@@ -24,6 +24,4 @@ Save this as "jenkings.virt". Now create an image:
 
 	sudo make jenkins VIRTUALIZED=jenkins.virt
 
-The image will be saved as `/var/lib/debootstrap/install/D7-H.1.0.0/jenkins-D7-H.1.0.0.img.vdi`.
-
-
+The image will be saved as `/var/lib/debootstrap/install/D7-H.1.0.0/jenkins-D7-H.1.0.0.img.qcow2`.
