@@ -1,0 +1,6 @@
+# -*- shell-script -*-
+
+ORIG=${SDIR}/build
+SRC=$(cd $(dirname $0); pwd)
+
+. ${ORIG}/functions
