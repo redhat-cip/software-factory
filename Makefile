@@ -40,7 +40,7 @@ export CURRENT_TARGET
 INST=$(TOP)/install/$(VERS)
 META=$(TOP)/metadata/$(VERS)
 
-ROLES = jenkins
+ROLES = jenkins gerrit
 
 all: $(ROLES)
 
@@ -48,6 +48,11 @@ jenkins: $(INST)/jenkins.done
 $(INST)/jenkins.done: jenkins.install $(INST)/base.done
 	./jenkins.install $(INST)/base $(INST)/jenkins $(VERS)
 	touch $(INST)/jenkins.done
+
+gerrit: $(INST)/gerrit.done
+$(INST)/gerrit.done: gerrit.install $(INST)/base.done
+	./gerrit.install $(INST)/base $(INST)/gerrit $(VERS)
+	touch $(INST)/gerrit.done
 
 dist:
 	tar zcvf ../edeploy-roles.tgz Makefile README.rst *.install *.exclude
