@@ -1,0 +1,15 @@
+[gerrit]
+	basePath = git
+	canonicalWebUrl = <%= canonicalweburl %>
+[database]
+	type = h2
+    database = db/ReviewDB
+[auth]
+	type = OPENID
+[container]
+	user = gerrit
+	javaHome = <%= java_home %>
+[sshd]
+	listenAddress = <%= sshd_listen_address %>
+[httpd]
+	listenUrl = http://*:8080/
