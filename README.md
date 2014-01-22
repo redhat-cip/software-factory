@@ -20,7 +20,7 @@ You need a configuration file for creating bootable images. For example:
 	# Only auto is supported now
 	NETWORK_CONFIG=auto
 
-Save this as "jenkings.virt". Now create an image:
+Save this as "jenkins.virt". Now create an image:
 
 	sudo make jenkins VIRTUALIZED=jenkins.virt
 
