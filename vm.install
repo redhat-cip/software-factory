@@ -1,0 +1,80 @@
+#!/bin/bash
+#
+# Copyright (C) 2014 eNovance SAS <licensing@enovance.com>
+#
+# Author: Frederic Lepied <frederic.lepied@enovance.com>
+#
+# Licensed under the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License. You may obtain
+# a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations
+# under the License.
+
+src="$1"
+dir="$2"
+version="$3"
+
+ROLE=vm
+
+ORIG=$(cd $(dirname $0); pwd)
+
+. ${ORIG}/functions
+
+install_ib_if_needed $ORIG $dir
+
+configure_cloudinit () {
+
+    mkdir -p ${dir}/etc/cloud/cloud.cfg.d
+    rm -f ${dir}/etc/cloud/cloud.cfg
+
+    case "$OS" in
+	"Debian")
+	    local repository=$(add_main_repository $DIST)
+	    cat > ${dir}/etc/apt/sources.list.d/$RELEASE-backport.list <<EOF
+deb $repository ${RELEASE}-backports main
+EOF
+            update_repositories $dir
+	    install_packages ${dir} "cloud-init"
+	    ;;
+	"Ubuntu")
+            update_repositories $dir
+	    # Todo(EmilienM): Move cloud-init into backports repo to have last release properly
+	    do_chroot ${dir} wget --no-verbose http://security.ubuntu.com/ubuntu/pool/main/c/cloud-init/cloud-init_0.7.3-0ubuntu2_all.deb
+	    do_chroot ${dir} wget --no-verbose http://security.ubuntu.com/ubuntu/pool/main/p/python-json-patch/python-json-patch_1.0-2_all.deb
+	    do_chroot ${dir} wget --no-verbose http://security.ubuntu.com/ubuntu/pool/main/p/python-json-pointer/python-json-pointer_1.0-1ubuntu2_all.deb
+	    do_chroot ${dir} dpkg -i cloud-init_0.7.3-0ubuntu2_all.deb  || true
+	    do_chroot ${dir} dpkg -i python-json-patch_1.0-2_all.deb  || true
+	    do_chroot ${dir} dpkg -i python-json-pointer_1.0-1ubuntu2_all.deb  || true
+	    do_chroot ${dir} apt-get -f install -y -o Dpkg::Options::="--force-confold"
+	    do_chroot ${dir} rm cloud-init_0.7.3-0ubuntu2_all.deb python-json-patch_1.0-2_all.deb python-json-pointer_1.0-1ubuntu2_all.deb
+	    ;;
+	"RedHatEnterpriseServer")
+	    # cloud-init is in Red Hat Common for RHEL Server (v. 6)
+	    add_rhn_channel $dir rhel-x86_64-server-rh-common-6
+	    ;&
+	"CentOS"|"RedHatEnterpriseServer")
+	    add_epel_repository $dir
+	    if [ "$(get_redhat_major_version $CODENAME)" == "6" ]; then
+		install_packages $dir "cloud-init"
+	    fi
+	    remove_epel_repository $DIST $dir
+	    ;;
+	*)
+	    fatal_error "OS ($OS) or Release ($RELEASE) not supported"
+	    ;;
+    esac
+}
+
+# invalidate root password
+#do_chroot ${dir} usermod -L root
+
+# ssh key gen is being taken care by cloud-init
+rm -f ${dir}/etc/first-boot.d/01-ssh
+
+configure_cloudinit

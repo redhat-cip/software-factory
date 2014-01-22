@@ -40,33 +40,46 @@ export CURRENT_TARGET
 INST=$(TOP)/install/$(VERS)
 META=$(TOP)/metadata/$(VERS)
 
-ROLES = jenkins gerrit
+ROLES = jenkins gerrit redmine
+
+# Build virtual images by default
+export VIRTUALIZED=params.virt
 
 all: $(ROLES)
 
 jenkins: $(INST)/jenkins.done
-$(INST)/jenkins.done: jenkins.install $(INST)/base.done
-	./jenkins.install $(INST)/base $(INST)/jenkins $(VERS)
+$(INST)/jenkins.done: jenkins.install $(INST)/vm.done
+	./jenkins.install $(INST)/vm $(INST)/jenkins $(VERS)
 	touch $(INST)/jenkins.done
 
 gerrit: $(INST)/gerrit.done
-$(INST)/gerrit.done: gerrit.install $(INST)/base.done
-	./gerrit.install $(INST)/base $(INST)/gerrit $(VERS)
+$(INST)/gerrit.done: gerrit.install $(INST)/vm.done
+	./gerrit.install $(INST)/vm $(INST)/gerrit $(VERS)
 	touch $(INST)/gerrit.done
 
 redmine: $(INST)/redmine.done
-$(INST)/redmine.done: redmine.install $(INST)/base.done
-	./redmine.install $(INST)/base $(INST)/redmine $(VERS)
+$(INST)/redmine.done: redmine.install $(INST)/vm.done
+	./redmine.install $(INST)/vm $(INST)/redmine $(VERS)
 	touch $(INST)/redmine.done
+
+vm: $(INST)/vm.done
+$(INST)/vm.done: vm.install $(INST)/base.done
+	./vm.install $(INST)/base $(INST)/vm $(VERS)
+	touch $(INST)/vm.done
+
+$(INST)/base.done:
+	mkdir -p $(INST)/base
+	tar zxf $(ARCHIVE)/$(VERS)/base-$(VERS).edeploy -C $(INST)/base
+	touch $(INST)/base.done
 
 dist:
 	tar zcvf ../edeploy-roles.tgz Makefile README.rst *.install *.exclude
 
 clean:
-	-rm -f *~ $(INST)/*.done
+	-for f in $(ROLES); do rm -f $(INST)/$$f.done
 
 distclean: clean
-	-rm -rf $(INST)/*
+	-for f in $(ROLES); do rm -rf $(INST)/$$f; done
 
 version:
 	@echo "$(VERS)"
