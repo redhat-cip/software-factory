@@ -1,0 +1,60 @@
+#!/bin/bash
+#
+# Copyright (C) 2013 eNovance SAS <licensing@enovance.com>
+#
+# Licensed under the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License. You may obtain
+# a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations
+# under the License.
+
+src="$1"
+dir="$2"
+version="$3"
+
+ROLE=redmine
+
+ORIG=$(cd $(dirname $0); pwd)
+PACKAGES="apache2 libapache2-mod-passenger redmine-sqlite sqlite3 ruby rails dbconfig-common ruby-rack ruby-coderay ruby-net-ldap ruby-fastercsv bundler ruby-rails-2.3 rubygems"
+
+. ${ORIG}/functions
+
+update_repositories $dir
+install_ib_if_needed $ORIG $dir
+
+# all packages except redmine; redmine fails here
+# redmine will be installed/configured on first boot
+install_packages $dir "$PACKAGES"
+
+cat > ${dir}/etc/apache2/mods-available/passenger.conf << EOF
+<IfModule mod_passenger.c>
+  PassengerDefaultUser www-data
+  PassengerRoot /usr
+  PassengerRuby /usr/bin/ruby
+</IfModule>
+EOF
+
+cat > ${dir}/etc/init.d/firstboot <<EOF
+apt-get install -y redmine
+sudo ln -s /usr/share/redmine/public /var/www/redmine
+service apache2 restart
+update-rc.d firstboot remove
+EOF
+
+sed -i '$d' ${dir}/etc/apache2/sites-enabled/000-default
+cat >> ${dir}/etc/apache2/sites-enabled/000-default << EOF
+        <Directory /var/www/redmine>
+                RailsBaseURI /redmine
+                PassengerResolveSymlinksInDocumentRoot on
+        </Directory>
+</VirtualHost>
+EOF
+
+do_chroot ${dir} chmod +x /etc/init.d/firstboot
+do_chroot ${dir} update-rc.d firstboot defaults

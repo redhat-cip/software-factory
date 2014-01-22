@@ -54,6 +54,11 @@ $(INST)/gerrit.done: gerrit.install $(INST)/base.done
 	./gerrit.install $(INST)/base $(INST)/gerrit $(VERS)
 	touch $(INST)/gerrit.done
 
+redmine: $(INST)/redmine.done
+$(INST)/redmine.done: redmine.install $(INST)/base.done
+	./redmine.install $(INST)/base $(INST)/redmine $(VERS)
+	touch $(INST)/redmine.done
+
 dist:
 	tar zcvf ../edeploy-roles.tgz Makefile README.rst *.install *.exclude
 
