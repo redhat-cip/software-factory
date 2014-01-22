@@ -26,23 +26,15 @@ REPOSITORY="http://pkg.jenkins-ci.org/debian"
 
 . ${ORIG}/functions
 
-update_repositories $dir
-install_ib_if_needed $ORIG $dir
-
-case "$(package_tool)" in
-    "apt")
-        # trick to allow to test and demo updates: remove the update source for this role
-        rm -f ${dir}/etc/apt/sources.list.d/updates.list
-        do_chroot $dir sh -c "wget -q -O - http://pkg.jenkins-ci.org/debian/jenkins-ci.org.key | apt-key add -"
-        cat > ${dir}/etc/apt/sources.list.d/jenkins.list <<EOF
+# Add jenkins package repo and signing key
+wget -q -O - http://pkg.jenkins-ci.org/debian/jenkins-ci.org.key | do_chroot $dir apt-key add -
+cat > ${dir}/etc/apt/sources.list.d/jenkins.list <<EOF
 deb http://pkg.jenkins-ci.org/debian binary/
 EOF
-        update_repositories $dir
-        install_packages $dir "$PACKAGES"
-        ;;
-    *)
-        fatal_error "$package_tool isn't supported for $ROLE role"
-        ;;
-esac
 
-clear_packages_cache $dir
+update_repositories $dir
+install_ib_if_needed $ORIG $dir
+install_packages $dir "$PACKAGES"
+
+# Make sure jenkins start
+do_chroot ${dir} update-rc.d jenkins defaults
