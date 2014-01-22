@@ -49,6 +49,11 @@ $(INST)/jenkins.done: jenkins.install $(INST)/base.done
 	./jenkins.install $(INST)/base $(INST)/jenkins $(VERS)
 	touch $(INST)/jenkins.done
 
+redmine: $(INST)/redmine.done
+$(INST)/redmine.done: redmine.install $(INST)/base.done
+	./redmine.install $(INST)/base $(INST)/redmine $(VERS)
+	touch $(INST)/redmine.done
+
 dist:
 	tar zcvf ../edeploy-roles.tgz Makefile README.rst *.install *.exclude
 
