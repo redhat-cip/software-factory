@@ -51,3 +51,5 @@ cat >> ${dir}/etc/apache2/sites-enabled/000-default << EOF
         </Directory>
 </VirtualHost>
 EOF
+
+do_chroot $dir ln -s /usr/share/redmine/public /var/www/redmine
