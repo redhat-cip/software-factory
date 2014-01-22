@@ -21,15 +21,18 @@ version="$3"
 ROLE=redmine
 
 ORIG=$(cd $(dirname $0); pwd)
-PACKAGES="apache2 libapache2-mod-passenger redmine-sqlite sqlite3 ruby rails dbconfig-common ruby-rack ruby-coderay ruby-net-ldap ruby-fastercsv bundler ruby-rails-2.3 rubygems"
+PACKAGES="apache2 libapache2-mod-passenger redmine-sqlite redmine"
 
 . ${ORIG}/functions
 
 update_repositories $dir
 install_ib_if_needed $ORIG $dir
 
-# all packages except redmine; redmine fails here
-# redmine will be installed/configured on first boot
+do_chroot $dir /usr/share/debconf/fix_db.pl
+do_chroot $dir debconf-set-selections <<< "redmine redmine/instances/default/dbconfig-install boolean false"
+do_chroot $dir debconf-set-selections <<< "redmine redmine/instances/default/internal/skip-preseed boolean true"
+do_chroot $dir debconf-set-selections <<< "redmine redmine/instances/default/database-type string sqlite"
+
 install_packages $dir "$PACKAGES"
 
 cat > ${dir}/etc/apache2/mods-available/passenger.conf << EOF
@@ -40,13 +43,6 @@ cat > ${dir}/etc/apache2/mods-available/passenger.conf << EOF
 </IfModule>
 EOF
 
-cat > ${dir}/etc/init.d/firstboot <<EOF
-apt-get install -y redmine
-sudo ln -s /usr/share/redmine/public /var/www/redmine
-service apache2 restart
-update-rc.d firstboot remove
-EOF
-
 sed -i '$d' ${dir}/etc/apache2/sites-enabled/000-default
 cat >> ${dir}/etc/apache2/sites-enabled/000-default << EOF
         <Directory /var/www/redmine>
@@ -55,6 +51,3 @@ cat >> ${dir}/etc/apache2/sites-enabled/000-default << EOF
         </Directory>
 </VirtualHost>
 EOF
-
-do_chroot ${dir} chmod +x /etc/init.d/firstboot
-do_chroot ${dir} update-rc.d firstboot defaults
