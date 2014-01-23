@@ -24,7 +24,7 @@ ORIG=$(cd $(dirname $0); pwd)
 
 # Release page : https://gerrit-releases.storage.googleapis.com/index.html
 LASTWAR="https://gerrit-releases.storage.googleapis.com/gerrit-2.8.1.war"
-PACKAGES="openjdk-7-jre git"
+PACKAGES="openjdk-7-jre git puppet vim"
 GERRITUSER=gerrit
 
 . ${ORIG}/functions
@@ -42,8 +42,6 @@ case "$(package_tool)" in
         [ ! -f /tmp/gerrit.war ] && wget -q $LASTWAR -O /tmp/gerrit.war
         cp /tmp/gerrit.war ${dir}/home/$GERRITUSER/
         do_chroot $dir sh -c "chown $GERRITUSER:$GERRITUSER /home/$GERRITUSER/gerrit.war"
-        # Init must be done by puppet (if not already initialized)
-        # do_chroot $dir sh -c "su - gerrit -c \"cd; java -jar gerrit.war init --batch --no-auto-start -d ./site_path\""
         ;;
     *)
         fatal_error "$package_tool isn't supported for $ROLE role"
