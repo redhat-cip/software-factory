@@ -1,0 +1,13 @@
+<VirtualHost *:80>
+	ServerAdmin webmaster@localhost
+
+	LogLevel warn
+	ErrorLog ${APACHE_LOG_DIR}/error.log
+	CustomLog ${APACHE_LOG_DIR}/access.log combined
+
+	DocumentRoot /usr/share/redmine/public
+	<Directory /usr/share/redmine/public>
+   		AllowOverride all
+   		Options -MultiViews
+ 	</Directory>
+</VirtualHost>

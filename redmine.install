@@ -21,7 +21,7 @@ version="$3"
 ROLE=redmine
 
 ORIG=$(cd $(dirname $0); pwd)
-PACKAGES="apache2 libapache2-mod-passenger redmine-sqlite redmine"
+PACKAGES="apache2 libapache2-mod-passenger redmine-sqlite redmine-mysql redmine vim puppet"
 
 . ${ORIG}/functions
 
@@ -31,25 +31,7 @@ install_ib_if_needed $ORIG $dir
 do_chroot $dir /usr/share/debconf/fix_db.pl
 do_chroot $dir debconf-set-selections <<< "redmine redmine/instances/default/dbconfig-install boolean false"
 do_chroot $dir debconf-set-selections <<< "redmine redmine/instances/default/internal/skip-preseed boolean true"
-do_chroot $dir debconf-set-selections <<< "redmine redmine/instances/default/database-type string sqlite"
 
 install_packages $dir "$PACKAGES"
 
-cat > ${dir}/etc/apache2/mods-available/passenger.conf << EOF
-<IfModule mod_passenger.c>
-  PassengerDefaultUser www-data
-  PassengerRoot /usr
-  PassengerRuby /usr/bin/ruby
-</IfModule>
-EOF
-
-sed -i '$d' ${dir}/etc/apache2/sites-enabled/000-default
-cat >> ${dir}/etc/apache2/sites-enabled/000-default << EOF
-        <Directory /var/www/redmine>
-                RailsBaseURI /redmine
-                PassengerResolveSymlinksInDocumentRoot on
-        </Directory>
-</VirtualHost>
-EOF
-
-do_chroot $dir ln -s /usr/share/redmine/public /var/www/redmine
+sed -i 's/^AcceptEnv/AcceptEnv LANG LC_* FACTER_*/g' ${dir}/etc/ssh/sshd_config
