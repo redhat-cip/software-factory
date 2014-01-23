@@ -1,19 +1,4 @@
-# Install and maintain Gerrit Code Review.
-# params:
-#   canonicalweburl:
-#     Used in the Gerrit config to generate links,
-#       eg., https://review.example.com/
-#   sshd_listen_address:
-#   java_home:
-#   email_private_key
-#
-class gerrit(
-  $canonicalweburl = "http://${::fqdn}/",
-  $sshd_listen_address = '*:29418',
-  $email_private_key = '',
-) {
-
-  $java_home = '/usr/lib/jvm/java-7-openjdk-amd64/jre'
+class gerrit {
 
   user { 'gerrit':
     ensure     => present,
@@ -32,10 +17,6 @@ class gerrit(
   package { 'openjdk-7-jre':
     ensure => present,
   }
-
-  # Prepare gerrit directories.  Even though some of these would be created
-  # by the init command, we can go ahead and create them now and populate them.
-  # That way the config files are already in place before init runs.
 
   file { '/home/gerrit/site_path':
     ensure  => directory,
@@ -73,11 +54,6 @@ class gerrit(
     require => File['/home/gerrit/site_path'],
   }
 
-  # Gerrit sets these permissions in 'init'; don't fight them.
-  # Template uses:
-  # - $canonicalweburl
-  # - $java_home
-  # - $sshd_listen_address
   file { '/home/gerrit/site_path/etc/gerrit.config':
     ensure  => present,
     owner   => 'gerrit',
@@ -88,11 +64,6 @@ class gerrit(
     require => File['/home/gerrit/site_path/etc'],
   }
 
-  # Secret files.
-  # Gerrit sets these permissions in 'init'; don't fight them.  If
-  # these permissions aren't set correctly, gerrit init will write a
-  # new secure.config file and lose the mysql password.
-  # Template uses $email_private_key
   file { '/home/gerrit/site_path/etc/secure.config':
     ensure  => present,
     owner   => 'gerrit',
@@ -114,26 +85,36 @@ class gerrit(
     }
   }
 
-  # If gerrit.war was just installed, run the Gerrit "init" command.
+  package { 'libmysql-java':
+    ensure => present,
+  }
+
+  file { '/home/gerrit/site_path/lib/mysql-connector-java.jar':
+    ensure  => link,
+    target  => '/usr/share/java/mysql-connector-java-5.1.16.jar',
+    require => [Package['libmysql-java'],
+                File['/home/gerrit/site_path/lib']]  
+  }
+
   exec { 'gerrit-initial-init':
     user      => 'gerrit',
     command   => '/usr/bin/java -jar /home/gerrit/gerrit.war init -d /home/gerrit/site_path --batch --no-auto-start',
     require   => [Package['openjdk-7-jre'],
                   User['gerrit'],
+                  Group['gerrit'],
                   File['/home/gerrit/site_path/etc/gerrit.config'],
                   File['/home/gerrit/site_path/etc/secure.config']],
+    unless    => '/usr/bin/pgrep -f GerritCodeReview',
     notify    => Exec['gerrit-start'],
     logoutput => true,
   }
 
-  # Symlink the init script.
   file { '/etc/init.d/gerrit':
     ensure  => link,
     target  => '/home/gerrit/site_path/bin/gerrit.sh',
     require => Exec['gerrit-initial-init'],
   }
 
-  # The init script requires the path to gerrit to be set.
   file { '/etc/default/gerritcodereview':
     ensure  => present,
     content => 'GERRIT_SITE=/home/gerrit/site_path',
@@ -143,8 +124,6 @@ class gerrit(
     mode    => '0444',
   }
 
-
-  # Make sure the init script starts on boot.
   file { ['/etc/rc0.d/K10gerrit',
           '/etc/rc1.d/K10gerrit',
           '/etc/rc2.d/S90gerrit',
@@ -160,6 +139,15 @@ class gerrit(
   exec { 'gerrit-start':
     command     => '/etc/init.d/gerrit start',
     require     => File['/etc/init.d/gerrit'],
+    refreshonly => true,
+  }
+  
+  exec { 'gerrit-restart':
+    command     => '/etc/init.d/gerrit restart',
+    require     => File['/etc/init.d/gerrit'],
+    onlyif      => '/usr/bin/test -f /home/gerrit/site_path/bin/gerrit.sh',
+    subscribe   => [File['/home/gerrit/site_path/etc/gerrit.config'],
+                    File['/home/gerrit/site_path/etc/secure.config']],
     refreshonly => true,
   }
 

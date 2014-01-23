@@ -1,15 +1,18 @@
 [gerrit]
 	basePath = git
-	canonicalWebUrl = <%= canonicalweburl %>
+	canonicalWebUrl = http://<%= @canonical_weburl %>
 [database]
-	type = h2
-    database = db/ReviewDB
+    type = MYSQL
+    hostname = <%= @mysql_address %>
+    database = <%= @gerrit_mysql_db %>
+    username = <%= @gerrit_mysql_username %>
+    port = <%= @mysql_port %>
 [auth]
 	type = OPENID
 [container]
 	user = gerrit
-	javaHome = <%= java_home %>
+	javaHome = /usr/lib/jvm/java-7-openjdk-amd64/jre
 [sshd]
-	listenAddress = <%= sshd_listen_address %>
+	listenAddress = <%= @sshd_listen_address %>
 [httpd]
-	listenUrl = http://*:8080/
+    listenUrl = http://*:<%= @http_listen_port %>/
