@@ -1,6 +1,9 @@
 [gerrit]
-	basePath = git
-	canonicalWebUrl = <%= @canonical_weburl %>
+    basePath = <%= @repo_base_path %>
+	canonicalWebUrl = <%= @weburl %>
+    canonicalGitUrl = <%= @giturl %>
+    gitHttpUrl = <%= @httpurl %>
+    reportBugUrl = <%= @reportbugurl %>
 [database]
     type = MYSQL
     hostname = <%= @mysql_address %>
@@ -9,6 +12,7 @@
     port = <%= @mysql_port %>
 [auth]
     type = LDAP
+    gitBasicAuth = <%= @http_basic_auth %>
 [ldap]
     server = <%= @ldap_address %>
     # lookup user that can read the trees
@@ -25,4 +29,14 @@
 [sshd]
 	listenAddress = <%= @sshd_listen_address %>
 [httpd]
-    listenUrl = http://*:<%= @http_listen_port %>/
+    listenUrl = <%= @http_listen_address %>
+[sendmail]
+    enable = true
+    smtpEncryption = none
+    from = MIXED
+    smtpServer = <%= @smtp_server %>
+    smtpServerPort = <%= @smtp_server_port %>
+    smtpUser = <%= @smtp_user %>
+[suggest]
+    accounts = true
+    from = 2
