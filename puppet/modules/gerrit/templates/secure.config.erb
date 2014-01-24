@@ -2,3 +2,6 @@
 	registerEmailPrivateKey = <%= @email_private_key %>
 [database]
     password = <%= @gerrit_mysql_secret %>
+[ldap]
+    # Will be used if anonymous bind is disallowed
+    password = <%= @ldap_password %>

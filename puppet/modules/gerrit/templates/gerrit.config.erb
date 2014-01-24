@@ -1,6 +1,6 @@
 [gerrit]
 	basePath = git
-	canonicalWebUrl = http://<%= @canonical_weburl %>
+	canonicalWebUrl = <%= @canonical_weburl %>
 [database]
     type = MYSQL
     hostname = <%= @mysql_address %>
@@ -8,7 +8,17 @@
     username = <%= @gerrit_mysql_username %>
     port = <%= @mysql_port %>
 [auth]
-	type = OPENID
+    type = LDAP
+[ldap]
+    server = <%= @ldap_address %>
+    # lookup user that can read the trees
+    username = <%= @ldap_username %>
+    accountBase = <%= @ldap_account_base %>
+    accountPattern = <%= @ldap_account_pattern %>
+    accountEmailAddress = <%= @ldap_account_email_address %>
+    # we don't use LDAP groups
+    #groupBase = <%= @ldap_group_base %>
+    #groupMemberPattern = <%= @ldap_group_pattern %>
 [container]
 	user = gerrit
 	javaHome = /usr/lib/jvm/java-7-openjdk-amd64/jre
