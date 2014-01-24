@@ -40,7 +40,7 @@ export CURRENT_TARGET
 INST=$(TOP)/install/$(VERS)
 META=$(TOP)/metadata/$(VERS)
 
-ROLES = jenkins gerrit redmine
+ROLES = jenkins gerrit redmine mysql
 
 # Build virtual images by default
 export VIRTUALIZED=params.virt
@@ -61,6 +61,11 @@ redmine: $(INST)/redmine.done
 $(INST)/redmine.done: redmine.install $(INST)/vm.done
 	./redmine.install $(INST)/vm $(INST)/redmine $(VERS)
 	touch $(INST)/redmine.done
+
+mysql: $(INST)/mysql.done
+$(INST)/mysql.done: mysql.install $(INST)/vm.done
+	./mysql.install $(INST)/vm $(INST)/mysql $(VERS)
+	touch $(INST)/mysql.done
 
 vm: $(INST)/vm.done
 $(INST)/vm.done: vm.install $(INST)/base.done
