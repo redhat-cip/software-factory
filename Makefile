@@ -40,7 +40,7 @@ export CURRENT_TARGET
 INST=$(TOP)/install/$(VERS)
 META=$(TOP)/metadata/$(VERS)
 
-ROLES = jenkins gerrit redmine mysql
+ROLES = jenkins gerrit redmine mysql ldap
 
 # Build virtual images by default
 export VIRTUALIZED=params.virt
@@ -51,6 +51,11 @@ jenkins: $(INST)/jenkins.done
 $(INST)/jenkins.done: jenkins.install $(INST)/vm.done
 	./jenkins.install $(INST)/vm $(INST)/jenkins $(VERS)
 	touch $(INST)/jenkins.done
+
+ldap: $(INST)/ldap.done
+$(INST)/ldap.done: ldap.install $(INST)/vm.done
+	./ldap.install $(INST)/vm $(INST)/ldap $(VERS)
+	touch $(INST)/ldap.done
 
 gerrit: $(INST)/gerrit.done
 $(INST)/gerrit.done: gerrit.install $(INST)/vm.done
@@ -89,4 +94,4 @@ distclean: clean
 version:
 	@echo "$(VERS)"
 
-.PHONY: jenkins dist clean distclean version
+.PHONY: jenkins ldap gerrit redmine mysql vm dist clean distclean version
