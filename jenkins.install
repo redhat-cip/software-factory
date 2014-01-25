@@ -22,7 +22,6 @@ ROLE=jenkins
 
 ORIG=$(cd $(dirname $0); pwd)
 PACKAGES="jenkins"
-REPOSITORY="http://pkg.jenkins-ci.org/debian"
 
 . ${ORIG}/functions
 
