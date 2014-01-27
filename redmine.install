@@ -21,7 +21,7 @@ version="$3"
 ROLE=redmine
 
 ORIG=$(cd $(dirname $0); pwd)
-PACKAGES="apache2 libapache2-mod-passenger redmine-sqlite redmine-mysql redmine vim puppet"
+PACKAGES="apache2 libapache2-mod-passenger redmine-sqlite redmine-mysql redmine vim puppet git cron"
 
 . ${ORIG}/functions
 
