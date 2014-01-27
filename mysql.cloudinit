@@ -1,0 +1,13 @@
+#cloud-config
+#
+write_files:
+-   content: |
+	CREATE DATABASE redmine;
+	CREATE USER 'redmine'@'%' IDENTIFIED BY 'secret';
+	GRANT ALL PRIVILEGES ON redmine.* TO 'redmine'@'%' WITH GRANT OPTION;
+	FLUSH PRIVILEGES;
+    path: /root/redmine.sql
+
+runcmd:
+ - mysql -u root -pyour_password < /root/redmine.sql
+
