@@ -1,0 +1,28 @@
+#cloud-config
+#
+write_files:
+-   content: |
+      dn: ou=Users,dc=enovance,dc=com
+      objectClass: organizationalUnit
+      ou: Users
+    path: /root/users_ou.ldif
+
+-   content: |
+      dn: cn=demo_user1,ou=Users,dc=enovance,dc=com
+      cn: demo_user1
+      objectClass: person
+      sn: Demo user1
+      userPassword: userpass
+      objectClass: inetOrgPerson
+
+      dn: cn=demo_user2,ou=Users,dc=enovance,dc=com
+      cn: demo_user2
+      objectClass: person
+      sn: Demo user2
+      userPassword: userpass
+      objectClass: inetOrgPerson
+    path: /root/demo_users.ldif
+
+runcmd:
+ - ldapadd -x -D cn=admin,dc=enovance,dc=com -w secret -f /root/users_ou.ldif
+ - ldapadd -x -D cn=admin,dc=enovance,dc=com -w secret -f /root/demo_users.ldif
