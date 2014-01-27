@@ -2,10 +2,10 @@
 #
 write_files:
 -   content: |
-	CREATE DATABASE redmine;
-	CREATE USER 'redmine'@'%' IDENTIFIED BY 'secret';
-	GRANT ALL PRIVILEGES ON redmine.* TO 'redmine'@'%' WITH GRANT OPTION;
-	FLUSH PRIVILEGES;
+      CREATE DATABASE redmine;
+      CREATE USER 'redmine'@'%' IDENTIFIED BY 'secret';
+      GRANT ALL PRIVILEGES ON redmine.* TO 'redmine'@'%' WITH GRANT OPTION;
+      FLUSH PRIVILEGES;
     path: /root/redmine.sql
 
 runcmd:
