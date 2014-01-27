@@ -1,15 +1,14 @@
 [gerrit]
-    basePath = <%= @repo_base_path %>
-	canonicalWebUrl = <%= @weburl %>
-    canonicalGitUrl = <%= @giturl %>
-    gitHttpUrl = <%= @httpurl %>
-    reportBugUrl = <%= @reportbugurl %>
+    basePath = <%= has_variable?("repo_base_path") ? repo_base_path: 'git' %>
+    canonicalWebUrl = <%= @weburl %>
+    gitHttpUrl = <%= has_variable?("httpurl") ? httpurl: '' %>
+    reportBugUrl = <%= has_variable?("reportbugurl") ? reportbugurl: '' %>
 [database]
     type = MYSQL
     hostname = <%= @mysql_address %>
-    database = <%= @gerrit_mysql_db %>
-    username = <%= @gerrit_mysql_username %>
-    port = <%= @mysql_port %>
+    database = <%= has_variable?("gerrit_mysql_db") ? gerrit_mysql_db: 'gerrit' %>
+    username = <%= has_variable?("gerrit_mysql_username") ? gerrit_mysql_username: 'gerrit' %>
+    port = <%= has_variable?("mysql_port") ? mysql_port: '3306' %>
 [auth]
     type = LDAP
     gitBasicAuth = <%= @http_basic_auth %>
@@ -20,23 +19,27 @@
     accountBase = <%= @ldap_account_base %>
     accountPattern = <%= @ldap_account_pattern %>
     accountEmailAddress = <%= @ldap_account_email_address %>
+    accountSshUserName = <%= @ldap_account_ssh_username %>
     # we don't use LDAP groups
-    #groupBase = <%= @ldap_group_base %>
     #groupMemberPattern = <%= @ldap_group_pattern %>
 [container]
-	user = gerrit
-	javaHome = /usr/lib/jvm/java-7-openjdk-amd64/jre
+    user = gerrit
+    javaHome = /usr/lib/jvm/java-7-openjdk-amd64/jre
 [sshd]
-	listenAddress = <%= @sshd_listen_address %>
+    listenAddress = <%= has_variable?("sshd_listen_address") ? sshd_listen_address: '*:29418' %>
 [httpd]
-    listenUrl = <%= @http_listen_address %>
-[sendmail]
+    listenUrl = <%= has_variable?("http_listen_address") ? http_listen_address: 'http://*:8080' %>
+[sendemail]
     enable = true
     smtpEncryption = none
     from = MIXED
     smtpServer = <%= @smtp_server %>
-    smtpServerPort = <%= @smtp_server_port %>
-    smtpUser = <%= @smtp_user %>
+    smtpServerPort = <%= has_variable?("smtp_server_port") ? smtp_server_port: '25' %>
+    smtpUser = <%= has_variable?("smtp_user") ? smtp_user: '' %>
+[download]
+    scheme = ssh
+    scheme = http
+    scheme = anon_http
 [suggest]
     accounts = true
     from = 2
