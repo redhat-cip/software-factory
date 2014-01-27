@@ -8,18 +8,36 @@ write_files:
     path: /root/users_ou.ldif
 
 -   content: |
-      dn: cn=demo_user1,ou=Users,dc=enovance,dc=com
-      cn: demo_user1
+      dn: cn=tristan.cacqueray,ou=Users,dc=enovance,dc=com
+      cn: tristan.cacqueray
       objectClass: person
       sn: Demo user1
       userPassword: userpass
+      mail: tristan.cacqueray@enovance.com
       objectClass: inetOrgPerson
 
-      dn: cn=demo_user2,ou=Users,dc=enovance,dc=com
-      cn: demo_user2
+      dn: cn=fabien.boucher,ou=Users,dc=enovance,dc=com
+      cn: fabien.boucher
       objectClass: person
       sn: Demo user2
       userPassword: userpass
+      mail: fabien.boucher@enovance.com
+      objectClass: inetOrgPerson
+
+      dn: cn=christian.schwede,ou=Users,dc=enovance,dc=com
+      cn: christian.schwede
+      objectClass: person
+      sn: Demo user3
+      userPassword: userpass
+      mail: christian.schwede@enovance.com
+      objectClass: inetOrgPerson
+
+      dn: cn=frederic.lepied,ou=Users,dc=enovance,dc=com
+      cn: frederic.lepied
+      objectClass: person
+      sn: Demo user4
+      userPassword: userpass
+      mail: frederic.lepied@enovance.com
       objectClass: inetOrgPerson
     path: /root/demo_users.ldif
 
