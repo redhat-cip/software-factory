@@ -39,6 +39,14 @@ write_files:
       userPassword: userpass
       mail: frederic.lepied@enovance.com
       objectClass: inetOrgPerson
+
+      dn: cn=jenkins,ou=Users,dc=enovance,dc=com
+      cn: jenkins
+      objectClass: person
+      sn: Jenkins
+      userPassword: userpass
+      mail: tristan.cacqueray@enovance.com
+      objectClass: inetOrgPerson
     path: /root/demo_users.ldif
 
 runcmd:
