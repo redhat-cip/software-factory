@@ -27,6 +27,15 @@ PACKAGES="slapd ldap-utils"
 
 update_repositories $dir
 install_ib_if_needed $ORIG $dir
+
+do_chroot ${dir} debconf-set-selections <<< 'slapd slapd/password1 password secret'  
+do_chroot ${dir} debconf-set-selections <<< 'slapd slapd/password2 password secret' 
+do_chroot ${dir} debconf-set-selections <<< 'slapd shared/organization string dev'
+do_chroot ${dir} debconf-set-selections <<< 'slapd slapd/backend string HDB'
+do_chroot ${dir} debconf-set-selections <<< 'slapd slapd/allow_ldap_v2 boolean true' 
+do_chroot ${dir} debconf-set-selections <<< 'slapd slapd/purge_database boolean true'
+do_chroot ${dir} debconf-set-selections <<< 'slapd slapd/domain string enovance.com'
+
 install_packages $dir "$PACKAGES"
 
 # Make sure jenkins start

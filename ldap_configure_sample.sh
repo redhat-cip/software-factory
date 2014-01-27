@@ -8,22 +8,6 @@
 # User password = userpass
 
 
-# Reconfigure slapd
-/etc/init.d/slapd stop
-
-dpkg-reconfigure slapd
-# Omit OpenLDAP server configuration? No
-# DNS domain name: enovance.com
-# Organization name: dev
-# Administrator password: ldappass
-# Database backend to use: 2
-# Do you want the database to be removed when slapd is purged? yes
-# Move old database? Yes
-# Allow LDAPv2 protocol? Yes
-
-/etc/init.d/slapd start
-
-
 # Create users ou
 cat <<EOF > users_ou.ldif
 dn: ou=Users,dc=enovance,dc=com
