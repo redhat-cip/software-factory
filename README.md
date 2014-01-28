@@ -66,6 +66,14 @@ It is auto-configured with cloud-init with a simple schema, ie: ou=Users,dc=enov
 
 ### Gerrit
 
+The eDeploy image is provided with the Gerrit war and a gerrit user in it. Gerrit configuration
+is done after the VM is booted. Gerrit configuration is handled by puppet and puppet need some
+environment variables configured like the MySQL and LDAP database connection. All the available
+variable are configurable in the gerrit_configure_sample.sh script.
+
+This role need to be fully automated by cloud-init like it is done for the Redmine role. Configuration
+variables and puppet triggering will be done by cloud-init.
+
 ### Jenkins
 
 What's need to be done automagically:
@@ -92,11 +100,29 @@ nosetests
 
 ### Redmine
 
+The role includes redmine and an apache web server. The initial database configuration is not done during image creation;
+the database connection and schema creation will be done by puppet after the VM has booted.
+cloud-init is used to set the IP address of the database host and to trigger puppet to finish the configuration.
 
-Todo
-----
-* Integrate the manual configuration: puppet/heat/ansible/...
+### MySQL
+
+This is a base role for a MySQL database server. After booting the VM cloud-init is used to create two databases and users
+for Gerrit and Redmine.
+
+
+Next steps
+----------
+
+What need to be done in the next sprints:
+
+* Use cloud-init to trigger puppet for the Gerrit role
+* Add a main script based on Openstack API to deploy and
+  configure all the roles
+* Have a look to https://github.com/tru/redmine-gerrit-scripts
+* Do we need to have some specialized project parents pre-provisionned in Gerrit ?
+* Extend puppet manifests
+* Secure instances, ie disable root logins / password logins
+* Integrate puppet manifests into eNovance CI
 * Jenkins role need git, nosetests, coverage, ...
 * Jenkins job builder to automate job creation for gerrit new projects
 * Jenkins new job should give link to failing test, and remove the 'nulljob/gerrit_tester/10' part
-* 
