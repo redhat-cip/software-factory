@@ -2,7 +2,6 @@
     basePath = <%= has_variable?("repo_base_path") ? repo_base_path: 'git' %>
     canonicalWebUrl = <%= @weburl %>
     gitHttpUrl = <%= has_variable?("httpurl") ? httpurl: '' %>
-    reportBugUrl = <%= has_variable?("reportbugurl") ? reportbugurl: '' %>
 [database]
     type = MYSQL
     hostname = <%= @mysql_address %>
@@ -29,6 +28,9 @@
     listenAddress = <%= has_variable?("sshd_listen_address") ? sshd_listen_address: '*:29418' %>
 [httpd]
     listenUrl = <%= has_variable?("http_listen_address") ? http_listen_address: 'http://*:8080' %>
+[commentlink "Redmine"]
+    match = ([Bb]ug:\\s+)(\\d+)
+    html = $1<a href=\"http://<%= @issues_tracker_address %>/issues/$2\">$2</a>
 [sendemail]
     enable = true
     smtpEncryption = none

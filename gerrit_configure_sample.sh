@@ -12,14 +12,14 @@ export FACTER_WEBURL="http://198.154.188.164:8080"
 # Can be use to set HTTP read access from a mirror
 #export FACTER_HTTPURL="http://mirror.monrepo.local"
 
-# Bug tracker URL
-#export FACTER_REPORTBUGURL="http://redmine.monrepo.local"
-
 # Binding address for sshd
 #export FACTER_SSHD_LISTEN_ADDRESS="*:29418"
 
 # Binding address for httpd
 #export FACTER_HTTP_LISTEN_ADDRESS="http://*:8080"
+
+# Issue tracker address for commentlinks
+export FACTER_ISSUES_TRACKER_ADDRESS="198.154.188.170"
 
 # MySQL access
 export FACTER_MYSQL_ADDRESS="10.43.0.37"
