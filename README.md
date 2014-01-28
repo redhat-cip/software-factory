@@ -85,3 +85,11 @@ What's need to be done automagically:
 
 ### Redmine
 
+The role includes redmine and an apache web server. The initial database configuration is not done during image creation;
+the database connection and schema creation will be done by puppet after the VM has booted.
+cloud-init is used to set the IP address of the database host and to trigger puppet to finish the configuration.
+
+### MySQL
+
+This is a base role for a MySQL database server. After booting the VM cloud-init is used to create two databases and users
+for Gerrit and Redmine.
