@@ -54,3 +54,34 @@ Update private IP in redmine.cloudinit, start new VM using Redmine image:
 Assign floating IP to redmine VM:
 
 	nova floating-ip-associate edeploy-redmine 198.154.188.219
+
+
+Roles
+-----
+
+### Ldap
+
+A sample openldap server have been setup in order to emulate a customer's users directory.
+It is auto-configured with cloud-init with a simple schema, ie: ou=Users,dc=enovance,dc=com
+
+### Gerrit
+
+### Jenkins
+
+What's need to be done automagically:
+
+* Authentication: In /var/lib/jenkins/config.xml
+..* Force authentication: <authorizationStrategy class="hudson.security.FullControlOnceLoggedInAuthorizationStrategy"/> 
+..* ldap address: <server>ldap://10.43.0.61</server>
+..* Root dn: <rootDN>dc=enovance,dc=com</rootDN>
+..* Users base: <userSearchBase>ou=Users</userSearchBase>
+..* User match: <userSearch>cn={0}</userSearch>
+
+* Gerrit-trigger: In /var/lib/jenkins/gerrit-trigger.xml
+..* Gerrit host: <gerritHostName>198.154.188.164</gerritHostName><gerritSshPort>29418</gerritSshPort>
+..* Gerrit ssh-key: <gerritAuthKeyFile>/var/lib/jenkins/.ssh/id_rsa</gerritAuthKeyFile>
+
+* Test-job
+
+### Redmine
+
