@@ -64,6 +64,11 @@ Roles
 A sample openldap server have been setup in order to emulate a customer's users directory.
 It is auto-configured with cloud-init with a simple schema, ie: ou=Users,dc=enovance,dc=com
 
+### MySQL
+
+This is a base role for a MySQL database server. By default it listens on 0.0.0.0 and can be used by other VMs in the same subnet.
+After booting the VM cloud-init is used to create two databases and users for Gerrit and Redmine.
+
 ### Gerrit
 
 The eDeploy image is provided with the Gerrit war and a gerrit user in it. Gerrit configuration
@@ -103,11 +108,6 @@ nosetests
 The role includes redmine and an apache web server. The initial database configuration is not done during image creation;
 the database connection and schema creation will be done by puppet after the VM has booted.
 cloud-init is used to set the IP address of the database host and to trigger puppet to finish the configuration.
-
-### MySQL
-
-This is a base role for a MySQL database server. After booting the VM cloud-init is used to create two databases and users
-for Gerrit and Redmine.
 
 
 Next steps
