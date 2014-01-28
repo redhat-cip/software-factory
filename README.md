@@ -113,3 +113,6 @@ What need to be done in the next sprints:
   configure all the roles
 * Have a look to https://github.com/tru/redmine-gerrit-scripts
 * Do we need to have some specialized project parents pre-provisionned in Gerrit ?
+* Extend puppet manifests
+* Secure instances, ie disable root logins / password logins
+* Integrate puppet manifests into eNovance CI
