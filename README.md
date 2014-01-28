@@ -82,6 +82,21 @@ What's need to be done automagically:
 ..* Gerrit ssh-key: <gerritAuthKeyFile>/var/lib/jenkins/.ssh/id_rsa</gerritAuthKeyFile>
 
 * Test-job
+..* This must be done for every-project and every-branches
+..* We need Jenkins Job Builder
+..* After job is configured for a gerrit project, the job does:
+```shell
+git fetch ${GIT_URL} ${GERRIT_REFSPEC} && git checkout FETCH_HEAD
+nosetests
+
 
 ### Redmine
 
+
+Todo
+----
+* Integrate the manual configuration: puppet/heat/ansible/...
+* Jenkins role need git, nosetests, coverage, ...
+* Jenkins job builder to automate job creation for gerrit new projects
+* Jenkins new job should give link to failing test, and remove the 'nulljob/gerrit_tester/10' part
+* 
