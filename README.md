@@ -66,6 +66,14 @@ It is auto-configured with cloud-init with a simple schema, ie: ou=Users,dc=enov
 
 ### Gerrit
 
+The eDeploy image is provided with the Gerrit war and a gerrit user in it. Gerrit configuration
+is done after the VM is booted. Gerrit configuration is handled by puppet and puppet need some
+environment variables configured like the MySQL and LDAP database connection. All the available
+variable are configurable in the gerrit_configure_sample.sh script.
+
+This role need to be fully automated by cloud-init like it is done for the Redmine role. Configuration
+variables and puppet triggering will be done by cloud-init.
+
 ### Jenkins
 
 What's need to be done automagically:
