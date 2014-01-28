@@ -120,8 +120,11 @@ What need to be done in the next sprints:
   configure all the roles: create images, register images
   in Glance if not done, start MySQL & LDAP instances, get IPs
   and update cloud-init settings for Jenkins, Gerrit and Redmine
+* Store Git repositories on a Cinder volume for Gerrit and maybe for Redmine.
+  The creation of the Cinder volume can be automated by the main script.
 * Have a look to https://github.com/tru/redmine-gerrit-scripts
-* Do we need to have some specialized project parents pre-provisionned in Gerrit ?
+* Add Gitweb to the Gerrit eDeploy role.
+* Have some specialized project parents pre-provisionned in Gerrit.
 * Extend puppet manifests
 * Secure instances, ie disable root logins / password logins
 * Integrate puppet manifests into eNovance CI
