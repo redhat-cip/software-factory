@@ -117,7 +117,9 @@ What need to be done in the next sprints:
 
 * Use cloud-init to trigger puppet for the Gerrit role
 * Add a main script based on Openstack API to deploy and
-  configure all the roles
+  configure all the roles: create images, register images
+  in Glance if not done, start MySQL & LDAP instances, get IPs
+  and update cloud-init settings for Jenkins, Gerrit and Redmine
 * Have a look to https://github.com/tru/redmine-gerrit-scripts
 * Do we need to have some specialized project parents pre-provisionned in Gerrit ?
 * Extend puppet manifests
