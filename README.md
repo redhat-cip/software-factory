@@ -131,3 +131,4 @@ What need to be done in the next sprints:
 * Jenkins role need git, nosetests, coverage, ...
 * Jenkins job builder to automate job creation for gerrit new projects
 * Jenkins new job should give link to failing test, and remove the 'nulljob/gerrit_tester/10' part
+* Test VM updates using eDeploy
