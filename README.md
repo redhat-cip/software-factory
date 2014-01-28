@@ -101,3 +101,15 @@ cloud-init is used to set the IP address of the database host and to trigger pup
 
 This is a base role for a MySQL database server. After booting the VM cloud-init is used to create two databases and users
 for Gerrit and Redmine.
+
+
+Next steps
+----------
+
+What need to be done in the next sprints:
+
+* Use cloud-init to trigger puppet for the Gerrit role
+* Add a main script based on Openstack API to deploy and
+  configure all the roles
+* Have a look to https://github.com/tru/redmine-gerrit-scripts
+* Do we need to have some specialized project parents pre-provisionned in Gerrit ?
