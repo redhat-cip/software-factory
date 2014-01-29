@@ -72,9 +72,6 @@ EOF
 }
 
 # invalidate root password
-#do_chroot ${dir} usermod -L root
-
-# ssh key gen is being taken care by cloud-init
-rm -f ${dir}/etc/first-boot.d/01-ssh
+do_chroot ${dir} usermod -L root
 
 configure_cloudinit
