@@ -137,11 +137,11 @@ Install required packages:
 Run a test against a node with sudo:
 
 	cd serverspec
-	RUBYOPT=rubygems HOST=198.154.188.170 USER=debian SUDO_PASSWORD=debian rake spec
+	RUBYOPT=rubygems ROLE=redmine HOST=198.154.188.170 USER=debian SUDO_PASSWORD=debian rake spec
 
 You can omit USER and SUDO_PASSWORD if you're logged in as root and using ssh keys for authentication: 
 
-	RUBYOPT=rubygems HOST=198.154.188.170 rake spec
+	RUBYOPT=rubygems ROLE=redmine HOST=198.154.188.170 rake spec
 
 
 Next steps
