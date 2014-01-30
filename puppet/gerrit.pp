@@ -74,6 +74,15 @@ class gerrit {
     require => File['/home/gerrit/site_path/etc'],
   }
 
+  file { '/home/gerrit/gerrit.war':
+    ensure  => present,
+    owner   => 'gerrit',
+    group   => 'gerrit',
+    mode    => '0644',
+    source  => '/root/gerrit_data_source/gerrit.war',
+    replace => true,
+  }
+
   if $ssh_dsa_key_contents != '' {
     file { '/home/gerrit/site_path/etc/ssh_host_dsa_key':
       owner   => 'gerrit',
@@ -102,6 +111,7 @@ class gerrit {
     require   => [Package['openjdk-7-jre'],
                   User['gerrit'],
                   Group['gerrit'],
+                  File['/home/gerrit/gerrit.war'],
                   File['/home/gerrit/site_path/etc/gerrit.config'],
                   File['/home/gerrit/site_path/etc/secure.config']],
     unless    => '/usr/bin/pgrep -f GerritCodeReview',

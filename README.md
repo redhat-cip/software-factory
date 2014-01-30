@@ -101,6 +101,7 @@ What's need to be done automagically:
 ```shell
 git fetch ${GIT_URL} ${GERRIT_REFSPEC} && git checkout FETCH_HEAD
 nosetests
+```
 
 
 ### Redmine
