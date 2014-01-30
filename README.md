@@ -55,6 +55,16 @@ Assign floating IP to redmine VM:
 
 	nova floating-ip-associate edeploy-redmine 198.154.188.219
 
+Using edeploy-lxc
+-----------------
+
+Edeploy-lxc can also be used to quickly test created roles:
+
+	sudo edeploy-lxc --config sf-lxc.yaml restart
+
+All containers should be started and should be accessible using embedded ssh-server, using ip address defined in the yaml file. Ie: to access the sf-ldap role:
+
+	ssh root@192.168.134.50
 
 Roles
 -----
