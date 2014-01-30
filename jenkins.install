@@ -21,7 +21,7 @@ version="$3"
 ROLE=jenkins
 
 ORIG=$(cd $(dirname $0); pwd)
-PACKAGES="jenkins"
+PACKAGES="jenkins puppet"
 
 . ${ORIG}/functions
 
@@ -37,3 +37,7 @@ install_packages $dir "$PACKAGES"
 
 # Make sure jenkins start
 do_chroot ${dir} update-rc.d jenkins defaults
+
+# Install puppet manifest
+rsync -av puppet/modules/jenkins/ $dir/etc/puppet/modules/jenkins/
+cp puppet/jenkins* ${dir}/etc/puppet/
