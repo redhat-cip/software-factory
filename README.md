@@ -121,6 +121,29 @@ the database connection and schema creation will be done by puppet after the VM 
 cloud-init is used to set the IP address of the database host and to trigger puppet to finish the configuration.
 
 
+Testing VMs with serverspec
+---------------------------
+
+From http://serverspec.org:
+> With serverspec, you can write RSpec tests for checking your servers are configured correctly.
+> 
+> Serverspec tests your servers' actual state through SSH access, so you don't need to install any agent softwares on your servers and can use any configuration management tools, Puppet, Chef, CFEngine and so on.
+
+Install required packages:
+
+	apt-get install rubygems rake
+	gem install serverspec rspec
+
+Run a test against a node with sudo:
+
+	cd serverspec
+	RUBYOPT=rubygems HOST=198.154.188.170 USER=debian SUDO_PASSWORD=debian rake spec
+
+You can omit USER and SUDO_PASSWORD if you're logged in as root and using ssh keys for authentication: 
+
+	RUBYOPT=rubygems HOST=198.154.188.170 rake spec
+
+
 Next steps
 ----------
 
