@@ -73,6 +73,20 @@ class gerrit {
     replace => true,
     require => File['/home/gerrit/site_path/etc'],
   }
+  
+  file { '/root/gerrit-firtuser-init.sql':
+    ensure  => present,
+    mode    => '0644',
+    content => template('gerrit/gerrit-firstuser-init.sql.erb'),
+    replace => true,
+  }
+  
+  file { '/root/gerrit-firtuser-init.sh':
+    ensure  => present,
+    mode    => '0700',
+    content => template('gerrit/gerrit-firstuser-init.sh.erb'),
+    replace => true,
+  }
 
   file { '/home/gerrit/gerrit.war':
     ensure  => present,
@@ -81,17 +95,6 @@ class gerrit {
     mode    => '0644',
     source  => '/root/gerrit_data_source/gerrit.war',
     replace => true,
-  }
-
-  if $ssh_dsa_key_contents != '' {
-    file { '/home/gerrit/site_path/etc/ssh_host_dsa_key':
-      owner   => 'gerrit',
-      group   => 'gerrit',
-      mode    => '0600',
-      content => $ssh_dsa_key_contents,
-      replace => true,
-      require => File['/home/gerrit/site_path/etc']
-    }
   }
 
   package { 'libmysql-java':
@@ -144,6 +147,13 @@ class gerrit {
     ensure  => link,
     target  => '/etc/init.d/gerrit',
     require => File['/etc/init.d/gerrit'],
+  }
+
+  exec {'gerrit-init-firstuser':
+    command     => '/root/gerrit-firtuser-init.sh',
+    require     => [File['/root/gerrit-firtuser-init.sql'],
+                    File['/root/gerrit-firtuser-init.sh'],
+                    Exec['gerrit-start']]
   }
 
   exec { 'gerrit-start':

@@ -24,9 +24,9 @@ ORIG=$(cd $(dirname $0); pwd)
 
 # Release page : https://gerrit-releases.storage.googleapis.com/index.html
 LASTWAR="https://gerrit-releases.storage.googleapis.com/gerrit-2.8.1.war"
-PACKAGES="openjdk-7-jre git puppet vim libmysql-java"
+PACKAGES="openjdk-7-jre git puppet vim libmysql-java mysql-client"
 GERRITUSER=gerrit
-PUPPET=puppet
+PUPPET=../puppet
 
 . ${ORIG}/functions
 
