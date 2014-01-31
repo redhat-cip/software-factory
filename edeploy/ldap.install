@@ -21,7 +21,7 @@ version="$3"
 ROLE=ldap
 
 ORIG=$(cd $(dirname $0); pwd)
-PACKAGES="slapd ldap-utils"
+PACKAGES="slapd ldap-utils puppet"
 
 . ${ORIG}/functions
 
@@ -37,6 +37,9 @@ do_chroot ${dir} debconf-set-selections <<< 'slapd slapd/purge_database boolean 
 do_chroot ${dir} debconf-set-selections <<< 'slapd slapd/domain string enovance.com'
 
 install_packages $dir "$PACKAGES"
+
+mkdir -p $dir/etc/puppet/modules/ldap
+cp ../puppet/ldap* ../puppet/base.pp $dir/etc/puppet/.
 
 # Make sure jenkins start
 do_chroot ${dir} update-rc.d slapd defaults

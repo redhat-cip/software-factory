@@ -35,6 +35,6 @@ do_chroot $dir debconf-set-selections <<< "redmine redmine/instances/default/int
 install_packages $dir "$PACKAGES"
 
 mkdir -p $dir/etc/puppet/modules/redmine
-rsync -av puppet/modules/redmine/ $dir/etc/puppet/modules/redmine/
-cp puppet/redmine* $dir/etc/puppet/.
+rsync -av ../puppet/modules/redmine/ $dir/etc/puppet/modules/redmine/
+cp ../puppet/redmine* ../puppet/base.pp $dir/etc/puppet/.
 sed -i 's/^AcceptEnv/AcceptEnv LANG LC_* FACTER_*/g' ${dir}/etc/ssh/sshd_config

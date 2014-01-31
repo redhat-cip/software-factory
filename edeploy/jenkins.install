@@ -39,5 +39,5 @@ install_packages $dir "$PACKAGES"
 do_chroot ${dir} update-rc.d jenkins defaults
 
 # Install puppet manifest
-rsync -av puppet/modules/jenkins/ $dir/etc/puppet/modules/jenkins/
-cp puppet/jenkins* ${dir}/etc/puppet/
+rsync -av ../puppet/modules/jenkins/ $dir/etc/puppet/modules/jenkins/
+cp ../puppet/jenkins* ${dir}/etc/puppet/

@@ -23,7 +23,7 @@ version="$3"
 ROLE=mysql
 
 ORIG=$(cd $(dirname $0); pwd)
-PACKAGES="mysql-server"
+PACKAGES="mysql-server puppet"
 
 . ${ORIG}/functions
 
@@ -48,5 +48,8 @@ case "$(package_tool)" in
 esac
 
 do_chroot ${dir} sed -i -e"s/^bind-address.*/bind-address = 0.0.0.0/" /etc/mysql/my.cnf
+
+mkdir -p $dir/etc/puppet/modules/mysql
+cp ../puppet/mysql* ../puppet/base.pp $dir/etc/puppet/.
 
 clear_packages_cache $dir
