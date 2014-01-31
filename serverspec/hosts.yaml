@@ -5,3 +5,11 @@ redmine:
   :hostname: 198.154.188.170
   :username: debian  # optional
   :sudo_password: debian  #optional
+
+mysql:
+  :roles:
+    - base
+    - mysql
+  :hostname: 198.154.188.147
+  :username: debian
+  :sudo_password: debian
