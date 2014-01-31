@@ -1,0 +1,7 @@
+redmine:
+  :roles:
+    - base
+    - redmine
+  :hostname: 198.154.188.170
+  :username: debian  # optional
+  :sudo_password: debian  #optional

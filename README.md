@@ -134,14 +134,10 @@ Install required packages:
 	apt-get install rubygems rake
 	gem install serverspec rspec
 
-Run a test against a node with sudo:
+Set appropriate settings in ``hosts.yaml`` and run tests:
 
 	cd serverspec
-	RUBYOPT=rubygems ROLE=redmine HOST=198.154.188.170 USER=debian SUDO_PASSWORD=debian rake spec
-
-You can omit USER and SUDO_PASSWORD if you're logged in as root and using ssh keys for authentication: 
-
-	RUBYOPT=rubygems ROLE=redmine HOST=198.154.188.170 rake spec
+	RUBYOPT=rubygems rake spec
 
 
 Next steps
