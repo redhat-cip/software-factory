@@ -102,8 +102,10 @@ class gerrit {
   }
 
   file { '/home/gerrit/site_path/lib/mysql-connector-java.jar':
-    ensure  => link,
-    target  => '/usr/share/java/mysql-connector-java-5.1.16.jar',
+    ensure  => present,
+    owner   => 'gerrit',
+    group   => 'gerrit',
+    source  => '/usr/share/java/mysql-connector-java-5.1.16.jar',
     require => [Package['libmysql-java'],
                 File['/home/gerrit/site_path/lib']]  
   }
