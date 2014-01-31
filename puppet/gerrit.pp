@@ -17,6 +17,10 @@ class gerrit {
   package { 'openjdk-7-jre':
     ensure => present,
   }
+  
+  package { 'libbcprov-java':
+    ensure => present,
+  }
 
   file { '/home/gerrit/site_path':
     ensure  => directory,
@@ -74,6 +78,24 @@ class gerrit {
     require => File['/home/gerrit/site_path/etc'],
   }
   
+  file { '/home/gerrit/site_path/etc/ssh_host_rsa_key':
+    ensure  => present,
+    owner   => 'gerrit',
+    group   => 'gerrit',
+    mode    => '0600',
+    source  => /home/gerrit/ssh_host_rsa_key,
+    require => File['/home/gerrit/site_path/etc']
+  }
+
+  file { '/home/gerrit/site_path/etc/ssh_host_rsa_key.pub':
+    ensure  => present,
+    owner   => 'gerrit',
+    group   => 'gerrit',
+    mode    => '0644',
+    source  => /home/gerrit/ssh_host_rsa_key.pub,
+    require => File['/home/gerrit/site_path/etc']
+  }
+  
   file { '/root/gerrit-firstuser-init.sql':
     ensure  => present,
     mode    => '0644',
@@ -109,6 +131,15 @@ class gerrit {
     require => [Package['libmysql-java'],
                 File['/home/gerrit/site_path/lib']]  
   }
+  
+  file { '/home/gerrit/site_path/lib/bcprov.jar':
+    ensure  => present,
+    owner   => 'gerrit',
+    group   => 'gerrit',
+    source  => '/usr/share/java/bcprov.jar',
+    require => [Package['libbcprov-java'],
+                File['/home/gerrit/site_path/lib']]  
+  }
 
   exec { 'gerrit-initial-init':
     user      => 'gerrit',
@@ -117,6 +148,8 @@ class gerrit {
                   User['gerrit'],
                   Group['gerrit'],
                   File['/home/gerrit/gerrit.war'],
+                  File['/home/gerrit/site_path/lib/mysql-connector-java.jar'],
+                  File['/home/gerrit/site_path/lib/bcprov.jar'],
                   File['/home/gerrit/site_path/etc/gerrit.config'],
                   File['/home/gerrit/site_path/etc/secure.config']],
     unless    => '/usr/bin/pgrep -f GerritCodeReview',
