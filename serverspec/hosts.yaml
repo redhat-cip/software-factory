@@ -13,3 +13,11 @@ mysql:
   :hostname: 198.154.188.147
   :username: debian
   :sudo_password: debian
+
+ldap:
+  :roles:
+    - base
+    - ldap
+  :hostname: 198.154.188.148
+  :username: debian
+  :sudo_password: debian
