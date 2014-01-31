@@ -74,14 +74,14 @@ class gerrit {
     require => File['/home/gerrit/site_path/etc'],
   }
   
-  file { '/root/gerrit-firtuser-init.sql':
+  file { '/root/gerrit-firstuser-init.sql':
     ensure  => present,
     mode    => '0644',
     content => template('gerrit/gerrit-firstuser-init.sql.erb'),
     replace => true,
   }
   
-  file { '/root/gerrit-firtuser-init.sh':
+  file { '/root/gerrit-firstuser-init.sh':
     ensure  => present,
     mode    => '0700',
     content => template('gerrit/gerrit-firstuser-init.sh.erb'),
@@ -150,9 +150,9 @@ class gerrit {
   }
 
   exec {'gerrit-init-firstuser':
-    command     => '/root/gerrit-firtuser-init.sh',
-    require     => [File['/root/gerrit-firtuser-init.sql'],
-                    File['/root/gerrit-firtuser-init.sh'],
+    command     => '/root/gerrit-firstuser-init.sh',
+    require     => [File['/root/gerrit-firstuser-init.sql'],
+                    File['/root/gerrit-firstuser-init.sh'],
                     Exec['gerrit-start']]
   }
 

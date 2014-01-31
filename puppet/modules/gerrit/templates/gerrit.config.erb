@@ -4,7 +4,7 @@
     gitHttpUrl = <%= has_variable?("httpurl") ? httpurl: '' %>
 [database]
     type = MYSQL
-    hostname = <%= @mysql_address %>
+    hostname = <%= @gerrit_mysql_address %>
     database = <%= has_variable?("gerrit_mysql_db") ? gerrit_mysql_db: 'gerrit' %>
     username = <%= has_variable?("gerrit_mysql_username") ? gerrit_mysql_username: 'gerrit' %>
     port = <%= has_variable?("mysql_port") ? mysql_port: '3306' %>

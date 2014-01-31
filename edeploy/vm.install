@@ -72,6 +72,6 @@ EOF
 }
 
 # invalidate root password
-do_chroot ${dir} usermod -L root
+#do_chroot ${dir} usermod -L root
 
 configure_cloudinit
