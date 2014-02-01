@@ -24,7 +24,9 @@ ORIG=$(cd $(dirname $0); pwd)
 
 # Release page : https://gerrit-releases.storage.googleapis.com/index.html
 LASTWAR="https://gerrit-releases.storage.googleapis.com/gerrit-2.8.1.war"
-PACKAGES="openjdk-7-jre git puppet vim libmysql-java mysql-client libbcprov-java"
+MYSQLJAVA="http://repo2.maven.org/maven2/mysql/mysql-connector-java/5.1.21/mysql-connector-java-5.1.21.jar"
+BCPROVJAVA="http://www.bouncycastle.org/download/bcprov-jdk16-144.jar"
+PACKAGES="openjdk-7-jre git puppet vim mysql-client"
 GERRITUSER=gerrit
 PUPPET=../puppet
 
@@ -40,8 +42,12 @@ case "$(package_tool)" in
         install_packages $dir "$PACKAGES"
         do_chroot $dir sh -c "adduser --disabled-password --gecos \"\" $GERRITUSER"
         [ ! -f /tmp/gerrit.war ] && wget -q $LASTWAR -O /tmp/gerrit.war
+        [ ! -f /tmp/mysql-connector-java-5.1.21.jar ] && wget -q $MYSQLJAVA -O /tmp/mysql-connector-java-5.1.21.jar
+        [ ! -f /tmp/bcprov-jdk16-144.jar ] && wget -q $BCPROVJAVA -O /tmp/bcprov-jdk16-144.jar
         mkdir ${dir}/root/gerrit_data_source/
         cp /tmp/gerrit.war ${dir}/root/gerrit_data_source/
+        cp /tmp/mysql-connector-java-5.1.21.jar ${dir}/root/gerrit_data_source/
+        cp /tmp/bcprov-jdk16-144.jar ${dir}/root/gerrit_data_source/
         cp -Rf $PUPPET ${dir}/root/gerrit_data_source/
         ;;
     *)

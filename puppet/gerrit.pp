@@ -18,10 +18,6 @@ class gerrit {
     ensure => present,
   }
   
-  package { 'libbcprov-java':
-    ensure => present,
-  }
-
   file { '/home/gerrit/site_path':
     ensure  => directory,
     owner   => 'gerrit',
@@ -83,8 +79,8 @@ class gerrit {
     owner   => 'gerrit',
     group   => 'gerrit',
     mode    => '0600',
-    source  => /home/gerrit/ssh_host_rsa_key,
-    require => File['/home/gerrit/site_path/etc']
+    source  => '/home/gerrit/ssh_host_rsa_key',
+    require => File['/home/gerrit/site_path/etc'],
   }
 
   file { '/home/gerrit/site_path/etc/ssh_host_rsa_key.pub':
@@ -92,8 +88,8 @@ class gerrit {
     owner   => 'gerrit',
     group   => 'gerrit',
     mode    => '0644',
-    source  => /home/gerrit/ssh_host_rsa_key.pub,
-    require => File['/home/gerrit/site_path/etc']
+    source  => '/home/gerrit/ssh_host_rsa_key.pub',
+    require => File['/home/gerrit/site_path/etc'],
   }
   
   file { '/root/gerrit-firstuser-init.sql':
@@ -119,26 +115,20 @@ class gerrit {
     replace => true,
   }
 
-  package { 'libmysql-java':
-    ensure => present,
-  }
-
-  file { '/home/gerrit/site_path/lib/mysql-connector-java.jar':
+  file { '/home/gerrit/site_path/lib/mysql-connector-java-5.1.21.jar':
     ensure  => present,
     owner   => 'gerrit',
     group   => 'gerrit',
-    source  => '/usr/share/java/mysql-connector-java-5.1.16.jar',
-    require => [Package['libmysql-java'],
-                File['/home/gerrit/site_path/lib']]  
+    source  => '/root/gerrit_data_source/mysql-connector-java-5.1.21.jar',
+    require => File['/home/gerrit/site_path/lib'],  
   }
   
-  file { '/home/gerrit/site_path/lib/bcprov.jar':
+  file { '/home/gerrit/site_path/lib/bcprov-jdk16-144.jar':
     ensure  => present,
     owner   => 'gerrit',
     group   => 'gerrit',
-    source  => '/usr/share/java/bcprov.jar',
-    require => [Package['libbcprov-java'],
-                File['/home/gerrit/site_path/lib']]  
+    source  => '/root/gerrit_data_source/bcprov-jdk16-144.jar',
+    require => File['/home/gerrit/site_path/lib'], 
   }
 
   exec { 'gerrit-initial-init':
@@ -148,8 +138,8 @@ class gerrit {
                   User['gerrit'],
                   Group['gerrit'],
                   File['/home/gerrit/gerrit.war'],
-                  File['/home/gerrit/site_path/lib/mysql-connector-java.jar'],
-                  File['/home/gerrit/site_path/lib/bcprov.jar'],
+                  File['/home/gerrit/site_path/lib/mysql-connector-java-5.1.21.jar'],
+                  File['/home/gerrit/site_path/lib/bcprov-jdk16-144.jar'],
                   File['/home/gerrit/site_path/etc/gerrit.config'],
                   File['/home/gerrit/site_path/etc/secure.config']],
     unless    => '/usr/bin/pgrep -f GerritCodeReview',
@@ -188,7 +178,7 @@ class gerrit {
     command     => '/root/gerrit-firstuser-init.sh',
     require     => [File['/root/gerrit-firstuser-init.sql'],
                     File['/root/gerrit-firstuser-init.sh'],
-                    Exec['gerrit-start']]
+                    Exec['gerrit-start']],
   }
 
   exec { 'gerrit-start':
