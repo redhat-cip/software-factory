@@ -1,10 +1,13 @@
 SET @username="<%= @gerrit_admin_username %>";
 SET @mail="<%= @gerrit_admin_mail %>";
 SET @pubkey="<%= @gerrit_admin_sshkey %>";
+SET @pubkey2="<%= @local_sshkey %>";
 
-INSERT INTO `account_external_ids` VALUES (1,@mail,NULL,CONCAT('gerrit:',@username)),(1,NULL,NULL,CONCAT('username:', @username));
-INSERT INTO `account_group_members` VALUES (1,1),(1,6);
-INSERT INTO `account_group_members_audit` VALUES (1,NULL,NULL,1,CURRENT_TIMESTAMP(),1),(1,NULL,NULL,1,CURRENT_TIMESTAMP(),6);
-INSERT INTO `account_id` VALUES (1);
-INSERT INTO `account_ssh_keys` VALUES (@pubkey,'Y',1,1);
-INSERT INTO `accounts` VALUES (NULL,NULL,NULL,NULL,'N',NULL,NULL,NULL,'SSH',25,'N','N','Y','N',NULL,'Y','N',@mail,CURRENT_TIMESTAMP(),1);
+INSERT INTO account_external_ids VALUES (1,@mail,NULL,CONCAT('gerrit:',@username)),(1,NULL,NULL,CONCAT('username:', @username));
+INSERT INTO account_group_members VALUES (1,1),(1,6);
+INSERT INTO account_group_members_audit VALUES (1,NULL,NULL,1,CURRENT_TIMESTAMP(),1),(1,NULL,NULL,1,CURRENT_TIMESTAMP(),6);
+INSERT INTO account_id VALUES (1);
+INSERT INTO account_ssh_keys VALUES (@pubkey,'Y',1,1);
+INSERT INTO accounts VALUES (NULL,NULL,NULL,NULL,'N',NULL,NULL,NULL,'SSH',25,'N','N','Y','N',NULL,'Y','N',@mail,CURRENT_TIMESTAMP(),1);
+
+INSERT INTO account_ssh_keys VALUES(@pubkey2,'Y',1,2);
