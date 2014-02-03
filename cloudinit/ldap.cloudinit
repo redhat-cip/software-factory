@@ -45,7 +45,7 @@ write_files:
       objectClass: person
       sn: Jenkins
       userPassword: userpass
-      mail: tristan.cacqueray@enovance.com
+      mail: jenkins@enovance.com
       objectClass: inetOrgPerson
     path: /root/demo_users.ldif
 
