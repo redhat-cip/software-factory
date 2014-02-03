@@ -183,6 +183,7 @@ class gerrit {
 
   exec {'gerrit-init-firstuser':
     command     => '/root/gerrit-firstuser-init.sh',
+    logoutput   => "on_failure",
     require     => [File['/root/gerrit-firstuser-init.sql'],
                     File['/root/gerrit-firstuser-init.sh'],
                     Exec['gerrit-start']],
@@ -190,7 +191,9 @@ class gerrit {
 
   exec {'gerrit-init-acl':
     command     => '/root/gerrit-set-default-acl.sh',
+    logoutput   => "on_failure",
     require     => [File['/root/gerrit-set-default-acl.sh'],
+                    Exec['gerrit-init-firstuser'],
                     Exec['gerrit-start']],
   }
 
