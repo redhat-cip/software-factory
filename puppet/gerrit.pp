@@ -112,6 +112,13 @@ class gerrit {
     content => template('gerrit/gerrit-set-default-acl.sh.erb'),
     replace => true,
   }
+  
+  file { '/root/gerrit-set-jenkins-user.sh':
+    ensure  => present,
+    mode    => '0700',
+    content => template('gerrit/gerrit-set-jenkins-user.sh.erb'),
+    replace => true,
+  }
 
   file { '/home/gerrit/gerrit.war':
     ensure  => present,
@@ -193,6 +200,14 @@ class gerrit {
     command     => '/root/gerrit-set-default-acl.sh',
     logoutput   => "on_failure",
     require     => [File['/root/gerrit-set-default-acl.sh'],
+                    Exec['gerrit-init-firstuser'],
+                    Exec['gerrit-start']],
+  }
+  
+  exec {'gerrit-init-jenkins':
+    command     => '/root/gerrit-set-jenkins-user.sh',
+    logoutput   => "on_failure",
+    require     => [File['/root/gerrit-set-jenkins-user.sh'],
                     Exec['gerrit-init-firstuser'],
                     Exec['gerrit-start']],
   }
