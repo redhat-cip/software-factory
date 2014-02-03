@@ -39,7 +39,7 @@ configure_cloudinit () {
 	    cat > ${dir}/etc/apt/sources.list.d/$RELEASE-backport.list <<EOF
 deb $repository ${RELEASE}-backports main
 EOF
-            do_chroot ${dir} wget --no-verbose https://apt.puppetlabs.com/puppetlabs-release-wheezy.deb
+            do_chroot ${dir} wget --no-verbose http://apt.puppetlabs.com/puppetlabs-release-wheezy.deb
             do_chroot ${dir} dpkg -i puppetlabs-release-wheezy.deb || true
             do_chroot ${dir} rm puppetlabs-release-wheezy.deb
             update_repositories $dir
@@ -51,7 +51,7 @@ EOF
 	    do_chroot ${dir} wget --no-verbose http://security.ubuntu.com/ubuntu/pool/main/c/cloud-init/cloud-init_0.7.3-0ubuntu2_all.deb
 	    do_chroot ${dir} wget --no-verbose http://security.ubuntu.com/ubuntu/pool/main/p/python-json-patch/python-json-patch_1.0-2_all.deb
 	    do_chroot ${dir} wget --no-verbose http://security.ubuntu.com/ubuntu/pool/main/p/python-json-pointer/python-json-pointer_1.0-1ubuntu2_all.deb
-	    do_chroot ${dir} wget --no-verbose https://apt.puppetlabs.com/puppetlabs-release-precise.deb
+	    do_chroot ${dir} wget --no-verbose http://apt.puppetlabs.com/puppetlabs-release-precise.deb
 	    do_chroot ${dir} dpkg -i cloud-init_0.7.3-0ubuntu2_all.deb  || true
 	    do_chroot ${dir} dpkg -i python-json-patch_1.0-2_all.deb  || true
 	    do_chroot ${dir} dpkg -i python-json-pointer_1.0-1ubuntu2_all.deb  || true
