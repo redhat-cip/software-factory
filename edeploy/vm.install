@@ -39,6 +39,9 @@ configure_cloudinit () {
 	    cat > ${dir}/etc/apt/sources.list.d/$RELEASE-backport.list <<EOF
 deb $repository ${RELEASE}-backports main
 EOF
+            do_chroot ${dir} wget --no-verbose https://apt.puppetlabs.com/puppetlabs-release-wheezy.deb
+            do_chroot ${dir} dpkg -i puppetlabs-release-wheezy.deb || true
+            do_chroot ${dir} rm puppetlabs-release-wheezy.deb
             update_repositories $dir
 	    install_packages ${dir} "cloud-init"
 	    ;;
@@ -48,11 +51,13 @@ EOF
 	    do_chroot ${dir} wget --no-verbose http://security.ubuntu.com/ubuntu/pool/main/c/cloud-init/cloud-init_0.7.3-0ubuntu2_all.deb
 	    do_chroot ${dir} wget --no-verbose http://security.ubuntu.com/ubuntu/pool/main/p/python-json-patch/python-json-patch_1.0-2_all.deb
 	    do_chroot ${dir} wget --no-verbose http://security.ubuntu.com/ubuntu/pool/main/p/python-json-pointer/python-json-pointer_1.0-1ubuntu2_all.deb
+	    do_chroot ${dir} wget --no-verbose https://apt.puppetlabs.com/puppetlabs-release-precise.deb
 	    do_chroot ${dir} dpkg -i cloud-init_0.7.3-0ubuntu2_all.deb  || true
 	    do_chroot ${dir} dpkg -i python-json-patch_1.0-2_all.deb  || true
 	    do_chroot ${dir} dpkg -i python-json-pointer_1.0-1ubuntu2_all.deb  || true
+	    do_chroot ${dir} dpkg -i puppetlabs-release-precise.deb || true
 	    do_chroot ${dir} apt-get -f install -y -o Dpkg::Options::="--force-confold"
-	    do_chroot ${dir} rm cloud-init_0.7.3-0ubuntu2_all.deb python-json-patch_1.0-2_all.deb python-json-pointer_1.0-1ubuntu2_all.deb
+	    do_chroot ${dir} rm cloud-init_0.7.3-0ubuntu2_all.deb python-json-patch_1.0-2_all.deb python-json-pointer_1.0-1ubuntu2_all.deb puppetlabs-release-precise.deb
 	    ;;
 	"RedHatEnterpriseServer")
 	    # cloud-init is in Red Hat Common for RHEL Server (v. 6)
