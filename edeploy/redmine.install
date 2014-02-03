@@ -21,7 +21,7 @@ version="$3"
 ROLE=redmine
 
 ORIG=$(cd $(dirname $0); pwd)
-PACKAGES="apache2 libapache2-mod-passenger redmine-sqlite redmine-mysql redmine vim puppet git cron"
+PACKAGES="apache2 libapache2-mod-passenger redmine-sqlite redmine-mysql redmine vim rubygems git cron"
 
 . ${ORIG}/functions
 
@@ -34,7 +34,9 @@ do_chroot $dir debconf-set-selections <<< "redmine redmine/instances/default/int
 
 install_packages $dir "$PACKAGES"
 
-mkdir -p $dir/etc/puppet/modules/redmine
-rsync -av ../puppet/modules/redmine/ $dir/etc/puppet/modules/redmine/
-cp ../puppet/redmine* ../puppet/base.pp $dir/etc/puppet/.
+# Let's install an up-to-date version of puppet
+do_chroot $dir gem install puppet
+
+mkdir -p $dir/etc/puppet/
+rsync -av ../puppet/ $dir/etc/puppet/
 sed -i 's/^AcceptEnv/AcceptEnv LANG LC_* FACTER_*/g' ${dir}/etc/ssh/sshd_config
