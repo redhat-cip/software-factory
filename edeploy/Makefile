@@ -86,10 +86,10 @@ dist:
 	tar zcvf ../edeploy-roles.tgz Makefile README.rst *.install *.exclude
 
 clean:
-	-for f in $(ROLES); do rm -f $(INST)/$$f;done
+	-for f in $(ROLES); do rm -rf $(INST)/$$f;done
 
 distclean: clean
-	-for f in $(ROLES); do rm -rf $(INST)/$$f; done
+	-for f in $(ROLES); do rm -rf $(INST)/$$f*; done
 
 version:
 	@echo "$(VERS)"
