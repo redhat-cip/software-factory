@@ -1,0 +1,22 @@
+#!/bin/sh
+
+set -x
+
+ADMINUSER=<%= @gerrit_admin_username %> 
+ADMINUSEREMAIL=<%= @gerrit_admin_mail %> 
+CLONETEMPDIR="/tmp/All-projects"
+
+[ -d "$CLONETEMPDIR" ] && rm -Rf $CLONETEMPDIR
+git init $CLONETEMPDIR
+cd $CLONETEMPDIR
+git config --global user.name "SF initial configurator"
+git config --global user.email $ADMINUSERMAIL
+git remote add origin ssh://$ADMINUSER@localhost:29418/All-Projects
+GIT_SSH=/root/ssh_wrapper.sh git fetch origin refs/meta/config:refs/remotes/origin/meta/config
+git checkout meta/config
+cp /root/gerrit_data_source/project.config .
+git diff
+git add project.config
+git commit -a -m"Provide the default config"
+GIT_SSH=/root/ssh_wrapper.sh git push origin meta/config:meta/config
+cd -

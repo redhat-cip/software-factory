@@ -29,6 +29,7 @@ BCPROVJAVA="http://www.bouncycastle.org/download/bcprov-jdk16-144.jar"
 PACKAGES="openjdk-7-jre git puppet vim mysql-client"
 GERRITUSER=gerrit
 PUPPET=../puppet
+DATA=../data
 
 . ${ORIG}/functions
 
@@ -48,6 +49,9 @@ case "$(package_tool)" in
         cp /tmp/gerrit.war ${dir}/root/gerrit_data_source/
         cp /tmp/mysql-connector-java-5.1.21.jar ${dir}/root/gerrit_data_source/
         cp /tmp/bcprov-jdk16-144.jar ${dir}/root/gerrit_data_source/
+        cp $DATA/project.config ${dir}/root/gerrit_data_source/
+        cp $DATA/ssh_wrapper.sh ${dir}/root/gerrit_data_source/
+        chmod +x ${dir}/root/gerrit_data_source/ssh_wrapper.sh
         cp -Rf $PUPPET ${dir}/root/gerrit_data_source/
         ;;
     *)

@@ -105,6 +105,13 @@ class gerrit {
     content => template('gerrit/gerrit-firstuser-init.sh.erb'),
     replace => true,
   }
+  
+  file { '/root/gerrit-set-default-acl.sh':
+    ensure  => present,
+    mode    => '0700',
+    content => template('gerrit/gerrit-set-default-acl.sh.erb'),
+    replace => true,
+  }
 
   file { '/home/gerrit/gerrit.war':
     ensure  => present,
@@ -178,6 +185,12 @@ class gerrit {
     command     => '/root/gerrit-firstuser-init.sh',
     require     => [File['/root/gerrit-firstuser-init.sql'],
                     File['/root/gerrit-firstuser-init.sh'],
+                    Exec['gerrit-start']],
+  }
+
+  exec {'gerrit-init-acl':
+    command     => '/root/gerrit-set-default-acl.sh',
+    require     => [File['/root/gerrit-set-default-acl.sh'],
                     Exec['gerrit-start']],
   }
 
