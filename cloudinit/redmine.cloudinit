@@ -1,4 +1,3 @@
 #cloud-config
 runcmd:
- - echo 10.43.0.37 mysqldb.edeploysf  > /etc/hosts
  - puppet apply /etc/puppet/redmine_node.pp
