@@ -27,3 +27,4 @@ hosts:
     address: 192.168.134.54
     name: sf-jenkins
     role: jenkins
+    cloudinit: ../cloudinit/jenkins.cloudinit
