@@ -23,6 +23,10 @@ ROLE=jenkins
 ORIG=$(cd $(dirname $0); pwd)
 PACKAGES="jenkins puppet"
 
+PLUGINS="http://updates.jenkins-ci.org/download/plugins/gerrit-trigger/2.11.0/gerrit-trigger.hpi    \
+         http://updates.jenkins-ci.org/download/plugins/ssh-agent/1.4.1/ssh-agent.hpi"
+
+
 . ${ORIG}/functions
 
 # Add jenkins package repo and signing key
@@ -37,6 +41,15 @@ install_packages $dir "$PACKAGES"
 
 # Make sure jenkins start
 do_chroot ${dir} update-rc.d jenkins defaults
+
+
+mkdir -p ${dir}/var/lib/jenkins/plugins
+do_chroot $dir chown jenkins /var/lib/jenkins /var/lib/jenkins/plugins
+for plugin in ${PLUGINS}; do
+    plugin_name=$(basename ${plugin})
+    echo "Installing plugin ${plugin_name}"
+    wget -q -O - "${plugin}" > ${dir}/var/lib/jenkins/plugins/${plugin_name}
+done
 
 # Install puppet manifest
 rsync -av ../puppet/modules/jenkins/ $dir/etc/puppet/modules/jenkins/
