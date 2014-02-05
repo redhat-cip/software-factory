@@ -21,7 +21,7 @@ version="$3"
 ROLE=jenkins
 
 ORIG=$(cd $(dirname $0); pwd)
-PACKAGES="jenkins puppet"
+PACKAGES="jenkins puppet git python-yaml python-jenkins python-pip"
 
 PLUGINS="http://updates.jenkins-ci.org/download/plugins/gerrit-trigger/2.11.0/gerrit-trigger.hpi    \
          http://updates.jenkins-ci.org/download/plugins/ssh-agent/1.4.1/ssh-agent.hpi"
@@ -42,7 +42,7 @@ install_packages $dir "$PACKAGES"
 # Make sure jenkins start
 do_chroot ${dir} update-rc.d jenkins defaults
 
-
+# plugin jenkins
 mkdir -p ${dir}/var/lib/jenkins/plugins
 do_chroot $dir chown jenkins /var/lib/jenkins /var/lib/jenkins/plugins
 for plugin in ${PLUGINS}; do
@@ -50,6 +50,12 @@ for plugin in ${PLUGINS}; do
     echo "Installing plugin ${plugin_name}"
     wget -q -O - "${plugin}" > ${dir}/var/lib/jenkins/plugins/${plugin_name}
 done
+
+# jjb
+mkdir -p ${dir}/opt/
+git clone 'https://git.openstack.org/openstack-infra/jenkins-job-builder' ${dir}/opt/jenkins-job-builder
+do_chroot ${dir} pip install /opt/jenkins-job-builder
+mkdir -p ${dir}/etc/jenkins_jobs
 
 # Install puppet manifest
 rsync -av ../puppet/modules/jenkins/ $dir/etc/puppet/modules/jenkins/
