@@ -11,18 +11,22 @@ hosts:
     address: 192.168.134.50
     name: sf-ldap
     role: ldap
+    cloudinit: ../cloudinit/ldap.cloudinit
   -
     address: 192.168.134.51
     name: sf-mysql
     role: mysql
+    cloudinit: ../cloudinit/mysql.cloudinit
   -
     address: 192.168.134.52
     name: sf-redmine
     role: redmine
+    cloudinit: ../cloudinit/redmine.cloudinit
   -
     address: 192.168.134.53
     name: sf-gerrit
     role: gerrit
+    cloudinit: ../cloudinit/gerrit.cloudinit
   -
     address: 192.168.134.54
     name: sf-jenkins
