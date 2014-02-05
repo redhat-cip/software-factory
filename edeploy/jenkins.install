@@ -21,7 +21,7 @@ version="$3"
 ROLE=jenkins
 
 ORIG=$(cd $(dirname $0); pwd)
-PACKAGES="jenkins puppet git python-yaml python-jenkins python-pip"
+PACKAGES="jenkins puppet git python-pip"
 
 PLUGINS="http://updates.jenkins-ci.org/download/plugins/gerrit-trigger/2.11.0/gerrit-trigger.hpi    \
          http://updates.jenkins-ci.org/download/plugins/ssh-agent/1.4.1/ssh-agent.hpi"
