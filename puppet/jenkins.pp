@@ -1,4 +1,4 @@
-class jenkins {
+class jenkins ($settings = hiera_hash('jenkins')) {
   file {'/var/lib/jenkins/config.xml':
     ensure  => file,
     mode    => 0644,

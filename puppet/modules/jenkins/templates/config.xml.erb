@@ -7,11 +7,11 @@
   <useSecurity>true</useSecurity>
   <authorizationStrategy class="hudson.security.FullControlOnceLoggedInAuthorizationStrategy"/>
   <securityRealm class="hudson.security.LDAPSecurityRealm" plugin="ldap@1.6">
-    <server><%= has_variable?("ldap_url") ? ldap_url: 'ldap://127.0.0.1:389' %></server>
-    <rootDN><%= has_variable?("ldap_root_dn") ? ldap_root_dn: 'dc=example,dc=com' %></rootDN>
+    <server><%= @settings['ldap_url'] ? @settings['ldap_url']: 'ldap://127.0.0.1:389' %></server>
+    <rootDN><%= @settings['ldap_root_dn'] ? @settings['ldap_root_dn']: 'dc=example,dc=com' %></rootDN>
     <inhibitInferRootDN>false</inhibitInferRootDN>
-    <userSearchBase><%= has_variable?("ldap_user_base") ? ldap_user_base: 'ou=Users' %></userSearchBase>
-    <userSearch><%= has_variable?("ldap_user_search") ? ldap_user_search: 'cn={0}' %></userSearch>
+    <userSearchBase><%= @settings['ldap_user_base'] ? @settings['ldap_user_base']: 'ou=Users' %></userSearchBase>
+    <userSearch><%= @settings['ldap_user_search'] ? @settings['ldap_user_search']: 'cn={0}' %></userSearch>
     <disableMailAddressResolver>false</disableMailAddressResolver>
   </securityRealm>
   <disableRememberMe>false</disableRememberMe>

@@ -4,3 +4,4 @@
   - "%{::clientcert}"
   - hosts
   - ssh
+  - jenkins
