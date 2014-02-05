@@ -19,16 +19,21 @@ for ROLENAME in $ROLES; do
 		make $ROLENAME
 	fi
 
-	echo "Registering image in Glance..."
+	IMAGE_ID=`glance image-list | grep $PREFIX$ROLENAME  | cut -f 2 -d " "`
+	
+	if [ "$IMAGE_ID" == "" ]; then
+		echo "Registering image in Glance..."
 
-	GLANCE_OUTPUT=`glance -v image-create --name="$VM_NAME" --container-format ovf --disk-format qcow2 < /var/lib/debootstrap/install/$RELEASE/$ROLENAME-$RELEASE.img.qcow2`
+		GLANCE_OUTPUT=`glance -v image-create --name="$VM_NAME" --container-format ovf --disk-format qcow2 < /var/lib/debootstrap/install/$RELEASE/$ROLENAME-$RELEASE.img.qcow2`
 		
-	# Get image ID
-	IMAGE_ID=`echo  $GLANCE_OUTPUT | grep -ohe "id | [0-9a-f-]\{36\}" | cut -c 6-`
+		# Get image ID
+		IMAGE_ID=`echo  $GLANCE_OUTPUT | grep -ohe "id | [0-9a-f-]\{36\}" | cut -c 6-`
+	fi 
+
 	echo "Booting new VM..."
 
 	# Boot new VM with that image
-	NOVA_OUTPUT=`nova boot --flavor $VM_FLAVOR --image $IMAGE_ID --user-data ../cloudinit/$ROLENAME.cloudinit --security-groups $SECURITY_GROUPS $VM_NAME`
+	NOVA_OUTPUT=`nova boot  --key-name cschwede --flavor $VM_FLAVOR --image $IMAGE_ID --user-data ../cloudinit/$ROLENAME.cloudinit --security-groups $SECURITY_GROUPS $VM_NAME`
 
 	VM_ID=`echo $NOVA_OUTPUT | grep -ohe "id | [0-9a-f-]\{36\}" | cut -c 6-`
 	
@@ -46,7 +51,7 @@ for ROLENAME in $ROLES; do
 
 	echo "Getting unused floating IP..."
 	FLOATING_IP=`nova floating-ip-list | grep "-" | grep -ohe "[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}" | head -n 1`
-	nova floating-ip-associate $VM_ID $FLOATING_IP
+	nova add-floating-ip $VM_ID $FLOATING_IP
 	echo "Assigned floating IP $FLOATING_IP."
 
 	
