@@ -33,7 +33,7 @@ for ROLENAME in $ROLES; do
 	echo "Booting new VM..."
 
 	# Boot new VM with that image
-	NOVA_OUTPUT=`nova boot  --key-name cschwede --flavor $VM_FLAVOR --image $IMAGE_ID --user-data ../cloudinit/$ROLENAME.cloudinit --security-groups $SECURITY_GROUPS $VM_NAME`
+	NOVA_OUTPUT=`nova boot  --flavor $VM_FLAVOR --image $IMAGE_ID --user-data ../cloudinit/$ROLENAME.cloudinit --security-groups $SECURITY_GROUPS $VM_NAME`
 
 	VM_ID=`echo $NOVA_OUTPUT | grep -ohe "id | [0-9a-f-]\{36\}" | cut -c 6-`
 	
@@ -50,7 +50,7 @@ for ROLENAME in $ROLES; do
 	done 
 
 	echo "Getting unused floating IP..."
-	FLOATING_IP=`nova floating-ip-list | grep "-" | grep -ohe "[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}" | head -n 1`
+	FLOATING_IP=`nova floating-ip-list | grep "None" | grep -ohe "[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}" | head -n 1`
 	nova add-floating-ip $VM_ID $FLOATING_IP
 	echo "Assigned floating IP $FLOATING_IP."
 
