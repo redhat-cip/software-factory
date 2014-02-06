@@ -1,4 +1,4 @@
-#!/bin/env/python
+#!/usr/bin/env python
 
 from dulwich import client
 from dulwich import index
