@@ -26,7 +26,9 @@ import subprocess
 import sys
 import yaml
 
-HOOKS_CONFIG = 'hooks.config'
+# Look for the config in the Gerrit hooks directory
+HOOKS_CONFIG = os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                            'hooks.config')
 ISSUE_REGEX = '([Bb]ug:\s+)(\d+)'
 MESSAGE = """Fix proposed on Gerrit to branch: %(branch)s
 Review: %(url)s
