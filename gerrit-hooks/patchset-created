@@ -1,0 +1,103 @@
+#!/usr/bin/env python
+
+# This hook will update a Redmine issue by:
+# - changing its status to in-progess
+# - add an issue note with the review URL
+
+# https://gerrit-documentation.storage.googleapis.com/\
+#        Documentation/2.8.1/config-hooks.html
+
+# Gerrit will call the hook with the following options:
+# patchset-created --change <change id>
+#                  --is-draft <boolean>
+#                  --change-url <change url>
+#                  --project <project name>
+#                  --branch <branch>
+#                  --topic <topic>
+#                  --uploader <uploader>
+#                  --commit <sha1>
+#                  --patchset <patchset id>
+
+import argparse
+import os
+import re
+import redmine
+import subprocess
+import sys
+import yaml
+
+HOOKS_CONFIG = 'hooks.config'
+ISSUE_REGEX = '([Bb]ug:\s+)(\d+)'
+MESSAGE = """Fix proposed on Gerrit to branch: %(branch)s
+Review: %(url)s
+"""
+issue_reg = re.compile(ISSUE_REGEX)
+
+
+def parse_commit_message(message):
+    """Parse the commit message
+
+    :returns: The redmine issue ID
+              or None if there is no Issue reference
+    """
+    m = issue_reg.findall(message)
+    if not m:
+        return None
+    # Only match the first mentionned bug
+    return m[0][1]
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    for arg in ('change', 'is-draft', 'change-url', 'project',
+                'branch', 'topic', 'uploader', 'commit', 'patchset'):
+        parser.add_argument('--%s' % arg)
+    args = parser.parse_args()
+
+    if not os.path.isfile(HOOKS_CONFIG):
+        print "Unable to find hooks config !"
+        sys.exit(0)
+
+    try:
+        config = yaml.load(file(HOOKS_CONFIG))
+        redmine_host = 'http://' + config['redmine_host']
+        redmine_key = config['redmine_key']
+        redmine_version = config['redmine_version']
+    except Exception, err:
+        print "Unable to read hooks config file (Missing key ? Bad format ?)"
+        print err
+        sys.exit(0)
+
+    if args.patchset != '1':
+        print "Do nothing as the patchset is not the first"
+        sys.exit(0)
+
+    # GIT_SSH env var is setup by Gerrit when calling the hook
+    commit = subprocess.check_output(['git', 'cat-file', '-p', args.commit])
+
+    # Look for the Redmine issue ID
+    issue = parse_commit_message(commit)
+    if not issue:
+        print "Do nothing as there is no issue mentionned"
+        sys.exit(0)
+
+    # Build message for the issue
+    message = MESSAGE % {'branch': args.branch,
+                         'url': args.change_url}
+
+    # Post message on the Redmine issue
+    redmine_client = redmine.Redmine(redmine_host,
+                                     redmine_key,
+                                     version=redmine_version)
+    try:
+        obj = redmine_client.issues.get(issue)
+    except Exception, err:
+        print "It seems there is no issue %s registered on Redmine (%s)" % \
+            (issue, err)
+        sys.exit(0)
+
+    # Set the issue as In-Progess
+    try:
+        obj.set_status(2, message)
+    except err:
+        print "Unable to change the issue's status"
+        sys.exit(0)
