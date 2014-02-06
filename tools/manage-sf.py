@@ -4,13 +4,12 @@ from dulwich import client
 from dulwich import index
 from dulwich import repo
 from gerritlib import gerrit
+from redmine import Redmine
 
 import os
 import shutil
 import sys
-
-#TODO(fbo): Use yaml file to describe a project
-
+import yaml
 
 
 class CustomSSHVendor(client.SubprocessSSHVendor):
@@ -110,65 +109,99 @@ class GerritRepo(object):
         self.local_repo["refs/heads/master"] = remote_refs["refs/heads/master"]
 
 
-def create_project(project):
-    name = project['name']
-    group = project['core-group']
-    gerrit_client.createGroup(group,
+def create_project(gerrit_client, infos):
+    gerrit_client.createGroup(infos['core-group'],
                               visible_to_all=True)
-    gerrit_client.createProject(name,
+    gerrit_client.createProject(infos['name'],
                                 require_change_id=True)
 
-if __name__ == "__main__":
-    try:
-        project_name = sys.argv[1]
-        keyfile = os.environ['SSH_KEY']
-        adminuser = os.environ['ADMIN_USER']
-        adminemail = os.environ['ADMIN_EMAIL']
-        gerrithost = os.environ['GERRIT_HOST']
-    except KeyError, e:
-        print e
-        sys.exit(1)
 
-    client.get_ssh_vendor = lambda: CustomSSHVendor(keyfile)
-
-    print "Will create project %s" % project_name
-    print "Using private key : %s" % keyfile
-    print "Using username : %s" % adminuser
-    print "Using email : %s" % adminemail
-    print "Using gerrit hostname : %s" % gerrithost
-
-    gerrit_client = CustomGerritClient(gerrithost,
-                                       adminuser,
-                                       keyfile=keyfile)
-
-    ssh_client = client.SSHGitClient(gerrithost,
-                                     29418,
-                                     adminuser)
-
-    project = {'name': project_name,
-               'core-group': '%s-core' % project_name,
-               'gerrit-host': gerrithost,
-               'gerrit-host-port': '29418',
-               }
-
-    sys.stdout.write("Create project %s ... " % project_name)
-    create_project(project)
+def init_gerrit_project(gerrit_client, ssh_client, infos):
+    sys.stdout.write("Create project %s ... " % infos['name'])
+    create_project(gerrit_client, infos)
     sys.stdout.write("done.\n")
     sys.stdout.write("Retrieve groups UUID ... ")
-    project['core-group-uuid'] = \
-        gerrit_client.getGroupUUID(project['core-group'])
-    project['non-interactive-users'] = \
+    infos['core-group-uuid'] = \
+        gerrit_client.getGroupUUID(infos['core-group'])
+    infos['non-interactive-users'] = \
         gerrit_client.getGroupUUID('Non-Interactive')
     sys.stdout.write("done.\n")
     sys.stdout.write("Clone previously created repo ... ")
-    email = "%s <%s>" % (adminuser, adminemail)
-    grepo = GerritRepo(ssh_client, project_name, email)
+    email = "%s <%s>" % (infos['admin'], infos['email'])
+    grepo = GerritRepo(ssh_client, infos['name'], email)
     sys.stdout.write("done.\n")
-    acls = file('templates/project.config').read() % project
-    groups = file('templates/groups').read() % project
-    gitreview = file('templates/gitreview').read() % project
+    acls = file('templates/project.config').read() % infos
+    groups = file('templates/groups').read() % infos
+    gitreview = file('templates/gitreview').read() % infos
     sys.stdout.write("Add ACLs, groups files, .gitreview files ... ")
     grepo.push_groups(groups)
     grepo.push_acls(acls)
     grepo.push_gitreview(gitreview)
     sys.stdout.write("done.\n")
+
+
+def init_redmine_project(redmine_client, infos):
+    sys.stdout.write("Create project on Remine %s ... " % infos['name'])
+    redmine_client.projects.new(name=infos['name'],
+                                description=infos['description'],
+                                identifier=infos['name'])
+    sys.stdout.write("done.\n")
+
+if __name__ == "__main__":
+    if len(sys.argv) < 3:
+        print "Usage: %s <manage-sf.conf> <project.yaml>" % sys.argv[0]
+        sys.exit(1)
+
+    # parse manage sf configuration file
+    sf_yaml = yaml.load(file(sys.argv[1]))
+    sf_gerrit = [e for e in sf_yaml if
+                 e.keys()[0] == 'gerrit'][0]['gerrit']
+    sf_redmine = [e for e in sf_yaml if
+                  e.keys()[0] == 'redmine'][0]['redmine']
+    keyfile = sf_gerrit['sshkey-priv-path']
+    adminuser = sf_gerrit['admin']
+    adminemail = sf_gerrit['admin-email']
+    gerrithost = sf_gerrit['host']
+    redminehost = 'http://' + sf_redmine['host']
+    redmineapikey = sf_redmine['apikey']
+    redmineversion = sf_redmine['version']
+
+    # parse project configuration file
+    project_yaml = yaml.load(file(sys.argv[2]))
+    name = project_yaml['name']
+    desc = project_yaml['description']
+
+    print "Will create project : %s" % name
+    print "Project description : %s" % desc
+    print "Using private key : %s" % keyfile
+    print "Using username : %s" % adminuser
+    print "Using email : %s" % adminemail
+    print "Using gerrit hostname : %s" % gerrithost
+    print "Using redmine hostname : %s" % redminehost
+    print "Using redmine API key : %s" % redmineapikey
+    print "Using redmine version : %s" % redmineversion
+
+    gerrit_client = CustomGerritClient(gerrithost,
+                                       adminuser,
+                                       keyfile=keyfile)
+
+    client.get_ssh_vendor = lambda: CustomSSHVendor(keyfile)
+    ssh_client = client.SSHGitClient(gerrithost,
+                                     29418,
+                                     adminuser)
+
+    redmine_client = Redmine(redminehost,
+                             redmineapikey,
+                             version=redmineversion)
+
+    infos = {'name': name,
+             'description': desc,
+             'core-group': '%s-core' % name,
+             'gerrit-host': gerrithost,
+             'gerrit-host-port': '29418',
+             'admin': adminuser,
+             'email': adminemail,
+             }
+
+    init_gerrit_project(gerrit_client, ssh_client, infos)
+    init_redmine_project(redmine_client, infos)
