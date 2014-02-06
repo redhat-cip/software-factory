@@ -16,6 +16,9 @@ for ROLENAME in $ROLES; do
 	if [ "$1" == "recreate" ]; then	
 		rm /var/lib/debootstrap/install/D7-H.1.0.0/$ROLENAME-D7-H.1.0.0.img*
 		rm /var/lib/debootstrap/install/D7-H.1.0.0/$ROLENAME.done
+	fi
+
+	if [ ! -e "/var/lib/debootstrap/install/D7-H.1.0.0/$ROLENAME-D7-H.1.0.0.img.qcow2" ]; then
 		make $ROLENAME
 	fi
 
