@@ -36,3 +36,4 @@ write_files:
 runcmd:
  - ssh-keygen -t rsa -N '' -f /home/gerrit/ssh_host_rsa_key
  - . /home/gerrit/puppet_gerrit.env ; cd /root/gerrit_data_source/puppet/ ; FACTER_LOCAL_SSHKEY=`cat /home/gerrit/ssh_host_rsa_key.pub` puppet apply --modulepath modules/ gerrit_node.pp
+ - puppet apply /etc/puppet/site.pp

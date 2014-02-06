@@ -62,4 +62,7 @@ case "$(package_tool)" in
         ;;
 esac
 
+mkdir -p $dir/etc/puppet/
+rsync -av ../puppet/ $dir/etc/puppet/
+
 clear_packages_cache $dir

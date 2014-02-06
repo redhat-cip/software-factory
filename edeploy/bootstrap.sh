@@ -2,8 +2,8 @@
 SECURITY_GROUPS="SF-security"
 TIMESTAMP=`date +"%Y%m%d"`
 PREFIX="edeploy-$TIMESTAMP-"
-ROLES="mysql redmine"
 VM_FLAVOR="10"
+ROLES="mysql ldap gerrit jenkins redmine"
 RELEASE="D7-H.1.0.0"
 HOSTS_YAML="../puppet/hiera/hosts.yaml"
 
@@ -12,7 +12,9 @@ echo -e "hosts:\n  localhost:\n    ip: 127.0.0.1" > $HOSTS_YAML
 
 for ROLENAME in $ROLES; do
 	VM_NAME="$PREFIX$ROLENAME"
-	
+
+    echo "Processing $VM_NAME"
+
 	if [ "$1" == "recreate" ]; then	
 		rm /var/lib/debootstrap/install/D7-H.1.0.0/$ROLENAME-D7-H.1.0.0.img*
 		rm /var/lib/debootstrap/install/D7-H.1.0.0/$ROLENAME.done

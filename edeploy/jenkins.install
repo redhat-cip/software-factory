@@ -58,5 +58,5 @@ do_chroot ${dir} pip install /opt/jenkins-job-builder
 mkdir -p ${dir}/etc/jenkins_jobs
 
 # Install puppet manifest
-rsync -av ../puppet/modules/jenkins/ $dir/etc/puppet/modules/jenkins/
-cp ../puppet/jenkins* ${dir}/etc/puppet/
+mkdir -p $dir/etc/puppet/
+rsync -av ../puppet/ $dir/etc/puppet/
