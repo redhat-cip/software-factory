@@ -21,3 +21,9 @@ gerrit:
     - base
     - gerrit
   :hostname: 94.143.114.148 
+
+jenkins:
+  :roles:
+    - base
+    - jenkins
+  :hostname: 94.143.114.154
