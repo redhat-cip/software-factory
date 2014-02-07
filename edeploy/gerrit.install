@@ -29,7 +29,6 @@ BCPROVJAVA="http://www.bouncycastle.org/download/bcprov-jdk16-144.jar"
 PYREDMINEWS="https://pypi.python.org/packages/source/p/pyredmine/pyredmine-0.2.4.tar.gz"
 PACKAGES="openjdk-7-jre git puppet vim mysql-client python-pip python-dateutil"
 GERRITUSER=gerrit
-PUPPET=../puppet
 DATA=../data
 GERRITHOOKS=../gerrit-hooks
 
@@ -54,7 +53,6 @@ case "$(package_tool)" in
         cp $DATA/project.config ${dir}/root/gerrit_data_source/
         cp $DATA/ssh_wrapper.sh ${dir}/root/gerrit_data_source/
         chmod +x ${dir}/root/gerrit_data_source/ssh_wrapper.sh
-        cp -Rf $PUPPET ${dir}/root/gerrit_data_source/
         cp -Rf $GERRITHOOKS ${dir}/root/gerrit_data_source/
         ;;
     *)

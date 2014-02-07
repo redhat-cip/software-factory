@@ -1,0 +1,27 @@
+gerrit:
+  repo_base_path: git
+  weburl: http://198.154.188.171:8080
+  sshd_listen_address: '*:29418'
+  http_listen_address: http://*:8080
+  issues_tracker_address: 198.154.188.170
+  gerrit_mysql_address: 10.43.0.61
+  gerrit_mysql_db: gerrit
+  gerrit_mysql_username: gerrit
+  gerrit_mysql_port: 3306
+  gerrit_mysql_secret: secret
+  ldap_address: ldap://10.43.0.37
+  ldap_username: cn=admin,dc=enovance,dc=com
+  ldap_password: secret
+  ldap_account_base: ou=Users,dc=enovance,dc=com
+  ldap_account_pattern: (&(objectClass=inetOrgPerson)(cn=${username}))
+  ldap_account_email_address: mail
+  ldap_account_ssh_username: cn
+  http_basic_auth: true
+  smtp_server: smtp.enovance.com
+  smtp_server_port: 25
+  smtp_user:
+  smtp_pass:
+  gerrit_admin_username: fabien.boucher
+  gerrit_admin_mail: fabien.boucher@enovance.com
+  gerrit_admin_sshkey: ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQCvDXydmEaLfzpDep9AlIYYKogcr9lEopSfwGXAzKRRPMsDPtg4mAfbuWSzGQgEdXcHo9lxt1IYbyWgYZ/HDLUls/xad2VVn2HSvgUIZUJPs7anvmWBhCui2ctnXShr5sPP7ckUYiF7RHHQxTqLg88ZAa1eYKF9BSanlhEcztmW1WsVfNfdWae+OOAqo0D8LUQDfSkhMg5SbvJy+xs+rBghqMX1S/ACInvb1wY6QFkySakD+L9XN15thL87BAM6w8vHG9hvgTh/cw9/yYByC9rdXIMECKug73LZGHKdOqB5dNRiW5AQK9CTuT5AzuGMfifYK+zlBSkSiGqQOvi59XL+0Ml1AcVCv0Rouu3dGmk0kyHgahkbnLjmwvRd6lMNLHnSpCKPFcwVD60yKo9P3KASdV5FJ+zPmxWtyP48kEDr1NUksiNaZH4cRFf2MS6S0JBN4TiztK82XeUvUVtVaXmdg4RApw7VfWRFXprvWU0EIf9jRt51z2fYxUOsJApCXtwZLZhpqbew85rvmySL0SXnmuQ+gGhzkD4ISBQmqr7tNEimAFlLoxs6IFPHO/O9qDLgpCoT2giWhATcFm3ys0LVLDULBZesWwvs6xDTlSsI/rwewh+V1MUPIBIPnfOFr1XzZ07aCKR028WZv+HTUyPhTJ3ymjg8sF9Aay40JU4+gw== fabien@ks26901.kimsufi.com
+  gerrit_jenkins_sshkey: ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQCvDXydmEaLfzpDep9AlIYYKogcr9lEopSfwGXAzKRRPMsDPtg4mAfbuWSzGQgEdXcHo9lxt1IYbyWgYZ/HDLUls/xad2VVn2HSvgUIZUJPs7anvmWBhCui2ctnXShr5sPP7ckUYiF7RHHQxTqLg88ZAa1eYKF9BSanlhEcztmW1WsVfNfdWae+OOAqo0D8LUQDfSkhMg5SbvJy+xs+rBghqMX1S/ACInvb1wY6QFkySakD+L9XN15thL87BAM6w8vHG9hvgTh/cw9/yYByC9rdXIMECKug73LZGHKdOqB5dNRiW5AQK9CTuT5AzuGMfifYK+zlBSkSiGqQOvi59XL+0Ml1AcVCv0Rouu3dGmk0kyHgahkbnLjmwvRd6lMNLHnSpCKPFcwVD60yKo9P3KASdV5FJ+zPmxWtyP48kEDr1NUksiNaZH4cRFf2MS6S0JBN4TiztK82XeUvUVtVaXmdg4RApw7VfWRFXprvWU0EIf9jRt51z2fYxUOsJApCXtwZLZhpqbew85rvmySL0SXnmuQ+gGhzkD4ISBQmqr7tNEimAFlLoxs6IFPHO/O9qDLgpCoT2giWhATcFm3ys0LVLDULBZesWwvs6xDTlSsI/rwewh+V1MUPIBIPnfOFr1XzZ07aCKR028WZv+HTUyPhTJ3ymjg8sF9Aay40JU4+gw== fabien@ks26901.kimsufi.com

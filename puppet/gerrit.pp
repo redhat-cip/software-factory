@@ -1,4 +1,4 @@
-class gerrit {
+class gerrit ($settings = hiera_hash('gerrit')) {
 
   user { 'gerrit':
     ensure     => present,

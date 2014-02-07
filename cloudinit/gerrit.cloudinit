@@ -1,39 +1,5 @@
 #cloud-config
 output: {all: '| tee -a /var/log/cloud-init-output.log'}
-write_files:
--   content: |
-        #export FACTER_REPO_BASE_PATH="git"
-        export FACTER_WEBURL="http://198.154.188.171:8080"
-        #export FACTER_HTTPURL="http://mirror.monrepo.local"
-        #export FACTER_SSHD_LISTEN_ADDRESS="*:29418"
-        #export FACTER_HTTP_LISTEN_ADDRESS="http://*:8080"
-        export FACTER_ISSUES_TRACKER_ADDRESS="198.154.188.170"
-        export FACTER_GERRIT_MYSQL_ADDRESS="10.43.0.61"
-        export FACTER_GERRIT_MYSQL_DB="gerrit"
-        export FACTER_GERRIT_MYSQL_USERNAME="gerrit"
-        export FACTER_GERRIT_MYSQL_PORT="3306"
-        export FACTER_GERRIT_MYSQL_SECRET="secret"
-        export FACTER_LDAP_ADDRESS="ldap://10.43.0.37"
-        export FACTER_LDAP_USERNAME="cn=admin,dc=enovance,dc=com"
-        export FACTER_LDAP_PASSWORD="secret"
-        export FACTER_LDAP_ACCOUNT_BASE="ou=Users,dc=enovance,dc=com"
-        export FACTER_LDAP_ACCOUNT_PATTERN='(&(objectClass=inetOrgPerson)(cn=${username}))'
-        export FACTER_LDAP_ACCOUNT_EMAIL_ADDRESS='mail'
-        export FACTER_LDAP_ACCOUNT_SSH_USERNAME='cn'
-        export FACTER_HTTP_BASIC_AUTH='true'
-        export FACTER_SMTP_SERVER='smtp.enovance.com'
-        #export FACTER_SMTP_SERVER_PORT='25'
-        #export FACTER_SMTP_USER=''
-        #export FACTER_SMTP_PASS=''
-        export FACTER_GERRIT_ADMIN_USERNAME='fabien.boucher'
-        export FACTER_GERRIT_ADMIN_MAIL='fabien.boucher@enovance.com'
-        export FACTER_GERRIT_ADMIN_SSHKEY='ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQCvDXydmEaLfzpDep9AlIYYKogcr9lEopSfwGXAzKRRPMsDPtg4mAfbuWSzGQgEdXcHo9lxt1IYbyWgYZ/HDLUls/xad2VVn2HSvgUIZUJPs7anvmWBhCui2ctnXShr5sPP7ckUYiF7RHHQxTqLg88ZAa1eYKF9BSanlhEcztmW1WsVfNfdWae+OOAqo0D8LUQDfSkhMg5SbvJy+xs+rBghqMX1S/ACInvb1wY6QFkySakD+L9XN15thL87BAM6w8vHG9hvgTh/cw9/yYByC9rdXIMECKug73LZGHKdOqB5dNRiW5AQK9CTuT5AzuGMfifYK+zlBSkSiGqQOvi59XL+0Ml1AcVCv0Rouu3dGmk0kyHgahkbnLjmwvRd6lMNLHnSpCKPFcwVD60yKo9P3KASdV5FJ+zPmxWtyP48kEDr1NUksiNaZH4cRFf2MS6S0JBN4TiztK82XeUvUVtVaXmdg4RApw7VfWRFXprvWU0EIf9jRt51z2fYxUOsJApCXtwZLZhpqbew85rvmySL0SXnmuQ+gGhzkD4ISBQmqr7tNEimAFlLoxs6IFPHO/O9qDLgpCoT2giWhATcFm3ys0LVLDULBZesWwvs6xDTlSsI/rwewh+V1MUPIBIPnfOFr1XzZ07aCKR028WZv+HTUyPhTJ3ymjg8sF9Aay40JU4+gw== fabien@ks26901.kimsufi.com'
-        export FACTER_GERRIT_JENKINS_SSHKEY='ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQCvDXydmEaLfzpDep9AlIYYKogcr9lEopSfwGXAzKRRPMsDPtg4mAfbuWSzGQgEdXcHo9lxt1IYbyWgYZ/HDLUls/xad2VVn2HSvgUIZUJPs7anvmWBhCui2ctnXShr5sPP7ckUYiF7RHHQxTqLg88ZAa1eYKF9BSanlhEcztmW1WsVfNfdWae+OOAqo0D8LUQDfSkhMg5SbvJy+xs+rBghqMX1S/ACInvb1wY6QFkySakD+L9XN15thL87BAM6w8vHG9hvgTh/cw9/yYByC9rdXIMECKug73LZGHKdOqB5dNRiW5AQK9CTuT5AzuGMfifYK+zlBSkSiGqQOvi59XL+0Ml1AcVCv0Rouu3dGmk0kyHgahkbnLjmwvRd6lMNLHnSpCKPFcwVD60yKo9P3KASdV5FJ+zPmxWtyP48kEDr1NUksiNaZH4cRFf2MS6S0JBN4TiztK82XeUvUVtVaXmdg4RApw7VfWRFXprvWU0EIf9jRt51z2fYxUOsJApCXtwZLZhpqbew85rvmySL0SXnmuQ+gGhzkD4ISBQmqr7tNEimAFlLoxs6IFPHO/O9qDLgpCoT2giWhATcFm3ys0LVLDULBZesWwvs6xDTlSsI/rwewh+V1MUPIBIPnfOFr1XzZ07aCKR028WZv+HTUyPhTJ3ymjg8sF9Aay40JU4+gw== fabien@ks26901.kimsufi.com'
-    owner: gerrit:gerrit
-    permissions: '0600'
-    path: /home/gerrit/puppet_gerrit.env
-
 runcmd:
  - ssh-keygen -t rsa -N '' -f /home/gerrit/ssh_host_rsa_key
- - . /home/gerrit/puppet_gerrit.env ; cd /root/gerrit_data_source/puppet/ ; FACTER_LOCAL_SSHKEY=`cat /home/gerrit/ssh_host_rsa_key.pub` puppet apply --modulepath modules/ gerrit_node.pp
- - puppet apply /etc/puppet/site.pp
+ - FACTER_LOCAL_SSHKEY=`cat /home/gerrit/ssh_host_rsa_key.pub` puppet apply /etc/puppet/site.pp
