@@ -1,43 +1,43 @@
 [gerrit]
-    basePath = <%= has_variable?("repo_base_path") ? repo_base_path: 'git' %>
-    canonicalWebUrl = <%= @weburl %>
-    gitHttpUrl = <%= has_variable?("httpurl") ? httpurl: '' %>
+    basePath = <%= @settings['repo_base_path'] ? @settings['repo_base_path'] : 'git' %>
+    canonicalWebUrl = <%= @settings['weburl'] %>
+    gitHttpUrl = <%= @settings['httpurl'] ? @settings['httpurl'] : '' %>
 [database]
     type = MYSQL
-    hostname = <%= @gerrit_mysql_address %>
-    database = <%= has_variable?("gerrit_mysql_db") ? gerrit_mysql_db: 'gerrit' %>
-    username = <%= has_variable?("gerrit_mysql_username") ? gerrit_mysql_username: 'gerrit' %>
-    port = <%= has_variable?("mysql_port") ? mysql_port: '3306' %>
+    hostname = <%= @settings['gerrit_mysql_address'] %>
+    database = <%= @settings['gerrit_mysql_db'] ? @settings['gerrit_mysql_db'] : 'gerrit' %>
+    username = <%= @settings['gerrit_mysql_username'] ? @settings['gerrit_mysql_username'] : 'gerrit' %>
+    port = <%= @settings['mysql_port'] ? @settings['mysql_port'] : '3306' %>
 [auth]
     type = LDAP
-    gitBasicAuth = <%= @http_basic_auth %>
+    gitBasicAuth = <%= @settings['http_basic_auth'] %>
 [ldap]
-    server = <%= @ldap_address %>
+    server = <%= @settings['ldap_address'] %>
     # lookup user that can read the trees
-    username = <%= @ldap_username %>
-    accountBase = <%= @ldap_account_base %>
-    accountPattern = <%= @ldap_account_pattern %>
-    accountEmailAddress = <%= @ldap_account_email_address %>
-    accountSshUserName = <%= @ldap_account_ssh_username %>
+    username = <%= @settings['ldap_username'] %>
+    accountBase = <%= @settings['ldap_account_base'] %>
+    accountPattern = <%= @settings['ldap_account_pattern'] %>
+    accountEmailAddress = <%= @settings['ldap_account_email_address'] %>
+    accountSshUserName = <%= @settings['ldap_account_ssh_username'] %>
     # we don't use LDAP groups
-    #groupMemberPattern = <%= @ldap_group_pattern %>
+    #groupMemberPattern = <%= @settings['ldap_group_pattern'] %>
 [container]
     user = gerrit
     javaHome = /usr/lib/jvm/java-7-openjdk-amd64/jre
 [sshd]
-    listenAddress = <%= has_variable?("sshd_listen_address") ? sshd_listen_address: '*:29418' %>
+    listenAddress = <%= @settings['sshd_listen_address'] ? @settings['sshd_listen_address'] : '*:29418' %>
 [httpd]
-    listenUrl = <%= has_variable?("http_listen_address") ? http_listen_address: 'http://*:8080' %>
+    listenUrl = <%= @settings['http_listen_address'] ? @settings['http_listen_address'] : 'http://*:8080' %>
 [commentlink "Redmine"]
     match = ([Bb]ug:\\s+)(\\d+)
-    html = $1<a href=\"http://<%= @issues_tracker_address %>/issues/$2\">$2</a>
+    html = $1<a href=\"http://<%= @settings['issues_tracker_address'] %>/issues/$2\">$2</a>
 [sendemail]
     enable = true
     smtpEncryption = none
     from = MIXED
-    smtpServer = <%= @smtp_server %>
-    smtpServerPort = <%= has_variable?("smtp_server_port") ? smtp_server_port: '25' %>
-    smtpUser = <%= has_variable?("smtp_user") ? smtp_user: '' %>
+    smtpServer = <%= @settings['smtp_server'] %>
+    smtpServerPort = <%= @settings['smtp_server_port'] ? @settings['smtp_server_port'] : '25' %>
+    smtpUser = <%= @settings['smtp_user'] ? @settings['smtp_user'] : '' %>
 [download]
     scheme = ssh
     scheme = http

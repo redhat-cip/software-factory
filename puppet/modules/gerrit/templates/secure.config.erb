@@ -1,7 +1,7 @@
 [database]
-    password = <%= @gerrit_mysql_secret %>
+    password = <%= @settings['gerrit_mysql_secret'] %>
 [ldap]
     # Will be used if anonymous bind is disallowed
-    password = <%= @ldap_password %>
+    password = <%= @settings['ldap_password'] %>
 [sendmail]
-    smtpPass = <%= has_variable?("smtp_pass") ? smtp_pass: '' %>
+    smtpPass = <%= @settings['smtp_pass'] ? @settings['smtp_pass'] : '' %>

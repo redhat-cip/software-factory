@@ -1,6 +1,6 @@
-SET @username="<%= @gerrit_admin_username %>";
-SET @mail="<%= @gerrit_admin_mail %>";
-SET @pubkey="<%= @gerrit_admin_sshkey %>";
+SET @username="<%= @settings['gerrit_admin_username'] %>";
+SET @mail="<%= @settings['gerrit_admin_mail'] %>";
+SET @pubkey="<%= @settings['gerrit_admin_sshkey'] %>";
 SET @pubkey2="<%= @local_sshkey %>";
 
 INSERT INTO account_external_ids VALUES (1,@mail,NULL,CONCAT('gerrit:',@username)),(1,NULL,NULL,CONCAT('username:', @username));

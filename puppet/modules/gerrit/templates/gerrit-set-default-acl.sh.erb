@@ -3,8 +3,11 @@
 set -x
 set -e
 
-ADMINUSER=<%= @gerrit_admin_username %> 
-ADMINUSEREMAIL=<%= @gerrit_admin_mail %> 
+# Git config complains about HOME env var missing ...
+export HOME=/root
+
+ADMINUSER=<%= @settings['gerrit_admin_username'] %> 
+ADMINUSEREMAIL=<%= @settings['gerrit_admin_mail'] %> 
 CLONETEMPDIR="/tmp/All-projects"
 
 [ -d "$CLONETEMPDIR" ] && rm -Rf $CLONETEMPDIR
