@@ -137,7 +137,7 @@ Install required packages:
 Set appropriate settings in ``hosts.yaml`` and run tests:
 
 	cd serverspec
-	RUBYOPT=rubygems rake spec
+	rake spec -j 10 -m
 
 
 Next steps

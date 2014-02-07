@@ -10,6 +10,11 @@ HOSTS_YAML="../puppet/hiera/hosts.yaml"
 
 echo -e "hosts:\n  localhost:\n    ip: 127.0.0.1" > $HOSTS_YAML
 
+
+cp ../serverspec/hosts.yaml.tpl ../serverspec/hosts.yaml
+echo > hosts
+
+
 for ROLENAME in $ROLES; do
 	VM_NAME="$PREFIX$ROLENAME"
 
@@ -66,4 +71,20 @@ for ROLENAME in $ROLES; do
 	echo "  $ROLENAME.pub:" >> $HOSTS_YAML
 	echo "    ip: $FLOATING_IP" >> $HOSTS_YAML
 
+    sed -i -e "s/$ROLENAME\_ip/$FLOATING_IP/g" ../serverspec/hosts.yaml
+
+    echo "$FLOATING_IP" >> hosts
 done 
+
+
+echo "Waiting 60 seconds before starting serverspec tests..."
+sleep 60
+
+for ip in `cat hosts`; do
+    # Remove SSH key from known hosts
+    ssh-keygen -f "$HOME/.ssh/known_hosts" -R $ip
+    ssh-keyscan -H $ip >> $HOME/.ssh/known_hosts
+done
+
+# Test servers
+cd ../serverspec && rake spec -j 10 -m 
