@@ -2,20 +2,22 @@ redmine:
   :roles:
     - base
     - redmine
-  :hostname: 198.154.188.152
+  :hostname: 94.143.114.155
 
 mysql:
   :roles:
     - base
     - mysql
-  :hostname: 198.154.188.147
-  :username: debian
-  :sudo_password: debian
+  :hostname: 46.231.128.14
 
 ldap:
   :roles:
     - base
     - ldap
-  :hostname: 198.154.188.148
-  :username: debian
-  :sudo_password: debian
+  :hostname: 46.231.128.252
+
+gerrit:
+  :roles:
+    - base
+    - gerrit
+  :hostname: 94.143.114.148 
