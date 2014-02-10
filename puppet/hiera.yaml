@@ -5,4 +5,5 @@
   - hosts
   - ssh
   - jenkins
+  - redmine
   - gerrit

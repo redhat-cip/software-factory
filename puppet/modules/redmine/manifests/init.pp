@@ -1,4 +1,4 @@
-class redmine {
+class redmine ($settings = hiera_hash('redmine')) {
     package {'redmine':
         ensure => 'installed',
         name   => 'redmine',
@@ -48,6 +48,13 @@ class redmine {
     file { '/etc/apache2/sites-enabled/000-default':
         ensure => absent,
     }
+  
+    file { '/root/activate-api-for-admin.sql':
+        ensure  => present,
+        mode    => '0640',
+        content => template('redmine/activate-api-for-admin.sql.erb'),
+        replace => true,
+    }
 
     exec {'enable_redmine_site':
         command => 'a2ensite redmine',
@@ -84,5 +91,12 @@ class redmine {
         path        => '/usr/bin/:/bin/',
         cwd         => '/usr/bin',
         require     => [Exec['default_data']],
+    }
+    
+    exec {'init_api_key':
+        command     => 'mysql -u redmine redmine -psecret -h mysql.pub /root/activate-api-for-admin.sql',
+        path        => '/usr/bin/:/bin/',
+        cwd         => '/usr/bin',
+        require     => [Exec['ldap_auth']],
     }
 }
