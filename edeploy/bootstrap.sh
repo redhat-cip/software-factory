@@ -17,6 +17,8 @@ SECURITY_GROUP="${PREFIX}sg"
 nova secgroup-create $SECURITY_GROUP "Software Factory"
 ***REMOVED***
 nova secgroup-add-rule $SECURITY_GROUP tcp 22 22 46.231.128.220/24
+nova secgroup-add-rule $SECURITY_GROUP tcp 80 80 0.0.0.0/0 
+nova secgroup-add-rule $SECURITY_GROUP tcp 8080 8080 0.0.0.0/0 
 
 for ROLENAME in $ROLES; do
 	VM_NAME="$PREFIX$ROLENAME"
