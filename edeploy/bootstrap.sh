@@ -59,7 +59,7 @@ for ROLENAME in $ROLES; do
 			echo "Failed getting private IP"
 			break
 		fi
-		sleep 5
+		sleep 10
 	done 
 
     RETRIES=0
@@ -78,7 +78,7 @@ for ROLENAME in $ROLES; do
 			echo "Failed getting floating IP"
 			break
 		fi
-		sleep 5
+		sleep 10
     done
 
 	echo "  $ROLENAME.priv:" >> $HOSTS_YAML
