@@ -5,7 +5,7 @@ VM_FLAVOR="10"
 ROLES="mysql ldap redmine jenkins gerrit "
 RELEASE="D7-H.1.0.0"
 HOSTS_YAML="../puppet/hiera/hosts.yaml"
-
+SUMMARY=""
 
 echo -e "hosts:\n  localhost:\n    ip: 127.0.0.1" > $HOSTS_YAML
 
@@ -17,6 +17,8 @@ SECURITY_GROUP="${PREFIX}sg"
 nova secgroup-create $SECURITY_GROUP "Software Factory"
 ***REMOVED***
 nova secgroup-add-rule $SECURITY_GROUP tcp 22 22 46.231.128.220/24
+nova secgroup-add-rule $SECURITY_GROUP tcp 80 80 0.0.0.0/0 
+nova secgroup-add-rule $SECURITY_GROUP tcp 8080 8080 0.0.0.0/0 
 
 for ROLENAME in $ROLES; do
 	VM_NAME="$PREFIX$ROLENAME"
@@ -70,6 +72,7 @@ for ROLENAME in $ROLES; do
 
         if [ $? -eq 0 ]; then
 	        echo "Assigned floating IP $FLOATING_IP."
+            SUMMARY=${SUMMARY}"$ROLENAME: $FLOATING_IP\n"
             break
         fi
 
@@ -81,9 +84,6 @@ for ROLENAME in $ROLES; do
 		sleep 10
     done
 
-	echo "  $ROLENAME.priv:" >> $HOSTS_YAML
-	echo "    ip: $IP" >> $HOSTS_YAML
-	
 	echo "  $ROLENAME.pub:" >> $HOSTS_YAML
 	echo "    ip: $FLOATING_IP" >> $HOSTS_YAML
 
@@ -108,3 +108,5 @@ done
 
 # Test servers
 cd ../serverspec && rake spec -j 10 -m 
+
+echo -e $SUMMARY

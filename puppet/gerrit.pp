@@ -74,6 +74,16 @@ class gerrit ($settings = hiera_hash('gerrit')) {
     require => File['/home/gerrit/site_path/etc'],
   }
   
+  file { '/home/gerrit/site_path/hooks/hooks.config':
+    ensure  => present,
+    owner   => 'gerrit',
+    group   => 'gerrit',
+    mode    => '0600',
+    content => template('gerrit/hooks.config.erb'),
+    replace => true,
+    require => File['/home/gerrit/site_path/hooks'],
+  }
+  
   file { '/home/gerrit/site_path/etc/ssh_host_rsa_key':
     ensure  => present,
     owner   => 'gerrit',
@@ -144,6 +154,26 @@ class gerrit ($settings = hiera_hash('gerrit')) {
     source  => '/root/gerrit_data_source/bcprov-jdk16-144.jar',
     require => File['/home/gerrit/site_path/lib'], 
   }
+  
+  file { '/home/gerrit/site_path/hooks/patchset-created':
+    ensure  => present,
+    owner   => 'gerrit',
+    group   => 'gerrit',
+    mode    => '0744',
+    source  => '/root/gerrit_data_source/gerrit-hooks/patchset-created',
+    require => [File['/home/gerrit/site_path/hooks'], 
+                File['/home/gerrit/site_path/hooks/hooks.config']],
+  }
+  
+  file { '/home/gerrit/site_path/hooks/change-merged':
+    ensure  => present,
+    owner   => 'gerrit',
+    group   => 'gerrit',
+    mode    => '0744',
+    source  => '/root/gerrit_data_source/gerrit-hooks/change-merged',
+    require => [File['/home/gerrit/site_path/hooks'], 
+                File['/home/gerrit/site_path/hooks/hooks.config']],
+  }
 
   exec { 'gerrit-initial-init':
     user      => 'gerrit',
@@ -154,6 +184,7 @@ class gerrit ($settings = hiera_hash('gerrit')) {
                   File['/home/gerrit/gerrit.war'],
                   File['/home/gerrit/site_path/lib/mysql-connector-java-5.1.21.jar'],
                   File['/home/gerrit/site_path/lib/bcprov-jdk16-144.jar'],
+                  File['/home/gerrit/site_path/hooks/hooks.config'],
                   File['/home/gerrit/site_path/etc/gerrit.config'],
                   File['/home/gerrit/site_path/etc/secure.config']],
     unless    => '/usr/bin/pgrep -f GerritCodeReview',
