@@ -53,7 +53,7 @@ for ROLENAME in $ROLES; do
 	echo "Getting private IP..."
 	RETRIES=0
 	while [ -z $IP ]; do
-		IP=`nova show $VM_ID | grep "nova network" | cut -d "|" -f 3 | sed 's/ *$//g'`
+		IP=`nova show $VM_ID | grep "network" | cut -d "|" -f 3 | sed 's/ *$//g'`
 		let RETRIES=RETRIES+1
 		if [ "$RETRIES" == "9" ]; then
 			echo "Failed getting private IP"
@@ -75,7 +75,7 @@ for ROLENAME in $ROLES; do
 
 		let RETRIES=RETRIES+1
 		if [ "$RETRIES" == "9" ]; then
-			echo "Failed getting private IP"
+			echo "Failed getting floating IP"
 			break
 		fi
 		sleep 5
