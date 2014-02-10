@@ -1,5 +1,4 @@
 #!/bin/bash
-SECURITY_GROUPS="SF-security"
 TIMESTAMP=`date +"%Y%m%d"`
 PREFIX="edeploy-$TIMESTAMP-"
 VM_FLAVOR="10"
@@ -14,6 +13,10 @@ echo -e "hosts:\n  localhost:\n    ip: 127.0.0.1" > $HOSTS_YAML
 cp ../serverspec/hosts.yaml.tpl ../serverspec/hosts.yaml
 echo > hosts
 
+SECURITY_GROUP="${PREFIX}sg"
+nova secgroup-create $SECURITY_GROUP "Software Factory"
+***REMOVED***
+nova secgroup-add-rule $SECURITY_GROUP tcp 22 22 46.231.128.220/24
 
 for ROLENAME in $ROLES; do
 	VM_NAME="$PREFIX$ROLENAME"
@@ -43,7 +46,7 @@ for ROLENAME in $ROLES; do
 	echo "Booting new VM..."
 
 	# Boot new VM with that image
-	NOVA_OUTPUT=`nova boot  --flavor $VM_FLAVOR --image $IMAGE_ID --user-data ../cloudinit/$ROLENAME.cloudinit --security-groups $SECURITY_GROUPS $VM_NAME`
+	NOVA_OUTPUT=`nova boot  --flavor $VM_FLAVOR --image $IMAGE_ID --user-data ../cloudinit/$ROLENAME.cloudinit --security-groups $SECURITY_GROUP $VM_NAME`
 
 	VM_ID=`echo $NOVA_OUTPUT | grep -ohe "id | [0-9a-f-]\{36\}" | cut -c 6-`
 	
@@ -74,6 +77,7 @@ for ROLENAME in $ROLES; do
     sed -i -e "s/$ROLENAME\_ip/$FLOATING_IP/g" ../serverspec/hosts.yaml
 
     echo "$FLOATING_IP" >> hosts
+    nova secgroup-add-rule $SECURITY_GROUP tcp 1 65535 "$FLOATING_IP/32"
 done 
 
 
