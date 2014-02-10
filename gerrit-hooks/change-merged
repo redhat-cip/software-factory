@@ -1,22 +1,25 @@
 #!/usr/bin/env python
 
 # This hook will update a Redmine issue by:
-# - changing its status to in-progess
-# - add an issue note with the review URL
+# - changing its status to closed
+# - add an issue note with :
+#   - The review URL
+#   - The submitter name
+#   - TODO (fbo) : The URL of the commit in cgit/gitweb using the commit id
+#   - Branch
+#   - Full commit message
 
 # https://gerrit-documentation.storage.googleapis.com/\
 #        Documentation/2.8.1/config-hooks.html
 
 # Gerrit will call the hook with the following options:
 # patchset-created --change <change id>
-#                  --is-draft <boolean>
 #                  --change-url <change url>
 #                  --project <project name>
 #                  --branch <branch>
 #                  --topic <topic>
-#                  --uploader <uploader>
+#                  --submitter <uploader>
 #                  --commit <sha1>
-#                  --patchset <patchset id>
 
 import argparse
 import os
@@ -30,8 +33,12 @@ import yaml
 HOOKS_CONFIG = os.path.join(os.path.dirname(os.path.realpath(__file__)),
                             'hooks.config')
 ISSUE_REGEX = '([Bb]ug:\s+)(\d+)'
-MESSAGE = """Fix proposed on Gerrit to branch: %(branch)s
+MESSAGE = """The following change on Gerrit has been merged to: %(branch)s
 Review: %(url)s
+Submitter: %(submitter)s
+
+Commit message:
+%(commit)s
 """
 issue_reg = re.compile(ISSUE_REGEX)
 
@@ -50,8 +57,8 @@ def parse_commit_message(message):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    for arg in ('change', 'is-draft', 'change-url', 'project',
-                'branch', 'topic', 'uploader', 'commit', 'patchset'):
+    for arg in ('change', 'change-url', 'project',
+                'branch', 'topic', 'submitter', 'commit'    ):
         parser.add_argument('--%s' % arg)
     args = parser.parse_args()
 
@@ -69,10 +76,6 @@ if __name__ == "__main__":
         print err
         sys.exit(0)
 
-    if args.patchset != '1':
-        print "Do nothing as the patchset is not the first"
-        sys.exit(0)
-
     # GIT_SSH env var is setup by Gerrit when calling the hook
     commit = subprocess.check_output(['git', 'cat-file', '-p', args.commit])
 
@@ -81,10 +84,17 @@ if __name__ == "__main__":
     if not issue:
         print "Do nothing as there is no issue mentionned"
         sys.exit(0)
+    
+    # We remove the fourth first lines of the commit message
+    # tree, parent, author, commiter and we just keep
+    # the real user message
+    commit = "\n".join(commit.splitlines()[4:])
 
     # Build message for the issue
     message = MESSAGE % {'branch': args.branch,
-                         'url': args.change_url}
+                         'url': args.change_url,
+                         'submitter': args.submitter,
+                         'commit': commit}
 
     # Post message on the Redmine issue
     redmine_client = redmine.Redmine(redmine_host,
@@ -93,13 +103,13 @@ if __name__ == "__main__":
     try:
         obj = redmine_client.issues.get(issue)
     except Exception, err:
-        print "It seems there is no issue %s registered on Redmine (%s)" % \
+        print "It seems there is no issue %s registered on Redmine (%s) error" % \
             (issue, err)
         sys.exit(0)
 
-    # Set the issue as In-Progess
+    # Set the issue as closed
     try:
-        obj.set_status(2, message)
+        obj.close(message)
     except err:
         print "Unable to change the issue %s status on Redmine (%s)" % \
             (issue, err)
