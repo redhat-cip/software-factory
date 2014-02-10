@@ -2,5 +2,4 @@
 output: {all: '| tee -a /var/log/cloud-init-output.log'}
 runcmd:
  - ssh-keygen -t rsa -N '' -f /home/gerrit/ssh_host_rsa_key
- - FACTER_LOCAL_SSHKEY=`cat /home/gerrit/ssh_host_rsa_key.pub` puppet apply /etc/puppet/gerrit_node.pp
- - puppet apply /etc/puppet/site.pp
+ - FACTER_LOCAL_SSHKEY=`cat /home/gerrit/ssh_host_rsa_key.pub` puppet apply /etc/puppet/site.pp

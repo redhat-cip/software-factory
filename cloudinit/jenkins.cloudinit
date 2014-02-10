@@ -1,4 +1,3 @@
 #cloud-config
 runcmd:
- - puppet apply /etc/puppet/jenkins_node.pp
  - puppet apply /etc/puppet/site.pp

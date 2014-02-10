@@ -11,3 +11,11 @@ node default inherits base {
 node /.*redmine.*/ inherits base {
   include redmine
 }
+
+node /.*gerrit.*/ inherits base {
+  include gerrit
+}
+
+node /.*jenkins.*/ inherits base {
+  include jenkins
+}
