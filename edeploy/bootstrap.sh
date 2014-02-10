@@ -83,9 +83,6 @@ for ROLENAME in $ROLES; do
 		sleep 10
     done
 
-	echo "  $ROLENAME.priv:" >> $HOSTS_YAML
-	echo "    ip: $IP" >> $HOSTS_YAML
-	
 	echo "  $ROLENAME.pub:" >> $HOSTS_YAML
 	echo "    ip: $FLOATING_IP" >> $HOSTS_YAML
 
