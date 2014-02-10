@@ -5,7 +5,7 @@ VM_FLAVOR="10"
 ROLES="mysql ldap redmine jenkins gerrit "
 RELEASE="D7-H.1.0.0"
 HOSTS_YAML="../puppet/hiera/hosts.yaml"
-
+SUMMARY=""
 
 echo -e "hosts:\n  localhost:\n    ip: 127.0.0.1" > $HOSTS_YAML
 
@@ -72,6 +72,7 @@ for ROLENAME in $ROLES; do
 
         if [ $? -eq 0 ]; then
 	        echo "Assigned floating IP $FLOATING_IP."
+            SUMMARY=${SUMMARY}"$ROLENAME: $FLOATING_IP\n"
             break
         fi
 
@@ -107,3 +108,5 @@ done
 
 # Test servers
 cd ../serverspec && rake spec -j 10 -m 
+
+echo -e $SUMMARY
