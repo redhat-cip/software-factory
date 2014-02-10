@@ -148,8 +148,7 @@ end
 describe file('/etc/init.d/gerrit') do
     it {
         should be_linked_to '/home/gerrit/site_path/bin/gerrit.sh'
-        should be_owned_by 'gerrit'
-        should be_grouped_into 'gerrit'
+        should be_mode '777'
     }
 end
 
