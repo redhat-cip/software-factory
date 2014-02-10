@@ -1,0 +1,13 @@
+- job-template:
+    name: '{name}-unit-tests'
+    builders:
+#      - gerrit-git-prep
+      - shell: unittest
+    triggers:
+      - gerrit:
+          trigger-on-patchset-uploaded-event: true
+          projects:
+            - project-compare-type: 'PLAIN'
+              project-pattern: '{name}'
+              branch-compare-type: 'ANT'
+              branch-pattern: '**'

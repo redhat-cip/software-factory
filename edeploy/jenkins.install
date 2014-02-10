@@ -17,6 +17,7 @@
 src="$1"
 dir="$2"
 version="$3"
+DATA=../data
 
 ROLE=jenkins
 
@@ -60,3 +61,4 @@ mkdir -p ${dir}/etc/jenkins_jobs
 # Install puppet manifest
 mkdir -p $dir/etc/puppet/
 rsync -av ../puppet/ $dir/etc/puppet/
+rsync -av ../data/jjb/ $dir/usr/share/sf-jjb/
