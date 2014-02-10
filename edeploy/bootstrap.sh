@@ -2,7 +2,7 @@
 TIMESTAMP=`date +"%Y%m%d"`
 PREFIX="edeploy-$TIMESTAMP-"
 VM_FLAVOR="10"
-ROLES="mysql ldap gerrit jenkins redmine"
+ROLES="mysql ldap redmine jenkins gerrit "
 RELEASE="D7-H.1.0.0"
 HOSTS_YAML="../puppet/hiera/hosts.yaml"
 
