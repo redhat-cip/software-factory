@@ -97,8 +97,8 @@ for ROLENAME in $ROLES; do
 done 
 
 
-echo "Waiting 60 seconds before starting serverspec tests..."
-sleep 60
+echo "Waiting another 120 seconds before starting serverspec tests..."
+sleep 120
 
 for ip in `cat hosts`; do
     # Remove SSH key from known hosts
