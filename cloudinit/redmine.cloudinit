@@ -1,3 +1,7 @@
 #cloud-config
 runcmd:
  - puppet apply /etc/puppet/site.pp
+write_files:
+-   content: |
+      INSERT INTO auth_sources (TYPE, NAME, HOST, PORT, BASE_DN, ATTR_LOGIN, ONTHEFLY_REGISTER) VALUES ('AuthSourceLdap', 'Local LDAP', 'ldap.pub', 389, 'ou=Users,dc=enovance,dc=com', 'cn', 1);
+    path: /root/redmine_ldap.sql
