@@ -91,11 +91,14 @@ for ROLENAME in $ROLES; do
 
     echo "$FLOATING_IP" >> hosts
     nova secgroup-add-rule $SECURITY_GROUP tcp 1 65535 "$FLOATING_IP/32"
+
+    echo "Waiting 60 seconds before continuing..."
+    sleep 60
 done 
 
 
-echo "Waiting 120 seconds before starting serverspec tests..."
-sleep 120
+echo "Waiting 60 seconds before starting serverspec tests..."
+sleep 60
 
 for ip in `cat hosts`; do
     # Remove SSH key from known hosts
