@@ -1,3 +1,4 @@
 #cloud-config
 runcmd:
+ - /bin/su jenkins -c "ssh-keygen -N '' -f /var/lib/jenkins/.ssh/id_rsa"
  - puppet apply /etc/puppet/site.pp

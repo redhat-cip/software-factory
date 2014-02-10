@@ -1,4 +1,5 @@
 jenkins:
+  gerrit_url: http://192.168.134.53:8080
   ldap_url: ldap://192.168.134.50
   ldap_root_dn: dc=enovance,dc=com
   jenkins_username: jenkins
