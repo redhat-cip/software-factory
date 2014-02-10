@@ -62,12 +62,25 @@ for ROLENAME in $ROLES; do
 		sleep 5
 	done 
 
-	echo "Getting unused floating IP..."
-	FLOATING_IP=`nova floating-ip-list | grep "None" | grep -ohe "[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}" | head -n 1`
-	nova add-floating-ip $VM_ID $FLOATING_IP
-	echo "Assigned floating IP $FLOATING_IP."
+    RETRIES=0
+    while true; do
+	    echo "Getting unused floating IP..."
+	    FLOATING_IP=`nova floating-ip-list | grep "None" | grep -ohe "[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}" | head -n 1`
+	    nova add-floating-ip $VM_ID $FLOATING_IP
 
-	
+        if [ $? -eq 0 ]; then
+	        echo "Assigned floating IP $FLOATING_IP."
+            break
+        fi
+
+		let RETRIES=RETRIES+1
+		if [ "$RETRIES" == "9" ]; then
+			echo "Failed getting private IP"
+			break
+		fi
+		sleep 5
+    done
+
 	echo "  $ROLENAME.priv:" >> $HOSTS_YAML
 	echo "    ip: $IP" >> $HOSTS_YAML
 	
