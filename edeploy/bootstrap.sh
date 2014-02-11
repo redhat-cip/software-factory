@@ -97,16 +97,13 @@ for ROLENAME in $ROLES; do
 done 
 
 
-echo "Waiting another 120 seconds before starting serverspec tests..."
-sleep 120
+echo "Waiting another 60 seconds before starting SSH keyscan..."
+sleep 60
 
 for ip in `cat hosts`; do
     # Remove SSH key from known hosts
     ssh-keygen -f "$HOME/.ssh/known_hosts" -R $ip
     ssh-keyscan -H $ip >> $HOME/.ssh/known_hosts
 done
-
-# Test servers
-cd ../serverspec && rake spec -j 10 -m 
 
 echo -e $SUMMARY
