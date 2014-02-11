@@ -87,14 +87,14 @@ class redmine ($settings = hiera_hash('redmine')) {
 
     exec {'ldap_auth':
         environment => ['RAILS_ENV=production', 'REDMINE_LANG=en'],
-        command     => 'mysql -u redmine redmine -psecret -h mysql.pub /root/redmine_ldap.sql',
+        command     => 'mysql -u redmine redmine -psecret -h mysql.pub < /root/redmine_ldap.sql',
         path        => '/usr/bin/:/bin/',
         cwd         => '/usr/bin',
         require     => [Exec['default_data']],
     }
     
     exec {'init_api_key':
-        command     => 'mysql -u redmine redmine -psecret -h mysql.pub /root/activate-api-for-admin.sql',
+        command     => 'mysql -u redmine redmine -psecret -h mysql.pub < /root/activate-api-for-admin.sql',
         path        => '/usr/bin/:/bin/',
         cwd         => '/usr/bin',
         require     => [Exec['ldap_auth']],
