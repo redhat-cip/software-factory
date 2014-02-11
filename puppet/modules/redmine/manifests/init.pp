@@ -1,4 +1,4 @@
-class redmine ($settings = hiera_hash('redmine')) {
+class redmine ($settings = hiera_hash('redmine', '')) {
     package {'redmine':
         ensure => 'installed',
         name   => 'redmine',
