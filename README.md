@@ -26,6 +26,23 @@ Save this as "jenkins.virt". Now create an image:
 
 The image will be saved as `/var/lib/debootstrap/install/D7-H.1.0.0/jenkins-D7-H.1.0.0.img.qcow2`.
 
+
+Deployment stages
+-----------------
+
+* eDeploy: Image creation
+* LXC/eNocloud: Image boot
+* cloudinit: Create static configuration + puppetmaster server address
+* *puppetmaster* can be configured
+* Each role first register their IP address to puppetmaster
+* *Ldap* / *Mysql* can be configured
+* Gerrit register its api access key
+* *Gerrit* can be configured
+* *Redmine* can be configured
+* Jenkins register its ssh public key
+* *Jenkins* / *Jenkins-slave* can be configured
+
+
 Registering image and booting VM
 --------------------------------
 
