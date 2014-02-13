@@ -36,7 +36,7 @@ Deployment stages
 * *puppetmaster* can be configured
 * Each role first register their IP address to puppetmaster
 * *Ldap* / *Mysql* can be configured
-* Gerrit register its api access key
+* Redmine register its api access key
 * *Gerrit* can be configured
 * *Redmine* can be configured
 * Jenkins register its ssh public key
