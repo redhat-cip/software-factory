@@ -21,7 +21,7 @@ version="$3"
 ROLE=puppetmaster
 
 ORIG=$(cd $(dirname $0); pwd)
-PACKAGES="puppetmaster"
+PACKAGES="puppetmaster puppetdb puppetdb-terminus"
 
 . ${ORIG}/functions
 
@@ -34,3 +34,4 @@ rsync -av ../puppet/ $dir/etc/puppet/
 
 # Make sure service starts
 do_chroot ${dir} update-rc.d puppetmaster defaults
+do_chroot ${dir} update-rc.d puppetdb defaults
