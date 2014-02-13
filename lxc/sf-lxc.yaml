@@ -8,6 +8,11 @@ edeploy:
     dir: /var/lib/debootstrap/install/D7-H.1.0.0
 hosts:
   -
+    address: 192.168.134.49
+    name: sf-puppetmaster
+    role: puppetmaster
+    cloudinit: ../cloudinit/puppetmaster.cloudinit
+  -
     address: 192.168.134.50
     name: sf-ldap
     role: ldap
