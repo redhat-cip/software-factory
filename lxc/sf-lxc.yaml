@@ -32,3 +32,8 @@ hosts:
     name: sf-jenkins
     role: jenkins
     cloudinit: ../cloudinit/jenkins.cloudinit
+  -
+    address: 192.168.134.55
+    name: sf-jenkins-slave
+    role: jenkins-slave
+    cloudinit: ../cloudinit/jenkins-slave.cloudinit

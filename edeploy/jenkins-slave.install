@@ -1,0 +1,46 @@
+#!/bin/bash
+#
+# Copyright (C) 2013 eNovance SAS <licensing@enovance.com>
+#
+# Licensed under the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License. You may obtain
+# a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations
+# under the License.
+
+src="$1"
+dir="$2"
+version="$3"
+DATA=../data
+
+ROLE=jenkins-slave
+
+ORIG=$(cd $(dirname $0); pwd)
+PACKAGES="jenkins puppet git python-pip sloccount"
+
+. ${ORIG}/functions
+
+# Add jenkins package repo and signing key
+wget -q -O - http://pkg.jenkins-ci.org/debian/jenkins-ci.org.key | do_chroot $dir apt-key add -
+cat > ${dir}/etc/apt/sources.list.d/jenkins.list <<EOF
+deb http://pkg.jenkins-ci.org/debian binary/
+EOF
+
+update_repositories $dir
+install_ib_if_needed $ORIG $dir
+install_packages $dir "$PACKAGES"
+
+# Disable jenkins server
+do_chroot ${dir} update-rc.d -f jenkins remove
+
+# Install puppet manifest
+mkdir -p $dir/etc/puppet/
+rsync -av ../puppet/ $dir/etc/puppet/
+
+
