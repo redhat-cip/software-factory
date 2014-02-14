@@ -20,6 +20,8 @@ You need a configuration file for creating bootable images. For example:
 	# Only auto is supported now
 	NETWORK_CONFIG=auto
 
+Install pigz before building to speed up the image compression.
+
 Save this as "jenkins.virt". Now create an image:
 
 	sudo make jenkins VIRTUALIZED=jenkins.virt
