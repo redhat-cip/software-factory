@@ -18,6 +18,10 @@ class gerrit ($settings = hiera_hash('gerrit', '')) {
     ensure => present,
   }
   
+  package { 'apache2':
+    ensure => present,
+  }
+  
   file { '/home/gerrit/site_path':
     ensure  => directory,
     owner   => 'gerrit',
@@ -82,6 +86,20 @@ class gerrit ($settings = hiera_hash('gerrit', '')) {
     content => template('gerrit/hooks.config.erb'),
     replace => true,
     require => File['/home/gerrit/site_path/hooks'],
+  }
+  
+  file { '/etc/apache2/sites-available/gerrit':
+    ensure  => present,
+    mode    => '0644',
+    content => template('gerrit/apache_gerrit.erb'),
+    replace => true,
+    require => Package['apache2'],
+  }
+  
+  file { '/etc/apache2/sites-enabled/gerrit':
+    ensure  => link,
+    target  => '/etc/apache2/sites-available/gerrit',
+    require => File['/etc/apache2/sites-available/gerrit'],
   }
   
   file { '/home/gerrit/site_path/etc/ssh_host_rsa_key':
@@ -245,7 +263,8 @@ class gerrit ($settings = hiera_hash('gerrit', '')) {
 
   exec { 'gerrit-start':
     command     => '/etc/init.d/gerrit start',
-    require     => File['/etc/init.d/gerrit'],
+    require     => [File['/etc/init.d/gerrit'],
+                    Exec['apache2-restart']],
     refreshonly => true,
   }
   
@@ -257,5 +276,10 @@ class gerrit ($settings = hiera_hash('gerrit', '')) {
                     File['/home/gerrit/site_path/etc/secure.config']],
     refreshonly => true,
   }
-
+  
+  exec { 'apache2-restart':
+    command     => '/etc/init.d/apache2 restart',
+    subscribe   => File['/etc/apache2/sites-enabled/gerrit'],
+    refreshonly => true,
+  }
 }

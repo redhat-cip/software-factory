@@ -1,0 +1,16 @@
+<VirtualHost *:80>
+    ServerName <%= @settings['weburl'] %>
+
+    ProxyRequests Off
+    ProxyVia Off
+    ProxyPreserveHost On
+
+    <Proxy *>
+        Order deny,allow
+        Allow from all
+    </Proxy>
+
+    AllowEncodedSlashes On
+    Redirect / /r/
+    ProxyPass /r/ http://127.0.0.1:8080/r/ nocanon
+</VirtualHost>

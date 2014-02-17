@@ -27,7 +27,7 @@ LASTWAR="https://gerrit-releases.storage.googleapis.com/gerrit-2.8.1.war"
 MYSQLJAVA="http://repo2.maven.org/maven2/mysql/mysql-connector-java/5.1.21/mysql-connector-java-5.1.21.jar"
 BCPROVJAVA="http://www.bouncycastle.org/download/bcprov-jdk16-144.jar"
 PYREDMINEWS="https://pypi.python.org/packages/source/p/pyredmine/pyredmine-0.2.4.tar.gz"
-PACKAGES="openjdk-7-jre git puppet vim mysql-client python-pip python-dateutil"
+PACKAGES="openjdk-7-jre git puppet vim mysql-client python-pip python-dateutil apache2"
 GERRITUSER=gerrit
 DATA=../data
 GERRITHOOKS=../gerrit-hooks
@@ -54,6 +54,8 @@ case "$(package_tool)" in
         cp $DATA/ssh_wrapper.sh ${dir}/root/gerrit_data_source/
         chmod +x ${dir}/root/gerrit_data_source/ssh_wrapper.sh
         cp -Rf $GERRITHOOKS ${dir}/root/gerrit_data_source/
+        do_chroot $dir a2enmod proxy_http
+        do_chroot $dir a2enmod rewrite
         ;;
     *)
         fatal_error "$package_tool isn't supported for $ROLE role"

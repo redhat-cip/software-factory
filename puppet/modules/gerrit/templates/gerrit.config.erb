@@ -1,6 +1,6 @@
 [gerrit]
     basePath = <%= @settings['repo_base_path'] ? @settings['repo_base_path'] : 'git' %>
-    canonicalWebUrl = <%= @settings['weburl'] %>
+    canonicalWebUrl = http://<%= @settings['weburl'] %>
     gitHttpUrl = <%= @settings['httpurl'] ? @settings['httpurl'] : '' %>
 [database]
     type = MYSQL
@@ -12,7 +12,7 @@
     type = LDAP
     gitBasicAuth = <%= @settings['http_basic_auth'] %>
 [ldap]
-    server = <%= @settings['ldap_address'] %>
+    server = ldap://<%= @settings['ldap_address'] %>
     # lookup user that can read the trees
     username = <%= @settings['ldap_username'] %>
     accountBase = <%= @settings['ldap_account_base'] %>
@@ -20,17 +20,19 @@
     accountEmailAddress = <%= @settings['ldap_account_email_address'] %>
     accountSshUserName = <%= @settings['ldap_account_ssh_username'] %>
     # we don't use LDAP groups
-    #groupMemberPattern = <%= @settings['ldap_group_pattern'] %>
+    #groupMemberPattern =
 [container]
     user = gerrit
     javaHome = /usr/lib/jvm/java-7-openjdk-amd64/jre
 [sshd]
     listenAddress = <%= @settings['sshd_listen_address'] ? @settings['sshd_listen_address'] : '*:29418' %>
 [httpd]
-    listenUrl = <%= @settings['http_listen_address'] ? @settings['http_listen_address'] : 'http://*:8080' %>
+    listenUrl = proxy-http://127.0.0.1:8080/r/
 [commentlink "Redmine"]
     match = ([Bb]ug:\\s+)(\\d+)
     html = $1<a href=\"http://<%= @settings['issues_tracker_address'] %>/issues/$2\">$2</a>
+[gitweb]
+    cgi = /usr/share/gitweb/gitweb.cgi
 [sendemail]
     enable = true
     smtpEncryption = none
