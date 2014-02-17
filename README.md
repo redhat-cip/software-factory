@@ -168,12 +168,12 @@ be built.
 
 How to build it:
 
-        -> Install ant, openjdk, javac ...
+	-> Install ant, openjdk, javac ...
 
-        -> Build and install Buck
-        git clone https://gerrit.googlesource.com/buck
+	-> Build and install Buck
+	git clone https://gerrit.googlesource.com/buck
 	ant
-        ln -s bin/buck /usr/local/bin/buck
+	ln -s bin/buck /usr/local/bin/buck
 
 	-> Build Gerrit
 	git clone --recursive https://gerrit.googlesource.com/gerrit
@@ -188,8 +188,8 @@ How to build it:
 	
 How to install it:
 
-        scp buck-out/gen/plugins/replication/replication.jar user@gerrit:/tmp
-        ssh -p 29418 user@gerrit gerrit plugin install /tmp/replication.jar
+	scp buck-out/gen/plugins/replication/replication.jar user@gerrit:/tmp
+	ssh -p 29418 user@gerrit gerrit plugin install /tmp/replication.jar
 
 How to configure it:
 The plugin need a configuration file ${site_path}/etc/replication.config. The simplest
@@ -213,9 +213,15 @@ Gerrit replication plugin to refuse the connection. The file can be filled that 
 
 	ssh-keyscan -t rsa 192.168.134.1 >> ~/.ssh/known_hosts
 
-A manual replication can be started as follow :
+A manual replication can be started as follow or a marged changed will triggered
+a push on the remotes:
 
 	ssh -p 29418 user@gerrit replication start --all
+
+I tried with Github and it works as expected. The main differences between Github
+and a self-managed Git repo server is that the replication plugin is able to create
+a missing repository on the self-managed Git server and not on Github. That means
+the repositories to replicate must be created before on Github.
 
 
 Next steps
