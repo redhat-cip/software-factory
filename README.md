@@ -158,6 +158,65 @@ Set appropriate settings in ``hosts.yaml`` and run tests:
 	cd serverspec
 	rake spec -j 10 -m
 
+Gerrit replication
+------------------
+
+Replication plugin allows to automatically replicate repositories
+on a remote SSH mirror. All repositories can be mirrored or only
+a subset. The plugin is not provided in the gerrit.war and must
+be built.
+
+How to build it:
+
+        -> Install ant, openjdk, javac ...
+
+        -> Build and install Buck
+        git clone https://gerrit.googlesource.com/buck
+	ant
+        ln -s bin/buck /usr/local/bin/buck
+
+	-> Build Gerrit
+	git clone --recursive https://gerrit.googlesource.com/gerrit
+	git checkout <branch-stable>
+	git submodule update
+	git clean -fdx
+	buck build gerrit
+
+	-> Build the plugin
+	buck build plugins/replication:replication
+	ls buck-out/gen/plugins/replication/replication.jar
+	
+How to install it:
+
+        scp buck-out/gen/plugins/replication/replication.jar user@gerrit:/tmp
+        ssh -p 29418 user@gerrit gerrit plugin install /tmp/replication.jar
+
+How to configure it:
+The plugin need a configuration file ${site_path}/etc/replication.config. The simplest
+example is as follow :
+
+	[remote "mirror"]
+  	url = fabien@192.168.134.1:replication/${name}.git
+  	push = +refs/heads/*:refs/heads/*
+  	push = +refs/tags/*:refs/tags/*
+
+The plugin needs to find the private key to connect to the remote ssh and
+will look at ~.ssh/config :
+
+	Host 192.168.134.1
+  	User fabien
+  	IdentityFile /home/gerrit/site_path/etc/ssh_host_rsa_key
+  	PreferredAuthentications publickey
+
+The .ssh/known_hosts must be filled with the remote host key before Gerrit start to avoid
+Gerrit replication plugin to refuse the connection. The file can be filled that way :
+
+	ssh-keyscan -t rsa 192.168.134.1 >> ~/.ssh/known_hosts
+
+A manual replication can be started as follow :
+
+	ssh -p 29418 user@gerrit replication start --all
+
 
 Next steps
 ----------
