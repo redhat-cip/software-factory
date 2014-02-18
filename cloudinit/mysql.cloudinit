@@ -18,4 +18,4 @@ write_files:
 runcmd:
  - mysql -u root -pyour_password < /root/redmine.sql
  - mysql -u root -pyour_password < /root/gerrit.sql
- - puppet apply /etc/puppet/site.pp
+ - puppet apply /etc/puppet/manifests/site.pp

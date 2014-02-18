@@ -2,7 +2,7 @@
 TIMESTAMP=`date +"%Y%m%d"`
 PREFIX="edeploy-$TIMESTAMP-"
 VM_FLAVOR="10"
-ROLES="mysql ldap redmine jenkins gerrit "
+ROLES="puppetmaster mysql ldap redmine jenkins gerrit "
 RELEASE="D7-H.1.0.0"
 HOSTS_YAML="../puppet/hiera/hosts.yaml"
 SUMMARY=""
@@ -19,6 +19,8 @@ nova secgroup-create $SECURITY_GROUP "Software Factory"
 nova secgroup-add-rule $SECURITY_GROUP tcp 22 22 46.231.128.220/24
 nova secgroup-add-rule $SECURITY_GROUP tcp 80 80 0.0.0.0/0 
 nova secgroup-add-rule $SECURITY_GROUP tcp 8080 8080 0.0.0.0/0 
+
+PUPPETMASTER_IP=""
 
 for ROLENAME in $ROLES; do
 	VM_NAME="$PREFIX$ROLENAME"
@@ -46,6 +48,10 @@ for ROLENAME in $ROLES; do
 	fi 
 
 	echo "Booting new VM..."
+
+    if [ "$PUPPETMASTER_IP" != "" ]; then
+        sed -i -e "s#.*puppetmaster.pub.*#- echo $PUPPETMASTER_IP puppetmaster.pub >> /etc/hosts#g" ../cloudinit/$ROLENAME.cloudinit
+    fi
 
 	# Boot new VM with that image
 	NOVA_OUTPUT=`nova boot  --flavor $VM_FLAVOR --image $IMAGE_ID --user-data ../cloudinit/$ROLENAME.cloudinit --security-groups $SECURITY_GROUP $VM_NAME`
@@ -91,6 +97,11 @@ for ROLENAME in $ROLES; do
 
     echo "$FLOATING_IP" >> hosts
     nova secgroup-add-rule $SECURITY_GROUP tcp 1 65535 "$FLOATING_IP/32"
+
+    # First role is puppetmaster -> first IP is from puppetmaster
+    if [ "$PUPPETMASTER_IP" == "" ]; then
+        PUPPETMASTER_IP=$FLOATING_IP
+    fi
 
     echo "Waiting 60 seconds before continuing..."
     sleep 60
