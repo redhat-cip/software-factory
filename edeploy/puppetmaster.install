@@ -32,5 +32,9 @@ install_packages $dir "$PACKAGES"
 mkdir -p $dir/etc/puppet/
 rsync -av ../puppet/ $dir/etc/puppet/
 
+sed -i -e '0,/^$/s/^$/certname=puppetmaster.pub\n/g' $dir/etc/puppet/puppet.conf
+sed -i -e '0,/^$/s/^$/server=puppetmaster.pub\n/g' $dir/etc/puppet/puppet.conf
+sed -i -e '0,/^$/s/^$/autosign=true/g' $dir/etc/puppet/puppet.conf
+
 # Make sure service starts
 do_chroot ${dir} update-rc.d puppetmaster defaults
