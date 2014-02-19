@@ -52,4 +52,5 @@ write_files:
 runcmd:
  - ldapadd -x -D cn=admin,dc=enovance,dc=com -w secret -f /root/users_ou.ldif
  - ldapadd -x -D cn=admin,dc=enovance,dc=com -w secret -f /root/demo_users.ldif
- - puppet apply /etc/puppet/manifests/site.pp
+ - echo PUPPETMASTER puppetmaster.pub >> /etc/hosts
+ - puppet agent --test

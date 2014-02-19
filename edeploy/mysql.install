@@ -49,7 +49,4 @@ esac
 
 do_chroot ${dir} sed -i -e"s/^bind-address.*/bind-address = 0.0.0.0/" /etc/mysql/my.cnf
 
-mkdir -p $dir/etc/puppet/
-rsync -av ../puppet/ $dir/etc/puppet/
-
 clear_packages_cache $dir
