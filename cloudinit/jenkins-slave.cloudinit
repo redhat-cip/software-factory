@@ -1,3 +1,5 @@
 #cloud-config
 runcmd:
  - env | tee /root/cloud_inited
+ - echo PUPPETMASTER puppetmaster.pub >> /etc/hosts
+ - puppet agent --test
