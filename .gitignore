@@ -38,3 +38,7 @@ nosetests.xml
 # IDE
 *.swp
 *~
+
+# Generated files
+lxc/lxc-cloudinit
+lxc/lxc-hiera

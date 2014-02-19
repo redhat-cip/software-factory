@@ -1,7 +1,8 @@
 EDEPLOY_LXC=/srv/edeploy-lxc/edeploy-lxc
 
 start:
-	sudo ${EDEPLOY_LXC} --config sf-lxc.yaml restart
+	./bootstrap.sh start
 
 clean:
-	sudo ${EDEPLOY_LXC} --config sf-lxc.yaml stop
+	./bootstrap.sh stop
+	rm -Rf lxc-cloudinit lxc-hiera
