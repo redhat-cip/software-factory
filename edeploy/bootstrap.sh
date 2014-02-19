@@ -50,7 +50,7 @@ for ROLENAME in $ROLES; do
 	echo "Booting new VM..."
 
     if [ "$PUPPETMASTER_IP" != "" ]; then
-        sed -i -e "s#.*puppetmaster.pub.*#- echo $PUPPETMASTER_IP puppetmaster.pub >> /etc/hosts#g" ../cloudinit/$ROLENAME.cloudinit
+        sed -i -e "s#.*puppetmaster.pub.*# - echo $PUPPETMASTER_IP puppetmaster.pub >> /etc/hosts#g" ../cloudinit/$ROLENAME.cloudinit
     fi
 
 	# Boot new VM with that image
@@ -102,9 +102,10 @@ for ROLENAME in $ROLES; do
     if [ "$PUPPETMASTER_IP" == "" ]; then
         PUPPETMASTER_IP=$FLOATING_IP
     fi
-    
-    echo "Waiting 120 seconds before starting SSH key scan"
-    sleep 120
+
+    # 180 seconds because cloudinit already requires a 120 second timeout
+    echo "Waiting 180 seconds before starting SSH key scan"
+    sleep 180
     ssh-keygen -f "$HOME/.ssh/known_hosts" -R $FLOATING_IP
     ssh-keyscan -H $FLOATING_IP >> $HOME/.ssh/known_hosts
     scp $HOSTS_YAML $PUPPETMASTER_IP:/etc/puppet/hiera/hosts.yaml

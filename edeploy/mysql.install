@@ -49,4 +49,7 @@ esac
 
 do_chroot ${dir} sed -i -e"s/^bind-address.*/bind-address = 0.0.0.0/" /etc/mysql/my.cnf
 
+sed -i -e 's/START=.*/START=yes/g' $dir/etc/default/puppet
+sed -i -e '0,/^$/s/^$/server=puppetmaster.pub\n/g' $dir/etc/puppet/puppet.conf
+
 clear_packages_cache $dir

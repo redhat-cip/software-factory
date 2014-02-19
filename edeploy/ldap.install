@@ -38,5 +38,8 @@ do_chroot ${dir} debconf-set-selections <<< 'slapd slapd/domain string enovance.
 
 install_packages $dir "$PACKAGES"
 
+sed -i -e 's/START=.*/START=yes/g' $dir/etc/default/puppet
+sed -i -e '0,/^$/s/^$/server=puppetmaster.pub\n/g' $dir/etc/puppet/puppet.conf
+
 # Make sure LDAP starts
 do_chroot ${dir} update-rc.d slapd defaults
