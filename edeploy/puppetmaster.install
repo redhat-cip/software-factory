@@ -21,7 +21,7 @@ version="$3"
 ROLE=puppetmaster
 
 ORIG=$(cd $(dirname $0); pwd)
-PACKAGES="puppetmaster"
+PACKAGES="puppetmaster puppet"
 
 . ${ORIG}/functions
 
@@ -35,6 +35,8 @@ rsync -av ../puppet/ $dir/etc/puppet/
 sed -i -e '0,/^$/s/^$/certname=puppetmaster.pub\n/g' $dir/etc/puppet/puppet.conf
 sed -i -e '0,/^$/s/^$/server=puppetmaster.pub\n/g' $dir/etc/puppet/puppet.conf
 sed -i -e '0,/^$/s/^$/autosign=true/g' $dir/etc/puppet/puppet.conf
+sed -i -e 's/START=.*/START=yes/g' $dir/etc/default/puppet
 
 # Make sure service starts
 do_chroot ${dir} update-rc.d puppetmaster defaults
+do_chroot ${dir} update-rc.d puppet defaults
