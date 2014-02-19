@@ -84,10 +84,10 @@ for ROLENAME in $ROLES; do
 
 		let RETRIES=RETRIES+1
 		if [ "$RETRIES" == "9" ]; then
-			echo "Failed getting floating IP"
 			break
 		fi
-		sleep 10
+		echo "Failed getting floating IP, will retry in 30 seconds"
+		sleep 30
     done
 
 	echo "  $ROLENAME.pub:" >> $HOSTS_YAML
@@ -103,11 +103,25 @@ for ROLENAME in $ROLES; do
         PUPPETMASTER_IP=$FLOATING_IP
     fi
 
-    # 180 seconds because cloudinit already requires a 120 second timeout
-    echo "Waiting 180 seconds before starting SSH key scan"
-    sleep 180
     ssh-keygen -f "$HOME/.ssh/known_hosts" -R $FLOATING_IP
-    ssh-keyscan -H $FLOATING_IP >> $HOME/.ssh/known_hosts
+    
+    RETRIES=0
+    while true; do
+	    echo "Starting ssh-keyscan on $FLOATING_IP"
+        KEY=`ssh-keyscan -H $FLOATING_IP`
+        if [ "$KEY" != ""  ]; then
+            echo $KEY >> $HOME/.ssh/known_hosts
+            break
+        fi
+
+		let RETRIES=RETRIES+1
+		if [ "$RETRIES" == "9" ]; then
+			break
+		fi
+		echo "ssh-keyscan on $FLOATING_IP failed, will retry in 30 seconds"
+		sleep 30
+    done
+    
     scp $HOSTS_YAML $PUPPETMASTER_IP:/etc/puppet/hiera/hosts.yaml
 done 
 
