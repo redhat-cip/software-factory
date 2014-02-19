@@ -102,19 +102,12 @@ for ROLENAME in $ROLES; do
     if [ "$PUPPETMASTER_IP" == "" ]; then
         PUPPETMASTER_IP=$FLOATING_IP
     fi
-
-    echo "Waiting 60 seconds before continuing..."
-    sleep 60
+    
+    echo "Waiting 120 seconds before starting SSH key scan"
+    sleep 120
+    ssh-keygen -f "$HOME/.ssh/known_hosts" -R $FLOATING_IP
+    ssh-keyscan -H $FLOATING_IP >> $HOME/.ssh/known_hosts
+    scp $HOSTS_YAML $PUPPETMASTER_IP:/etc/puppet/hiera/hosts.yaml
 done 
-
-
-echo "Waiting another 60 seconds before starting SSH keyscan..."
-sleep 60
-
-for ip in `cat hosts`; do
-    # Remove SSH key from known hosts
-    ssh-keygen -f "$HOME/.ssh/known_hosts" -R $ip
-    ssh-keyscan -H $ip >> $HOME/.ssh/known_hosts
-done
 
 echo -e $SUMMARY
