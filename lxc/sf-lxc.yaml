@@ -17,28 +17,28 @@ hosts:
     name: sf-ldap
     role: ldap
     cloudinit: ./lxc-cloudinit/ldap.cloudinit
-#  -
-#    address: 192.168.134.51
-#    name: sf-mysql
-#    role: mysql
-#    cloudinit: ./lxc-cloudinit/mysql.cloudinit
-#  -
-#    address: 192.168.134.52
-#    name: sf-redmine
-#    role: redmine
-#    cloudinit: ./lxc-cloudinit/redmine.cloudinit
-#  -
-#    address: 192.168.134.53
-#    name: sf-gerrit
-#    role: gerrit
-#    cloudinit: ./lxc-cloudinit/gerrit.cloudinit
-#  -
-#    address: 192.168.134.54
-#    name: sf-jenkins
-#    role: jenkins
-#    cloudinit: ./lxc-cloudinit/jenkins.cloudinit
-#  -
-#    address: 192.168.134.55
-#    name: sf-jenkins-slave
-#    role: jenkins-slave
-#    cloudinit: ./lxc-cloudinit/jenkins-slave.cloudinit
+  -
+    address: 192.168.134.51
+    name: sf-mysql
+    role: mysql
+    cloudinit: ./lxc-cloudinit/mysql.cloudinit
+  -
+    address: 192.168.134.52
+    name: sf-redmine
+    role: redmine
+    cloudinit: ./lxc-cloudinit/redmine.cloudinit
+  -
+    address: 192.168.134.53
+    name: sf-gerrit
+    role: gerrit
+    cloudinit: ./lxc-cloudinit/gerrit.cloudinit
+  -
+    address: 192.168.134.54
+    name: sf-jenkins
+    role: jenkins
+    cloudinit: ./lxc-cloudinit/jenkins.cloudinit
+  -
+    address: 192.168.134.55
+    name: sf-jenkins-slave
+    role: jenkins-slave
+    cloudinit: ./lxc-cloudinit/jenkins-slave.cloudinit

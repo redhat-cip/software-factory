@@ -1,6 +1,6 @@
 #!/bin/bash
 
-ROLES="puppetmaster mysql" # ldap redmine jenkins gerrit"
+ROLES="puppetmaster mysql ldap redmine jenkins gerrit"
 EDEPLOY_LXC=/srv/edeploy-lxc/edeploy-lxc
 
 
