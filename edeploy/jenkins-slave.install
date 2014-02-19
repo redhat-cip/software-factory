@@ -39,8 +39,6 @@ install_packages $dir "$PACKAGES"
 # Disable jenkins server
 do_chroot ${dir} update-rc.d -f jenkins remove
 
-# Install puppet manifest
-mkdir -p $dir/etc/puppet/
-rsync -av ../puppet/ $dir/etc/puppet/
-
+sed -i -e 's/START=.*/START=yes/g' $dir/etc/default/puppet
+sed -i -e '0,/^$/s/^$/server=puppetmaster.pub\n/g' $dir/etc/puppet/puppet.conf
 

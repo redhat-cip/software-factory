@@ -1,4 +1,5 @@
 #cloud-config
 runcmd:
  - /bin/su jenkins -c "ssh-keygen -N '' -f /var/lib/jenkins/.ssh/id_rsa"
- - puppet apply /etc/puppet/manifests/site.pp
+ - echo PUPPETMASTER puppetmaster.pub >> /etc/hosts
+ - puppet agent --test
