@@ -1,4 +1,5 @@
 #cloud-config
 runcmd:
  - env | tee /root/cloud_inited
+ - puppet apply /etc/puppet/manifests/site.pp
  - puppet agent --test
