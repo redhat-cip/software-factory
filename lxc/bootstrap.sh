@@ -82,7 +82,7 @@ function post_configuration_knownhosts {
         while true; do
             KEY=`ssh-keyscan sf-${role} 2> /dev/null`
             if [ "$KEY" != ""  ]; then
-                echo $KEY >> "$HOME/.ssh/known_hosts"
+                ssh-keyscan sf-${role} >> "$HOME/.ssh/known_hosts" 2> /dev/null
                 echo "  -> sf-${role} is up!"
                 break
             fi
