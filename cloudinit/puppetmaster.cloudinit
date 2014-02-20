@@ -1,5 +1,5 @@
 #cloud-config
 runcmd:
- - echo "127.0.0.1 puppetmaster.pub" >> /etc/hosts
+ - echo "127.0.0.1 sf-puppetmaster" >> /etc/hosts
+ - sed -i -e '0,/^$/s/^$/server=sf-puppetmaster\n/g' /etc/puppet/puppet.conf
  - puppet agent --test
- - env | tee /root/cloud_inited

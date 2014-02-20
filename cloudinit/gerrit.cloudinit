@@ -2,5 +2,6 @@
 output: {all: '| tee -a /var/log/cloud-init-output.log'}
 runcmd:
  - ssh-keygen -t rsa -N '' -f /home/gerrit/ssh_host_rsa_key
- - echo PLACEHOLDER puppetmaster.pub >> /etc/hosts
+ - echo PLACEHOLDER sf-puppetmaster >> /etc/hosts
+ - sed -i -e '0,/^$/s/^$/server=sf-puppetmaster\n/g' /etc/puppet/puppet.conf
  - puppet agent --test

@@ -40,5 +40,4 @@ install_packages $dir "$PACKAGES"
 do_chroot ${dir} update-rc.d -f jenkins remove
 
 sed -i -e 's/START=.*/START=yes/g' $dir/etc/default/puppet
-sed -i -e '0,/^$/s/^$/server=puppetmaster.pub\n/g' $dir/etc/puppet/puppet.conf
 do_chroot ${dir} update-rc.d puppet defaults
