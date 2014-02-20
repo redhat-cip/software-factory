@@ -43,16 +43,64 @@ function generate_jenkins_key {
     ssh-keygen -N '' -f ${OUTPUT}/jenkins_rsa
 }
 
+function post_configuration_etc_hosts {
+    # Make sure /etc/hosts is up-to-date
+    for role in ${ROLES}; do
+        HOST_LINE="$(getip_from_lxcyaml ${role}) sf-${role}"
+        grep sf-${role} /etc/hosts > /dev/null
+        if [ $? == 0 ]; then
+            sudo sed -i "s#^.*sf-${role}.*#${HOST_LINE}#" /etc/hosts
+        else
+            echo ${HOST_LINE} | sudo tee -a /etc/hosts > /dev/null
+        fi
+    done
+}
+
+function post_configuration_knownhosts {
+    # Update known_hosts file
+    echo "[+] Update local knownhosts file"
+    for role in ${ROLES}; do
+        ssh-keygen -f "$HOME/.ssh/known_hosts" -R sf-${role} > /dev/null 2>&1
+        RETRIES=0
+        echo " [+] Starting ssh-keyscan on sf-${role}"
+        while true; do
+            KEY=`ssh-keyscan sf-${role} 2> /dev/null`
+            if [ "$KEY" != ""  ]; then
+                echo $KEY >> "$HOME/.ssh/known_hosts"
+                echo "  -> sf-${role} is up!"
+                break
+            fi
+
+            let RETRIES=RETRIES+1
+            [ "$RETRIES" == "6" ] && break
+            echo "[E] ssh-keyscan on sf-${role} failed, will retry in 5 seconds"
+            sleep 10
+        done
+    done
+}
+
+function post_configuration_puppet_apply {
+    echo "[+] Running one last puppet agent"
+    for role in ${ROLES}; do
+        echo " [+] sf-${role}"
+        ssh root@sf-${role} puppet agent --test
+    done
+}
+
 if [ -z "$1" ] || [ "$1" == "start" ]; then
-    echo "[+] Starting"
     generate_cloudinit
     generate_jenkins_key
     generate_hiera
     sudo ${EDEPLOY_LXC} --config sf-lxc.yaml restart
     sudo scp ${BUILD}/hiera/*.yaml /var/lib/lxc/puppetmaster/rootfs/etc/puppet/hiera/
+    post_configuration_etc_hosts
+    post_configuration_knownhosts
+    post_configuration_puppet_apply
 elif [ "$1" == "stop" ]; then
-    echo "[+] Stoping"
     sudo ${EDEPLOY_LXC} --config sf-lxc.yaml stop
+elif [ "$1" == "clean" ]; then
+    sudo ${EDEPLOY_LXC} --config sf-lxc.yaml stop
+    rm -Rf ${BUILD}/*
 else
-    echo "usage: $0 [start|stop]"
+    echo "usage: $0 [start|stop|clean]"
 fi
