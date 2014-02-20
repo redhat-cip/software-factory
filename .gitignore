@@ -40,5 +40,4 @@ nosetests.xml
 *~
 
 # Generated files
-lxc/lxc-cloudinit
-lxc/lxc-hiera
+build/

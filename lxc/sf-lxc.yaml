@@ -11,34 +11,34 @@ hosts:
     address: 192.168.134.49
     name: sf-puppetmaster
     role: puppetmaster
-    cloudinit: ./lxc-cloudinit/puppetmaster.cloudinit
+    cloudinit: ../build/cloudinit/puppetmaster.cloudinit
   -
     address: 192.168.134.50
     name: sf-ldap
     role: ldap
-    cloudinit: ./lxc-cloudinit/ldap.cloudinit
+    cloudinit: ../build/cloudinit/ldap.cloudinit
   -
     address: 192.168.134.51
     name: sf-mysql
     role: mysql
-    cloudinit: ./lxc-cloudinit/mysql.cloudinit
-  -
-    address: 192.168.134.52
-    name: sf-redmine
-    role: redmine
-    cloudinit: ./lxc-cloudinit/redmine.cloudinit
+    cloudinit: ../build/cloudinit/mysql.cloudinit
+#  -
+#    address: 192.168.134.52
+#    name: sf-redmine
+#    role: redmine
+#    cloudinit: ../build/cloudinit/redmine.cloudinit
   -
     address: 192.168.134.53
     name: sf-gerrit
     role: gerrit
-    cloudinit: ./lxc-cloudinit/gerrit.cloudinit
+    cloudinit: ../build/cloudinit/gerrit.cloudinit
   -
     address: 192.168.134.54
     name: sf-jenkins
     role: jenkins
-    cloudinit: ./lxc-cloudinit/jenkins.cloudinit
+    cloudinit: ../build/cloudinit/jenkins.cloudinit
   -
     address: 192.168.134.55
     name: sf-jenkins-slave
     role: jenkins-slave
-    cloudinit: ./lxc-cloudinit/jenkins-slave.cloudinit
+    cloudinit: ../build/cloudinit/jenkins-slave.cloudinit

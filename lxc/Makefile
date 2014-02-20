@@ -5,4 +5,3 @@ start:
 
 clean:
 	./bootstrap.sh stop
-	rm -Rf lxc-cloudinit lxc-hiera
