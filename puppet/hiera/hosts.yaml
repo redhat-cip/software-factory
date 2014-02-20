@@ -1,11 +1,3 @@
 hosts:
   localhost:
     ip: 127.0.0.1
-  mysql.priv:
-    ip: 
-  mysql.pub:
-    ip: 198.154.188.164
-  redmine.priv:
-    ip:  10.43.0.15
-  redmine.pub:
-    ip: 198.154.188.164

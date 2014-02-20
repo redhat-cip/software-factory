@@ -1,7 +1,7 @@
 #!/bin/bash
 
 BUILD="../build"
-ROLES="puppetmaster mysql ldap redmine jenkins gerrit"
+ROLES="puppetmaster mysql ldap jenkins gerrit"
 EDEPLOY_LXC=/srv/edeploy-lxc/edeploy-lxc
 
 
@@ -27,7 +27,7 @@ function generate_hiera {
     # Hosts
     echo -e "hosts:\n  localhost:\n    ip: 127.0.0.1" > ${OUTPUT}/hosts.yaml
     for role in $ROLES; do
-        echo "  ${role}.pub:" >> ${OUTPUT}/hosts.yaml
+        echo "  sf-${role}:" >> ${OUTPUT}/hosts.yaml
         echo "    ip: $(getip_from_lxcyaml ${role})" >> ${OUTPUT}/hosts.yaml
     done
 
@@ -73,7 +73,7 @@ function post_configuration_knownhosts {
 
             let RETRIES=RETRIES+1
             [ "$RETRIES" == "6" ] && break
-            echo "[E] ssh-keyscan on sf-${role} failed, will retry in 5 seconds"
+            echo "  [E] ssh-keyscan on sf-${role} failed, will retry in 5 seconds"
             sleep 10
         done
     done
