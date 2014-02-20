@@ -4,7 +4,7 @@ gerrit:
   sshd_listen_address: '*:29418'
   issues_tracker_address: sf-redmine
   issues_tracker_api_key: REDMINE_API_KEY
-  issues_tracker_version:
+  issues_tracker_version: 1.4
   gerrit_mysql_address: sf-mysql
   gerrit_mysql_db: gerrit
   gerrit_mysql_username: gerrit
