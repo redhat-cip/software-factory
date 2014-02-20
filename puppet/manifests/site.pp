@@ -19,3 +19,8 @@ node /.*gerrit.*/ inherits base {
 node /.*jenkins.*/ inherits base {
   include jenkins
 }
+
+node /.*mysql.*/ inherits base {
+  include mysql
+}
+
