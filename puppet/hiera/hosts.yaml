@@ -1,3 +1,21 @@
 hosts:
   localhost:
     ip: 127.0.0.1
+  puppetmaster:
+    ip: 46.231.128.14
+    host_aliases: ['sf-puppetmaster', 'puppetmaster.pub']
+  mysql:
+    ip: 46.231.128.213
+    host_aliases: ['sf-mysql', 'mysql.pub']
+  ldap:
+    ip: 46.231.128.252
+    host_aliases: ['sf-ldap', 'ldap.pub']
+  redmine:
+    ip: 94.143.114.148
+    host_aliases: ['sf-redmine', 'redmine.pub']
+  jenkins:
+    ip: 94.143.114.154
+    host_aliases: ['sf-jenkins', 'jenkins.pub']
+  gerrit:
+    ip: 94.143.114.155
+    host_aliases: ['sf-gerrit', 'gerrit.pub']

@@ -92,7 +92,7 @@ for ROLENAME in $ROLES; do
 
 	echo "  $ROLENAME.pub:" >> $HOSTS_YAML
 	echo "    ip: $FLOATING_IP" >> $HOSTS_YAML
-
+	echo "    host_aliases: [\'sf-$ROLENAME\', \'$ROLENAME.pub\']" >> $HOSTS_YAML
     sed -i -e "s/$ROLENAME\_ip/$FLOATING_IP/g" ../serverspec/hosts.yaml
 
     echo "$FLOATING_IP" >> hosts
