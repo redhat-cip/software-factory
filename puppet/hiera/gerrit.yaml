@@ -5,7 +5,7 @@ gerrit:
   issues_tracker_address: 
   issues_tracker_api_key: 
   issues_tracker_version: 
-  gerrit_mysql_address: 192.168.134.51
+  gerrit_mysql_address: mysql.pub
   gerrit_mysql_db: gerrit
   gerrit_mysql_username: gerrit
   gerrit_mysql_port: 3306
