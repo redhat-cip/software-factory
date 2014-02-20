@@ -5,7 +5,10 @@ VM_FLAVOR="10"
 ROLES="puppetmaster mysql ldap redmine jenkins gerrit "
 RELEASE="D7-H.1.0.0"
 HOSTS_YAML="../puppet/hiera/hosts.yaml"
+BUILD="../build"
 SUMMARY=""
+
+mkdir -p ${BUILD}/cloudinit
 
 echo -e "hosts:\n  localhost:\n    ip: 127.0.0.1" > $HOSTS_YAML
 
@@ -50,11 +53,13 @@ for ROLENAME in $ROLES; do
 	echo "Booting new VM..."
 
     if [ "$PUPPETMASTER_IP" != "" ]; then
-        sed -i -e "s#.*puppetmaster.pub.*# - echo $PUPPETMASTER_IP puppetmaster.pub >> /etc/hosts#g" ../cloudinit/$ROLENAME.cloudinit
+        cat ../cloudinit/$ROLENAME.cloudinit | sed -i -e "s#PUPPETMASTER#$PUPPETMASTER_IP#g" > ${BUILD}/cloudinit/$ROLENAME.cloudinit
+    else
+        cp ../cloudinit/$ROLENAME.cloudinit ${BUILD}/cloudinit/$ROLENAME.cloudinit
     fi
 
 	# Boot new VM with that image
-	NOVA_OUTPUT=`nova boot  --flavor $VM_FLAVOR --image $IMAGE_ID --user-data ../cloudinit/$ROLENAME.cloudinit --security-groups $SECURITY_GROUP $VM_NAME`
+	NOVA_OUTPUT=`nova boot  --flavor $VM_FLAVOR --image $IMAGE_ID --user-data ${BUILD}/cloudinit/$ROLENAME.cloudinit --security-groups $SECURITY_GROUP $VM_NAME`
 
 	VM_ID=`echo $NOVA_OUTPUT | grep -ohe "id | [0-9a-f-]\{36\}" | cut -c 6-`
 	

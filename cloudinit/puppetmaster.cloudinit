@@ -1,5 +1,7 @@
 #cloud-config
 runcmd:
- - echo "127.0.0.1 sf-puppetmaster" >> /etc/hosts
- - sed -i -e '0,/^$/s/^$/server=sf-puppetmaster\n/g' /etc/puppet/puppet.conf
+ - echo "127.0.0.1 sf-puppetmaster.pub sf-puppetmaster" >> /etc/hosts
+ # Insert server configuration before the autosign= line
+ - sed -i -e 's/autosign/certname=sf-puppetmaster.pub\nautosign/g' /etc/puppet/puppet.conf
+ - sed -i -e 's/autosign/server=sf-puppetmaster.pub\nautosign/g' /etc/puppet/puppet.conf
  - puppet agent --test

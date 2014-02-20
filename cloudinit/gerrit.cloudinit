@@ -1,6 +1,6 @@
 #cloud-config
 output: {all: '| tee -a /var/log/cloud-init-output.log'}
 runcmd:
- - echo PLACEHOLDER sf-puppetmaster >> /etc/hosts
- - sed -i -e '0,/^$/s/^$/server=sf-puppetmaster\n/g' /etc/puppet/puppet.conf
+ - echo PUPPETMASTER sf-puppetmaster.pub >> /etc/hosts
+ - sed -i -e '0,/^$/s/^$/server=sf-puppetmaster.pub\n/g' /etc/puppet/puppet.conf
  - puppet agent --test

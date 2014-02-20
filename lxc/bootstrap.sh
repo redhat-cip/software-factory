@@ -15,7 +15,7 @@ function generate_cloudinit {
     rm -Rf ${OUTPUT}
     mkdir -p ${OUTPUT}
     for i in ../cloudinit/*.cloudinit; do
-        cat $i | sed "s#.*puppetmaster.pub.*# - echo ${PUPPETMASTER_IP} puppetmaster.pub >> /etc/hosts#g" > ${OUTPUT}/$(basename $i)
+        cat $i | sed "s#PUPPETMASTER#${PUPPETMASTER_IP}#g" > ${OUTPUT}/$(basename $i)
     done
 }
 
