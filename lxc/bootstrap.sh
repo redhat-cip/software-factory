@@ -34,7 +34,7 @@ function generate_hiera {
     # Jenkins ssh key
     JENKINS_PUB="$(cat ${OUTPUT}/../data/jenkins_rsa.pub | cut -d' ' -f2)"
     cat ../puppet/hiera/ssh.yaml | sed "s#JENKINS_PUB_KEY#${JENKINS_PUB}#" > ${OUTPUT}/ssh.yaml
-    
+
     # Gerrit service key
     GERRIT_SERV_PUB="$(cat ${OUTPUT}/../data/gerrit_service_rsa.pub | cut -d' ' -f2)"
     cat ../puppet/hiera/gerrit.yaml | sed "s#GERRIT_SERV_PUB_KEY#ssh-rsa ${GERRIT_SERV_PUB}#" > ${OUTPUT}/gerrit.yaml
@@ -113,10 +113,19 @@ if [ -z "$1" ] || [ "$1" == "start" ]; then
     generate_all
     sudo ${EDEPLOY_LXC} --config sf-lxc.yaml restart
     sudo scp ${BUILD}/hiera/*.yaml /var/lib/lxc/puppetmaster/rootfs/etc/puppet/hiera/
+
+    # jenkins ssh key
+    sudo mkdir /var/lib/lxc/jenkins/rootfs/var/lib/jenkins/.ssh/
+    sudo scp ${BUILD}/data/jenkins_rsa /var/lib/lxc/jenkins/rootfs/var/lib/jenkins/.ssh/id_rsa
+    sudo chroot /var/lib/lxc/jenkins/rootfs chown -R jenkins /var/lib/jenkins/.ssh/
+    sudo chroot /var/lib/lxc/jenkins/rootfs chmod 400 /var/lib/jenkins/.ssh/id_rsa
+
+    # gerrit ssh key
     sudo scp ${BUILD}/data/gerrit_service_rsa /var/lib/lxc/gerrit/rootfs/home/gerrit/ssh_host_rsa_key
     sudo scp ${BUILD}/data/gerrit_service_rsa.pub /var/lib/lxc/gerrit/rootfs/home/gerrit/ssh_host_rsa_key.pub
     sudo chroot /var/lib/lxc/gerrit/rootfs chown gerrit:gerrit /home/gerrit/ssh_host_rsa_key
     sudo chroot /var/lib/lxc/gerrit/rootfs chown gerrit:gerrit /home/gerrit/ssh_host_rsa_key.pub
+
     post_configuration_etc_hosts
     post_configuration_knownhosts
     post_configuration_puppet_apply

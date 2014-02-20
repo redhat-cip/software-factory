@@ -1,5 +1,5 @@
 network:
-    domain: lab
+    domain: pub
     bridge: virbr1
     gateway: 192.168.134.1
 general:
