@@ -2,9 +2,9 @@ gerrit:
   repo_base_path: git
   weburl: sf-gerrit
   sshd_listen_address: '*:29418'
-  issues_tracker_address: 
-  issues_tracker_api_key: 
-  issues_tracker_version: 
+  issues_tracker_address: sf-redmine
+  issues_tracker_api_key: REDMINE_API_KEY
+  issues_tracker_version:
   gerrit_mysql_address: sf-mysql
   gerrit_mysql_db: gerrit
   gerrit_mysql_username: gerrit
@@ -25,4 +25,5 @@ gerrit:
   gerrit_admin_username: fabien.boucher
   gerrit_admin_mail: fabien.boucher@enovance.com
   gerrit_admin_sshkey: ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCyLcFYZOiqcnGpHs9cC5zhjU5KNkfc33oCCO/+PXzbDeoLx2Mgm5dx6xpge9d0SZ3mftIGDZcBUt3oOcuy9f/HDQzAmsn9NSKqJuQmwe7FfJJCZZgrVnkbriFpWXXlKhIlO9PuPeCcENqdcywtZdix6TLsA6yxtZ9KD+FjRZDQ3R3lIiVaKtYJumhZEXcArXyoxCNfLXyxiIhpx3obNKuCwRQgi7Tdz/19HbhJShAII/1dDh7Gd0o/xYsScrie9dXPOq+csWqT53dc+etOMoHijIGHLqWd+TsXdey0O+2GfQARUT5cqCwpbmZvrdU17z+I60y5cNXOEN/5d0KXKpib fabien@ubuntu-sf
-  gerrit_jenkins_sshkey: ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCyLcFYZOiqcnGpHs9cC5zhjU5KNkfc33oCCO/+PXzbDeoLx2Mgm5dx6xpge9d0SZ3mftIGDZcBUt3oOcuy9f/HDQzAmsn9NSKqJuQmwe7FfJJCZZgrVnkbriFpWXXlKhIlO9PuPeCcENqdcywtZdix6TLsA6yxtZ9KD+FjRZDQ3R3lIiVaKtYJumhZEXcArXyoxCNfLXyxiIhpx3obNKuCwRQgi7Tdz/19HbhJShAII/1dDh7Gd0o/xYsScrie9dXPOq+csWqT53dc+etOMoHijIGHLqWd+TsXdey0O+2GfQARUT5cqCwpbmZvrdU17z+I60y5cNXOEN/5d0KXKpib fabien@ubuntu-sf  
+  gerrit_jenkins_sshkey: JENKINS_PUB_KEY
+  gerrit_local_sshkey: GERRIT_SERV_PUB_KEY

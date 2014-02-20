@@ -34,13 +34,29 @@ function generate_hiera {
     # Jenkins ssh key
     JENKINS_PUB="$(cat ${OUTPUT}/../data/jenkins_rsa.pub | cut -d' ' -f2)"
     cat ../puppet/hiera/ssh.yaml | sed "s#JENKINS_PUB_KEY#${JENKINS_PUB}#" > ${OUTPUT}/ssh.yaml
+    
+    # Gerrit service key
+    GERRIT_SERV_PUB="$(cat ${OUTPUT}/../data/gerrit_service_rsa.pub | cut -d' ' -f2)"
+    cat ../puppet/hiera/gerrit.yaml | sed "s#GERRIT_SERV_PUB_KEY#ssh-rsa ${GERRIT_SERV_PUB}#" > ${OUTPUT}/gerrit.yaml
+
+    # Gerrit Jenkins pub key
+    sed -i "s#JENKINS_PUB_KEY#ssh-rsa ${JENKINS_PUB}#" ${OUTPUT}/gerrit.yaml
+
+    # Gerrit Redmine API key
+    sed -i "s#REDMINE_API_KEY#${REDMINE_API_KEY}#" ${OUTPUT}/gerrit.yaml
+
+    # Redmine API key
+    cat ../puppet/hiera/redmine.yaml | sed "s#REDMINE_API_KEY#${REDMINE_API_KEY}#" > ${OUTPUT}/redmine.yaml
 }
 
-function generate_jenkins_key {
+function generate_keys {
     OUTPUT=${BUILD}/data
     rm -Rf ${OUTPUT}
     mkdir -p ${OUTPUT}
     ssh-keygen -N '' -f ${OUTPUT}/jenkins_rsa
+    ssh-keygen -N '' -f ${OUTPUT}/gerrit_service_rsa
+    # TODO Will be randomly generated
+    REDMINE_API_KEY="7f094d4e3e327bbd3f67279c95c193825e48f59e"
 }
 
 function post_configuration_etc_hosts {
@@ -89,7 +105,7 @@ function post_configuration_puppet_apply {
 
 function generate_all {
     generate_cloudinit
-    generate_jenkins_key
+    generate_keys
     generate_hiera
 }
 
@@ -97,6 +113,10 @@ if [ -z "$1" ] || [ "$1" == "start" ]; then
     generate_all
     sudo ${EDEPLOY_LXC} --config sf-lxc.yaml restart
     sudo scp ${BUILD}/hiera/*.yaml /var/lib/lxc/puppetmaster/rootfs/etc/puppet/hiera/
+    sudo scp ${BUILD}/data/gerrit_service_rsa /var/lib/lxc/gerrit/rootfs/home/gerrit/ssh_host_rsa_key
+    sudo scp ${BUILD}/data/gerrit_service_rsa.pub /var/lib/lxc/gerrit/rootfs/home/gerrit/ssh_host_rsa_key.pub
+    sudo chroot /var/lib/lxc/gerrit/rootfs chown gerrit:gerrit /home/gerrit/ssh_host_rsa_key
+    sudo chroot /var/lib/lxc/gerrit/rootfs chown gerrit:gerrit /home/gerrit/ssh_host_rsa_key.pub
     post_configuration_etc_hosts
     post_configuration_knownhosts
     post_configuration_puppet_apply
