@@ -4,7 +4,7 @@
     <com.sonyericsson.hudson.plugins.gerrit.trigger.GerritServer>
       <name>sf-gerrit</name>
       <config class="com.sonyericsson.hudson.plugins.gerrit.trigger.config.Config">
-        <gerritHostName></gerritHostName>
+        <gerritHostName><%= @settings['gerrit_hostname'] %></gerritHostName>
         <gerritSshPort>29418</gerritSshPort>
         <gerritProxy></gerritProxy>
         <gerritUserName></gerritUserName>
