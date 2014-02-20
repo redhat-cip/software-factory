@@ -19,7 +19,11 @@ echo > hosts
 SECURITY_GROUP="${PREFIX}sg"
 nova secgroup-create $SECURITY_GROUP "Software Factory"
 ***REMOVED***
-nova secgroup-add-rule $SECURITY_GROUP tcp 22 22 46.231.128.220/24
+nova secgroup-add-rule $SECURITY_GROUP tcp 22 22 94.143.116.0/24  # VPN
+nova secgroup-add-rule $SECURITY_GROUP tcp 22 22 46.231.128.0/24
+***REMOVED***
+nova secgroup-add-rule $SECURITY_GROUP tcp 29418 29418 94.143.116.0/24  # VPN
+nova secgroup-add-rule $SECURITY_GROUP tcp 29418 29418 46.231.128.0/24
 nova secgroup-add-rule $SECURITY_GROUP tcp 80 80 0.0.0.0/0 
 nova secgroup-add-rule $SECURITY_GROUP tcp 8080 8080 0.0.0.0/0 
 
