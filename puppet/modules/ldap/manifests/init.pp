@@ -1,21 +1,21 @@
-class mysql () {
+class ldap () {
     package {'cron':
         ensure => 'installed',
         name   => 'cron',
     }
 
-    file {'/root/mysqldump.sh':
+    file {'/root/ldapdump.sh':
         ensure  => file,
         mode    => '700',
-        content => template('mysql/mysqldump.sh'),
+        content => template('ldap/ldapdump.sh'),
         require => [Package['cron']],
     }
 
     file {'/var/spool/cron/crontabs/root':
         ensure => file,
         mode   => '600',
-        content => '0 * * * * bash /root/mysqldump.sh
+        content => '0 * * * * bash /root/ldapdump.sh
 ',
-        require => [File['/root/mysqldump.sh']]
+        require => [File['/root/ldapdump.sh']]
     }
 }

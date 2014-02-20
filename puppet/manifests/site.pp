@@ -24,3 +24,7 @@ node /.*mysql.*/ inherits base {
   include mysql
 }
 
+node /.*ldap.*/ inherits base {
+  include ldap
+}
+
