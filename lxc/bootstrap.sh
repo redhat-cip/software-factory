@@ -1,7 +1,7 @@
 #!/bin/bash
 
 BUILD="../build"
-ROLES="puppetmaster mysql ldap jenkins gerrit"
+ROLES="puppetmaster mysql ldap jenkins gerrit jenkins-slave"
 EDEPLOY_LXC=/srv/edeploy-lxc/edeploy-lxc
 
 
@@ -87,15 +87,21 @@ function post_configuration_puppet_apply {
     done
 }
 
-if [ -z "$1" ] || [ "$1" == "start" ]; then
+function generate_all {
     generate_cloudinit
     generate_jenkins_key
     generate_hiera
+}
+
+if [ -z "$1" ] || [ "$1" == "start" ]; then
+    generate_all
     sudo ${EDEPLOY_LXC} --config sf-lxc.yaml restart
     sudo scp ${BUILD}/hiera/*.yaml /var/lib/lxc/puppetmaster/rootfs/etc/puppet/hiera/
     post_configuration_etc_hosts
     post_configuration_knownhosts
     post_configuration_puppet_apply
+elif [ "$1" == "generate" ]; then
+    generate_all
 elif [ "$1" == "stop" ]; then
     sudo ${EDEPLOY_LXC} --config sf-lxc.yaml stop
 elif [ "$1" == "clean" ]; then

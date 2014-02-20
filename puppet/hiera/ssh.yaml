@@ -14,7 +14,12 @@ ssh_keys:
     type: rsa
     key: AAAAB3NzaC1yc2EAAAADAQABAAABAQDciR0xAqSh4S8IQEtwXL/7k9bwdat3/pB1rs57z4las7DI8gaa8SqyHc8H+fFIkVfp9Rq2x6A/ylP0joVfbgm6iiJ26ldkLp8MS1cN+WrTmB4FJarWNyNCyIMdBDa/+ZosrJAHtVhtAtQ9ylWMVgvNeLfjxGyIwhp08onvk3JJxgVnC9ag2O/HSDYvk1o7cLTEyWUNGM+fA8kPwRzRagd1kz2a8vhwKsYKT+jDcjiVVmYL5JljDTMH6m31b9ZV323PTmo14JdD5LN/h81S0D4tzpbcwZCSxFDwJwuzPvt3S9D+OxKyhPMgimxcIc9gx+VY4ch30IH2HhDQd3y0udfd
 
-  ssh_jenkins:
+  ssh_gerrit_jenkins:
     user: gerrit
+    type: rsa
+    key: JENKINS_PUB_KEY
+
+  ssh_jenkins_jenkins:
+    user: jenkins
     type: rsa
     key: JENKINS_PUB_KEY
