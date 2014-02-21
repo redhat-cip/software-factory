@@ -1,2 +1,3 @@
 ssmtp:
   mailhub: mail.enovance.com
+  domain: enovance.com
