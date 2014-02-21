@@ -129,7 +129,7 @@ function generate_serverspec {
 }
 
 function post_configuration_update_hiera {
-    scp ${BUILD}/hiera/*.yaml root@sf-puppetmaster/etc/puppet/hiera/
+    scp ${BUILD}/hiera/*.yaml root@sf-puppetmaster:/etc/puppet/hiera/
 }
 
 function post_configuration_ssh_keys {
