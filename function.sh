@@ -154,6 +154,7 @@ function sf_postconfigure {
     post_configuration_etc_hosts
     post_configuration_knownhosts
     post_configuration_ssh_keys
+    post_configuration_update_hiera
     post_configuration_serverspec
     post_configuration_puppet_apply
 }
