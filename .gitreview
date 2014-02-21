@@ -1,0 +1,5 @@
+[gerrit]
+host=94.143.114.155
+port=29418
+project=SoftwareFactory
+defaultbranch=master
