@@ -9,7 +9,12 @@ node base {
 node default inherits base {
 }
 
-node /.*jenkins.*/ inherits base {
+node /.*jenkins\..*/ inherits base {
+  include jenkins
+  include jjb
+}
+
+node /.*jenkins-slave.*/ inherits base {
   include jjb
 }
 
@@ -19,10 +24,6 @@ node /.*redmine.*/ inherits base {
 
 node /.*gerrit.*/ inherits base {
   include gerrit
-}
-
-node "sf-jenkins.pub" inherits base {
-  include jenkins
 }
 
 node /.*mysql.*/ inherits base {
