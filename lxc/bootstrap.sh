@@ -2,7 +2,7 @@
 
 . ../function.sh
 
-ROLES="puppetmaster ldap mysql jenkins gerrit jenkins-slave"
+ROLES="puppetmaster ldap mysql jenkins gerrit jenkins-slave01 jenkins-slave02"
 EDEPLOY_LXC=/srv/edeploy-lxc/edeploy-lxc
 
 if [ -z "$1" ] || [ "$1" == "start" ]; then

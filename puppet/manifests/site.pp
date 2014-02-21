@@ -9,6 +9,10 @@ node base {
 node default inherits base {
 }
 
+node /.*jenkins.*/ inherits base {
+  include jjb
+}
+
 node /.*redmine.*/ inherits base {
   include redmine
 }

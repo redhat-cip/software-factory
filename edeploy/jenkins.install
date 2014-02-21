@@ -22,7 +22,7 @@ DATA=../data
 ROLE=jenkins
 
 ORIG=$(cd $(dirname $0); pwd)
-PACKAGES="jenkins puppet git python-pip"
+PACKAGES="jenkins puppet git python-pip sloccount"
 
 PLUGINS="http://updates.jenkins-ci.org/download/plugins/gerrit-trigger/2.11.0/gerrit-trigger.hpi    \
          http://updates.jenkins-ci.org/download/plugins/ssh-agent/1.4.1/ssh-agent.hpi"
@@ -40,8 +40,8 @@ update_repositories $dir
 install_ib_if_needed $ORIG $dir
 install_packages $dir "$PACKAGES"
 
-# Make sure jenkins start
-do_chroot ${dir} update-rc.d jenkins defaults
+# Jenkins will be started by cloudinit
+do_chroot ${dir} update-rc.d -f jenkins remove
 
 # plugin jenkins
 mkdir -p ${dir}/var/lib/jenkins/plugins

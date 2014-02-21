@@ -3,7 +3,8 @@ jenkins:
   gerrit_hostname: sf-gerrit
   ldap_url: ldap://sf-ldap
   ldap_root_dn: dc=enovance,dc=com
+  jenkins_url: http://sf-jenkins/
   jenkins_username: jenkins
   jenkins_password: userpass
   credential_id: JENKINS_CREDS_ID
-  slaves: [sf-jenkins-slave]
+  slaves: [sf-jenkins-slave01, sf-jenkins-slave02]

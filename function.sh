@@ -151,9 +151,9 @@ function post_configuration_ssh_keys {
     ssh root@sf-gerrit chown gerrit:gerrit /home/gerrit/ssh_host_rsa_key.pub
 }
 
-function posst_configuration_jenkins_scripts {
+function post_configuration_jenkins_scripts {
     # Update jenkins slave scripts
-    for host in "sf-jenkins" "sf-jenkins-slave"; do
+    for host in "sf-jenkins" "sf-jenkins-slave01" "sf-jenkins-slave02"; do
         ssh root@${host} mkdir -p /usr/local/jenkins/slave_scripts/
         scp ../data/jenkins_slave_scripts/* root@${host}:/usr/local/jenkins/slave_scripts/
     done
