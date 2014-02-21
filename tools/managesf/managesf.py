@@ -1,15 +1,11 @@
-#!/usr/bin/env python
-
 from dulwich import client
 from dulwich import index
 from dulwich import repo
 from gerritlib import gerrit
-from redmine import Redmine
 
 import os
 import shutil
 import sys
-import yaml
 
 
 class CustomSSHVendor(client.SubprocessSSHVendor):
@@ -147,61 +143,3 @@ def init_redmine_project(redmine_client, infos):
                                 identifier=infos['name'])
     sys.stdout.write("done.\n")
 
-if __name__ == "__main__":
-    if len(sys.argv) < 3:
-        print "Usage: %s <manage-sf.conf> <project.yaml>" % sys.argv[0]
-        sys.exit(1)
-
-    # parse manage sf configuration file
-    sf_yaml = yaml.load(file(sys.argv[1]))
-    sf_gerrit = [e for e in sf_yaml if
-                 e.keys()[0] == 'gerrit'][0]['gerrit']
-    sf_redmine = [e for e in sf_yaml if
-                  e.keys()[0] == 'redmine'][0]['redmine']
-    keyfile = sf_gerrit['sshkey-priv-path']
-    adminuser = sf_gerrit['admin']
-    adminemail = sf_gerrit['admin-email']
-    gerrithost = sf_gerrit['host']
-    redminehost = 'http://' + sf_redmine['host']
-    redmineapikey = sf_redmine['apikey']
-    redmineversion = sf_redmine['version']
-
-    # parse project configuration file
-    project_yaml = yaml.load(file(sys.argv[2]))
-    name = project_yaml['name']
-    desc = project_yaml['description']
-
-    print "Will create project : %s" % name
-    print "Project description : %s" % desc
-    print "Using private key : %s" % keyfile
-    print "Using username : %s" % adminuser
-    print "Using email : %s" % adminemail
-    print "Using gerrit hostname : %s" % gerrithost
-    print "Using redmine hostname : %s" % redminehost
-    print "Using redmine API key : %s" % redmineapikey
-    print "Using redmine version : %s" % redmineversion
-
-    gerrit_client = CustomGerritClient(gerrithost,
-                                       adminuser,
-                                       keyfile=keyfile)
-
-    client.get_ssh_vendor = lambda: CustomSSHVendor(keyfile)
-    ssh_client = client.SSHGitClient(gerrithost,
-                                     29418,
-                                     adminuser)
-
-    redmine_client = Redmine(redminehost,
-                             redmineapikey,
-                             version=redmineversion)
-
-    infos = {'name': name,
-             'description': desc,
-             'core-group': '%s-core' % name,
-             'gerrit-host': gerrithost,
-             'gerrit-host-port': '29418',
-             'admin': adminuser,
-             'email': adminemail,
-             }
-
-    init_gerrit_project(gerrit_client, ssh_client, infos)
-    init_redmine_project(redmine_client, infos)
