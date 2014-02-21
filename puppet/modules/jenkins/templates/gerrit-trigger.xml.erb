@@ -7,7 +7,7 @@
         <gerritHostName><%= @settings['gerrit_hostname'] %></gerritHostName>
         <gerritSshPort>29418</gerritSshPort>
         <gerritProxy></gerritProxy>
-        <gerritUserName>jenkins</gerritUserName>
+        <gerritUserName><%= @settings['gerrit_username'] %></gerritUserName>
         <gerritEMail></gerritEMail>
         <gerritAuthKeyFile>/var/lib/jenkins/.ssh/id_rsa</gerritAuthKeyFile>
         <useRestApi>false</useRestApi>
