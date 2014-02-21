@@ -1,9 +1,10 @@
 :yaml:
   :datadir: /etc/puppet/hiera
 :hierarchy:
-  - "%{::clientcert}"
   - hosts
   - ssh
+  - ssmtp
+  - "%{::clientcert}"
   - jenkins
   - redmine
   - gerrit
