@@ -1,0 +1,4 @@
+- builder:
+    name: gerrit-git-prep
+    builders:
+      - shell: "/usr/local/jenkins/slave_scripts/gerrit-git-prep.sh http://sf-gerrit/r"

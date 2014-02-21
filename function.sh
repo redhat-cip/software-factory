@@ -151,6 +151,14 @@ function post_configuration_ssh_keys {
     ssh root@sf-gerrit chown gerrit:gerrit /home/gerrit/ssh_host_rsa_key.pub
 }
 
+function posst_configuration_jenkins_scripts {
+    # Update jenkins slave scripts
+    for host in "sf-jenkins" "sf-jenkins-slave"; do
+        ssh root@${host} mkdir -p /usr/local/jenkins/slave_scripts/
+        scp ../data/jenkins_slave_scripts/* root@${host}:/usr/local/jenkins/slave_scripts/
+    done
+}
+
 function sf_postconfigure {
     # ${BUILD}/sf-host.yaml must be present and filled with roles ip
     generate_serverspec
@@ -161,4 +169,5 @@ function sf_postconfigure {
     post_configuration_ssh_keys
     post_configuration_update_hiera
     post_configuration_puppet_apply
+    post_configuration_jenkins_scripts
 }

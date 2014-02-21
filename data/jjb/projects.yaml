@@ -1,0 +1,4 @@
+#- project:
+#    name: config
+#    jobs:
+#      - '{name}-unit-tests'

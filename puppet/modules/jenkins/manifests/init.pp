@@ -23,6 +23,8 @@ class jenkins ($settings = hiera_hash('jenkins', '')) {
   file {'/etc/jenkins_jobs/jenkins_jobs.ini':
     ensure  => file,
     mode    => '0400',
+    owner   => "jenkins",
+    group   => "nogroup",
     content => template('jenkins/jenkins_jobs.ini.erb'),
   }
 }

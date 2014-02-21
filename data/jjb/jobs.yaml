@@ -1,7 +1,7 @@
 - job-template:
     name: '{name}-unit-tests'
     builders:
-#      - gerrit-git-prep
+      - gerrit-git-prep
       - shell: unittest
     triggers:
       - gerrit:
