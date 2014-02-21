@@ -17,7 +17,7 @@ node /.*gerrit.*/ inherits base {
   include gerrit
 }
 
-node /.*jenkins.*/ inherits base {
+node "sf-jenkins" inherits base {
   include jenkins
 }
 

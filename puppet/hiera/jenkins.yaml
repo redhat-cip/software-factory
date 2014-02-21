@@ -5,3 +5,5 @@ jenkins:
   ldap_root_dn: dc=enovance,dc=com
   jenkins_username: jenkins
   jenkins_password: userpass
+  credential_id: JENKINS_CREDS_ID
+  slaves: [sf-jenkins-slave]

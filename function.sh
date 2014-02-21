@@ -62,6 +62,11 @@ function generate_hiera {
 
     # Redmine API key
     cat ../puppet/hiera/redmine.yaml | sed "s#REDMINE_API_KEY#${REDMINE_API_KEY}#" > ${OUTPUT}/redmine.yaml
+
+    # Redmine Credencials ID
+    # TODO: Will be randomly generated
+    JENKINS_CREDS_ID="a6feb755-3493-4635-8ede-216127d31bb0"
+    cat ../puppet/hiera/jenkins.yaml | sed "s#JENKINS_CREDS_ID#${JENKINS_CREDS_ID}#" > ${OUTPUT}/jenkins.yaml
 }
 
 function generate_keys {
@@ -155,6 +160,5 @@ function sf_postconfigure {
     post_configuration_knownhosts
     post_configuration_ssh_keys
     post_configuration_update_hiera
-    post_configuration_serverspec
     post_configuration_puppet_apply
 }
