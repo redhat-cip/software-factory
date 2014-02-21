@@ -154,5 +154,4 @@ function sf_postconfigure {
     post_configuration_etc_hosts
     post_configuration_knownhosts
     post_configuration_puppet_apply
-    post_configuration_serverspec
 }
