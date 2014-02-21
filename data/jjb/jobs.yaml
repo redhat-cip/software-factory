@@ -11,3 +11,20 @@
               project-pattern: '{name}'
               branch-compare-type: 'ANT'
               branch-pattern: '**'
+
+- job-template:
+    name: '{name}-sloccount'
+    builders:
+      - gerrit-git-prep
+      - shell: sloccount --duplicates --wide --details . | fgrep -v .svn > sloccount.sc
+#    publishers:
+#      - sloccount:
+#          pattern: sloccount.sc
+    triggers:
+      - gerrit:
+          trigger-on-patchset-uploaded-event: true
+          projects:
+            - project-compare-type: 'PLAIN'
+              project-pattern: '{name}'
+              branch-compare-type: 'ANT'
+              branch-pattern: '**'
