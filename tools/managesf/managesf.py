@@ -5,7 +5,9 @@ from gerritlib import gerrit
 
 import os
 import re
+import shlex
 import shutil
+import subprocess
 import sys
 
 
@@ -155,8 +157,20 @@ def push_dir_in_gerrit_project(ssh_client, infos, target_dir, paths):
 
 
 def init_redmine_project(redmine_client, infos):
-    sys.stdout.write("Create project on Remine %s ... " % infos['name'])
+    sys.stdout.write("Create project on Redmine %s ... " % infos['name'])
     redmine_client.projects.new(name=infos['name'],
                                 description=infos['description'],
                                 identifier=infos['name'])
+    sys.stdout.write("done.\n")
+
+def jenkins_init_jjb(infos, ):
+    sys.stdout.write("Kick JJB on Jenkins %s ... ")
+    jenkins_kick_path='/usr/local/jenkins/slave_scripts/kick.sh'
+    cmd = "ssh -i %s -o StrictHostKeyChecking=no %s@%s %s" % \
+            (infos['jenkins-privkey'],
+             'root',
+             infos['jenkins-host'],
+             jenkins_kick_path)
+    args = shlex.split(cmd)
+    subprocess.call(args)
     sys.stdout.write("done.\n")

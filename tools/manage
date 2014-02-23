@@ -29,10 +29,14 @@ if __name__ == "__main__":
                  e.keys()[0] == 'gerrit'][0]['gerrit']
     sf_redmine = [e for e in sf_yaml if
                   e.keys()[0] == 'redmine'][0]['redmine']
+    sf_jenkins = [e for e in sf_yaml if
+                  e.keys()[0] == 'jenkins'][0]['jenkins']
     keyfile = sf_gerrit['sshkey-priv-path']
+    jenkins_keyfile = sf_jenkins['sshkey-priv-path']
     adminuser = sf_gerrit['admin']
     adminemail = sf_gerrit['admin-email']
     gerrithost = sf_gerrit['host']
+    jenkinshost = sf_jenkins['host']
     redminehost = 'http://' + sf_redmine['host']
     redmineapikey = sf_redmine['apikey']
     redmineversion = sf_redmine['version']
@@ -65,10 +69,12 @@ if __name__ == "__main__":
         infos['core-group'] = '%s-core' % infos['name']
 
     if args.action == 'init-config-repo':
-        infos['name'] = 'config'
+        infos['name'] = 'config2'
         infos['description'] = 'Config repository'
         infos['core-group'] = '%s-core' % infos['name']
-
+        infos['jenkins-host'] = jenkinshost
+        infos['jenkins-privkey'] = jenkins_keyfile
+    
     print "Using private key : %s" % keyfile
     print "Using username : %s" % adminuser
     print "Using email : %s" % adminemail
@@ -88,5 +94,6 @@ if __name__ == "__main__":
         files = os.listdir(JJB_INIT_PATH)
         paths = [os.path.join(JJB_INIT_PATH, f) for f in files]
         msf.init_gerrit_project(gerrit_client, ssh_client, infos)
+        msf.jenkins_init_jjb(infos)
         msf.push_dir_in_gerrit_project(ssh_client, infos, 'jobs', paths)
         msf.init_redmine_project(redmine_client, infos)
