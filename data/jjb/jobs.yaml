@@ -2,7 +2,7 @@
     name: '{name}-unit-tests'
     builders:
       - gerrit-git-prep
-      - shell: unittest
+      - shell: ./run_tests.sh
     triggers:
       - gerrit:
           trigger-on-patchset-uploaded-event: true
