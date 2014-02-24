@@ -11,5 +11,4 @@ setup(name='managesf',
       url='',
       install_requires=['dulwich', 'pyredmine', 'gerritlib',
                         'python-dateutil', 'pyaml'],
-      packages=['managesf'],
-     )
+      packages=['managesf'])

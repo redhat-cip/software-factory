@@ -18,7 +18,6 @@ class CustomSSHVendor(client.SubprocessSSHVendor):
         self.key_path = key_path
 
     def run_command(self, host, command, username=None, port=None):
-        import subprocess
         args = ['ssh', '-i', self.key_path, '-x']
         if port is not None:
             args.extend(['-p', str(port)])
@@ -163,14 +162,15 @@ def init_redmine_project(redmine_client, infos):
                                 identifier=infos['name'])
     sys.stdout.write("done.\n")
 
+
 def jenkins_init_jjb(infos, ):
     sys.stdout.write("Kick JJB on Jenkins %s ... ")
-    jenkins_kick_path='/usr/local/jenkins/slave_scripts/kick.sh'
-    cmd = "ssh -i %s -o StrictHostKeyChecking=no %s@%s %s" % \
-            (infos['jenkins-privkey'],
-             'root',
-             infos['jenkins-host'],
-             jenkins_kick_path)
+    jenkins_kick_path = '/usr/local/jenkins/slave_scripts/kick.sh'
+    cmd = "ssh -i %s -o StrictHostKeyChecking=no %s@%s %s" % (
+        infos['jenkins-privkey'],
+        'root',
+        infos['jenkins-host'],
+        jenkins_kick_path)
     args = shlex.split(cmd)
     subprocess.call(args)
     sys.stdout.write("done.\n")
