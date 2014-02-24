@@ -43,4 +43,26 @@ class jenkins ($settings = hiera_hash('jenkins', '')) {
     notify  => Service["jenkins"],
     source =>'puppet:///modules/jenkins/swarm-1.15.hpi',
   }
+  package {'rubygems':
+    ensure => 'installed',
+  }
+  package {'rake':
+    ensure => 'installed',
+  }
+  package {'puppet-lint':
+    ensure => 'installed',
+  }
+  package {'python-pip':
+    ensure => 'installed',
+  }
+  package {'flake8':
+    ensure => 'installed',
+    provider => 'pip',
+    require  => Package['python-pip'],
+  }
+  package {'rspec-puppet':
+    ensure => 'installed',
+    provider => 'gem',
+    require  => Package['rubygems'],
+  }
 }

@@ -22,7 +22,7 @@ DATA=../data
 ROLE=jenkins
 
 ORIG=$(cd $(dirname $0); pwd)
-PACKAGES="jenkins puppet git python-pip sloccount"
+PACKAGES="jenkins puppet git python-pip sloccount rubygems rake puppet-lint python-pip"
 
 PLUGINS="http://updates.jenkins-ci.org/download/plugins/gerrit-trigger/2.11.0/gerrit-trigger.hpi    \
          http://updates.jenkins-ci.org/download/plugins/ssh-agent/1.4.1/ssh-agent.hpi"
@@ -64,3 +64,7 @@ rsync -av ../data/jjb/ $dir/usr/share/sf-jjb/
 
 sed -i -e 's/START=.*/START=yes/g' $dir/etc/default/puppet
 do_chroot ${dir} update-rc.d puppet defaults
+
+#Install some addons required for testing
+do_chroot ${dir} gem install --no-rdoc --no-ri rspec-puppet
+do_chroot ${dir} pip install flake8
