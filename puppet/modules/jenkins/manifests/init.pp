@@ -27,4 +27,12 @@ class jenkins ($settings = hiera_hash('jenkins', '')) {
     notify  => Service["jenkins"],
     content => template('jenkins/gerrit-trigger.xml.erb'),
   }
+  file {'/var/lib/jenkins/plugins/swarm-1.15.hpi':
+    ensure  => file,
+    mode    => '0644',
+    owner   => "jenkins",
+    group   => "nogroup",
+    notify  => Service["jenkins"],
+    source =>'puppet:///modules/jenkins/swarm-1.15.hpi',
+  }
 }
