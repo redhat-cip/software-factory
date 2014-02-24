@@ -1,5 +1,5 @@
 jenkins:
-  gerrit_url: http://sf-gerrit
+  gerrit_url: http://sf-gerrit/
   gerrit_hostname: sf-gerrit
   gerrit_username: jenkins
   ldap_url: ldap://sf-ldap
