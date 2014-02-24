@@ -22,8 +22,8 @@ gerrit:
   smtp_server_port:
   smtp_user:
   smtp_pass:
-  gerrit_admin_username: fabien.boucher
-  gerrit_admin_mail: fabien.boucher@enovance.com
-  gerrit_admin_sshkey: ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCyLcFYZOiqcnGpHs9cC5zhjU5KNkfc33oCCO/+PXzbDeoLx2Mgm5dx6xpge9d0SZ3mftIGDZcBUt3oOcuy9f/HDQzAmsn9NSKqJuQmwe7FfJJCZZgrVnkbriFpWXXlKhIlO9PuPeCcENqdcywtZdix6TLsA6yxtZ9KD+FjRZDQ3R3lIiVaKtYJumhZEXcArXyoxCNfLXyxiIhpx3obNKuCwRQgi7Tdz/19HbhJShAII/1dDh7Gd0o/xYsScrie9dXPOq+csWqT53dc+etOMoHijIGHLqWd+TsXdey0O+2GfQARUT5cqCwpbmZvrdU17z+I60y5cNXOEN/5d0KXKpib fabien@ubuntu-sf
+  gerrit_admin_username: GERRIT_ADMIN
+  gerrit_admin_mail: GERRIT_ADMIN_MAIL
+  gerrit_admin_sshkey: GERRIT_ADMIN_PUB_KEY
   gerrit_jenkins_sshkey: JENKINS_PUB_KEY
   gerrit_local_sshkey: GERRIT_SERV_PUB_KEY
