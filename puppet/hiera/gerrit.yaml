@@ -18,7 +18,7 @@ gerrit:
   ldap_account_email_address: mail
   ldap_account_ssh_username: cn
   http_basic_auth: true
-  smtp_server:
+  smtp_server: mail.enovance.com
   smtp_server_port:
   smtp_user:
   smtp_pass:
