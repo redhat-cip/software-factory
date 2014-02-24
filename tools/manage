@@ -1,14 +1,13 @@
 #!/usr/bin/env python
 
-import os
-import sys
-import yaml
 import argparse
+import os
+import yaml
 
 from dulwich import client
-from redmine import Redmine
 from managesf import managesf as msf
-        
+from redmine import Redmine
+
 JJB_INIT_PATH = '../data/jjb/'
 
 if __name__ == "__main__":
@@ -21,7 +20,7 @@ if __name__ == "__main__":
                         help='project config file')
 
     args = parser.parse_args()
-    
+
     assert args.config
 
     # parse manage sf configuration file
@@ -37,7 +36,7 @@ if __name__ == "__main__":
     redminehost = 'http://' + sf_redmine['host']
     redmineapikey = sf_redmine['apikey']
     redmineversion = sf_redmine['version']
-    
+
     gerrit_client = msf.CustomGerritClient(gerrithost,
                                            adminuser,
                                            keyfile=keyfile)
@@ -46,7 +45,11 @@ if __name__ == "__main__":
     ssh_client = client.SSHGitClient(gerrithost,
                                      29418,
                                      adminuser)
-    
+
+    redmine_client = Redmine(redminehost,
+                             redmineapikey,
+                             version=redmineversion)
+
     infos = {'gerrit-host': gerrithost,
              'gerrit-host-port': '29418',
              'admin': adminuser,
@@ -59,13 +62,13 @@ if __name__ == "__main__":
         project_yaml = yaml.load(file(args.project))
         infos['name'] = project_yaml['name']
         infos['description'] = project_yaml['description']
-        infos['core-group'] = '%s-core' % infos['name'],
+        infos['core-group'] = '%s-core' % infos['name']
 
     if args.action == 'init-config-repo':
         infos['name'] = 'config'
         infos['description'] = 'Config repository'
-        infos['core-group'] = '%s-core' % infos['name'],
-    
+        infos['core-group'] = '%s-core' % infos['name']
+
     print "Using private key : %s" % keyfile
     print "Using username : %s" % adminuser
     print "Using email : %s" % adminemail
@@ -78,16 +81,12 @@ if __name__ == "__main__":
     print "Project description : %s" % infos['description']
 
     if args.action == 'init-repo':
-        redmine_client = Redmine(redminehost,
-                                 redmineapikey,
-                                 version=redmineversion)
-
-
         msf.init_gerrit_project(gerrit_client, ssh_client, infos)
         msf.init_redmine_project(redmine_client, infos)
-    
+
     if args.action == 'init-config-repo':
         files = os.listdir(JJB_INIT_PATH)
         paths = [os.path.join(JJB_INIT_PATH, f) for f in files]
         msf.init_gerrit_project(gerrit_client, ssh_client, infos)
         msf.push_dir_in_gerrit_project(ssh_client, infos, 'jobs', paths)
+        msf.init_redmine_project(redmine_client, infos)

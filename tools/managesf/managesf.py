@@ -3,8 +3,8 @@ from dulwich import index
 from dulwich import repo
 from gerritlib import gerrit
 
-import re
 import os
+import re
 import shutil
 import sys
 
@@ -64,9 +64,9 @@ class GerritRepo(object):
         tree = self.local_repo[ref].tree
         stages = [path]
         if clean:
-	    exclude = [f for f in os.listdir(self.local_repo.path)
-	               if f != '.git' and f != path]
-	    if exclude:
+            exclude = [f for f in os.listdir(self.local_repo.path)
+                       if f != '.git' and f != path]
+            if exclude:
                 for exc in exclude:
                     os.unlink(os.path.join(self.local_repo.path, exc))
                     stages.append(exc)
@@ -75,7 +75,7 @@ class GerritRepo(object):
                                     indexfile,
                                     self.local_repo.object_store,
                                     tree)
-        
+
         if path.split('/') > 1:
             d = re.sub(os.path.basename(path), '', path)
             try:
@@ -83,7 +83,7 @@ class GerritRepo(object):
             except OSError:
                 pass
         file(os.path.join(self.local_repo.path,
-              	      path), 'w').write(content)
+                          path), 'w').write(content)
         self.local_repo.stage(stages)
         self.local_repo.do_commit(message,
                                   self.email,
@@ -95,7 +95,7 @@ class GerritRepo(object):
 
     def push_file(self, branch, filename, data, clean=False):
         self._push(branch, filename, data, "Update %s" % filename, clean)
-    
+
     def fetch_project(self):
         if os.path.isdir(self.localcopy_path):
             shutil.rmtree(self.localcopy_path)
@@ -110,6 +110,7 @@ def create_project(gerrit_client, infos):
                               visible_to_all=True)
     gerrit_client.createProject(infos['name'],
                                 require_change_id=True)
+
 
 def init_gerrit_project(gerrit_client, ssh_client, infos):
     sys.stdout.write("Create project %s ... " % infos['name'])
@@ -134,6 +135,7 @@ def init_gerrit_project(gerrit_client, ssh_client, infos):
     grepo.push_file("refs/heads/master", ".gitreview", gitreview, True)
     sys.stdout.write("done.\n")
 
+
 def push_dir_in_gerrit_project(ssh_client, infos, target_dir, paths):
     path_content = {}
     for p in paths:
@@ -147,14 +149,14 @@ def push_dir_in_gerrit_project(ssh_client, infos, target_dir, paths):
     sys.stdout.write("done.\n")
     for filename, content in path_content.items():
         path = os.path.join(target_dir, filename)
-        sys.stdout.write("Push %s on repo %s ... " %(path, infos['name']))
+        sys.stdout.write("Push %s on repo %s ... " % (path, infos['name']))
         grepo.push_file("refs/heads/master", path, content)
         sys.stdout.write("done.\n")
-    
+
+
 def init_redmine_project(redmine_client, infos):
     sys.stdout.write("Create project on Remine %s ... " % infos['name'])
     redmine_client.projects.new(name=infos['name'],
                                 description=infos['description'],
                                 identifier=infos['name'])
     sys.stdout.write("done.\n")
-
