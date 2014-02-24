@@ -25,7 +25,9 @@
   <viewsTabBar class="hudson.views.DefaultViewsTabBar"/>
   <myViewsTabBar class="hudson.views.DefaultMyViewsTabBar"/>
   <clouds/>
+  <% if @settings['slaves'] -%>
   <slaves>
+
 <% @settings['slaves'].each do |slave| -%>
     <slave>
       <temporaryOfflineCause class="hudson.node_monitors.DiskSpaceMonitorDescriptor$DiskSpace">
@@ -51,6 +53,7 @@
     </slave>
 <% end -%>
   </slaves>
+<% end -%>
   <scmCheckoutRetryCount>0</scmCheckoutRetryCount>
   <views>
     <hudson.model.AllView>

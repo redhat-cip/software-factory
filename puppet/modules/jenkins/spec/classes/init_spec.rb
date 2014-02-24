@@ -11,10 +11,6 @@ describe "jenkins" do
                 'group'  => 'nogroup',
                 'mode'   => '0644',
             })
-            should contain_file('/etc/jenkins_jobs/jenkins_jobs.ini').with({
-                'ensure' => 'file',
-                'mode'   => '0400',
-            })
         }
     end
 end
