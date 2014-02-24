@@ -62,7 +62,7 @@ function generate_hiera {
     
     # Gerrit Admin pubkey,mail,login
     sed -i "s#GERRIT_ADMIN_PUB_KEY#ssh-rsa ${GERRIT_ADMIN_PUB_KEY}#" ${OUTPUT}/gerrit.yaml
-    sed -i "s#GERRIT_ADMIN#${GERRIT_ADMIN}#" ${OUTPUT}/gerrit.yaml
+    sed -i "s#GERRIT_ADMIN_NAME#${GERRIT_ADMIN}#" ${OUTPUT}/gerrit.yaml
     sed -i "s#GERRIT_ADMIN_MAIL#${GERRIT_ADMIN_MAIL}#" ${OUTPUT}/gerrit.yaml
 
     # Gerrit Redmine API key
