@@ -3,7 +3,7 @@ network:
     bridge: virbr1
     gateway: 192.168.134.1
 general:
-    ssh_key: /home/localadmin/.ssh/id_rsa.pub
+    ssh_key: /home/ubuntu/.ssh/id_rsa.pub
 edeploy:
     dir: /var/lib/debootstrap/install/D7-H.1.0.0
 hosts:
@@ -22,11 +22,11 @@ hosts:
     name: sf-mysql
     role: mysql
     cloudinit: ../build/cloudinit/mysql.cloudinit
-#  -
-#    address: 192.168.134.52
-#    name: sf-redmine
-#    role: redmine
-#    cloudinit: ../build/cloudinit/redmine.cloudinit
+  -
+    address: 192.168.134.52
+    name: sf-redmine
+    role: redmine
+    cloudinit: ../build/cloudinit/redmine.cloudinit
   -
     address: 192.168.134.53
     name: sf-gerrit
@@ -47,3 +47,8 @@ hosts:
     name: sf-jenkins-slave02
     role: jenkins
     cloudinit: ../build/cloudinit/jenkins-slave.cloudinit
+  -
+    address: 192.168.134.57
+    name: sf-edeploy-server
+    role: edeploy
+    cloudinit: ../build/cloudinit/edeploy-server.cloudinit

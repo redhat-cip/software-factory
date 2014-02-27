@@ -3,6 +3,7 @@ node base {
   include disable_root_pw_login
   include ssh_keys
   include hosts
+  include edeploy_client
   include ssmtp
 }
 

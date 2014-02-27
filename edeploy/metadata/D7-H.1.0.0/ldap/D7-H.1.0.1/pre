@@ -1,0 +1,4 @@
+#!/bin/sh
+
+echo "Pre upgrade script executed"
+exit 0

@@ -40,12 +40,17 @@ export CURRENT_TARGET
 INST=$(TOP)/install/$(VERS)
 META=$(TOP)/metadata/$(VERS)
 
-ROLES = jenkins jenkins-slave puppetmaster gerrit redmine mysql ldap
+ROLES = jenkins jenkins-slave puppetmaster gerrit redmine mysql ldap edeploy
 
 # Build virtual images by default
 export VIRTUALIZED=params.virt
 
 all: $(ROLES)
+
+edeploy: $(INST)/edeploy.done
+$(INST)/edeploy.done: edeploy.install $(INST)/deploy.done
+	./edeploy.install $(INST)/deploy $(INST)/edeploy $(VERS)
+	touch $(INST)/edeploy.done
 
 puppetmaster: $(INST)/puppetmaster.done
 $(INST)/puppetmaster.done: puppetmaster.install $(INST)/vm.done
@@ -104,4 +109,4 @@ distclean: clean
 version:
 	@echo "$(VERS)"
 
-.PHONY: jenkins jenkins-slave puppetmaster ldap gerrit redmine mysql vm dist clean distclean version
+.PHONY: edeploy jenkins jenkins-slave puppetmaster ldap gerrit redmine mysql vm dist clean distclean version

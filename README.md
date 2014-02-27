@@ -223,6 +223,75 @@ and a self-managed Git repo server is that the replication plugin is able to cre
 a missing repository on the self-managed Git server and not on Github. That means
 the repositories to replicate must be created before on Github.
 
+Use eDeploy to upgrade roles
+----------------------------
+
+In SF the upgrade of the running roles (Redmine, Jenkins, Gerrit, ...) will
+be managed by eDeploy. That why along with the others roles in the SF we
+have a role edeploy-server deployed on the target IAAS.
+
+The eDeploy server role contains in /var/lib/debootstrap/install all the
+file trees for each role of the SF (base roles + updated roles).
+/var/lib/debootstrap/metadata contains the update rules in form
+of directories name like D7-H.1.0.0/ldap/D7-H.1.0.1 that contains
+files (add_only, exclude, pre, post). The eDeploy server role serves
+via rsync install and metadata directories.
+
+Each role built with eDeploy automatically have a script /usr/sbin/edeploy.
+This script is used to verify the availability of an upgrade as well as
+performing the upgrade of the local file system. 
+
+        root@sf-ldap:~# edeploy list
+        D7-H.1.0.1
+
+        root@sf-ldap:~# edeploy upgrade D7-H.1.0.1
+        ...
+        Upgraded to D7-H.1.0.1
+
+The add_only and exclude files are used by rsync during the file system
+tree retreival. The pre and post script are triggered respectively before
+and after the file retreival. In those files you can for example stop/start
+services in case of services' configuration files has changed.
+
+How to build an upgrade role with eDeploy for the SF
+----------------------------------------------------
+
+In the edeploy directory of SF there is a script called upgrade-from and
+a directory called upgrade-from.d. The first one will use the definition
+of an upgrade for a specific role from upgrade-from.d. For now the SF repo
+contains an example for an empty upgrade of the ldap role.
+
+        ubuntu@sf-build:~/git/SoftwareFactory$ ls -al edeploy/upgrade-from.d/
+        total 20
+        drwxrwxr-x 2 ubuntu ubuntu 4096 Feb 27 17:58 .
+        drwxrwxr-x 4 ubuntu ubuntu 4096 Feb 28 09:38 ..
+        -rwxrwxr-x 1 ubuntu ubuntu   54 Feb 27 17:58 ldap_D7-H.1.0.0_D7-H.1.0.1.post
+        -rwxrwxr-x 1 ubuntu ubuntu   53 Feb 27 17:58 ldap_D7-H.1.0.0_D7-H.1.0.1.pre
+        -rwxrwxr-x 1 ubuntu ubuntu  106 Feb 27 17:58 ldap_D7-H.1.0.0_D7-H.1.0.1.upgrade
+
+The .upgrade file contains the commands we want to perform to upgrade the target
+file system (same as the .install file of a role).
+
+To build the upgrade role of ldap for example :
+
+       sudo ORIG=../../edeploy/build/ ./upgrade-from ldap D7-H.1.0.0 D7-H.1.0.1 /var/lib/debootstrap
+
+The file system tree for the ldap role in version 1.0.1 is created in
+/var/lib/debootstrap/install/D7-H.1.0.1 and metadata directory is created
+in the current dir.
+
+eDeploy server role provisionning
+---------------------------------
+
+Both install and metadata directories must be copied on the eDeploy server
+deployed in the SF:
+
+       sudo rsync -av /var/lib/debootstrap/install/D7-H.1.0.0/ldap -e "ssh -i /home/ubuntu/.ssh/id_rsa -l root" sf-edeploy-server:/var/lib/debootstrap/install/D7-H.1.0.0
+       sudo rsync -av /var/lib/debootstrap/install/D7-H.1.0.1/ldap -e "ssh -i /home/ubuntu/.ssh/id_rsa -l root" sf-edeploy-server:/var/lib/debootstrap/install/D7-H.1.0.1
+       sudo rsync -av metadata -e "ssh -i /home/ubuntu/.ssh/id_rsa -l root" sf-edeploy-server:/var/lib/debootstrap/
+
+The /usr/sbin/edeploy command can be used from the sf-ldap node the verify that 1.0.1 version of the role
+is available.
 
 Next steps
 ----------
@@ -230,7 +299,7 @@ Next steps
 What need to be done in the next sprints:
 
 * Use cloud-init to trigger puppet for the Gerrit role
-* Add a main script based on Openstack API to deploy and
+* Add a main script based on Openstack API to deploy an
   configure all the roles: create images, register images
   in Glance if not done, start MySQL & LDAP instances, get IPs
   and update cloud-init settings for Jenkins, Gerrit and Redmine

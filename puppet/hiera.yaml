@@ -3,6 +3,7 @@
 :hierarchy:
   - hosts
   - ssh
+  - edeploy_client
   - ssmtp
   - "%{::clientcert}"
   - jenkins
