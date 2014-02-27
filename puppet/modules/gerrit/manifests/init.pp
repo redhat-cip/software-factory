@@ -179,6 +179,9 @@ class gerrit ($settings = hiera_hash('gerrit', '')) {
     target  => '/etc/apache2/sites-available/gerrit',
     require => File['/etc/apache2/sites-available/gerrit'],
   }
+  file { '/etc/apache2/sites-enabled/default':
+    ensure  => absent,
+  }
 
 
   # Gerrit first initialization, must be run only when gerrit.war changes
