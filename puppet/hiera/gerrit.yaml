@@ -1,5 +1,6 @@
 gerrit:
   repo_base_path: git
+  weburl: sf-gerrit
   sshd_listen_address: '*:29418'
   issues_tracker_address: sf-redmine
   issues_tracker_api_key: REDMINE_API_KEY
