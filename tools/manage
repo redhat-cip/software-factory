@@ -69,7 +69,7 @@ if __name__ == "__main__":
         infos['core-group'] = '%s-core' % infos['name']
 
     if args.action == 'init-config-repo':
-        infos['name'] = 'config2'
+        infos['name'] = 'config'
         infos['description'] = 'Config repository'
         infos['core-group'] = '%s-core' % infos['name']
         infos['jenkins-host'] = jenkinshost
