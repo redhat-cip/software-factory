@@ -9,6 +9,6 @@ setup(name='managesf',
       author_email='devs@enovance.com',
       scripts=['manage'],
       url='',
-      install_requires=['dulwich', 'pyredmine', 'gerritlib',
+      install_requires=['pyredmine', 'gerritlib',
                         'python-dateutil', 'pyaml'],
       packages=['managesf'])

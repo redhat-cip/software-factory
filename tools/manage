@@ -2,9 +2,9 @@
 
 import argparse
 import os
+import sys
 import yaml
 
-from dulwich import client
 from managesf import managesf as msf
 from redmine import Redmine
 
@@ -45,20 +45,19 @@ if __name__ == "__main__":
                                            adminuser,
                                            keyfile=keyfile)
 
-    client.get_ssh_vendor = lambda: msf.CustomSSHVendor(keyfile)
-    ssh_client = client.SSHGitClient(gerrithost,
-                                     29418,
-                                     adminuser)
-
     redmine_client = Redmine(redminehost,
                              redmineapikey,
                              version=redmineversion)
 
     infos = {'gerrit-host': gerrithost,
              'gerrit-host-port': '29418',
+             'gerrit-keyfile': keyfile,
              'admin': adminuser,
              'email': adminemail,
              }
+
+    if not args.action:
+        sys.exit(1)
 
     if args.action == 'init-repo':
         assert args.project
@@ -66,6 +65,7 @@ if __name__ == "__main__":
         project_yaml = yaml.load(file(args.project))
         infos['name'] = project_yaml['name']
         infos['description'] = project_yaml['description']
+        infos['upstream'] = project_yaml['upstream']
         infos['core-group'] = '%s-core' % infos['name']
 
     if args.action == 'init-config-repo':
@@ -74,7 +74,7 @@ if __name__ == "__main__":
         infos['core-group'] = '%s-core' % infos['name']
         infos['jenkins-host'] = jenkinshost
         infos['jenkins-privkey'] = jenkins_keyfile
-    
+
     print "Using private key : %s" % keyfile
     print "Using username : %s" % adminuser
     print "Using email : %s" % adminemail
@@ -87,13 +87,18 @@ if __name__ == "__main__":
     print "Project description : %s" % infos['description']
 
     if args.action == 'init-repo':
-        msf.init_gerrit_project(gerrit_client, ssh_client, infos)
+        print "Create project %s" % infos['name']
+        msf.init_gerrit_project(gerrit_client, infos)
+        print "Create project on Redmine %s" % infos['name']
         msf.init_redmine_project(redmine_client, infos)
 
     if args.action == 'init-config-repo':
+        print "Create special project %s" % infos['name']
         files = os.listdir(JJB_INIT_PATH)
         paths = [os.path.join(JJB_INIT_PATH, f) for f in files]
-        msf.init_gerrit_project(gerrit_client, ssh_client, infos)
+        msf.init_gerrit_project(gerrit_client, infos)
+        msf.push_dir_in_gerrit_project(infos, 'jobs', paths)
+        print "Kick JJB on Jenkins %s" % infos['name']
         msf.jenkins_init_jjb(infos)
-        msf.push_dir_in_gerrit_project(ssh_client, infos, 'jobs', paths)
+        print "Create project on Redmine %s" % infos['name']
         msf.init_redmine_project(redmine_client, infos)

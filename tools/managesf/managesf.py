@@ -1,6 +1,3 @@
-from dulwich import client
-from dulwich import index
-from dulwich import repo
 from gerritlib import gerrit
 
 import os
@@ -9,25 +6,7 @@ import shlex
 import shutil
 import subprocess
 import sys
-
-
-class CustomSSHVendor(client.SubprocessSSHVendor):
-    """SSH vendor that shells out to the local 'ssh' command."""
-
-    def __init__(self, key_path):
-        self.key_path = key_path
-
-    def run_command(self, host, command, username=None, port=None):
-        args = ['ssh', '-i', self.key_path, '-x']
-        if port is not None:
-            args.extend(['-p', str(port)])
-        if username is not None:
-            host = '%s@%s' % (username, host)
-        args.append(host)
-        proc = subprocess.Popen(args + command,
-                                stdin=subprocess.PIPE,
-                                stdout=subprocess.PIPE)
-        return client.SubprocessWrapper(proc)
+import stat
 
 
 class CustomGerritClient(gerrit.Gerrit):
@@ -47,63 +26,97 @@ class CustomGerritClient(gerrit.Gerrit):
 
 
 class GerritRepo(object):
-    def __init__(self, ssh_client, name, email):
-        self.ssh_client = ssh_client
-        self.name = name
-        self.localcopy_path = '/tmp/clone-%s' % self.name
-        self.email = email
-        self.fetch_project()
+    def __init__(self, infos):
+        self.infos = infos
+        self.infos['localcopy_path'] = '/tmp/clone-%(name)s' % self.infos
+        if os.path.isdir(self.infos['localcopy_path']):
+            shutil.rmtree(self.infos['localcopy_path'])
+        self.email = "%(admin)s <%(email)s>" % self.infos
+        ssh_wrapper = "ssh -o StrictHostKeyChecking=no -i " % self.infos + \
+                      "%(gerrit-keyfile)s \"$@\"" % self.infos
+        file('/tmp/ssh_wrapper.sh', 'w').write(ssh_wrapper)
+        os.chmod('/tmp/ssh_wrapper.sh', stat.S_IRWXU)
+        self.env = os.environ.copy()
+        self.env['GIT_SSH'] = '/tmp/ssh_wrapper.sh'
+        self.debug = file('/tmp/debug', 'a')
 
-    def determine_wants(self, *args):
-        refs = args[0]
-        refs["refs/meta/config"] = self.local_repo.refs["refs/meta/config"]
-        refs["refs/heads/master"] = self.local_repo.refs["refs/heads/master"]
-        return refs
+    def _exec(self, cmd, cwd=None):
+        cmd = shlex.split(cmd)
+        ocwd = os.getcwd()
+        if cwd:
+            os.chdir(cwd)
+        p = subprocess.Popen(cmd, stdout=self.debug,
+                             stderr=subprocess.STDOUT,
+                             env=self.env, cwd=cwd)
+        p.wait()
+        os.chdir(ocwd)
 
-    def _push(self, ref, path, content, message, clean):
-        indexfile = self.local_repo.index_path()
-        tree = self.local_repo[ref].tree
-        stages = [path]
-        if clean:
-            exclude = [f for f in os.listdir(self.local_repo.path)
-                       if f != '.git' and f != path]
-            if exclude:
-                for exc in exclude:
-                    os.unlink(os.path.join(self.local_repo.path, exc))
-                    stages.append(exc)
+    def clone(self):
+        print("Clone repository %s" % self.infos['name'])
+        cmd = "git clone ssh://%(admin)s@%(gerrit-host)s" % self.infos + \
+              ":%(gerrit-host-port)s/%(name)s %(localcopy_path)s" % self.infos
+        self._exec(cmd)
 
-        index.build_index_from_tree(self.local_repo.path,
-                                    indexfile,
-                                    self.local_repo.object_store,
-                                    tree)
-
+    def add_file(self, path, content):
+        print("Add file %s to index" % path)
         if path.split('/') > 1:
             d = re.sub(os.path.basename(path), '', path)
             try:
-                os.makedirs(os.path.join(self.local_repo.path, d))
+                os.makedirs(os.path.join(self.infos['localcopy_path'], d))
             except OSError:
                 pass
-        file(os.path.join(self.local_repo.path,
-                          path), 'w').write(content)
-        self.local_repo.stage(stages)
-        self.local_repo.do_commit(message,
-                                  self.email,
-                                  ref=ref)
-        self.ssh_client.send_pack(
-            self.name,
-            self.determine_wants,
-            self.local_repo.object_store.generate_pack_contents)
+        file(os.path.join(self.infos['localcopy_path'],
+             path), 'w').write(content)
+        cmd = "git add %s" % path
+        self._exec(cmd, cwd=self.infos['localcopy_path'])
 
-    def push_file(self, branch, filename, data, clean=False):
-        self._push(branch, filename, data, "Update %s" % filename, clean)
+    def push_config(self, paths):
+        print("Prepare push on config for repository %s" %
+              self.infos['name'])
+        cmd = "git fetch origin " + \
+              "refs/meta/config:refs/remotes/origin/meta/config"
+        self._exec(cmd, cwd=self.infos['localcopy_path'])
+        cmd = "git checkout meta/config"
+        self._exec(cmd, cwd=self.infos['localcopy_path'])
+        for path, content in paths.items():
+            self.add_file(path, content)
+        cmd = "git commit -a --author '%s' -m'Provides ACL and Groups'" % \
+              self.email
+        self._exec(cmd, cwd=self.infos['localcopy_path'])
+        cmd = "git push origin meta/config:meta/config"
+        self._exec(cmd, cwd=self.infos['localcopy_path'])
+        print("Push on config for repository %s" %
+              self.infos['name'])
 
-    def fetch_project(self):
-        if os.path.isdir(self.localcopy_path):
-            shutil.rmtree(self.localcopy_path)
-        self.local_repo = repo.Repo.init(self.localcopy_path, mkdir=True)
-        remote_refs = self.ssh_client.fetch(self.name, self.local_repo)
-        self.local_repo["refs/meta/config"] = remote_refs["refs/meta/config"]
-        self.local_repo["refs/heads/master"] = remote_refs["refs/heads/master"]
+    def push_master(self, paths):
+        print("Prepare push on master for repository %s" %
+              self.infos['name'])
+        cmd = "git checkout master"
+        self._exec(cmd, cwd=self.infos['localcopy_path'])
+        for path, content in paths.items():
+            self.add_file(path, content)
+        cmd = "git commit -a --author '%s' -m'ManageSF commit'" % self.email
+        self._exec(cmd, cwd=self.infos['localcopy_path'])
+        cmd = "git push origin master"
+        self._exec(cmd, cwd=self.infos['localcopy_path'])
+        print("Push on master for repository %s" % self.infos['name'])
+
+    def push_master_from_git_remote(self, infos):
+        remote = infos['upstream']
+        print("Fetch git objects from a remote and push to master for " +
+              "repository %s" % self.infos['name'])
+        cmd = "git checkout master"
+        self._exec(cmd, cwd=self.infos['localcopy_path'])
+        cmd = "git remote add upstream %s" % remote
+        self._exec(cmd, cwd=self.infos['localcopy_path'])
+        cmd = "git fetch upstream"
+        self._exec(cmd, cwd=self.infos['localcopy_path'])
+        print("Push remote (master branch) of %s to the Gerrit repository" %
+              remote)
+        cmd = "git push -f origin upstream/master:master"
+        self._exec(cmd, cwd=self.infos['localcopy_path'])
+        cmd = "git reset --hard origin/master"
+        self._exec(cmd, cwd=self.infos['localcopy_path'])
 
 
 def create_project(gerrit_client, infos):
@@ -113,50 +126,41 @@ def create_project(gerrit_client, infos):
                                 require_change_id=True)
 
 
-def init_gerrit_project(gerrit_client, ssh_client, infos):
-    sys.stdout.write("Create project %s ... " % infos['name'])
-    create_project(gerrit_client, infos)
-    sys.stdout.write("done.\n")
-    sys.stdout.write("Retrieve groups UUID ... ")
+def init_gerrit_project(gerrit_client, infos):
+    try:
+        create_project(gerrit_client, infos)
+    except Exception:
+        print("Error occured during project creation")
     infos['core-group-uuid'] = \
         gerrit_client.getGroupUUID(infos['core-group'])
     infos['non-interactive-users'] = \
         gerrit_client.getGroupUUID('Non-Interactive')
-    sys.stdout.write("done.\n")
-    sys.stdout.write("Clone previously created repo ... ")
-    email = "%s <%s>" % (infos['admin'], infos['email'])
-    grepo = GerritRepo(ssh_client, infos['name'], email)
-    sys.stdout.write("done.\n")
-    acls = file('templates/project.config').read() % infos
-    groups = file('templates/groups').read() % infos
-    gitreview = file('templates/gitreview').read() % infos
-    sys.stdout.write("Add ACLs, groups files, .gitreview files ... ")
-    grepo.push_file("refs/meta/config", "groups", groups)
-    grepo.push_file("refs/meta/config", "project.config", acls)
-    grepo.push_file("refs/heads/master", ".gitreview", gitreview, True)
-    sys.stdout.write("done.\n")
+    grepo = GerritRepo(infos)
+    grepo.clone()
+    paths = {}
+    paths['project.config'] = file('templates/project.config').read() % infos
+    paths['groups'] = file('templates/groups').read() % infos
+    grepo.push_config(paths)
+    if infos['upstream']:
+        grepo.push_master_from_git_remote(infos)
+    paths = {}
+    paths['.gitreview'] = file('templates/gitreview').read() % infos
+    grepo.push_master(paths)
 
 
-def push_dir_in_gerrit_project(ssh_client, infos, target_dir, paths):
+def push_dir_in_gerrit_project(infos, target_dir, paths):
     path_content = {}
     for p in paths:
         filename = os.path.basename(p)
         with open(p) as fd:
             content = fd.read()
-            path_content[filename] = content
-    sys.stdout.write("Clone created repo %s ... " % infos['name'])
-    email = "%s <%s>" % (infos['admin'], infos['email'])
-    grepo = GerritRepo(ssh_client, infos['name'], email)
-    sys.stdout.write("done.\n")
-    for filename, content in path_content.items():
-        path = os.path.join(target_dir, filename)
-        sys.stdout.write("Push %s on repo %s ... " % (path, infos['name']))
-        grepo.push_file("refs/heads/master", path, content)
-        sys.stdout.write("done.\n")
+            path_content[os.path.join(target_dir, filename)] = content
+    repo = GerritRepo(infos)
+    repo.clone()
+    repo.push_master(path_content)
 
 
 def init_redmine_project(redmine_client, infos):
-    sys.stdout.write("Create project on Redmine %s ... " % infos['name'])
     redmine_client.projects.new(name=infos['name'],
                                 description=infos['description'],
                                 identifier=infos['name'])
