@@ -40,6 +40,14 @@ write_files:
       mail: frederic.lepied@enovance.com
       objectClass: inetOrgPerson
 
+      dn: cn=james.kulina,ou=Users,dc=enovance,dc=com
+      cn: james.kulina
+      objectClass: person
+      sn: Demo user5
+      userPassword: userpass
+      mail: james.kulina@enovance.com
+      objectClass: inetOrgPerson
+
       dn: cn=jenkins,ou=Users,dc=enovance,dc=com
       cn: jenkins
       objectClass: person
