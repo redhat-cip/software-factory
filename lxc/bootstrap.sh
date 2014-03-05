@@ -8,6 +8,7 @@ EDEPLOY_LXC=/srv/edeploy-lxc/edeploy-lxc
 if [ -z "$1" ] || [ "$1" == "start" ]; then
     new_build
     cp sf-lxc.yaml ${BUILD}/sf-host.yaml
+    mkdir -p /var/lib/debootstrap/install/D7-H.1.0.0/puppetmaster/etc/puppet/{modules,manifests}
     rsync -a ../puppet/modules/ /var/lib/debootstrap/install/D7-H.1.0.0/puppetmaster/etc/puppet/modules/
     rsync -a ../puppet/manifests/ /var/lib/debootstrap/install/D7-H.1.0.0/puppetmaster/etc/puppet/manifests/
     # We alreay have puppetmaster IP, so we can generate cloudinit
