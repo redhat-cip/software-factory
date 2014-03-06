@@ -1,0 +1,52 @@
+### BEGIN INIT INFO
+# Provides:          jenkins-swarm-slave
+# Required-Start:    $remote_fs $syslog $network
+# Required-Stop:     $remote_fs $syslog $network
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Start jenkins-swarm-slave at boot time
+### END INIT INFO
+
+PATH=/bin:/usr/bin:/sbin:/usr/sbin
+
+DESC="Jenkins Swarm Slave"
+NAME=jenkins-swarm-slave
+SCRIPTNAME=/etc/init.d/$NAME
+
+[ -r /etc/default/$NAME ] && . /etc/default/$NAME
+PIDFILE=/var/run/jenkins-swarm-slave.pid
+HOSTNAME=`hostname -s`
+
+case "$1" in
+    start)
+        if [ ! -f $PIDFILE ]; then
+	        printf "%-50s" "Starting $NAME..."
+        	PID=`nohup sudo -u jenkins java -jar $SWARM_JAR -master $MASTER -username $USERNAME -password $PASSWORD -name $HOSTNAME > /dev/null 2>&1 & echo $!`
+	        if [ -z $PID ]; then
+        	    printf "%s\n" "Fail"
+	        else
+        	    echo $PID > $PIDFILE
+	            printf "%s\n" "Ok"
+	        fi
+	else
+		echo "$NAME already running"
+	fi
+    ;;
+    stop)
+        PID=`cat $PIDFILE`
+        if [ -f $PIDFILE ]; then
+            kill $PID
+            printf "%s\n" "Ok"
+            rm -f $PIDFILE
+        fi
+    ;;
+    restart)
+        $0 stop
+        $0 start
+    ;;
+    *)
+        echo "Usage: $0 {start|stop|restart}"
+        exit 1
+esac
+
+exit 0
