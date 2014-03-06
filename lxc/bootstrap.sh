@@ -13,7 +13,7 @@ if [ -z "$1" ] || [ "$1" == "start" ]; then
     rsync -a ../puppet/manifests/ /var/lib/debootstrap/install/D7-H.1.0.0/puppetmaster/etc/puppet/manifests/
     # We alreay have puppetmaster IP, so we can generate cloudinit
     generate_cloudinit
-    sudo ${EDEPLOY_LXC} --config sf-lxc.yaml restart
+    sudo ${EDEPLOY_LXC} --config sf-lxc.yaml restart || exit -1
     sf_postconfigure
 elif [ "$1" == "stop" ]; then
     sudo ${EDEPLOY_LXC} --config sf-lxc.yaml stop
