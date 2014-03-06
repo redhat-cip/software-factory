@@ -293,6 +293,36 @@ deployed in the SF:
 The /usr/sbin/edeploy command can be used from the sf-ldap node the verify that 1.0.1 version of the role
 is available.
 
+Migrate a project from Github
+-----------------------------
+
+The github plugin for Gerrit is a pain to build and
+I never succeed to build and use it. The project
+seems a bit new.
+
+Migrate the source code of a project
+....................................
+
+This can be done with the manage tool of the SF using
+the upstream key in the yaml configuration file.
+
+Import pull requests of a project
+.................................
+
+The import-pr.py is a working POC based on this
+Gist : https://gist.github.com/yuvipanda/5174162
+that import all the commits of a pull request, squash
+them and summit a review on Gerrit.
+
+This tool does not handle the pull request'comments.
+And I'm sure this can be improved.
+
+Import the issues from Github to Redmine
+........................................
+
+It seems there is no existing tool for that over Internet.
+It can be easy to write one using pyGithub and pyRedmine.
+
 Next steps
 ----------
 

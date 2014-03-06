@@ -1,0 +1,3 @@
+name: dulwich
+description: Amazing project
+upstream: https://github.com/jelmer/dulwich
