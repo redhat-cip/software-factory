@@ -5,7 +5,6 @@ BUILD="../build"
 # TODO: Should be moved in other place maybe a config file for bootstrap scripts ?
 GERRIT_ADMIN=fabien.boucher
 GERRIT_ADMIN_MAIL=fabien.boucher@enovance.com
-GERRIT_ADMIN_PUB_KEY="AAAAB3NzaC1yc2EAAAADAQABAAABAQCyLcFYZOiqcnGpHs9cC5zhjU5KNkfc33oCCO/+PXzbDeoLx2Mgm5dx6xpge9d0SZ3mftIGDZcBUt3oOcuy9f/HDQzAmsn9NSKqJuQmwe7FfJJCZZgrVnkbriFpWXXlKhIlO9PuPeCcENqdcywtZdix6TLsA6yxtZ9KD+FjRZDQ3R3lIiVaKtYJumhZEXcArXyoxCNfLXyxiIhpx3obNKuCwRQgi7Tdz/19HbhJShAII/1dDh7Gd0o/xYsScrie9dXPOq+csWqT53dc+etOMoHijIGHLqWd+TsXdey0O+2GfQARUT5cqCwpbmZvrdU17z+I60y5cNXOEN/5d0KXKpib"
 
 #### Configuration generation
 function new_build {
@@ -59,8 +58,9 @@ function generate_hiera {
 
     # Gerrit Jenkins pub key
     sed -i "s#JENKINS_PUB_KEY#ssh-rsa ${JENKINS_PUB}#" ${OUTPUT}/gerrit.yaml
-    
+
     # Gerrit Admin pubkey,mail,login
+    GERRIT_ADMIN_PUB_KEY="$(cat ${OUTPUT}/../data/gerrit_admin_rsa.pub | cut -d' ' -f2)"
     sed -i "s#GERRIT_ADMIN_PUB_KEY#ssh-rsa ${GERRIT_ADMIN_PUB_KEY}#" ${OUTPUT}/gerrit.yaml
     sed -i "s#GERRIT_ADMIN_NAME#${GERRIT_ADMIN}#" ${OUTPUT}/gerrit.yaml
     sed -i "s#GERRIT_ADMIN_MAIL#${GERRIT_ADMIN_MAIL}#" ${OUTPUT}/gerrit.yaml
@@ -85,6 +85,7 @@ function generate_keys {
     mkdir -p ${OUTPUT}
     ssh-keygen -N '' -f ${OUTPUT}/jenkins_rsa
     ssh-keygen -N '' -f ${OUTPUT}/gerrit_service_rsa
+    ssh-keygen -N '' -f ${OUTPUT}/gerrit_admin_rsa
 }
 
 
