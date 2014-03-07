@@ -90,6 +90,8 @@ class redmine ($settings = hiera_hash('redmine', '')) {
         command     => 'mysql -u redmine redmine -psecret -h sf-mysql < /root/redmine_ldap.sql',
         path        => '/usr/bin/:/bin/',
         cwd         => '/usr/bin',
+        refreshonly => true,
+        subscribe   => Package['redmine'],
         require     => [Exec['default_data']],
     }
     
