@@ -182,6 +182,9 @@ class gerrit ($settings = hiera_hash('gerrit', '')) {
   file { '/etc/apache2/sites-enabled/default':
     ensure  => absent,
   }
+  file { '/etc/apache2/sites-enabled/000-default':
+    ensure  => absent,
+  }
 
 
   # Gerrit first initialization, must be run only when gerrit.war changes
