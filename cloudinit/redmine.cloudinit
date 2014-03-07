@@ -6,4 +6,3 @@ write_files:
 runcmd:
  - echo PLACEHOLDER sf-puppetmaster.pub >> /etc/hosts
  - sed -i -e '0,/^$/s/^$/server=sf-puppetmaster.pub\n/g' /etc/puppet/puppet.conf
- - puppet agent --test

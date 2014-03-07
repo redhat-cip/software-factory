@@ -20,4 +20,3 @@ runcmd:
  - mysql -u root -pyour_password < /root/gerrit.sql
  - echo PUPPETMASTER sf-puppetmaster.pub >> /etc/hosts
  - sed -i -e '0,/^$/s/^$/server=sf-puppetmaster.pub\n/g' /etc/puppet/puppet.conf
- - puppet agent --test

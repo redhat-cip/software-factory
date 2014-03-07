@@ -62,4 +62,3 @@ runcmd:
  - ldapadd -x -D cn=admin,dc=enovance,dc=com -w secret -f /root/demo_users.ldif
  - echo PUPPETMASTER sf-puppetmaster.pub >> /etc/hosts
  - sed -i -e '0,/^$/s/^$/server=sf-puppetmaster.pub\n/g' /etc/puppet/puppet.conf
- - puppet agent --test

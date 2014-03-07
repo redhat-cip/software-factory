@@ -4,4 +4,3 @@ runcmd:
  # Insert server configuration before the autosign= line
  - sed -i -e 's/autosign/certname=sf-puppetmaster.pub\nautosign/g' /etc/puppet/puppet.conf
  - sed -i -e 's/autosign/server=sf-puppetmaster.pub\nautosign/g' /etc/puppet/puppet.conf
- - puppet agent --test
