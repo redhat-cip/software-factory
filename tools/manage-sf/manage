@@ -8,7 +8,7 @@ import yaml
 from managesf import managesf as msf
 from redmine import Redmine
 
-JJB_INIT_PATH = '../data/jjb/'
+JJB_INIT_PATH = '../../data/jjb/'
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Manage SF')
