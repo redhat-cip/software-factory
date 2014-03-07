@@ -4,6 +4,8 @@ jenkins:
   gerrit_username: jenkins
   ldap_url: ldap://sf-ldap
   ldap_root_dn: dc=enovance,dc=com
+  ldap_manager_dn: cn=admin,dc=enovance,dc=com
+  ldap_manager_password: c2VjcmV0 # Base64 encoded password (secret)
   jenkins_url: http://sf-jenkins:8080/
   jenkins_username: jenkins
   jenkins_password: userpass

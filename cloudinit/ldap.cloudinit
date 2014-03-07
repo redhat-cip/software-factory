@@ -2,6 +2,18 @@
 #
 write_files:
 -   content: |
+      dn: olcDatabase={-1}frontend,cn=config
+      add: olcRequires
+      olcRequires: authc
+    path: /root/disable_anon_frontend.ldif
+
+-   content: |
+      dn: olcDatabase={1}hdb,cn=config
+      add: olcRequires
+      olcRequires: authc
+    path: /root/disable_anon_backend.ldif
+
+-   content: |
       dn: ou=Users,dc=enovance,dc=com
       objectClass: organizationalUnit
       ou: Users
@@ -60,5 +72,7 @@ write_files:
 runcmd:
  - ldapadd -x -D cn=admin,dc=enovance,dc=com -w secret -f /root/users_ou.ldif
  - ldapadd -x -D cn=admin,dc=enovance,dc=com -w secret -f /root/demo_users.ldif
+ - ldapmodify -Q -Y EXTERNAL -H ldapi:/// -f /root/disable_anon_frontend.ldif
+ - ldapmodify -Q -Y EXTERNAL -H ldapi:/// -f /root/disable_anon_frontend.ldif
  - echo PUPPETMASTER sf-puppetmaster.pub >> /etc/hosts
  - sed -i -e '0,/^$/s/^$/server=sf-puppetmaster.pub\n/g' /etc/puppet/puppet.conf
