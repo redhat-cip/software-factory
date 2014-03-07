@@ -96,7 +96,8 @@ function post_configuration_etc_hosts {
         HOST_LINE="$(getip_from_yaml ${role}) sf-${role}"
         grep "sf-${role}$" /etc/hosts > /dev/null
         if [ $? == 0 ]; then
-            cat /etc/hosts | grep -v "sf-${role}$" | sudo tee /etc/hosts > /dev/null
+            cat /etc/hosts | grep -v "sf-${role}$" | sudo tee /etc/hosts.new > /dev/null
+            sudo mv /etc/hosts.new /etc/hosts
         fi
         echo ${HOST_LINE} | sudo tee -a /etc/hosts > /dev/null
     done
