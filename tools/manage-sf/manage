@@ -65,7 +65,10 @@ if __name__ == "__main__":
         project_yaml = yaml.load(file(args.project))
         infos['name'] = project_yaml['name']
         infos['description'] = project_yaml['description']
-        infos['upstream'] = project_yaml['upstream']
+        try:
+            infos['upstream'] = project_yaml['upstream']
+        except KeyError:
+            pass
         infos['core-group'] = '%s-core' % infos['name']
 
     if args.action == 'init-config-repo':
