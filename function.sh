@@ -126,6 +126,27 @@ function post_configuration_knownhosts {
         done
     done
 }
+function post_configuration_gerrit_knownhosts {
+    # Gerrit ssh port
+    ssh-keygen -f "$HOME/.ssh/known_hosts" -R "[sf-gerrit]:29418" > /dev/null 2>&1
+    ssh-keygen -f "$HOME/.ssh/known_hosts" -R "[$(getip_from_yaml gerrit)]:29418" > /dev/null 2>&1
+    RETRIES=0
+    echo " [+] Starting ssh-keyscan on sf-gerrit:29418"
+    while true; do
+        KEY=`ssh-keyscan -p 29418 sf-gerrit 2> /dev/null`
+        if [ "$KEY" != ""  ]; then
+                # fix ssh-keyscan bug for 2 ssh server on different port
+                ssh-keyscan -p 29418 sf-gerrit | sed "s/sf-gerrit/[sf-gerrit]:29418,[$(getip_from_yaml gerrit)]:29418/" >> "$HOME/.ssh/known_hosts" 2> /dev/null
+                echo "  -> sf-gerrit:29418 is up!"
+                break
+        fi
+
+        let RETRIES=RETRIES+1
+        [ "$RETRIES" == "6" ] && break
+        echo "  [E] ssh-keyscan on sf-gerrit:29418 failed, will retry in 5 seconds"
+        sleep 10
+    done
+}
 
 function post_configuration_puppet_apply {
     echo "[+] Running one last puppet agent"
@@ -182,4 +203,5 @@ function sf_postconfigure {
     post_configuration_update_hiera
     post_configuration_puppet_apply
     post_configuration_jenkins_scripts
+    post_configuration_gerrit_knownhosts
 }
