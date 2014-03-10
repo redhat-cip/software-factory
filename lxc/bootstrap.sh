@@ -9,7 +9,7 @@ if [ -z "$1" ] || [ "$1" == "start" ]; then
     new_build
     cp sf-lxc.yaml ${BUILD}/sf-host.yaml
     # Fix jenkins for lxc
-    sed -i 's/^#*JAVA_ARGS.*/JAVA_ARGS="-Djava.awt.headless=true -Xmx256m"/g' /var/lib/debootstrap/install/D7-H.1.0.0/jenkins/etc/default/jenkins
+    sudo sed -i 's/^#*JAVA_ARGS.*/JAVA_ARGS="-Djava.awt.headless=true -Xmx256m"/g' /var/lib/debootstrap/install/D7-H.1.0.0/jenkins/etc/default/jenkins
     # Update puppet modules
     mkdir -p /var/lib/debootstrap/install/D7-H.1.0.0/puppetmaster/etc/puppet/{modules,manifests}
     rsync -a ../puppet/modules/ /var/lib/debootstrap/install/D7-H.1.0.0/puppetmaster/etc/puppet/modules/

@@ -141,7 +141,7 @@ def init_gerrit_project(gerrit_client, infos):
     paths['project.config'] = file('templates/project.config').read() % infos
     paths['groups'] = file('templates/groups').read() % infos
     grepo.push_config(paths)
-    if infos['upstream']:
+    if 'upstream' in infos:
         grepo.push_master_from_git_remote(infos)
     paths = {}
     paths['.gitreview'] = file('templates/gitreview').read() % infos
