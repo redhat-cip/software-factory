@@ -12,15 +12,13 @@
     type = LDAP
     gitBasicAuth = <%= @settings['http_basic_auth'] %>
 [ldap]
-    server = ldap://<%= @settings['ldap_address'] %>
+    server = <%= @settings['ldap_uri'] %>
     # lookup user that can read the trees
     username = <%= @settings['ldap_username'] %>
     accountBase = <%= @settings['ldap_account_base'] %>
     accountPattern = <%= @settings['ldap_account_pattern'] %>
     accountEmailAddress = <%= @settings['ldap_account_email_address'] %>
     accountSshUserName = <%= @settings['ldap_account_ssh_username'] %>
-    # we don't use LDAP groups
-    #groupMemberPattern =
 [container]
     user = gerrit
     javaHome = /usr/lib/jvm/java-7-openjdk-amd64/jre

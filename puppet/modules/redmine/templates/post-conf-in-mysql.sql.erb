@@ -1,0 +1,14 @@
+SET @api_key="<%= @settings['issues_tracker_api_key'] %>";
+SET @ldap_addr="<%= @settings['ldap_address'] %>";
+SET @ldap_port="<%= @settings['ldap_port'] %>";
+SET @ldap_tls="<%= @settings['ldap_tls'] %>";
+SET @ldap_account_base="<%= @settings['ldap_account_base'] %>";
+SET @ldap_login_attr="<%= @settings['ldap_login_attr'] %>";
+SET @ldap_username="<%= @settings['ldap_username'] %>";
+SET @ldap_password="<%= @settings['ldap_password'] %>";
+
+INSERT INTO settings (name, value, updated_on) VALUES ('rest_api_enabled','1', CURRENT_TIMESTAMP());
+INSERT INTO tokens (user_id, action, value, created_on) VALUES('1', 'api', @api_key, CURRENT_TIMESTAMP());
+
+INSERT INTO auth_sources (TYPE, NAME, HOST, PORT, BASE_DN, ATTR_LOGIN, ONTHEFLY_REGISTER, ACCOUNT, ACCOUNT_PASSWORD, TLS) VALUES ('AuthSourceLdap', 'LDAP Auth', @ldap_addr, @ldap_port, @ldap_account_base, @ldap_login_attr, '1', @ldap_username, @ldap_password, @ldap_tls);
+

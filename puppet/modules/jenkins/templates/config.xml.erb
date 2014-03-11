@@ -7,7 +7,7 @@
   <useSecurity>true</useSecurity>
   <authorizationStrategy class="hudson.security.FullControlOnceLoggedInAuthorizationStrategy"/>
   <securityRealm class="hudson.security.LDAPSecurityRealm" plugin="ldap@1.6">
-    <server><%= @settings['ldap_url'] ? @settings['ldap_url']: 'ldap://127.0.0.1:389' %></server>
+    <server><%= @settings['ldap_uri'] ? @settings['ldap_uri']: 'ldap://127.0.0.1:389' %></server>
     <rootDN><%= @settings['ldap_root_dn'] ? @settings['ldap_root_dn']: 'dc=example,dc=com' %></rootDN>
     <managerDN><%= @settings['ldap_manager_dn'] ? @settings['ldap_manager_dn']: 'cn=admin,dc=example,dc=com' %></managerDN>
     <managerPassword><%= @settings['ldap_manager_password'] ? @settings['ldap_manager_password']: 'c2VjcmV0' %></managerPassword>

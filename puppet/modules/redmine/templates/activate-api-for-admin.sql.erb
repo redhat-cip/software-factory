@@ -1,4 +1,0 @@
-SET @api_key="<%= @settings['issues_tracker_api_key'] %>";
-
-INSERT INTO settings (name, value, updated_on) VALUES ('rest_api_enabled','1', CURRENT_TIMESTAMP());
-INSERT INTO tokens (user_id, action, value, created_on) VALUES('1', 'api', @api_key, CURRENT_TIMESTAMP());

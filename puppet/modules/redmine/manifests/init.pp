@@ -49,10 +49,10 @@ class redmine ($settings = hiera_hash('redmine', '')) {
         ensure => absent,
     }
   
-    file { '/root/activate-api-for-admin.sql':
+    file { '/root/post-conf-in-mysql.sql':
         ensure  => present,
         mode    => '0640',
-        content => template('redmine/activate-api-for-admin.sql.erb'),
+        content => template('redmine/post-conf-in-mysql.sql.erb'),
         replace => true,
     }
 
@@ -85,20 +85,12 @@ class redmine ($settings = hiera_hash('redmine', '')) {
         require     => [Exec['create_db']],
     }
 
-    exec {'ldap_auth':
-        environment => ['RAILS_ENV=production', 'REDMINE_LANG=en'],
-        command     => 'mysql -u redmine redmine -psecret -h sf-mysql < /root/redmine_ldap.sql',
+    exec {'post-conf-in-mysql':
+        command     => 'mysql -u redmine redmine -psecret -h sf-mysql < /root/post-conf-in-mysql.sql',
         path        => '/usr/bin/:/bin/',
         cwd         => '/usr/bin',
         refreshonly => true,
-        subscribe   => Package['redmine'],
+        subscribe   => File['/root/post-conf-in-mysql.sql'],
         require     => [Exec['default_data']],
-    }
-    
-    exec {'init_api_key':
-        command     => 'mysql -u redmine redmine -psecret -h sf-mysql < /root/activate-api-for-admin.sql',
-        path        => '/usr/bin/:/bin/',
-        cwd         => '/usr/bin',
-        require     => [Exec['ldap_auth']],
     }
 }

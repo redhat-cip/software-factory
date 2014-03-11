@@ -1,2 +1,9 @@
 redmine:
   issues_tracker_api_key: REDMINE_API_KEY
+  ldap_address: sf-ldap
+  ldap_port: 389
+  ldap_tls: 0
+  ldap_login_attr: cn
+  ldap_username: cn=admin,dc=enovance,dc=com
+  ldap_password: secret
+  ldap_account_base: ou=Users,dc=enovance,dc=com

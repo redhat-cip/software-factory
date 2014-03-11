@@ -10,7 +10,7 @@ gerrit:
   gerrit_mysql_username: gerrit
   gerrit_mysql_port: 3306
   gerrit_mysql_secret: secret
-  ldap_address: sf-ldap
+  ldap_uri: ldap://sf-ldap
   ldap_username: cn=admin,dc=enovance,dc=com
   ldap_password: secret
   ldap_account_base: ou=Users,dc=enovance,dc=com

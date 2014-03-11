@@ -1,8 +1,4 @@
 #cloud-config
-write_files:
--   content: |
-      INSERT INTO auth_sources (TYPE, NAME, HOST, PORT, BASE_DN, ATTR_LOGIN, ONTHEFLY_REGISTER, ACCOUNT, ACCOUNT_PASSWORD) VALUES ('AuthSourceLdap', 'Local LDAP', 'ldap.pub', 389, 'ou=Users,dc=enovance,dc=com', 'cn', 1, 'cn=admin,dc=enovance,dc=com', 'secret');
-    path: /root/redmine_ldap.sql
 runcmd:
  - echo PLACEHOLDER sf-puppetmaster.pub >> /etc/hosts
  - sed -i -e '0,/^$/s/^$/server=sf-puppetmaster.pub\n/g' /etc/puppet/puppet.conf
