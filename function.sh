@@ -136,7 +136,7 @@ function post_configuration_gerrit_knownhosts {
         KEY=`ssh-keyscan -p 29418 sf-gerrit 2> /dev/null`
         if [ "$KEY" != ""  ]; then
                 # fix ssh-keyscan bug for 2 ssh server on different port
-                ssh-keyscan -p 29418 sf-gerrit | sed "s/sf-gerrit/[sf-gerrit]:29418,[$(getip_from_yaml gerrit)]:29418/" >> "$HOME/.ssh/known_hosts" 2> /dev/null
+                ssh-keyscan -p 29418 sf-gerrit 2> /dev/null | sed "s/sf-gerrit/[sf-gerrit]:29418,[$(getip_from_yaml gerrit)]:29418/" >> "$HOME/.ssh/known_hosts"
                 echo "  -> sf-gerrit:29418 is up!"
                 break
         fi
