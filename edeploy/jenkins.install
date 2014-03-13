@@ -66,5 +66,5 @@ sed -i -e 's/START=.*/START=yes/g' $dir/etc/default/puppet
 do_chroot ${dir} update-rc.d puppet defaults
 
 #Install some addons required for testing
-do_chroot ${dir} gem install --no-rdoc --no-ri rspec-puppet
+HOME=/root do_chroot ${dir} gem install --no-rdoc --no-ri rspec-puppet
 do_chroot ${dir} pip install flake8
