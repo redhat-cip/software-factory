@@ -38,6 +38,10 @@ class GerritRepo(object):
         os.chmod('/tmp/ssh_wrapper.sh', stat.S_IRWXU)
         self.env = os.environ.copy()
         self.env['GIT_SSH'] = '/tmp/ssh_wrapper.sh'
+        # Commit will be reject by gerrit if the commiter info
+        # is not a registered user (author can be anything else)
+        self.env['GIT_COMMITTER_NAME'] = self.infos['admin']
+        self.env['GIT_COMMITTER_EMAIL'] = self.infos['email']
         self.debug = file('/tmp/debug', 'a')
 
     def _exec(self, cmd, cwd=None):
