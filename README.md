@@ -1,7 +1,161 @@
-edeploy-software-factory-roles
-==============================
+Software-factory
+================
 
-The edeploy roles for software factory roles.
+How to begin development on SF
+------------------------------
+
+As it is easier to use a VM hosted on eNocloud to develop
+on SF due to :
+
+ * The network bandwidth on eNocloud
+ * The quite big flavors you can choose
+ * You avoid load you personal dev laptop
+
+1/ - Request for an eNocloud account
+....................................
+
+Not so much to say about it, but there is two eNocloud
+at eNovance:
+
+ * eNocloud Canada (ca.enocloud.com)
+ * eNocloud France (os.enocloud.com)
+
+No matter on which eNocloud you request an account.
+
+2/ - Create an instance on eNocloud
+...................................
+
+ * Choose an Ubuntu 12.04 image
+ * Select a flavor with at least 4 vCPUs, 80GB disk, and 4GB RAM
+ * Do not forget to add you keypair
+ * Add a floating IP to your instance once booted
+ * Ssh to it using the ubuntu account.
+
+3/ - Install the requirements on the VM
+.......................................
+
+Install a new kernel (for aufs support used by edeploy-lxc):
+
+    $ ssh ubuntu@floating-ip
+    $ curl http://198.154.188.142:8080/v1/AUTH_4f1b0b9ce3354a439db8ef19cf456d6f/kernel/linux-image-3.2.54-fbo_3.2.54-fbo-10.00.Custom_amd64.deb -o linux-image-3.2.54-fbo_3.2.54-fbo-10.00.Custom_amd64.deb
+    $ sudo dpkg -i linux-image-3.2.54-fbo_3.2.54-fbo-10.00.Custom_amd64.deb
+    $ sudo update-grub
+
+Reboot the instance.
+
+    $ ssh ubuntu@floating-ip
+    $ uname -a
+    Linux test-build 3.2.54-fbo #1 SMP Mon Feb 24 20:20:54 UTC 2014 x86_64 x86_64 x86_64 GNU/Linux
+
+    $ sudo apt-get update
+    $ sudo apt-get install python-netaddr debootstrap qemu-kvm qemu-utils python-mock python-netaddr debootstrap qemu-kvm qemu-utils python-ipaddr libfrontier-rpc-perl curl libfrontier-rpc-perl pigz git lxc make gcc python-dev python-pip kpartx python-augeas socat python-virtualenv
+    $ sudo pip install ansible
+    $ sudo pip install git-review
+
+Build the bases eDeploy roles:
+
+    $ mkdir git && cd git
+    $ git clone http://github.com/enovance/edeploy
+    $ cd edeploy/build
+    $ sudo make base
+    $ ls -al /var/lib/debootstrap/install/D7-H.1.0.0/base
+    $ sudo make deploy
+    $ ls -al /var/lib/debootstrap/install/D7-H.1.0.0/deploy
+
+4/ - Build SF roles:
+...................
+
+    $ git clone ssh://fabien.boucher@gerrit.sf.ring.enovance.com:29418/SoftwareFactory
+    $ sudo ln -s ~/git/SoftwareFactory/ /srv
+    # You can also clone from github (with your github account)
+    # The clone on gerrit.sf.ring.enovance.com will not work as we need to add your
+    # VM IP in the security group (Ask fbo, tristan or christian for that)
+    $ cd SoftwareFactory/edeploy
+    $ for i in "edeploy jenkins ldap mysql puppetmaster gerrit redmine"; do sudo make SDIR=../../edeploy $i; done
+    # Now all roles are built :)
+
+5/ - How to start the SF using LXC:
+...................................
+
+
+    $ ssh-keygen -N ""
+    $ cd ~/git
+    $ git clone http://github.com/enovance/edeploy-lxc
+
+    Change line 215 of edeploy-lxc from:
+    subprocess.call(['lxc-start', '-d', '-L', '/tmp/lxc-%s.log' % host['name'], '-n', host['name'] ])
+    by
+    subprocess.call(['lxc-start', '-d', '-o', '/tmp/lxc-%s.log' % host['name'], '-n', host['name'] ])
+
+    $ sudo ln -s /home/ubuntu/git/edeploy-lxc/ /srv/
+    $ cd ~/git/SoftwareFactory/lxc
+    $ ./bootstrap.sh 
+    ubuntu@test-build:~/git/SoftwareFactory/lxc $ ps ax | grep lxc-start
+    10512 pts/0    S+     0:00 grep --color=auto lxc-start
+    23022 ?        Ss     0:00 lxc-start -d -o /tmp/lxc-sf-puppetmaster.log -n sf-puppetmaster
+    23060 ?        Ss     0:00 lxc-start -d -o /tmp/lxc-sf-ldap.log -n sf-ldap
+    23338 ?        Ss     0:00 lxc-start -d -o /tmp/lxc-sf-mysql.log -n sf-mysql
+    24695 ?        Ss     0:00 lxc-start -d -o /tmp/lxc-sf-redmine.log -n sf-redmine
+    25911 ?        Ss     0:00 lxc-start -d -o /tmp/lxc-sf-gerrit.log -n sf-gerrit
+    26826 ?        Ss     0:00 lxc-start -d -o /tmp/lxc-sf-jenkins.log -n sf-jenkins
+    27701 ?        Ss     0:00 lxc-start -d -o /tmp/lxc-sf-jenkins-slave01.log -n sf-jenkins-slave01
+    28660 ?        Ss     0:00 lxc-start -d -o /tmp/lxc-sf-jenkins-slave02.log -n sf-jenkins-slave02
+    30295 ?        Ss     0:00 lxc-start -d -o /tmp/lxc-sf-edeploy-server.log -n sf-edeploy-server
+
+6/ - How to access deployed VMs (gerrit, redmine, ...):
+.....................................................
+
+    $ cd ~/git/SoftwareFactory/lxc
+    $ sudo ./socat.sh
+
+In the security group associated to your dev VM add
+access to 1-65535/TCP from your Home/Office IP.
+
+Add in your /etc/hosts (the one on your home/office's laptop) the following :
+<floating-ip> sf-build sf-gerrit
+
+Then you can access:
+
+ * Gerrit with : http://sf-gerrit
+ * Redmine with : http://sf-build:81
+ * Jenkins with : http://sf-build:8080
+
+7/ - How to create a project using managesf:
+............................................
+
+    $ cd /home/ubuntu/git/SoftwareFactory/tools/manage-sf
+    $ virtualenv venv
+    $ . venv/bin/activate
+    $ python setup.py install (run it maybe two or three time :/)
+    $ manage --config manage-sf.conf --action init-config-repo
+    # You can check in Redmine and Gerrit that the config project has been
+    # created (the config repo is a special on for JJB)
+
+Create a file project.yaml with this content:
+name: project1
+description: Amazing project
+
+    $ manage --config manage-sf.conf --project project.yaml --action init-repo
+    # You can check on Gerrit and Redmine (project is created)
+
+8/ - How to clone and commit on it:
+...................................
+
+    $ cd /tmp
+    $ ssh-add --list
+    Identity added: /home/ubuntu/.ssh/id_rsa (/home/ubuntu/.ssh/id_rsa)
+    # Add this key under this user you want to use for cloning/working...
+    # and add the pub key above in the gerrit settings (UI)
+    $ git clone ssh://<your_user>@sf-gerrit:29418/dulwich
+    $ cd dulwich
+    $ cat .gitreview
+    $ git remote
+    $ git config --global --add gitreview.username "fabien.boucher"
+    $ git review -s
+    $ git remote
+    $ touch afile1 && git add afile1 && git commit -a -m'my first commit'; git review
+
+You can check on gerrit that the first review has been created.
 
 Creating a bootable image
 -------------------------
