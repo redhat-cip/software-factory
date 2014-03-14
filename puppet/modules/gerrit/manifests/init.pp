@@ -136,6 +136,27 @@ class gerrit ($settings = hiera_hash('gerrit', '')) {
     require => File['/home/gerrit/site_path/etc'],
     replace => true,
   }
+  file { '/home/gerrit/site_path/etc/GerritSite.css':
+        ensure => file,
+        mode   => '0644',
+        owner  => 'root',
+        group  => 'root',
+        source => 'puppet:///modules/gerrit/GerritSite.css'
+  }
+  file { '/home/gerrit/site_path/etc/GerritSiteHeader.html':
+        ensure => file,
+        mode   => '0644',
+        owner  => 'root',
+        group  => 'root',
+        source => 'puppet:///modules/gerrit/GerritSiteHeader.html'
+  }
+  file { '/home/gerrit/site_path/static/logo.png':
+        ensure => file,
+        mode   => '0644',
+        owner  => 'root',
+        group  => 'root',
+        source => 'puppet:///modules/gerrit/logo.png'
+  }
   file { '/home/gerrit/site_path/hooks/hooks.config':
     ensure  => present,
     owner   => 'gerrit',
