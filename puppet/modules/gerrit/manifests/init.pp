@@ -44,6 +44,11 @@ class gerrit ($settings = hiera_hash('gerrit', '')) {
     owner   => 'gerrit',
     require => File['/home/gerrit/site_path'],
   }
+  file { '/home/gerrit/site_path/static':
+    ensure  => directory,
+    owner   => 'gerrit',
+    require => File['/home/gerrit/site_path'],
+  }
   file { '/home/gerrit/site_path/etc/ssh_host_rsa_key':
     ensure  => present,
     owner   => 'gerrit',
@@ -149,6 +154,7 @@ class gerrit ($settings = hiera_hash('gerrit', '')) {
         mode   => '0644',
         owner  => 'root',
         group  => 'root',
+    	require => File['/home/gerrit/site_path/etc'],
         source => 'puppet:///modules/gerrit/GerritSite.css'
   }
   file { '/home/gerrit/site_path/etc/GerritSiteHeader.html':
@@ -156,6 +162,7 @@ class gerrit ($settings = hiera_hash('gerrit', '')) {
         mode   => '0644',
         owner  => 'root',
         group  => 'root',
+    	require => File['/home/gerrit/site_path/etc'],
         source => 'puppet:///modules/gerrit/GerritSiteHeader.html'
   }
   file { '/home/gerrit/site_path/static/logo.png':
@@ -163,6 +170,7 @@ class gerrit ($settings = hiera_hash('gerrit', '')) {
         mode   => '0644',
         owner  => 'root',
         group  => 'root',
+    	require => File['/home/gerrit/site_path/static'],
         source => 'puppet:///modules/gerrit/logo.png'
   }
   file { '/home/gerrit/site_path/hooks/hooks.config':
@@ -235,6 +243,11 @@ class gerrit ($settings = hiera_hash('gerrit', '')) {
     refreshonly => true,
     logoutput => on_failure,
   }
+  exec { 'gerrit-change-start-timeout':
+    command   => "/bin/sed -i 's/TIMEOUT=90/TIMEOUT=400/' /etc/init.d/gerrit",
+    require   => File['/etc/init.d/gerrit'],
+    logoutput => on_failure,
+  }
   file { '/etc/init.d/gerrit':
     ensure  => link,
     target  => '/home/gerrit/site_path/bin/gerrit.sh',
@@ -275,6 +288,7 @@ class gerrit ($settings = hiera_hash('gerrit', '')) {
     hasrestart  => true,
     provider    => debian,
     require     => [Exec['gerrit-initial-init'],
+                    Exec['gerrit-change-start-timeout'],
                     File['/etc/init.d/gerrit']],
     subscribe   => [File['/home/gerrit/gerrit.war'],
                     File['/home/gerrit/site_path/etc/gerrit.config'],

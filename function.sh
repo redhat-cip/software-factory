@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BUILD="../build"
+BUILD=${BUILD:-../build}
 
 # TODO: Should be moved in other place maybe a config file for bootstrap scripts ?
 GERRIT_ADMIN=fabien.boucher
@@ -10,6 +10,10 @@ GERRIT_ADMIN_MAIL=fabien.boucher@enovance.com
 function new_build {
     rm -Rf ${BUILD}/
     mkdir ${BUILD}
+    [ ! -d "${BUILD}/cloudinit" ] && mkdir ${BUILD}/cloudinit
+    # puppetmaster cloudinit file can be used directly
+    cp ../cloudinit/puppetmaster.cloudinit \
+        ${BUILD}/cloudinit/puppetmaster.cloudinit
     echo "hosts:" > ${BUILD}/sf-host.yaml
 }
 
@@ -21,8 +25,20 @@ function putip_to_yaml {
 EOF
 }
 
+function putip_to_yaml_devstack {
+    cat << EOF >> ${BUILD}/sf-host-tunneled.yaml
+  -
+    name: sf-$1
+    address: $2
+EOF
+}
+
 function getip_from_yaml {
     cat ${BUILD}/sf-host.yaml  | grep -A 1 -B 1 "name: sf-$1$" | grep 'address' | cut -d: -f2 | sed 's/ *//g'
+}
+
+function getip_from_yaml_devstack {
+    cat ${BUILD}/sf-host-tunneled.yaml  | grep -A 1 -B 1 "name: sf-$1$" | grep 'address' | cut -d: -f2 | sed 's/ *//g'
 }
 
 function generate_cloudinit {
@@ -45,7 +61,7 @@ function generate_hiera {
     for role in $ROLES; do
         echo "  ${role}.pub:" >> ${OUTPUT}/hosts.yaml
         echo "    ip: $(getip_from_yaml ${role})" >> ${OUTPUT}/hosts.yaml
-        echo "    host_aliases: [\'sf-${role}\', \'${role}.pub\']" >> ${OUTPUT}/hosts.yaml
+        echo "    host_aliases: [sf-${role}, ${role}.pub]" >> ${OUTPUT}/hosts.yaml
     done
 
     # Jenkins ssh key
@@ -88,12 +104,15 @@ function generate_keys {
     ssh-keygen -N '' -f ${OUTPUT}/gerrit_admin_rsa
 }
 
-
 #### Post configuration
 function post_configuration_etc_hosts {
     # Make sure /etc/hosts is up-to-date
     for role in ${ROLES}; do
-        HOST_LINE="$(getip_from_yaml ${role}) sf-${role}"
+        if [ -z "$1" ]; then
+            HOST_LINE="$(getip_from_yaml ${role}) sf-${role}"
+        else
+            HOST_LINE="$(getip_from_yaml_devstack ${role}) sf-${role}"
+        fi
         grep "sf-${role}$" /etc/hosts > /dev/null
         if [ $? == 0 ]; then
             cat /etc/hosts | grep -v "sf-${role}$" | sudo tee /etc/hosts.new > /dev/null
@@ -103,56 +122,64 @@ function post_configuration_etc_hosts {
     done
 }
 
-function post_configuration_knownhosts {
-    # Update known_hosts file and make sure vm are available
-    echo "[+] Update local knownhosts file"
-    for role in ${ROLES}; do
-        ssh-keygen -f "$HOME/.ssh/known_hosts" -R sf-${role} > /dev/null 2>&1
-        ssh-keygen -f "$HOME/.ssh/known_hosts" -R $(getip_from_yaml ${role}) > /dev/null 2>&1
-        RETRIES=0
-        echo " [+] Starting ssh-keyscan on sf-${role}"
-        while true; do
-            KEY=`ssh-keyscan sf-${role} 2> /dev/null`
-            if [ "$KEY" != ""  ]; then
-                ssh-keyscan sf-${role} >> "$HOME/.ssh/known_hosts" 2> /dev/null
-                echo "  -> sf-${role} is up!"
-                break
-            fi
 
-            let RETRIES=RETRIES+1
-            [ "$RETRIES" == "6" ] && break
-            echo "  [E] ssh-keyscan on sf-${role} failed, will retry in 5 seconds"
-            sleep 10
-        done
+function post_configuration_knownhosts {
+    local port=22
+    if [ -n "$1" ]; then
+        let port=port+1024
+    fi
+    for role in $ROLES; do
+        if [ -n "$1" ]; then
+            ip=$(getip_from_yaml_devstack $role)
+        else
+            ip=$(getip_from_yaml $role)
+        fi
+        _post_configuration_knownhosts "sf-$role" $ip $port
     done
 }
+
 function post_configuration_gerrit_knownhosts {
-    # Gerrit ssh port
-    ssh-keygen -f "$HOME/.ssh/known_hosts" -R "[sf-gerrit]:29418" > /dev/null 2>&1
-    ssh-keygen -f "$HOME/.ssh/known_hosts" -R "[$(getip_from_yaml gerrit)]:29418" > /dev/null 2>&1
+    if [ -n "$1" ]; then
+        ip=$(getip_from_yaml_devstack gerrit)
+    else
+        ip=$(getip_from_yaml gerrit)
+    fi
+    _post_configuration_knownhosts "sf-gerrit" $ip 29418
+}
+
+function _post_configuration_knownhosts {
+    local role=$1
+    local ip=$2
+    local port=$3
+    ssh-keygen -f "$HOME/.ssh/known_hosts" -R "[$role]:$port" > /dev/null 2>&1
+    ssh-keygen -f "$HOME/.ssh/known_hosts" -R "[$ip]:$port" > /dev/null 2>&1
     RETRIES=0
-    echo " [+] Starting ssh-keyscan on sf-gerrit:29418"
+    echo " [+] Starting ssh-keyscan on $role:$port"
     while true; do
-        KEY=`ssh-keyscan -p 29418 sf-gerrit 2> /dev/null`
+        KEY=`ssh-keyscan -p $port $role 2> /dev/null`
         if [ "$KEY" != ""  ]; then
                 # fix ssh-keyscan bug for 2 ssh server on different port
-                ssh-keyscan -p 29418 sf-gerrit 2> /dev/null | sed "s/sf-gerrit/[sf-gerrit]:29418,[$(getip_from_yaml gerrit)]:29418/" >> "$HOME/.ssh/known_hosts"
-                echo "  -> sf-gerrit:29418 is up!"
+                ssh-keyscan -p $port $role 2> /dev/null | sed "s/$role/[$role]:$port,[$ip]:$port/" >> "$HOME/.ssh/known_hosts"
+                echo "  -> $role:$port is up!"
                 break
         fi
 
         let RETRIES=RETRIES+1
-        [ "$RETRIES" == "6" ] && break
-        echo "  [E] ssh-keyscan on sf-gerrit:29418 failed, will retry in 5 seconds"
+        [ "$RETRIES" == "40" ] && break
+        echo "  [E] ssh-keyscan on $role:$port failed, will retry in 5 seconds (attempt $RETRIES/40)"
         sleep 10
     done
 }
 
 function post_configuration_puppet_apply {
     echo "[+] Running one last puppet agent"
+    local ssh_port=22
+    if [ -n "$1" ]; then
+        let ssh_port=ssh_port+1024
+    fi
     for role in ${ROLES}; do
         echo " [+] sf-${role}"
-        ssh root@sf-${role} puppet agent --test || echo "TODO: fix puppet agent failure"
+        ssh -p$ssh_port root@sf-${role} puppet agent --test || echo "TODO: fix puppet agent failure"
     done
 }
 
@@ -162,46 +189,64 @@ function generate_serverspec {
     mkdir -p ${OUTPUT}
     cp ../serverspec/hosts.yaml.tpl ${OUTPUT}/hosts.yaml
     for role in ${ROLES}; do
-        sed -i -e "s/${role}_ip/$(getip_from_yaml ${role})/g" ${OUTPUT}/hosts.yaml
+        if [ -z "$1" ]; then
+            ip_role=$(getip_from_yaml ${role})
+        else
+            ip_role=$(getip_from_yaml_devstack ${role})
+        fi
+        sed -i -e "s/${role}_ip/$ip_role/g" ${OUTPUT}/hosts.yaml
     done
 }
 
 function post_configuration_update_hiera {
-    scp ${BUILD}/hiera/*.yaml root@sf-puppetmaster:/etc/puppet/hiera/
+    local ssh_port=22
+    if [ -n "$1" ]; then
+        let ssh_port=ssh_port+1024
+    fi
+    scp -P$ssh_port ${BUILD}/hiera/*.yaml root@sf-puppetmaster:/etc/puppet/hiera/
 }
 
 function post_configuration_ssh_keys {
-    # jenkins ssh key
-    ssh root@sf-jenkins mkdir /var/lib/jenkins/.ssh/
-    scp ${BUILD}/data/jenkins_rsa root@sf-jenkins:/var/lib/jenkins/.ssh/id_rsa
-    ssh root@sf-jenkins chown -R jenkins /var/lib/jenkins/.ssh/
-    ssh root@sf-jenkins chmod 400 /var/lib/jenkins/.ssh/id_rsa
-
-    # gerrit ssh key
-    scp ${BUILD}/data/gerrit_service_rsa root@sf-gerrit:/home/gerrit/ssh_host_rsa_key
-    scp ${BUILD}/data/gerrit_service_rsa.pub root@sf-gerrit:/home/gerrit/ssh_host_rsa_key.pub
-    ssh root@sf-gerrit chown gerrit:gerrit /home/gerrit/ssh_host_rsa_key
-    ssh root@sf-gerrit chown gerrit:gerrit /home/gerrit/ssh_host_rsa_key.pub
+    local ssh_port=22
+    if [ -n "$1" ]; then
+        let ssh_port=ssh_port+1024
+    fi
+    ssh -p$ssh_port root@sf-jenkins mkdir /var/lib/jenkins/.ssh/
+    scp -P$ssh_port ${BUILD}/data/jenkins_rsa root@sf-jenkins:/var/lib/jenkins/.ssh/id_rsa
+    ssh -p$ssh_port root@sf-jenkins chown -R jenkins /var/lib/jenkins/.ssh/
+    ssh -p$ssh_port root@sf-jenkins chmod 400 /var/lib/jenkins/.ssh/id_rsa
+    scp -P$ssh_port ${BUILD}/data/gerrit_service_rsa root@sf-gerrit:/home/gerrit/ssh_host_rsa_key
+    scp -P$ssh_port ${BUILD}/data/gerrit_service_rsa.pub root@sf-gerrit:/home/gerrit/ssh_host_rsa_key.pub
+    ssh -p$ssh_port root@sf-gerrit chown gerrit:gerrit /home/gerrit/ssh_host_rsa_key
+    ssh -p$ssh_port root@sf-gerrit chown gerrit:gerrit /home/gerrit/ssh_host_rsa_key.pub
 }
 
 function post_configuration_jenkins_scripts {
     # Update jenkins slave scripts
+    local ssh_port=22
+    if [ -n "$1" ]; then
+        let ssh_port=ssh_port+1024
+    fi
     for host in "sf-jenkins" "sf-jenkins-slave01" "sf-jenkins-slave02"; do
-        ssh root@${host} mkdir -p /usr/local/jenkins/slave_scripts/
-        scp ../data/jenkins_slave_scripts/* root@${host}:/usr/local/jenkins/slave_scripts/
+        ssh -p$ssh_port root@${host} mkdir -p /usr/local/jenkins/slave_scripts/
+        scp -P$ssh_port ../data/jenkins_slave_scripts/* root@${host}:/usr/local/jenkins/slave_scripts/
     done
 }
 
 function sf_postconfigure {
     # ${BUILD}/sf-host.yaml must be present and filled with roles ip
-    generate_serverspec
+    # devstack (just a flag) is used by the boostrap script for Openstack in
+    # case of a devstack deployment (we create a tunnel from this host
+    # to the floating IP inside the devstack).
+    local devstack=$1
+    generate_serverspec $devstack
     generate_keys
     generate_hiera
-    post_configuration_etc_hosts
-    post_configuration_knownhosts
-    post_configuration_ssh_keys
-    post_configuration_update_hiera
-    post_configuration_puppet_apply
-    post_configuration_jenkins_scripts
-    post_configuration_gerrit_knownhosts
+    post_configuration_etc_hosts $devstack
+    post_configuration_knownhosts $devstack
+    post_configuration_ssh_keys $devstack
+    post_configuration_update_hiera $devstack
+    post_configuration_puppet_apply $devstack
+    post_configuration_jenkins_scripts $devstack
+    post_configuration_gerrit_knownhosts $devstack
 }

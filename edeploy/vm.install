@@ -80,3 +80,4 @@ EOF
 #do_chroot ${dir} usermod -L root
 
 configure_cloudinit
+cp ../data/99_sf.cfg ${dir}/etc/cloud/cloud.cfg.d/

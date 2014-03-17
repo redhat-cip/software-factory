@@ -1,5 +1,8 @@
 #cloud-config
 #
+hostname: sf-ldap
+fqdn: sf-ldap.pub
+disable_root: 0
 write_files:
 -   content: |
       dn: olcDatabase={-1}frontend,cn=config

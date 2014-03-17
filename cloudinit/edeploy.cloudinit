@@ -1,4 +1,7 @@
 #cloud-config
+hostname: sf-edeploy
+fqdn: sf-edeploy.pub
+disable_root: 0
 runcmd:
  - echo PUPPETMASTER sf-puppetmaster.pub >> /etc/hosts
  - sed -i -e '0,/^$/s/^$/server=sf-puppetmaster.pub\n/g' /etc/puppet/puppet.conf

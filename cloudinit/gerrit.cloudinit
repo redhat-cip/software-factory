@@ -1,5 +1,8 @@
 #cloud-config
 output: {all: '| tee -a /var/log/cloud-init-output.log'}
+hostname: sf-gerrit
+fqdn: sf-gerrit.pub
+disable_root: 0
 runcmd:
  - echo PUPPETMASTER sf-puppetmaster.pub >> /etc/hosts
  - sed -i -e '0,/^$/s/^$/server=sf-puppetmaster.pub\n/g' /etc/puppet/puppet.conf

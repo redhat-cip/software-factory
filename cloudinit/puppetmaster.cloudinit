@@ -1,6 +1,15 @@
 #cloud-config
+hostname: sf-puppetmaster
+fqdn: sf-puppetmaster.pub
+disable_root: 0
 runcmd:
  - echo "127.0.0.1 sf-puppetmaster.pub sf-puppetmaster" >> /etc/hosts
  # Insert server configuration before the autosign= line
  - sed -i -e 's/autosign/certname=sf-puppetmaster.pub\nautosign/g' /etc/puppet/puppet.conf
  - sed -i -e 's/autosign/server=sf-puppetmaster.pub\nautosign/g' /etc/puppet/puppet.conf
+ - sed -i -e 's/novalocal/pub/' /etc/resolv.conf
+ # runcmd commands are executed after the hostname setting
+ # we need to clean the puppet master CA stuff and let it build new cert with the right hostname
+ - /etc/init.d/puppetmaster stop
+ - rm -Rf /var/lib/puppet/ssl/*
+ - /etc/init.d/puppetmaster start

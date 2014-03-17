@@ -1,4 +1,7 @@
 #cloud-config
+hostname: sf-redmine
+fqdn: sf-redmine.pub
+disable_root: 0
 runcmd:
- - echo PLACEHOLDER sf-puppetmaster.pub >> /etc/hosts
+ - echo PUPPETMASTER sf-puppetmaster.pub >> /etc/hosts
  - sed -i -e '0,/^$/s/^$/server=sf-puppetmaster.pub\n/g' /etc/puppet/puppet.conf

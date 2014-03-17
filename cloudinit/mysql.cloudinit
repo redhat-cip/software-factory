@@ -1,5 +1,8 @@
 #cloud-config
 #
+hostname: sf-mysql
+fqdn: sf-mysql.pub
+disable_root: 0
 write_files:
 -   content: |
       CREATE DATABASE redmine;

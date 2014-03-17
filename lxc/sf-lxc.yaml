@@ -51,4 +51,4 @@ hosts:
     address: 192.168.134.57
     name: sf-edeploy-server
     role: edeploy
-    cloudinit: ../build/cloudinit/edeploy-server.cloudinit
+    cloudinit: ../build/cloudinit/edeploy.cloudinit
