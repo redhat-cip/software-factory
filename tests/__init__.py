@@ -1,9 +1,23 @@
 import subprocess
+import os
+import sys
 
 
 def setUpPackage():
-    subprocess.call(['lxc/bootstrap-lxc.sh'])
+    print "setUpPackage!"
+    if "--skip-bootstrap" in sys.argv:
+        print "No bootstrap"
+        return
+    os.chdir("lxc")
+    #subprocess.call(['./bootstrap-lxc.sh'])
+    os.chdir("..")
 
 
 def tearDownPackage():
-    subprocess.call(['lxc/bootstrap-lxc.sh', 'stop'])
+    print "tearDownPackage!"
+    if "--skip-bootstrap" in sys.argv:
+        print "No bootstrap"
+        return
+    os.chdir("lxc")
+    subprocess.call(['./bootstrap-lxc.sh', 'stop'])
+    os.chdir("..")
