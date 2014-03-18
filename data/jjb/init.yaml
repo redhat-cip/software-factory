@@ -1,5 +1,5 @@
 - job:
-    name: config
+    name: config-update
     builders:
       - gerrit-git-prep
       - shell: |
@@ -9,6 +9,22 @@
     triggers:
       - gerrit:
           trigger-on-change-merged-event: true
+          projects:
+            - project-compare-type: 'PLAIN'
+              project-pattern: 'config'
+              branch-compare-type: 'ANT'
+              branch-pattern: '**'
+
+- job:
+    name: config-check
+    builders:
+      - gerrit-git-prep
+      - shell: |
+          mkdir build
+          jenkins-jobs test jobs/ -o build/
+    triggers:
+      - gerrit:
+          trigger-on-change-created-event: true
           projects:
             - project-compare-type: 'PLAIN'
               project-pattern: 'config'
