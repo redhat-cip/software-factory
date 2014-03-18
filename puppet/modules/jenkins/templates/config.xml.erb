@@ -9,8 +9,6 @@
   <securityRealm class="hudson.security.LDAPSecurityRealm" plugin="ldap@1.6">
     <server><%= @settings['ldap_uri'] ? @settings['ldap_uri']: 'ldap://127.0.0.1:389' %></server>
     <rootDN><%= @settings['ldap_root_dn'] ? @settings['ldap_root_dn']: 'dc=example,dc=com' %></rootDN>
-    <managerDN><%= @settings['ldap_manager_dn'] ? @settings['ldap_manager_dn']: 'cn=admin,dc=example,dc=com' %></managerDN>
-    <managerPassword><%= @settings['ldap_manager_password'] ? @settings['ldap_manager_password']: 'c2VjcmV0' %></managerPassword>
     <inhibitInferRootDN>false</inhibitInferRootDN>
     <userSearchBase><%= @settings['ldap_user_base'] ? @settings['ldap_user_base']: 'ou=Users' %></userSearchBase>
     <userSearch><%= @settings['ldap_user_search'] ? @settings['ldap_user_search']: 'cn={0}' %></userSearch>
