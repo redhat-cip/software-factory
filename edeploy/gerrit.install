@@ -51,6 +51,7 @@ case "$(package_tool)" in
         cp $DATA/project.config ${dir}/root/gerrit_data_source/
         cp $DATA/ssh_wrapper.sh ${dir}/root/gerrit_data_source/
         cp $DATA/replication.jar ${dir}/root/gerrit_data_source/
+        cp $DATA/delete-project.jar ${dir}/root/gerrit_data_source/
         chmod +x ${dir}/root/gerrit_data_source/ssh_wrapper.sh
         cp -Rf $GERRITHOOKS ${dir}/root/gerrit_data_source/
         do_chroot $dir a2enmod proxy_http

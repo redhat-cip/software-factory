@@ -24,6 +24,27 @@ class CustomGerritClient(gerrit.Gerrit):
         uuid = out.split('\t')[1]
         return uuid
 
+    def deleteGroup(self, name):
+        grp_id = "select group_id from account_group_names " \
+                 "where name=\"%s\"" % name
+        tables = ['account_group_members',
+                  'account_group_members_audit',
+                  'account_group_by_id',
+                  'account_group_by_id_aud',
+                  'account_groups']
+        for t in tables:
+            cmd = 'gerrit gsql -c \'delete from %(table)s where ' \
+                  'group_id=(%(grp_id)s)\'' % {'table': t, 'grp_id': grp_id}
+            out, err = self._ssh(cmd)
+        cmd = 'gerrit gsql -c \'delete from account_group_names ' \
+              'where name=\"%s\"' % (name)
+        out, err = self._ssh(cmd)
+
+    def deleteProject(self, name):
+        cmd = 'deleteproject delete %s --force --yes-really-delete' % name
+        out, err = self._ssh(cmd)
+        return err
+
 
 class GerritRepo(object):
     def __init__(self, infos):
@@ -124,8 +145,10 @@ class GerritRepo(object):
 
 
 def create_project(gerrit_client, infos):
+    print "Creating group"
     gerrit_client.createGroup(infos['core-group'],
                               visible_to_all=True)
+    print "Creating project"
     gerrit_client.createProject(infos['name'],
                                 require_change_id=True)
 
@@ -152,6 +175,16 @@ def init_gerrit_project(gerrit_client, infos):
     grepo.push_master(paths)
 
 
+def delete_gerrit_project(gerrit_client, infos):
+    try:
+        print "Deleting group " + infos['core-group']
+        gerrit_client.deleteGroup(infos['core-group'])
+        print "Deleting the project " + infos['name']
+        gerrit_client.deleteProject(infos['name'])
+    except Exception:
+        print("Error occured during project deletion")
+
+
 def push_dir_in_gerrit_project(infos, target_dir, paths):
     path_content = {}
     for p in paths:
@@ -168,6 +201,11 @@ def init_redmine_project(redmine_client, infos):
     redmine_client.projects.new(name=infos['name'],
                                 description=infos['description'],
                                 identifier=infos['name'])
+    sys.stdout.write("done.\n")
+
+
+def delete_redmine_project(redmine_client, infos):
+    redmine_client.projects.delete(infos['name'])
     sys.stdout.write("done.\n")
 
 

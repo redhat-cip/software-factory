@@ -68,6 +68,14 @@ class gerrit ($settings = hiera_hash('gerrit', '')) {
     source  => '/root/gerrit_data_source/replication.jar',
     require => File['/home/gerrit/site_path/plugins'],
   }
+  file { '/home/gerrit/site_path/plugins/delete-project.jar':
+    ensure  => present,
+    owner   => 'gerrit',
+    group   => 'gerrit',
+    mode    => '0640',
+    source  => '/root/gerrit_data_source/delete-project.jar',
+    require => File['/home/gerrit/site_path/plugins'],
+  }
   file { '/home/gerrit/site_path/lib/mysql-connector-java-5.1.21.jar':
     ensure  => present,
     owner   => 'gerrit',
