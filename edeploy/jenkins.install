@@ -22,7 +22,7 @@ DATA=../data
 ROLE=jenkins
 
 ORIG=$(cd $(dirname $0); pwd)
-PACKAGES="jenkins puppet git python-pip sloccount rubygems rake puppet-lint python-pip"
+PACKAGES="jenkins puppet git python-pip sloccount rubygems rake puppet-lint"
 
 PLUGINS="http://updates.jenkins-ci.org/download/plugins/gerrit-trigger/2.11.0/gerrit-trigger.hpi    \
          http://updates.jenkins-ci.org/download/plugins/ssh-agent/1.4.1/ssh-agent.hpi"
@@ -56,6 +56,9 @@ for plugin in ${PLUGINS}; do
     echo "Installing plugin ${plugin_name}"
     wget -q -O - "${plugin}" > ${dir}/var/lib/jenkins/plugins/${plugin_name}
 done
+
+#Update pip to satisfy jjb requirement
+do_chroot ${dir} pip install -U pip
 
 # jjb
 mkdir -p ${dir}/opt/
