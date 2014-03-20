@@ -39,8 +39,6 @@ install_ib_if_needed $ORIG $dir
 
 case "$(package_tool)" in
     "apt")
-        rm -f ${dir}/etc/apt/sources.list.d/updates.list
-        update_repositories $dir
         install_packages $dir "$PACKAGES"
 
         do_chroot $dir sh -c "adduser --disabled-password --gecos \"\" $GERRITUSER"
