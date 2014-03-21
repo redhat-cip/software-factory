@@ -154,10 +154,7 @@ def create_project(gerrit_client, infos):
 
 
 def init_gerrit_project(gerrit_client, infos):
-    try:
-        create_project(gerrit_client, infos)
-    except Exception:
-        print("Error occured during project creation")
+    create_project(gerrit_client, infos)
     infos['core-group-uuid'] = \
         gerrit_client.getGroupUUID(infos['core-group'])
     infos['non-interactive-users'] = \

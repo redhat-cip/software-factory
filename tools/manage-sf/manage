@@ -90,22 +90,38 @@ if __name__ == "__main__":
     print "Project description : %s" % infos['description']
 
     if args.action == 'init-repo':
-        print "Create project %s" % infos['name']
-        msf.init_gerrit_project(gerrit_client, infos)
-        print "Create project on Redmine %s" % infos['name']
-        msf.init_redmine_project(redmine_client, infos)
+        project_list = gerrit_client.listProjects()
+        if infos['name'] in project_list:
+            print "Project '%s' already exist" % infos['name']
+            sys.exit(1)
+        try:
+            print "Create project %s" % infos['name']
+            msf.init_gerrit_project(gerrit_client, infos)
+            print "Create project on Redmine %s" % infos['name']
+            msf.init_redmine_project(redmine_client, infos)
+        except Exception as e:
+            print "ERROR:Creating project %s is failed" % infos['name']
+            print "Error Msg:\n", e
     elif args.action == 'delete-repo':
         print "Delete project %s on gerrit" % infos['name']
         msf.delete_gerrit_project(gerrit_client, infos)
         print "Delete project %s on Redmine" % infos['name']
         msf.delete_redmine_project(redmine_client, infos)
     elif args.action == 'init-config-repo':
+        project_list = gerrit_client.listProjects()
+        if infos['name'] in project_list:
+            print "Project '%s' already exist" % infos['name']
+            sys.exit(1)
         print "Create special project %s" % infos['name']
         files = os.listdir(JJB_INIT_PATH)
         paths = [os.path.join(JJB_INIT_PATH, f) for f in files]
-        msf.init_gerrit_project(gerrit_client, infos)
-        msf.push_dir_in_gerrit_project(infos, 'jobs', paths)
-        print "Kick JJB on Jenkins %s" % infos['name']
-        msf.jenkins_init_jjb(infos)
-        print "Create project on Redmine %s" % infos['name']
-        msf.init_redmine_project(redmine_client, infos)
+        try:
+            msf.init_gerrit_project(gerrit_client, infos)
+            msf.push_dir_in_gerrit_project(infos, 'jobs', paths)
+            print "Kick JJB on Jenkins %s" % infos['name']
+            msf.jenkins_init_jjb(infos)
+            print "Create project on Redmine %s" % infos['name']
+            msf.init_redmine_project(redmine_client, infos)
+        except Exception as e:
+            print "ERROR:Creating special project %s is failed" % infos['name']
+            print "Error Msg:\n", e
