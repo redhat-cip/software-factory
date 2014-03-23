@@ -1,5 +1,8 @@
 #!/bin/bash
 
+set -x
+set -e
+
 . ../function.sh
 
 ROLES="puppetmaster ldap mysql redmine jenkins gerrit jenkins-slave01 jenkins-slave02 edeploy-server"
@@ -11,9 +14,9 @@ if [ -z "$1" ] || [ "$1" == "start" ]; then
     # Fix jenkins for lxc
     sudo sed -i 's/^#*JAVA_ARGS.*/JAVA_ARGS="-Djava.awt.headless=true -Xmx256m"/g' /var/lib/debootstrap/install/D7-H.1.0.0/jenkins/etc/default/jenkins
     # Update puppet modules
-    mkdir -p /var/lib/debootstrap/install/D7-H.1.0.0/puppetmaster/etc/puppet/{modules,manifests}
-    rsync -a ../puppet/modules/ /var/lib/debootstrap/install/D7-H.1.0.0/puppetmaster/etc/puppet/modules/
-    rsync -a ../puppet/manifests/ /var/lib/debootstrap/install/D7-H.1.0.0/puppetmaster/etc/puppet/manifests/
+    sudo mkdir -p /var/lib/debootstrap/install/D7-H.1.0.0/puppetmaster/etc/puppet/{modules,manifests}
+    sudo rsync -a ../puppet/modules/ /var/lib/debootstrap/install/D7-H.1.0.0/puppetmaster/etc/puppet/modules/
+    sudo rsync -a ../puppet/manifests/ /var/lib/debootstrap/install/D7-H.1.0.0/puppetmaster/etc/puppet/manifests/
     # We alreay have puppetmaster IP, so we can generate cloudinit
     generate_cloudinit
     sudo ${EDEPLOY_LXC} --config sf-lxc.yaml restart || exit -1
