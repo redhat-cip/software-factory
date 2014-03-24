@@ -175,6 +175,34 @@ function check_vm_up {
     done
 }
 
+function attach_volume {
+    if [[ "$rolename" =~ "gerrit" ]]; then
+        volume_id=`cinder list | grep $GIT_VOLUME_NAME | cut -f 2 -d "|" | tr -d ' '`
+        if [ "$volume_id" == "" ]; then
+            echo "Volume $GIT_VOLUME_NAME not found, creating new $GIT_VOLUME_SIZE GB volume"
+            cinder create --name $GIT_VOLUME_NAME $GIT_VOLUME_SIZE
+            volume_id=`cinder list | grep $GIT_VOLUME_NAME | cut -f 2 -d "|" | tr -d ' '`
+            if [ "$volume_id" == "" ]; then
+                echo "Could not create volume $GIT_VOLUME_NAME, skipping git Cinder volume"
+                return
+            fi
+        fi
+        retries=0
+        while true; do
+            nova volume-attach $vm_id $volume_id /dev/vdb
+            if [ $? -eq 0 ]; then
+                echo "Attached volume $GIT_VOLUME_NAME to $rolename"
+                break
+            fi
+            let retries=retries+1
+            if [ "$retries" == "9" ]; then
+                echo "Failed attaching volume $GIT_VOLUME_NAME to $rolename"
+            fi
+            sleep 10
+        done
+    fi
+}
+
 function add_vm_floating_ip {
     echo "Add a floating IP to ${rolename} ..."
     floating_ip=`nova floating-ip-list | grep "$vm_id" | head -1 | cut -f2 -d'|' | tr -d ' '`
@@ -239,6 +267,7 @@ function start {
         upload_vm_image
         boot_vm_image
         check_vm_up
+        attach_volume
         add_vm_floating_ip
         _add_in_security_group 1 65535 "$floating_ip/32"
         if [ -n "$DEVSTACK_SSH" ]; then
