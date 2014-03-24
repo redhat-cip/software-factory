@@ -9,7 +9,7 @@ def setUpPackage():
         print "No bootstrap"
         return
     os.chdir("lxc")
-    #subprocess.call(['./bootstrap-lxc.sh'])
+    subprocess.call(['./bootstrap-lxc.sh'])
     os.chdir("..")
 
 
