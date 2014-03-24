@@ -6,13 +6,8 @@
   <mode>NORMAL</mode>
   <useSecurity>true</useSecurity>
   <authorizationStrategy class="hudson.security.FullControlOnceLoggedInAuthorizationStrategy"/>
-  <securityRealm class="hudson.security.LDAPSecurityRealm" plugin="ldap@1.6">
-    <server><%= @settings['ldap_uri'] ? @settings['ldap_uri']: 'ldap://127.0.0.1:389' %></server>
-    <rootDN><%= @settings['ldap_root_dn'] ? @settings['ldap_root_dn']: 'dc=example,dc=com' %></rootDN>
-    <inhibitInferRootDN>false</inhibitInferRootDN>
-    <userSearchBase><%= @settings['ldap_user_base'] ? @settings['ldap_user_base']: 'ou=Users' %></userSearchBase>
-    <userSearch><%= @settings['ldap_user_search'] ? @settings['ldap_user_search']: 'cn={0}' %></userSearch>
-    <disableMailAddressResolver>false</disableMailAddressResolver>
+  <securityRealm class="hudson.security.PAMSecurityRealm" plugin="pam-auth@1.1">
+    <serviceName>jenkins</serviceName>
   </securityRealm>
   <disableRememberMe>false</disableRememberMe>
   <projectNamingStrategy class="jenkins.model.ProjectNamingStrategy$DefaultProjectNamingStrategy"/>
