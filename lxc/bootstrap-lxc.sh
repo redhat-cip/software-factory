@@ -1,8 +1,5 @@
 #!/bin/bash
 
-set -x
-set -e
-
 . ../function.sh
 
 ROLES="puppetmaster ldap mysql redmine jenkins gerrit jenkins-slave01 jenkins-slave02 edeploy-server"

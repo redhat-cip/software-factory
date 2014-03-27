@@ -151,15 +151,24 @@ function _post_configuration_knownhosts {
     local role=$1
     local ip=$2
     local port=$3
-    ssh-keygen -f "$HOME/.ssh/known_hosts" -R "[$role]:$port" > /dev/null 2>&1
-    ssh-keygen -f "$HOME/.ssh/known_hosts" -R "[$ip]:$port" > /dev/null 2>&1
+    if [ "$port" != "22" ]; then
+        ssh-keygen -f "$HOME/.ssh/known_hosts" -R "[$role]:$port" > /dev/null 2>&1
+        ssh-keygen -f "$HOME/.ssh/known_hosts" -R "[$ip]:$port" > /dev/null 2>&1
+    else
+        ssh-keygen -f "$HOME/.ssh/known_hosts" -R "$role" > /dev/null 2>&1
+        ssh-keygen -f "$HOME/.ssh/known_hosts" -R "$ip" > /dev/null 2>&1
+    fi
     RETRIES=0
     echo " [+] Starting ssh-keyscan on $role:$port"
     while true; do
         KEY=`ssh-keyscan -p $port $role 2> /dev/null`
         if [ "$KEY" != ""  ]; then
                 # fix ssh-keyscan bug for 2 ssh server on different port
-                ssh-keyscan -p $port $role 2> /dev/null | sed "s/$role/[$role]:$port,[$ip]:$port/" >> "$HOME/.ssh/known_hosts"
+                if [ "$port" != "22" ]; then
+                    ssh-keyscan -p $port $role 2> /dev/null | sed "s/$role/[$role]:$port,[$ip]:$port/" >> "$HOME/.ssh/known_hosts"
+                else
+                    ssh-keyscan $role 2> /dev/null | sed "s/$role/$role,$ip/" >> "$HOME/.ssh/known_hosts"
+                fi
                 echo "  -> $role:$port is up!"
                 break
         fi
