@@ -1,0 +1,167 @@
+#!/bin/bash
+#
+# Copyright (C) 2013 eNovance SAS <licensing@enovance.com>
+#
+# Author: Frederic Lepied <frederic.lepied@enovance.com>
+#
+# Licensed under the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License. You may obtain
+# a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations
+# under the License.
+
+src="$1"
+dir="$2"
+version="$3"
+DATA=../data
+ROLE=softwarefactory
+ORIG=$(cd $(dirname $0); pwd)
+
+. ${ORIG}/functions
+
+#
+# Gerrit
+#
+LASTWAR="https://gerrit-releases.storage.googleapis.com/gerrit-2.8.1.war"
+MYSQLJAVA="http://repo2.maven.org/maven2/mysql/mysql-connector-java/5.1.21/mysql-connector-java-5.1.21.jar"
+BCPROVJAVA="http://www.bouncycastle.org/download/bcprov-jdk16-144.jar"
+PYREDMINEWS="https://pypi.python.org/packages/source/p/pyredmine/pyredmine-0.2.4.tar.gz"
+GERRITUSER=gerrit
+GERRITHOOKS=../gerrit-hooks
+GERRIT_PACKAGES="git puppet vim mysql-client python-pip python-dateutil apache2 file"
+
+#
+# Jenkins
+#
+JENKINS_PACKAGES="jenkins puppet git python-pip sloccount rubygems rake puppet-lint"
+JENKINS_PLUGINS="http://updates.jenkins-ci.org/download/plugins/gerrit-trigger/2.11.0/gerrit-trigger.hpi \
+                 http://updates.jenkins-ci.org/download/plugins/ssh-agent/1.4.1/ssh-agent.hpi"
+
+#
+# MySQL
+#
+MYSQL_PACKAGES="mysql-server puppet automysqlbackup"
+
+#
+# Redmine
+#
+REDMINE_PACKAGES="apache2 libapache2-mod-passenger redmine-sqlite redmine-mysql redmine vim puppet git cron"
+
+#
+# LDAP
+#
+LDAP_PACKAGES="slapd ldap-utils puppet"
+
+PACKAGES="${GERRIT_PACKAGES} ${MYSQL_PACKAGES} ${REDMINE_PACKAGES} ${LDAP_PACKAGES}"
+
+update_repositories $dir
+install_ib_if_needed $ORIG $dir
+
+case "$(package_tool)" in
+  "apt")
+    #
+    # Redmine
+    #
+    do_chroot $dir /usr/share/debconf/fix_db.pl
+    do_chroot $dir debconf-set-selections <<< "redmine redmine/instances/default/dbconfig-install boolean false"
+    do_chroot $dir debconf-set-selections <<< "redmine redmine/instances/default/internal/skip-preseed boolean true"
+
+    #
+    # MySQL
+    #
+    do_chroot $dir debconf-set-selections <<< 'mysql-server-5.1 mysql-server/root_password password your_password'
+    do_chroot $dir debconf-set-selections <<< 'mysql-server-5.1 mysql-server/root_password_again password your_password'
+
+    #
+    # LDAP
+    #
+    do_chroot $dir debconf-set-selections <<< 'slapd slapd/password1 password secret'
+    do_chroot $dir debconf-set-selections <<< 'slapd slapd/password2 password secret'
+    do_chroot $dir debconf-set-selections <<< 'slapd shared/organization string dev'
+    do_chroot $dir debconf-set-selections <<< 'slapd slapd/backend string HDB'
+    do_chroot $dir debconf-set-selections <<< 'slapd slapd/allow_ldap_v2 boolean true'
+    do_chroot $dir debconf-set-selections <<< 'slapd slapd/purge_database boolean true'
+    do_chroot $dir debconf-set-selections <<< 'slapd slapd/domain string enovance.com'
+
+    install_packages $dir "$PACKAGES"
+
+    #
+    # Jenkins
+    #
+    wget -q -O - http://pkg.jenkins-ci.org/debian/jenkins-ci.org.key | do_chroot $dir apt-key add -
+    cat > ${dir}/etc/apt/sources.list.d/jenkins.list <<EOF
+    deb http://pkg.jenkins-ci.org/debian binary/
+EOF
+    update_repositories $dir
+    # Update kernel for LXC capabilities
+    wget -q http://198.154.188.142:8080/v1/AUTH_4f1b0b9ce3354a439db8ef19cf456d6f/kernel/linux-image-3.2.54-fbo_3.2.54-fbo-10.00.Custom_amd64.deb -O ${dir}/root/linux-image-3.2.54-fbo_3.2.54-fbo-10.00.Custom_amd64.deb
+    do_chroot $dir dpkg -i /root/linux-image-3.2.54-fbo_3.2.54-fbo-10.00.Custom_amd64.deb
+    do_chroot $dir update-grub
+
+    install_packages $dir "$JENKINS_PACKAGES"
+
+    #
+    # Gerrit
+    #
+    do_chroot $dir sh -c "adduser --disabled-password --gecos \"\" $GERRITUSER"
+    mkdir ${dir}/root/gerrit_data_source/
+    wget -q $LASTWAR -O ${dir}/root/gerrit_data_source/gerrit.war
+    wget -q $MYSQLJAVA -O ${dir}/root/gerrit_data_source/mysql-connector-java-5.1.21.jar
+    wget -q $BCPROVJAVA -O ${dir}/root/gerrit_data_source/bcprov-jdk16-144.jar
+    do_chroot $dir pip install $PYREDMINEWS
+    cp $DATA/project.config ${dir}/root/gerrit_data_source/
+    cp $DATA/ssh_wrapper.sh ${dir}/root/gerrit_data_source/
+    cp $DATA/replication.jar ${dir}/root/gerrit_data_source/
+    cp $DATA/delete-project.jar ${dir}/root/gerrit_data_source/
+    chmod +x ${dir}/root/gerrit_data_source/ssh_wrapper.sh
+    cp -Rf $GERRITHOOKS ${dir}/root/gerrit_data_source/
+    do_chroot $dir a2enmod proxy_http
+    do_chroot $dir a2enmod rewrite
+
+    do_chroot $dir sed -i -e 's/START=.*/START=yes/g' /etc/default/puppet
+    do_chroot $dir update-rc.d puppet defaults
+    do_chroot $dir update-rc.d -f slapd remove
+    do_chroot $dir update-rc.d -f apache2 remove
+    do_chroot $dir update-rc.d -f gerrit remove
+    do_chroot $dir update-rc.d -f mysql remove
+    do_chroot $dir update-rc.d -f jenkins remove
+    ;;
+  *)
+    fatal_error "$package_tool isn't supported for $ROLE role"
+    ;;
+esac
+
+
+do_chroot $dir pip install --upgrade pip
+do_chroot $dir /usr/local/bin/pip install flake8
+do_chroot $dir sed -i -e"s/^bind-address.*/bind-address = 0.0.0.0/" /etc/mysql/my.cnf
+
+
+#
+# Jenkins Post Inst
+#
+mkdir -p ${dir}/var/lib/jenkins/plugins
+do_chroot $dir chown jenkins /var/lib/jenkins /var/lib/jenkins/plugins
+for plugin in ${JENKINS_PLUGINS}; do
+  plugin_name=$(basename ${plugin})
+  echo "Installing plugin ${plugin_name}"
+  wget -q -O - "${plugin}" > ${dir}/var/lib/jenkins/plugins/${plugin_name}
+done
+# jjb
+mkdir -p ${dir}/opt/
+git clone 'https://git.openstack.org/openstack-infra/jenkins-job-builder' ${dir}/opt/jenkins-job-builder
+do_chroot ${dir} /usr/local/bin/pip install /opt/jenkins-job-builder
+mkdir -p ${dir}/etc/jenkins_jobs
+# Install puppet manifest
+rsync -av ../data/jjb/ $dir/usr/share/sf-jjb/
+#Install some addons required for testing
+HOME=/root do_chroot ${dir} gem install --no-rdoc --no-ri rspec-puppet
+
+
+clear_packages_cache $dir
