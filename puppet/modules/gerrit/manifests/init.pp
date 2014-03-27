@@ -336,6 +336,7 @@ class gerrit ($settings = hiera_hash('gerrit', '')) {
 
   # Only mount if there is an ext3 on the device
   exec {'mount_git':
+    path    => '/usr/bin:/usr/sbin:/bin',
     command => 'mount /home/gerrit/site_path/git/',
     onlyif => 'file -s /dev/vdb  | grep ext3',
     require => [Exec['create_git_fs'], Mount['git_volume']]
