@@ -70,13 +70,20 @@ if __name__ == "__main__":
         except KeyError:
             pass
         infos['core-group'] = '%s-core' % infos['name']
+        infos['ptl-group'] = '%s-ptl' % infos['name']
+        for k_group_members in ('ptl-group-members', 'core-group-members'):
+            try:
+                infos[k_group_members] = project_yaml[k_group_members]
+            except KeyError:
+                print "Nobody specified in %s" % k_group_members
 
     if args.action == 'init-config-repo':
         infos['name'] = 'config'
         infos['description'] = 'Config repository'
-        infos['core-group'] = '%s-core' % infos['name']
         infos['jenkins-host'] = jenkinshost
         infos['jenkins-privkey'] = jenkins_keyfile
+        infos['core-group'] = '%s-core' % infos['name']
+        infos['ptl-group'] = '%s-ptl' % infos['name']
 
     print "Using private key : %s" % keyfile
     print "Using username : %s" % adminuser

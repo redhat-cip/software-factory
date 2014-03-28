@@ -1,3 +1,5 @@
 name: dulwich
 description: Amazing project
 upstream: https://github.com/jelmer/dulwich
+ptl-group-members: frederic.lepied@enovance.com
+core-group-members: christian.schwede@enovance.com tristan.cacqueray@enovance.com

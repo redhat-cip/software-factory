@@ -18,6 +18,23 @@ class CustomGerritClient(gerrit.Gerrit):
         out, err = self._ssh(cmd)
         return err
 
+    def createGroup(self, group, visible_to_all=True, owner=None):
+        cmd = 'gerrit create-group %s' % group
+        if visible_to_all:
+            cmd = '%s --visible-to-all' % cmd
+        if owner:
+            cmd = '%s --owner %s' % (cmd, owner)
+        out, err = self._ssh(cmd)
+        return err
+
+    def addInGroup(self, group, user_email):
+        cmd = 'gerrit set-members %s -a %s' % (group, user_email)
+        try:
+            out, err = self._ssh(cmd)
+        except Exception, e:
+            print "Fail to add %s in group %s. Skip it !" % (user_email, group)
+            print "Fail due to : %s" % e
+
     def getGroupUUID(self, name):
         cmd = 'gerrit ls-groups -v -m %s' % name
         out, err = self._ssh(cmd)
@@ -144,10 +161,25 @@ class GerritRepo(object):
         self._exec(cmd, cwd=self.infos['localcopy_path'])
 
 
+def populate_groups(gerrit_client, infos):
+    for kgn, kgnm in [('ptl-group', 'ptl-group-members'),
+                      ('core-group', 'core-group-members')]:
+        try:
+            members = infos[kgnm].split()
+        except KeyError:
+            print "No key %s skip populate %s group." % (kgnm, kgn)
+            continue
+        for member in members:
+            gerrit_client.addInGroup(infos[kgn], member)
+
+
 def create_project(gerrit_client, infos):
-    print "Creating group"
-    gerrit_client.createGroup(infos['core-group'],
+    print "Creating groups (ptl, core)"
+    gerrit_client.createGroup(infos['ptl-group'],
                               visible_to_all=True)
+    gerrit_client.createGroup(infos['core-group'],
+                              visible_to_all=True,
+                              owner=infos['ptl-group'])
     print "Creating project"
     gerrit_client.createProject(infos['name'],
                                 require_change_id=True)
@@ -157,8 +189,11 @@ def init_gerrit_project(gerrit_client, infos):
     create_project(gerrit_client, infos)
     infos['core-group-uuid'] = \
         gerrit_client.getGroupUUID(infos['core-group'])
+    infos['ptl-group-uuid'] = \
+        gerrit_client.getGroupUUID(infos['ptl-group'])
     infos['non-interactive-users'] = \
         gerrit_client.getGroupUUID('Non-Interactive')
+    populate_groups(gerrit_client, infos)
     grepo = GerritRepo(infos)
     grepo.clone()
     paths = {}
@@ -174,8 +209,9 @@ def init_gerrit_project(gerrit_client, infos):
 
 def delete_gerrit_project(gerrit_client, infos):
     try:
-        print "Deleting group " + infos['core-group']
-        gerrit_client.deleteGroup(infos['core-group'])
+        for kgn in ('core-group', 'ptl-group'):
+            print "Deleting group " + infos[kgn]
+            gerrit_client.deleteGroup(infos[kgn])
         print "Deleting the project " + infos['name']
         gerrit_client.deleteProject(infos['name'])
     except Exception:
