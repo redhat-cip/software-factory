@@ -20,7 +20,7 @@ function new_build {
 function putip_to_yaml {
     cat << EOF >> ${BUILD}/sf-host.yaml
   -
-    name: sf-$1
+    name: $1
     address: $2
 EOF
 }
@@ -28,22 +28,22 @@ EOF
 function putip_to_yaml_devstack {
     cat << EOF >> ${BUILD}/sf-host-tunneled.yaml
   -
-    name: sf-$1
+    name: $1
     address: $2
 EOF
 }
 
 function getip_from_yaml {
-    cat ${BUILD}/sf-host.yaml  | grep -A 1 -B 1 "name: sf-$1$" | grep 'address' | cut -d: -f2 | sed 's/ *//g'
+    cat ${BUILD}/sf-host.yaml  | grep -A 1 -B 1 "name: $1$" | grep 'address' | cut -d: -f2 | sed 's/ *//g'
 }
 
 function getip_from_yaml_devstack {
-    cat ${BUILD}/sf-host-tunneled.yaml  | grep -A 1 -B 1 "name: sf-$1$" | grep 'address' | cut -d: -f2 | sed 's/ *//g'
+    cat ${BUILD}/sf-host-tunneled.yaml  | grep -A 1 -B 1 "name: $1$" | grep 'address' | cut -d: -f2 | sed 's/ *//g'
 }
 
 function generate_cloudinit {
     OUTPUT=${BUILD}/cloudinit
-    PUPPETMASTER_IP=$(getip_from_yaml puppetmaster)
+    PUPPETMASTER_IP=$(getip_from_yaml sf-puppetmaster)
     rm -Rf ${OUTPUT}
     mkdir -p ${OUTPUT}
     for i in ../cloudinit/*.cloudinit; do
@@ -61,7 +61,7 @@ function generate_hiera {
     for role in $ROLES; do
         echo "  ${role}.pub:" >> ${OUTPUT}/hosts.yaml
         echo "    ip: $(getip_from_yaml ${role})" >> ${OUTPUT}/hosts.yaml
-        echo "    host_aliases: [sf-${role}, ${role}.pub]" >> ${OUTPUT}/hosts.yaml
+        echo "    host_aliases: [${role}, ${role}.pub]" >> ${OUTPUT}/hosts.yaml
     done
 
     # Jenkins ssh key
@@ -109,13 +109,13 @@ function post_configuration_etc_hosts {
     # Make sure /etc/hosts is up-to-date
     for role in ${ROLES}; do
         if [ -z "$1" ]; then
-            HOST_LINE="$(getip_from_yaml ${role}) sf-${role}"
+            HOST_LINE="$(getip_from_yaml ${role}) ${role}"
         else
-            HOST_LINE="$(getip_from_yaml_devstack ${role}) sf-${role}"
+            HOST_LINE="$(getip_from_yaml_devstack ${role}) ${role}"
         fi
-        grep "sf-${role}$" /etc/hosts > /dev/null
+        grep "${role}$" /etc/hosts > /dev/null
         if [ $? == 0 ]; then
-            cat /etc/hosts | grep -v "sf-${role}$" | sudo tee /etc/hosts.new > /dev/null
+            cat /etc/hosts | grep -v "${role}$" | sudo tee /etc/hosts.new > /dev/null
             sudo mv /etc/hosts.new /etc/hosts
         fi
         echo ${HOST_LINE} | sudo tee -a /etc/hosts > /dev/null
@@ -134,15 +134,15 @@ function post_configuration_knownhosts {
         else
             ip=$(getip_from_yaml $role)
         fi
-        _post_configuration_knownhosts "sf-$role" $ip $port
+        _post_configuration_knownhosts "$role" $ip $port
     done
 }
 
 function post_configuration_gerrit_knownhosts {
     if [ -n "$1" ]; then
-        ip=$(getip_from_yaml_devstack gerrit)
+        ip=$(getip_from_yaml_devstack sf-gerrit)
     else
-        ip=$(getip_from_yaml gerrit)
+        ip=$(getip_from_yaml sf-gerrit)
     fi
     _post_configuration_knownhosts "sf-gerrit" $ip 29418
 }
@@ -187,8 +187,8 @@ function post_configuration_puppet_apply {
         let ssh_port=ssh_port+1024
     fi
     for role in ${ROLES}; do
-        echo " [+] sf-${role}"
-        ssh -p$ssh_port root@sf-${role} puppet agent --test || echo "TODO: fix puppet agent failure"
+        echo " [+] ${role}"
+        ssh -p$ssh_port root@${role} puppet agent --test || echo "TODO: fix puppet agent failure"
     done
 }
 

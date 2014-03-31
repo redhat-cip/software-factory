@@ -2,14 +2,14 @@
 
 . ../function.sh
 
-ROLES="puppetmaster ldap mysql redmine jenkins gerrit jenkins-slave01 jenkins-slave02 edeploy-server"
+ROLES="sf-puppetmaster sf-ldap sf-mysql sf-redmine sf-jenkins sf-gerrit sf-jenkins-slave01 sf-jenkins-slave02 sf-edeploy-server"
 EDEPLOY_LXC=/srv/edeploy-lxc/edeploy-lxc
 
 if [ -z "$1" ] || [ "$1" == "start" ]; then
     new_build
     cp sf-lxc.yaml ${BUILD}/sf-host.yaml
     # Fix jenkins for lxc
-    sudo sed -i 's/^#*JAVA_ARGS.*/JAVA_ARGS="-Djava.awt.headless=true -Xmx256m"/g' /var/lib/debootstrap/install/D7-H.1.0.0/jenkins/etc/default/jenkins
+    sudo sed -i 's/^#*JAVA_ARGS.*/JAVA_ARGS="-Djava.awt.headless=true -Xmx256m"/g' /var/lib/debootstrap/install/D7-H.1.0.0/softwarefactory/etc/default/jenkins
     # Update puppet modules
     sudo mkdir -p /var/lib/debootstrap/install/D7-H.1.0.0/puppetmaster/etc/puppet/{modules,manifests}
     sudo rsync -a ../puppet/modules/ /var/lib/debootstrap/install/D7-H.1.0.0/puppetmaster/etc/puppet/modules/
