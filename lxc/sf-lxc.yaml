@@ -10,7 +10,7 @@ hosts:
   -
     address: 192.168.134.49
     name: sf-puppetmaster
-    role: puppetmaster
+    role: install-server
     cloudinit: ../build/cloudinit/puppetmaster.cloudinit
   -
     address: 192.168.134.50
@@ -25,30 +25,15 @@ hosts:
   -
     address: 192.168.134.52
     name: sf-redmine
-    role: redmine
+    role: softwarefactory
     cloudinit: ../build/cloudinit/redmine.cloudinit
   -
     address: 192.168.134.53
     name: sf-gerrit
-    role: gerrit
+    role: softwarefactory
     cloudinit: ../build/cloudinit/gerrit.cloudinit
   -
     address: 192.168.134.54
     name: sf-jenkins
-    role: jenkins
+    role: softwarefactory
     cloudinit: ../build/cloudinit/jenkins.cloudinit
-  -
-    address: 192.168.134.55
-    name: sf-jenkins-slave01
-    role: jenkins
-    cloudinit: ../build/cloudinit/jenkins-slave.cloudinit
-  -
-    address: 192.168.134.56
-    name: sf-jenkins-slave02
-    role: jenkins
-    cloudinit: ../build/cloudinit/jenkins-slave.cloudinit
-  -
-    address: 192.168.134.57
-    name: sf-edeploy-server
-    role: edeploy
-    cloudinit: ../build/cloudinit/edeploy.cloudinit

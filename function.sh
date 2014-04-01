@@ -212,6 +212,7 @@ function post_configuration_update_hiera {
     if [ -n "$1" ]; then
         let ssh_port=ssh_port+1024
     fi
+    ssh root@sf-puppetmaster mkdir -p /etc/puppet/hiera/
     scp -P$ssh_port ${BUILD}/hiera/*.yaml root@sf-puppetmaster:/etc/puppet/hiera/
 }
 
@@ -236,7 +237,7 @@ function post_configuration_jenkins_scripts {
     if [ -n "$1" ]; then
         let ssh_port=ssh_port+1024
     fi
-    for host in "sf-jenkins" "sf-jenkins-slave01" "sf-jenkins-slave02"; do
+    for host in "sf-jenkins"; do
         ssh -p$ssh_port root@${host} mkdir -p /usr/local/jenkins/slave_scripts/
         scp -P$ssh_port ../data/jenkins_slave_scripts/* root@${host}:/usr/local/jenkins/slave_scripts/
     done
