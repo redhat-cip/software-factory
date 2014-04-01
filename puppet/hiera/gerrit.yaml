@@ -15,6 +15,10 @@ gerrit:
   ldap_password: secret
   ldap_account_base: ou=Users,dc=enovance,dc=com
   ldap_account_pattern: (&(objectClass=inetOrgPerson)(cn=${username}))
+  ldap_group_base: ou=Groups,dc=enovance,dc=com
+  ldap_group_name: cn
+  ldap_group_pattern: (&(objectClass=organizationalRole)(cn=${groupname}))
+  ldap_group_member_pattern: (|(roleOccupant=${username})(gidNumber=${gidNumber}))
   ldap_account_email_address: mail
   ldap_account_ssh_username: cn
   http_basic_auth: true

@@ -72,9 +72,37 @@ write_files:
       objectClass: inetOrgPerson
     path: /root/demo_users.ldif
 
+-   content: |
+      dn: ou=Groups,dc=enovance,dc=com
+      objectClass: organizationalUnit
+      ou: Groups
+    path: /root/groups_ou.ldif
+
+-   content: |
+      dn: cn=group01,ou=Groups,dc=enovance,dc=com
+      cn: group01
+      objectClass: organizationalRole
+      roleOccupant: cn=fabien.boucher,dc=enovance,dc=com
+      roleOccupant: cn=frederic.lepied,dc=enovance,dc=com
+
+      dn: cn=group02,ou=Groups,dc=enovance,dc=com
+      cn: group02
+      objectClass: organizationalRole
+      roleOccupant: cn=fabien.boucher,dc=enovance,dc=com
+      roleOccupant: cn=tristan.cacqueray,dc=enovance,dc=com
+
+      dn: cn=group03,ou=Groups,dc=enovance,dc=com
+      cn: group03
+      objectClass: organizationalRole
+      roleOccupant: cn=tristan.cacqueray,dc=enovance,dc=com
+      roleOccupant: cn=christian.schwede,dc=enovance,dc=com
+    path: /root/groups.ldif
+
 runcmd:
  - ldapadd -x -D cn=admin,dc=enovance,dc=com -w secret -f /root/users_ou.ldif
  - ldapadd -x -D cn=admin,dc=enovance,dc=com -w secret -f /root/demo_users.ldif
+ - ldapadd -x -D cn=admin,dc=enovance,dc=com -w secret -f /root/groups_ou.ldif
+ - ldapadd -x -D cn=admin,dc=enovance,dc=com -w secret -f /root/groups.ldif
  - ldapmodify -Q -Y EXTERNAL -H ldapi:/// -f /root/disable_anon_frontend.ldif
  - ldapmodify -Q -Y EXTERNAL -H ldapi:/// -f /root/disable_anon_frontend.ldif
  - echo PUPPETMASTER SF_PREFIX-puppetmaster.pub >> /etc/hosts
