@@ -1,6 +1,6 @@
 production:
-  adapter: <%= has_variable?("redmine_database_adapter") ? redmine_database_adapter: 'mysql' %>
-  database: <%= has_variable?("redmine_database_name") ? redmine_database_name: 'redmine' %>
-  host: <%= has_variable?("redmine_database_host") ? redmine_database_host: 'sf-mysql' %>
-  username: <%= has_variable?("redmine_database_username") ? redmine_database_username: 'redmine' %>
-  password: <%= has_variable?("redmine_database_password") ? redmine_database_password: 'secret' %>
+  adapter: mysql
+  database: <%= @settings['redmine_mysql_db'] %>
+  host: <%= @settings['redmine_mysql_db_address'] %>
+  username: <%= @settings['redmine_mysql_db_username'] %>
+  password: <%= @settings['redmine_mysql_db_secret'] %>

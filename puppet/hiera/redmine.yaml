@@ -1,6 +1,10 @@
 redmine:
   issues_tracker_api_key: REDMINE_API_KEY
-  ldap_address: sf-ldap
+  redmine_mysql_db_address: "%{hiera('mysql_url')}"
+  redmine_mysql_db_secret: secret
+  redmine_mysql_db_username: redmine
+  redmine_mysql_db: redmine
+  ldap_address: "%{hiera('ldap_url')}"
   ldap_port: 389
   ldap_tls: 0
   ldap_login_attr: cn

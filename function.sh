@@ -33,6 +33,10 @@ function putip_to_yaml_devstack {
 EOF
 }
 
+function gethostname_from_yaml {
+    cat ${BUILD}/sf-host.yaml | grep "name: .*$1.*$" | cut -d: -f2 | sed 's/ *//g'
+}
+
 function getip_from_yaml {
     cat ${BUILD}/sf-host.yaml  | grep -A 1 -B 1 "name: $1$" | grep 'address' | cut -d: -f2 | sed 's/ *//g'
 }
@@ -43,7 +47,8 @@ function getip_from_yaml_devstack {
 
 function generate_cloudinit {
     OUTPUT=${BUILD}/cloudinit
-    PUPPETMASTER_IP=$(getip_from_yaml sf-puppetmaster)
+    puppetmaster_host=$(gethostname_from_yaml puppetmaster)
+    PUPPETMASTER_IP=$(getip_from_yaml ${puppetmaster_host})
     rm -Rf ${OUTPUT}
     mkdir -p ${OUTPUT}
     for i in ../cloudinit/*.cloudinit; do
@@ -55,6 +60,7 @@ function generate_hiera {
     OUTPUT=${BUILD}/hiera
     rm -Rf ${OUTPUT}
     mkdir -p ${OUTPUT}
+    cp ../puppet/hiera/common.yaml ${OUTPUT}/common.yaml
 
     # Hosts
     echo -e "hosts:\n  localhost:\n    ip: 127.0.0.1" > ${OUTPUT}/hosts.yaml
@@ -62,7 +68,10 @@ function generate_hiera {
         echo "  ${role}.pub:" >> ${OUTPUT}/hosts.yaml
         echo "    ip: $(getip_from_yaml ${role})" >> ${OUTPUT}/hosts.yaml
         echo "    host_aliases: [${role}, ${role}.pub]" >> ${OUTPUT}/hosts.yaml
+        current_role=`echo "${role}" | sed 's/.*\(gerrit\|redmine\|jenkins\|mysql\|ldap\).*/\1/g'`
+        sed -i "s#${current_role}_url:.*#${current_role}_url: ${role}#g" ${OUTPUT}/common.yaml
     done
+
 
     # Jenkins ssh key
     JENKINS_PUB="$(cat ${OUTPUT}/../data/jenkins_rsa.pub | cut -d' ' -f2)"
@@ -139,12 +148,13 @@ function post_configuration_knownhosts {
 }
 
 function post_configuration_gerrit_knownhosts {
+    gerrit_host=$(gethostname_from_yaml gerrit)
     if [ -n "$1" ]; then
-        ip=$(getip_from_yaml_devstack sf-gerrit)
+        ip=$(getip_from_yaml_devstack $gerrit_host)
     else
-        ip=$(getip_from_yaml sf-gerrit)
+        ip=$(getip_from_yaml $gerrit_host)
     fi
-    _post_configuration_knownhosts "sf-gerrit" $ip 29418
+    _post_configuration_knownhosts "${gerrit_host}" $ip 29418
 }
 
 function _post_configuration_knownhosts {
@@ -208,36 +218,41 @@ function generate_serverspec {
 }
 
 function post_configuration_update_hiera {
+    puppetmaster_host=$(gethostname_from_yaml puppetmaster)
     local ssh_port=22
     if [ -n "$1" ]; then
         let ssh_port=ssh_port+1024
     fi
-    ssh root@sf-puppetmaster mkdir -p /etc/puppet/hiera/
-    scp -P$ssh_port ${BUILD}/hiera/*.yaml root@sf-puppetmaster:/etc/puppet/hiera/
+    ssh root@$puppetmaster_host mkdir -p /etc/puppet/hiera/
+    scp -P$ssh_port ${BUILD}/hiera/*.yaml root@$puppetmaster_host:/etc/puppet/hiera/
 }
 
 function post_configuration_ssh_keys {
+    jenkins_host=$(gethostname_from_yaml jenkins)
+    gerrit_host=$(gethostname_from_yaml gerrit)
+
     local ssh_port=22
     if [ -n "$1" ]; then
         let ssh_port=ssh_port+1024
     fi
-    ssh -p$ssh_port root@sf-jenkins mkdir /var/lib/jenkins/.ssh/
-    scp -P$ssh_port ${BUILD}/data/jenkins_rsa root@sf-jenkins:/var/lib/jenkins/.ssh/id_rsa
-    ssh -p$ssh_port root@sf-jenkins chown -R jenkins /var/lib/jenkins/.ssh/
-    ssh -p$ssh_port root@sf-jenkins chmod 400 /var/lib/jenkins/.ssh/id_rsa
-    scp -P$ssh_port ${BUILD}/data/gerrit_service_rsa root@sf-gerrit:/home/gerrit/ssh_host_rsa_key
-    scp -P$ssh_port ${BUILD}/data/gerrit_service_rsa.pub root@sf-gerrit:/home/gerrit/ssh_host_rsa_key.pub
-    ssh -p$ssh_port root@sf-gerrit chown gerrit:gerrit /home/gerrit/ssh_host_rsa_key
-    ssh -p$ssh_port root@sf-gerrit chown gerrit:gerrit /home/gerrit/ssh_host_rsa_key.pub
+    ssh -p$ssh_port root@$jenkins_host mkdir /var/lib/jenkins/.ssh/
+    scp -P$ssh_port ${BUILD}/data/jenkins_rsa root@$jenkins_host:/var/lib/jenkins/.ssh/id_rsa
+    ssh -p$ssh_port root@$jenkins_host chown -R jenkins /var/lib/jenkins/.ssh/
+    ssh -p$ssh_port root@$jenkins_host chmod 400 /var/lib/jenkins/.ssh/id_rsa
+    scp -P$ssh_port ${BUILD}/data/gerrit_service_rsa root@$gerrit_host:/home/gerrit/ssh_host_rsa_key
+    scp -P$ssh_port ${BUILD}/data/gerrit_service_rsa.pub root@$gerrit_host:/home/gerrit/ssh_host_rsa_key.pub
+    ssh -p$ssh_port root@$gerrit_host chown gerrit:gerrit /home/gerrit/ssh_host_rsa_key
+    ssh -p$ssh_port root@$gerrit_host chown gerrit:gerrit /home/gerrit/ssh_host_rsa_key.pub
 }
 
 function post_configuration_jenkins_scripts {
+    jenkins_host=$(gethostname_from_yaml jenkins)
     # Update jenkins slave scripts
     local ssh_port=22
     if [ -n "$1" ]; then
         let ssh_port=ssh_port+1024
     fi
-    for host in "sf-jenkins"; do
+    for host in "${jenkins_host}"; do
         ssh -p$ssh_port root@${host} mkdir -p /usr/local/jenkins/slave_scripts/
         scp -P$ssh_port ../data/jenkins_slave_scripts/* root@${host}:/usr/local/jenkins/slave_scripts/
     done

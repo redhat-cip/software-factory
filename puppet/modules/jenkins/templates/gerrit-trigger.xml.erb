@@ -2,7 +2,7 @@
 <com.sonyericsson.hudson.plugins.gerrit.trigger.PluginImpl plugin="gerrit-trigger@2.11.0">
   <servers>
     <com.sonyericsson.hudson.plugins.gerrit.trigger.GerritServer>
-      <name>sf-gerrit</name>
+      <name><%= @settings['gerrit_url'] %></name>
       <config class="com.sonyericsson.hudson.plugins.gerrit.trigger.config.Config">
         <gerritHostName><%= @settings['gerrit_hostname'] %></gerritHostName>
         <gerritSshPort>29418</gerritSshPort>

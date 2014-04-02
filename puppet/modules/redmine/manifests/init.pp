@@ -1,4 +1,7 @@
 class redmine ($settings = hiera_hash('redmine', '')) {
+
+    $mysql_url = $settings['redmine_mysql_db_address']
+
     package {'redmine':
         ensure => 'installed',
         name   => 'redmine',
@@ -86,7 +89,7 @@ class redmine ($settings = hiera_hash('redmine', '')) {
     }
 
     exec {'post-conf-in-mysql':
-        command     => 'mysql -u redmine redmine -psecret -h sf-mysql < /root/post-conf-in-mysql.sql',
+        command     => "mysql -u redmine redmine -psecret -h ${mysql_url} < /root/post-conf-in-mysql.sql",
         path        => '/usr/bin/:/bin/',
         cwd         => '/usr/bin',
         refreshonly => true,
