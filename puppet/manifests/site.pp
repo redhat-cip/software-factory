@@ -14,12 +14,8 @@ node /.*jenkins-swarm-slave.*/ inherits base {
   include jenkins-swarm-slave
 }
 
-node /.*jenkins\..*/ inherits base {
+node /.*jenkins.*/ inherits base {
   include jenkins
-  include jjb
-}
-
-node /.*jenkins-slave.*/ inherits base {
   include jjb
 }
 

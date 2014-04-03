@@ -9,31 +9,31 @@ edeploy:
 hosts:
   -
     address: 192.168.134.49
-    name: sf-puppetmaster
+    name: SF_PREFIX-puppetmaster
     role: install-server
     cloudinit: ../build/cloudinit/puppetmaster.cloudinit
   -
     address: 192.168.134.50
-    name: sf-ldap
+    name: SF_PREFIX-ldap
     role: ldap
     cloudinit: ../build/cloudinit/ldap.cloudinit
   -
     address: 192.168.134.51
-    name: sf-mysql
+    name: SF_PREFIX-mysql
     role: mysql
     cloudinit: ../build/cloudinit/mysql.cloudinit
   -
     address: 192.168.134.52
-    name: sf-redmine
+    name: SF_PREFIX-redmine
     role: softwarefactory
     cloudinit: ../build/cloudinit/redmine.cloudinit
   -
     address: 192.168.134.53
-    name: sf-gerrit
+    name: SF_PREFIX-gerrit
     role: softwarefactory
     cloudinit: ../build/cloudinit/gerrit.cloudinit
   -
     address: 192.168.134.54
-    name: sf-jenkins
+    name: SF_PREFIX-jenkins
     role: softwarefactory
     cloudinit: ../build/cloudinit/jenkins.cloudinit

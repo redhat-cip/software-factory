@@ -1,7 +1,7 @@
 #cloud-config
-hostname: sf-jenkins-slave
-fqdn: sf-jenkins-slave.pub
+hostname: SF_PREFIX-jenkins-slave
+fqdn: SF_PREFIX-jenkins-slave.pub
 disable_root: 0
 runcmd:
- - echo PUPPETMASTER sf-puppetmaster.pub >> /etc/hosts
- - sed -i -e '0,/^$/s/^$/server=sf-puppetmaster.pub\n/g' /etc/puppet/puppet.conf
+ - echo PUPPETMASTER SF_PREFIX-puppetmaster.pub >> /etc/hosts
+ - sed -i -e '0,/^$/s/^$/server=SF_PREFIX-puppetmaster.pub\n/g' /etc/puppet/puppet.conf

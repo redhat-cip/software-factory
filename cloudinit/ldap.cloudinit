@@ -1,7 +1,7 @@
 #cloud-config
 #
-hostname: sf-ldap
-fqdn: sf-ldap.pub
+hostname: SF_PREFIX-ldap
+fqdn: SF_PREFIX-ldap.pub
 disable_root: 0
 write_files:
 -   content: |
@@ -77,5 +77,5 @@ runcmd:
  - ldapadd -x -D cn=admin,dc=enovance,dc=com -w secret -f /root/demo_users.ldif
  - ldapmodify -Q -Y EXTERNAL -H ldapi:/// -f /root/disable_anon_frontend.ldif
  - ldapmodify -Q -Y EXTERNAL -H ldapi:/// -f /root/disable_anon_frontend.ldif
- - echo PUPPETMASTER sf-puppetmaster.pub >> /etc/hosts
- - sed -i -e '0,/^$/s/^$/server=sf-puppetmaster.pub\n/g' /etc/puppet/puppet.conf
+ - echo PUPPETMASTER SF_PREFIX-puppetmaster.pub >> /etc/hosts
+ - sed -i -e '0,/^$/s/^$/server=SF_PREFIX-puppetmaster.pub\n/g' /etc/puppet/puppet.conf

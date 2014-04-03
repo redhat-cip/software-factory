@@ -12,8 +12,7 @@ function new_build {
     mkdir ${BUILD}
     [ ! -d "${BUILD}/cloudinit" ] && mkdir ${BUILD}/cloudinit
     # puppetmaster cloudinit file can be used directly
-    cp ../cloudinit/puppetmaster.cloudinit \
-        ${BUILD}/cloudinit/puppetmaster.cloudinit
+    cat ../cloudinit/puppetmaster.cloudinit | sed "s/SF_PREFIX/${SF_PREFIX}/g" > ${BUILD}/cloudinit/puppetmaster.cloudinit
     echo "hosts:" > ${BUILD}/sf-host.yaml
 }
 
@@ -52,7 +51,7 @@ function generate_cloudinit {
     rm -Rf ${OUTPUT}
     mkdir -p ${OUTPUT}
     for i in ../cloudinit/*.cloudinit; do
-        cat $i | sed "s#PUPPETMASTER#${PUPPETMASTER_IP}#g" > ${OUTPUT}/$(basename $i)
+        cat $i | sed -e "s#PUPPETMASTER#${PUPPETMASTER_IP}#g" -e "s/SF_PREFIX/${SF_PREFIX}/" > ${OUTPUT}/$(basename $i)
     done
 }
 
@@ -122,8 +121,7 @@ function post_configuration_etc_hosts {
         else
             HOST_LINE="$(getip_from_yaml_devstack ${role}) ${role}"
         fi
-        grep "${role}$" /etc/hosts > /dev/null
-        if [ $? == 0 ]; then
+        if [ "z`grep \"${role}$\" /etc/hosts`" != "z" ]; then
             cat /etc/hosts | grep -v "${role}$" | sudo tee /etc/hosts.new > /dev/null
             sudo mv /etc/hosts.new /etc/hosts
         fi
@@ -162,11 +160,11 @@ function _post_configuration_knownhosts {
     local ip=$2
     local port=$3
     if [ "$port" != "22" ]; then
-        ssh-keygen -f "$HOME/.ssh/known_hosts" -R "[$role]:$port" > /dev/null 2>&1
-        ssh-keygen -f "$HOME/.ssh/known_hosts" -R "[$ip]:$port" > /dev/null 2>&1
+        ssh-keygen -f "$HOME/.ssh/known_hosts" -R "[$role]:$port" > /dev/null 2>&1 || echo
+        ssh-keygen -f "$HOME/.ssh/known_hosts" -R "[$ip]:$port" > /dev/null 2>&1 || echo
     else
-        ssh-keygen -f "$HOME/.ssh/known_hosts" -R "$role" > /dev/null 2>&1
-        ssh-keygen -f "$HOME/.ssh/known_hosts" -R "$ip" > /dev/null 2>&1
+        ssh-keygen -f "$HOME/.ssh/known_hosts" -R "$role" > /dev/null 2>&1 || echo
+        ssh-keygen -f "$HOME/.ssh/known_hosts" -R "$ip" > /dev/null 2>&1 || echo
     fi
     RETRIES=0
     echo " [+] Starting ssh-keyscan on $role:$port"

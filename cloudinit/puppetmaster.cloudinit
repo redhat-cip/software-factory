@@ -1,6 +1,6 @@
 #cloud-config
-hostname: sf-puppetmaster
-fqdn: sf-puppetmaster.pub
+hostname: SF_PREFIX-puppetmaster
+fqdn: SF_PREFIX-puppetmaster.pub
 disable_root: 0
 write_files:
 -   content: |
@@ -11,8 +11,8 @@ write_files:
       rundir=/var/run/puppet
       factpath=$vardir/lib/facter
       templatedir=$confdir/templates
-      certname=sf-puppetmaster.pub
-      server=sf-puppetmaster.pub
+      certname=SF_PREFIX-puppetmaster.pub
+      server=SF_PREFIX-puppetmaster.pub
       autosign=true
 
       [master]
@@ -23,7 +23,7 @@ write_files:
     path: /etc/puppet/puppet.conf
 
 runcmd:
- - echo "127.0.0.1 sf-puppetmaster.pub sf-puppetmaster" >> /etc/hosts
+ - echo "127.0.0.1 SF_PREFIX-puppetmaster.pub SF_PREFIX-puppetmaster" >> /etc/hosts
  # Insert server configuration before the autosign= line
  - sed -i -e 's/novalocal/pub/' /etc/resolv.conf
  # runcmd commands are executed after the hostname setting
