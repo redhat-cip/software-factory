@@ -1,0 +1,4 @@
+pecan
+gerritlib
+python-ldap
+requests

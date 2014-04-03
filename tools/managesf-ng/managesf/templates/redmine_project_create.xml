@@ -1,0 +1,5 @@
+<project>
+  <name>%(name)s</name>
+  <description>%(description)s</description>
+  <identifier>%(identifier)s</identifier>
+</project>
