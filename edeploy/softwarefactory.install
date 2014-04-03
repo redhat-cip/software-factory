@@ -53,12 +53,7 @@ MYSQL_PACKAGES="mysql-server puppet automysqlbackup"
 #
 REDMINE_PACKAGES="apache2 libapache2-mod-passenger redmine-sqlite redmine-mysql redmine vim puppet git cron"
 
-#
-# LDAP
-#
-LDAP_PACKAGES="slapd ldap-utils puppet"
-
-PACKAGES="${GERRIT_PACKAGES} ${MYSQL_PACKAGES} ${REDMINE_PACKAGES} ${LDAP_PACKAGES}"
+PACKAGES="${GERRIT_PACKAGES} ${MYSQL_PACKAGES} ${REDMINE_PACKAGES}"
 
 update_repositories $dir
 install_ib_if_needed $ORIG $dir
@@ -77,17 +72,6 @@ case "$(package_tool)" in
     #
     do_chroot $dir debconf-set-selections <<< 'mysql-server-5.1 mysql-server/root_password password your_password'
     do_chroot $dir debconf-set-selections <<< 'mysql-server-5.1 mysql-server/root_password_again password your_password'
-
-    #
-    # LDAP
-    #
-    do_chroot $dir debconf-set-selections <<< 'slapd slapd/password1 password secret'
-    do_chroot $dir debconf-set-selections <<< 'slapd slapd/password2 password secret'
-    do_chroot $dir debconf-set-selections <<< 'slapd shared/organization string dev'
-    do_chroot $dir debconf-set-selections <<< 'slapd slapd/backend string HDB'
-    do_chroot $dir debconf-set-selections <<< 'slapd slapd/allow_ldap_v2 boolean true'
-    do_chroot $dir debconf-set-selections <<< 'slapd slapd/purge_database boolean true'
-    do_chroot $dir debconf-set-selections <<< 'slapd slapd/domain string enovance.com'
 
     install_packages $dir "$PACKAGES"
 
@@ -126,7 +110,6 @@ EOF
 
     do_chroot $dir sed -i -e 's/START=.*/START=yes/g' /etc/default/puppet
     do_chroot $dir update-rc.d puppet defaults
-    do_chroot $dir update-rc.d -f slapd remove
     do_chroot $dir update-rc.d -f apache2 remove
     do_chroot $dir update-rc.d -f gerrit remove
     do_chroot $dir update-rc.d -f mysql remove
