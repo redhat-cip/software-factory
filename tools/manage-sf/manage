@@ -65,6 +65,7 @@ if __name__ == "__main__":
         project_yaml = yaml.load(file(args.project))
         infos['name'] = project_yaml['name']
         infos['description'] = project_yaml['description']
+        infos['private'] = project_yaml['private']
         try:
             infos['upstream'] = project_yaml['upstream']
         except KeyError:
@@ -76,6 +77,9 @@ if __name__ == "__main__":
                 infos[k_group_members] = project_yaml[k_group_members]
             except KeyError:
                 print "Nobody specified in %s" % k_group_members
+        if infos['private'] is True:
+            infos['dev-group'] = '%s-dev' % infos['name']
+            infos['dev-group-members'] = project_yaml['dev-group-members']
 
     if args.action == 'init-config-repo':
         infos['name'] = 'config'

@@ -163,7 +163,10 @@ class GerritRepo(object):
 
 def populate_groups(gerrit_client, infos):
     for kgn, kgnm in [('ptl-group', 'ptl-group-members'),
-                      ('core-group', 'core-group-members')]:
+                      ('core-group', 'core-group-members'),
+                      ('dev-group', 'dev-group-members')]:
+        if infos['private'] is False and kgn == 'dev-group':
+            continue
         try:
             members = infos[kgnm].split()
         except KeyError:
@@ -180,6 +183,11 @@ def create_project(gerrit_client, infos):
     gerrit_client.createGroup(infos['core-group'],
                               visible_to_all=True,
                               owner=infos['ptl-group'])
+    if infos['private'] is True:
+        print "Creating group (dev)"
+        gerrit_client.createGroup(infos['dev-group'],
+                                  visible_to_all=True,
+                                  owner=infos['ptl-group'])
     print "Creating project"
     gerrit_client.createProject(infos['name'],
                                 require_change_id=True)
@@ -191,14 +199,23 @@ def init_gerrit_project(gerrit_client, infos):
         gerrit_client.getGroupUUID(infos['core-group'])
     infos['ptl-group-uuid'] = \
         gerrit_client.getGroupUUID(infos['ptl-group'])
+    if infos['private'] is True:
+        infos['dev-group-uuid'] = \
+            gerrit_client.getGroupUUID(infos['dev-group'])
     infos['non-interactive-users'] = \
         gerrit_client.getGroupUUID('Non-Interactive')
     populate_groups(gerrit_client, infos)
     grepo = GerritRepo(infos)
     grepo.clone()
     paths = {}
-    paths['project.config'] = file('templates/project.config').read() % infos
-    paths['groups'] = file('templates/groups').read() % infos
+    if infos['private'] is True:
+        paths['project.config'] = \
+            file('templates/private-project.config').read() % infos
+        paths['groups'] = file('templates/private-groups').read() % infos
+    else:
+        paths['project.config'] = \
+            file('templates/project.config').read() % infos
+        paths['groups'] = file('templates/groups').read() % infos
     grepo.push_config(paths)
     if 'upstream' in infos:
         grepo.push_master_from_git_remote(infos)
@@ -212,6 +229,9 @@ def delete_gerrit_project(gerrit_client, infos):
         for kgn in ('core-group', 'ptl-group'):
             print "Deleting group " + infos[kgn]
             gerrit_client.deleteGroup(infos[kgn])
+        if infos['private'] is True:
+            print "Deleting group " + infos['dev-group']
+            gerrit_client.deleteGroup(infos['dev-group'])
         print "Deleting the project " + infos['name']
         gerrit_client.deleteProject(infos['name'])
     except Exception:
