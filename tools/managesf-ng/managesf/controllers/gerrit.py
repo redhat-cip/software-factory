@@ -283,20 +283,28 @@ class CustomGerritClient(gerrit.Gerrit):
         out, err = self._ssh(cmd)
 
 
-def init_git_repo(prj_name, prj_desc, upstream):
+def init_git_repo(prj_name, prj_desc, upstream, private):
     grps = {}
     grps['project-description'] = prj_desc
     grps['core-group-uuid'] = get_group_id(get_core_group_name(prj_name))
     grps['ptl-group-uuid'] = get_group_id(get_ptl_group_name(prj_name))
+    if private:
+        grps['dev-group-uuid'] = get_group_id(get_dev_group_name(prj_name))
     grps['non-interactive-users'] = get_group_id('Non-Interactive%20Users')
     grps['core-group'] = get_core_group_name(prj_name)
     grps['ptl-group'] = get_ptl_group_name(prj_name)
+    if private:
+        grps['dev-group'] = get_dev_group_name(prj_name)
     grepo = GerritRepo(prj_name)
     grepo.clone()
     paths = {}
 
-    paths['project.config'] = file(template('project.config')).read() % grps
-    paths['groups'] = file(template('groups')).read() % grps
+    prefix = ''
+    if private:
+        prefix = 'private-'
+    paths['project.config'] = file(template(prefix +
+                                   'project.config')).read() % grps
+    paths['groups'] = file(template(prefix + 'groups')).read() % grps
     grepo.push_config(paths)
     if upstream:
         grepo.push_master_from_git_remote(upstream)
@@ -317,9 +325,14 @@ def get_ptl_group_name(prj_name):
     return "%s-ptl" % prj_name
 
 
+def get_dev_group_name(prj_name):
+    return "%s-dev" % prj_name
+
+
 def init_project(name, json):
     upstream = None if 'upstream' not in json else json['upstream']
     description = "" if 'description' not in json else json['description']
+    private = False if 'private' not in json else json['private']
 
     core = get_core_group_name(name)
     core_desc = "Core developers for project " + name
@@ -335,8 +348,19 @@ def init_project(name, json):
         for m in json['ptl-group-members']:
             add_user_to_group(ptl, m)
 
+    if private:
+        if 'dev-group-members' not in json:
+            abort(422)
+        else:
+            dev = get_dev_group_name(name)
+            dev_desc = "Developers for project " + name
+            create_group(dev, dev_desc, name)
+            for m in json['dev-group-members']:
+                if m != request.remote_user['username']:
+                    add_user_to_group(dev, m)
+
     create_project(name, description)
-    init_git_repo(name, description, upstream)
+    init_git_repo(name, description, upstream, private)
 
 
 def delete_project(name):
@@ -350,4 +374,9 @@ def delete_project(name):
                                        keyfile=conf.gerrit['sshkey_priv_path'])
     gerrit_client.deleteGroup(get_core_group_name(name))
     gerrit_client.deleteGroup(get_ptl_group_name(name))
+    try:
+        #if dev group exists, no exception will be thrown
+        gerrit_client.deleteGroup(get_dev_group_name(name))
+    except Exception:
+        pass
     _delete_project(name)

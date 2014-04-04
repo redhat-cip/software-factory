@@ -61,14 +61,14 @@ url = "http://%(host)s:%(port)s/project/%(name)s" % \
      'name': args.name
      }
 
+if not validate_auth(args.auth):
+    raise Exception("'auth' should be mentioned in name:password format")
+
 headers = {'Authorization': 'Basic ' + base64.b64encode(args.auth)}
 
 if args.command == 'delete':
     resp = http.delete(url, headers=headers)
 elif args.command == 'create':
-    if not validate_auth(args.auth):
-        raise Exception("'auth' should be mentioned in name:password format")
-
     if getattr(args, 'core_group'):
         args.core_group = split_and_strip(args.core_group)
     if getattr(args, 'ptl_group'):
