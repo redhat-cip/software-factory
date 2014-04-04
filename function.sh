@@ -55,6 +55,17 @@ function generate_cloudinit {
     done
 }
 
+function generate_api_key() {
+    out=""
+    while [ ${#out} -lt 40 ];
+        do
+            out=$out`echo "obase=16; $RANDOM" | bc`
+        done
+
+    out=${out:0:40}
+    echo $out | awk '{print tolower($0)}'
+}
+
 function generate_hiera {
     OUTPUT=${BUILD}/hiera
     rm -Rf ${OUTPUT}
@@ -90,8 +101,7 @@ function generate_hiera {
     sed -i "s#GERRIT_ADMIN_MAIL#${GERRIT_ADMIN_MAIL}#" ${OUTPUT}/gerrit.yaml
 
     # Gerrit Redmine API key
-    # TODO Will be randomly generated
-    REDMINE_API_KEY="7f094d4e3e327bbd3f67279c95c193825e48f59e"
+    REDMINE_API_KEY=$(generate_api_key)
     sed -i "s#REDMINE_API_KEY#${REDMINE_API_KEY}#" ${OUTPUT}/gerrit.yaml
 
     # Redmine API key
