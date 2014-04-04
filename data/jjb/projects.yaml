@@ -1,4 +1,5 @@
 #- project:
-#    name: config
+#    name: SoftwareFactory
 #    jobs:
 #      - '{name}-unit-tests'
+#      - '{name}-functional-tests'

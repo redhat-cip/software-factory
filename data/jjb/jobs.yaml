@@ -13,6 +13,25 @@
               branch-pattern: '**'
 
 - job-template:
+    name: '{name}-functional-tests'
+    builders:
+      - gerrit-git-prep
+      - shell: ./run_functional-tests.sh
+    triggers:
+      - gerrit:
+          trigger-on-patchset-uploaded-event: true
+          projects:
+            - project-compare-type: 'PLAIN'
+              project-pattern: '{name}'
+              branch-compare-type: 'ANT'
+              branch-pattern: '**'
+          skip-vote:
+            successful: true
+            failed: true
+            unstable: true
+            notbuilt: true
+
+- job-template:
     name: '{name}-sloccount'
     builders:
       - gerrit-git-prep
