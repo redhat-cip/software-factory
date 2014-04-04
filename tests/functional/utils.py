@@ -7,12 +7,17 @@ import shlex
 import stat
 import tempfile
 import time
+import string
+import random
 from multiprocessing import Process
 from redmine import Redmine
 from requests.auth import HTTPBasicAuth
 from requests.exceptions import HTTPError
 from pygerrit.rest import GerritRestAPI
 
+def create_random_str():
+    value = "".join([random.choice(string.ascii_letters) for _ in range(6)])
+    return value
 
 class Base(unittest.TestCase):
     pass
@@ -64,12 +69,25 @@ class ManageSfUtils(Tool):
 
     def createProject(self, name, user, passwd):
         cmd = self.base_cmd % (user, passwd) + "create --name %s" % name
-        print cmd
         self.exe(cmd, self.install_dir)
 
     def deleteProject(self, name, user, passwd):
         cmd = self.base_cmd % (user, passwd) + "delete --name %s" % name
         self.exe(cmd, self.install_dir)
+
+
+class ManageSfUtilsConfigCreator(Tool):
+    def __init__(self):
+        Tool.__init__(self)
+        self.install_dir = "tools/managesf-ng/utils"
+
+    def createConfigProject(self):
+        cmd = "bash init-config-repo.sh"
+        self.exe(cmd, self.install_dir)
+
+    def deleteProject(self, user, passwd):
+        msu = ManageSfUtils('localhost', 9090)
+        msu.deleteProject('config', user, passwd)
 
 
 class GerritGitUtils(Tool):
@@ -95,6 +113,12 @@ class GerritGitUtils(Tool):
         clone = os.path.join(self.tempdir, target)
         assert os.path.isdir(clone)
         return clone
+
+    def fetch_meta_config(self, clone_dir):
+        cmd = 'git fetch origin' \
+        ' refs/meta/config:refs/remotes/origin/meta/config'
+        self.exe(cmd, clone_dir)
+        self.exe('git checkout meta/config', clone_dir)
 
     def add_commit_in_branch(self, clone_dir, branch):
         self.exe('git checkout master', clone_dir)

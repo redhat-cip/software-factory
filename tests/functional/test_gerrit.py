@@ -2,39 +2,61 @@
 
 import os
 import time
-import random
+import config
 
 from utils import Base
 from utils import ManageRestServer
 from utils import ManageSfUtils
 from utils import GerritGitUtils
+from utils import create_random_str
 
-USER = 'fabien.boucher'
-PASSWD = 'userpass'
-EMAIL = 'fabien.boucher@enovance.com'
-PRIV_KEY_PATH = '/srv/SoftwareFactory/build/data/gerrit_admin_rsa'
-GERRIT_HOST = 'sf-gerrit:29418'
-
-
-class GerritFunctionalTests(Base):
+class GerritGitInterat(Base):
+    """ Functional tests that interact using Git client with
+    projects on Gerrit.
+    """
     @classmethod
     def setUpClass(cls):
+        cls.projects = []
+        cls.clone_dirs = []
         cls.mrs = ManageRestServer()
         cls.mrs.run()
         cls.msu = ManageSfUtils('localhost', 9090)
 
     @classmethod
     def tearDownClass(cls):
-        # We should first delete project that have been created
+        for name in cls.projects:
+            cls.msu.deleteProject(name,
+                                  config.ADMIN_USER,
+                                  config.ADMIN_PASSWD)
         cls.mrs.stop()
 
-    def test_01_create_repository_as_admin(self):
-        pname = 'p%s' % random.randint(0, 1000)
-        # create the project as admin
-        self.msu.createProject(pname, USER, PASSWD)
-        # try to clone it as admin
-        ggu = GerritGitUtils(USER, PRIV_KEY_PATH, EMAIL)
-        url = "ssh://%s@%s/%s" % (USER, GERRIT_HOST, pname)
-        ggu.clone(url, pname)
-        # Check we were able to clone
-        self.assertTrue(os.path.isdir(os.path.join(ggu.tempdir, pname)))
+    def createProject(self, name):
+        self.msu.createProject(name,
+                               config.ADMIN_USER,
+                               config.ADMIN_PASSWD)
+        self.projects.append(name)
+
+    def test_simple_clone_as_admin(self):
+        """ Verify we can clone a project as Admin user and .gitreview exist
+        in the master branch
+        """
+        pname = 'p_%s' % create_random_str()
+        self.createProject(pname)
+        ggu = GerritGitUtils(config.ADMIN_USER,
+                             config.ADMIN_PRIV_KEY_PATH,
+                             config.ADMIN_EMAIL)
+        url = "ssh://%s@%s/%s" % (config.ADMIN_USER,
+                                  config.GERRIT_HOST, pname)
+        clone_dir = ggu.clone(url, pname)
+        # Test that the clone is a success
+        self.assertTrue(os.path.isdir(clone_dir))
+        # Verify master own the .gitreview file
+        self.assertTrue(os.path.isfile(os.path.join(clone_dir,
+                                                    '.gitreview')))
+        # Verify meta/config branch own both group and ACLs config file
+        ggu.fetch_meta_config(clone_dir)
+        self.assertTrue(os.path.isfile(os.path.join(clone_dir,
+                                                    'project.config')))
+        self.assertTrue(os.path.isfile(os.path.join(clone_dir,
+                                                    'groups')))
+        
