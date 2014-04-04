@@ -70,6 +70,7 @@ def create_project(prj_name, prj_desc):
     proj_info = {
         "description": prj_desc,
         "name": prj_name,
+        "create_empty_commit": True,
         "owners": [get_ptl_group_name(prj_name)]
     }
     send_request(url, [201],
