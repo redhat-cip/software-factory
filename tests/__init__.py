@@ -1,11 +1,10 @@
 import subprocess
 import os
-import sys
 
 
 def setUpPackage():
     print "setUpPackage!"
-    if "--skip-bootstrap" in sys.argv:
+    if "SF_SKIP_BOOTSTRAP" in os.environ:
         print "No bootstrap"
         return
     os.chdir("lxc")
@@ -15,7 +14,7 @@ def setUpPackage():
 
 def tearDownPackage():
     print "tearDownPackage!"
-    if "--skip-bootstrap" in sys.argv:
+    if "SF_SKIP_BOOTSTRAP" in os.environ:
         print "No bootstrap"
         return
     os.chdir("lxc")

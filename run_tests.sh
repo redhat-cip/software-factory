@@ -1,6 +1,13 @@
-#!/bin/sh
+#!/bin/bash
 
 OLDPWD=`pwd`
+
+if [ "$1" == "--functional" ]; then
+    shift
+    # export SF_SKIP_BOOTSTRAP=1 to... skip bootstrap step
+    nosetests -s -v tests/ $*
+    exit $?
+fi
 
 echo -e "\nTesting puppet manifests for Gerrit"
 cd puppet/modules/gerrit && ./runtests.sh
