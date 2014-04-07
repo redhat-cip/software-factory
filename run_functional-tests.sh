@@ -2,6 +2,7 @@
 
 set -x
 
+export SF_ROOT=$(pwd)
 export SF_PREFIX=tests
 (cd lxc; ./bootstrap-lxc.sh clean)
 nosetests -v ./tests
