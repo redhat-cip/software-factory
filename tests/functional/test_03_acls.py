@@ -14,19 +14,19 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import os
 import config
 
 from utils import Base
 from utils import ManageRestServer
 from utils import ManageSfUtils
-from utils import GerritGitUtils
-from utils import create_random_str
+#from utils import GerritGitUtils
+#from utils import create_random_str
+#from utils import GerritUtil
+#from utils import RedmineUtil
 
 
-class GerritGitInterat(Base):
-    """ Functional tests that interact using Git client with
-    projects on Gerrit.
+class TestSFACLs(Base):
+    """ Functional tests that validate SF project ACLs.
     """
     @classmethod
     def setUpClass(cls):
@@ -50,26 +50,8 @@ class GerritGitInterat(Base):
                                config.ADMIN_PASSWD)
         self.projects.append(name)
 
-    def test_simple_clone_as_admin(self):
-        """ Verify we can clone a project as Admin user and .gitreview exist
-        in the master branch
+    def test_01_validate_gerrit_public_project_acls(self):
+        """ Verify the correct behavior of ACLs set on
+        gerrit public project
         """
-        pname = 'p_%s' % create_random_str()
-        self.createProject(pname)
-        ggu = GerritGitUtils(config.ADMIN_USER,
-                             config.ADMIN_PRIV_KEY_PATH,
-                             config.ADMIN_EMAIL)
-        url = "ssh://%s@%s/%s" % (config.ADMIN_USER,
-                                  config.GERRIT_HOST, pname)
-        clone_dir = ggu.clone(url, pname)
-        # Test that the clone is a success
-        self.assertTrue(os.path.isdir(clone_dir))
-        # Verify master own the .gitreview file
-        self.assertTrue(os.path.isfile(os.path.join(clone_dir,
-                                                    '.gitreview')))
-        # Verify meta/config branch own both group and ACLs config file
-        ggu.fetch_meta_config(clone_dir)
-        self.assertTrue(os.path.isfile(os.path.join(clone_dir,
-                                                    'project.config')))
-        self.assertTrue(os.path.isfile(os.path.join(clone_dir,
-                                                    'groups')))
+        pass

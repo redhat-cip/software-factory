@@ -1,0 +1,4 @@
+pecan
+python-ldap
+requests
+pyredmine
