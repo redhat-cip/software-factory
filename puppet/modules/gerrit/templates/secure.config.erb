@@ -4,4 +4,7 @@
     # Will be used if anonymous bind is disallowed
     password = <%= @settings['ldap_password'] %>
 [sendmail]
-    smtpPass = <%= @settings['smtp_pass'] ? @settings['smtp_pass'] : '' %>
+    smtpPass =<%= @settings['smtp_pass'] ? @settings['smtp_pass'] : '' %>
+[auth]
+    registerEmailPrivateKey = <%= @settings['gerrit_email_pk'] %>
+    restTokenPrivateKey = <%= @settings['gerrit_token_pk'] %>

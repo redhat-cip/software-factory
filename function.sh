@@ -58,6 +58,10 @@ function getip_from_yaml_devstack {
     cat ${BUILD}/sf-host-tunneled.yaml  | grep -A 1 -B 1 "name: $1$" | grep 'address' | cut -d: -f2 | sed 's/ *//g'
 }
 
+function generate_random_pswd { 64
+    echo `dd if=/dev/urandom bs=1 count=$1 2>/dev/null | base64 -w $1 | head -n1`
+}
+
 function generate_cloudinit {
     OUTPUT=${BUILD}/cloudinit
     puppetmaster_host=$(gethostname_from_yaml puppetmaster)
@@ -113,6 +117,12 @@ function generate_hiera {
     sed -i "s#GERRIT_ADMIN_PUB_KEY#ssh-rsa ${GERRIT_ADMIN_PUB_KEY}#" ${OUTPUT}/gerrit.yaml
     sed -i "s#GERRIT_ADMIN_NAME#${GERRIT_ADMIN}#" ${OUTPUT}/gerrit.yaml
     sed -i "s#GERRIT_ADMIN_MAIL#${GERRIT_ADMIN_MAIL}#" ${OUTPUT}/gerrit.yaml
+
+    # Gerrit other random tokens
+    GERRIT_EMAIL_PK=$(generate_random_pswd 32)
+    GERRIT_TOKEN_PK=$(generate_random_pswd 32)
+    sed -i "s#GERRIT_EMAIL_PK#${GERRIT_EMAIL_PK}#" ${OUTPUT}/gerrit.yaml
+    sed -i "s#GERRIT_TOKEN_PK#${GERRIT_TOKEN_PK}#" ${OUTPUT}/gerrit.yaml
 
     # Gerrit Redmine API key
     REDMINE_API_KEY=$(generate_api_key)
