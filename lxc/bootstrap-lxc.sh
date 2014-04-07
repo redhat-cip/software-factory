@@ -42,9 +42,9 @@ if [ -z "$1" ] || [ "$1" == "start" ]; then
     sudo ${EDEPLOY_LXC} --config ${BUILD}/sf-host.yaml restart || exit -1
     sf_postconfigure
 elif [ "$1" == "stop" ]; then
-    sudo ${EDEPLOY_LXC} --config ${BUILD}/sf-lxc.yaml stop
+    [ -f "${BUILD}/sf-lxc.yaml" ] && sudo ${EDEPLOY_LXC} --config ${BUILD}/sf-lxc.yaml stop
 elif [ "$1" == "clean" ]; then
-    sudo ${EDEPLOY_LXC} --config ${BUILD}/sf-lxc.yaml stop || echo
+    [ -f "${BUILD}/sf-lxc.yaml" ] && sudo ${EDEPLOY_LXC} --config ${BUILD}/sf-lxc.yaml stop || echo
     rm -Rf ${BUILD} || echo
     # make sure all lxc are shutdown
     #for instance in $(sudo lxc-ls --active); do

@@ -20,6 +20,9 @@ def setUpPackage():
     if "SF_SKIP_BOOTSTRAP" in os.environ:
         return
     os.chdir("lxc")
+    if "SF_PREFIX" not in os.environ or os.environ["SF_PREFIX"] == "sf":
+        # Make sure we use a tests prefix
+        os.environ["SF_PREFIX"] = "tests"
     subprocess.call(['./bootstrap-lxc.sh'])
     os.chdir("..")
 
