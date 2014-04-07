@@ -13,6 +13,8 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 # Server Specific Configurations
+import os
+
 server = {
     'port': '9090',
     'host': '0.0.0.0'
@@ -53,22 +55,22 @@ logging = {
 auth = {
     'type': 'ldap',
     'ldap': {
-        'host': 'ldap://sf-ldap',
+        'host': 'ldap://%s-ldap' % (os.environ['SF_PREFIX']),
         'dn': 'cn=%(username)s,ou=Users,dc=enovance,dc=com'
     }
 }
 
 gerrit = {
-    'host': 'sf-gerrit',
+    'host': '%s-gerrit' % (os.environ['SF_PREFIX']),
     'admin': 'fabien.boucher',
     'admin_email': 'fabien.boucher@enovance.com',
     'ssh_port': 29418,
     'http_password': 'userpass',
-    'sshkey_priv_path': '/srv/SoftwareFactory/build/data/gerrit_admin_rsa'
+    'sshkey_priv_path': '%s/build/data/gerrit_admin_rsa' % (os.environ['SF_ROOT'])
 }
 
 redmine = {
-    'host': 'sf-redmine',
+    'host': '%s-redmine' % (os.environ['SF_PREFIX']),
     'api_key': '7f094d4e3e327bbd3f67279c95c193825e48f59e'
 }
 # Custom Configurations must be in Python dictionary format::
