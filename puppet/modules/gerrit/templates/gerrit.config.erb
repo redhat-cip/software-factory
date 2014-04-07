@@ -1,7 +1,7 @@
 [gerrit]
     basePath = <%= @settings['repo_base_path'] ? @settings['repo_base_path'] : 'git' %>
     canonicalWebUrl = http://<%= @settings['weburl'] %>
-    gitHttpUrl = <%= @settings['httpurl'] ? @settings['httpurl'] : '' %>
+    gitHttpUrl =<%= @settings['httpurl'] ? @settings['httpurl'] : '' %>
 [database]
     type = MYSQL
     hostname = <%= @settings['gerrit_mysql_address'] %>
@@ -37,11 +37,11 @@
     cgi = /usr/share/gitweb/gitweb.cgi
 [sendemail]
     enable = true
-    smtpEncryption = none
+    smtpEncryption =
     from = MIXED
     smtpServer = <%= @settings['smtp_server'] %>
     smtpServerPort = <%= @settings['smtp_server_port'] ? @settings['smtp_server_port'] : '25' %>
-    smtpUser = <%= @settings['smtp_user'] ? @settings['smtp_user'] : '' %>
+    smtpUser =<%= @settings['smtp_user'] ? @settings['smtp_user'] : '' %>
 [download]
     scheme = ssh
     scheme = http
@@ -49,3 +49,5 @@
 [suggest]
     accounts = true
     from = 2
+[cache]
+    directory = cache
