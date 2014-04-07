@@ -49,6 +49,11 @@ cp.add_argument('--core-group', '-c', metavar='core-group-members',
                 help='member ids separated by comma', nargs='?')
 cp.add_argument('--ptl-group', '-p', metavar='ptl-group-members',
                 help='member ids serarated by comma', nargs='?')
+cp.add_argument('--dev-group', '-e', metavar='dev-group-members',
+                help='member ids serarated by comma (only relevant for private project)',
+                nargs='?')
+cp.add_argument('--private', action='store_true',
+                help='set if the project is private')
 
 dp = sp.add_parser('delete')
 dp.add_argument('--name', '-n', nargs='?', metavar='project-name',
@@ -73,13 +78,18 @@ elif args.command == 'create':
         args.core_group = split_and_strip(args.core_group)
     if getattr(args, 'ptl_group'):
         args.ptl_group = split_and_strip(args.ptl_group)
+    if getattr(args, 'dev_group'):
+        args.dev_group = split_and_strip(args.dev_group)
     substitute = {'description': 'description',
                   'core_group': 'core-group-members',
                   'ptl_group': 'ptl-group-members',
-                  'upstream': 'upstream'
+                  'dev_group': 'dev-group-members',
+                  'upstream': 'upstream',
+                  'private': 'private'
                   }
     info = {}
-    for word in ['description', 'core_group', 'ptl_group', 'upstream']:
+    for word in ['description', 'core_group', 'ptl_group',
+                 'dev_group', 'upstream', 'private']:
         if getattr(args, word):
             info[substitute[word]] = getattr(args, word)
 

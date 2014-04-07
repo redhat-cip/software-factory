@@ -349,12 +349,10 @@ def init_project(name, json):
             add_user_to_group(ptl, m)
 
     if private:
-        if 'dev-group-members' not in json:
-            abort(422)
-        else:
-            dev = get_dev_group_name(name)
-            dev_desc = "Developers for project " + name
-            create_group(dev, dev_desc, name)
+        dev = get_dev_group_name(name)
+        dev_desc = "Developers for project " + name
+        create_group(dev, dev_desc, name)
+        if 'dev-group-members' in json:
             for m in json['dev-group-members']:
                 if m != request.remote_user['username']:
                     add_user_to_group(dev, m)
