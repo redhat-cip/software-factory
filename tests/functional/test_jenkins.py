@@ -28,6 +28,7 @@ import time, os, subprocess
 class JenkinsFunctionalTests(Base):
     @classmethod
     def setUpClass(cls):
+        pass
 #        print "[+] Creating temp data dir"
 #        cls.outputs = "/tmp/sf-functests-%d" % time.time()
 #        os.mkdir(cls.outputs)
@@ -38,6 +39,7 @@ class JenkinsFunctionalTests(Base):
 
     @classmethod
     def tearDownClass(cls):
+        pass
 #        print "[+] Removing temp data dir %s" % cls.outputs
 #        shutil.rmtree(cls.outputs)
 #        cls.mrs.stop()
