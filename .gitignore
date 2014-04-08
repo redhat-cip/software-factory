@@ -41,3 +41,6 @@ nosetests.xml
 
 # Generated files
 build/
+
+# Git Review
+.gitreview
