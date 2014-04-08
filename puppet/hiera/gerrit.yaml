@@ -9,7 +9,6 @@ gerrit:
   gerrit_mysql_db: gerrit
   gerrit_mysql_username: gerrit
   gerrit_mysql_port: 3306
-  gerrit_mysql_secret: secret
   ldap_uri: "ldap://%{hiera('ldap_url')}"
   ldap_username: cn=admin,dc=enovance,dc=com
   ldap_password: secret
@@ -33,3 +32,4 @@ gerrit:
   gerrit_local_sshkey: GERRIT_SERV_PUB_KEY
   gerrit_email_pk: GERRIT_EMAIL_PK
   gerrit_token_pk: GERRIT_TOKEN_PK
+  gerrit_mysql_secret: GERRIT_MYSQL_SECRET

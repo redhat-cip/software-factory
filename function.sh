@@ -20,6 +20,9 @@ BUILD=${BUILD:-../build}
 GERRIT_ADMIN=fabien.boucher
 GERRIT_ADMIN_MAIL=fabien.boucher@enovance.com
 
+GERRIT_MYSQL_SECRET=''
+REDMINE_MYSQL_SECRET=''
+
 #### Configuration generation
 function new_build {
     rm -Rf ${BUILD}/
@@ -58,7 +61,7 @@ function getip_from_yaml_devstack {
     cat ${BUILD}/sf-host-tunneled.yaml  | grep -A 1 -B 1 "name: $1$" | grep 'address' | cut -d: -f2 | sed 's/ *//g'
 }
 
-function generate_random_pswd { 64
+function generate_random_pswd {
     echo `dd if=/dev/urandom bs=1 count=$1 2>/dev/null | base64 -w $1 | head -n1`
 }
 
@@ -71,6 +74,11 @@ function generate_cloudinit {
     for i in ../cloudinit/*.cloudinit; do
         cat $i | sed -e "s#PUPPETMASTER#${PUPPETMASTER_IP}#g" -e "s/SF_PREFIX/${SF_PREFIX}/" > ${OUTPUT}/$(basename $i)
     done
+    
+    REDMINE_MYSQL_SECRET=$(generate_random_pswd 8)
+    GERRIT_MYSQL_SECRET=$(generate_random_pswd 8)
+    sed -i "s#REDMINE_MYSQL_SECRET#${REDMINE_MYSQL_SECRET}#" ${OUTPUT}/mysql.cloudinit
+    sed -i "s#GERRIT_MYSQL_SECRET#${GERRIT_MYSQL_SECRET}#" ${OUTPUT}/mysql.cloudinit
 }
 
 function generate_api_key() {
@@ -117,6 +125,7 @@ function generate_hiera {
     sed -i "s#GERRIT_ADMIN_PUB_KEY#ssh-rsa ${GERRIT_ADMIN_PUB_KEY}#" ${OUTPUT}/gerrit.yaml
     sed -i "s#GERRIT_ADMIN_NAME#${GERRIT_ADMIN}#" ${OUTPUT}/gerrit.yaml
     sed -i "s#GERRIT_ADMIN_MAIL#${GERRIT_ADMIN_MAIL}#" ${OUTPUT}/gerrit.yaml
+    sed -i "s#GERRIT_MYSQL_SECRET#${GERRIT_MYSQL_SECRET}#" ${OUTPUT}/gerrit.yaml
 
     # Gerrit other random tokens
     GERRIT_EMAIL_PK=$(generate_random_pswd 32)
@@ -130,6 +139,7 @@ function generate_hiera {
 
     # Redmine API key
     cat ../puppet/hiera/redmine.yaml | sed "s#REDMINE_API_KEY#${REDMINE_API_KEY}#" > ${OUTPUT}/redmine.yaml
+    sed -i "s#REDMINE_MYSQL_SECRET#${REDMINE_MYSQL_SECRET}#" ${OUTPUT}/redmine.yaml
 
     # Redmine Credencials ID
     # TODO: Will be randomly generated

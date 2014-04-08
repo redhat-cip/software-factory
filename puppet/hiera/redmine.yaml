@@ -1,7 +1,7 @@
 redmine:
   issues_tracker_api_key: REDMINE_API_KEY
   redmine_mysql_db_address: "%{hiera('mysql_url')}"
-  redmine_mysql_db_secret: secret
+  redmine_mysql_db_secret: REDMINE_MYSQL_SECRET
   redmine_mysql_db_username: redmine
   redmine_mysql_db: redmine
   ldap_address: "%{hiera('ldap_url')}"

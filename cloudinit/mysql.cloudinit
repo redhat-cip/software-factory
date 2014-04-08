@@ -6,13 +6,13 @@ disable_root: 0
 write_files:
 -   content: |
       CREATE DATABASE redmine;
-      CREATE USER 'redmine'@'%' IDENTIFIED BY 'secret';
+      CREATE USER 'redmine'@'%' IDENTIFIED BY 'REDMINE_MYSQL_SECRET';
       GRANT ALL PRIVILEGES ON redmine.* TO 'redmine'@'%' WITH GRANT OPTION;
       FLUSH PRIVILEGES;
     path: /root/redmine.sql
 -   content: |
       CREATE DATABASE gerrit;
-      CREATE USER 'gerrit'@'%' IDENTIFIED BY 'secret';
+      CREATE USER 'gerrit'@'%' IDENTIFIED BY 'GERRIT_MYSQL_SECRET';
       GRANT ALL PRIVILEGES ON gerrit.* TO 'gerrit'@'%' WITH GRANT OPTION;
       FLUSH PRIVILEGES;
     path: /root/gerrit.sql
