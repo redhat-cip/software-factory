@@ -15,7 +15,6 @@
 # under the License.
 
 import os
-import time
 import config
 
 from utils import Base
@@ -23,6 +22,7 @@ from utils import ManageRestServer
 from utils import ManageSfUtils
 from utils import GerritGitUtils
 from utils import create_random_str
+
 
 class GerritGitInterat(Base):
     """ Functional tests that interact using Git client with
@@ -73,4 +73,3 @@ class GerritGitInterat(Base):
                                                     'project.config')))
         self.assertTrue(os.path.isfile(os.path.join(clone_dir,
                                                     'groups')))
-        

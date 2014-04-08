@@ -66,7 +66,8 @@ gerrit = {
     'admin_email': 'fabien.boucher@enovance.com',
     'ssh_port': 29418,
     'http_password': 'userpass',
-    'sshkey_priv_path': '%s/build/data/gerrit_admin_rsa' % (os.environ['SF_ROOT'])
+    'sshkey_priv_path': '%s/build/data/gerrit_admin_rsa' %
+    (os.environ['SF_ROOT'])
 }
 
 redmine = {

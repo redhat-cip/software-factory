@@ -23,15 +23,16 @@ import tempfile
 import time
 import string
 import random
-from multiprocessing import Process
 from redmine import Redmine
 from requests.auth import HTTPBasicAuth
 from requests.exceptions import HTTPError
 from pygerrit.rest import GerritRestAPI
 
+
 def create_random_str():
     value = "".join([random.choice(string.ascii_letters) for _ in range(6)])
     return value
+
 
 class Base(unittest.TestCase):
     pass
@@ -57,6 +58,7 @@ class Tool:
             os.chdir(ocwd)
         return p
 
+
 class ManageRestServer(Tool):
     def __init__(self):
         Tool.__init__(self)
@@ -78,7 +80,8 @@ class ManageSfUtils(Tool):
         self.host = host
         self.port = port
         self.install_dir = "tools/managesf-ng/cli"
-        self.base_cmd = "python sf-manage.py --host %s --port %s --auth %%s:%%s " \
+        self.base_cmd = \
+            "python sf-manage.py --host %s --port %s --auth %%s:%%s " \
             % (self.host, self.port)
 
     def createProject(self, name, user, passwd):
@@ -130,7 +133,7 @@ class GerritGitUtils(Tool):
 
     def fetch_meta_config(self, clone_dir):
         cmd = 'git fetch origin' \
-        ' refs/meta/config:refs/remotes/origin/meta/config'
+            ' refs/meta/config:refs/remotes/origin/meta/config'
         self.exe(cmd, clone_dir)
         self.exe('git checkout meta/config', clone_dir)
 

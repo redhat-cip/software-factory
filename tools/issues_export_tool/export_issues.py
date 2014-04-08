@@ -58,10 +58,10 @@ def main():
         g = Github()
 
     if redmine['apikey'] is not None or redmine['apikey'] != '':
-        r = Redmine(redmine['url'], key = redmine['apikey'])
+        r = Redmine(redmine['url'], key=redmine['apikey'])
     else:
-        r = Redmine(redmine['url'], username = redmine['rm_username'],
-                    password = redmine['rm_password'])
+        r = Redmine(redmine['url'], username=redmine['rm_username'],
+                    password=redmine['rm_password'])
 
     #if project id not given, find
     if redmine['id'] is None:
@@ -79,7 +79,7 @@ def main():
     for repo in string.split(github['repos']):
         try:
             rep = g.get_repo(repo)
-            issues = rep.get_issues(state = 'all')
+            issues = rep.get_issues(state='all')
             for i in issues:
                 subject = i.title
                 description = i.body
@@ -88,12 +88,12 @@ def main():
                 else:
                     status_id = 1
                 try:
-                    r.issue.create(project_id = redmine['id'],
-                                   subject = subject,
-                                   tracker_id = 1,
-                                   status_id = status_id,
-                                   priority_id = 4,
-                                   description = description)
+                    r.issue.create(project_id=redmine['id'],
+                                   subject=subject,
+                                   tracker_id=1,
+                                   status_id=status_id,
+                                   priority_id=4,
+                                   description=description)
                 except Exception:
                     continue
                 issue_count = issue_count + 1

@@ -14,6 +14,8 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+set -e
+
 OLDPWD=`pwd`
 
 if [ "$1" == "--functional" ]; then
@@ -23,20 +25,20 @@ if [ "$1" == "--functional" ]; then
     exit $?
 fi
 
-echo -e "\nTesting puppet manifests for Gerrit"
-cd puppet/modules/gerrit && ./runtests.sh
-cd $OLDPWD
-echo -e "\n"
-
-echo -e "\nTesting puppet manifests for Jenkins"
-cd puppet/modules/jenkins && ./runtests.sh
-cd $OLDPWD
-echo -e "\n"
-
-echo -e "\nTesting puppet manifests for Redmine"
-cd puppet/modules/redmine  && ./runtests.sh
-cd $OLDPWD
-echo -e "\n"
+#echo -e "\nTesting puppet manifests for Gerrit"
+#cd puppet/modules/gerrit && ./runtests.sh
+#cd $OLDPWD
+#echo -e "\n"
+#
+#echo -e "\nTesting puppet manifests for Jenkins"
+#cd puppet/modules/jenkins && ./runtests.sh
+#cd $OLDPWD
+#echo -e "\n"
+#
+#echo -e "\nTesting puppet manifests for Redmine"
+#cd puppet/modules/redmine  && ./runtests.sh
+#cd $OLDPWD
+#echo -e "\n"
 
 
 echo -e "\nFLAKE8 tests"

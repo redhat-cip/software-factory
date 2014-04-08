@@ -50,7 +50,8 @@ cp.add_argument('--core-group', '-c', metavar='core-group-members',
 cp.add_argument('--ptl-group', '-p', metavar='ptl-group-members',
                 help='member ids serarated by comma', nargs='?')
 cp.add_argument('--dev-group', '-e', metavar='dev-group-members',
-                help='member ids serarated by comma (only relevant for private project)',
+                help='member ids serarated by comma' +
+                     ' (only relevant for private project)',
                 nargs='?')
 cp.add_argument('--private', action='store_true',
                 help='set if the project is private')

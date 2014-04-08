@@ -14,16 +14,19 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import config
-import shutil
+#import config
+#import shutil
 
 from utils import Base
-from utils import ManageRestServer
-from utils import ManageSfUtils
-from utils import ManageSfUtilsConfigCreator
-from utils import GerritGitUtils
+#from utils import ManageRestServer
+#from utils import ManageSfUtils
+#from utils import ManageSfUtilsConfigCreator
+#from utils import GerritGitUtils
 
-import time, os, subprocess
+#import time
+#import os
+#import subprocess
+
 
 class JenkinsFunctionalTests(Base):
     @classmethod

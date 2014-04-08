@@ -16,6 +16,7 @@
 import subprocess
 import os
 
+
 def setUpPackage():
     if "SF_SKIP_BOOTSTRAP" in os.environ:
         return
