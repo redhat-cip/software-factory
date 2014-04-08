@@ -17,92 +17,78 @@ write_files:
     path: /root/disable_anon_backend.ldif
 
 -   content: |
-      dn: ou=Users,dc=enovance,dc=com
+      dn: ou=Users,dc=example,dc=com
       objectClass: organizationalUnit
       ou: Users
     path: /root/users_ou.ldif
 
 -   content: |
-      dn: cn=tristan.cacqueray,ou=Users,dc=enovance,dc=com
-      cn: tristan.cacqueray
+      dn: cn=user1,ou=Users,dc=example,dc=com
+      cn: user1
       objectClass: person
       sn: Demo user1
       userPassword: userpass
-      mail: tristan.cacqueray@enovance.com
+      mail: user1@example.com
       objectClass: inetOrgPerson
 
-      dn: cn=fabien.boucher,ou=Users,dc=enovance,dc=com
-      cn: fabien.boucher
+      dn: cn=user2,ou=Users,dc=example,dc=com
+      cn: user2
       objectClass: person
       sn: Demo user2
       userPassword: userpass
-      mail: fabien.boucher@enovance.com
+      mail: user2@example.com
       objectClass: inetOrgPerson
 
-      dn: cn=christian.schwede,ou=Users,dc=enovance,dc=com
-      cn: christian.schwede
+      dn: cn=user3,ou=Users,dc=example,dc=com
+      cn: user3
       objectClass: person
       sn: Demo user3
       userPassword: userpass
-      mail: christian.schwede@enovance.com
+      mail: user3@example.com
       objectClass: inetOrgPerson
 
-      dn: cn=frederic.lepied,ou=Users,dc=enovance,dc=com
-      cn: frederic.lepied
+      dn: cn=user4,ou=Users,dc=example,dc=com
+      cn: user4
       objectClass: person
       sn: Demo user4
       userPassword: userpass
-      mail: frederic.lepied@enovance.com
+      mail: user4@example.com
       objectClass: inetOrgPerson
 
-      dn: cn=james.kulina,ou=Users,dc=enovance,dc=com
-      cn: james.kulina
-      objectClass: person
-      sn: Demo user5
-      userPassword: userpass
-      mail: james.kulina@enovance.com
-      objectClass: inetOrgPerson
-
-      dn: cn=jenkins,ou=Users,dc=enovance,dc=com
+      dn: cn=jenkins,ou=Users,dc=example,dc=com
       cn: jenkins
       objectClass: person
       sn: Jenkins
       userPassword: userpass
-      mail: jenkins@enovance.com
+      mail: jenkins@example.com
       objectClass: inetOrgPerson
     path: /root/demo_users.ldif
 
 -   content: |
-      dn: ou=Groups,dc=enovance,dc=com
+      dn: ou=Groups,dc=example,dc=com
       objectClass: organizationalUnit
       ou: Groups
     path: /root/groups_ou.ldif
 
 -   content: |
-      dn: cn=group01,ou=Groups,dc=enovance,dc=com
+      dn: cn=group01,ou=Groups,dc=example,dc=com
       cn: group01
       objectClass: organizationalRole
-      roleOccupant: cn=fabien.boucher,dc=enovance,dc=com
-      roleOccupant: cn=frederic.lepied,dc=enovance,dc=com
+      roleOccupant: cn=user1,dc=example,dc=com
+      roleOccupant: cn=user2,dc=example,dc=com
 
-      dn: cn=group02,ou=Groups,dc=enovance,dc=com
+      dn: cn=group02,ou=Groups,dc=example,dc=com
       cn: group02
       objectClass: organizationalRole
-      roleOccupant: cn=fabien.boucher,dc=enovance,dc=com
-      roleOccupant: cn=tristan.cacqueray,dc=enovance,dc=com
-
-      dn: cn=group03,ou=Groups,dc=enovance,dc=com
-      cn: group03
-      objectClass: organizationalRole
-      roleOccupant: cn=tristan.cacqueray,dc=enovance,dc=com
-      roleOccupant: cn=christian.schwede,dc=enovance,dc=com
+      roleOccupant: cn=user1,dc=example,dc=com
+      roleOccupant: cn=user3,dc=example,dc=com
     path: /root/groups.ldif
 
 runcmd:
- - ldapadd -x -D cn=admin,dc=enovance,dc=com -w secret -f /root/users_ou.ldif
- - ldapadd -x -D cn=admin,dc=enovance,dc=com -w secret -f /root/demo_users.ldif
- - ldapadd -x -D cn=admin,dc=enovance,dc=com -w secret -f /root/groups_ou.ldif
- - ldapadd -x -D cn=admin,dc=enovance,dc=com -w secret -f /root/groups.ldif
+ - ldapadd -x -D cn=admin,dc=example,dc=com -w secret -f /root/users_ou.ldif
+ - ldapadd -x -D cn=admin,dc=example,dc=com -w secret -f /root/demo_users.ldif
+ - ldapadd -x -D cn=admin,dc=example,dc=com -w secret -f /root/groups_ou.ldif
+ - ldapadd -x -D cn=admin,dc=example,dc=com -w secret -f /root/groups.ldif
  - ldapmodify -Q -Y EXTERNAL -H ldapi:/// -f /root/disable_anon_frontend.ldif
  - ldapmodify -Q -Y EXTERNAL -H ldapi:/// -f /root/disable_anon_frontend.ldif
  - echo PUPPETMASTER SF_PREFIX-puppetmaster.pub >> /etc/hosts

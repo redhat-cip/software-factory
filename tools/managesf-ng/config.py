@@ -56,14 +56,14 @@ auth = {
     'type': 'ldap',
     'ldap': {
         'host': 'ldap://%s-ldap' % (os.environ['SF_PREFIX']),
-        'dn': 'cn=%(username)s,ou=Users,dc=enovance,dc=com'
+        'dn': 'cn=%(username)s,ou=Users,dc=example,dc=com'
     }
 }
 
 gerrit = {
     'host': '%s-gerrit' % (os.environ['SF_PREFIX']),
-    'admin': 'fabien.boucher',
-    'admin_email': 'fabien.boucher@enovance.com',
+    'admin': 'user1',
+    'admin_email': 'user1@example.com',
     'ssh_port': 29418,
     'http_password': 'userpass',
     'sshkey_priv_path': '%s/build/data/gerrit_admin_rsa' %

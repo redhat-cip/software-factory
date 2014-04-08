@@ -59,7 +59,7 @@ class TestGerrit(Base):
         pname = 'p_%s' % create_random_str()
         self.createProject(pname)
         assert gu.isPrjExist(pname)
-        NEW_USER = 'christian.schwede'
+        NEW_USER = 'user2'
         GROUP_NAME = '%s-core' % pname
         assert gu.isGroupExist(GROUP_NAME)
         assert not gu.isMemberInGroup(NEW_USER, GROUP_NAME)
@@ -77,7 +77,7 @@ class TestGerrit(Base):
         pname = 'p_%s' % create_random_str()
         self.createProject(pname)
         assert gu.isPrjExist(pname)
-        NEW_USER = 'christian.schwede'
+        NEW_USER = 'user2'
         GROUP_NAME = '%s-ptl' % pname
         assert gu.isGroupExist(GROUP_NAME)
         assert not gu.isMemberInGroup(NEW_USER, GROUP_NAME)

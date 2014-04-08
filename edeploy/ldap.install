@@ -34,7 +34,7 @@ do_chroot ${dir} debconf-set-selections <<< 'slapd shared/organization string de
 do_chroot ${dir} debconf-set-selections <<< 'slapd slapd/backend string HDB'
 do_chroot ${dir} debconf-set-selections <<< 'slapd slapd/allow_ldap_v2 boolean true' 
 do_chroot ${dir} debconf-set-selections <<< 'slapd slapd/purge_database boolean true'
-do_chroot ${dir} debconf-set-selections <<< 'slapd slapd/domain string enovance.com'
+do_chroot ${dir} debconf-set-selections <<< 'slapd slapd/domain string example.com'
 
 install_packages $dir "$PACKAGES"
 

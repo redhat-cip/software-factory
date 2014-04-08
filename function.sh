@@ -17,8 +17,8 @@
 BUILD=${BUILD:-../build}
 
 # TODO: Should be moved in other place maybe a config file for bootstrap scripts ?
-GERRIT_ADMIN=fabien.boucher
-GERRIT_ADMIN_MAIL=fabien.boucher@enovance.com
+GERRIT_ADMIN=user1
+GERRIT_ADMIN_MAIL=user1@example.com
 
 GERRIT_MYSQL_SECRET=''
 REDMINE_MYSQL_SECRET=''

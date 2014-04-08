@@ -3,7 +3,7 @@ jenkins:
   gerrit_hostname: "%{hiera('gerrit_url')}"
   gerrit_username: jenkins
   ldap_uri: "ldap://%{hiera('ldap_url')}"
-  ldap_root_dn: dc=enovance,dc=com
+  ldap_root_dn: dc=example,dc=com
   jenkins_url: "http://%{hiera('jenkins_url')}:8080"
   jenkins_username: jenkins
   jenkins_password: userpass

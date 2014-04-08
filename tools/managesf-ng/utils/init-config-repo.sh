@@ -17,9 +17,9 @@
 mh="localhost:9090" # HTTP access for managesf host
 gh="sf-gerrit:29418" # SSH access for gerrit host
 jh="sf-jenkins" # SSH access for jenkins host
-admin="fabien.boucher" # admin user for accessing gerrit
+admin="user1" # admin user for accessing gerrit
 admin_http_password="userpass"
-admin_email="fabien.boucher@enovnace.com" # Registered email address for admin user
+admin_email="user1@example.com" # Registered email address for admin user
 gerrit_ssh_key="/srv/SoftwareFactory/build/data/gerrit_admin_rsa" # gerrit priv key path for admin user
 jenkins_ssh_key="/home/ubuntu/.ssh/id_rsa" # ssh key to access jenkins
 jenkins_kick_script="/usr/local/jenkins/slave_scripts/kick.sh" # JJB kick start script

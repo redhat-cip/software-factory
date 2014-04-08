@@ -3,7 +3,7 @@ description: Amazing project
 #set private as true for private project otherwise set it as false 
 private: true
 upstream: https://github.com/jelmer/dulwich
-ptl-group-members: frederic.lepied@enovance.com
-core-group-members: tristan.cacqueray@enovance.com
+ptl-group-members: user2@examle.com
+core-group-members: user3@examle.com
 #dev-group-members is applicable only for private projects i.e private: true
-dev-group-members: fabien.boucher@enovance.com 
+dev-group-members: user4@examle.com
