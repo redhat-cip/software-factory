@@ -19,8 +19,8 @@ import unittest
 import subprocess
 import shlex
 import stat
+import config
 import tempfile
-import time
 import string
 import random
 from redmine import Redmine
@@ -59,21 +59,6 @@ class Tool:
         return p
 
 
-class ManageRestServer(Tool):
-    def __init__(self):
-        Tool.__init__(self)
-        self.install_dir = "tools/managesf/"
-        self.cmd = "pecan serve config.py"
-
-    def run(self):
-        self.env['PYTHONPATH'] = '.'
-        self.p = self.exe(self.cmd, self.install_dir, False)
-        time.sleep(2)
-
-    def stop(self):
-        self.p.terminate()
-
-
 class ManageSfUtils(Tool):
     def __init__(self, host, port):
         Tool.__init__(self)
@@ -103,7 +88,7 @@ class ManageSfUtilsConfigCreator(Tool):
         self.exe(cmd, self.install_dir)
 
     def deleteProject(self, user, passwd):
-        msu = ManageSfUtils('localhost', 9090)
+        msu = ManageSfUtils(config.MANAGESF_HOST, 80)
         msu.deleteProject('config', user, passwd)
 
 

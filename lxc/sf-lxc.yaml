@@ -37,3 +37,8 @@ hosts:
     name: SF_PREFIX-jenkins
     role: softwarefactory
     cloudinit: ../build/cloudinit/jenkins.cloudinit
+  -
+    address: 192.168.134.55
+    name: SF_PREFIX-managesf
+    role: softwarefactory
+    cloudinit: ../build/cloudinit/managesf.cloudinit

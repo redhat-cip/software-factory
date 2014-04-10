@@ -51,7 +51,12 @@ MYSQL_PACKAGES="mysql-server puppet automysqlbackup"
 #
 REDMINE_PACKAGES="apache2 libapache2-mod-passenger redmine-sqlite redmine-mysql redmine vim puppet git cron"
 
-PACKAGES="${GERRIT_PACKAGES} ${MYSQL_PACKAGES} ${REDMINE_PACKAGES}"
+#
+# Managesf
+#
+MANAGESF_PACKAGES="apache2 libapache2-mod-wsgi puppet python-dev libldap2-dev libsasl2-dev libssl-dev gcc"
+
+PACKAGES="${GERRIT_PACKAGES} ${MYSQL_PACKAGES} ${REDMINE_PACKAGES} ${MANAGESF_PACKAGES}"
 
 update_repositories $dir
 install_ib_if_needed $ORIG $dir
@@ -112,6 +117,12 @@ EOF
     do_chroot $dir update-rc.d -f gerrit remove
     do_chroot $dir update-rc.d -f mysql remove
     do_chroot $dir update-rc.d -f jenkins remove
+
+    #
+    # Managesf
+    #
+    cp -r ../tools/managesf ${dir}/var/www/managesf
+    do_chroot $dir pip install -r /var/www/managesf/requirements.txt
     ;;
   *)
     fatal_error "$package_tool isn't supported for $ROLE role"

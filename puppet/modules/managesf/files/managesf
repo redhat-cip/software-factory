@@ -1,0 +1,11 @@
+<VirtualHost *>
+    WSGIDaemonProcess managesf user=www-data group=www-data python-path=/var/www/managesf/
+    WSGIScriptAlias / /var/www/managesf/app.wsgi
+    WSGIPassAuthorization On
+    <Directory /var/www/managesf/>
+        WSGIProcessGroup managesf
+        WSGIApplicationGroup %{GLOBAL}
+        Order deny,allow
+        Allow from all
+    </Directory>
+</VirtualHost>

@@ -35,3 +35,6 @@ node /.*ldap.*/ inherits base {
   include ldap
 }
 
+node /.*managesf.*/ inherits base {
+  include managesf
+}

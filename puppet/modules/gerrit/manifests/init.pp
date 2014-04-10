@@ -237,6 +237,14 @@ class gerrit ($settings = hiera_hash('gerrit', '')) {
   file { '/etc/apache2/sites-enabled/000-default':
     ensure  => absent,
   }
+  
+  # Just to help debug
+  exec { 'debug-copy-config-just-before-init':
+    command   => "/bin/cp /home/gerrit/site_path/etc/*.config /tmp/",
+    require => [File['/home/gerrit/site_path/etc/gerrit.config'],
+                File['/home/gerrit/site_path/etc/secure.config']],
+    logoutput => on_failure,
+  }
 
 
   # Gerrit first initialization, must be run only when gerrit.war changes
@@ -253,11 +261,13 @@ class gerrit ($settings = hiera_hash('gerrit', '')) {
                   File['/root/gerrit-firstuser-init.sql'],
                   File['/root/gerrit-firstuser-init.sh'],
                   File['/root/gerrit-set-default-acl.sh'],
-                  File['/root/gerrit-set-jenkins-user.sh']],
+                  File['/root/gerrit-set-jenkins-user.sh'],
+                  Exec['debug-copy-config-just-before-init']],
     subscribe => File['/home/gerrit/gerrit.war'],
     refreshonly => true,
     logoutput => on_failure,
   }
+
   exec { 'gerrit-change-start-timeout':
     command   => "/bin/sed -i 's/TIMEOUT=90/TIMEOUT=400/' /etc/init.d/gerrit",
     require   => File['/etc/init.d/gerrit'],
@@ -289,6 +299,16 @@ class gerrit ($settings = hiera_hash('gerrit', '')) {
   exec {'gerrit-init-jenkins':
     command     => '/root/gerrit-set-jenkins-user.sh',
     logoutput   => on_failure,
+    subscribe   => Exec['gerrit-init-firstuser'],
+    require     => Service['gerrit'],
+    refreshonly => true,
+  }
+  # Just to help debug, we do a diff after the gerrit.war init
+  exec { 'make-diff-config-after-init':
+    cwd => '/tmp',
+    path    => '/usr/bin/:/bin/',
+    command   => "diff -rup gerrit.config /home/gerrit/site_path/etc/gerrit.config > /tmp/config.diff; diff -rup secure.config /home/gerrit/site_path/etc/secure.config >> /tmp/config.diff",
+    logoutput => on_failure,
     subscribe   => Exec['gerrit-init-firstuser'],
     require     => Service['gerrit'],
     refreshonly => true,

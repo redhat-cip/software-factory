@@ -31,6 +31,9 @@ def setUpPackage():
 def tearDownPackage():
     if "SF_SKIP_BOOTSTRAP" in os.environ:
         return
-    os.chdir("lxc")
-    subprocess.call(['./bootstrap-lxc.sh', 'stop'])
-    os.chdir("..")
+# Note(fbo): I remove the stop from here because we cannot retreive logs
+# from hosts after. I suggest to move the boostrap-lxc start/stop in
+# run_functional_tests.sh script.
+#    os.chdir("lxc")
+#    subprocess.call(['./bootstrap-lxc.sh', 'stop'])
+#    os.chdir("..")

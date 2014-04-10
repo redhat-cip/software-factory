@@ -23,7 +23,8 @@ export SF_PREFIX
 
 . ../function.sh
 
-ROLES="${SF_PREFIX}-puppetmaster ${SF_PREFIX}-ldap ${SF_PREFIX}-mysql ${SF_PREFIX}-redmine ${SF_PREFIX}-jenkins ${SF_PREFIX}-gerrit"
+ROLES="${SF_PREFIX}-puppetmaster ${SF_PREFIX}-ldap ${SF_PREFIX}-mysql ${SF_PREFIX}-redmine ${SF_PREFIX}-jenkins ${SF_PREFIX}-gerrit ${SF_PREFIX}-managesf"
+
 EDEPLOY_LXC=/srv/edeploy-lxc/edeploy-lxc
 
 if [ -z "$1" ] || [ "$1" == "start" ]; then

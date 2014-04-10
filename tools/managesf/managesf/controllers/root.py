@@ -15,6 +15,7 @@
 
 from pecan import expose
 from pecan import conf
+from pecan import abort
 from pecan.rest import RestController
 from pecan.secure import secure
 from pecan import request, response
@@ -27,6 +28,8 @@ import ldap
 class ProjectController(RestController):
     @expose()
     def put(self, name, **kwargs):
+        if name == '':
+            abort(405)
         #create project
         inp = request.json if request.content_length else {}
         gerrit.init_project(name, inp)
@@ -37,6 +40,8 @@ class ProjectController(RestController):
 
     @expose()
     def delete(self, name):
+        if name == '':
+            abort(405)
         #delete project
         gerrit.delete_project(name)
         redmine.delete_project(name)

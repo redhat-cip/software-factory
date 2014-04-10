@@ -18,7 +18,6 @@ import os
 import config
 
 from utils import Base
-from utils import ManageRestServer
 from utils import ManageSfUtils
 from utils import GerritGitUtils
 from utils import create_random_str
@@ -33,9 +32,7 @@ class TestManageSF(Base):
     def setUpClass(cls):
         cls.projects = []
         cls.clone_dirs = []
-        cls.mrs = ManageRestServer()
-        cls.mrs.run()
-        cls.msu = ManageSfUtils('localhost', 9090)
+        cls.msu = ManageSfUtils(config.MANAGESF_HOST, 80)
 
     @classmethod
     def tearDownClass(cls):
@@ -43,7 +40,6 @@ class TestManageSF(Base):
             cls.msu.deleteProject(name,
                                   config.ADMIN_USER,
                                   config.ADMIN_PASSWD)
-        cls.mrs.stop()
 
     def createProject(self, name):
         self.msu.createProject(name,

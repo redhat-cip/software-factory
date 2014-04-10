@@ -1,7 +1,8 @@
 gerrit:
   repo_base_path: git
   weburl: "%{hiera('gerrit_url')}"
-  sshd_listen_address: '*:29418'
+  gerrit_sshd_port: 29418
+  sshd_listen_address: "*:29418"  # use the same port as above
   issues_tracker_address: "%{hiera('redmine_url')}"
   issues_tracker_api_key: REDMINE_API_KEY
   issues_tracker_version: 1.4
@@ -26,6 +27,7 @@ gerrit:
   smtp_user:
   smtp_pass:
   gerrit_admin_username: GERRIT_ADMIN_NAME
+  gerrit_admin_password: GERRIT_ADMIN_PASSWORD
   gerrit_admin_mail: GERRIT_ADMIN_MAIL
   gerrit_admin_sshkey: GERRIT_ADMIN_PUB_KEY
   gerrit_jenkins_sshkey: JENKINS_PUB_KEY

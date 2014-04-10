@@ -19,6 +19,7 @@ BUILD=${BUILD:-../build}
 # TODO: Should be moved in other place maybe a config file for bootstrap scripts ?
 GERRIT_ADMIN=user1
 GERRIT_ADMIN_MAIL=user1@example.com
+GERRIT_ADMIN_PASSWORD=userpass
 
 GERRIT_MYSQL_SECRET=''
 REDMINE_MYSQL_SECRET=''
@@ -124,6 +125,7 @@ function generate_hiera {
     GERRIT_ADMIN_PUB_KEY="$(cat ${OUTPUT}/../data/gerrit_admin_rsa.pub | cut -d' ' -f2)"
     sed -i "s#GERRIT_ADMIN_PUB_KEY#ssh-rsa ${GERRIT_ADMIN_PUB_KEY}#" ${OUTPUT}/gerrit.yaml
     sed -i "s#GERRIT_ADMIN_NAME#${GERRIT_ADMIN}#" ${OUTPUT}/gerrit.yaml
+    sed -i "s#GERRIT_ADMIN_PASSWORD#${GERRIT_ADMIN_PASSWORD}#" ${OUTPUT}/gerrit.yaml
     sed -i "s#GERRIT_ADMIN_MAIL#${GERRIT_ADMIN_MAIL}#" ${OUTPUT}/gerrit.yaml
     sed -i "s#GERRIT_MYSQL_SECRET#${GERRIT_MYSQL_SECRET}#" ${OUTPUT}/gerrit.yaml
 
@@ -272,6 +274,7 @@ function post_configuration_update_hiera {
 function post_configuration_ssh_keys {
     jenkins_host=$(gethostname_from_yaml jenkins)
     gerrit_host=$(gethostname_from_yaml gerrit)
+    managesf_host=$(gethostname_from_yaml managesf)
 
     local ssh_port=22
     if [ -n "$1" ]; then
@@ -283,6 +286,7 @@ function post_configuration_ssh_keys {
     ssh -p$ssh_port root@$jenkins_host chmod 400 /var/lib/jenkins/.ssh/id_rsa
     scp -P$ssh_port ${BUILD}/data/gerrit_service_rsa root@$gerrit_host:/home/gerrit/ssh_host_rsa_key
     scp -P$ssh_port ${BUILD}/data/gerrit_service_rsa.pub root@$gerrit_host:/home/gerrit/ssh_host_rsa_key.pub
+    scp -p$ssh_port ${BUILD}/data/gerrit_admin_rsa root@$managesf_host:/var/www/managesf
     ssh -p$ssh_port root@$gerrit_host chown gerrit:gerrit /home/gerrit/ssh_host_rsa_key
     ssh -p$ssh_port root@$gerrit_host chown gerrit:gerrit /home/gerrit/ssh_host_rsa_key.pub
 }
