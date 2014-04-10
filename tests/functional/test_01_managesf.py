@@ -51,9 +51,9 @@ class TestManageSF(Base):
                                config.ADMIN_PASSWD)
         self.projects.append(name)
 
-    def test_01_create_private_project_as_admin(self):
-        """ Verify the correct creation of a private project
-        on both redmine and gerrit.
+    def test_01_create_public_project_as_admin(self):
+        """ Verify the correct creation of a public project
+        on both redmine and gerrit
         """
         pname = 'p_%s' % create_random_str()
         self.createProject(pname)
@@ -68,8 +68,8 @@ class TestManageSF(Base):
         assert gu.isMemberInGroup(config.ADMIN_USER, '%s-ptl' % pname)
         #assert rm.isProjectExist(pname)
 
-    def test_02_delete_private_project_as_admin(self):
-        """ Verify the correct deletion of a private project
+    def test_02_delete_public_project_as_admin(self):
+        """ Verify the correct deletion of a public project
         on both redmine and gerrit.
         """
         gu = GerritUtil(config.GERRIT_SERVER, username=config.ADMIN_USER,
@@ -87,9 +87,9 @@ class TestManageSF(Base):
         #assert not rm.isProjectExist(pname)
         self.projects.remove(pname)
 
-    def test_03_create_clone_as_admin(self):
-        """ Verify we can clone a project as Admin user and .gitreview exist
-        in the master branch
+    def test_03_create_public_project_as_user_clone_as_admin(self):
+        """ Verify we can clone a public project as Admin user
+        and .gitreview exist in the master branch
         """
         pname = 'p_%s' % create_random_str()
         self.createProject(pname)
