@@ -1,5 +1,0 @@
-[gerrit]
-host=%(gerrit-host)s
-port=%(gerrit-host-port)s
-project=%(name)s
-defaultbranch=master

@@ -62,7 +62,7 @@ class Tool:
 class ManageRestServer(Tool):
     def __init__(self):
         Tool.__init__(self)
-        self.install_dir = "tools/managesf-ng/"
+        self.install_dir = "tools/managesf/"
         self.cmd = "pecan serve config.py"
 
     def run(self):
@@ -79,7 +79,7 @@ class ManageSfUtils(Tool):
         Tool.__init__(self)
         self.host = host
         self.port = port
-        self.install_dir = "tools/managesf-ng/cli"
+        self.install_dir = "tools/managesf/cli"
         self.base_cmd = \
             "python sf-manage.py --host %s --port %s --auth %%s:%%s " \
             % (self.host, self.port)
@@ -96,7 +96,7 @@ class ManageSfUtils(Tool):
 class ManageSfUtilsConfigCreator(Tool):
     def __init__(self):
         Tool.__init__(self)
-        self.install_dir = "tools/managesf-ng/utils"
+        self.install_dir = "tools/managesf/utils"
 
     def createConfigProject(self):
         cmd = "bash init-config-repo.sh"

@@ -1,7 +1,0 @@
-# UUID          Group Name
-%(non-interactive-users)s	Non-Interactive Users
-%(core-group-uuid)s	%(core-group)s
-%(ptl-group-uuid)s	%(ptl-group)s
-%(dev-group-uuid)s	%(dev-group)s
-global:Anonymous-Users	Anonymous Users
-global:Registered-Users	Registered Users
