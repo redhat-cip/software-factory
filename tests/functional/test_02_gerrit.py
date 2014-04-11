@@ -47,8 +47,7 @@ class TestGerrit(Base):
         self.projects.append(name)
 
     def test_01_add_remove_user_in_core_as_admin(self):
-        """ Verify we can add/remove user from core group
-        as admin
+        """ Add/remove user from core group as admin
         """
         gu = GerritUtil(config.GERRIT_SERVER, username=config.ADMIN_USER,
                         password=config.ADMIN_PASSWD)
@@ -65,8 +64,7 @@ class TestGerrit(Base):
         assert not gu.isMemberInGroup(NEW_USER, GROUP_NAME)
 
     def test_add_remove_user_in_ptl_as_admin(self):
-        """ Verify we can add/remove user from ptl group
-        as admin
+        """ Add/remove user from ptl group as admin
         """
         gu = GerritUtil(config.GERRIT_SERVER, username=config.ADMIN_USER,
                         password=config.ADMIN_PASSWD)

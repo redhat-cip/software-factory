@@ -16,43 +16,51 @@
 
 import os
 import config
+import shutil
 
 from utils import Base
 from utils import ManageSfUtils
 from utils import GerritGitUtils
 from utils import create_random_str
+from utils import set_private_key
 from utils import GerritUtil
 from utils import RedmineUtil
 
 
 class TestManageSF(Base):
-    """ Functional tests that validate managesf feature.
+    """ Functional tests that validate managesf features.
+    Here we do basic verifications about project creation
+    with managesf.
     """
     @classmethod
     def setUpClass(cls):
-        cls.projects = []
-        cls.clone_dirs = []
         cls.msu = ManageSfUtils(config.MANAGESF_HOST, 80)
 
     @classmethod
     def tearDownClass(cls):
-        for name in cls.projects:
-            cls.msu.deleteProject(name,
-                                  config.ADMIN_USER,
-                                  config.ADMIN_PASSWD)
+        pass
 
-    def createProject(self, name):
-        self.msu.createProject(name,
-                               config.ADMIN_USER,
-                               config.ADMIN_PASSWD)
+    def setUp(self):
+        self.projects = []
+        self.dirs_to_delete = []
+
+    def tearDown(self):
+        for name in self.projects:
+            self.msu.deleteProject(name,
+                                   config.ADMIN_USER,
+                                   config.ADMIN_PASSWD)
+        for dirs in self.dirs_to_delete:
+            shutil.rmtree(dirs)
+
+    def createProject(self, name, user, passwd):
+        self.msu.createProject(name, user, passwd)
         self.projects.append(name)
 
     def test_01_create_public_project_as_admin(self):
-        """ Verify the correct creation of a public project
-        on both redmine and gerrit
+        """ Create public project on redmine and gerrit as admin
         """
         pname = 'p_%s' % create_random_str()
-        self.createProject(pname)
+        self.createProject(pname, config.ADMIN_USER, config.ADMIN_PASSWD)
         gu = GerritUtil(config.GERRIT_SERVER, username=config.ADMIN_USER,
                         password=config.ADMIN_PASSWD)
         rm = RedmineUtil(config.REDMINE_SERVER, username=config.ADMIN_USER,
@@ -65,15 +73,14 @@ class TestManageSF(Base):
         assert rm.isProjectExist(pname)
 
     def test_02_delete_public_project_as_admin(self):
-        """ Verify the correct deletion of a public project
-        on both redmine and gerrit.
+        """ Delete public project on redmine and gerrit as admin
         """
         gu = GerritUtil(config.GERRIT_SERVER, username=config.ADMIN_USER,
                         password=config.ADMIN_PASSWD)
         rm = RedmineUtil(config.REDMINE_SERVER, username=config.ADMIN_USER,
                          password=config.ADMIN_PASSWD)
         pname = 'p_%s' % create_random_str()
-        self.createProject(pname)
+        self.createProject(pname, config.ADMIN_USER, config.ADMIN_PASSWD)
         assert gu.isPrjExist(pname)
         assert rm.isProjectExist(pname)
         self.msu.deleteProject(pname, config.ADMIN_USER, config.ADMIN_PASSWD)
@@ -83,18 +90,34 @@ class TestManageSF(Base):
         assert not rm.isProjectExist(pname)
         self.projects.remove(pname)
 
-    def test_03_create_public_project_as_user_clone_as_admin(self):
-        """ Verify we can clone a public project as Admin user
-        and .gitreview exist in the master branch
+    def test_03_create_public_project_as_user(self):
+        """ Create public project on redmine and gerrit as user
         """
         pname = 'p_%s' % create_random_str()
-        self.createProject(pname)
+        self.createProject(pname, config.USER_2, config.USER_2_PASSWD)
+        gu = GerritUtil(config.GERRIT_SERVER, username=config.ADMIN_USER,
+                        password=config.ADMIN_PASSWD)
+        rm = RedmineUtil(config.REDMINE_SERVER, username=config.ADMIN_USER,
+                         password=config.ADMIN_PASSWD)
+        assert gu.isPrjExist(pname)
+        assert gu.isGroupExist('%s-core' % pname)
+        assert gu.isGroupExist('%s-ptl' % pname)
+        assert gu.isMemberInGroup(config.ADMIN_USER, '%s-core' % pname)
+        assert gu.isMemberInGroup(config.ADMIN_USER, '%s-ptl' % pname)
+        assert rm.isProjectExist(pname)
+
+    def test_04_create_public_project_as_admin_clone_as_admin(self):
+        """ Clone public project as admin and check content
+        """
+        pname = 'p_%s' % create_random_str()
+        self.createProject(pname, config.ADMIN_USER, config.ADMIN_PASSWD)
         ggu = GerritGitUtils(config.ADMIN_USER,
                              config.ADMIN_PRIV_KEY_PATH,
                              config.ADMIN_EMAIL)
         url = "ssh://%s@%s/%s" % (config.ADMIN_USER,
                                   config.GERRIT_HOST, pname)
         clone_dir = ggu.clone(url, pname)
+        self.dirs_to_delete.append(os.path.dirname(clone_dir))
         # Test that the clone is a success
         self.assertTrue(os.path.isdir(clone_dir))
         # Verify master own the .gitreview file
@@ -106,3 +129,57 @@ class TestManageSF(Base):
                                                     'project.config')))
         self.assertTrue(os.path.isfile(os.path.join(clone_dir,
                                                     'groups')))
+
+    def test_05_create_public_project_as_admin_clone_as_user(self):
+        """ Create public project as admin then clone as user
+        """
+        pname = 'p_%s' % create_random_str()
+        # create the project as admin
+        self.createProject(pname, config.ADMIN_USER, config.ADMIN_PASSWD)
+        # add user2 ssh pubkey to user2
+        gu = GerritUtil(config.GERRIT_SERVER, username=config.USER_2,
+                        password=config.USER_2_PASSWD)
+        gu.addPubKey(config.USER_2_PUB_KEY)
+        # prepare to clone
+        priv_key_path = set_private_key(config.USER_2_PRIV_KEY)
+        self.dirs_to_delete.append(os.path.dirname(priv_key_path))
+        ggu = GerritGitUtils(config.USER_2,
+                             priv_key_path,
+                             config.USER_2_EMAIL)
+        url = "ssh://%s@%s/%s" % (config.USER_2,
+                                  config.GERRIT_HOST, pname)
+        # clone
+        clone_dir = ggu.clone(url, pname)
+        self.dirs_to_delete.append(os.path.dirname(clone_dir))
+        # Test that the clone is a success
+        self.assertTrue(os.path.isdir(clone_dir))
+        # Verify master own the .gitreview file
+        self.assertTrue(os.path.isfile(os.path.join(clone_dir,
+                                                    '.gitreview')))
+
+    def test_06_create_public_project_as_user_clone_as_user(self):
+        """ Create public project as user then clone as user
+        """
+        pname = 'p_%s' % create_random_str()
+        # create the project as admin
+        self.createProject(pname, config.USER_2, config.USER_2_PASSWD)
+        # add user2 ssh pubkey to user2
+        gu = GerritUtil(config.GERRIT_SERVER, username=config.USER_2,
+                        password=config.USER_2_PASSWD)
+        gu.addPubKey(config.USER_2_PUB_KEY)
+        # prepare to clone
+        priv_key_path = set_private_key(config.USER_2_PRIV_KEY)
+        self.dirs_to_delete.append(os.path.dirname(priv_key_path))
+        ggu = GerritGitUtils(config.USER_2,
+                             priv_key_path,
+                             config.USER_2_EMAIL)
+        url = "ssh://%s@%s/%s" % (config.USER_2,
+                                  config.GERRIT_HOST, pname)
+        # clone
+        clone_dir = ggu.clone(url, pname)
+        self.dirs_to_delete.append(os.path.dirname(clone_dir))
+        # Test that the clone is a success
+        self.assertTrue(os.path.isdir(clone_dir))
+        # Verify master own the .gitreview file
+        self.assertTrue(os.path.isfile(os.path.join(clone_dir,
+                                                    '.gitreview')))

@@ -26,12 +26,20 @@ import random
 from redmine import Redmine
 from requests.auth import HTTPBasicAuth
 from requests.exceptions import HTTPError
-from pygerrit.rest import GerritRestAPI
+from pygerrit import rest
 
 
 def create_random_str():
     value = "".join([random.choice(string.ascii_lowercase) for _ in range(6)])
     return value
+
+
+def set_private_key(priv_key):
+    tempdir = tempfile.mkdtemp()
+    priv_key_path = os.path.join(tempdir, 'user.priv')
+    file(priv_key_path, 'w').write(priv_key)
+    os.chmod(priv_key_path, stat.S_IREAD | stat.S_IWRITE)
+    return priv_key_path
 
 
 class Base(unittest.TestCase):
@@ -162,14 +170,17 @@ class GerritUtil:
             self.anonymous = True
         if not self.anonymous:
             self.auth = HTTPBasicAuth(username, password)
-        self.rest = GerritRestAPI(self.url, self.auth)
+        # The original SUFFIX does not fit well with our
+        # installation of Gerrit
+        rest.GERRIT_AUTH_SUFFIX = ''
+        self.rest = rest.GerritRestAPI(self.url, self.auth)
 
     # project APIs
     def getProjects(self, name=None):
         if name:
-            return self.rest.get('/projects/%s' % name)
+            return self.rest.get('/a/projects/%s' % name)
         else:
-            return self.rest.get('/projects/?')
+            return self.rest.get('/a/projects/?')
 
     def isPrjExist(self, name):
         try:
@@ -183,16 +194,17 @@ class GerritUtil:
 
     # Group APIs
     def isGroupExist(self, name):
-        g = self.rest.get('/groups/')
+        g = self.rest.get('/a/groups/')
         return name in g
 
     def getGroupOwner(self, name):
-        g = self.rest.get('/groups/%s/owner' % name)
+        g = self.rest.get('/a/groups/%s/owner' % name)
         return g['owner']
 
     def isMemberInGroup(self, username, groupName):
         try:
-            g = self.rest.get('/groups/%s/members/%s' % (groupName, username))
+            g = self.rest.get('/a/groups/%s/members/%s' % (groupName,
+                                                           username))
             return (len(g) >= 1 and g['username'] == username)
         except HTTPError as e:
             if e.response.status_code == 404:
@@ -201,15 +213,21 @@ class GerritUtil:
                 raise
 
     def addGroupMember(self, username, groupName):
-        self.rest.put('/groups/%s/members/%s' % (groupName, username))
+        self.rest.put('/a/groups/%s/members/%s' % (groupName, username))
 
     def deleteGroupMember(self, username, groupName):
-        self.rest.delete('/groups/%s/members/%s' % (groupName, username))
+        self.rest.delete('/a/groups/%s/members/%s' % (groupName, username))
+
+    def addPubKey(self, pubkey):
+        headers = {'content-type': 'plain/text'}
+        self.rest.post('/a/accounts/self/sshkeys',
+                       data=pubkey,
+                       headers=headers)
 
     # Review APIs
     def _submitCodeReview(self, change_id, revision_id, rate):
         reviewInput = {"labels": {"Code-Review": int(rate)}}
-        self.rest.post('/changes/%s/revisions/%s/review' %
+        self.rest.post('/a/changes/%s/revisions/%s/review' %
                        (change_id, revision_id), data=reviewInput)
 
     def setPlus2CodeReview(self, change_id, revision_id):
@@ -229,7 +247,7 @@ class GerritUtil:
 
     def _submitVerified(self, change_id, revision_id, rate):
         reviewInput = {"labels": {"Verified": int(rate)}}
-        self.rest.post('/changes/%s/revisions/%s/review' %
+        self.rest.post('/a/changes/%s/revisions/%s/review' %
                        (change_id, revision_id), data=reviewInput)
 
     def setPlus1Verified(self, change_id, revision_id):
