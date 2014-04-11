@@ -52,11 +52,15 @@ class TestManageSF(Base):
         for dirs in self.dirs_to_delete:
             shutil.rmtree(dirs)
 
-    def createProject(self, name, user, passwd):
-        self.msu.createProject(name, user, passwd)
+    def createProject(self, name, user, passwd,
+                      private=False, group_infos=None, upstream=None):
+        self.msu.createProject(name, user, passwd,
+                               private=private,
+                               group_infos=group_infos,
+                               upstream=upstream)
         self.projects.append(name)
 
-    def test_01_create_public_project_as_admin(self):
+    def test_create_public_project_as_admin(self):
         """ Create public project on redmine and gerrit as admin
         """
         pname = 'p_%s' % create_random_str()
@@ -66,13 +70,34 @@ class TestManageSF(Base):
         rm = RedmineUtil(config.REDMINE_SERVER, username=config.ADMIN_USER,
                          password=config.ADMIN_PASSWD)
         assert gu.isPrjExist(pname)
-        assert gu.isGroupExist('%s-core' % pname)
-        assert gu.isGroupExist('%s-ptl' % pname)
-        assert gu.isMemberInGroup(config.ADMIN_USER, '%s-core' % pname)
-        assert gu.isMemberInGroup(config.ADMIN_USER, '%s-ptl' % pname)
         assert rm.isProjectExist(pname)
+        assert gu.isGroupExist('%s-ptl' % pname)
+        assert gu.isGroupExist('%s-core' % pname)
+        #TODO(Project creator, as project owner, should only be in ptl group)
+        assert gu.isMemberInGroup(config.ADMIN_USER, '%s-ptl' % pname)
+        assert gu.isMemberInGroup(config.ADMIN_USER, '%s-core' % pname)
 
-    def test_02_delete_public_project_as_admin(self):
+    def test_create_private_project_as_admin(self):
+        """ Create private project on redmine and gerrit as admin
+        """
+        pname = 'p_%s' % create_random_str()
+        self.createProject(pname, config.ADMIN_USER,
+                           config.ADMIN_PASSWD, private=True)
+        gu = GerritUtil(config.GERRIT_SERVER, username=config.ADMIN_USER,
+                        password=config.ADMIN_PASSWD)
+        rm = RedmineUtil(config.REDMINE_SERVER, username=config.ADMIN_USER,
+                         password=config.ADMIN_PASSWD)
+        assert gu.isPrjExist(pname)
+        assert rm.isProjectExist(pname)
+        assert gu.isGroupExist('%s-ptl' % pname)
+        assert gu.isGroupExist('%s-core' % pname)
+        assert gu.isGroupExist('%s-dev' % pname)
+        #TODO(Project creator, as project owner, should only be in ptl group)
+        assert gu.isMemberInGroup(config.ADMIN_USER, '%s-ptl' % pname)
+        assert gu.isMemberInGroup(config.ADMIN_USER, '%s-core' % pname)
+        assert gu.isMemberInGroup(config.ADMIN_USER, '%s-dev' % pname)
+
+    def test_delete_public_project_as_admin(self):
         """ Delete public project on redmine and gerrit as admin
         """
         gu = GerritUtil(config.GERRIT_SERVER, username=config.ADMIN_USER,
@@ -85,12 +110,12 @@ class TestManageSF(Base):
         assert rm.isProjectExist(pname)
         self.msu.deleteProject(pname, config.ADMIN_USER, config.ADMIN_PASSWD)
         assert not gu.isPrjExist(pname)
-        assert not gu.isGroupExist('%s-core' % pname)
         assert not gu.isGroupExist('%s-ptl' % pname)
         assert not rm.isProjectExist(pname)
+        assert not gu.isGroupExist('%s-core' % pname)
         self.projects.remove(pname)
 
-    def test_03_create_public_project_as_user(self):
+    def test_create_public_project_as_user(self):
         """ Create public project on redmine and gerrit as user
         """
         pname = 'p_%s' % create_random_str()
@@ -100,13 +125,34 @@ class TestManageSF(Base):
         rm = RedmineUtil(config.REDMINE_SERVER, username=config.ADMIN_USER,
                          password=config.ADMIN_PASSWD)
         assert gu.isPrjExist(pname)
-        assert gu.isGroupExist('%s-core' % pname)
-        assert gu.isGroupExist('%s-ptl' % pname)
-        assert gu.isMemberInGroup(config.ADMIN_USER, '%s-core' % pname)
-        assert gu.isMemberInGroup(config.ADMIN_USER, '%s-ptl' % pname)
         assert rm.isProjectExist(pname)
+        assert gu.isGroupExist('%s-ptl' % pname)
+        assert gu.isGroupExist('%s-core' % pname)
+        #TODO(Project creator, as project owner, should only be in ptl group)
+        assert gu.isMemberInGroup(config.ADMIN_USER, '%s-ptl' % pname)
+        assert gu.isMemberInGroup(config.ADMIN_USER, '%s-core' % pname)
 
-    def test_04_create_public_project_as_admin_clone_as_admin(self):
+    def test_create_private_project_as_user(self):
+        """ Create private project on redmine and gerrit as user
+        """
+        pname = 'p_%s' % create_random_str()
+        self.createProject(pname, config.USER_2, config.USER_2_PASSWD,
+                           private=True)
+        gu = GerritUtil(config.GERRIT_SERVER, username=config.ADMIN_USER,
+                        password=config.ADMIN_PASSWD)
+        rm = RedmineUtil(config.REDMINE_SERVER, username=config.ADMIN_USER,
+                         password=config.ADMIN_PASSWD)
+        assert gu.isPrjExist(pname)
+        assert rm.isProjectExist(pname)
+        assert gu.isGroupExist('%s-ptl' % pname)
+        assert gu.isGroupExist('%s-core' % pname)
+        assert gu.isGroupExist('%s-dev' % pname)
+        #TODO(Project creator, as project owner, should only be in ptl group)
+        assert gu.isMemberInGroup(config.USER_2, '%s-ptl' % pname)
+        assert gu.isMemberInGroup(config.USER_2, '%s-core' % pname)
+        assert gu.isMemberInGroup(config.USER_2, '%s-dev' % pname)
+
+    def test_create_public_project_as_admin_clone_as_admin(self):
         """ Clone public project as admin and check content
         """
         pname = 'p_%s' % create_random_str()
@@ -129,8 +175,44 @@ class TestManageSF(Base):
                                                     'project.config')))
         self.assertTrue(os.path.isfile(os.path.join(clone_dir,
                                                     'groups')))
+        # There is no group dev for a public project
+        content = file(os.path.join(clone_dir, 'project.config')).read()
+        self.assertFalse('%s-dev' % pname in content)
+        content = file(os.path.join(clone_dir, 'groups')).read()
+        self.assertFalse('%s-dev' % pname in content)
 
-    def test_05_create_public_project_as_admin_clone_as_user(self):
+    def test_create_private_project_as_admin_clone_as_admin(self):
+        """ Clone private project as admin and check content
+        """
+        pname = 'p_%s' % create_random_str()
+        self.createProject(pname, config.ADMIN_USER,
+                           config.ADMIN_PASSWD,
+                           private=True)
+        ggu = GerritGitUtils(config.ADMIN_USER,
+                             config.ADMIN_PRIV_KEY_PATH,
+                             config.ADMIN_EMAIL)
+        url = "ssh://%s@%s/%s" % (config.ADMIN_USER,
+                                  config.GERRIT_HOST, pname)
+        clone_dir = ggu.clone(url, pname)
+        self.dirs_to_delete.append(os.path.dirname(clone_dir))
+        # Test that the clone is a success
+        self.assertTrue(os.path.isdir(clone_dir))
+        # Verify master own the .gitreview file
+        self.assertTrue(os.path.isfile(os.path.join(clone_dir,
+                                                    '.gitreview')))
+        # Verify meta/config branch own both group and ACLs config file
+        ggu.fetch_meta_config(clone_dir)
+        self.assertTrue(os.path.isfile(os.path.join(clone_dir,
+                                                    'project.config')))
+        self.assertTrue(os.path.isfile(os.path.join(clone_dir,
+                                                    'groups')))
+        # There is a group dev for a private project
+        content = file(os.path.join(clone_dir, 'project.config')).read()
+        self.assertTrue('%s-dev' % pname in content)
+        content = file(os.path.join(clone_dir, 'groups')).read()
+        self.assertTrue('%s-dev' % pname in content)
+
+    def test_create_public_project_as_admin_clone_as_user(self):
         """ Create public project as admin then clone as user
         """
         pname = 'p_%s' % create_random_str()
@@ -157,7 +239,7 @@ class TestManageSF(Base):
         self.assertTrue(os.path.isfile(os.path.join(clone_dir,
                                                     '.gitreview')))
 
-    def test_06_create_public_project_as_user_clone_as_user(self):
+    def test_create_public_project_as_user_clone_as_user(self):
         """ Create public project as user then clone as user
         """
         pname = 'p_%s' % create_random_str()
