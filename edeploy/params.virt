@@ -1,5 +1,5 @@
 # Size of the root filesystem in MB or auto
-ROOT_FS_SIZE=1500
+ROOT_FS_SIZE=2000
 #ROOT_FS_SIZE=auto
 
 # Output format supported by qemu-img

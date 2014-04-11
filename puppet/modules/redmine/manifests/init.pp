@@ -150,4 +150,12 @@ class redmine ($settings = hiera_hash('redmine', ''),$ldap_sync_settings = hiera
     path => ['/bin', '/usr/bin'],
     require => Exec['plugin_install'],
   }
+
+  exec {'rake redmine:backlogs:install RAILS_ENV=production' :
+    cwd         =>  '/usr/share/redmine/plugins/redmine_backlogs',
+    path        =>  ['/bin', '/usr/bin'],
+    environment =>  ["story_trackers=Bug", "task_tracker=Task"],
+    require     =>  Exec['create_db'],
+  }
+
 }
