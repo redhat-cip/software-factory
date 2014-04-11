@@ -69,8 +69,19 @@ class ManageSfUtils(Tool):
             "python sf-manage.py --host %s --port %s --auth %%s:%%s " \
             % (self.host, self.port)
 
-    def createProject(self, name, user, passwd):
+    def createProject(self, name, user, passwd,
+                      private=False, group_infos=None,
+                      upstream=None):
         cmd = self.base_cmd % (user, passwd) + "create --name %s" % name
+        if private:
+            cmd += " --private"
+        for group in ('ptl-group', 'core-group', 'dev-group'):
+            if group_infos and group in group_infos:
+                if group_infos[group]:
+                    members = ",".join(group_infos[group])
+                    cmd += " --%s %s" % (group, members)
+        if upstream:
+            cmd += " --upstream %s" % upstream
         self.exe(cmd, self.install_dir)
 
     def deleteProject(self, name, user, passwd):
