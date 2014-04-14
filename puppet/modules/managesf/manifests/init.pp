@@ -29,7 +29,7 @@ class managesf ($gerrit = hiera_hash('gerrit', ''), $redmine = hiera_hash('redmi
   }
 
   file { '/var/www/managesf/':
-    ensure  => present,
+    ensure  => directory,
     owner   => 'www-data',
     group   => 'www-data',
     mode    => '0640'

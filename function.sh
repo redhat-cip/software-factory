@@ -98,6 +98,7 @@ function generate_hiera {
     rm -Rf ${OUTPUT}
     mkdir -p ${OUTPUT}
     cp ../puppet/hiera/common.yaml ${OUTPUT}/common.yaml
+    cp ../puppet/hiera/monit.yaml ${OUTPUT}/monit.yaml
 
     # Hosts
     echo -e "hosts:\n  localhost:\n    ip: 127.0.0.1" > ${OUTPUT}/hosts.yaml

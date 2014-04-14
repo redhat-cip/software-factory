@@ -112,4 +112,12 @@ class redmine ($settings = hiera_hash('redmine', '')) {
         subscribe   => File['/root/post-conf-in-mysql.sql'],
         require     => [Exec['default_data']],
     }
+
+  file { '/etc/monit/conf.d/redmine':
+    ensure  => present,
+    content => template('redmine/monit.erb'),
+    require => [Package['monit'], File['/etc/monit/conf.d']],
+    notify  => Service['monit'],
+  }
+
 }

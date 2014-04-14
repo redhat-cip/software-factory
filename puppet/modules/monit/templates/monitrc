@@ -1,0 +1,14 @@
+  set daemon 120
+  set logfile /var/log/monit.log
+  set idfile /var/lib/monit/id
+  set statefile /var/lib/monit/state
+  set mailserver <%= @settings['smtp_server'] %>
+  set eventqueue
+      basedir /var/lib/monit/events
+      slots 100
+  set mail-format { from: <%= @settings['mail_from'] %> }
+  set alert <%= @settings['mail_to'] %>
+  set httpd port 2812 and
+    use address 0.0.0.0
+    allow 0.0.0.0/0.0.0.0
+  include /etc/monit/conf.d/*

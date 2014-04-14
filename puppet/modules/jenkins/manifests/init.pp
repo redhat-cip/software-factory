@@ -14,13 +14,13 @@
 # under the License.
 
 class jenkins ($settings = hiera_hash('jenkins', '')) {
-   service { "jenkins":
-     ensure  => "running",
-     enable  => "true",
+  service { "jenkins":
+    ensure  => "running",
+    enable  => "true",
   }
   user { "jenkins":
-     password => '$6$I.XrOOwo$lpbpxQnBMoHDZ2dpcsYZD.MzMjusR0JVt6nTld05TDMej0MHJeEzX0YVuhdlEk01jx.IZO8bAn4DIlrwDVtOQ1',
-     groups => ['shadow'],
+    password => '$6$I.XrOOwo$lpbpxQnBMoHDZ2dpcsYZD.MzMjusR0JVt6nTld05TDMej0MHJeEzX0YVuhdlEk01jx.IZO8bAn4DIlrwDVtOQ1',
+    groups => ['shadow'],
   }
   file {'/var/lib/jenkins/config.xml':
     ensure  => file,
@@ -84,4 +84,12 @@ class jenkins ($settings = hiera_hash('jenkins', '')) {
     provider => 'gem',
     require  => Package['rubygems'],
   }
+
+  file { '/etc/monit/conf.d/jenkins':
+    ensure  => present,
+    content => template('jenkins/monit.erb'),
+    require => [Package['monit'], File['/etc/monit/conf.d']],
+    notify  => Service['monit'],
+  }
+
 }

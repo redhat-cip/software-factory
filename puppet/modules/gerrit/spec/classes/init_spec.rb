@@ -129,7 +129,7 @@ describe "gerrit" do
                 'group'   => 'gerrit',
                 'mode'    => '0644',
             })
-            
+            should contain_file('/etc/monit/conf.d/gerrit') 
         }
     end
 end

@@ -1,0 +1,3 @@
+check filesystem rootfs with path /
+    if space usage > 90% then alert
+    if inode usage > 90% then alert

@@ -29,6 +29,7 @@ describe "redmine" do
              should contain_file('/etc/apache2/sites-enabled/000-default').with({
                 'ensure' => 'absent',
             })
+            should contain_file('/etc/monit/conf.d/redmine')
         }
     end
 end

@@ -33,4 +33,12 @@ class ldap () {
 ',
         require => [File['/root/ldapdump.sh']]
     }
+
+    file { '/etc/monit/conf.d/ldap':
+        ensure  => present,
+        source  => 'puppet:///modules/ldap/monit',
+        require => [Package['monit'], File['/etc/monit/conf.d']],
+        notify  => Service['monit'],
+    }
+
 }

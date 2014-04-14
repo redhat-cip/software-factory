@@ -1,0 +1,14 @@
+  set daemon 120
+  set logfile /var/log/monit.log
+  set idfile /var/lib/monit/id
+  set statefile /var/lib/monit/state
+  set mailserver mail.enovance.com
+  set eventqueue
+      basedir /var/lib/monit/events
+      slots 100
+  set mail-format { from: monit@sf.ring.enovance.com }
+  set alert cobra@enovance.com
+  set httpd port 2812 and
+    use address localhost
+    allow localhost
+  include /etc/monit/conf.d/*

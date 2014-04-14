@@ -14,7 +14,7 @@
 # under the License.
 
 class gerrit ($settings = hiera_hash('gerrit', '')) {
- 
+
   # Here we just ensure that some basic stuff are present 
   package { 'openjdk-7-jre':
     ensure => present,
@@ -35,9 +35,9 @@ class gerrit ($settings = hiera_hash('gerrit', '')) {
     ensure  => directory,
     owner   => 'gerrit',
     require => [User['gerrit'],
-                Group['gerrit'],
-                Package['openjdk-7-jre'],
-                Package['apache2']],
+    Group['gerrit'],
+    Package['openjdk-7-jre'],
+    Package['apache2']],
   }
   file { '/home/gerrit/site_path/etc':
     ensure  => directory,
@@ -102,7 +102,7 @@ class gerrit ($settings = hiera_hash('gerrit', '')) {
     group   => 'gerrit',
     mode    => '0640',
     source  => '/root/gerrit_data_source/mysql-connector-java-5.1.21.jar',
-    require => File['/home/gerrit/site_path/lib'],  
+    require => File['/home/gerrit/site_path/lib'],
   }
   file { '/home/gerrit/site_path/lib/bcprov-jdk16-144.jar':
     ensure  => present,
@@ -110,7 +110,7 @@ class gerrit ($settings = hiera_hash('gerrit', '')) {
     group   => 'gerrit',
     mode    => '0640',
     source  => '/root/gerrit_data_source/bcprov-jdk16-144.jar',
-    require => File['/home/gerrit/site_path/lib'], 
+    require => File['/home/gerrit/site_path/lib'],
   }
   file { '/home/gerrit/site_path/hooks/patchset-created':
     ensure  => present,
@@ -143,7 +143,7 @@ class gerrit ($settings = hiera_hash('gerrit', '')) {
     mode    => '0644',
     require => File['/home/gerrit/site_path'],
   }
-  
+
 
   # Here we setup file based on templates
   file { '/home/gerrit/site_path/etc/gerrit.config':
@@ -165,28 +165,28 @@ class gerrit ($settings = hiera_hash('gerrit', '')) {
     replace => true,
   }
   file { '/home/gerrit/site_path/etc/GerritSite.css':
-        ensure => file,
-        mode   => '0644',
-        owner  => 'root',
-        group  => 'root',
-    	require => File['/home/gerrit/site_path/etc'],
-        source => 'puppet:///modules/gerrit/GerritSite.css'
+    ensure  => file,
+    mode    => '0644',
+    owner   => 'root',
+    group   => 'root',
+    require => File['/home/gerrit/site_path/etc'],
+    source  => 'puppet:///modules/gerrit/GerritSite.css'
   }
   file { '/home/gerrit/site_path/etc/GerritSiteHeader.html':
-        ensure => file,
-        mode   => '0644',
-        owner  => 'root',
-        group  => 'root',
-    	require => File['/home/gerrit/site_path/etc'],
-        source => 'puppet:///modules/gerrit/GerritSiteHeader.html'
+    ensure  => file,
+    mode    => '0644',
+    owner   => 'root',
+    group   => 'root',
+    require => File['/home/gerrit/site_path/etc'],
+    source  => 'puppet:///modules/gerrit/GerritSiteHeader.html'
   }
   file { '/home/gerrit/site_path/static/logo.png':
-        ensure => file,
-        mode   => '0644',
-        owner  => 'root',
-        group  => 'root',
-    	require => File['/home/gerrit/site_path/static'],
-        source => 'puppet:///modules/gerrit/logo.png'
+    ensure  => file,
+    mode    => '0644',
+    owner   => 'root',
+    group   => 'root',
+    require => File['/home/gerrit/site_path/static'],
+    source  => 'puppet:///modules/gerrit/logo.png'
   }
   file { '/home/gerrit/site_path/hooks/hooks.config':
     ensure  => present,
@@ -323,14 +323,14 @@ class gerrit ($settings = hiera_hash('gerrit', '')) {
     hasrestart  => true,
     provider    => debian,
     require     => [Exec['gerrit-initial-init'],
-                    Exec['gerrit-change-start-timeout'],
-                    File['/etc/init.d/gerrit']],
+    Exec['gerrit-change-start-timeout'],
+    File['/etc/init.d/gerrit']],
     subscribe   => [File['/home/gerrit/gerrit.war'],
-                    File['/home/gerrit/site_path/etc/gerrit.config'],
-                    File['/home/gerrit/site_path/etc/secure.config']],
+    File['/home/gerrit/site_path/etc/gerrit.config'],
+    File['/home/gerrit/site_path/etc/secure.config']],
   }
- 
- 
+
+
   # Apache process restart only when one of the configuration files
   # change
   service { 'apache2':
@@ -340,7 +340,7 @@ class gerrit ($settings = hiera_hash('gerrit', '')) {
     provider    => debian,
     require     => Service['gerrit'],
     subscribe   => [File['/etc/apache2/sites-enabled/gerrit'],
-                    File['/etc/apache2/sites-available/gerrit']],
+    File['/etc/apache2/sites-available/gerrit']],
   }
 
   # Create ext3 filesystem if the Cinder device is available
@@ -376,4 +376,19 @@ class gerrit ($settings = hiera_hash('gerrit', '')) {
     onlyif => 'file -s /dev/vdb  | grep ext3',
     require => [Exec['create_git_fs'], Mount['git_volume']]
   }
+
+  file { '/etc/monit/conf.d/gerrit':
+    ensure  => present,
+    content => template('gerrit/monit.erb'),
+    require => [Package['monit'], File['/etc/monit/conf.d']],
+    notify  => Service['monit'],
+  }
+
+  file { '/etc/monit/conf.d/gerrit-fs':
+    ensure  => present,
+    source  => 'puppet:///modules/gerrit/monit-fs',
+    require => [Package['monit'], Exec['mount_git'], File['/etc/monit/conf.d']],
+    notify  => Service['monit'],
+  }
+
 }

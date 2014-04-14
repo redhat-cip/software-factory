@@ -1,0 +1,4 @@
+monit:
+  smtp_server: mail.example.com
+  mail_from: monit@example.com
+  mail_to: alert@example.com

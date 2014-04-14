@@ -5,6 +5,7 @@ node base {
   include hosts
   include edeploy_client
   include ssmtp
+  include monit
 }
 
 node default inherits base {

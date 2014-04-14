@@ -1,4 +1,3 @@
-#
 # Copyright (C) 2014 eNovance SAS <licensing@enovance.com>
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -13,11 +12,18 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-class mysql () {
-    file { '/etc/monit/conf.d/mysql':
-        ensure  => present,
-        source  => 'puppet:///modules/mysql/monit',
-        require => Package['monit'],
-        notify  => Service['monit'],
-    }
-}
+require 'spec_helper'
+
+describe "monit" do
+    let(:title) { 'monit' }
+
+    context 'monit' do
+        it {
+            should contain_package('monit')
+            should contain_service('monit')
+            should contain_file('/etc/monit/monitrc')
+            should contain_file('/etc/monit/conf.d/rootfs')
+            should contain_file('/etc/monit/conf.d/system')
+        }
+    end
+end

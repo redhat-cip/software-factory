@@ -21,7 +21,7 @@ version="$3"
 ROLE=ldap
 
 ORIG=$(cd $(dirname $0); pwd)
-PACKAGES="slapd ldap-utils puppet"
+PACKAGES="slapd ldap-utils puppet monit"
 
 . ${ORIG}/functions
 
