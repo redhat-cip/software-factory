@@ -1,9 +1,14 @@
 #!/bin/bash
 
+set -x
+
 echo -n > /tmp/debug
 export SF_ROOT=$(pwd)
 export SF_PREFIX=tests
+export SKIP_CLEAN_ROLES="y"
+export EDEPLOY_ROLES=/var/lib/sf/roles/
 (cd lxc; ./bootstrap-lxc.sh clean)
+sudo ./build_roles.sh
 nosetests -v ./tests
 RET=$?
 echo "=================================================================================="

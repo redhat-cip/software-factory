@@ -18,6 +18,7 @@ set -x
 set -e
 
 SF_PREFIX=${SF_PREFIX:-sf}
+EDEPLOY_ROLES=${EDEPLOY_ROLES:-/var/lib/debootstrap}
 export SF_PREFIX
 
 . ../function.sh
@@ -29,14 +30,14 @@ if [ -z "$1" ] || [ "$1" == "start" ]; then
     new_build
     # Fix SF_PREFIX bootstrap && manage-sf configuration
     cat sf-lxc.yaml | sed "s/SF_PREFIX/${SF_PREFIX}/g" > ${BUILD}/sf-host.yaml
-    cat ../tools/manage-sf/manage-sf.conf | sed "s/SF_PREFIX/${SF_PREFIX}/g" > ${BUILD}/manage-sf.conf
+    sed -i "s#EDEPLOY_ROLES#${EDEPLOY_ROLES}#g" ${BUILD}/sf-host.yaml
     # Fix jenkins for lxc
-    sudo sed -i 's/^#*JAVA_ARGS.*/JAVA_ARGS="-Djava.awt.headless=true -Xmx256m"/g' /var/lib/debootstrap/install/D7-H.1.0.0/softwarefactory/etc/default/jenkins
+    sudo sed -i 's/^#*JAVA_ARGS.*/JAVA_ARGS="-Djava.awt.headless=true -Xmx256m"/g' $EDEPLOY_ROLES/install/D7-H.1.0.0/softwarefactory/etc/default/jenkins
     # Update puppet modules
-    sudo mkdir -p /var/lib/debootstrap/install/D7-H.1.0.0/install-server/etc/puppet/{modules,manifests}
-    sudo cp ../puppet/hiera.yaml /var/lib/debootstrap/install/D7-H.1.0.0/install-server/etc/puppet/
-    sudo rsync -a ../puppet/modules/ /var/lib/debootstrap/install/D7-H.1.0.0/install-server/etc/puppet/modules/
-    sudo rsync -a ../puppet/manifests/ /var/lib/debootstrap/install/D7-H.1.0.0/install-server/etc/puppet/manifests/
+    sudo mkdir -p $EDEPLOY_ROLES/install/D7-H.1.0.0/install-server/etc/puppet/{modules,manifests}
+    sudo cp ../puppet/hiera.yaml $EDEPLOY_ROLES/install/D7-H.1.0.0/install-server/etc/puppet/
+    sudo rsync -a ../puppet/modules/ $EDEPLOY_ROLES/install/D7-H.1.0.0/install-server/etc/puppet/modules/
+    sudo rsync -a ../puppet/manifests/ $EDEPLOY_ROLES/install/D7-H.1.0.0/install-server/etc/puppet/manifests/
     # We alreay have puppetmaster IP, so we can generate cloudinit
     generate_cloudinit
     sudo ${EDEPLOY_LXC} --config ${BUILD}/sf-host.yaml restart || exit -1

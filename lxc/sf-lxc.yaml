@@ -5,7 +5,7 @@ network:
 general:
     ssh_key: /home/ubuntu/.ssh/id_rsa.pub
 edeploy:
-    dir: /var/lib/debootstrap/install/D7-H.1.0.0
+    dir: EDEPLOY_ROLES/install/D7-H.1.0.0
 hosts:
   -
     address: 192.168.134.49
