@@ -38,8 +38,8 @@ GERRIT_PACKAGES="openjdk-7-jre git puppet vim mysql-client python-pip python-dat
 # Jenkins
 #
 JENKINS_PACKAGES="jenkins puppet git python-pip sloccount rubygems rake puppet-lint"
-JENKINS_PLUGINS="http://updates.jenkins-ci.org/download/plugins/gerrit-trigger/2.11.0/gerrit-trigger.hpi \
-                 http://updates.jenkins-ci.org/download/plugins/ssh-agent/1.4.1/ssh-agent.hpi"
+JENKINS_PLUGINS="http://ftp.nluug.nl/programming/jenkins/plugins/gerrit-trigger/2.11.0/gerrit-trigger.hpi \
+                 http://ftp.nluug.nl/programming/jenkins/plugins/ssh-agent/1.4.1/ssh-agent.hpi"
 
 #
 # MySQL
@@ -81,7 +81,8 @@ case "$(package_tool)" in
     #
     # Jenkins
     #
-    wget -q -O - http://pkg.jenkins-ci.org/debian/jenkins-ci.org.key | do_chroot $dir apt-key add -
+    [ -f "jenkins-ci.org.key" ] || wget -q http://pkg.jenkins-ci.org/debian/jenkins-ci.org.key -O jenkins-ci.org.key
+    cat jenkins-ci.org.key | do_chroot $dir apt-key add -
     cat > ${dir}/etc/apt/sources.list.d/jenkins.list <<EOF
     deb http://pkg.jenkins-ci.org/debian binary/
 EOF
