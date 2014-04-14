@@ -19,13 +19,13 @@ import unittest
 import subprocess
 import shlex
 import stat
-import config
 import tempfile
 import string
 import random
 import json
 import requests as http
 from redmine import Redmine
+import config
 from requests.auth import HTTPBasicAuth
 from requests.exceptions import HTTPError
 from pygerrit import rest
@@ -94,21 +94,6 @@ class ManageSfUtils(Tool):
         passwd = config.USERS[user]['password']
         cmd = self.base_cmd % (user, passwd) + "delete --name %s" % name
         self.exe(cmd, self.install_dir)
-
-
-class ManageSfUtilsConfigCreator(Tool):
-    def __init__(self):
-        Tool.__init__(self)
-        self.install_dir = "tools/managesf/utils"
-
-    def createConfigProject(self):
-        cmd = "bash init-config-repo.sh"
-        self.exe(cmd, self.install_dir)
-
-    def deleteProject(self, user):
-        passwd = config.USERS[user]['password']
-        msu = ManageSfUtils(config.MANAGESF_HOST, 80)
-        msu.deleteProject('config', user, passwd)
 
 
 class GerritGitUtils(Tool):

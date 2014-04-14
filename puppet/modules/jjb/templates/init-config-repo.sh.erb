@@ -13,18 +13,19 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+set -x
+set -e
 
-mh="localhost:9090" # HTTP access for managesf host
-gh="sf-gerrit:29418" # SSH access for gerrit host
-jh="sf-jenkins" # SSH access for jenkins host
-admin="user1" # admin user for accessing gerrit
-admin_http_password="userpass"
-admin_email="user1@example.com" # Registered email address for admin user
-gerrit_ssh_key="/srv/SoftwareFactory/build/data/gerrit_admin_rsa" # gerrit priv key path for admin user
-jenkins_ssh_key="/home/ubuntu/.ssh/id_rsa" # ssh key to access jenkins
-jenkins_kick_script="/usr/local/jenkins/slave_scripts/kick.sh" # JJB kick start script
-
-dir=`pwd`/$( dirname "${BASH_SOURCE[0]}")
+gerrit_host=<%= scope.function_hiera(["gerrit_url"]) %>
+gerrit_ssh_port=<%= @gerrit['gerrit_sshd_port'] %>
+mh="<%= scope.function_hiera(["managesf_url"]) %>"
+gh="$gerrit_host:$gerrit_ssh_port"
+jh="<%= scope.function_hiera(["jenkins_url"]) %>"
+admin="<%= @gerrit['gerrit_admin_username'] %>"
+admin_http_password="<%= @gerrit['gerrit_admin_password'] %>"
+admin_email="<%= @gerrit['gerrit_admin_mail'] %>"
+gerrit_ssh_key="/root/gerrit_admin_rsa"
+jenkins_kick_script="/usr/local/jenkins/slave_scripts/kick.sh"
 auth=$admin:$admin_http_password
 
 echo ""
@@ -43,11 +44,11 @@ git clone ssh://$admin@$gh/config /tmp/config
 echo ""
 echo "==== Adding JJB files to the config repo ===="
 cd /tmp/config
-files=`ls $dir/jjb/`
+files=`ls /root/jjb/`
 for f in $files
 do
     name=`echo "$f" | cut -d'.' -f1`
-    cp $dir/jjb/$f /tmp/config/$name
+    cp /root/jjb/$f /tmp/config/$name
 done
 git add .
 
@@ -59,13 +60,12 @@ echo ""
 echo "==== Pushing changes ===="
 git push origin master
 
-cd $dir
 rm -rf /tmp/config
 rm -f /tmp/ssh_wrapper.sh
 
 echo ""
 echo "==== Kick starting JJB ===="
-ssh -i $jenkins_ssh_key -o StrictHostKeyChecking=no root@$jh $jenkins_kick_script
+exec $jenkins_kick_script
 
 echo ""
 echo "Done!"

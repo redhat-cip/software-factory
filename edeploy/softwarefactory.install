@@ -159,6 +159,7 @@ EOF
     do_chroot $dir update-grub
 
     install_packages $dir "$JENKINS_PACKAGES"
+    cp -r ../data/jjb ${dir}/root/
 
     #
     # Gerrit

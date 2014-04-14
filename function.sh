@@ -110,7 +110,7 @@ function generate_hiera {
         echo "  ${role}.pub:" >> ${OUTPUT}/hosts.yaml
         echo "    ip: $(getip_from_yaml ${role})" >> ${OUTPUT}/hosts.yaml
         echo "    host_aliases: [${role}, ${role}.pub]" >> ${OUTPUT}/hosts.yaml
-        current_role=`echo "${role}" | sed 's/.*\(gerrit\|redmine\|jenkins\|mysql\|ldap\).*/\1/g'`
+        current_role=`echo "${role}" | sed 's/.*\(gerrit\|redmine\|jenkins\|mysql\|ldap\|managesf\).*/\1/g'`
         sed -i "s#${current_role}_url:.*#${current_role}_url: ${role}#g" ${OUTPUT}/common.yaml
     done
 
@@ -290,6 +290,7 @@ function post_configuration_ssh_keys {
     scp -P$ssh_port ${BUILD}/data/gerrit_service_rsa root@$gerrit_host:/home/gerrit/ssh_host_rsa_key
     scp -P$ssh_port ${BUILD}/data/gerrit_service_rsa.pub root@$gerrit_host:/home/gerrit/ssh_host_rsa_key.pub
     scp -p$ssh_port ${BUILD}/data/gerrit_admin_rsa root@$managesf_host:/var/www/managesf
+    scp -p$ssh_port ${BUILD}/data/gerrit_admin_rsa root@$jenkins_host:/root/
     ssh -p$ssh_port root@$gerrit_host chown gerrit:gerrit /home/gerrit/ssh_host_rsa_key
     ssh -p$ssh_port root@$gerrit_host chown gerrit:gerrit /home/gerrit/ssh_host_rsa_key.pub
 }
@@ -320,7 +321,7 @@ function sf_postconfigure {
     post_configuration_knownhosts $devstack
     post_configuration_ssh_keys $devstack
     post_configuration_update_hiera $devstack
-    post_configuration_puppet_apply $devstack
     post_configuration_jenkins_scripts $devstack
+    post_configuration_puppet_apply $devstack
     post_configuration_gerrit_knownhosts $devstack
 }
