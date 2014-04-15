@@ -4,18 +4,27 @@ set -x
 
 echo -n > /tmp/debug
 export SF_ROOT=$(pwd)
-export SF_PREFIX=tests
+export SF_PREFIX=${SF_PREFIX:-tests}
 export SKIP_CLEAN_ROLES="y"
 export EDEPLOY_ROLES=/var/lib/sf/roles/
 
 (cd lxc; ./bootstrap-lxc.sh clean)
 sudo ./build_roles.sh
+
+if [ ! ${SF_SKIP_BOOTSTRAP} ]; then
+    cd lxc
+    ./bootstrap-lxc.sh
+    cd ..
+fi
+
 nosetests -v ./tests
 RET=$?
 # This delay is used to wait a bit before fetching log file from hosts
 # in order to not avoid so important logs that can appears some seconds
 # after a failure.
 sleep 30
+
+
 echo "=================================================================================="
 echo "===================================== DEBUG LOGS ================================="
 echo "=================================================================================="
@@ -56,5 +65,9 @@ echo "local dmesg content: --["
 sudo tail -n 50 /var/log/dmesg
 echo "]--"
 
-(cd lxc; ./bootstrap-lxc.sh clean)
+if [ ! ${SF_SKIP_BOOTSTRAP} ]; then
+    cd lxc
+    ./bootstrap-lxc.sh clean
+    cd ..
+fi
 exit $RET
