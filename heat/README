@@ -1,0 +1,8 @@
+To launch the jenkins stack:
+
+Install Heat on devstack following this fine guide: 
+  https://docs.google.com/a/enovance.com/document/d/1OINcCMXGzUIkdjJaY9zs_L3IT8olxYkI0LQrCT3v0iM/edit#
+
+Do (change image_id with software-factory role image id):
+heat stack-create --template-file ./sf.tmpl  -P "key_name=heat_key;image_id=f1211a6d-eb08-45e6-b38e-c683d1303a36" heat-sf
+
