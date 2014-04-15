@@ -3,6 +3,13 @@
 set -e
 set -x
 
+if [ "$(sudo losetup -a | wc -l)" -gt 5 ]; then
+    # TODO: fix/report this
+    echo "Not enough loopback device. This is a known bug, please reboot this jenkins node"
+    exit -1
+fi
+
+
 SKIP_CLEAN_ROLES="y"
 
 EDEPLOY_PROJECT=https://github.com/enovance/edeploy.git
@@ -18,10 +25,15 @@ EDEPLOY_ROLES=$WORKSPACE/git/edeploy-roles/
 EDEPLOY_TAG=H.1.0.0
 SF_ROLES=$CURRENT/edeploy
 
+if [ ! -d $WORKSPACE ]; then
+    sudo mkdir -m 0770 $WORKSPACE
+    sudo chown ${USER}:root $WORKSPACE
+fi
+
 [ ! -d "$BUILD_DIR" ] && mkdir -p $BUILD_DIR
 
 if [ "$SKIP_CLEAN_ROLES" != "y" ]; then
-    [ -d "$BUILD_DIR/install" ] && rm -Rf $BUILD_DIR/install
+    [ -d "$BUILD_DIR/install" ] && sudo rm -Rf $BUILD_DIR/install
 fi
 [ ! -d "$CLONES_DIR" ] && mkdir -p $CLONES_DIR
 

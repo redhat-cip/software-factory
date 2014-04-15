@@ -42,9 +42,6 @@ META=$(TOP)/metadata/$(VERS)
 
 ROLES = mysql ldap softwarefactory
 
-# Build virtual images by default
-export VIRTUALIZED=params.virt
-
 all: $(ROLES)
 
 softwarefactory: $(INST)/softwarefactory.done

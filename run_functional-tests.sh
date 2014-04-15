@@ -8,7 +8,7 @@ export SF_PREFIX=tests
 export SKIP_CLEAN_ROLES="y"
 export EDEPLOY_ROLES=/var/lib/sf/roles/
 (cd lxc; ./bootstrap-lxc.sh clean)
-sudo ./build_roles.sh
+./build_roles.sh || exit -1
 nosetests -v ./tests
 RET=$?
 echo "=================================================================================="
