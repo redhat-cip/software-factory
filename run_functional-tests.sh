@@ -2,6 +2,14 @@
 
 set -x
 
+function stop {
+    if [ ! ${SF_SKIP_BOOTSTRAP} ]; then
+        cd lxc
+        ./bootstrap-lxc.sh clean
+        cd ..
+    fi
+}
+
 echo -n > /tmp/debug
 export SF_ROOT=$(pwd)
 export SF_PREFIX=${SF_PREFIX:-tests}
@@ -16,6 +24,18 @@ if [ ! ${SF_SKIP_BOOTSTRAP} ]; then
     ./bootstrap-lxc.sh
     cd ..
 fi
+
+# Start serverspec test to detect failure early
+cp build/serverspec/hosts.yaml serverspec/
+cd serverspec/
+rake spec
+RET=$?
+[ "$RET" != "0" ] && {
+    cd ..
+    stop
+    exit $RET
+}
+cd ..
 
 nosetests -v ./tests
 RET=$?
@@ -65,9 +85,6 @@ echo "local dmesg content: --["
 sudo tail -n 50 /var/log/dmesg
 echo "]--"
 
-if [ ! ${SF_SKIP_BOOTSTRAP} ]; then
-    cd lxc
-    ./bootstrap-lxc.sh clean
-    cd ..
-fi
+stop
+
 exit $RET

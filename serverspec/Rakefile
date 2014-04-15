@@ -12,10 +12,10 @@ namespace :serverspec do
   hosts.keys.each do |role|
     desc "Run serverspec to #{role}"
     RSpec::Core::RakeTask.new(role.split('.')[0].to_sym) do |t|
-      ENV['HOST'] = hosts[role][:hostname]
       ENV['SUDO_PASSWORD'] = hosts[role][:sudo_password]
       ENV['USER'] = hosts[role][:username]
       t.pattern = 'spec/{' + hosts[role][:roles].join(',') + '}/*_spec.rb'
+      t.rspec_opts = "-t ~host:#{hosts[role][:hostname]}"
     end
   end
 end

@@ -34,8 +34,11 @@ class redmine ($settings = hiera_hash('redmine', '')) {
     }
 
     service {'apache2':
-        ensure  => running,
-        require => [Package['apache2'], Package['libapache2-mod-passenger']],
+        ensure     => running,
+        enable     => true,
+        hasrestart => true,
+        hasstatus  => true,
+        require    => [Package['apache2'], Package['libapache2-mod-passenger']],
     }
 
     file {'/etc/redmine/default/database.yml':

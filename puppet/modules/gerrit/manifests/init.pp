@@ -76,7 +76,7 @@ class gerrit ($settings = hiera_hash('gerrit', '')) {
     ensure  => present,
     owner   => 'gerrit',
     group   => 'gerrit',
-    mode    => '0640',
+    mode    => '0644',
     source  => '/home/gerrit/ssh_host_rsa_key.pub',
     require => File['/home/gerrit/site_path/etc'],
   }
@@ -132,7 +132,7 @@ class gerrit ($settings = hiera_hash('gerrit', '')) {
     ensure  => present,
     owner   => 'gerrit',
     group   => 'gerrit',
-    mode    => '0640',
+    mode    => '0644',
     source  => '/root/gerrit_data_source/gerrit.war',
   }
   file { '/etc/default/gerritcodereview':
@@ -140,7 +140,7 @@ class gerrit ($settings = hiera_hash('gerrit', '')) {
     content => 'GERRIT_SITE=/home/gerrit/site_path',
     owner   => 'gerrit',
     group   => 'gerrit',
-    mode    => '0644',
+    mode    => '0444',
     require => File['/home/gerrit/site_path'],
   }
 
@@ -150,7 +150,7 @@ class gerrit ($settings = hiera_hash('gerrit', '')) {
     ensure  => present,
     owner   => 'gerrit',
     group   => 'gerrit',
-    mode    => '0640',
+    mode    => '0644',
     content => template('gerrit/gerrit.config.erb'),
     require => File['/home/gerrit/site_path/etc'],
     replace => true,
@@ -199,7 +199,7 @@ class gerrit ($settings = hiera_hash('gerrit', '')) {
   }
   file { '/root/gerrit-firstuser-init.sql':
     ensure  => present,
-    mode    => '0640',
+    mode    => '0644',
     content => template('gerrit/gerrit-firstuser-init.sql.erb'),
     replace => true,
   }
@@ -273,10 +273,10 @@ class gerrit ($settings = hiera_hash('gerrit', '')) {
     require   => File['/etc/init.d/gerrit'],
     logoutput => on_failure,
   }
-  file { '/etc/init.d/gerrit':
+  file { '/etc/init.d/gerrit':    
     ensure  => link,
     target  => '/home/gerrit/site_path/bin/gerrit.sh',
-    require => Exec['gerrit-initial-init'],
+    require => Exec['gerrit-initial-init'],   
   }
 
 

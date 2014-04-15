@@ -2,28 +2,33 @@ redmine:
   :roles:
     - base
     - redmine
-  :hostname: redmine_ip
+  :username: root
+  :hostname: SF_PREFIX-redmine
 
 mysql:
   :roles:
     - base
     - mysql
-  :hostname: mysql_ip
+  :username: root
+  :hostname: SF_PREFIX-mysql
 
 ldap:
   :roles:
     - base
     - ldap
-  :hostname: ldap_ip
+  :username: root
+  :hostname: SF_PREFIX-ldap
 
 gerrit:
   :roles:
     - base
     - gerrit
-  :hostname: gerrit_ip
+  :username: root
+  :hostname: SF_PREFIX-gerrit
 
 jenkins:
   :roles:
     - base
     - jenkins
-  :hostname: jenkins_ip
+  :username: root
+  :hostname: SF_PREFIX-jenkins

@@ -252,14 +252,7 @@ function generate_serverspec {
     rm -Rf ${OUTPUT}
     mkdir -p ${OUTPUT}
     cp ../serverspec/hosts.yaml.tpl ${OUTPUT}/hosts.yaml
-    for role in ${ROLES}; do
-        if [ -z "$1" ]; then
-            ip_role=$(getip_from_yaml ${role})
-        else
-            ip_role=$(getip_from_yaml_devstack ${role})
-        fi
-        sed -i -e "s/${role}_ip/$ip_role/g" ${OUTPUT}/hosts.yaml
-    done
+    sed -i -e "s/SF_PREFIX/${SF_PREFIX}/g" ${OUTPUT}/hosts.yaml
 }
 
 function post_configuration_update_hiera {
