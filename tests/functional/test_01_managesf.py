@@ -17,6 +17,7 @@
 import os
 import config
 import shutil
+import yaml
 
 from utils import Base
 from utils import ManageSfUtils
@@ -35,6 +36,9 @@ class TestManageSF(Base):
     @classmethod
     def setUpClass(cls):
         cls.msu = ManageSfUtils(config.MANAGESF_HOST, 80)
+        with open(os.environ['SF_ROOT'] + "/build/hiera/redmine.yaml") as f:
+            ry = yaml.load(f)
+        cls.redmine_api_key = ry['redmine']['issues_tracker_api_key']
 
     @classmethod
     def tearDownClass(cls):
@@ -42,124 +46,142 @@ class TestManageSF(Base):
 
     def setUp(self):
         self.projects = []
+        self.users = []
         self.dirs_to_delete = []
+        self.rm = RedmineUtil(config.REDMINE_SERVER,
+                              apiKey=self.redmine_api_key)
+        self.gu = GerritUtil(config.GERRIT_SERVER,
+                             username=config.ADMIN_USER)
 
     def tearDown(self):
         for name in self.projects:
             self.msu.deleteProject(name,
-                                   config.ADMIN_USER,
-                                   config.ADMIN_PASSWD)
+                                   config.ADMIN_USER)
         for dirs in self.dirs_to_delete:
             shutil.rmtree(dirs)
+        for user in self.users:
+            self.rm.deleteUser(user)
 
-    def createProject(self, name, user, passwd,
-                      private=False, group_infos=None, upstream=None):
-        self.msu.createProject(name, user, passwd,
-                               private=private,
-                               group_infos=group_infos,
-                               upstream=upstream)
+    def createProject(self, name, user,
+                      options=None):
+        uid = self.rm.createUser(user)
+        assert uid
+        self.users.append(uid)
+        self.msu.createProject(name, user,
+                               options)
         self.projects.append(name)
+
+        return uid
 
     def test_create_public_project_as_admin(self):
         """ Create public project on redmine and gerrit as admin
         """
         pname = 'p_%s' % create_random_str()
-        self.createProject(pname, config.ADMIN_USER, config.ADMIN_PASSWD)
-        gu = GerritUtil(config.GERRIT_SERVER, username=config.ADMIN_USER,
-                        password=config.ADMIN_PASSWD)
-        rm = RedmineUtil(config.REDMINE_SERVER, username=config.ADMIN_USER,
-                         password=config.ADMIN_PASSWD)
-        assert gu.isPrjExist(pname)
-        assert rm.isProjectExist(pname)
-        assert gu.isGroupExist('%s-ptl' % pname)
-        assert gu.isGroupExist('%s-core' % pname)
+        uid = self.createProject(pname, config.ADMIN_USER)
+        assert self.gu.isPrjExist(pname)
+        assert self.rm.isProjectExist(pname)
+        assert self.gu.isGroupExist('%s-ptl' % pname)
+        assert self.gu.isGroupExist('%s-core' % pname)
         #TODO(Project creator, as project owner, should only be in ptl group)
-        assert gu.isMemberInGroup(config.ADMIN_USER, '%s-ptl' % pname)
-        assert gu.isMemberInGroup(config.ADMIN_USER, '%s-core' % pname)
+        assert self.gu.isMemberInGroup(config.ADMIN_USER, '%s-ptl' % pname)
+        assert self.gu.isMemberInGroup(config.ADMIN_USER, '%s-core' % pname)
+
+        uid2 = self.rm.createUser(config.USER_2)
+        self.users.append(uid2)
+        assert uid2
+        assert self.rm.isProjectExist(pname)
+        assert self.rm.isProjectExist_ex(pname, config.USER_2)
+        assert self.rm.checkUserRole(pname, uid, 'Manager')
+        assert self.rm.checkUserRole(pname, uid, 'Developer')
 
     def test_create_private_project_as_admin(self):
         """ Create private project on redmine and gerrit as admin
         """
         pname = 'p_%s' % create_random_str()
-        self.createProject(pname, config.ADMIN_USER,
-                           config.ADMIN_PASSWD, private=True)
-        gu = GerritUtil(config.GERRIT_SERVER, username=config.ADMIN_USER,
-                        password=config.ADMIN_PASSWD)
-        rm = RedmineUtil(config.REDMINE_SERVER, username=config.ADMIN_USER,
-                         password=config.ADMIN_PASSWD)
-        assert gu.isPrjExist(pname)
-        assert rm.isProjectExist(pname)
-        assert gu.isGroupExist('%s-ptl' % pname)
-        assert gu.isGroupExist('%s-core' % pname)
-        assert gu.isGroupExist('%s-dev' % pname)
+        options = {"private": ""}
+        uid = self.createProject(pname, config.ADMIN_USER,
+                                 options=options)
+        assert self.gu.isPrjExist(pname)
+        assert self.rm.isProjectExist(pname)
+        assert self.rm.isProjectExist_ex(pname, config.ADMIN_USER)
+        assert self.gu.isGroupExist('%s-ptl' % pname)
+        assert self.gu.isGroupExist('%s-core' % pname)
+        assert self.gu.isGroupExist('%s-dev' % pname)
         #TODO(Project creator, as project owner, should only be in ptl group)
-        assert gu.isMemberInGroup(config.ADMIN_USER, '%s-ptl' % pname)
-        assert gu.isMemberInGroup(config.ADMIN_USER, '%s-core' % pname)
-        assert gu.isMemberInGroup(config.ADMIN_USER, '%s-dev' % pname)
+        assert self.gu.isMemberInGroup(config.ADMIN_USER, '%s-ptl' % pname)
+        assert self.gu.isMemberInGroup(config.ADMIN_USER, '%s-core' % pname)
+        assert self.gu.isMemberInGroup(config.ADMIN_USER, '%s-dev' % pname)
+
+        uid2 = self.rm.createUser(config.USER_2)
+        self.users.append(uid2)
+        assert uid2
+        assert not self.rm.isProjectExist_ex(pname, config.USER_2)
+        assert self.rm.checkUserRole(pname, uid, 'Manager')
+        assert self.rm.checkUserRole(pname, uid, 'Developer')
 
     def test_delete_public_project_as_admin(self):
         """ Delete public project on redmine and gerrit as admin
         """
-        gu = GerritUtil(config.GERRIT_SERVER, username=config.ADMIN_USER,
-                        password=config.ADMIN_PASSWD)
-        rm = RedmineUtil(config.REDMINE_SERVER, username=config.ADMIN_USER,
-                         password=config.ADMIN_PASSWD)
         pname = 'p_%s' % create_random_str()
-        self.createProject(pname, config.ADMIN_USER, config.ADMIN_PASSWD)
-        assert gu.isPrjExist(pname)
-        assert rm.isProjectExist(pname)
-        self.msu.deleteProject(pname, config.ADMIN_USER, config.ADMIN_PASSWD)
-        assert not gu.isPrjExist(pname)
-        assert not gu.isGroupExist('%s-ptl' % pname)
-        assert not rm.isProjectExist(pname)
-        assert not gu.isGroupExist('%s-core' % pname)
+        self.createProject(pname, config.ADMIN_USER)
+        assert self.gu.isPrjExist(pname)
+        assert self.rm.isProjectExist(pname)
+        self.msu.deleteProject(pname, config.ADMIN_USER)
+        assert not self.gu.isPrjExist(pname)
+        assert not self.gu.isGroupExist('%s-ptl' % pname)
+        assert not self.rm.isProjectExist(pname)
+        assert not self.gu.isGroupExist('%s-core' % pname)
         self.projects.remove(pname)
 
     def test_create_public_project_as_user(self):
         """ Create public project on redmine and gerrit as user
         """
         pname = 'p_%s' % create_random_str()
-        self.createProject(pname, config.USER_2, config.USER_2_PASSWD)
-        gu = GerritUtil(config.GERRIT_SERVER, username=config.ADMIN_USER,
-                        password=config.ADMIN_PASSWD)
-        rm = RedmineUtil(config.REDMINE_SERVER, username=config.ADMIN_USER,
-                         password=config.ADMIN_PASSWD)
-        assert gu.isPrjExist(pname)
-        assert rm.isProjectExist(pname)
-        assert gu.isGroupExist('%s-ptl' % pname)
-        assert gu.isGroupExist('%s-core' % pname)
+        uid = self.createProject(pname, config.USER_2)
+        assert self.gu.isPrjExist(pname)
+        assert self.rm.isProjectExist(pname)
+        assert self.rm.isProjectExist_ex(pname, config.USER_2)
+        assert self.gu.isGroupExist('%s-ptl' % pname)
+        assert self.gu.isGroupExist('%s-core' % pname)
         #TODO(Project creator, as project owner, should only be in ptl group)
-        assert gu.isMemberInGroup(config.ADMIN_USER, '%s-ptl' % pname)
-        assert gu.isMemberInGroup(config.ADMIN_USER, '%s-core' % pname)
+        assert self.gu.isMemberInGroup(config.ADMIN_USER, '%s-ptl' % pname)
+        assert self.gu.isMemberInGroup(config.ADMIN_USER, '%s-core' % pname)
+        assert self.rm.checkUserRole(pname, uid, 'Manager')
+        assert self.rm.checkUserRole(pname, uid, 'Developer')
 
     def test_create_private_project_as_user(self):
         """ Create private project on redmine and gerrit as user
         """
         pname = 'p_%s' % create_random_str()
-        self.createProject(pname, config.USER_2, config.USER_2_PASSWD,
-                           private=True)
-        gu = GerritUtil(config.GERRIT_SERVER, username=config.ADMIN_USER,
-                        password=config.ADMIN_PASSWD)
-        rm = RedmineUtil(config.REDMINE_SERVER, username=config.ADMIN_USER,
-                         password=config.ADMIN_PASSWD)
-        assert gu.isPrjExist(pname)
-        assert rm.isProjectExist(pname)
-        assert gu.isGroupExist('%s-ptl' % pname)
-        assert gu.isGroupExist('%s-core' % pname)
-        assert gu.isGroupExist('%s-dev' % pname)
+        options = {"private": ""}
+        uid = self.createProject(pname, config.USER_2,
+                                 options=options)
+        assert self.gu.isPrjExist(pname)
+        assert self.rm.isProjectExist(pname)  # it should be visible to admin
+        assert self.rm.isProjectExist_ex(pname, config.USER_2)
+        assert self.gu.isGroupExist('%s-ptl' % pname)
+        assert self.gu.isGroupExist('%s-core' % pname)
+        assert self.gu.isGroupExist('%s-dev' % pname)
         #TODO(Project creator, as project owner, should only be in ptl group)
-        assert gu.isMemberInGroup(config.USER_2, '%s-ptl' % pname)
-        assert gu.isMemberInGroup(config.USER_2, '%s-core' % pname)
-        assert gu.isMemberInGroup(config.USER_2, '%s-dev' % pname)
+        assert self.gu.isMemberInGroup(config.USER_2, '%s-ptl' % pname)
+        assert self.gu.isMemberInGroup(config.USER_2, '%s-core' % pname)
+        assert self.gu.isMemberInGroup(config.USER_2, '%s-dev' % pname)
+
+        uid3 = self.rm.createUser(config.USER_3)
+        self.users.append(uid3)
+        assert uid3
+        assert not self.rm.isProjectExist_ex(pname, config.USER_3)
+        assert self.rm.checkUserRole(pname, uid, 'Manager')
+        assert self.rm.checkUserRole(pname, uid, 'Developer')
 
     def test_create_public_project_as_admin_clone_as_admin(self):
         """ Clone public project as admin and check content
         """
         pname = 'p_%s' % create_random_str()
-        self.createProject(pname, config.ADMIN_USER, config.ADMIN_PASSWD)
+        self.createProject(pname, config.ADMIN_USER)
         ggu = GerritGitUtils(config.ADMIN_USER,
                              config.ADMIN_PRIV_KEY_PATH,
-                             config.ADMIN_EMAIL)
+                             config.USERS[config.ADMIN_USER]['email'])
         url = "ssh://%s@%s/%s" % (config.ADMIN_USER,
                                   config.GERRIT_HOST, pname)
         clone_dir = ggu.clone(url, pname)
@@ -185,12 +207,11 @@ class TestManageSF(Base):
         """ Clone private project as admin and check content
         """
         pname = 'p_%s' % create_random_str()
-        self.createProject(pname, config.ADMIN_USER,
-                           config.ADMIN_PASSWD,
-                           private=True)
+        options = {"private": ""}
+        self.createProject(pname, config.ADMIN_USER, options=options)
         ggu = GerritGitUtils(config.ADMIN_USER,
                              config.ADMIN_PRIV_KEY_PATH,
-                             config.ADMIN_EMAIL)
+                             config.USERS[config.ADMIN_USER]['email'])
         url = "ssh://%s@%s/%s" % (config.ADMIN_USER,
                                   config.GERRIT_HOST, pname)
         clone_dir = ggu.clone(url, pname)
@@ -217,17 +238,16 @@ class TestManageSF(Base):
         """
         pname = 'p_%s' % create_random_str()
         # create the project as admin
-        self.createProject(pname, config.ADMIN_USER, config.ADMIN_PASSWD)
+        self.createProject(pname, config.ADMIN_USER)
         # add user2 ssh pubkey to user2
-        gu = GerritUtil(config.GERRIT_SERVER, username=config.USER_2,
-                        password=config.USER_2_PASSWD)
+        gu = GerritUtil(config.GERRIT_SERVER, username=config.USER_2)
         gu.addPubKey(config.USER_2_PUB_KEY)
         # prepare to clone
         priv_key_path = set_private_key(config.USER_2_PRIV_KEY)
         self.dirs_to_delete.append(os.path.dirname(priv_key_path))
         ggu = GerritGitUtils(config.USER_2,
                              priv_key_path,
-                             config.USER_2_EMAIL)
+                             config.USERS[config.USER_2]['email'])
         url = "ssh://%s@%s/%s" % (config.USER_2,
                                   config.GERRIT_HOST, pname)
         # clone
@@ -244,17 +264,16 @@ class TestManageSF(Base):
         """
         pname = 'p_%s' % create_random_str()
         # create the project as admin
-        self.createProject(pname, config.USER_2, config.USER_2_PASSWD)
+        self.createProject(pname, config.USER_2)
         # add user2 ssh pubkey to user2
-        gu = GerritUtil(config.GERRIT_SERVER, username=config.USER_2,
-                        password=config.USER_2_PASSWD)
+        gu = GerritUtil(config.GERRIT_SERVER, username=config.USER_2)
         gu.addPubKey(config.USER_2_PUB_KEY)
         # prepare to clone
         priv_key_path = set_private_key(config.USER_2_PRIV_KEY)
         self.dirs_to_delete.append(os.path.dirname(priv_key_path))
         ggu = GerritGitUtils(config.USER_2,
                              priv_key_path,
-                             config.USER_2_EMAIL)
+                             config.USERS[config.USER_2]['email'])
         url = "ssh://%s@%s/%s" % (config.USER_2,
                                   config.GERRIT_HOST, pname)
         # clone

@@ -37,13 +37,11 @@ class TestSFACLs(Base):
     def tearDownClass(cls):
         for name in cls.projects:
             cls.msu.deleteProject(name,
-                                  config.ADMIN_USER,
-                                  config.ADMIN_PASSWD)
+                                  config.ADMIN_USER)
 
     def createProject(self, name):
         self.msu.createProject(name,
-                               config.ADMIN_USER,
-                               config.ADMIN_PASSWD)
+                               config.ADMIN_USER)
         self.projects.append(name)
 
     def test_01_validate_gerrit_public_project_acls(self):

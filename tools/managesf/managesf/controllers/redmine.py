@@ -22,12 +22,15 @@ from managesf.controllers.utils import send_request, template
 import json
 
 
-def create_project(name, description):
+def create_project(name, description, private):
     print ' [redmine] create project ' + name
+    pub = 'false' if private else 'true'
     data = file(template('redmine_project_create.xml')).read() % {
         'name': name,
         'description': description,
-        'identifier': name}
+        'identifier': name.lower(),
+        'is_public': pub
+        }
 
     url = "http://%(redmine_host)s/projects.json" % \
           {'redmine_host': conf.redmine['host']}
@@ -93,20 +96,11 @@ def get_role_id(role_name):
     return None
 
 
-def edit_membership(prj_name, users):
+def edit_membership(prj_name, memberships):
     print ' [redmine] editing membership for the project'
-    role_id = get_role_id('Manager')
 
-    if role_id is None:
-        print ' [redmine] Cannot find a role named Manager'
-        abort(500)
-
-    for u in users:
-        membership = {
-            "user_id": u,
-            "role_ids": [role_id]
-        }
-        data = json.dumps({"membership": membership})
+    for m in memberships:
+        data = json.dumps({"membership": m})
         url = "http://%(redmine_host)s/projects/%(pid)s/memberships.json" % \
               {'redmine_host': conf.redmine['host'],
                'pid': prj_name}
@@ -115,25 +109,48 @@ def edit_membership(prj_name, users):
         send_request(url, [201], method='POST', data=data, headers=headers)
 
 
+def update_project_roles(name, ptl, dev):
+    memberships = []
+    mgr_role_id = get_role_id('Manager')
+    dev_role_id = get_role_id('Developer')
+
+    cu = request.remote_user['username']
+    if cu not in ptl:
+        ptl.append(cu)
+    if cu not in dev:
+        dev.append(cu)
+
+    append = lambda x, y: memberships.append({'user_id': x, 'role_ids': y})
+    for m in ptl:
+        uid = get_user_id(m)
+        role_id = [mgr_role_id]
+        if m in dev:
+            role_id.append(dev_role_id)
+            del dev[dev.index(m)]
+        append(uid, role_id)
+
+    for m in dev:
+        append(get_user_id(m), [dev_role_id])
+
+    edit_membership(name, memberships)
+
+
 def init_project(name, inp):
     description = '' if 'description' not in inp else inp['description']
     ptl = [] if 'ptl-group-members' not in inp else inp['ptl-group-members']
-
-    uid = get_current_user_id()
-    users = [uid]
-    for m in ptl:
-        users.append(get_user_id(m))
+    private = False if 'private' not in inp else inp['private']
+    dev = [] if 'dev-group-members' not in inp else inp['dev-group-members']
 
     #create the project
-    create_project(name, description)
-    edit_membership(name, users)
+    create_project(name, description, private)
+    update_project_roles(name, ptl, dev)
 
 
 def user_manages_project(prj_name):
     print ' [redmine] checking if user manages project'
     url = "http://%(redmine_host)s/projects/%(name)s/memberships.json" % \
           {'redmine_host': conf.redmine['host'],
-           'name': prj_name}
+           'name': prj_name.lower()}
 
     resp = send_request(url, [200], method='GET',
                         auth=HTTPBasicAuth(request.remote_user['username'],
@@ -160,6 +177,6 @@ def delete_project(name):
     print ' [redmine] deleting project ' + name
     url = "http://%(redmine_host)s/projects/%(project_id)s.xml" % \
           {'redmine_host': conf.redmine['host'],
-           'project_id': name}
+           'project_id': name.lower()}
     headers = {'X-Redmine-API-Key': conf.redmine['api_key']}
     send_request(url, [200], method='DELETE', headers=headers)

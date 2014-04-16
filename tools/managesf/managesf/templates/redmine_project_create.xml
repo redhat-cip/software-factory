@@ -2,4 +2,5 @@
   <name>%(name)s</name>
   <description>%(description)s</description>
   <identifier>%(identifier)s</identifier>
+  <is_public>%(is_public)s</is_public>
 </project>

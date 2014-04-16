@@ -5,14 +5,11 @@ GERRIT_SERVER = 'http://%s-gerrit/r/' % environ['SF_PREFIX']
 REDMINE_SERVER = 'http://%s-redmine' % environ['SF_PREFIX']
 MANAGESF_HOST = '%s-managesf' % environ['SF_PREFIX']
 
-ADMIN_USER = 'user1'
-ADMIN_PASSWD = 'userpass'
-ADMIN_EMAIL = 'user1@example.com'
+USER_1 = 'user1'
+ADMIN_USER = USER_1
 ADMIN_PRIV_KEY_PATH = '%s/build/data/gerrit_admin_rsa' % environ['SF_ROOT']
 
 USER_2 = 'user2'
-USER_2_PASSWD = 'userpass'
-USER_2_EMAIL = 'user2@example.com'
 USER_2_PUB_KEY = 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDV6R5m5a' + \
     'AFQGoaw82JyrD7TFP9+MqBVO7CKt/WzL5stcbXlsZqx7Sf4sS70S4ANOyAuyqQD' + \
     'Mrwu0xQwie6rxSTLQXR4Mj/9q29dsiYEOkZ5V0A2eU/ja1dqD56ajJeH24XJsKI' + \
@@ -51,8 +48,6 @@ iy5Lb0Yy9I1UjSyJ+ftDkizdrUb1h6B8gP0+6t5ee9qMiY96e2KZDw==
 """
 
 USER_3 = 'user3'
-USER_3_PASSWD = 'userpass'
-USER_3_EMAIL = 'user3@example.com'
 USER_3_PUB_KEY = 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDj0xClo8qxB+' + \
     '0Omdab78T/zF+owWtbE6BxZBw0h3mm+wy2h/M1b/P2xb0nW6djFXPzd6OcRl5Ws' + \
     'zZfbH1J11IZ8v5ax0caR/y8YbWSGgHllEPcv8wYl0hnmyutPBjxoQ+Fyp7/uPGB' + \
@@ -91,8 +86,6 @@ asObPhlIwm8RAI2c5sqeGjSERG3kfR3Zif+bukkVkz2N5yON3VJKEmA=
 """
 
 USER_4 = 'user4'
-USER_4_PASSWD = 'userpass'
-USER_4_EMAIL = 'user4@example.com'
 USER_4_PUB_KEY = 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC0uBmIooeTKA' + \
     'UKdeqQtR/LUt7qbSd+0jFZPtyDLCvfVZHz9UdmjGfPS0YAXO3vDAx6kjg/acWc8' + \
     '/c2V/xeFKj5xSyl2LUGy4nPiF9KMXGBqu6pKP6kM47dzol/Qy8hkB3JY6wzvpQg' + \
@@ -129,3 +122,26 @@ e8Hn4MD7cWUwUa2k/bDgp0El8Hfiiwicd2d/Q3tzAEy76n7HwEJ0X0ZjrgYMnak8
 GImOmKYg2lO4r6X5SO3RzrNxQnEBKk4q4r7j70meLkxqDj5WdbvirA==
 -----END RSA PRIVATE KEY-----
 """
+
+USERS = {
+    USER_1: {"password": "userpass",
+             "email": "user1@example.com",
+             "pubkey": "",
+             "privkey": ""
+             },
+    USER_2: {"password": "userpass",
+             "email": "user2@example.com",
+             "pubkey": USER_2_PUB_KEY,
+             "privkey": USER_2_PRIV_KEY
+             },
+    USER_3: {"password": "userpass",
+             "email": "user3@example.com",
+             "pubkey": USER_3_PUB_KEY,
+             "privkey": USER_3_PRIV_KEY
+             },
+    USER_4: {"password": "userpass",
+             "email": "user4@example.com",
+             "pubkey": USER_4_PUB_KEY,
+             "privkey": USER_4_PRIV_KEY
+             }
+}

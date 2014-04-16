@@ -23,6 +23,8 @@ import config
 import tempfile
 import string
 import random
+import json
+import requests as http
 from redmine import Redmine
 from requests.auth import HTTPBasicAuth
 from requests.exceptions import HTTPError
@@ -77,22 +79,17 @@ class ManageSfUtils(Tool):
             "python sf-manage.py --host %s --port %s --auth %%s:%%s " \
             % (self.host, self.port)
 
-    def createProject(self, name, user, passwd,
-                      private=False, group_infos=None,
-                      upstream=None):
+    def createProject(self, name, user, options=None):
+        passwd = config.USERS[user]['password']
         cmd = self.base_cmd % (user, passwd) + "create --name %s" % name
-        if private:
-            cmd += " --private"
-        for group in ('ptl-group', 'core-group', 'dev-group'):
-            if group_infos and group in group_infos:
-                if group_infos[group]:
-                    members = ",".join(group_infos[group])
-                    cmd += " --%s %s" % (group, members)
-        if upstream:
-            cmd += " --upstream %s" % upstream
+        if options:
+            for k, v in options.items():
+                cmd = cmd + " --" + k + " " + v
+
         self.exe(cmd, self.install_dir)
 
-    def deleteProject(self, name, user, passwd):
+    def deleteProject(self, name, user):
+        passwd = config.USERS[user]['password']
         cmd = self.base_cmd % (user, passwd) + "delete --name %s" % name
         self.exe(cmd, self.install_dir)
 
@@ -106,7 +103,8 @@ class ManageSfUtilsConfigCreator(Tool):
         cmd = "bash init-config-repo.sh"
         self.exe(cmd, self.install_dir)
 
-    def deleteProject(self, user, passwd):
+    def deleteProject(self, user):
+        passwd = config.USERS[user]['password']
         msu = ManageSfUtils(config.MANAGESF_HOST, 80)
         msu.deleteProject('config', user, passwd)
 
@@ -160,7 +158,8 @@ class GerritGitUtils(Tool):
 
 
 class GerritUtil:
-    def __init__(self, url, username=None, password=None):
+    def __init__(self, url, username=None):
+        password = config.USERS[username]['password'] if username else None
         self.url = url
         self.username = username
         self.password = password
@@ -261,7 +260,9 @@ class GerritUtil:
 
 
 class RedmineUtil:
-    def __init__(self, url, username=None, password=None, apiKey=None):
+    def __init__(self, url, username=None, apiKey=None):
+        password = config.USERS[username]['password'] if username else None
+        self.api_key = apiKey
         if apiKey is not None:
             self.redmine = Redmine(url, key=apiKey)
         elif username is not None and password is not None:
@@ -270,9 +271,25 @@ class RedmineUtil:
             self.redmine = Redmine(url)
 
     def isProjectExist(self, name):
-        for p in self.redmine.projects:
-            if p.name == name:
-                return True
+        url = "%(redmine_server)s/projects/%(prj_name)s.json" % \
+              {"redmine_server": config.REDMINE_SERVER,
+               "prj_name": name}
+        headers = {"X-Redmine-Api-Key": self.api_key}
+        resp = http.get(url, headers=headers)
+        if resp.status_code == 200:
+            return True
+
+        return False
+
+    def isProjectExist_ex(self, name, username):
+        password = config.USERS[username]['password']
+        url = "%(redmine_server)s/projects/%(prj_name)s.json" % \
+              {"redmine_server": config.REDMINE_SERVER,
+               "prj_name": name}
+        resp = http.get(url, auth=HTTPBasicAuth(username, password))
+        if resp.status_code == 200:
+            return True
+
         return False
 
     def isIssueInProgress(self, issueId):
@@ -280,3 +297,67 @@ class RedmineUtil:
 
     def isIssueClosed(self, issueId):
         return self.redmine.issues[issueId].status.id is 5
+
+    def createUser(self, username, lastname='None'):
+        email = config.USERS[username]['email']
+        password = config.USERS[username]['password']
+
+        user = {"login":  username,
+                "firstname": username,
+                "lastname": lastname,
+                "mail": email,
+                "password": password
+                }
+        data = json.dumps({"user": user})
+        url = "%(redmine_server)s/users.json" % \
+              {"redmine_server": config.REDMINE_SERVER}
+        headers = {"X-Redmine-API-Key": self.api_key,
+                   "Content-type": "application/json"}
+        resp = http.post(url, data=data, headers=headers)
+
+        def current_user_id():
+            url = "%(redmine_server)s/users/current.json" % \
+                  {"redmine_server": config.REDMINE_SERVER}
+            r = http.get(url, auth=HTTPBasicAuth(username, password))
+            if r.status_code != 200:
+                return None
+
+            return r.json()['user']['id']
+
+        if resp.status_code != 201:
+            if resp.status_code == 422:
+                return current_user_id()
+            return None
+
+        ret = resp.json()
+        return ret['user']['id']
+
+    def checkUserRole(self, prj_name, user_id, role_name):
+        url = "%(redmine_server)s/projects/%(project)s/memberships.json" % \
+              {"redmine_server": config.REDMINE_SERVER,
+                  "project": prj_name}
+        headers = {"X-Redmine-API-Key": self.api_key}
+        resp = http.get(url, headers=headers)
+        if resp.status_code != 200:
+            return False
+
+        j = resp.json()
+        for m in j['memberships']:
+            if m['user']['id'] == user_id:
+                for r in m['roles']:
+                    if r['name'] == role_name:
+                        return True
+
+        return False
+
+    def deleteUser(self, user_id):
+        url = "%(redmine_server)s/%(user_id)s.xml" % \
+              {"redmine_server": config.REDMINE_SERVER,
+               "user_id": user_id}
+
+        headers = {"X-Redmine-API-Key": self.api_key}
+        resp = http.delete(url, headers=headers)
+        if resp.status_code == 200:
+            return True
+
+        return False

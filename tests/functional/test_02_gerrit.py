@@ -37,20 +37,17 @@ class TestGerrit(Base):
     def tearDownClass(cls):
         for name in cls.projects:
             cls.msu.deleteProject(name,
-                                  config.ADMIN_USER,
-                                  config.ADMIN_PASSWD)
+                                  config.ADMIN_USER)
 
     def createProject(self, name):
         self.msu.createProject(name,
-                               config.ADMIN_USER,
-                               config.ADMIN_PASSWD)
+                               config.ADMIN_USER)
         self.projects.append(name)
 
     def test_01_add_remove_user_in_core_as_admin(self):
         """ Add/remove user from core group as admin
         """
-        gu = GerritUtil(config.GERRIT_SERVER, username=config.ADMIN_USER,
-                        password=config.ADMIN_PASSWD)
+        gu = GerritUtil(config.GERRIT_SERVER, username=config.ADMIN_USER)
         pname = 'p_%s' % create_random_str()
         self.createProject(pname)
         assert gu.isPrjExist(pname)
@@ -66,8 +63,7 @@ class TestGerrit(Base):
     def test_add_remove_user_in_ptl_as_admin(self):
         """ Add/remove user from ptl group as admin
         """
-        gu = GerritUtil(config.GERRIT_SERVER, username=config.ADMIN_USER,
-                        password=config.ADMIN_PASSWD)
+        gu = GerritUtil(config.GERRIT_SERVER, username=config.ADMIN_USER)
         pname = 'p_%s' % create_random_str()
         self.createProject(pname)
         assert gu.isPrjExist(pname)
