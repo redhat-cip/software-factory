@@ -11,3 +11,6 @@ redmine:
   ldap_username: cn=admin,dc=example,dc=com
   ldap_password: secret
   ldap_account_base: ou=Users,dc=example,dc=com
+  ldap_firstname: cn
+  ldap_lastname: sn
+  ldap_mail: mail

@@ -30,7 +30,7 @@ from pygerrit.rest import GerritRestAPI
 
 
 def create_random_str():
-    value = "".join([random.choice(string.ascii_letters) for _ in range(6)])
+    value = "".join([random.choice(string.ascii_lowercase) for _ in range(6)])
     return value
 
 

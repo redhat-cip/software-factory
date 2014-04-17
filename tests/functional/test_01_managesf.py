@@ -22,7 +22,7 @@ from utils import ManageSfUtils
 from utils import GerritGitUtils
 from utils import create_random_str
 from utils import GerritUtil
-#from utils import RedmineUtil
+from utils import RedmineUtil
 
 
 class TestManageSF(Base):
@@ -55,14 +55,14 @@ class TestManageSF(Base):
         self.createProject(pname)
         gu = GerritUtil(config.GERRIT_SERVER, username=config.ADMIN_USER,
                         password=config.ADMIN_PASSWD)
-        #rm = RedmineUtil(config.REDMINE_SERVER, username=config.ADMIN_USER,
-        #                 password=config.ADMIN_PASSWD)
+        rm = RedmineUtil(config.REDMINE_SERVER, username=config.ADMIN_USER,
+                         password=config.ADMIN_PASSWD)
         assert gu.isPrjExist(pname)
         assert gu.isGroupExist('%s-core' % pname)
         assert gu.isGroupExist('%s-ptl' % pname)
         assert gu.isMemberInGroup(config.ADMIN_USER, '%s-core' % pname)
         assert gu.isMemberInGroup(config.ADMIN_USER, '%s-ptl' % pname)
-        #assert rm.isProjectExist(pname)
+        assert rm.isProjectExist(pname)
 
     def test_02_delete_public_project_as_admin(self):
         """ Verify the correct deletion of a public project
@@ -70,17 +70,17 @@ class TestManageSF(Base):
         """
         gu = GerritUtil(config.GERRIT_SERVER, username=config.ADMIN_USER,
                         password=config.ADMIN_PASSWD)
-        #rm = RedmineUtil(config.REDMINE_SERVER, username=config.ADMIN_USER,
-        #                 password=config.ADMIN_PASSWD)
+        rm = RedmineUtil(config.REDMINE_SERVER, username=config.ADMIN_USER,
+                         password=config.ADMIN_PASSWD)
         pname = 'p_%s' % create_random_str()
         self.createProject(pname)
         assert gu.isPrjExist(pname)
-        #assert rm.isProjectExist(pname)
+        assert rm.isProjectExist(pname)
         self.msu.deleteProject(pname, config.ADMIN_USER, config.ADMIN_PASSWD)
         assert not gu.isPrjExist(pname)
         assert not gu.isGroupExist('%s-core' % pname)
         assert not gu.isGroupExist('%s-ptl' % pname)
-        #assert not rm.isProjectExist(pname)
+        assert not rm.isProjectExist(pname)
         self.projects.remove(pname)
 
     def test_03_create_public_project_as_user_clone_as_admin(self):
