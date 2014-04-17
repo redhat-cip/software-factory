@@ -28,6 +28,9 @@ ORIG=$(cd $(dirname $0); pwd)
 
 install_ib_if_needed $ORIG $dir
 
+do_chroot ${dir} wget --no-verbose http://ftp.de.debian.org/debian/pool/main/c/cloud-initramfs-tools/cloud-initramfs-growroot_0.18.debian5_all.deb
+do_chroot ${dir} wget --no-verbose http://ftp.de.debian.org/debian/pool/main/c/cloud-utils/cloud-utils_0.26-2~bpo70+1_all.deb
+
 configure_cloudinit () {
 
     mkdir -p ${dir}/etc/cloud/cloud.cfg.d
@@ -43,7 +46,9 @@ EOF
             do_chroot ${dir} dpkg -i puppetlabs-release-wheezy.deb || true
             do_chroot ${dir} rm puppetlabs-release-wheezy.deb
             update_repositories $dir
-	    install_packages ${dir} "cloud-init"
+	    install_packages ${dir} "cloud-init euca2ools file python-paramiko"
+            do_chroot ${dir} dpkg -i cloud-utils_0.26-2~bpo70+1_all.deb || true
+            do_chroot ${dir} dpkg -i cloud-initramfs-growroot_0.18.debian5_all.deb || true
 	    ;;
 	"Ubuntu")
             update_repositories $dir
@@ -58,6 +63,10 @@ EOF
 	    do_chroot ${dir} dpkg -i puppetlabs-release-precise.deb || true
 	    do_chroot ${dir} apt-get -f install -y -o Dpkg::Options::="--force-confold"
 	    do_chroot ${dir} rm cloud-init_0.7.3-0ubuntu2_all.deb python-json-patch_1.0-2_all.deb python-json-pointer_1.0-1ubuntu2_all.deb puppetlabs-release-precise.deb
+	    install_packages ${dir} "euca2ools file python-paramiko"
+            do_chroot ${dir} dpkg -i cloud-utils_0.26-2~bpo70+1_all.deb || true
+            do_chroot ${dir} dpkg -i cloud-initramfs-growroot_0.18.debian5_all.deb || true
+
 	    ;;
 	"RedHatEnterpriseServer")
 	    # cloud-init is in Red Hat Common for RHEL Server (v. 6)
