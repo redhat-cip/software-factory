@@ -14,3 +14,49 @@ redmine:
   ldap_firstname: cn
   ldap_lastname: sn
   ldap_mail: mail
+
+redmine_ldap_setting:
+  name: plugin_redmine_ldap_sync
+  value: |
+    --- !ruby/hash:ActiveSupport::HashWithIndifferentAccess
+    1: !ruby/hash:ActiveSupport::HashWithIndifferentAccess
+      active: true
+      groups_base_dn: ou=Groups,dc=example,dc=com
+      class_user: person
+      class_group: groupOfNames
+      groupname_pattern: ''
+      group_search_filter: ''
+      account_disabled_test: ''
+      group_membership: on_groups
+      nested_groups: ''
+      groupname: cn
+      account_flags: ''
+      member: memberUid
+      user_memberid: dn
+      user_groups: ''
+      groupid: ''
+      parent_group: ''
+      group_parentid: ''
+      member_group: ''
+      group_memberid: ''
+      required_group: ''
+      fixed_group: ''
+      create_groups: '0'
+      create_users: '1'
+      sync_on_login: 'user_fields'
+      dyngroups: ''
+      admin_group: ''
+      group_fields_to_sync: []
+      user_fields_to_sync:
+       - firstname
+       - lastname
+       - mail
+       - '1'
+       - '2'
+      user_ldap_attrs: !ruby/hash:ActiveSupport::HashWithIndifferentAccess
+         '1': preferredLanguage
+         '2': uidNumber
+      group_ldap_attrs: !ruby/hash:ActiveSupport::HashWithIndifferentAccess
+         '3': description
+    2: !ruby/hash:ActiveSupport::HashWithIndifferentAccess
+      active: true

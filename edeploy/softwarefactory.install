@@ -64,6 +64,16 @@ install_ib_if_needed $ORIG $dir
 case "$(package_tool)" in
   "apt")
     #
+    #
+    # Add wheezy-backport for Redmine 2.4.2
+    #
+    repository=$(add_main_repository $DIST)
+    cat > ${dir}/etc/apt/sources.list.d/$RELEASE-backport.list <<EOF
+      deb $repository ${RELEASE}-backports main
+EOF
+    pin_repository $DIST $dir 'http.debian.net' 500 'wheezy-backports' 'wheezy-backports' main
+    update_repositories $dir
+
     # Redmine
     #
     do_chroot $dir /usr/share/debconf/fix_db.pl
@@ -77,6 +87,14 @@ case "$(package_tool)" in
     do_chroot $dir debconf-set-selections <<< 'mysql-server-5.1 mysql-server/root_password_again password your_password'
 
     install_packages $dir "$PACKAGES"
+
+    # Fix Redmine backport inconcistency
+    do_chroot $dir mkdir -p /usr/buildout
+    do_chroot $dir ln -s /usr/lib/passenger/agents/ /usr/buildout/agents
+    do_chroot $dir ln -s /usr/share/passenger/helper-scripts/ /usr/helper-scripts
+    # Install Redmine ldap sync plugin
+    do_chroot $dir mkdir -p /usr/share/redmine/plugins
+    do_chroot $dir git clone git://github.com/thorin/redmine_ldap_sync.git /usr/share/redmine/plugins/redmine_ldap_sync --depth 1
 
     #
     # Jenkins

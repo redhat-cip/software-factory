@@ -9,8 +9,11 @@ SET @ldap_password="<%= @settings['ldap_password'] %>";
 SET @ldap_firstname="<%= @settings['ldap_firstname'] %>";
 SET @ldap_lastname="<%= @settings['ldap_lastname'] %>";
 SET @ldap_mail="<%= @settings['ldap_mail'] %>";
+SET @ldap_sync_plugin_name="<%= @ldap_sync_settings['name'] %>";
+SET @ldap_sync_plugin_value="<%= @ldap_sync_settings['value'] %>";
 
 INSERT INTO settings (name, value, updated_on) VALUES ('rest_api_enabled','1', CURRENT_TIMESTAMP());
+INSERT INTO settings (name, value, updated_on) VALUES (@ldap_sync_plugin_name, @ldap_sync_plugin_value, CURRENT_TIMESTAMP());
 INSERT INTO tokens (user_id, action, value, created_on) VALUES('1', 'api', @api_key, CURRENT_TIMESTAMP());
 
 INSERT INTO auth_sources (TYPE, NAME, HOST, PORT, BASE_DN, ATTR_LOGIN, ATTR_FIRSTNAME, ATTR_LASTNAME, ATTR_MAIL, ONTHEFLY_REGISTER, ACCOUNT, ACCOUNT_PASSWORD, TLS) VALUES ('AuthSourceLdap', 'LDAP Auth', @ldap_addr, @ldap_port, @ldap_account_base, @ldap_login_attr, @ldap_firstname, @ldap_lastname, @ldap_mail, '1', @ldap_username, @ldap_password, @ldap_tls);

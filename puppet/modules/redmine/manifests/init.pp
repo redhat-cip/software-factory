@@ -13,7 +13,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-class redmine ($settings = hiera_hash('redmine', '')) {
+class redmine ($settings = hiera_hash('redmine', ''),$ldap_sync_settings = hiera_hash('redmine_ldap_setting', '')) {
 
     $mysql_url = $settings['redmine_mysql_db_address']
     $mysql_password = $settings['redmine_mysql_db_secret']
@@ -124,4 +124,30 @@ class redmine ($settings = hiera_hash('redmine', '')) {
     notify  => Service['monit'],
   }
 
+  file { '/usr/share/redmine/public/plugin_assets':
+    ensure  => directory,
+    require => [Package['redmine'], Exec['post-conf-in-mysql']],
+  }
+
+  file { '/usr/share/redmine/public/plugin_assets/redmine_ldap_sync':
+    ensure  => link,
+    target  => '/usr/share/redmine/plugins/redmine_ldap_sync/assets',
+    require => File['/usr/share/redmine/public/plugin_assets'],
+  }
+
+  exec {'plugin_install':
+    environment => ['RAILS_ENV=production', 'REDMINE_LANG=en'],
+    command     => 'rake redmine:plugins:migrate',
+    cwd => '/usr/share/redmine',
+    path => ['/bin', '/usr/bin'],
+    require => File['/usr/share/redmine/public/plugin_assets/redmine_ldap_sync'],
+  }
+
+  exec {'ldap_sync_users':
+    environment => ['RAILS_ENV=production', 'REDMINE_LANG=en'],
+    command     => 'rake redmine:plugins:ldap_sync:sync_users',
+    cwd => '/usr/share/redmine',
+    path => ['/bin', '/usr/bin'],
+    require => Exec['plugin_install'],
+  }
 }

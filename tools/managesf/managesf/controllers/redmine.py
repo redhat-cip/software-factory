@@ -39,21 +39,7 @@ def create_project(name, description, private):
     send_request(url, [201], method='POST', data=data, headers=headers)
 
 
-def login_user(name, password="userpass"):
-    if name.find('@') != -1:
-        user_name, domain = name.split('@')
-        name = user_name
-    print(' [redmine] login user ' + name)
-    data = json.dumps({"username": name, "password": password})
-    url = "http://%(redmine_host)s/login" % \
-          {'redmine_host': conf.redmine['host']}
-    headers = {'Content-type': 'application/json'}
-    send_request(url, [200], method='POST', data=data, headers=headers)
-
-
 def get_current_user_id():
-    login_user(request.remote_user['username'],
-               request.remote_user['password'])
     print ' [redmine] Fetching id of the current user'
     url = "http://%(redmine_host)s/users/current.json" % \
           {'redmine_host': conf.redmine['host']}
@@ -65,7 +51,6 @@ def get_current_user_id():
 
 
 def get_user_id(name):
-    login_user(name)
     print ' [redmine] Fetching id for the user ' + name
     url = "http://%(redmine_host)s/users.json?name=%(user_name)s" % \
           {'redmine_host': conf.redmine['host'],
