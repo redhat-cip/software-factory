@@ -82,6 +82,7 @@ class redmine ($settings = hiera_hash('redmine', '')) {
         command => 'a2ensite redmine',
         path    => '/usr/sbin/:/usr/bin/:/bin/',
         require => [File['/etc/apache2/sites-available/redmine']],
+        before  => Class['monit'],
     }
 
     exec {'create_session_store':
