@@ -38,9 +38,9 @@
 [sendemail]
     enable = true
     from = MIXED
-    smtpServer = <%= @settings['smtp_server'] %>
-    smtpServerPort = <%= @settings['smtp_server_port'] ? @settings['smtp_server_port'] : '25' %>
-    smtpUser =<%= @settings['smtp_user'] ? @settings['smtp_user'] : '' %>
+    smtpServer = 127.0.0.1
+    smtpServerPort = 25
+    smtpUser =
 [download]
     scheme = ssh
     scheme = http

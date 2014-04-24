@@ -54,6 +54,15 @@ class jenkins ($settings = hiera_hash('jenkins', '')) {
     notify  => Service["jenkins"],
     content => template('jenkins/jenkins.model.JenkinsLocationConfiguration.xml.erb'),
   }
+  file {'/var/lib/jenkins/hudson.tasks.Mailer.xml':
+    ensure  => file,
+    mode    => 0644,
+    owner   => "jenkins",
+    group   => "nogroup",
+    notify  => Service["jenkins"],
+    content => template('jenkins/hudson.tasks.Mailer.xml'),
+  }
+ 
   file {'/var/lib/jenkins/plugins/swarm-1.15.hpi':
     ensure  => file,
     mode    => '0644',

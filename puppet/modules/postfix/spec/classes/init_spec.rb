@@ -1,4 +1,3 @@
-#
 # Copyright (C) 2014 eNovance SAS <licensing@enovance.com>
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -13,16 +12,16 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-class ssmtp ($settings = hiera_hash('ssmtp', '')) {
-    package {'ssmtp':
-        ensure => 'installed',
-        name   => 'ssmtp',
-    }
+require 'spec_helper'
 
-    file {'/etc/ssmtp/ssmtp.conf':
-        ensure  => file,
-        mode    => '644',
-        content => template('ssmtp/ssmtp.conf'),
-        require => [Package['ssmtp']],
-    }
-}
+describe "postfix" do
+    let(:title) { 'postfix' }
+
+    context 'postfix' do
+        it {
+            should contain_package('postfix')
+            should contain_service('postfix')
+            should contain_file('/etc/postfix/main.cf')
+        }
+    end
+end

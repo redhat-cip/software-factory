@@ -1,3 +1,0 @@
-ssmtp:
-  mailhub: mail.example.com
-  domain: example.com

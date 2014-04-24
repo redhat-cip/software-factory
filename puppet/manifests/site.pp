@@ -4,7 +4,7 @@ node base {
   include ssh_keys
   include hosts
   include edeploy_client
-  include ssmtp
+  include postfix
   include monit
 }
 

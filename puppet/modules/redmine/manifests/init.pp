@@ -49,6 +49,14 @@ class redmine ($settings = hiera_hash('redmine', ''),$ldap_sync_settings = hiera
         content => template('redmine/database.erb'),
     }
 
+    file {'/etc/redmine/default/configuration.yml':
+        ensure  => file,
+        mode    => '0640',
+        owner   => 'www-data',
+        group   => 'www-data',
+        content => template('redmine/configuration.yml.erb'),
+    }
+
     file {'/etc/apache2/mods-available/passenger.conf':
         ensure => file,
         mode   => '0640',

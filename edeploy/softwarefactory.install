@@ -32,7 +32,7 @@ BCPROVJAVA="http://www.bouncycastle.org/download/bcprov-jdk16-144.jar"
 PYREDMINEWS="https://pypi.python.org/packages/source/p/pyredmine/pyredmine-0.2.4.tar.gz"
 GERRITUSER=gerrit
 GERRITHOOKS=../gerrit-hooks
-GERRIT_PACKAGES="openjdk-7-jre git puppet vim mysql-client python-pip python-dateutil apache2 file monit"
+GERRIT_PACKAGES="openjdk-7-jre apache2 file"
 
 #
 # Jenkins
@@ -63,7 +63,12 @@ ETHERPAD_PACKAGES="nodejs apache2"
 ETHERPAD_LITE="https://codeload.github.com/ether/etherpad-lite/tar.gz/1.4.0"
 NODEJS_NMP="https://www.npmjs.org/install.sh"
 
-PACKAGES="${GERRIT_PACKAGES} ${MYSQL_PACKAGES} ${REDMINE_PACKAGES} ${MANAGESF_PACKAGES} ${ETHERPAD_PACKAGES}"
+#
+# Other
+#
+OTHER_PACKAGES="git puppet vim mysql-client python-pip python-dateutil monit postfix"
+
+PACKAGES="${GERRIT_PACKAGES} ${MYSQL_PACKAGES} ${REDMINE_PACKAGES} ${MANAGESF_PACKAGES} ${ETHERPAD_PACKAGES} ${OTHER_PACKAGES}"
 
 # To remove (but maybe the the vm role should remove that) :
 do_chroot $dir rm /etc/apt/sources.list.d/hwraid.list
