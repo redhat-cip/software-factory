@@ -1,4 +1,4 @@
 check process httpd with pidfile /var/run/apache2.pid 
     start program = "/etc/init.d/apache2 start"
     stop program = "/etc/init.d/apache2 stop"
-    if failed host <%= @ipaddress %> port 80 protocol http with timeout 60 seconds for 5 cycles then restart
+    if failed host <%= @ipaddress %> port 80 protocol http with timeout 600 seconds for 5 cycles then restart
