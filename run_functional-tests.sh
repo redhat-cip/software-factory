@@ -28,14 +28,21 @@ fi
 # Start serverspec test to detect failure early
 cp build/serverspec/hosts.yaml serverspec/
 cd serverspec/
-rake spec
-RET=$?
-[ "$RET" != "0" ] && {
-    cd ..
-    stop
-    exit $RET
-}
+retries=0
+while true; do
+    rake spec
+    RET=$?
+
+    [ "$RET" == "0" ] && break
+
+        let retries=retries+1
+        if [ "$retries" == "9" ]; then
+            exit $RET
+        fi
+    sleep 30
+done
 cd ..
+
 
 nosetests -v ./tests
 RET=$?
