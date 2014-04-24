@@ -30,12 +30,13 @@ if [ ! -d $WORKSPACE ]; then
     sudo chown ${USER}:root $WORKSPACE
 fi
 
-[ ! -d "$BUILD_DIR" ] && mkdir -p $BUILD_DIR
+[ ! -d "$BUILD_DIR" ] && sudo mkdir -p $BUILD_DIR
 
 if [ "$SKIP_CLEAN_ROLES" != "y" ]; then
     [ -d "$BUILD_DIR/install" ] && sudo rm -Rf $BUILD_DIR/install
 fi
-[ ! -d "$CLONES_DIR" ] && mkdir -p $CLONES_DIR
+[ ! -d "$CLONES_DIR" ] && sudo mkdir -p $CLONES_DIR
+sudo chown -R ${USER} ${CLONES_DIR}
 
 cd $CLONES_DIR
 [ ! -d "edeploy" ] && {
