@@ -8,6 +8,7 @@ MANAGESF_HOST = '%s-managesf' % environ['SF_PREFIX']
 USER_1 = 'user1'
 ADMIN_USER = USER_1
 ADMIN_PRIV_KEY_PATH = '%s/build/data/gerrit_admin_rsa' % environ['SF_ROOT']
+ADMIN_PUB_KEY_PATH = '%s/build/data/gerrit_admin_rsa.pub' % environ['SF_ROOT']
 
 USER_2 = 'user2'
 USER_2_PUB_KEY = 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDV6R5m5a' + \
@@ -126,8 +127,8 @@ GImOmKYg2lO4r6X5SO3RzrNxQnEBKk4q4r7j70meLkxqDj5WdbvirA==
 USERS = {
     USER_1: {"password": "userpass",
              "email": "user1@example.com",
-             "pubkey": "",
-             "privkey": ""
+             "pubkey": file(ADMIN_PUB_KEY_PATH).read(),
+             "privkey": file(ADMIN_PRIV_KEY_PATH).read()
              },
     USER_2: {"password": "userpass",
              "email": "user2@example.com",

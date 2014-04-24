@@ -170,6 +170,7 @@ EOF
     wget -q $BCPROVJAVA -O ${dir}/root/gerrit_data_source/bcprov-jdk16-144.jar
     do_chroot $dir pip install $PYREDMINEWS
     cp $DATA/project.config ${dir}/root/gerrit_data_source/
+    cp $DATA/rules.pl ${dir}/root/gerrit_data_source/
     cp $DATA/ssh_wrapper.sh ${dir}/root/gerrit_data_source/
     cp $DATA/replication.jar ${dir}/root/gerrit_data_source/
     cp $DATA/delete-project.jar ${dir}/root/gerrit_data_source/

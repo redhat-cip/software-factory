@@ -54,6 +54,8 @@ class Tool:
         self.env = os.environ.copy()
 
     def exe(self, cmd, cwd=None, wait=True):
+        self.debug.write("\n\ncmd = %s\n" % cmd)
+        self.debug.flush()
         cmd = shlex.split(cmd)
         ocwd = os.getcwd()
         if cwd:
@@ -131,6 +133,9 @@ class GerritGitUtils(Tool):
         self.exe(cmd, self.tempdir)
         clone = os.path.join(self.tempdir, target)
         assert os.path.isdir(clone)
+        self.exe('git config --add gitreview.username %s' %
+                 self.user, clone)
+        self.exe('git review -s', clone)
         return clone
 
     def fetch_meta_config(self, clone_dir):
@@ -155,6 +160,19 @@ class GerritGitUtils(Tool):
         self.exe('git checkout %s' % branch, clone_dir)
         self.exe('git review' % clone_dir)
         self.exe('git checkout master', clone_dir)
+
+    def add_commit_and_publish(self, clone_dir, branch,
+                               commit_msg, commit_author=None):
+        self.exe('git checkout %s' % branch, clone_dir)
+        fname = create_random_str()
+        file(os.path.join(clone_dir, fname), 'w').write('data')
+        self.exe('git add %s' % fname, clone_dir)
+        author = '%s <%s>' % (commit_author,
+                              config.USERS[commit_author]['email']) \
+                 if commit_author else self.email
+        self.exe("git commit --author '%s' -m '%s'" %
+                 (author, commit_msg), clone_dir)
+        self.exe('git review -v', clone_dir)
 
 
 class GerritUtil:
@@ -219,15 +237,20 @@ class GerritUtil:
 
     def addPubKey(self, pubkey):
         headers = {'content-type': 'plain/text'}
-        self.rest.post('/a/accounts/self/sshkeys',
-                       data=pubkey,
-                       headers=headers)
+        resp = self.rest.post('/a/accounts/self/sshkeys',
+                              data=pubkey,
+                              headers=headers)
+        return resp['seq']
 
-    # Review APIs
+    def delPubKey(self, index):
+        self.rest.delete('/a/accounts/self/sshkeys/' + str(index))
+
     def _submitCodeReview(self, change_id, revision_id, rate):
-        reviewInput = {"labels": {"Code-Review": int(rate)}}
+        reviewInput = json.dumps({"labels": {"Code-Review": int(rate)}})
+        headers = {'Content-Type': 'application/json'}
         self.rest.post('/a/changes/%s/revisions/%s/review' %
-                       (change_id, revision_id), data=reviewInput)
+                       (change_id, revision_id), data=reviewInput,
+                       headers=headers)
 
     def setPlus2CodeReview(self, change_id, revision_id):
         self._submitCodeReview(change_id, revision_id, '+2')
@@ -245,9 +268,11 @@ class GerritUtil:
         self._submitCodeReview(change_id, revision_id, '0')
 
     def _submitVerified(self, change_id, revision_id, rate):
-        reviewInput = {"labels": {"Verified": int(rate)}}
+        headers = {'Content-Type': 'application/json'}
+        reviewInput = json.dumps({"labels": {"Verified": int(rate)}})
         self.rest.post('/a/changes/%s/revisions/%s/review' %
-                       (change_id, revision_id), data=reviewInput)
+                       (change_id, revision_id), data=reviewInput,
+                       headers=headers)
 
     def setPlus1Verified(self, change_id, revision_id):
         self._submitVerified(change_id, revision_id, '+1')
@@ -257,6 +282,24 @@ class GerritUtil:
 
     def setNoScoreVerified(self, change_id, revision_id):
         self._submitVerified(change_id, revision_id, '0')
+
+    def setPlus1Approved(self, change_id, revision_id):
+        reviewInput = json.dumps({"labels": {"Approved": 1}})
+        headers = {'Content-Type': 'application/json'}
+        self.rest.post('/a/changes/%s/revisions/%s/review' %
+                       (change_id, revision_id), data=reviewInput,
+                       headers=headers)
+
+    def submitPatch(self, change_id, revision_id):
+        submit = json.dumps({"wait_for_merge": True})
+        headers = {'Content-Type': 'application/json'}
+        try:
+            r = self.rest.post('/a/changes/%s/revisions/%s/submit' %
+                               (change_id, revision_id), data=submit,
+                               headers=headers)
+            return r
+        except Exception as e:
+            return e.response.status_code
 
 
 class RedmineUtil:

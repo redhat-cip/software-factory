@@ -13,15 +13,16 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-
+import os
 import config
+import shutil
 
 from utils import Base
+from utils import set_private_key
 from utils import ManageSfUtils
-#from utils import GerritGitUtils
+from utils import GerritGitUtils
 from utils import create_random_str
 from utils import GerritUtil
-#from utils import RedmineUtil
 
 
 class TestGerrit(Base):
@@ -29,22 +30,32 @@ class TestGerrit(Base):
     """
     @classmethod
     def setUpClass(cls):
-        cls.projects = []
-        cls.clone_dirs = []
-        cls.msu = ManageSfUtils(config.MANAGESF_HOST, 80)
+        pass
 
     @classmethod
     def tearDownClass(cls):
-        for name in cls.projects:
-            cls.msu.deleteProject(name,
-                                  config.ADMIN_USER)
+        pass
 
-    def createProject(self, name):
+    def setUp(self):
+        self.projects = []
+        self.clone_dirs = []
+        self.dirs_to_delete = []
+        self.msu = ManageSfUtils(config.MANAGESF_HOST, 80)
+
+    def tearDown(self):
+        for name in self.projects:
+            self.msu.deleteProject(name,
+                                   config.ADMIN_USER)
+        for dirs in self.dirs_to_delete:
+            shutil.rmtree(dirs)
+
+    def createProject(self, name, options=None):
         self.msu.createProject(name,
-                               config.ADMIN_USER)
+                               config.ADMIN_USER,
+                               options=options)
         self.projects.append(name)
 
-    def test_01_add_remove_user_in_core_as_admin(self):
+    def test_add_remove_user_in_core_as_admin(self):
         """ Add/remove user from core group as admin
         """
         gu = GerritUtil(config.GERRIT_SERVER, username=config.ADMIN_USER)
@@ -75,3 +86,99 @@ class TestGerrit(Base):
         assert gu.isMemberInGroup(NEW_USER, GROUP_NAME)
         gu.deleteGroupMember(NEW_USER, GROUP_NAME)
         assert not gu.isMemberInGroup(NEW_USER, GROUP_NAME)
+
+    def test_review_labels(self):
+        """ Test if list of review labels are as expected
+        """
+        pname = 'p_%s' % create_random_str()
+        self.createProject(pname)
+        un = config.ADMIN_USER
+        gu = GerritUtil(config.GERRIT_SERVER, username=un)
+        hostkey = file("%s/.ssh/id_rsa.pub" % os.environ['HOME']).read()
+        hk_index = gu.addPubKey(hostkey)
+        k_index = gu.addPubKey(config.USERS[un]["pubkey"])
+        assert gu.isPrjExist(pname)
+        priv_key_path = set_private_key(config.USERS[un]["privkey"])
+        gitu = GerritGitUtils(un,
+                              priv_key_path,
+                              config.USERS[un]['email'])
+        url = "ssh://%s@%s/%s" % (un, config.GERRIT_HOST,
+                                  pname)
+        clone_dir = gitu.clone(url, pname)
+        self.dirs_to_delete.append(os.path.dirname(clone_dir))
+
+        gitu.add_commit_and_publish(clone_dir, "master", "Test commit")
+        changes = gu.rest.get('/a/changes/')
+
+        count = 0
+        change = None
+        for x in changes:
+            if x['project'] == pname:
+                count += 1
+                change = x
+
+        assert count == 1
+
+        change_id = change['change_id']
+        url = '/a/changes/%s/?o=LABELS' % change_id
+        labels = gu.rest.get(url)['labels']
+
+        assert 'Approved' in labels
+        assert 'Code-Review' in labels
+        assert 'Verified' in labels
+        assert len(labels.keys()) is 3
+
+        gu.delPubKey(hk_index)
+        gu.delPubKey(k_index)
+
+    def test_review_submit_approval(self):
+        """ Test submit criteria - CR(2 +2s), V(+1), A(+1)
+        """
+        pname = 'p_%s' % create_random_str()
+        options = {'core-group': 'user2'}
+        self.createProject(pname, options)
+        un = config.ADMIN_USER
+        gu = GerritUtil(config.GERRIT_SERVER, username=un)
+        hostkey = file("%s/.ssh/id_rsa.pub" % os.environ['HOME']).read()
+        hk_index = gu.addPubKey(hostkey)
+        k_index = gu.addPubKey(config.USERS[un]["pubkey"])
+        assert gu.isPrjExist(pname)
+        priv_key_path = set_private_key(config.USERS[un]["privkey"])
+        gitu = GerritGitUtils(un,
+                              priv_key_path,
+                              config.USERS[un]['email'])
+        url = "ssh://%s@%s/%s" % (un, config.GERRIT_HOST,
+                                  pname)
+        clone_dir = gitu.clone(url, pname)
+        self.dirs_to_delete.append(os.path.dirname(clone_dir))
+
+        gitu.add_commit_and_publish(clone_dir, "master", "Test commit")
+        changes = gu.rest.get('/a/changes/')
+        count = 0
+        change = None
+        for x in changes:
+            if x['project'] == pname:
+                count += 1
+                change = x
+
+        assert count == 1
+
+        change_id = change['change_id']
+
+        gu.setPlus1CodeReview(change_id, "current")
+        assert gu.submitPatch(change_id, "current") == 409
+
+        gu.setPlus1Verified(change_id, "current")
+        assert gu.submitPatch(change_id, "current") == 409
+
+        gu.setPlus1Approved(change_id, "current")
+        assert gu.submitPatch(change_id, "current") == 409
+
+        gu.setPlus2CodeReview(change_id, "current")
+        assert gu.submitPatch(change_id, "current") == 409
+
+        gu_user2 = GerritUtil(config.GERRIT_SERVER, username=config.USER_2)
+        gu_user2.setPlus2CodeReview(change_id, "current")
+        assert gu.submitPatch(change_id, "current")['status'] == 'MERGED'
+        gu.delPubKey(hk_index)
+        gu.delPubKey(k_index)

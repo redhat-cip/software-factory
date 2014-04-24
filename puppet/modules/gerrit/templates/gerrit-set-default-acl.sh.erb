@@ -19,8 +19,9 @@ git remote add origin ssh://$ADMINUSER@localhost:29418/All-Projects
 GIT_SSH=/root/gerrit_data_source/ssh_wrapper.sh git fetch origin refs/meta/config:refs/remotes/origin/meta/config
 git checkout meta/config
 cp /root/gerrit_data_source/project.config .
+cp /root/gerrit_data_source/rules.pl .
 git diff
-git add project.config
+git add project.config rules.pl
 git commit -a -m"Provide the default config"
 GIT_SSH=/root/gerrit_data_source/ssh_wrapper.sh git push origin meta/config:meta/config
 cd -
