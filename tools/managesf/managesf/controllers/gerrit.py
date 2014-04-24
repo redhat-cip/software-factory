@@ -100,8 +100,11 @@ def _delete_project(prj_name):
     url = "http://%(gerrit_host)s/r/a/projects/%(project_name)s" % \
           {'gerrit_host': conf.gerrit['host'],
            'project_name': prj_name}
+    data = json.dumps({"force": True})
     send_request(url, [204],
                  method='DELETE',
+                 data=data,
+                 headers={'Content-type': 'application/json'},
                  auth=HTTPBasicAuth(conf.gerrit['admin'],
                                     conf.gerrit['http_password']))
 
