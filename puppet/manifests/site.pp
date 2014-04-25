@@ -39,3 +39,8 @@ node /.*ldap.*/ inherits base {
 node /.*managesf.*/ inherits base {
   include managesf
 }
+
+node /.*commonservices.*/ inherits base {
+  include commonservices-apache
+  include etherpad
+}

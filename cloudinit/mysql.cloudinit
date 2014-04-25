@@ -16,10 +16,17 @@ write_files:
       GRANT ALL PRIVILEGES ON gerrit.* TO 'gerrit'@'%' WITH GRANT OPTION;
       FLUSH PRIVILEGES;
     path: /root/gerrit.sql
+-   content: |
+      CREATE DATABASE etherpad CHARACTER SET utf8 COLLATE utf8_general_ci;
+      CREATE USER 'etherpad'@'%' IDENTIFIED BY 'ETHERPAD_MYSQL_SECRET';
+      GRANT ALL PRIVILEGES ON etherpad.* TO 'etherpad'@'%';
+      FLUSH PRIVILEGES;
+    path: /root/etherpad.sql
 
 
 runcmd:
  - mysql -u root -pyour_password < /root/redmine.sql
  - mysql -u root -pyour_password < /root/gerrit.sql
+ - mysql -u root -pyour_password < /root/etherpad.sql
  - echo PUPPETMASTER SF_PREFIX-puppetmaster.pub >> /etc/hosts
  - sed -i -e '0,/^$/s/^$/server=SF_PREFIX-puppetmaster.pub\n/g' /etc/puppet/puppet.conf

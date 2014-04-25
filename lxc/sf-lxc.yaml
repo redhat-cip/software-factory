@@ -42,3 +42,8 @@ hosts:
     name: SF_PREFIX-managesf
     role: softwarefactory
     cloudinit: ../build/cloudinit/managesf.cloudinit
+  -
+    address: 192.168.134.56
+    name: SF_PREFIX-commonservices
+    role: softwarefactory
+    cloudinit: ../build/cloudinit/commonservices.cloudinit

@@ -1,0 +1,41 @@
+{
+  "title": "SF - Etherpad",
+  "favicon": "favicon.ico",
+  "ip": "127.0.0.1",
+  "port" : 9001,
+  "sessionKey" : "<%= @etherpad['session_key'] %>",
+  "dbType" : "mysql",
+  "dbSettings" : {
+                  "user"    : "<%= @etherpad['mysql_db_username'] %>", 
+                  "host"    : "<%= @etherpad['mysql_db_address'] %>",
+                  "password": "<%= @etherpad['mysql_db_secret'] %>",
+                  "database": "<%= @etherpad['mysql_db'] %>"
+                 },
+  "defaultPadText" : "Welcome to Etherpad!\n\nThis pad text is synchronized as you type, so that everyone viewing this page sees the same text. This allows you to collaborate seamlessly on documents!\n\nGet involved with Etherpad at http:\/\/etherpad.org\n",
+  "requireSession" : false,
+  "editOnly" : false,
+  "minify" : true,
+  "maxAge" : 21600,
+  "abiword" : null,
+  "requireAuthentication": false,
+  "requireAuthorization": false,
+  "trustProxy": false,
+  "disableIPlogging": false,  
+  "users": {
+    "admin": {
+      "password": "changeme1",
+      "is_admin": true
+      },
+  },
+  "socketTransportProtocols" : ["xhr-polling", "jsonp-polling", "htmlfile"],
+  "loglevel": "INFO",
+  "logconfig" :
+    { "appenders": [
+       { "type": "file",
+         "filename": "/var/log/etherpad/etherpad.log",
+         "maxLogSize": 1024,
+         "backups": 3
+       }
+      ]
+    }
+}

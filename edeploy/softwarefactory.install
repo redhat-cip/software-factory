@@ -56,7 +56,17 @@ REDMINE_PACKAGES="apache2 libapache2-mod-passenger redmine-sqlite redmine-mysql 
 #
 MANAGESF_PACKAGES="apache2 libapache2-mod-wsgi puppet python-dev libldap2-dev libsasl2-dev libssl-dev gcc"
 
-PACKAGES="${GERRIT_PACKAGES} ${MYSQL_PACKAGES} ${REDMINE_PACKAGES} ${MANAGESF_PACKAGES}"
+#
+# Etherpad
+#
+ETHERPAD_PACKAGES="nodejs apache2"
+ETHERPAD_LITE="https://codeload.github.com/ether/etherpad-lite/tar.gz/1.4.0"
+NODEJS_NMP="https://www.npmjs.org/install.sh"
+
+PACKAGES="${GERRIT_PACKAGES} ${MYSQL_PACKAGES} ${REDMINE_PACKAGES} ${MANAGESF_PACKAGES} ${ETHERPAD_PACKAGES}"
+
+# To remove (but maybe the the vm role should remove that) :
+do_chroot $dir rm /etc/apt/sources.list.d/hwraid.list
 
 update_repositories $dir
 install_ib_if_needed $ORIG $dir
@@ -65,7 +75,7 @@ case "$(package_tool)" in
   "apt")
     #
     #
-    # Add wheezy-backport for Redmine 2.4.2
+    # Add wheezy-backport for Redmine 2.4.2 and nodejs
     #
     repository=$(add_main_repository $DIST)
     cat > ${dir}/etc/apt/sources.list.d/$RELEASE-backport.list <<EOF
@@ -101,6 +111,19 @@ EOF
     do_chroot $dir mkdir -p /usr/share/redmine/plugins
     do_chroot $dir git clone git://github.com/backlogs/redmine_backlogs.git /usr/share/redmine/plugins/redmine_backlogs --depth 1
     do_chroot $dir bash -c 'cd /usr/share/redmine/plugins/redmine_backlogs && bundle install'
+
+    #
+    # Etherpad_lite
+    #
+    do_chroot $dir curl $ETHERPAD_LITE -o /tmp/etherpad_lite.tar.gz
+    do_chroot $dir curl $NODEJS_NMP -o /tmp/nmp-install.sh
+    # Try to avoid the failure in jenkins
+    do_chroot $dir sed -i "s#</dev/tty##" /tmp/nmp-install.sh
+    do_chroot $dir tar -xzf /tmp/etherpad_lite.tar.gz -C /var/www/
+    # /bin/installDeps.sh is looking for /usr/bin/node
+    do_chroot $dir ln -s /usr/bin/nodejs /usr/bin/node
+    do_chroot $dir sh /tmp/nmp-install.sh
+    do_chroot $dir sh /var/www/etherpad-lite-1.4.0/bin/installDeps.sh
 
     #
     # Jenkins

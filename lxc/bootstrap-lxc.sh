@@ -23,7 +23,7 @@ export SF_PREFIX
 
 . ../function.sh
 
-ROLES="${SF_PREFIX}-puppetmaster ${SF_PREFIX}-ldap ${SF_PREFIX}-mysql ${SF_PREFIX}-redmine ${SF_PREFIX}-jenkins ${SF_PREFIX}-gerrit ${SF_PREFIX}-managesf"
+ROLES="${SF_PREFIX}-puppetmaster ${SF_PREFIX}-ldap ${SF_PREFIX}-mysql ${SF_PREFIX}-redmine ${SF_PREFIX}-jenkins ${SF_PREFIX}-gerrit ${SF_PREFIX}-managesf ${SF_PREFIX}-commonservices"
 
 EDEPLOY_LXC=/srv/edeploy-lxc/edeploy-lxc
 

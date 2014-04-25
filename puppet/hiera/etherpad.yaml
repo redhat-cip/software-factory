@@ -1,0 +1,6 @@
+etherpad:
+  session_key: SESSION_KEY
+  mysql_db_address: "%{hiera('mysql_url')}"
+  mysql_db_secret: ETHERPAD_MYSQL_SECRET
+  mysql_db_username: etherpad
+  mysql_db: etherpad

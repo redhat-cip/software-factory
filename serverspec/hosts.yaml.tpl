@@ -32,3 +32,10 @@ jenkins:
     - jenkins
   :username: root
   :hostname: SF_PREFIX-jenkins
+
+commonservices:
+  :roles:
+    - base
+    - commonservices
+  :username: root
+  :hostname: SF_PREFIX-commonservices

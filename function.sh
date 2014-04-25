@@ -23,6 +23,7 @@ GERRIT_ADMIN_PASSWORD=userpass
 
 GERRIT_MYSQL_SECRET=''
 REDMINE_MYSQL_SECRET=''
+ETHERPAD_MYSQL_SECRET=''
 
 #### Configuration generation
 function new_build {
@@ -78,8 +79,10 @@ function generate_cloudinit {
     
     REDMINE_MYSQL_SECRET=$(generate_random_pswd 8)
     GERRIT_MYSQL_SECRET=$(generate_random_pswd 8)
+    ETHERPAD_MYSQL_SECRET=$(generate_random_pswd 8)
     sed -i "s#REDMINE_MYSQL_SECRET#${REDMINE_MYSQL_SECRET}#" ${OUTPUT}/mysql.cloudinit
     sed -i "s#GERRIT_MYSQL_SECRET#${GERRIT_MYSQL_SECRET}#" ${OUTPUT}/mysql.cloudinit
+    sed -i "s#ETHERPAD_MYSQL_SECRET#${ETHERPAD_MYSQL_SECRET}#" ${OUTPUT}/mysql.cloudinit
 }
 
 function generate_api_key() {
@@ -99,6 +102,7 @@ function generate_hiera {
     mkdir -p ${OUTPUT}
     cp ../puppet/hiera/common.yaml ${OUTPUT}/common.yaml
     cp ../puppet/hiera/monit.yaml ${OUTPUT}/monit.yaml
+    cp ../puppet/hiera/etherpad.yaml ${OUTPUT}/etherpad.yaml
 
     # Hosts
     echo -e "hosts:\n  localhost:\n    ip: 127.0.0.1" > ${OUTPUT}/hosts.yaml
@@ -148,6 +152,11 @@ function generate_hiera {
     # TODO: Will be randomly generated
     JENKINS_CREDS_ID="a6feb755-3493-4635-8ede-216127d31bb0"
     cat ../puppet/hiera/jenkins.yaml | sed "s#JENKINS_CREDS_ID#${JENKINS_CREDS_ID}#" > ${OUTPUT}/jenkins.yaml
+
+    # Etherpad
+    ETHERPAD_SESSION_KEY=$(generate_random_pswd 10)
+    sed -i "s#SESSION_KEY#${ETHERPAD_SESSION_KEY}#" ${OUTPUT}/etherpad.yaml
+    sed -i "s#ETHERPAD_MYSQL_SECRET#${ETHERPAD_MYSQL_SECRET}#" ${OUTPUT}/etherpad.yaml
 }
 
 function generate_keys {
