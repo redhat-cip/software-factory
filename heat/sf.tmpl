@@ -30,6 +30,17 @@ resources:
       floating_ip: {get_resource: jenkins_floating_ip}
       server_id: {get_resource: jenkins_instance}
 
+  puppetmaster_floating_ip:
+    type: OS::Nova::FloatingIP
+    properties:
+      pool: "nova"
+
+  associate_public_ip_to_puppetmaster_instace:
+    type: OS::Nova::FloatingIPAssociation
+    properties:
+      floating_ip: {get_resource: puppetmaster_floating_ip}
+      server_id: {get_resource: puppetmaster_instance}
+
   puppetmaster_instance:
     type: OS::Nova::Server
     properties:
@@ -58,12 +69,13 @@ resources:
             ssl_client_header = SSL_CLIENT_S_DN
             ssl_client_verify_header = SSL_CLIENT_VERIFY
             EOF
-            echo "127.0.0.1 heat-puppetmaster.pub heat-puppetmaster" >> /etc/hosts
+            echo "127.0.0.1 heat-puppetmaster.pub heat-puppetmaster" > /etc/hosts
+            echo "jenkins_host heat-jenkins.pub heat-jenkins" >> /etc/hosts
             /etc/init.d/puppetmaster stop
             rm -Rf /var/lib/puppet/ssl/*
             /etc/init.d/puppetmaster start
           params:
-            jenkins_host: 'pass'
+            jenkins_host: { get_attr: [jenkins_floating_ip, ip] }
 
   jenkins_instance:
     type: OS::Nova::Server
@@ -76,10 +88,11 @@ resources:
           template: |
             #!/bin/bash -v
             sed -i "s/127.0.0.1/0.0.0.0/" /etc/mysql/my.cnf
-            sed -i -e '0,/^$/s/^$/server=puppetmaster_host\n/g' /etc/puppet/puppet.conf
+            sed -i -e '0,/^$/s/^$/server=heat-puppetmaster.pub\n/g' /etc/puppet/puppet.conf
+            echo puppetmaster_host heat-puppetmaster.pub >> /etc/hosts
             update-rc.d jenkins start
           params:
-            puppetmaster_host: { get_attr: [puppetmaster_instance, first_address] }
+            puppetmaster_host: { get_attr: [puppetmaster_floating_ip, ip] }
 
 outputs:
   Jenkins_address:
