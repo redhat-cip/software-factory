@@ -22,11 +22,19 @@ write_files:
       GRANT ALL PRIVILEGES ON etherpad.* TO 'etherpad'@'%';
       FLUSH PRIVILEGES;
     path: /root/etherpad.sql
+-   content: |
+      CREATE DATABASE lodgeit CHARACTER SET utf8 COLLATE utf8_general_ci;
+      CREATE USER 'lodgeit'@'%' IDENTIFIED BY 'LODGEIT_MYSQL_SECRET';
+      GRANT ALL PRIVILEGES ON lodgeit.* TO 'lodgeit'@'%';
+      FLUSH PRIVILEGES;
+    path: /root/lodgeit.sql
+
 
 
 runcmd:
  - mysql -u root -pyour_password < /root/redmine.sql
  - mysql -u root -pyour_password < /root/gerrit.sql
  - mysql -u root -pyour_password < /root/etherpad.sql
+ - mysql -u root -pyour_password < /root/lodgeit.sql
  - echo PUPPETMASTER SF_PREFIX-puppetmaster.pub >> /etc/hosts
  - sed -i -e '0,/^$/s/^$/server=SF_PREFIX-puppetmaster.pub\n/g' /etc/puppet/puppet.conf

@@ -28,10 +28,6 @@ class commonservices-apache {
     notify => Service[apache2],
   }
 
-  file { '/etc/apache2/sites-enabled/000-default':
-    ensure => absent,
-  }
-
   exec {'enable_etherpad_site':
     command => 'a2ensite etherpad',
     path    => '/usr/sbin/:/usr/bin/:/bin/',
@@ -39,12 +35,33 @@ class commonservices-apache {
     before  => Class['monit'],
   }
 
+  file {'/etc/apache2/sites-available/lodgeit':
+    ensure => file,
+    mode   => '0640',
+    owner  => 'www-data',
+    group  => 'www-data',
+    source =>'puppet:///modules/commonservices-apache/lodgeit',
+    notify => Service[apache2],
+  }
+
+  exec {'enable_lodgeit_site':
+    command => 'a2ensite lodgeit',
+    path    => '/usr/sbin/:/usr/bin/:/bin/',
+    require => [File['/etc/apache2/sites-available/lodgeit']],
+    before  => Class['monit'],
+  }
+
+  file { '/etc/apache2/sites-enabled/000-default':
+    ensure => absent,
+  }
+
   service {'apache2':
     ensure     => running,
     enable     => true,
     hasrestart => true,
     hasstatus  => true,
-    require    => Exec['enable_etherpad_site'],
+    require    => [Exec['enable_etherpad_site'],
+                   Exec['enable_lodgeit_site']]
   }
 
 }

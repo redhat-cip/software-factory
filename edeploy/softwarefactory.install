@@ -34,6 +34,7 @@ GERRITUSER=gerrit
 GERRITHOOKS=../gerrit-hooks
 GERRIT_PACKAGES="openjdk-7-jre apache2 file"
 
+
 #
 # Jenkins
 #
@@ -68,10 +69,16 @@ NODEJS_NMP="https://www.npmjs.org/install.sh"
 #
 OTHER_PACKAGES="git puppet vim mysql-client python-pip python-dateutil monit postfix"
 
-PACKAGES="${GERRIT_PACKAGES} ${MYSQL_PACKAGES} ${REDMINE_PACKAGES} ${MANAGESF_PACKAGES} ${ETHERPAD_PACKAGES} ${OTHER_PACKAGES}"
+#
+# Paste (lodgeit)
+#
+PASTE_PACKAGES="python-dev python-setuptools python-virtualenv build-essential python-imaging python-werkzeug python-babel python-jinja2 python-pygments python-sqlalchemy python-simplejson python-mysqldb"
+ 
+PACKAGES="${GERRIT_PACKAGES} ${MYSQL_PACKAGES} ${REDMINE_PACKAGES} ${MANAGESF_PACKAGES} ${ETHERPAD_PACKAGES} ${OTHER_PACKAGES} ${PASTE_PACKAGES}"
 
 # To remove (but maybe the the vm role should remove that) :
 do_chroot $dir rm /etc/apt/sources.list.d/hwraid.list
+
 
 update_repositories $dir
 install_ib_if_needed $ORIG $dir
@@ -129,6 +136,13 @@ EOF
     do_chroot $dir ln -s /usr/bin/nodejs /usr/bin/node
     do_chroot $dir sh /tmp/nmp-install.sh
     do_chroot $dir sh /var/www/etherpad-lite-1.4.0/bin/installDeps.sh
+
+    #
+    # Paste (Lodgeit)
+    #
+    do_chroot $dir mkdir -p /srv/lodgeit
+    do_chroot $dir git clone https://git.openstack.org/openstack-infra/lodgeit /srv/lodgeit/lodgeit --depth 1
+    do_chroot $dir bash -c 'cd /srv/lodgeit/lodgeit && git checkout c69f555032'  # latest commit as of 05. May 2014
 
     #
     # Jenkins

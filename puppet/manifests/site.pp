@@ -43,4 +43,5 @@ node /.*managesf.*/ inherits base {
 node /.*commonservices.*/ inherits base {
   include commonservices-apache
   include etherpad
+  include lodgeit
 }

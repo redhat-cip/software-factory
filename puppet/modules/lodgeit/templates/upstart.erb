@@ -1,0 +1,6 @@
+description "Lodgeit server"
+
+start on (local-filesystems and net-device-up)
+stop on runlevel [!2345]
+
+exec python /srv/lodgeit/manage.py runserver -h 127.0.0.1 -p 8080 

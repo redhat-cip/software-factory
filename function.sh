@@ -24,6 +24,7 @@ GERRIT_ADMIN_PASSWORD=userpass
 GERRIT_MYSQL_SECRET=''
 REDMINE_MYSQL_SECRET=''
 ETHERPAD_MYSQL_SECRET=''
+LODGEIT_MYSQL_SECRET=''
 
 #### Configuration generation
 function new_build {
@@ -64,7 +65,8 @@ function getip_from_yaml_devstack {
 }
 
 function generate_random_pswd {
-    echo `dd if=/dev/urandom bs=1 count=$1 2>/dev/null | base64 -w $1 | head -n1`
+    # The sed character replacement makes the base64-string URL safe; for example required by lodgeit
+    echo `dd if=/dev/urandom bs=1 count=$1 2>/dev/null | base64 -w $1 | head -n1 | sed -e 's#/#_#g;s#\+#-#g'`
 }
 
 function generate_cloudinit {
@@ -80,9 +82,11 @@ function generate_cloudinit {
     REDMINE_MYSQL_SECRET=$(generate_random_pswd 8)
     GERRIT_MYSQL_SECRET=$(generate_random_pswd 8)
     ETHERPAD_MYSQL_SECRET=$(generate_random_pswd 8)
+    LODGEIT_MYSQL_SECRET=$(generate_random_pswd 8)
     sed -i "s#REDMINE_MYSQL_SECRET#${REDMINE_MYSQL_SECRET}#" ${OUTPUT}/mysql.cloudinit
     sed -i "s#GERRIT_MYSQL_SECRET#${GERRIT_MYSQL_SECRET}#" ${OUTPUT}/mysql.cloudinit
     sed -i "s#ETHERPAD_MYSQL_SECRET#${ETHERPAD_MYSQL_SECRET}#" ${OUTPUT}/mysql.cloudinit
+    sed -i "s#LODGEIT_MYSQL_SECRET#${LODGEIT_MYSQL_SECRET}#" ${OUTPUT}/mysql.cloudinit
 }
 
 function generate_api_key() {
@@ -103,6 +107,7 @@ function generate_hiera {
     cp ../puppet/hiera/common.yaml ${OUTPUT}/common.yaml
     cp ../puppet/hiera/monit.yaml ${OUTPUT}/monit.yaml
     cp ../puppet/hiera/etherpad.yaml ${OUTPUT}/etherpad.yaml
+    cp ../puppet/hiera/lodgeit.yaml ${OUTPUT}/lodgeit.yaml
 
     # Hosts
     echo -e "hosts:\n  localhost:\n    ip: 127.0.0.1" > ${OUTPUT}/hosts.yaml
@@ -157,6 +162,11 @@ function generate_hiera {
     ETHERPAD_SESSION_KEY=$(generate_random_pswd 10)
     sed -i "s#SESSION_KEY#${ETHERPAD_SESSION_KEY}#" ${OUTPUT}/etherpad.yaml
     sed -i "s#ETHERPAD_MYSQL_SECRET#${ETHERPAD_MYSQL_SECRET}#" ${OUTPUT}/etherpad.yaml
+
+    # Lodgeit/Paste
+    LODGEIT_SESSION_KEY=$(generate_random_pswd 10)
+    sed -i "s#SESSION_KEY#${LODGEIT_SESSION_KEY}#" ${OUTPUT}/lodgeit.yaml
+    sed -i "s#LODGEIT_MYSQL_SECRET#${LODGEIT_MYSQL_SECRET}#" ${OUTPUT}/lodgeit.yaml
 }
 
 function generate_keys {
