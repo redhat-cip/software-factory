@@ -190,6 +190,13 @@ class TestGerrit(Base):
         plugins = gu.listPlugins()
         assert 'download-commands' in plugins
 
+    def test_ifexist_gravatar(self):
+        """ Test if gravatar plugin is present
+        """
+        gu = GerritUtil(config.GERRIT_SERVER, username=config.ADMIN_USER)
+        plugins = gu.listPlugins()
+        assert 'gravatar-avatar-provider' in plugins
+
     def test_check_download_commands(self):
         """ Test if download commands plugin works
         """
