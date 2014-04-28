@@ -94,8 +94,6 @@ class TestGerrit(Base):
         self.createProject(pname)
         un = config.ADMIN_USER
         gu = GerritUtil(config.GERRIT_SERVER, username=un)
-        hostkey = file("%s/.ssh/id_rsa.pub" % os.environ['HOME']).read()
-        hk_index = gu.addPubKey(hostkey)
         k_index = gu.addPubKey(config.USERS[un]["pubkey"])
         assert gu.isPrjExist(pname)
         priv_key_path = set_private_key(config.USERS[un]["privkey"])
@@ -108,18 +106,11 @@ class TestGerrit(Base):
         self.dirs_to_delete.append(os.path.dirname(clone_dir))
 
         gitu.add_commit_and_publish(clone_dir, "master", "Test commit")
-        changes = gu.rest.get('/a/changes/')
 
-        count = 0
-        change = None
-        for x in changes:
-            if x['project'] == pname:
-                count += 1
-                change = x
+        change_ids = gu.getMyChangesForProject(pname)
+        assert len(change_ids) == 1
+        change_id = change_ids[0]
 
-        assert count == 1
-
-        change_id = change['change_id']
         url = '/a/changes/%s/?o=LABELS' % change_id
         labels = gu.rest.get(url)['labels']
 
@@ -128,7 +119,6 @@ class TestGerrit(Base):
         assert 'Verified' in labels
         assert len(labels.keys()) is 3
 
-        gu.delPubKey(hk_index)
         gu.delPubKey(k_index)
 
     def test_review_submit_approval(self):
@@ -139,8 +129,6 @@ class TestGerrit(Base):
         self.createProject(pname, options)
         un = config.ADMIN_USER
         gu = GerritUtil(config.GERRIT_SERVER, username=un)
-        hostkey = file("%s/.ssh/id_rsa.pub" % os.environ['HOME']).read()
-        hk_index = gu.addPubKey(hostkey)
         k_index = gu.addPubKey(config.USERS[un]["pubkey"])
         assert gu.isPrjExist(pname)
         priv_key_path = set_private_key(config.USERS[un]["privkey"])
@@ -153,17 +141,10 @@ class TestGerrit(Base):
         self.dirs_to_delete.append(os.path.dirname(clone_dir))
 
         gitu.add_commit_and_publish(clone_dir, "master", "Test commit")
-        changes = gu.rest.get('/a/changes/')
-        count = 0
-        change = None
-        for x in changes:
-            if x['project'] == pname:
-                count += 1
-                change = x
 
-        assert count == 1
-
-        change_id = change['change_id']
+        change_ids = gu.getMyChangesForProject(pname)
+        assert len(change_ids) == 1
+        change_id = change_ids[0]
 
         gu.setPlus1CodeReview(change_id, "current")
         assert gu.submitPatch(change_id, "current") == 409
@@ -180,7 +161,6 @@ class TestGerrit(Base):
         gu_user2 = GerritUtil(config.GERRIT_SERVER, username=config.USER_2)
         gu_user2.setPlus2CodeReview(change_id, "current")
         assert gu.submitPatch(change_id, "current")['status'] == 'MERGED'
-        gu.delPubKey(hk_index)
         gu.delPubKey(k_index)
 
     def test_ifexist_download_commands(self):
@@ -197,6 +177,13 @@ class TestGerrit(Base):
         plugins = gu.listPlugins()
         assert 'gravatar-avatar-provider' in plugins
 
+    def test_ifexist_reviewers_by_blame(self):
+        """ Test if reviewers-by-blame plugin is present
+        """
+        gu = GerritUtil(config.GERRIT_SERVER, username=config.ADMIN_USER)
+        plugins = gu.listPlugins()
+        assert 'reviewers-by-blame' in plugins
+
     def test_check_download_commands(self):
         """ Test if download commands plugin works
         """
@@ -204,10 +191,8 @@ class TestGerrit(Base):
         self.createProject(pname)
         un = config.ADMIN_USER
         gu = GerritUtil(config.GERRIT_SERVER, username=un)
-        hostkey = file("%s/.ssh/id_rsa.pub" % os.environ['HOME']).read()
-        hk_index = gu.addPubKey(hostkey)
-        k_index = gu.addPubKey(config.USERS[un]["pubkey"])
         assert gu.isPrjExist(pname)
+        k_index = gu.addPubKey(config.USERS[un]["pubkey"])
         priv_key_path = set_private_key(config.USERS[un]["privkey"])
         gitu = GerritGitUtils(un,
                               priv_key_path,
@@ -218,17 +203,10 @@ class TestGerrit(Base):
         self.dirs_to_delete.append(os.path.dirname(clone_dir))
 
         gitu.add_commit_and_publish(clone_dir, "master", "Test commit")
-        changes = gu.rest.get('/a/changes/')
-        count = 0
-        change = None
-        for x in changes:
-            if x['project'] == pname:
-                count += 1
-                change = x
 
-        assert count == 1
-
-        change_id = change['change_id']
+        change_ids = gu.getMyChangesForProject(pname)
+        assert len(change_ids) == 1
+        change_id = change_ids[0]
         resp = gu.rest.get('/a/changes/%s/?o=CURRENT_REVISION' % change_id)
         assert "current_revision" in resp
         assert "revisions" in resp
@@ -250,5 +228,67 @@ class TestGerrit(Base):
         fetch = resp["revisions"][current_rev]["fetch"]
         assert len(fetch.keys()) > 0
 
-        gu.delPubKey(hk_index)
         gu.delPubKey(k_index)
+
+    def test_check_add_automatic_reviewers(self):
+        """ Test if reviewers-by-blame plugin works
+        """
+        pname = 'p_%s' % create_random_str()
+        options = {'core-group': 'user2'}
+        self.createProject(pname, options)
+        first_u = config.ADMIN_USER
+        gu_first_u = GerritUtil(config.GERRIT_SERVER, username=first_u)
+        assert gu_first_u.isPrjExist(pname)
+        # Push data in the create project as Admin user
+        k1_index = gu_first_u.addPubKey(config.USERS[first_u]["pubkey"])
+        priv_key_path = set_private_key(config.USERS[first_u]["privkey"])
+        gitu = GerritGitUtils(first_u,
+                              priv_key_path,
+                              config.USERS[first_u]['email'])
+        url = "ssh://%s@%s/%s" % (first_u, config.GERRIT_HOST,
+                                  pname)
+        clone_dir = gitu.clone(url, pname)
+        self.dirs_to_delete.append(os.path.dirname(clone_dir))
+        data = ['this', 'is', 'a', 'couple', 'of', 'lines']
+        clone_dir = gitu.clone(url, pname)
+        gitu.add_commit_and_publish(clone_dir, "master", "Test commit",
+                                    fname="file",
+                                    data="\n".join(data))
+        # Get the change id
+        change_ids = gu_first_u.getMyChangesForProject(pname)
+        assert len(change_ids) == 1
+        change_id = change_ids[0]
+        # Merge the change
+        gu_first_u.setPlus2CodeReview(change_id, "current")
+        gu_first_u.setPlus1Verified(change_id, "current")
+        gu_first_u.setPlus1Approved(change_id, "current")
+        second_u = config.USER_2
+        gu_second_u = GerritUtil(config.GERRIT_SERVER, username=second_u)
+        gu_second_u.setPlus2CodeReview(change_id, "current")
+        assert gu_first_u.submitPatch(change_id, "current")['status'] == \
+            'MERGED'
+        # Change the file we have commited with Admin user
+        k2_index = gu_second_u.addPubKey(config.USERS[second_u]["pubkey"])
+        priv_key_path = set_private_key(config.USERS[second_u]["privkey"])
+        gitu = GerritGitUtils(second_u,
+                              priv_key_path,
+                              config.USERS[second_u]['email'])
+        url = "ssh://%s@%s/%s" % (second_u, config.GERRIT_HOST,
+                                  pname)
+        clone_dir = gitu.clone(url, pname)
+        self.dirs_to_delete.append(os.path.dirname(clone_dir))
+        data = ['this', 'is', 'some', 'lines']
+        gitu.add_commit_and_publish(clone_dir, "master", "Test commit",
+                                    fname="file",
+                                    data="\n".join(data))
+        # Get the change id
+        change_ids = gu_second_u.getMyChangesForProject(pname)
+        assert len(change_ids) == 1
+        change_id = change_ids[0]
+        # Verify first_u has been automatically added to reviewers
+        reviewers = gu_second_u.getReviewers(change_id)
+        assert len(reviewers) == 1
+        self.assertEqual(reviewers[0], first_u)
+
+        gu_first_u.delPubKey(k1_index)
+        gu_second_u.delPubKey(k2_index)

@@ -86,7 +86,15 @@ class gerrit ($settings = hiera_hash('gerrit', '')) {
     group   => 'gerrit',
     mode    => '0640',
     source  => '/root/gerrit_data_source/replication.jar',
-    require => File['/home/gerrit/site_path/plugins'],
+    require => file['/home/gerrit/site_path/plugins'],
+  }
+  file { '/home/gerrit/site_path/plugins/reviewersbyblame-2.8.1.jar':
+    ensure  => present,
+    owner   => 'gerrit',
+    group   => 'gerrit',
+    mode    => '0640',
+    source  => '/root/gerrit_data_source/reviewersbyblame-2.8.1.jar',
+    require => file['/home/gerrit/site_path/plugins'],
   }
   file { '/home/gerrit/site_path/plugins/gravatar.jar':
     ensure  => present,
@@ -271,6 +279,7 @@ class gerrit ($settings = hiera_hash('gerrit', '')) {
                   File['/home/gerrit/site_path/plugins/replication.jar'],
                   File['/home/gerrit/site_path/plugins/gravatar.jar'],
                   File['/home/gerrit/site_path/plugins/delete-project.jar'],
+                  File['/home/gerrit/site_path/plugins/reviewersbyblame-2.8.1.jar'],
                   File['/home/gerrit/site_path/lib/mysql-connector-java-5.1.21.jar'],
                   File['/home/gerrit/site_path/lib/bcprov-jdk16-144.jar'],
                   File['/home/gerrit/site_path/plugins/download-commands.jar'],

@@ -115,7 +115,8 @@ class GerritGitUtils(Tool):
     def __init__(self, user, priv_key_path, email):
         Tool.__init__(self)
         self.user = user
-        self.email = "%s <%s>" % (self.user, email)
+        self.email = email
+        self.author = "%s <%s>" % (self.user, email)
         self.priv_key_path = priv_key_path
         self.tempdir = tempfile.mkdtemp()
         ssh_wrapper = "ssh -o StrictHostKeyChecking=no -i " \
@@ -127,6 +128,10 @@ class GerritGitUtils(Tool):
         self.env['GIT_COMMITTER_NAME'] = self.user
         self.env['GIT_COMMITTER_EMAIL'] = self.email
 
+    def config_review(self, clone_dir):
+        self.exe("ssh-agent bash -c 'ssh-add %s; git review -s'" %
+                 self.priv_key_path, clone_dir)
+
     def clone(self, uri, target):
         assert uri.startswith('ssh://')
         cmd = "git clone %s %s" % (uri, target)
@@ -135,7 +140,7 @@ class GerritGitUtils(Tool):
         assert os.path.isdir(clone)
         self.exe('git config --add gitreview.username %s' %
                  self.user, clone)
-        self.exe('git review -s', clone)
+        self.config_review(clone)
         return clone
 
     def fetch_meta_config(self, clone_dir):
@@ -149,7 +154,7 @@ class GerritGitUtils(Tool):
         self.exe('git checkout -b %s' % branch)
         file(os.path.join(clone_dir, 'testfile'), 'w').write('data')
         self.exe('git add testfile', clone_dir)
-        self.exe("git commit --author '%s' testfile" % self.email, clone_dir)
+        self.exe("git commit --author '%s' testfile" % self.author, clone_dir)
 
     def direct_push_branch(self, clone_dir, branch):
         self.exe('git checkout %s' % branch, clone_dir)
@@ -162,14 +167,18 @@ class GerritGitUtils(Tool):
         self.exe('git checkout master', clone_dir)
 
     def add_commit_and_publish(self, clone_dir, branch,
-                               commit_msg, commit_author=None):
+                               commit_msg, commit_author=None,
+                               fname=None, data=None):
         self.exe('git checkout %s' % branch, clone_dir)
-        fname = create_random_str()
-        file(os.path.join(clone_dir, fname), 'w').write('data')
+        if not fname:
+            fname = create_random_str()
+        if not data:
+            data = 'data'
+        file(os.path.join(clone_dir, fname), 'w').write(data)
         self.exe('git add %s' % fname, clone_dir)
         author = '%s <%s>' % (commit_author,
                               config.USERS[commit_author]['email']) \
-                 if commit_author else self.email
+                 if commit_author else self.author
         self.exe("git commit --author '%s' -m '%s'" %
                  (author, commit_msg), clone_dir)
         self.exe('git review -v', clone_dir)
@@ -300,6 +309,15 @@ class GerritUtil:
             return r
         except Exception as e:
             return e.response.status_code
+
+    def getReviewers(self, changeid):
+        resp = self.rest.get('/a/changes/%s/reviewers' % changeid)
+        return [r['username'] for r in resp]
+
+    def getMyChangesForProject(self, project):
+        changes = self.rest.get(
+            '/a/changes/?q=owner:self+project:%s' % project)
+        return [c['change_id'] for c in changes]
 
     def listPlugins(self):
         plugins = self.rest.get('/a/plugins/?all')
