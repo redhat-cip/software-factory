@@ -44,3 +44,10 @@ commonservices:
     - commonservices
   :username: root
   :hostname: SF_PREFIX-commonservices
+
+managesf:
+  :roles:
+    - base
+    - managesf
+  :username: root
+  :hostname: SF_PREFIX-managesf
