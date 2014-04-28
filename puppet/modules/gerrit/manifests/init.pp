@@ -96,6 +96,14 @@ class gerrit ($settings = hiera_hash('gerrit', '')) {
     source  => '/root/gerrit_data_source/delete-project.jar',
     require => File['/home/gerrit/site_path/plugins'],
   }
+  file { '/home/gerrit/site_path/plugins/download-commands.jar':
+    ensure  => present,
+    owner   => 'gerrit',
+    group   => 'gerrit',
+    mode    => '0640',
+    source  => '/root/gerrit_data_source/download-commands.jar',
+    require => File['/home/gerrit/site_path/plugins'],
+  }
   file { '/home/gerrit/site_path/lib/mysql-connector-java-5.1.21.jar':
     ensure  => present,
     owner   => 'gerrit',
@@ -255,6 +263,8 @@ class gerrit ($settings = hiera_hash('gerrit', '')) {
                   File['/home/gerrit/site_path/plugins/replication.jar'],
                   File['/home/gerrit/site_path/lib/mysql-connector-java-5.1.21.jar'],
                   File['/home/gerrit/site_path/lib/bcprov-jdk16-144.jar'],
+                  File['/home/gerrit/site_path/plugins/download-commands.jar'],
+                  File['/home/gerrit/site_path/plugins/delete-project.jar'],
                   File['/home/gerrit/site_path/hooks/hooks.config'],
                   File['/home/gerrit/site_path/etc/gerrit.config'],
                   File['/home/gerrit/site_path/etc/secure.config'],

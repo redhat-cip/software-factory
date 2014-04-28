@@ -301,6 +301,21 @@ class GerritUtil:
         except Exception as e:
             return e.response.status_code
 
+    def listPlugins(self):
+        plugins = self.rest.get('/a/plugins/?all')
+        ret = []
+
+        for k, v in plugins.items():
+            ret.append(k)
+
+        return plugins
+
+    def enablePlugin(self, plugin):
+        self.rest.post('/a/plugins/%s/gerrit~enable' % plugin)
+
+    def disablePlugin(self, plugin):
+        self.rest.post('/a/plugins/%s/gerrit~disable' % plugin)
+
 
 class RedmineUtil:
     def __init__(self, url, username=None, apiKey=None):

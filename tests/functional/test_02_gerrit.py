@@ -182,3 +182,66 @@ class TestGerrit(Base):
         assert gu.submitPatch(change_id, "current")['status'] == 'MERGED'
         gu.delPubKey(hk_index)
         gu.delPubKey(k_index)
+
+    def test_ifexist_download_commands(self):
+        """ Test if download-commands plugin is present
+        """
+        gu = GerritUtil(config.GERRIT_SERVER, username=config.ADMIN_USER)
+        plugins = gu.listPlugins()
+        assert 'download-commands' in plugins
+
+    def test_check_download_commands(self):
+        """ Test if download commands plugin works
+        """
+        pname = 'p_%s' % create_random_str()
+        self.createProject(pname)
+        un = config.ADMIN_USER
+        gu = GerritUtil(config.GERRIT_SERVER, username=un)
+        hostkey = file("%s/.ssh/id_rsa.pub" % os.environ['HOME']).read()
+        hk_index = gu.addPubKey(hostkey)
+        k_index = gu.addPubKey(config.USERS[un]["pubkey"])
+        assert gu.isPrjExist(pname)
+        priv_key_path = set_private_key(config.USERS[un]["privkey"])
+        gitu = GerritGitUtils(un,
+                              priv_key_path,
+                              config.USERS[un]['email'])
+        url = "ssh://%s@%s/%s" % (un, config.GERRIT_HOST,
+                                  pname)
+        clone_dir = gitu.clone(url, pname)
+        self.dirs_to_delete.append(os.path.dirname(clone_dir))
+
+        gitu.add_commit_and_publish(clone_dir, "master", "Test commit")
+        changes = gu.rest.get('/a/changes/')
+        count = 0
+        change = None
+        for x in changes:
+            if x['project'] == pname:
+                count += 1
+                change = x
+
+        assert count == 1
+
+        change_id = change['change_id']
+        resp = gu.rest.get('/a/changes/%s/?o=CURRENT_REVISION' % change_id)
+        assert "current_revision" in resp
+        assert "revisions" in resp
+
+        current_rev = resp["current_revision"]
+
+        fetch = resp["revisions"][current_rev]["fetch"]
+        assert len(fetch.keys()) > 0
+
+        # disable and check if the fetch has anything
+        gu.disablePlugin("download-commands")
+        resp = gu.rest.get('/a/changes/%s/?o=CURRENT_REVISION' % change_id)
+        fetch = resp["revisions"][current_rev]["fetch"]
+        assert len(fetch.keys()) is 0
+
+        # enable the plugin and check if the fetch information is valid
+        gu.enablePlugin("download-commands")
+        resp = gu.rest.get('/a/changes/%s/?o=CURRENT_REVISION' % change_id)
+        fetch = resp["revisions"][current_rev]["fetch"]
+        assert len(fetch.keys()) > 0
+
+        gu.delPubKey(hk_index)
+        gu.delPubKey(k_index)
