@@ -27,10 +27,15 @@ GERRIT_ADMIN_PASSWORD=${ADMIN_PASSWORD}
 
 REDMINE_ADMIN=${ADMIN_NAME}
 
+JENKINS_ADMIN=${ADMIN_NAME}
+
 GERRIT_MYSQL_SECRET=''
 REDMINE_MYSQL_SECRET=''
 ETHERPAD_MYSQL_SECRET=''
 LODGEIT_MYSQL_SECRET=''
+
+LDAP_ADMIN_DN="cn=admin,dc=example,dc=com"
+LDAP_ADMIN_PASSWORD=secret
 
 #### Configuration generation
 function new_build {
@@ -162,8 +167,12 @@ function generate_hiera {
 
     # Redmine Credencials ID
     # TODO: Will be randomly generated
+    # using printf instead of echo along with base64 encoding, as echo was not giving correct values
     JENKINS_CREDS_ID="a6feb755-3493-4635-8ede-216127d31bb0"
     cat ../puppet/hiera/jenkins.yaml | sed "s#JENKINS_CREDS_ID#${JENKINS_CREDS_ID}#" > ${OUTPUT}/jenkins.yaml
+    sed -i "s#LDAP_ADMIN_DN#${LDAP_ADMIN_DN}#" ${OUTPUT}/jenkins.yaml
+    sed -i "s#LDAP_ADMIN_PASSWORD_BASE64#$(printf ${LDAP_ADMIN_PASSWORD} | base64)#" ${OUTPUT}/jenkins.yaml
+    sed -i "s#JENKINS_ADMIN_NAME#${JENKINS_ADMIN}#" ${OUTPUT}/jenkins.yaml
 
     # Etherpad
     ETHERPAD_SESSION_KEY=$(generate_random_pswd 10)

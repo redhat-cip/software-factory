@@ -9,3 +9,8 @@ jenkins:
   jenkins_password: userpass
   credential_id: JENKINS_CREDS_ID
   slaves: [sf-jenkins-slave01, sf-jenkins-slave02]
+  jenkins_admin_username: JENKINS_ADMIN_NAME
+  ldap_userSearchBase: ou=Users
+  ldap_userSearch: cn={0}
+  ldap_managerDN: LDAP_ADMIN_DN
+  ldap_managerPassword: LDAP_ADMIN_PASSWORD_BASE64

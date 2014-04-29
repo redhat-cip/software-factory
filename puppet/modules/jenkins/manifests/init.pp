@@ -18,10 +18,14 @@ class jenkins ($settings = hiera_hash('jenkins', '')) {
     ensure  => "running",
     enable  => "true",
   }
-  user { "jenkins":
-    password => '$6$I.XrOOwo$lpbpxQnBMoHDZ2dpcsYZD.MzMjusR0JVt6nTld05TDMej0MHJeEzX0YVuhdlEk01jx.IZO8bAn4DIlrwDVtOQ1',
-    groups => ['shadow'],
+  user { 'jenkins':
+    ensure => present,
   }
+
+  group { 'jenkins':
+    ensure => present,
+  }
+
   file {'/var/lib/jenkins/config.xml':
     ensure  => file,
     mode    => 0644,

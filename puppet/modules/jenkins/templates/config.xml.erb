@@ -5,9 +5,84 @@
   <numExecutors>2</numExecutors>
   <mode>NORMAL</mode>
   <useSecurity>true</useSecurity>
-  <authorizationStrategy class="hudson.security.FullControlOnceLoggedInAuthorizationStrategy"/>
-  <securityRealm class="hudson.security.PAMSecurityRealm" plugin="pam-auth@1.1">
-    <serviceName>jenkins</serviceName>
+  <authorizationStrategy class="hudson.security.GlobalMatrixAuthorizationStrategy">
+    <permission>com.cloudbees.plugins.credentials.CredentialsProvider.Create:<%= @settings['jenkins_username'] %></permission>
+    <permission>com.cloudbees.plugins.credentials.CredentialsProvider.Create:<%= @settings['jenkins_admin_username'] %></permission>
+    <permission>com.cloudbees.plugins.credentials.CredentialsProvider.Delete:<%= @settings['jenkins_username'] %></permission>
+    <permission>com.cloudbees.plugins.credentials.CredentialsProvider.Delete:<%= @settings['jenkins_admin_username'] %></permission>
+    <permission>com.cloudbees.plugins.credentials.CredentialsProvider.ManageDomains:<%= @settings['jenkins_username'] %></permission>
+    <permission>com.cloudbees.plugins.credentials.CredentialsProvider.ManageDomains:<%= @settings['jenkins_admin_username'] %></permission>
+    <permission>com.cloudbees.plugins.credentials.CredentialsProvider.Update:<%= @settings['jenkins_username'] %></permission>
+    <permission>com.cloudbees.plugins.credentials.CredentialsProvider.Update:<%= @settings['jenkins_admin_username'] %></permission>
+    <permission>com.cloudbees.plugins.credentials.CredentialsProvider.View:<%= @settings['jenkins_username'] %></permission>
+    <permission>com.cloudbees.plugins.credentials.CredentialsProvider.View:<%= @settings['jenkins_admin_username'] %></permission>
+    <permission>com.sonyericsson.hudson.plugins.gerrit.trigger.PluginImpl.ManualTrigger:<%= @settings['jenkins_username'] %></permission>
+    <permission>com.sonyericsson.hudson.plugins.gerrit.trigger.PluginImpl.ManualTrigger:<%= @settings['jenkins_admin_username'] %></permission>
+    <permission>com.sonyericsson.hudson.plugins.gerrit.trigger.PluginImpl.Retrigger:<%= @settings['jenkins_username'] %></permission>
+    <permission>com.sonyericsson.hudson.plugins.gerrit.trigger.PluginImpl.Retrigger:<%= @settings['jenkins_admin_username'] %></permission>
+    <permission>hudson.model.Computer.Build:<%= @settings['jenkins_username'] %></permission>
+    <permission>hudson.model.Computer.Build:<%= @settings['jenkins_admin_username'] %></permission>
+    <permission>hudson.model.Computer.Configure:<%= @settings['jenkins_username'] %></permission>
+    <permission>hudson.model.Computer.Configure:<%= @settings['jenkins_admin_username'] %></permission>
+    <permission>hudson.model.Computer.Connect:<%= @settings['jenkins_username'] %></permission>
+    <permission>hudson.model.Computer.Connect:<%= @settings['jenkins_admin_username'] %></permission>
+    <permission>hudson.model.Computer.Create:<%= @settings['jenkins_username'] %></permission>
+    <permission>hudson.model.Computer.Create:<%= @settings['jenkins_admin_username'] %></permission>
+    <permission>hudson.model.Computer.Delete:<%= @settings['jenkins_username'] %></permission>
+    <permission>hudson.model.Computer.Delete:<%= @settings['jenkins_admin_username'] %></permission>
+    <permission>hudson.model.Computer.Disconnect:<%= @settings['jenkins_username'] %></permission>
+    <permission>hudson.model.Computer.Disconnect:<%= @settings['jenkins_admin_username'] %></permission>
+    <permission>hudson.model.Hudson.Administer:<%= @settings['jenkins_admin_username'] %></permission>
+    <permission>hudson.model.Hudson.ConfigureUpdateCenter:<%= @settings['jenkins_username'] %></permission>
+    <permission>hudson.model.Hudson.ConfigureUpdateCenter:<%= @settings['jenkins_admin_username'] %></permission>
+    <permission>hudson.model.Hudson.Read:anonymous</permission>
+    <permission>hudson.model.Hudson.Read:<%= @settings['jenkins_username'] %></permission>
+    <permission>hudson.model.Hudson.Read:<%= @settings['jenkins_admin_username'] %></permission>
+    <permission>hudson.model.Hudson.RunScripts:<%= @settings['jenkins_username'] %></permission>
+    <permission>hudson.model.Hudson.RunScripts:<%= @settings['jenkins_admin_username'] %></permission>
+    <permission>hudson.model.Hudson.UploadPlugins:<%= @settings['jenkins_username'] %></permission>
+    <permission>hudson.model.Hudson.UploadPlugins:<%= @settings['jenkins_admin_username'] %></permission>
+    <permission>hudson.model.Item.Build:<%= @settings['jenkins_username'] %></permission>
+    <permission>hudson.model.Item.Build:<%= @settings['jenkins_admin_username'] %></permission>
+    <permission>hudson.model.Item.Cancel:<%= @settings['jenkins_username'] %></permission>
+    <permission>hudson.model.Item.Cancel:<%= @settings['jenkins_admin_username'] %></permission>
+    <permission>hudson.model.Item.Configure:<%= @settings['jenkins_username'] %></permission>
+    <permission>hudson.model.Item.Configure:<%= @settings['jenkins_admin_username'] %></permission>
+    <permission>hudson.model.Item.Create:<%= @settings['jenkins_username'] %></permission>
+    <permission>hudson.model.Item.Create:<%= @settings['jenkins_admin_username'] %></permission>
+    <permission>hudson.model.Item.Delete:<%= @settings['jenkins_username'] %></permission>
+    <permission>hudson.model.Item.Delete:<%= @settings['jenkins_admin_username'] %></permission>
+    <permission>hudson.model.Item.Discover:<%= @settings['jenkins_username'] %></permission>
+    <permission>hudson.model.Item.Discover:<%= @settings['jenkins_admin_username'] %></permission>
+    <permission>hudson.model.Item.Read:anonymous</permission>
+    <permission>hudson.model.Item.Read:<%= @settings['jenkins_username'] %></permission>
+    <permission>hudson.model.Item.Read:<%= @settings['jenkins_admin_username'] %></permission>
+    <permission>hudson.model.Item.Workspace:<%= @settings['jenkins_username'] %></permission>
+    <permission>hudson.model.Item.Workspace:<%= @settings['jenkins_admin_username'] %></permission>
+    <permission>hudson.model.Run.Delete:<%= @settings['jenkins_username'] %></permission>
+    <permission>hudson.model.Run.Delete:<%= @settings['jenkins_admin_username'] %></permission>
+    <permission>hudson.model.Run.Update:<%= @settings['jenkins_username'] %></permission>
+    <permission>hudson.model.Run.Update:<%= @settings['jenkins_admin_username'] %></permission>
+    <permission>hudson.model.View.Configure:<%= @settings['jenkins_username'] %></permission>
+    <permission>hudson.model.View.Configure:<%= @settings['jenkins_admin_username'] %></permission>
+    <permission>hudson.model.View.Create:<%= @settings['jenkins_username'] %></permission>
+    <permission>hudson.model.View.Create:<%= @settings['jenkins_admin_username'] %></permission>
+    <permission>hudson.model.View.Delete:<%= @settings['jenkins_username'] %></permission>
+    <permission>hudson.model.View.Delete:<%= @settings['jenkins_admin_username'] %></permission>
+    <permission>hudson.model.View.Read:<%= @settings['jenkins_username'] %></permission>
+    <permission>hudson.model.View.Read:<%= @settings['jenkins_admin_username'] %></permission>
+    <permission>hudson.scm.SCM.Tag:<%= @settings['jenkins_username'] %></permission>
+    <permission>hudson.scm.SCM.Tag:<%= @settings['jenkins_admin_username'] %></permission>
+  </authorizationStrategy>
+  <securityRealm class="hudson.security.LDAPSecurityRealm" plugin="ldap@1.6">
+    <server><%= @settings['ldap_uri'] %></server>
+    <rootDN><%= @settings['ldap_root_dn'] %></rootDN>
+    <inhibitInferRootDN>false</inhibitInferRootDN>
+    <userSearchBase><%= @settings['ldap_userSearchBase'] %></userSearchBase>
+    <userSearch><%= @settings['ldap_userSearch'] %></userSearch>
+    <managerDN><%= @settings['ldap_managerDN'] %></managerDN>
+    <managerPassword><%= @settings['ldap_managerPassword'] %></managerPassword>
+    <disableMailAddressResolver>false</disableMailAddressResolver>
   </securityRealm>
   <disableRememberMe>false</disableRememberMe>
   <projectNamingStrategy class="jenkins.model.ProjectNamingStrategy$DefaultProjectNamingStrategy"/>
