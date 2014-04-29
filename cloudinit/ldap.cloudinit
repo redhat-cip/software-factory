@@ -90,6 +90,6 @@ runcmd:
  - ldapadd -x -D cn=admin,dc=example,dc=com -w secret -f /root/groups_ou.ldif
  - ldapadd -x -D cn=admin,dc=example,dc=com -w secret -f /root/groups.ldif
  - ldapmodify -Q -Y EXTERNAL -H ldapi:/// -f /root/disable_anon_frontend.ldif
- - ldapmodify -Q -Y EXTERNAL -H ldapi:/// -f /root/disable_anon_frontend.ldif
+ - ldapmodify -Q -Y EXTERNAL -H ldapi:/// -f /root/disable_anon_backend.ldif
  - echo PUPPETMASTER SF_PREFIX-puppetmaster.pub >> /etc/hosts
  - sed -i -e '0,/^$/s/^$/server=SF_PREFIX-puppetmaster.pub\n/g' /etc/puppet/puppet.conf
