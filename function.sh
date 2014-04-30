@@ -16,10 +16,16 @@
 
 BUILD=${BUILD:-../build}
 
+ADMIN_NAME=user1
+ADMIN_MAIL=user1@example.com
+ADMIN_PASSWORD=userpass
+
 # TODO: Should be moved in other place maybe a config file for bootstrap scripts ?
-GERRIT_ADMIN=user1
-GERRIT_ADMIN_MAIL=user1@example.com
-GERRIT_ADMIN_PASSWORD=userpass
+GERRIT_ADMIN=${ADMIN_NAME}
+GERRIT_ADMIN_MAIL=${ADMIN_MAIL}
+GERRIT_ADMIN_PASSWORD=${ADMIN_PASSWORD}
+
+REDMINE_ADMIN=${ADMIN_NAME}
 
 GERRIT_MYSQL_SECRET=''
 REDMINE_MYSQL_SECRET=''
@@ -152,6 +158,7 @@ function generate_hiera {
     # Redmine API key
     cat ../puppet/hiera/redmine.yaml | sed "s#REDMINE_API_KEY#${REDMINE_API_KEY}#" > ${OUTPUT}/redmine.yaml
     sed -i "s#REDMINE_MYSQL_SECRET#${REDMINE_MYSQL_SECRET}#" ${OUTPUT}/redmine.yaml
+    sed -i "s#REDMINE_ADMIN_NAME#${REDMINE_ADMIN}#" ${OUTPUT}/redmine.yaml
 
     # Redmine Credencials ID
     # TODO: Will be randomly generated

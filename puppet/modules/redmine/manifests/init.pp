@@ -166,4 +166,20 @@ class redmine ($settings = hiera_hash('redmine', ''),$ldap_sync_settings = hiera
     require     =>  Exec['create_db'],
   }
 
+  file { '/root/configure-admin-user.sql':
+    ensure  => present,
+    mode    => '0640',
+    content => template('redmine/configure-admin-user.sql.erb'),
+    replace => true,
+  }
+
+  exec {'configure-admin-user':
+    command     => "mysql -u redmine redmine -p${mysql_password} -h ${mysql_url} < /root/configure-admin-user.sql",
+    path        => '/usr/bin/:/bin/',
+    cwd         => '/usr/bin',
+    refreshonly => true,
+    subscribe   => File['/root/configure-admin-user.sql'],
+    require     => Exec['ldap_sync_users'],
+  }
+
 }

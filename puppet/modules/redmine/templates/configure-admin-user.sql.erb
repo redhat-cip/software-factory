@@ -1,0 +1,9 @@
+SET @api_key="<%= @settings['issues_tracker_api_key'] %>";
+SET @username="<%= @settings['redmine_admin_username'] %>";
+
+UPDATE users SET admin = '1' WHERE login=@username;
+DELETE FROM users WHERE login='admin';
+SELECT id INTO @user_id FROM users WHERE login=@username;
+INSERT INTO tokens (user_id, action, value, created_on) VALUES(@user_id, 'api', @api_key, CURRENT_TIMESTAMP());
+
+

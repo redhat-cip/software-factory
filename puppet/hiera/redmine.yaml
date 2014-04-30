@@ -14,6 +14,7 @@ redmine:
   ldap_firstname: cn
   ldap_lastname: sn
   ldap_mail: mail
+  redmine_admin_username: REDMINE_ADMIN_NAME
 
 redmine_ldap_setting:
   name: plugin_redmine_ldap_sync
