@@ -21,6 +21,7 @@ gerrit:
   ldap_group_member_pattern: (|(roleOccupant=${username})(gidNumber=${gidNumber}))
   ldap_account_email_address: mail
   ldap_account_ssh_username: cn
+  ldap_ssl_verify: true
   http_basic_auth: true
   gerrit_admin_username: GERRIT_ADMIN_NAME
   gerrit_admin_password: GERRIT_ADMIN_PASSWORD
