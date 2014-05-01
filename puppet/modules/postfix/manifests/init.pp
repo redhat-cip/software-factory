@@ -18,6 +18,11 @@ class postfix ($settings = hiera_hash('postfix', '')) {
     ensure => 'installed',
   }
 
+  exec { '/etc/mailname':
+    command => 'hostname --fqdn > /etc/mailname',
+    path    => '/usr/sbin/:/usr/bin/:/bin/',
+  }
+
   file { '/etc/postfix':
     ensure  => directory,
     require => Package['postfix']
@@ -35,7 +40,7 @@ class postfix ($settings = hiera_hash('postfix', '')) {
     enable      => true,
     hasrestart  => true,
     provider    => debian,
-    require     => Package['postfix'],
+    require     => [Package['postfix'], Exec['/etc/mailname']],
     subscribe   => File['/etc/postfix/main.cf'],
   }
 
