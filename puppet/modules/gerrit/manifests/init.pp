@@ -88,7 +88,7 @@ class gerrit ($settings = hiera_hash('gerrit', '')) {
     owner   => 'gerrit',
     group   => 'gerrit',
     mode    => '0640',
-    source  => '/root/gerrit_data_source/replication.jar',
+    source  => 'puppet:///modules/gerrit/replication.jar',
     require => file['/home/gerrit/site_path/plugins'],
   }
   file { '/home/gerrit/site_path/plugins/reviewersbyblame-2.8.1.jar':
@@ -96,7 +96,7 @@ class gerrit ($settings = hiera_hash('gerrit', '')) {
     owner   => 'gerrit',
     group   => 'gerrit',
     mode    => '0640',
-    source  => '/root/gerrit_data_source/reviewersbyblame-2.8.1.jar',
+    source  => 'puppet:///modules/gerrit/reviewersbyblame-2.8.1.jar',
     require => file['/home/gerrit/site_path/plugins'],
   }
   file { '/home/gerrit/site_path/plugins/gravatar.jar':
@@ -104,7 +104,7 @@ class gerrit ($settings = hiera_hash('gerrit', '')) {
     owner   => 'gerrit',
     group   => 'gerrit',
     mode    => '0640',
-    source  => '/root/gerrit_data_source/gravatar.jar',
+    source  => 'puppet:///modules/gerrit/gravatar.jar',
     require => File['/home/gerrit/site_path/plugins'],
   }
   file { '/home/gerrit/site_path/plugins/delete-project.jar':
@@ -112,7 +112,7 @@ class gerrit ($settings = hiera_hash('gerrit', '')) {
     owner   => 'gerrit',
     group   => 'gerrit',
     mode    => '0640',
-    source  => '/root/gerrit_data_source/delete-project.jar',
+    source  => 'puppet:///modules/gerrit/delete-project.jar',
     require => File['/home/gerrit/site_path/plugins'],
   }
   file { '/home/gerrit/site_path/plugins/download-commands.jar':
@@ -120,7 +120,7 @@ class gerrit ($settings = hiera_hash('gerrit', '')) {
     owner   => 'gerrit',
     group   => 'gerrit',
     mode    => '0640',
-    source  => '/root/gerrit_data_source/download-commands.jar',
+    source  => 'puppet:///modules/gerrit/download-commands.jar',
     require => File['/home/gerrit/site_path/plugins'],
   }
   file { '/home/gerrit/site_path/lib/mysql-connector-java-5.1.21.jar':
