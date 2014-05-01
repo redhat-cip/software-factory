@@ -36,7 +36,7 @@ class ldap () {
 
     file { '/etc/monit/conf.d/ldap':
         ensure  => present,
-        source  => 'puppet:///modules/ldap/monit',
+        content => template('ldap/monit.erb'),
         require => [Package['monit'], File['/etc/monit/conf.d']],
         notify  => Service['monit'],
     }
