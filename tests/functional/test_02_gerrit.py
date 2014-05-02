@@ -108,16 +108,16 @@ class TestGerrit(Base):
         gitu.add_commit_and_publish(clone_dir, "master", "Test commit")
 
         change_ids = gu.getMyChangesForProject(pname)
-        assert len(change_ids) == 1
+        self.assertEqual(len(change_ids), 1)
         change_id = change_ids[0]
 
         url = '/a/changes/%s/?o=LABELS' % change_id
         labels = gu.rest.get(url)['labels']
 
-        assert 'Approved' in labels
-        assert 'Code-Review' in labels
-        assert 'Verified' in labels
-        assert len(labels.keys()) is 3
+        self.assertIn('Approved', labels)
+        self.assertIn('Code-Review', labels)
+        self.assertIn('Verified', labels)
+        self.assertEqual(len(labels.keys()), 3)
 
         gu.delPubKey(k_index)
 
@@ -143,24 +143,25 @@ class TestGerrit(Base):
         gitu.add_commit_and_publish(clone_dir, "master", "Test commit")
 
         change_ids = gu.getMyChangesForProject(pname)
-        assert len(change_ids) == 1
+        self.assertEqual(len(change_ids), 1)
         change_id = change_ids[0]
 
         gu.setPlus1CodeReview(change_id, "current")
-        assert gu.submitPatch(change_id, "current") == 409
+        self.assertEqual(gu.submitPatch(change_id, "current"), 409)
 
         gu.setPlus1Verified(change_id, "current")
-        assert gu.submitPatch(change_id, "current") == 409
+        self.assertEqual(gu.submitPatch(change_id, "current"), 409)
 
         gu.setPlus1Approved(change_id, "current")
-        assert gu.submitPatch(change_id, "current") == 409
+        self.assertEqual(gu.submitPatch(change_id, "current"), 409)
 
         gu.setPlus2CodeReview(change_id, "current")
-        assert gu.submitPatch(change_id, "current") == 409
+        self.assertEqual(gu.submitPatch(change_id, "current"), 409)
 
         gu_user2 = GerritUtil(config.GERRIT_SERVER, username=config.USER_2)
         gu_user2.setPlus2CodeReview(change_id, "current")
-        assert gu.submitPatch(change_id, "current")['status'] == 'MERGED'
+        self.assertEqual(
+            gu.submitPatch(change_id, "current")['status'], 'MERGED')
         gu.delPubKey(k_index)
 
     def test_ifexist_download_commands(self):
@@ -168,21 +169,21 @@ class TestGerrit(Base):
         """
         gu = GerritUtil(config.GERRIT_SERVER, username=config.ADMIN_USER)
         plugins = gu.listPlugins()
-        assert 'download-commands' in plugins
+        self.assertIn('download-commands', plugins)
 
     def test_ifexist_gravatar(self):
         """ Test if gravatar plugin is present
         """
         gu = GerritUtil(config.GERRIT_SERVER, username=config.ADMIN_USER)
         plugins = gu.listPlugins()
-        assert 'gravatar-avatar-provider' in plugins
+        self.assertIn('gravatar-avatar-provider', plugins)
 
     def test_ifexist_reviewers_by_blame(self):
         """ Test if reviewers-by-blame plugin is present
         """
         gu = GerritUtil(config.GERRIT_SERVER, username=config.ADMIN_USER)
         plugins = gu.listPlugins()
-        assert 'reviewers-by-blame' in plugins
+        self.assertIn('reviewers-by-blame', plugins)
 
     def test_check_download_commands(self):
         """ Test if download commands plugin works
@@ -205,28 +206,28 @@ class TestGerrit(Base):
         gitu.add_commit_and_publish(clone_dir, "master", "Test commit")
 
         change_ids = gu.getMyChangesForProject(pname)
-        assert len(change_ids) == 1
+        self.assertEqual(len(change_ids), 1)
         change_id = change_ids[0]
         resp = gu.rest.get('/a/changes/%s/?o=CURRENT_REVISION' % change_id)
-        assert "current_revision" in resp
-        assert "revisions" in resp
+        self.assertIn("current_revision", resp)
+        self.assertIn("revisions", resp)
 
         current_rev = resp["current_revision"]
 
         fetch = resp["revisions"][current_rev]["fetch"]
-        assert len(fetch.keys()) > 0
+        self.assertGreater(fetch.keys(), 0)
 
         # disable and check if the fetch has anything
         gu.disablePlugin("download-commands")
         resp = gu.rest.get('/a/changes/%s/?o=CURRENT_REVISION' % change_id)
         fetch = resp["revisions"][current_rev]["fetch"]
-        assert len(fetch.keys()) is 0
+        self.assertEqual(len(fetch.keys()), 0)
 
         # enable the plugin and check if the fetch information is valid
         gu.enablePlugin("download-commands")
         resp = gu.rest.get('/a/changes/%s/?o=CURRENT_REVISION' % change_id)
         fetch = resp["revisions"][current_rev]["fetch"]
-        assert len(fetch.keys()) > 0
+        self.assertGreater(len(fetch.keys()), 0)
 
         gu.delPubKey(k_index)
 
@@ -256,7 +257,7 @@ class TestGerrit(Base):
                                     data="\n".join(data))
         # Get the change id
         change_ids = gu_first_u.getMyChangesForProject(pname)
-        assert len(change_ids) == 1
+        self.assertEqual(len(change_ids), 1)
         change_id = change_ids[0]
         # Merge the change
         gu_first_u.setPlus2CodeReview(change_id, "current")
@@ -265,8 +266,8 @@ class TestGerrit(Base):
         second_u = config.USER_2
         gu_second_u = GerritUtil(config.GERRIT_SERVER, username=second_u)
         gu_second_u.setPlus2CodeReview(change_id, "current")
-        assert gu_first_u.submitPatch(change_id, "current")['status'] == \
-            'MERGED'
+        self.assertEqual(
+            gu_first_u.submitPatch(change_id, "current")['status'], 'MERGED')
         # Change the file we have commited with Admin user
         k2_index = gu_second_u.addPubKey(config.USERS[second_u]["pubkey"])
         priv_key_path = set_private_key(config.USERS[second_u]["privkey"])
@@ -283,11 +284,11 @@ class TestGerrit(Base):
                                     data="\n".join(data))
         # Get the change id
         change_ids = gu_second_u.getMyChangesForProject(pname)
-        assert len(change_ids) == 1
+        self.assertEqual(len(change_ids), 1)
         change_id = change_ids[0]
         # Verify first_u has been automatically added to reviewers
         reviewers = gu_second_u.getReviewers(change_id)
-        assert len(reviewers) == 1
+        self.assertEqual(len(reviewers), 1)
         self.assertEqual(reviewers[0], first_u)
 
         gu_first_u.delPubKey(k1_index)
