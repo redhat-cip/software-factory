@@ -94,10 +94,14 @@ def edit_membership(prj_name, memberships):
         send_request(url, [201], method='POST', data=data, headers=headers)
 
 
-def update_project_roles(name, ptl, dev):
+def update_project_roles(name, ptl, core, dev):
     memberships = []
     mgr_role_id = get_role_id('Manager')
     dev_role_id = get_role_id('Developer')
+
+    # core user and dev user will inherit
+    # of the Developer role
+    dev.extend(core)
 
     cu = request.remote_user['username']
     if cu not in ptl:
@@ -124,11 +128,12 @@ def init_project(name, inp):
     description = '' if 'description' not in inp else inp['description']
     ptl = [] if 'ptl-group-members' not in inp else inp['ptl-group-members']
     private = False if 'private' not in inp else inp['private']
+    core = [] if 'core-group-members' not in inp else inp['core-group-members']
     dev = [] if 'dev-group-members' not in inp else inp['dev-group-members']
 
     #create the project
     create_project(name, description, private)
-    update_project_roles(name, ptl, dev)
+    update_project_roles(name, ptl, core, dev)
 
 
 def user_manages_project(prj_name):
