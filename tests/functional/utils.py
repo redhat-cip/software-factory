@@ -393,7 +393,7 @@ class RedmineUtil:
         ret = resp.json()
         return ret['user']['id']
 
-    def checkUserRole(self, prj_name, user_id, role_name):
+    def checkUserRole(self, prj_name, user, role_name):
         url = "%(redmine_server)s/projects/%(project)s/memberships.json" % \
               {"redmine_server": config.REDMINE_SERVER,
                   "project": prj_name}
@@ -404,7 +404,8 @@ class RedmineUtil:
 
         j = resp.json()
         for m in j['memberships']:
-            if m['user']['id'] == user_id:
+            # This test is not strict be should be enough
+            if user in m['user']['name']:
                 for r in m['roles']:
                     if r['name'] == role_name:
                         return True

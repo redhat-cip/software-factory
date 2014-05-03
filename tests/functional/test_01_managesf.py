@@ -46,7 +46,6 @@ class TestManageSF(Base):
 
     def setUp(self):
         self.projects = []
-        self.users = []
         self.dirs_to_delete = []
         self.rm = RedmineUtil(config.REDMINE_SERVER,
                               apiKey=self.redmine_api_key)
@@ -59,51 +58,42 @@ class TestManageSF(Base):
                                    config.ADMIN_USER)
         for dirs in self.dirs_to_delete:
             shutil.rmtree(dirs)
-        for user in self.users:
-            self.rm.deleteUser(user)
 
     def createProject(self, name, user,
                       options=None):
-        uid = self.rm.createUser(user)
-        assert uid
-        self.users.append(uid)
         self.msu.createProject(name, user,
                                options)
         self.projects.append(name)
-
-        return uid
 
     def test_create_public_project_as_admin(self):
         """ Create public project on redmine and gerrit as admin
         """
         pname = 'p_%s' % create_random_str()
-        uid = self.createProject(pname, config.ADMIN_USER)
+        self.createProject(pname, config.ADMIN_USER)
+        # Gerrit part
         assert self.gu.isPrjExist(pname)
-        assert self.rm.isProjectExist(pname)
         assert self.gu.isGroupExist('%s-ptl' % pname)
         assert self.gu.isGroupExist('%s-core' % pname)
         #TODO(Project creator, as project owner, should only be in ptl group)
         assert self.gu.isMemberInGroup(config.ADMIN_USER, '%s-ptl' % pname)
         assert self.gu.isMemberInGroup(config.ADMIN_USER, '%s-core' % pname)
-
-        uid2 = self.rm.createUser(config.USER_2)
-        self.users.append(uid2)
-        assert uid2
+        # Redmine part
         assert self.rm.isProjectExist(pname)
+        assert self.rm.checkUserRole(pname, config.ADMIN_USER, 'Manager')
+        assert self.rm.checkUserRole(pname, config.ADMIN_USER, 'Developer')
+        # Test here the project is public
+        # ( Redmine API project detail does not return this flag)
         assert self.rm.isProjectExist_ex(pname, config.USER_2)
-        assert self.rm.checkUserRole(pname, uid, 'Manager')
-        assert self.rm.checkUserRole(pname, uid, 'Developer')
 
     def test_create_private_project_as_admin(self):
         """ Create private project on redmine and gerrit as admin
         """
         pname = 'p_%s' % create_random_str()
         options = {"private": ""}
-        uid = self.createProject(pname, config.ADMIN_USER,
-                                 options=options)
+        self.createProject(pname, config.ADMIN_USER,
+                           options=options)
+        # Gerrit part
         assert self.gu.isPrjExist(pname)
-        assert self.rm.isProjectExist(pname)
-        assert self.rm.isProjectExist_ex(pname, config.ADMIN_USER)
         assert self.gu.isGroupExist('%s-ptl' % pname)
         assert self.gu.isGroupExist('%s-core' % pname)
         assert self.gu.isGroupExist('%s-dev' % pname)
@@ -111,13 +101,13 @@ class TestManageSF(Base):
         assert self.gu.isMemberInGroup(config.ADMIN_USER, '%s-ptl' % pname)
         assert self.gu.isMemberInGroup(config.ADMIN_USER, '%s-core' % pname)
         assert self.gu.isMemberInGroup(config.ADMIN_USER, '%s-dev' % pname)
-
-        uid2 = self.rm.createUser(config.USER_2)
-        self.users.append(uid2)
-        assert uid2
+        # Redmine part
+        assert self.rm.isProjectExist(pname)
+        assert self.rm.checkUserRole(pname, config.ADMIN_USER, 'Manager')
+        assert self.rm.checkUserRole(pname, config.ADMIN_USER, 'Developer')
+        # Test here the project is private
+        # ( Redmine API project detail does not return this flag)
         assert not self.rm.isProjectExist_ex(pname, config.USER_2)
-        assert self.rm.checkUserRole(pname, uid, 'Manager')
-        assert self.rm.checkUserRole(pname, uid, 'Developer')
 
     def test_delete_public_project_as_admin(self):
         """ Delete public project on redmine and gerrit as admin
@@ -137,28 +127,32 @@ class TestManageSF(Base):
         """ Create public project on redmine and gerrit as user
         """
         pname = 'p_%s' % create_random_str()
-        uid = self.createProject(pname, config.USER_2)
+        self.createProject(pname, config.USER_2)
+        # Gerrit part
         assert self.gu.isPrjExist(pname)
-        assert self.rm.isProjectExist(pname)
-        assert self.rm.isProjectExist_ex(pname, config.USER_2)
         assert self.gu.isGroupExist('%s-ptl' % pname)
         assert self.gu.isGroupExist('%s-core' % pname)
         #TODO(Project creator, as project owner, should only be in ptl group)
         assert self.gu.isMemberInGroup(config.ADMIN_USER, '%s-ptl' % pname)
         assert self.gu.isMemberInGroup(config.ADMIN_USER, '%s-core' % pname)
-        assert self.rm.checkUserRole(pname, uid, 'Manager')
-        assert self.rm.checkUserRole(pname, uid, 'Developer')
+        # Redmine part
+        assert self.rm.isProjectExist(pname)
+        assert self.rm.isProjectExist_ex(pname, config.USER_2)
+        assert self.rm.checkUserRole(pname, config.USER_2, 'Manager')
+        assert self.rm.checkUserRole(pname, config.USER_2, 'Developer')
+        # Test here the project is public
+        # ( Redmine API project detail does not return this flag)
+        assert self.rm.isProjectExist_ex(pname, config.USER_3)
 
     def test_create_private_project_as_user(self):
         """ Create private project on redmine and gerrit as user
         """
         pname = 'p_%s' % create_random_str()
         options = {"private": ""}
-        uid = self.createProject(pname, config.USER_2,
-                                 options=options)
+        self.createProject(pname, config.USER_2,
+                           options=options)
+        # Gerrit part
         assert self.gu.isPrjExist(pname)
-        assert self.rm.isProjectExist(pname)  # it should be visible to admin
-        assert self.rm.isProjectExist_ex(pname, config.USER_2)
         assert self.gu.isGroupExist('%s-ptl' % pname)
         assert self.gu.isGroupExist('%s-core' % pname)
         assert self.gu.isGroupExist('%s-dev' % pname)
@@ -166,13 +160,14 @@ class TestManageSF(Base):
         assert self.gu.isMemberInGroup(config.USER_2, '%s-ptl' % pname)
         assert self.gu.isMemberInGroup(config.USER_2, '%s-core' % pname)
         assert self.gu.isMemberInGroup(config.USER_2, '%s-dev' % pname)
-
-        uid3 = self.rm.createUser(config.USER_3)
-        self.users.append(uid3)
-        assert uid3
+        # Redmine part
+        assert self.rm.isProjectExist(pname)  # it should be visible to admin
+        assert self.rm.isProjectExist_ex(pname, config.USER_2)
+        assert self.rm.checkUserRole(pname, config.USER_2, 'Manager')
+        assert self.rm.checkUserRole(pname, config.USER_2, 'Developer')
+        # Test here the project is private
+        # ( Redmine API project detail does not return this flag)
         assert not self.rm.isProjectExist_ex(pname, config.USER_3)
-        assert self.rm.checkUserRole(pname, uid, 'Manager')
-        assert self.rm.checkUserRole(pname, uid, 'Developer')
 
     def test_create_public_project_as_admin_clone_as_admin(self):
         """ Clone public project as admin and check content
