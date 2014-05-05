@@ -70,6 +70,9 @@ echo "]--"
 # appears in the config files (to help debugging).
 # We have copied *.config files in /tmp just before the gerrit.war init (see the
 # manifest) and create a diff after. Here we just display it to help debug.
+echo "Redmine node /var/log/redmine/default/production.log content: --["
+ssh root@${SF_PREFIX}-redmine cat /var/log/redmine/default/production.log
+echo "]--"
 echo "Gerrit configuration change: --["
 ssh root@${SF_PREFIX}-gerrit cat /tmp/config.diff
 echo "]--"
