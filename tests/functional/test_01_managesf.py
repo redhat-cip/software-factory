@@ -161,13 +161,59 @@ class TestManageSF(Base):
         assert self.gu.isMemberInGroup(config.USER_2, '%s-core' % pname)
         assert self.gu.isMemberInGroup(config.USER_2, '%s-dev' % pname)
         # Redmine part
-        assert self.rm.isProjectExist(pname)  # it should be visible to admin
+        assert self.rm.isProjectExist(pname)
         assert self.rm.isProjectExist_ex(pname, config.USER_2)
         assert self.rm.checkUserRole(pname, config.USER_2, 'Manager')
         assert self.rm.checkUserRole(pname, config.USER_2, 'Developer')
         # Test here the project is private
         # ( Redmine API project detail does not return this flag)
         assert not self.rm.isProjectExist_ex(pname, config.USER_3)
+
+    def test_create_public_project_with_users_in_group(self):
+        """ Create public project on redmine and gerrit with users in groups
+        """
+        pname = 'p_%s' % create_random_str()
+        options = {"ptl-group": "",
+                   "core-group": "%s,%s" % (config.USER_2, config.USER_3),
+                   }
+        self.createProject(pname, config.ADMIN_USER,
+                           options=options)
+        # Gerrit part
+        assert self.gu.isPrjExist(pname)
+        #TODO(Project creator, as project owner, should only be in ptl group)
+        assert self.gu.isMemberInGroup(config.ADMIN_USER, '%s-ptl' % pname)
+        for user in (config.ADMIN_USER, config.USER_2, config.USER_3):
+            assert self.gu.isMemberInGroup(user, '%s-core' % pname)
+        # Redmine part
+        assert self.rm.isProjectExist(pname)
+        assert self.rm.checkUserRole(pname, config.ADMIN_USER, 'Manager')
+        for user in (config.ADMIN_USER, config.USER_2, config.USER_3):
+            assert self.rm.checkUserRole(pname, user, 'Developer')
+
+    def test_create_private_project_with_users_in_group(self):
+        """ Create private project on redmine and gerrit with users in groups
+        """
+        pname = 'p_%s' % create_random_str()
+        options = {"private": "",
+                   "ptl-group": "",
+                   "core-group": "%s,%s" % (config.USER_2, config.USER_3),
+                   "dev-group": "%s" % (config.USER_4),
+                   }
+        self.createProject(pname, config.ADMIN_USER,
+                           options=options)
+        # Gerrit part
+        assert self.gu.isPrjExist(pname)
+        #TODO(Project creator, as project owner, should only be in ptl group)
+        assert self.gu.isMemberInGroup(config.ADMIN_USER, '%s-ptl' % pname)
+        for user in (config.ADMIN_USER, config.USER_2, config.USER_3):
+            assert self.gu.isMemberInGroup(user, '%s-core' % pname)
+        assert self.gu.isMemberInGroup(config.USER_4, '%s-dev' % pname)
+        # Redmine part
+        assert self.rm.isProjectExist(pname)  # it should be visible to admin
+        assert self.rm.checkUserRole(pname, config.ADMIN_USER, 'Manager')
+        for user in (config.ADMIN_USER, config.USER_2,
+                     config.USER_3, config.USER_4):
+            assert self.rm.checkUserRole(pname, user, 'Developer')
 
     def test_create_public_project_as_admin_clone_as_admin(self):
         """ Clone public project as admin and check content
