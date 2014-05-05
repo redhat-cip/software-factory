@@ -173,7 +173,6 @@ EOF
     do_chroot $dir update-grub
 
     install_packages $dir "$JENKINS_PACKAGES"
-    cp -r ../data/jjb ${dir}/root/
 
     #
     # Gerrit
@@ -236,8 +235,9 @@ mkdir -p ${dir}/opt/
 git clone 'https://git.openstack.org/openstack-infra/jenkins-job-builder' ${dir}/opt/jenkins-job-builder
 do_chroot ${dir} /usr/local/bin/pip install /opt/jenkins-job-builder
 mkdir -p ${dir}/etc/jenkins_jobs
-# Install puppet manifest
+# Sync static configuration file
 rsync -av ../data/jjb/ $dir/usr/share/sf-jjb/
+rsync -av ../data/zuul/ $dir/usr/share/sf-zuul/
 #Install some addons required for testing
 HOME=/root do_chroot ${dir} gem install --no-rdoc --no-ri rspec-puppet
 

@@ -22,13 +22,6 @@ class jjb ($settings = hiera_hash('jenkins', ''), $gerrit = hiera_hash('gerrit',
     content => template('jjb/jenkins_jobs.ini.erb'),
   }
 
-  file {'/root/jjb/':
-    ensure => present,
-    mode   => '0440',
-    owner  => "root",
-    group  => "root",
-  }
-
   file {'/root/gerrit_admin_rsa':
     ensure => present,
     mode   => '0400',
@@ -54,6 +47,6 @@ class jjb ($settings = hiera_hash('jenkins', ''), $gerrit = hiera_hash('gerrit',
   exec {'init_config_repo':
     command => '/root/init-config-repo.sh',
     path    => '/usr/sbin/:/usr/bin/:/bin/',
-    require => [File['/root/init-config-repo.sh'], File['/root/gerrit_admin_rsa'], File['/root/jjb'], File['/usr/local/jenkins/slave_scripts/kick.sh']],
+    require => [File['/root/init-config-repo.sh'], File['/root/gerrit_admin_rsa'], File['/usr/local/jenkins/slave_scripts/kick.sh']],
   }
 }

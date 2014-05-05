@@ -41,20 +41,27 @@ export GIT_COMMITTER_NAME=$admin
 export GIT_COMMITTER_EMAIL=$admin_email
 git clone ssh://$admin@$gh/config /tmp/config
 
+#TODO: find out why this is called multiple times...
+if [ -d "/tmp/config/jjb" ]; then
+    echo "Config repository already initialised"
+    exit 0
+fi
+
+
 echo ""
 echo "==== Adding JJB files to the config repo ===="
 cd /tmp/config
-files=`ls /root/jjb/`
-for f in $files
-do
-    name=`echo "$f" | cut -d'.' -f1`
-    cp /root/jjb/$f /tmp/config/$name
-done
-git add .
+cp -Rv /usr/share/sf-jjb /tmp/config/jobs
+
+echo ""
+echo "==== Adding Zuul files to the config repo ===="
+cd /tmp/config
+cp -Rv /usr/share/sf-zuul /tmp/config/zuul
 
 echo ""
 echo "==== Commiting the changes ===="
-git commit -a --author "$admin <$admin_email>" -m "JJB files"
+git add .
+git commit -a --author "$admin <$admin_email>" -m "JJB/Zuul files"
 
 echo ""
 echo "==== Pushing changes ===="

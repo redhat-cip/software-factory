@@ -48,4 +48,4 @@ class TestConfigRepo(Base):
         self.assertTrue(os.path.isdir(clone_dir))
         # Check if the clone dir has jobs file
         self.assertTrue(os.path.isfile(os.path.join(clone_dir,
-                                                    "jobs")))
+                                                    "jobs/jobs.yaml")))
