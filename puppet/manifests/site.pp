@@ -18,6 +18,7 @@ node /.*jenkins-swarm-slave.*/ inherits base {
 node /.*jenkins.*/ inherits base {
   include jenkins
   include jjb
+  include zuul
 }
 
 node /.*redmine.*/ inherits base {
