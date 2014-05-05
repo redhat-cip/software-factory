@@ -45,3 +45,6 @@ build/
 
 # Git Review
 .gitreview
+
+# docs
+docs/_build
