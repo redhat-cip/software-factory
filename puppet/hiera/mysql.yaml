@@ -1,0 +1,5 @@
+mysql:
+  redmine_sql_pwd: REDMINE_SQL_PWD
+  gerrit_sql_pwd: GERRIT_SQL_PWD
+  etherpad_sql_pwd: ETHERPAD_SQL_PWD
+  lodgeit_sql_pwd: LODGEIT_SQL_PWD

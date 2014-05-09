@@ -26,10 +26,11 @@ class jjb ($settings = hiera_hash('jenkins', ''),
   }
 
   file {'/root/gerrit_admin_rsa':
-    ensure => present,
+    ensure => file,
     mode   => '0400',
-    owner  => 'root',
-    group  => 'root'
+    owner  => "root",
+    group  => "root",
+    source => 'puppet:///modules/jjb/gerrit_admin_rsa',
   }
 
   file {'/root/init-config-repo.sh':
@@ -39,7 +40,7 @@ class jjb ($settings = hiera_hash('jenkins', ''),
     group   => 'root',
     content => template('jjb/init-config-repo.sh.erb'),
   }
-
+  
   file {'/usr/local/jenkins':
     ensure   => directory,
     mode     => '0540',
@@ -63,10 +64,11 @@ class jjb ($settings = hiera_hash('jenkins', ''),
     content  => template('jjb/kick.sh.erb'),
     require  => File['/usr/local/jenkins/slave_scripts'],
   }
-
+  
   exec {'init_config_repo':
     command => '/root/init-config-repo.sh',
     path    => '/usr/sbin/:/usr/bin/:/bin/:/usr/local/bin',
+    provider => shell,
     require => [File['/root/init-config-repo.sh'],
                 File['/root/gerrit_admin_rsa'],
                 File['/etc/jenkins_jobs/jenkins_jobs.ini'],

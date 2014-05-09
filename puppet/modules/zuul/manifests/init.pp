@@ -79,12 +79,20 @@ class zuul ($settings = hiera_hash('jenkins', ''), $gh = hiera('gerrit_url'), $h
     group   => 'zuul',
     require => [User['zuul'], Group['zuul']],
   }
+  file {'/var/lib/zuul/.ssh':
+    ensure  => directory,
+    mode    => '0755',
+    owner   => 'zuul',
+    group   => 'nogroup',
+    require => File['/var/lib/zuul/'],
+  }
   file {'/var/lib/zuul/.ssh/id_rsa':
     ensure  => present,
     mode    => '0400',
     owner   => 'zuul',
     group   => 'zuul',
-    require => [User['zuul'], Group['zuul']],
+    source  => 'puppet:///modules/zuul/jenkins_rsa',
+    require => File['/var/lib/zuul/.ssh'],
   }
   file {'/var/run/zuul/':
     ensure  => directory,

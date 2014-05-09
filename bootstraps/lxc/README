@@ -1,0 +1,10 @@
+Here is the bootstrap of the SF using LXC containers
+----------------------------------------------------
+
+Warning, this bootstrap, is used only for testing purpose !
+
+Once the SF edeploy roles has been built you can use the start.sh
+script to deploy a SF stack using edeploy-lxc tool.
+
+Be sure to have correctly set the variables on top of the start.sh
+script.

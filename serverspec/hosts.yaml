@@ -1,0 +1,41 @@
+redmine:
+  :roles:
+    - base
+    - redmine
+  :username: root
+  :hostname: tests-redmine
+
+mysql:
+  :roles:
+    - base
+    - mysql
+  :username: root
+  :hostname: tests-mysql
+
+ldap:
+  :roles:
+    - base
+    - ldap
+  :username: root
+  :hostname: tests-ldap
+
+gerrit:
+  :roles:
+    - base
+    - gerrit
+  :username: root
+  :hostname: tests-gerrit
+
+jenkins:
+  :roles:
+    - base
+    - jenkins
+  :username: root
+  :hostname: tests-jenkins
+
+commonservices:
+  :roles:
+    - base
+    - commonservices
+  :username: root
+  :hostname: tests-commonservices

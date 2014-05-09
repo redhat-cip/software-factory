@@ -11,6 +11,10 @@ fi
 
 
 SKIP_CLEAN_ROLES="y"
+VIRTUALIZED=""
+[ -n "$VIRT" ] && {
+    VIRTUALIZED="VIRTUALIZED=params.virt"
+}
 
 EDEPLOY_PROJECT=https://github.com/enovance/edeploy.git
 EDEPLOY_ROLES_PROJECT=https://github.com/enovance/edeploy-roles.git
@@ -24,6 +28,8 @@ EDEPLOY=$WORKSPACE/git/edeploy
 EDEPLOY_ROLES=$WORKSPACE/git/edeploy-roles/
 EDEPLOY_TAG=H.1.0.0
 SF_ROLES=$CURRENT/edeploy
+
+BOOTSTRAPPER=$SF_ROLES/puppet_bootstrapper.sh
 
 if [ ! -d $WORKSPACE ]; then
     sudo mkdir -m 0770 $WORKSPACE
@@ -49,18 +55,15 @@ cd $CLONES_DIR
     git clone $EDEPLOY_ROLES_PROJECT
     cd $EDEPLOY_ROLES
     git checkout $EDEPLOY_TAG
-    sed -i '/gem install/ s/^/HOME=\/root /' install-server.install
-    sed -i "/rake make/ s/$/ python-pip/" install-server.install
     cd -
 }
 
 cd $EDEPLOY/build
 sudo make TOP=$BUILD_DIR base
 
-cd $EDEPLOY_ROLES
-sudo make TOP=$BUILD_DIR install-server
-
 cd $SF_ROLES
-sudo make TOP=$BUILD_DIR ldap
-sudo make TOP=$BUILD_DIR mysql
-sudo make TOP=$BUILD_DIR softwarefactory
+# the nesteed puppet-master role need to be fetched from edeploy-roles
+sudo make TOP=$BUILD_DIR $VIRTUALIZED EDEPLOY_ROLES=$EDEPLOY_ROLES install-server-vm
+sudo make TOP=$BUILD_DIR $VIRTUALIZED ldap
+sudo make TOP=$BUILD_DIR $VIRTUALIZED mysql
+sudo make TOP=$BUILD_DIR $VIRTUALIZED softwarefactory

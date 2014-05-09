@@ -31,7 +31,6 @@ LASTWAR="https://gerrit-releases.storage.googleapis.com/gerrit-2.8.1.war"
 MYSQLJAVA="http://repo2.maven.org/maven2/mysql/mysql-connector-java/5.1.21/mysql-connector-java-5.1.21.jar"
 BCPROVJAVA="http://www.bouncycastle.org/download/bcprov-jdk16-144.jar"
 PYREDMINEWS="https://pypi.python.org/packages/source/p/pyredmine/pyredmine-0.2.4.tar.gz"
-GERRITUSER=gerrit
 GERRITHOOKS=../gerrit-hooks
 GERRIT_PACKAGES="openjdk-7-jre apache2 file"
 
@@ -51,11 +50,6 @@ JENKINS_PLUGINS="http://ftp.nluug.nl/programming/jenkins/plugins/ssh-agent/1.4.1
                  http://ftp.nluug.nl/programming/jenkins/plugins/git/2.2.1/git.hpi"
 
 ZUUL_PACKAGES="libjs-jquery"
-
-#
-# MySQL
-#
-MYSQL_PACKAGES="mysql-server puppet automysqlbackup"
 
 #
 # Redmine
@@ -84,7 +78,7 @@ OTHER_PACKAGES="git puppet vim mysql-client python-pip python-dateutil monit pos
 #
 PASTE_PACKAGES="python-dev python-setuptools python-virtualenv build-essential python-imaging python-werkzeug python-babel python-jinja2 python-pygments python-sqlalchemy python-simplejson python-mysqldb"
  
-PACKAGES="${GERRIT_PACKAGES} ${MYSQL_PACKAGES} ${REDMINE_PACKAGES} ${MANAGESF_PACKAGES} ${ETHERPAD_PACKAGES} ${OTHER_PACKAGES} ${PASTE_PACKAGES} ${ZUUL_PACKAGES}"
+PACKAGES="${GERRIT_PACKAGES} ${REDMINE_PACKAGES} ${MANAGESF_PACKAGES} ${ETHERPAD_PACKAGES} ${OTHER_PACKAGES} ${PASTE_PACKAGES} ${ZUUL_PACKAGES}"
 
 # To remove (but maybe the the vm role should remove that) :
 do_chroot $dir rm /etc/apt/sources.list.d/hwraid.list
@@ -111,12 +105,6 @@ EOF
     do_chroot $dir /usr/share/debconf/fix_db.pl
     do_chroot $dir debconf-set-selections <<< "redmine redmine/instances/default/dbconfig-install boolean false"
     do_chroot $dir debconf-set-selections <<< "redmine redmine/instances/default/internal/skip-preseed boolean true"
-
-    #
-    # MySQL
-    #
-    do_chroot $dir debconf-set-selections <<< 'mysql-server-5.1 mysql-server/root_password password your_password'
-    do_chroot $dir debconf-set-selections <<< 'mysql-server-5.1 mysql-server/root_password_again password your_password'
 
     install_packages $dir "$PACKAGES"
 
@@ -200,7 +188,6 @@ EOF
     #
     # Gerrit
     #
-    do_chroot $dir sh -c "adduser --disabled-password --gecos \"\" $GERRITUSER"
     mkdir ${dir}/root/gerrit_data_source/
     wget -q $LASTWAR -O ${dir}/root/gerrit_data_source/gerrit.war
     wget -q $MYSQLJAVA -O ${dir}/root/gerrit_data_source/mysql-connector-java-5.1.21.jar
@@ -223,7 +210,6 @@ EOF
     do_chroot $dir update-rc.d puppet defaults
     do_chroot $dir update-rc.d -f apache2 remove
     do_chroot $dir update-rc.d -f gerrit remove
-    do_chroot $dir update-rc.d -f mysql remove
     do_chroot $dir update-rc.d -f jenkins remove
 
     #
@@ -240,7 +226,6 @@ esac
 
 do_chroot $dir pip install --upgrade pip
 do_chroot $dir /usr/local/bin/pip install flake8
-do_chroot $dir sed -i -e"s/^bind-address.*/bind-address = 0.0.0.0/" /etc/mysql/my.cnf
 
 
 #
@@ -264,5 +249,7 @@ rsync -av ../data/zuul/ $dir/usr/share/sf-zuul/
 #Install some addons required for testing
 HOME=/root do_chroot ${dir} gem install --no-rdoc --no-ri rspec-puppet
 
-
 clear_packages_cache $dir
+
+# Disable root passwd
+do_chroot $dir passwd -l root

@@ -1,4 +1,5 @@
-pecan
 python-ldap
 requests
 pyredmine
+pygerrit
+git-review

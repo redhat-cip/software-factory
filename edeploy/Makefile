@@ -43,24 +43,34 @@ export CURRENT_TARGET
 INST=$(TOP)/install/$(VERS)
 META=$(TOP)/metadata/$(VERS)
 
-ROLES = mysql ldap softwarefactory
+ROLES = install-server-vm mysql ldap softwarefactory
 
 all: $(ROLES)
 
 softwarefactory: $(INST)/softwarefactory.done
 $(INST)/softwarefactory.done: softwarefactory.install $(INST)/vm.done
+	rm -f $(INST)/softwarefactory-$(DVER)-$(PVER).$(REL).img
 	./softwarefactory.install $(INST)/vm $(INST)/softwarefactory $(VERS)
 	touch $(INST)/softwarefactory.done
 
 ldap: $(INST)/ldap.done
 $(INST)/ldap.done: ldap.install $(INST)/vm.done
+	rm -f $(INST)/ldap-$(DVER)-$(PVER).$(REL).img
 	./ldap.install $(INST)/vm $(INST)/ldap $(VERS)
 	touch $(INST)/ldap.done
 
 mysql: $(INST)/mysql.done
 $(INST)/mysql.done: mysql.install $(INST)/vm.done
+	rm -f $(INST)/mysql-$(DVER)-$(PVER).$(REL).img
 	./mysql.install $(INST)/vm $(INST)/mysql $(VERS)
 	touch $(INST)/mysql.done
+
+bootstrapper:
+	./puppet_bootstrapper.sh
+
+install-server-vm: $(INST)/vm.done bootstrapper
+	rm -f $(INST)/install-server-vm-$(DVER)-$(PVER).$(REL).img
+	./install-server-vm.install $(INST)/vm $(INST)/install-server-vm $(VERS)
 
 vm: $(INST)/vm.done
 $(INST)/vm.done: vm.install $(INST)/base.done
@@ -84,4 +94,4 @@ distclean: clean
 version:
 	@echo "$(VERS)"
 
-.PHONY: ldap mysql softwarefactory vm dist clean distclean version 
+.PHONY: bootstrapper install-server-vm ldap mysql softwarefactory vm dist clean distclean version 

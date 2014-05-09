@@ -1,0 +1,10 @@
+#cloud-config
+output: {all: '| tee -a /var/log/cloud-init-output.log'}
+hostname: SF_PREFIX-redmine
+fqdn: SF_PREFIX-redmine.pub
+disable_root: 0
+runcmd:
+  - /etc/init.d/puppet stop
+  - echo puppetmaster-ip-template SF_PREFIX-puppetmaster.pub >> /etc/hosts
+  - sed -i -e '0,/^$/s/^$/server=SF_PREFIX-puppetmaster.pub\n/g' /etc/puppet/puppet.conf
+  - echo "root:SSHPASS" | chpasswd

@@ -13,11 +13,32 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-class mysql () {
+class mysql ($settings = hiera_hash('mysql', '')) {
     file { '/etc/monit/conf.d/mysql':
         ensure  => present,
         source  => 'puppet:///modules/mysql/monit',
         require => Package['monit'],
         notify  => Service['monit'],
+    }
+    
+    service {'mysql':
+        ensure     => running,
+        enable     => true,
+        hasrestart => true,
+        hasstatus  => true,
+    }
+    
+    file {'/root/create_databases.sql':
+        ensure  => file,
+        mode    => '0600',
+        content => template('mysql/create_databases.sql.erb'),
+    }
+    
+    exec {'create_databases':
+        command     => "mysql -u root -pyour_password < /root/create_databases.sql",
+        path        => '/usr/bin/:/bin/',
+        refreshonly => true,
+        subscribe   => File['/root/create_databases.sql'],
+        require     => [Service['mysql'], File['/root/create_databases.sql']],
     }
 }

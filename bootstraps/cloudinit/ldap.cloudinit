@@ -1,0 +1,91 @@
+#cloud-config
+output: {all: '| tee -a /var/log/cloud-init-output.log'}
+hostname: SF_PREFIX-ldap
+fqdn: SF_PREFIX-ldap.pub
+disable_root: 0
+write_files:
+- content: |
+    dn: olcDatabase={-1}frontend,cn=config
+    add: olcRequires
+    olcRequires: authc
+  path: /root/disable_anon_frontend.ldif
+- content: |
+    dn: olcDatabase={1}hdb,cn=config
+    add: olcRequires
+    olcRequires: authc
+  path: /root/disable_anon_backend.ldif
+- content: |
+    dn: ou=Users,dc=example,dc=com
+    objectClass: organizationalUnit
+    ou: Users
+  path: /root/users_ou.ldif
+- content: |
+    dn: cn=user1,ou=Users,dc=example,dc=com
+    cn: user1
+    objectClass: person
+    sn: Demo user1
+    userPassword: userpass
+    mail: user1@example.com
+    objectClass: inetOrgPerson
+
+    dn: cn=user2,ou=Users,dc=example,dc=com
+    cn: user2
+    objectClass: person
+    sn: Demo user2
+    userPassword: userpass
+    mail: user2@example.com
+    objectClass: inetOrgPerson
+
+    dn: cn=user3,ou=Users,dc=example,dc=com
+    cn: user3
+    objectClass: person
+    sn: Demo user3
+    userPassword: userpass
+    mail: user3@example.com
+    objectClass: inetOrgPerson
+
+    dn: cn=user4,ou=Users,dc=example,dc=com
+    cn: user4
+    objectClass: person
+    sn: Demo user4
+    userPassword: userpass
+    mail: user4@example.com
+    objectClass: inetOrgPerson
+
+    dn: cn=jenkins,ou=Users,dc=example,dc=com
+    cn: jenkins
+    objectClass: person
+    sn: Jenkins
+    userPassword: userpass
+    mail: jenkins@example.com
+    objectClass: inetOrgPerson
+  path: /root/demo_users.ldif
+- content: |
+    dn: ou=Groups,dc=example,dc=com
+    objectClass: organizationalUnit
+    ou: Groups
+  path: /root/groups_ou.ldif
+- content: |
+    dn: cn=group01,ou=Groups,dc=example,dc=com
+    cn: group01
+    objectClass: organizationalRole
+    roleOccupant: cn=user1,dc=example,dc=com
+    roleOccupant: cn=user2,dc=example,dc=com
+
+    dn: cn=group02,ou=Groups,dc=example,dc=com
+    cn: group02
+    objectClass: organizationalRole
+    roleOccupant: cn=user1,dc=example,dc=com
+    roleOccupant: cn=user3,dc=example,dc=com
+  path: /root/groups.ldif
+runcmd:
+  - /etc/init.d/puppet stop
+  - ldapadd -x -D cn=admin,dc=example,dc=com -w secret -f /root/users_ou.ldif
+  - ldapadd -x -D cn=admin,dc=example,dc=com -w secret -f /root/demo_users.ldif
+  - ldapadd -x -D cn=admin,dc=example,dc=com -w secret -f /root/groups_ou.ldif
+  - ldapadd -x -D cn=admin,dc=example,dc=com -w secret -f /root/groups.ldif
+  - ldapmodify -Q -Y EXTERNAL -H ldapi:/// -f /root/disable_anon_frontend.ldif
+  - ldapmodify -Q -Y EXTERNAL -H ldapi:/// -f /root/disable_anon_backend.ldif
+  - echo puppetmaster-ip-template SF_PREFIX-puppetmaster.pub >> /etc/hosts
+  - sed -i -e '0,/^$/s/^$/server=SF_PREFIX-puppetmaster.pub\n/g' /etc/puppet/puppet.conf
+  - echo "root:SSHPASS" | chpasswd

@@ -25,4 +25,4 @@ socat TCP-LISTEN:82,fork TCP:${SF_PREFIX}-commonservices:80 &
 # Logdeit
 socat TCP-LISTEN:83,fork TCP:${SF_PREFIX}-commonservices:8080 &
 # Zuul
-socat TCP-LISTEN:84,fork TCP:${SF_PREFIX}-jenkins:80 
+socat TCP-LISTEN:84,fork TCP:${SF_PREFIX}-jenkins:80 & 

@@ -1,0 +1,69 @@
+#cloud-config
+output: {all: '| tee -a /var/log/cloud-init-output.log'}
+hostname: SF_PREFIX-puppetmaster
+fqdn: SF_PREFIX-puppetmaster.pub
+disable_root: 0
+write_files:
+- content: |
+    [main]
+    logdir=/var/log/puppet
+    vardir=/var/lib/puppet
+    ssldir=/var/lib/puppet/ssl
+    rundir=/var/run/puppet
+    factpath=$vardir/lib/facter
+    templatedir=$confdir/templates
+    certname=SF_PREFIX-puppetmaster.pub
+    server=SF_PREFIX-puppetmaster.pub
+    environmentpath = $confdir/environments
+    autosign=true
+    [master]
+    # These are needed when the puppetmaster is run by passenger
+    # and can safely be removed if webrick is used.
+    ssl_client_header = SSL_CLIENT_S_DN
+    ssl_client_verify_header = SSL_CLIENT_VERIFY
+  path: /etc/puppet/puppet.conf
+- content: |
+    hosts:
+      localhost:
+        ip: 127.0.0.1
+      SF_PREFIX-puppetmaster.pub:
+        ip: puppermaster-ip-template
+        host_aliases: [SF_PREFIX-puppetmaster]
+      SF_PREFIX-ldap.pub:
+        ip: ldap_host
+        host_aliases: [SF_PREFIX-ldap]
+      SF_PREFIX-mysql.pub:
+        ip: mysql_host
+        host_aliases: [SF_PREFIX-mysql]
+      SF_PREFIX-jenkins.pub:
+        ip: jenkins_host
+        host_aliases: [SF_PREFIX-jenkins]
+      SF_PREFIX-redmine.pub:
+        ip: redmine_host
+        host_aliases: [SF_PREFIX-redmine]
+      SF_PREFIX-gerrit.pub:
+        ip: gerrit_host
+        host_aliases: [SF_PREFIX-gerrit]
+      SF_PREFIX-managesf.pub:
+        ip: managesf_host
+        host_aliases: [SF_PREFIX-managesf]
+      SF_PREFIX-commonservices.pub:
+        ip: commonservices_host
+        host_aliases: [SF_PREFIX-commonservices]
+  path: /root/hosts.yaml
+runcmd:
+    - /etc/init.d/puppetmaster stop
+    - MY_PRIV_IP=`curl -s http://169.254.169.254/latest/meta-data/local-ipv4`
+    - sed -i "s/puppermaster-ip-template/$MY_PRIV_IP/" /root/hosts.yaml
+    - echo "127.0.0.1 SF_PREFIX-puppetmaster.pub SF_PREFIX-puppetmaster" > /etc/hosts
+    - echo "ldap_host SF_PREFIX-ldap.pub SF_PREFIX-ldap" >> /etc/hosts
+    - echo "mysql_host SF_PREFIX-mysql.pub SF_PREFIX-mysql" >> /etc/hosts
+    - echo "jenkins_host SF_PREFIX-jenkins.pub SF_PREFIX-jenkins" >> /etc/hosts
+    - echo "redmine_host SF_PREFIX-redmine.pub SF_PREFIX-redmine" >> /etc/hosts
+    - echo "gerrit_host SF_PREFIX-gerrit.pub SF_PREFIX-gerrit" >> /etc/hosts
+    - echo "managesf_host SF_PREFIX-managesf.pub SF_PREFIX-managesf" >> /etc/hosts
+    - echo "commonservices_host SF_PREFIX-commonservices.pub SF_PREFIX-commonservices" >> /etc/hosts
+    - rm -Rf /var/lib/puppet/ssl/*
+    - tar -xzf /root/puppet-bootstrapper.tar.gz -C /root/
+    - cd /root/puppet-bootstrapper
+    - HOME=/root/ TEMP_SSH_PWD=SSHPASS SFPREFIX=SF_PREFIX ./bootstrap.sh > /var/log/sf-bootstrap.log 2>&1

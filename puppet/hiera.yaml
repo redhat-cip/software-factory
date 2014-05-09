@@ -1,5 +1,5 @@
 :yaml:
-  :datadir: /etc/puppet/hiera
+  :datadir: /etc/puppet/hiera/%{::environment}/
 :hierarchy:
   - monit
   - hosts
@@ -7,6 +7,7 @@
   - edeploy_client
   - postfix
   - "%{::clientcert}"
+  - mysql
   - jenkins
   - redmine
   - gerrit

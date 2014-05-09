@@ -1,6 +1,6 @@
 # Size of the root filesystem in MB or auto
-ROOT_FS_SIZE=2000
-#ROOT_FS_SIZE=auto
+#ROOT_FS_SIZE=3000
+ROOT_FS_SIZE=auto
 
 # Output format supported by qemu-img
 # Use 'qemu-img --help | grep Supported | cut -d ":" -f2' to get the full list

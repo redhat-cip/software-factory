@@ -19,7 +19,7 @@ describe user('gerrit') do
         should exist 
         should belong_to_group 'gerrit'
         should have_home_directory '/home/gerrit'
-        should have_login_shell '/bin/bash'
+        should have_login_shell '/bin/sh'
     }
 end
 

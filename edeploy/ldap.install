@@ -42,3 +42,6 @@ sed -i -e 's/START=.*/START=yes/g' $dir/etc/default/puppet
 
 # Make sure LDAP starts
 do_chroot ${dir} update-rc.d slapd defaults
+
+# Disable root passwd
+do_chroot $dir passwd -l root

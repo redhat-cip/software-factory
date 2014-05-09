@@ -23,7 +23,11 @@ class gerrit ($settings = hiera_hash('gerrit', '')) {
     ensure => present,
   }
   user { 'gerrit':
-    ensure     => present,
+    ensure => present,
+    home => '/home/gerrit',
+    system => true,
+    managehome => true,
+    comment => 'Gerrit sys user'
   }
   group { 'gerrit':
     ensure => present,
@@ -34,10 +38,9 @@ class gerrit ($settings = hiera_hash('gerrit', '')) {
   file { '/home/gerrit/site_path':
     ensure  => directory,
     owner   => 'gerrit',
-    require => [User['gerrit'],
-    Group['gerrit'],
-    Package['openjdk-7-jre'],
-    Package['apache2']],
+    require => [User['gerrit'], Group['gerrit'],
+                Package['openjdk-7-jre'],
+                Package['apache2']],
   }
   file { '/home/gerrit/site_path/etc':
     ensure  => directory,
@@ -69,7 +72,7 @@ class gerrit ($settings = hiera_hash('gerrit', '')) {
     owner   => 'gerrit',
     group   => 'gerrit',
     mode    => '0600',
-    source  => '/home/gerrit/ssh_host_rsa_key',
+    source  => 'puppet:///modules/gerrit/gerrit_service_rsa',
     require => File['/home/gerrit/site_path/etc'],
   }
   file { '/home/gerrit/site_path/etc/ssh_host_rsa_key.pub':
@@ -77,7 +80,7 @@ class gerrit ($settings = hiera_hash('gerrit', '')) {
     owner   => 'gerrit',
     group   => 'gerrit',
     mode    => '0644',
-    source  => '/home/gerrit/ssh_host_rsa_key.pub',
+    source  => 'puppet:///modules/gerrit/gerrit_service_rsa.pub',
     require => File['/home/gerrit/site_path/etc'],
   }
   file { '/home/gerrit/site_path/plugins/replication.jar':

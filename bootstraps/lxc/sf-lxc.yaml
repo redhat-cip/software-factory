@@ -3,47 +3,47 @@ network:
     bridge: virbr1
     gateway: 192.168.134.1
 general:
-    ssh_key: /home/ubuntu/.ssh/id_rsa.pub
+    ssh_key: SSH_PUBKEY
 edeploy:
-    dir: EDEPLOY_ROLES/install/D7-H.1.0.0
+    dir: EDEPLOY_ROLES/install/VERS
 hosts:
   -
     address: 192.168.134.49
     name: SF_PREFIX-puppetmaster
-    role: install-server
-    cloudinit: ../build/cloudinit/puppetmaster.cloudinit
+    role: install-server-vm
+    cloudinit: CIPATH/puppetmaster.cloudinit
   -
     address: 192.168.134.50
     name: SF_PREFIX-ldap
     role: ldap
-    cloudinit: ../build/cloudinit/ldap.cloudinit
+    cloudinit: CIPATH/ldap.cloudinit
   -
     address: 192.168.134.51
     name: SF_PREFIX-mysql
     role: mysql
-    cloudinit: ../build/cloudinit/mysql.cloudinit
+    cloudinit: CIPATH/mysql.cloudinit
   -
     address: 192.168.134.52
     name: SF_PREFIX-redmine
     role: softwarefactory
-    cloudinit: ../build/cloudinit/redmine.cloudinit
+    cloudinit: CIPATH/redmine.cloudinit
   -
     address: 192.168.134.53
     name: SF_PREFIX-gerrit
     role: softwarefactory
-    cloudinit: ../build/cloudinit/gerrit.cloudinit
+    cloudinit: CIPATH/gerrit.cloudinit
   -
     address: 192.168.134.54
     name: SF_PREFIX-jenkins
     role: softwarefactory
-    cloudinit: ../build/cloudinit/jenkins.cloudinit
+    cloudinit: CIPATH/jenkins.cloudinit
   -
     address: 192.168.134.55
     name: SF_PREFIX-managesf
     role: softwarefactory
-    cloudinit: ../build/cloudinit/managesf.cloudinit
+    cloudinit: CIPATH/managesf.cloudinit
   -
     address: 192.168.134.56
     name: SF_PREFIX-commonservices
     role: softwarefactory
-    cloudinit: ../build/cloudinit/commonservices.cloudinit
+    cloudinit: CIPATH/commonservices.cloudinit

@@ -52,3 +52,6 @@ do_chroot ${dir} sed -i -e"s/^bind-address.*/bind-address = 0.0.0.0/" /etc/mysql
 sed -i -e 's/START=.*/START=yes/g' $dir/etc/default/puppet
 
 clear_packages_cache $dir
+
+# Disable root passwd
+do_chroot $dir passwd -l root

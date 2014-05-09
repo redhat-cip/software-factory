@@ -50,6 +50,7 @@ class managesf ($gerrit = hiera_hash('gerrit', ''), $redmine = hiera_hash('redmi
     owner  => 'www-data',
     group  => 'www-data',
     mode   => '0400',
+    source => 'puppet:///modules/managesf/gerrit_admin_rsa',
     require => File['/var/www/managesf/'],
   }
 

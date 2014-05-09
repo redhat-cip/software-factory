@@ -22,6 +22,20 @@ class jenkins ($settings = hiera_hash('jenkins', '')) {
     ensure => present,
   }
 
+  file { "/var/lib/jenkins/.ssh":
+      ensure => directory,
+      owner => "jenkins",
+      group => "jenkins",
+      require => [User['jenkins'], Group['jenkins']],
+  }
+  file { "/var/lib/jenkins/.ssh/id_rsa":
+      ensure  => file,
+      owner   => "jenkins",
+      group   => "jenkins",
+      mode    => 0400,
+      source  => 'puppet:///modules/jenkins/jenkins_rsa',
+      require => File['/var/lib/jenkins/.ssh'],
+  }
   file {'/var/lib/jenkins/credentials.xml':
     ensure  => file,
     mode    => '0644',

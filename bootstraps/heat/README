@@ -1,0 +1,12 @@
+Here is the bootstrap of the SF using Openstack HEAT
+----------------------------------------------------
+
+Once the SF edeploy roles has been built you can use the start.sh
+script to call heat stack-create to deploy a SF stack.
+
+The script will take care to update roles into glance before
+starting the heat stack.
+
+Be sure to have correctly set the variable on top of the start.sh
+script and to have sourced the correct ENV variables to access
+your tenant/user (openrc).
