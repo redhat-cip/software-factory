@@ -1,0 +1,24 @@
+pipelines:
+  - name: check
+    description: Newly uploaded patchsets enter this pipeline to receive an initial +/-1 Verified vote from Jenkins.
+    failure-message: Build failed.
+    manager: IndependentPipelineManager
+    precedence: low
+    trigger:
+      gerrit:
+        - event: patchset-created
+    start:
+      gerrit:
+        verified: 0
+    success:
+      gerrit:
+        verified: 1
+    failure:
+      gerrit:
+        verified: -1
+
+projects:
+  - name: zuul-demo
+    check:
+      - zuul-demo-functional-tests
+      - zuul-demo-unit-tests

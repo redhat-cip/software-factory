@@ -252,9 +252,9 @@ class TestGerrit(Base):
         self.dirs_to_delete.append(os.path.dirname(clone_dir))
         data = ['this', 'is', 'a', 'couple', 'of', 'lines']
         clone_dir = gitu.clone(url, pname)
+        file(os.path.join(clone_dir, "file"), 'w').write("\n".join(data))
         gitu.add_commit_and_publish(clone_dir, "master", "Test commit",
-                                    fname="file",
-                                    data="\n".join(data))
+                                    fnames=["file"])
         # Get the change id
         change_ids = gu_first_u.getMyChangesForProject(pname)
         self.assertEqual(len(change_ids), 1)
@@ -279,9 +279,9 @@ class TestGerrit(Base):
         clone_dir = gitu.clone(url, pname)
         self.dirs_to_delete.append(os.path.dirname(clone_dir))
         data = ['this', 'is', 'some', 'lines']
+        file(os.path.join(clone_dir, "file"), 'w').write("\n".join(data))
         gitu.add_commit_and_publish(clone_dir, "master", "Test commit",
-                                    fname="file",
-                                    data="\n".join(data))
+                                    fnames=["file"])
         # Get the change id
         change_ids = gu_second_u.getMyChangesForProject(pname)
         self.assertEqual(len(change_ids), 1)

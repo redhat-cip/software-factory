@@ -3,6 +3,7 @@ from os import environ
 GERRIT_HOST = '%s-gerrit:29418' % environ['SF_PREFIX']
 GERRIT_SERVER = 'http://%s-gerrit/r/' % environ['SF_PREFIX']
 REDMINE_SERVER = 'http://%s-redmine' % environ['SF_PREFIX']
+JENKINS_SERVER = 'http://%s-jenkins:8080' % environ['SF_PREFIX']
 MANAGESF_HOST = '%s-managesf' % environ['SF_PREFIX']
 
 USER_1 = 'user1'

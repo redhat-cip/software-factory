@@ -151,21 +151,37 @@ class GerritGitUtils(Tool):
         self.exe('git review' % clone_dir)
         self.exe('git checkout master', clone_dir)
 
+    def git_add(self, clone_dir, files=[]):
+        to_add = ""
+        for f in files:
+            to_add = to_add + f + " "
+
+        self.exe('git add %s' % to_add, clone_dir)
+
     def add_commit_and_publish(self, clone_dir, branch,
                                commit_msg, commit_author=None,
-                               fname=None, data=None):
+                               fnames=None):
         self.exe('git checkout %s' % branch, clone_dir)
-        if not fname:
+
+        if not fnames:
+            # If no file names are passed, create a test file
             fname = create_random_str()
-        if not data:
             data = 'data'
-        file(os.path.join(clone_dir, fname), 'w').write(data)
-        self.exe('git add %s' % fname, clone_dir)
-        author = '%s <%s>' % (commit_author,
-                              config.USERS[commit_author]['email']) \
-                 if commit_author else self.author
-        self.exe("git commit --author '%s' -m '%s'" %
-                 (author, commit_msg), clone_dir)
+            file(os.path.join(clone_dir, fname), 'w').write(data)
+            fnames = [fname]
+
+        self.git_add(clone_dir, fnames)
+        if commit_msg:
+            author = '%s <%s>' % (commit_author,
+                                  config.USERS[commit_author]['email']) \
+                     if commit_author else self.author
+            self.exe("git commit --author '%s' -m '%s'" %
+                     (author, commit_msg), clone_dir)
+        else:
+            # If commit message is None, we need to ammend the old commit
+            self.exe("git reset --soft HEAD^", clone_dir)
+            self.exe("git commit -C ORIG_HEAD", clone_dir)
+
         self.exe('git review -v', clone_dir)
 
 
@@ -294,6 +310,11 @@ class GerritUtil:
             return r
         except Exception as e:
             return e.response.status_code
+
+    def getReviewerApprovals(self, changeid, reviewer):
+        resp = self.rest.get('/a/changes/%(change-id)s/reviewers/%(reviewer)s'
+                             % {'change-id': changeid, 'reviewer': reviewer})
+        return resp[0]['approvals']
 
     def getReviewers(self, changeid):
         resp = self.rest.get('/a/changes/%s/reviewers' % changeid)

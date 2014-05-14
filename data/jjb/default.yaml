@@ -1,0 +1,17 @@
+- defaults:
+    name: global
+    description: |
+      <p>Job is managed by Jenkins Job Builder</a>.</p>
+
+    project-type: freestyle
+
+
+- defaults:
+    name: zuul
+    description: | 
+      <p>Job triggered by zuul</p>
+
+    project-type: freestyle
+  
+    scm:
+     - zuul-git

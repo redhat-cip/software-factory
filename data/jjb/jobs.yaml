@@ -1,49 +1,26 @@
 - job-template:
     name: '{name}-unit-tests'
+    defaults: zuul
     builders:
-      - gerrit-git-prep
-      - shell: ./run_tests.sh
+      - shell: |
+          ./run_tests.sh
     triggers:
-      - gerrit:
-          trigger-on-patchset-uploaded-event: true
-          projects:
-            - project-compare-type: 'PLAIN'
-              project-pattern: '{name}'
-              branch-compare-type: 'ANT'
-              branch-pattern: '**'
+      - zuul
 
 - job-template:
     name: '{name}-functional-tests'
+    defaults: zuul
     builders:
-      - gerrit-git-prep
-      - shell: ./run_functional-tests.sh
+      - shell: |
+          ./run_functional-tests.sh
     triggers:
-      - gerrit:
-          trigger-on-patchset-uploaded-event: true
-          projects:
-            - project-compare-type: 'PLAIN'
-              project-pattern: '{name}'
-              branch-compare-type: 'ANT'
-              branch-pattern: '**'
-          skip-vote:
-            successful: true
-            failed: true
-            unstable: true
-            notbuilt: true
+      - zuul
 
 - job-template:
     name: '{name}-sloccount'
+    defaults: zuul
     builders:
-      - gerrit-git-prep
-      - shell: sloccount --duplicates --wide --details . | fgrep -v .svn > sloccount.sc
-#    publishers:
-#      - sloccount:
-#          pattern: sloccount.sc
+      - shell: |
+          sloccount --duplicates --wide --details . | fgrep -v .svn > sloccount.sc
     triggers:
-      - gerrit:
-          trigger-on-patchset-uploaded-event: true
-          projects:
-            - project-compare-type: 'PLAIN'
-              project-pattern: '{name}'
-              branch-compare-type: 'ANT'
-              branch-pattern: '**'
+      - zuul

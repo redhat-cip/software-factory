@@ -313,25 +313,16 @@ function post_configuration_ssh_keys {
     scp -P$ssh_port ${BUILD}/data/jenkins_rsa root@$jenkins_host:/var/lib/jenkins/.ssh/id_rsa
     ssh -p$ssh_port root@$jenkins_host chown -R jenkins /var/lib/jenkins/.ssh/
     ssh -p$ssh_port root@$jenkins_host chmod 400 /var/lib/jenkins/.ssh/id_rsa
+    
+    ssh -p$ssh_port root@$jenkins_host mkdir -p /var/lib/zuul/.ssh/
+    scp -P$ssh_port ${BUILD}/data/jenkins_rsa root@$jenkins_host:/var/lib/zuul/.ssh/id_rsa
+    
     scp -P$ssh_port ${BUILD}/data/gerrit_service_rsa root@$gerrit_host:/home/gerrit/ssh_host_rsa_key
     scp -P$ssh_port ${BUILD}/data/gerrit_service_rsa.pub root@$gerrit_host:/home/gerrit/ssh_host_rsa_key.pub
     scp -p$ssh_port ${BUILD}/data/gerrit_admin_rsa root@$managesf_host:/var/www/managesf
     scp -p$ssh_port ${BUILD}/data/gerrit_admin_rsa root@$jenkins_host:/root/
     ssh -p$ssh_port root@$gerrit_host chown gerrit:gerrit /home/gerrit/ssh_host_rsa_key
     ssh -p$ssh_port root@$gerrit_host chown gerrit:gerrit /home/gerrit/ssh_host_rsa_key.pub
-}
-
-function post_configuration_jenkins_scripts {
-    jenkins_host=$(gethostname_from_yaml jenkins)
-    # Update jenkins slave scripts
-    local ssh_port=22
-    if [ -n "$1" ]; then
-        let ssh_port=ssh_port+1024
-    fi
-    for host in "${jenkins_host}"; do
-        ssh -p$ssh_port root@${host} mkdir -p /usr/local/jenkins/slave_scripts/
-        scp -P$ssh_port ../data/jenkins_slave_scripts/* root@${host}:/usr/local/jenkins/slave_scripts/
-    done
 }
 
 function sf_postconfigure {
@@ -347,7 +338,6 @@ function sf_postconfigure {
     post_configuration_knownhosts $devstack
     post_configuration_ssh_keys $devstack
     post_configuration_update_hiera $devstack
-    post_configuration_jenkins_scripts $devstack
     post_configuration_puppet_apply $devstack
     post_configuration_gerrit_knownhosts $devstack
 }

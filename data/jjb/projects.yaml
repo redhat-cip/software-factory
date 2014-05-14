@@ -1,5 +1,5 @@
-#- project:
-#    name: SoftwareFactory
-#    jobs:
-#      - '{name}-unit-tests'
-#      - '{name}-functional-tests'
+- project:
+    name: zuul-demo
+    jobs:
+      - '{name}-unit-tests'
+      - '{name}-functional-tests'

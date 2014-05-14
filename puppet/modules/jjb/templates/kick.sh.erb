@@ -1,0 +1,21 @@
+#!/bin/bash
+
+set -e 
+set -x
+
+git clone http://<%= scope.function_hiera(["gerrit_url"]) %>/r/config /root/config
+
+# JJB
+jenkins-jobs update /root/config/jobs
+EXIT_CODE=$?
+
+# Jenkins jobs are not update by gearman plugin
+# TODO: Find a way to just restart the gearman plugin
+service jenkins restart 
+
+# Zuul
+cp /root/config/zuul/layout.yaml /etc/zuul/
+
+# Clean
+rm -Rf /root/config
+exit ${EXIT_CODE}

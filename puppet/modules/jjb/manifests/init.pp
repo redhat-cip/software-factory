@@ -13,40 +13,64 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-class jjb ($settings = hiera_hash('jenkins', ''), $gerrit = hiera_hash('gerrit', ''), $redmine = hiera_hash('redmine', '')) {
+class jjb ($settings = hiera_hash('jenkins', ''),
+            $gerrit = hiera_hash('gerrit', ''),
+            $redmine = hiera_hash('redmine', '')) {
   file {'/etc/jenkins_jobs/jenkins_jobs.ini':
     ensure  => file,
     mode    => '0400',
-    owner   => "jenkins",
-    group   => "nogroup",
+    owner   => 'jenkins',
+    group   => 'nogroup',
     content => template('jjb/jenkins_jobs.ini.erb'),
+    require => User['jenkins'],
   }
 
   file {'/root/gerrit_admin_rsa':
     ensure => present,
     mode   => '0400',
-    owner  => "root",
-    group  => "root"
+    owner  => 'root',
+    group  => 'root'
   }
 
   file {'/root/init-config-repo.sh':
-    ensure => file,
-    mode   => '0540',
-    owner  => "root",
-    group  => "root",
+    ensure  => file,
+    mode    => '0540',
+    owner   => 'root',
+    group   => 'root',
     content => template('jjb/init-config-repo.sh.erb'),
   }
 
+  file {'/usr/local/jenkins':
+    ensure   => directory,
+    mode     => '0540',
+    owner    => 'root',
+    group    => 'root',
+  }
+
+  file {'/usr/local/jenkins/slave_scripts':
+    ensure   => directory,
+    mode     => '0540',
+    owner    => 'root',
+    group    => 'root',
+    require  => File['/usr/local/jenkins']
+  }
+
   file {'/usr/local/jenkins/slave_scripts/kick.sh':
-    ensure   => present,
-    mode     => '540',
-    owner    => "root",
-    group    => "root",
+    ensure   => file,
+    mode     => '0540',
+    owner    => 'root',
+    group    => 'root',
+    content  => template('jjb/kick.sh.erb'),
+    require  => File['/usr/local/jenkins/slave_scripts'],
   }
 
   exec {'init_config_repo':
     command => '/root/init-config-repo.sh',
-    path    => '/usr/sbin/:/usr/bin/:/bin/',
-    require => [File['/root/init-config-repo.sh'], File['/root/gerrit_admin_rsa'], File['/usr/local/jenkins/slave_scripts/kick.sh']],
+    path    => '/usr/sbin/:/usr/bin/:/bin/:/usr/local/bin',
+    require => [File['/root/init-config-repo.sh'],
+                File['/root/gerrit_admin_rsa'],
+                File['/etc/jenkins_jobs/jenkins_jobs.ini'],
+                Exec['wait_for_jenkins'],
+                File['/usr/local/jenkins/slave_scripts/kick.sh']],
   }
 }

@@ -3,25 +3,27 @@ server=127.0.0.1
 
 [gearman_server]
 start=true
+log_config=/etc/zuul/gearman-logging.conf
 
 [gerrit]
 server=<%= @settings['gerrit_hostname'] %>
-;baseurl=https://review.example.com/r
+baseurl=<%= @settings['gerrit_url'] %>/r/
 user=<%= @settings['gerrit_username'] %>
-sshkey=/var/lib/jenkins/.ssh/id_rsa
+sshkey=/var/lib/zuul/.ssh/id_rsa
 
 [zuul]
 layout_config=/etc/zuul/layout.yaml
 log_config=/etc/zuul/logging.conf
 pidfile=/var/run/zuul/zuul.pid
 state_dir=/var/lib/zuul
-status_url=https://jenkins.example.com/zuul/status
+status_url=http://<%= scope.function_hiera(["jenkins_url"]) %>
 
 [merger]
 git_dir=/var/lib/zuul/git
 ;git_user_email=zuul@example.com
 ;git_user_name=zuul
-zuul_url=http://zuul.example.com/p
+zuul_url=http://<%= scope.function_hiera(["jenkins_url"]) %>/p
+log_config=/etc/zuul/merger-logging.conf
 
 #[swift]
 #authurl=https://identity.api.example.org/v2.0/

@@ -1,0 +1,6 @@
+<hudson.plugins.gearman.GearmanPluginConfig>
+<enablePlugin>true</enablePlugin>
+<host>127.0.0.1</host>
+<port>4730</port>
+</hudson.plugins.gearman.GearmanPluginConfig>
+

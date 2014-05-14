@@ -23,6 +23,7 @@ ORIG=$(cd $(dirname $0); pwd)
 
 . ${ORIG}/functions
 
+
 #
 # Gerrit
 #
@@ -39,8 +40,17 @@ GERRIT_PACKAGES="openjdk-7-jre apache2 file"
 # Jenkins
 #
 JENKINS_PACKAGES="jenkins puppet git python-pip sloccount rubygems rake puppet-lint"
-JENKINS_PLUGINS="http://ftp.nluug.nl/programming/jenkins/plugins/gerrit-trigger/2.11.0/gerrit-trigger.hpi \
-                 http://ftp.nluug.nl/programming/jenkins/plugins/ssh-agent/1.4.1/ssh-agent.hpi"
+JENKINS_PLUGINS="http://ftp.nluug.nl/programming/jenkins/plugins/ssh-agent/1.4.1/ssh-agent.hpi \
+                 http://ftp.nluug.nl/programming/jenkins/plugins/gearman-plugin/0.0.6/gearman-plugin.hpi \
+                 http://ftp.nluug.nl/programming/jenkins/plugins/promoted-builds/2.17/promoted-builds.hpi \
+                 http://ftp.nluug.nl/programming/jenkins/plugins/git-client/1.9.0/git-client.hpi \
+                 http://ftp.nluug.nl/programming/jenkins/plugins/scm-api/0.2/scm-api.hpi \
+                 http://ftp.nluug.nl/programming/jenkins/plugins/parameterized-trigger/2.24/parameterized-trigger.hpi \
+                 http://ftp.nluug.nl/programming/jenkins/plugins/token-macro/1.10/token-macro.hpi \
+                 http://ftp.nluug.nl/programming/jenkins/plugins/multiple-scms/0.3/multiple-scms.hpi \
+                 http://ftp.nluug.nl/programming/jenkins/plugins/git/2.2.1/git.hpi"
+
+ZUUL_PACKAGES="libjs-jquery"
 
 #
 # MySQL
@@ -74,7 +84,7 @@ OTHER_PACKAGES="git puppet vim mysql-client python-pip python-dateutil monit pos
 #
 PASTE_PACKAGES="python-dev python-setuptools python-virtualenv build-essential python-imaging python-werkzeug python-babel python-jinja2 python-pygments python-sqlalchemy python-simplejson python-mysqldb"
  
-PACKAGES="${GERRIT_PACKAGES} ${MYSQL_PACKAGES} ${REDMINE_PACKAGES} ${MANAGESF_PACKAGES} ${ETHERPAD_PACKAGES} ${OTHER_PACKAGES} ${PASTE_PACKAGES}"
+PACKAGES="${GERRIT_PACKAGES} ${MYSQL_PACKAGES} ${REDMINE_PACKAGES} ${MANAGESF_PACKAGES} ${ETHERPAD_PACKAGES} ${OTHER_PACKAGES} ${PASTE_PACKAGES} ${ZUUL_PACKAGES}"
 
 # To remove (but maybe the the vm role should remove that) :
 do_chroot $dir rm /etc/apt/sources.list.d/hwraid.list
@@ -173,6 +183,19 @@ EOF
     do_chroot $dir update-grub
 
     install_packages $dir "$JENKINS_PACKAGES"
+
+    # zuul
+    do_chroot $dir git clone https://github.com/openstack-infra/zuul /srv/zuul
+    do_chroot $dir bash -c "cd /srv/zuul && git checkout -b working a9702ada76" # latest commit as of 09. May 2014
+    do_chroot $dir bash -c "cd /srv/zuul && python /srv/zuul/setup.py install"
+    curl -L --silent http://getbootstrap.com/2.3.2/assets/bootstrap.zip > $dir/srv/zuul/bootstrap.zip
+    unzip -q -o $dir/srv/zuul/bootstrap.zip -d $dir/srv/zuul/etc/status/public_html/
+    curl -L --silent https://github.com/teamdf/jquery-visible/archive/1.1.0.zip > $dir/srv/zuul/jquery-visible-1.1.0.zip
+    unzip -q -o $dir/srv/zuul/jquery-visible-1.1.0.zip -d $dir/srv/zuul/etc/status/public_html/
+    cp $dir/srv/zuul/etc/status/public_html/jquery-visible-1.1.0/jquery.visible.min.js $dir/srv/zuul/etc/status/public_html/jquery-visible.min.js
+    rm -R $dir/srv/zuul/etc/status/public_html/jquery-visible-1.1.0/
+    rm -R $dir/srv/zuul/jquery-visible-1.1.0.zip
+    rm -R $dir/srv/zuul/bootstrap.zip
 
     #
     # Gerrit

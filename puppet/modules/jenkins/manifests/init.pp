@@ -14,66 +14,70 @@
 # under the License.
 
 class jenkins ($settings = hiera_hash('jenkins', '')) {
-  service { "jenkins":
-    ensure  => "running",
-    enable  => "true",
-  }
   user { 'jenkins':
-    ensure => present,
+    ensure   => present,
   }
 
   group { 'jenkins':
     ensure => present,
   }
 
-  file {'/var/lib/jenkins/config.xml':
-    ensure  => file,
-    mode    => 0644,
-    owner   => "jenkins",
-    group   => "nogroup",
-    notify  => Service["jenkins"],
-    content => template('jenkins/config.xml.erb'),
-  }
   file {'/var/lib/jenkins/credentials.xml':
     ensure  => file,
-    mode    => 0644,
-    owner   => "jenkins",
-    group   => "nogroup",
-    notify  => Service["jenkins"],
-    content => template('jenkins/credentials.xml.erb'),
-  }
-  file {'/var/lib/jenkins/gerrit-trigger.xml':
-    ensure  => file,
     mode    => '0644',
-    owner   => "jenkins",
-    group   => "nogroup",
-    notify  => Service["jenkins"],
-    content => template('jenkins/gerrit-trigger.xml.erb'),
+    owner   => 'jenkins',
+    group   => 'nogroup',
+    content => template('jenkins/credentials.xml.erb'),
+    require => User['jenkins'],
   }
   file {'/var/lib/jenkins/jenkins.model.JenkinsLocationConfiguration.xml':
     ensure  => file,
     mode    => '0644',
-    owner   => "jenkins",
-    group   => "nogroup",
-    notify  => Service["jenkins"],
+    owner   => 'jenkins',
+    group   => 'nogroup',
     content => template('jenkins/jenkins.model.JenkinsLocationConfiguration.xml.erb'),
+    require => User['jenkins'],
+  }
+  file {'/var/lib/jenkins/hudson.plugins.gearman.GearmanPluginConfig.xml':
+    ensure  => file,
+    mode    => '0644',
+    owner   => 'jenkins',
+    group   => 'nogroup',
+    source  => 'puppet:///modules/jenkins/gearman_config.xml',
+    require => User['jenkins'],
   }
   file {'/var/lib/jenkins/hudson.tasks.Mailer.xml':
     ensure  => file,
-    mode    => 0644,
-    owner   => "jenkins",
-    group   => "nogroup",
-    notify  => Service["jenkins"],
+    mode    => '0644',
+    owner   => 'jenkins',
+    group   => 'nogroup',
     content => template('jenkins/hudson.tasks.Mailer.xml'),
+    require => User['jenkins'],
   }
- 
   file {'/var/lib/jenkins/plugins/swarm-1.15.hpi':
     ensure  => file,
     mode    => '0644',
-    owner   => "jenkins",
-    group   => "nogroup",
-    notify  => Service["jenkins"],
-    source =>'puppet:///modules/jenkins/swarm-1.15.hpi',
+    owner   => 'jenkins',
+    group   => 'nogroup',
+    source  =>'puppet:///modules/jenkins/swarm-1.15.hpi',
+    require => User['jenkins'],
+  }
+  file {'/var/lib/jenkins/config.xml':
+    ensure  => file,
+    mode    => '0644',
+    owner   => 'jenkins',
+    group   => 'nogroup',
+    notify  => Service['jenkins'],
+    content => template('jenkins/config.xml.erb'),
+    require => [File['/var/lib/jenkins/credentials.xml'],
+                File['/var/lib/jenkins/jenkins.model.JenkinsLocationConfiguration.xml'],
+                File['/var/lib/jenkins/hudson.plugins.gearman.GearmanPluginConfig.xml'],
+                File['/var/lib/jenkins/hudson.tasks.Mailer.xml'],
+                File['/var/lib/jenkins/plugins/swarm-1.15.hpi']],
+  }
+  service { 'jenkins':
+    ensure  => 'running',
+    enable  => 'true',
   }
   package {'rubygems':
     ensure => 'installed',
@@ -88,12 +92,12 @@ class jenkins ($settings = hiera_hash('jenkins', '')) {
     ensure => 'installed',
   }
   package {'flake8':
-    ensure => 'installed',
+    ensure   => 'installed',
     provider => 'pip',
     require  => Package['python-pip'],
   }
   package {'rspec-puppet':
-    ensure => 'installed',
+    ensure   => 'installed',
     provider => 'gem',
     require  => Package['rubygems'],
   }
@@ -104,5 +108,8 @@ class jenkins ($settings = hiera_hash('jenkins', '')) {
     require => [Package['monit'], File['/etc/monit/conf.d']],
     notify  => Service['monit'],
   }
-
+  exec { 'wait_for_jenkins':
+    command => '/bin/bash -c "while :; do wget --spider http://localhost:8080; [[ \$? -eq 0 ]] && break; sleep 1; done"',
+    require => [File['/var/lib/jenkins/config.xml'],Service['jenkins']]
+  }
 }

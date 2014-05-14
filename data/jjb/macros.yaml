@@ -1,4 +1,11 @@
-- builder:
-    name: gerrit-git-prep
-    builders:
-      - shell: "/usr/local/jenkins/slave_scripts/gerrit-git-prep.sh http://sf-gerrit/r"
+- scm:
+    name: zuul-git
+    scm:
+     - git:
+        url: '$ZUUL_URL/$ZUUL_PROJECT'
+        branches:
+         - '$ZUUL_COMMIT'
+        refspec: '$ZUUL_REF'
+        wipe-workspace: false
+        clean: true
+
