@@ -19,11 +19,11 @@ set -x
 
 source functions.sh
 
-SF_PREFIX=${SFPREFIX:-sf}
+SF_SUFFIX=${SFSUFFIX:-sf.dom}
 
-ROLES="${SF_PREFIX}-puppetmaster ${SF_PREFIX}-ldap ${SF_PREFIX}-mysql"
-ROLES="$ROLES ${SF_PREFIX}-redmine ${SF_PREFIX}-gerrit ${SF_PREFIX}-managesf"
-ROLES="$ROLES ${SF_PREFIX}-jenkins ${SF_PREFIX}-commonservices"
+ROLES="puppetmaster ldap mysql"
+ROLES="$ROLES redmine gerrit managesf"
+ROLES="$ROLES jenkins commonservices"
 
 BUILD=build
 [ -d "$BUILD" ] && rm -Rf $BUILD

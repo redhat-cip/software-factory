@@ -55,13 +55,13 @@ logging = {
 auth = {
     'type': 'ldap',
     'ldap': {
-        'host': 'ldap://%s-ldap' % (os.environ['SF_PREFIX']),
+        'host': 'ldap://ldap.%s' % (os.environ['SF_SUFFIX']),
         'dn': 'cn=%(username)s,ou=Users,dc=example,dc=com'
     }
 }
 
 gerrit = {
-    'host': '%s-gerrit' % (os.environ['SF_PREFIX']),
+    'host': 'gerrit.%s' % (os.environ['SF_SUFFIX']),
     'admin': 'user1',
     'admin_email': 'user1@example.com',
     'ssh_port': 29418,
@@ -71,7 +71,7 @@ gerrit = {
 }
 
 redmine = {
-    'host': '%s-redmine' % (os.environ['SF_PREFIX']),
+    'host': 'redmine.%s' % (os.environ['SF_SUFFIX']),
     'api_key': '7f094d4e3e327bbd3f67279c95c193825e48f59e'
 }
 # Custom Configurations must be in Python dictionary format::

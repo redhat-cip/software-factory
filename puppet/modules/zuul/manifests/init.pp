@@ -14,7 +14,7 @@
 # under the License.
 
 class zuul ($settings = hiera_hash('jenkins', ''), $gh = hiera('gerrit_url'), $hosts = hiera('hosts')){
-  $gfqdn = "$gh.pub"
+  $gfqdn = "$gh"
   $gip = $hosts[$gfqdn]['ip']
   package { 'apache2':
     ensure => present,
@@ -155,7 +155,7 @@ class zuul ($settings = hiera_hash('jenkins', ''), $gh = hiera('gerrit_url'), $h
     owner   => 'zuul',
     group   => 'zuul',
     require => [File['/etc/zuul'],
-                Exec['init_config_repo']],
+                Exec['kick_jjb']],
   }
   file {'/srv/zuul/etc/status/public_html/jquery.min.js':
     ensure => link,

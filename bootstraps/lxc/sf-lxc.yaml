@@ -1,5 +1,5 @@
 network:
-    domain: pub
+    domain: SF_SUFFIX
     bridge: virbr1
     gateway: 192.168.134.1
 general:
@@ -9,46 +9,46 @@ edeploy:
 hosts:
   -
     address: 192.168.134.49
-    name: SF_PREFIX-puppetmaster
+    name: puppetmaster
     role: install-server-vm
     cloudinit: CIPATH/puppetmaster.cloudinit
   -
     address: 192.168.134.50
-    name: SF_PREFIX-ldap
+    name: ldap
     role: ldap
     cloudinit: CIPATH/ldap.cloudinit
   -
     address: 192.168.134.51
-    name: SF_PREFIX-mysql
+    name: mysql
     role: mysql
     cloudinit: CIPATH/mysql.cloudinit
   -
     address: 192.168.134.52
-    name: SF_PREFIX-redmine
+    name: redmine
     role: softwarefactory
     cloudinit: CIPATH/redmine.cloudinit
   -
     address: 192.168.134.53
-    name: SF_PREFIX-gerrit
+    name: gerrit
     role: softwarefactory
     cloudinit: CIPATH/gerrit.cloudinit
   -
     address: 192.168.134.54
-    name: SF_PREFIX-jenkins
+    name: jenkins
     role: softwarefactory
     cloudinit: CIPATH/jenkins.cloudinit
   -
     address: 192.168.134.55
-    name: SF_PREFIX-managesf
+    name: managesf
     role: softwarefactory
     cloudinit: CIPATH/managesf.cloudinit
   -
     address: 192.168.134.56
-    name: SF_PREFIX-commonservices
+    name: commonservices
     role: softwarefactory
     cloudinit: CIPATH/commonservices.cloudinit
   -
     address: 192.168.134.57
-    name: SF_PREFIX-slave
+    name: slave
     role: slave
     cloudinit: CIPATH/slave.cloudinit

@@ -13,16 +13,16 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-export SF_PREFIX=${SF_PREFIX:-tests}
+export SF_SUFFIX=${SF_SUFFIX:-tests.dom}
 # Gerrit
-socat TCP-LISTEN:80,fork TCP:${SF_PREFIX}-gerrit:80 &
+socat TCP-LISTEN:80,fork TCP:gerrit.${SF_SUFFIX}:80 &
 # Redmine
-socat TCP-LISTEN:81,fork TCP:${SF_PREFIX}-redmine:80 &
+socat TCP-LISTEN:81,fork TCP:redmine.${SF_SUFFIX}:80 &
 # Jenkins
-socat TCP-LISTEN:8080,fork TCP:${SF_PREFIX}-jenkins:8080 &
+socat TCP-LISTEN:8080,fork TCP:jenkins.${SF_SUFFIX}:8080 &
 # Etherpad
-socat TCP-LISTEN:82,fork TCP:${SF_PREFIX}-commonservices:80 &
+socat TCP-LISTEN:82,fork TCP:commonservices.${SF_SUFFIX}:80 &
 # Logdeit
-socat TCP-LISTEN:83,fork TCP:${SF_PREFIX}-commonservices:8080 &
+socat TCP-LISTEN:83,fork TCP:commonservices.${SF_SUFFIX}:8080 &
 # Zuul
-socat TCP-LISTEN:84,fork TCP:${SF_PREFIX}-jenkins:80 & 
+socat TCP-LISTEN:84,fork TCP:jenkins.${SF_SUFFIX}:80 

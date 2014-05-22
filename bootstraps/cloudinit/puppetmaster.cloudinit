@@ -1,51 +1,51 @@
 #cloud-config
 output: {all: '| tee -a /var/log/cloud-init-output.log'}
-hostname: SF_PREFIX-puppetmaster
-fqdn: SF_PREFIX-puppetmaster.pub
+hostname: puppetmaster
+fqdn: puppetmaster.SF_SUFFIX
 disable_root: 0
 write_files:
 - content: |
     hosts:
       localhost:
         ip: 127.0.0.1
-      SF_PREFIX-puppetmaster.pub:
+      puppetmaster.SF_SUFFIX:
         ip: puppermaster-ip-template
-        host_aliases: [SF_PREFIX-puppetmaster]
-      SF_PREFIX-ldap.pub:
+        host_aliases: [puppetmaster]
+      ldap.SF_SUFFIX:
         ip: ldap_host
-        host_aliases: [SF_PREFIX-ldap]
-      SF_PREFIX-mysql.pub:
+        host_aliases: [ldap]
+      mysql.SF_SUFFIX:
         ip: mysql_host
-        host_aliases: [SF_PREFIX-mysql]
-      SF_PREFIX-jenkins.pub:
+        host_aliases: [mysql]
+      jenkins.SF_SUFFIX:
         ip: jenkins_host
-        host_aliases: [SF_PREFIX-jenkins]
-      SF_PREFIX-redmine.pub:
+        host_aliases: [jenkins]
+      redmine.SF_SUFFIX:
         ip: redmine_host
-        host_aliases: [SF_PREFIX-redmine]
-      SF_PREFIX-gerrit.pub:
+        host_aliases: [redmine]
+      gerrit.SF_SUFFIX:
         ip: gerrit_host
-        host_aliases: [SF_PREFIX-gerrit]
-      SF_PREFIX-managesf.pub:
+        host_aliases: [gerrit]
+      managesf.SF_SUFFIX:
         ip: managesf_host
-        host_aliases: [SF_PREFIX-managesf]
-      SF_PREFIX-commonservices.pub:
+        host_aliases: [managesf]
+      commonservices.SF_SUFFIX:
         ip: commonservices_host
-        host_aliases: [SF_PREFIX-commonservices]
+        host_aliases: [commonservices]
   path: /root/hosts.yaml
 runcmd:
     - /etc/init.d/puppetmaster stop
     - MY_PRIV_IP=`curl -s http://169.254.169.254/latest/meta-data/local-ipv4 | cut -d, -f1`
     - sed -i "s/puppermaster-ip-template/$MY_PRIV_IP/" /root/hosts.yaml
-    - echo "127.0.0.1 SF_PREFIX-puppetmaster.pub SF_PREFIX-puppetmaster" > /etc/hosts
-    - echo "ldap_host SF_PREFIX-ldap.pub SF_PREFIX-ldap" >> /etc/hosts
-    - echo "mysql_host SF_PREFIX-mysql.pub SF_PREFIX-mysql" >> /etc/hosts
-    - echo "jenkins_host SF_PREFIX-jenkins.pub SF_PREFIX-jenkins" >> /etc/hosts
-    - echo "redmine_host SF_PREFIX-redmine.pub SF_PREFIX-redmine" >> /etc/hosts
-    - echo "gerrit_host SF_PREFIX-gerrit.pub SF_PREFIX-gerrit" >> /etc/hosts
-    - echo "managesf_host SF_PREFIX-managesf.pub SF_PREFIX-managesf" >> /etc/hosts
-    - echo "commonservices_host SF_PREFIX-commonservices.pub SF_PREFIX-commonservices" >> /etc/hosts
+    - echo "127.0.0.1 puppetmaster.SF_SUFFIX puppetmaster" > /etc/hosts
+    - echo "ldap_host ldap.SF_SUFFIX ldap" >> /etc/hosts
+    - echo "mysql_host mysql.SF_SUFFIX mysql" >> /etc/hosts
+    - echo "jenkins_host jenkins.SF_SUFFIX jenkins" >> /etc/hosts
+    - echo "redmine_host redmine.SF_SUFFIX redmine" >> /etc/hosts
+    - echo "gerrit_host gerrit.SF_SUFFIX gerrit" >> /etc/hosts
+    - echo "managesf_host managesf.SF_SUFFIX managesf" >> /etc/hosts
+    - echo "commonservices_host commonservices.SF_SUFFIX commonservices" >> /etc/hosts
     - tar -xzf /root/puppet-bootstrapper.tar.gz -C /root/
     - cd /root/puppet-bootstrapper
     - ./config_puppetmaster.sh > /var/log/sf-bootstrap.log 2>&1
-    - HOME=/root/ TEMP_SSH_PWD=SSHPASS SFPREFIX=SF_PREFIX ./bootstrap.sh >> /var/log/sf-bootstrap.log 2>&1
+    - HOME=/root/ TEMP_SSH_PWD=SSHPASS SFSUFFIX=SF_SUFFIX ./bootstrap.sh > /var/log/sf-bootstrap.log 2>&1

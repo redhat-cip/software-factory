@@ -4,7 +4,7 @@ redmine:
     - redmine
     - postfix
   :username: root
-  :hostname: SF_PREFIX-redmine
+  :hostname: redmine.SF_SUFFIX
 
 mysql:
   :roles:
@@ -12,7 +12,7 @@ mysql:
     - mysql
     - postfix
   :username: root
-  :hostname: SF_PREFIX-mysql
+  :hostname: mysql.SF_SUFFIX
 
 ldap:
   :roles:
@@ -20,7 +20,7 @@ ldap:
     - ldap
     - postfix
   :username: root
-  :hostname: SF_PREFIX-ldap
+  :hostname: ldap.SF_SUFFIX
 
 gerrit:
   :roles:
@@ -28,7 +28,7 @@ gerrit:
     - gerrit
     - postfix
   :username: root
-  :hostname: SF_PREFIX-gerrit
+  :hostname: gerrit.SF_SUFFIX
 
 jenkins:
   :roles:
@@ -36,18 +36,18 @@ jenkins:
     - jenkins
     - postfix
   :username: root
-  :hostname: SF_PREFIX-jenkins
+  :hostname: jenkins.SF_SUFFIX
 
 commonservices:
   :roles:
     - base
     - commonservices
   :username: root
-  :hostname: SF_PREFIX-commonservices
+  :hostname: commonservices.SF_SUFFIX
 
 managesf:
   :roles:
     - base
     - managesf
   :username: root
-  :hostname: SF_PREFIX-managesf
+  :hostname: managesf.SF_SUFFIX

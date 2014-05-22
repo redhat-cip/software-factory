@@ -7,10 +7,10 @@ parameters:
   key_name:
     type: string
     description:  Name of a KeyPair to enable SSH access to the instance
-  prefix:
+  suffix:
     type: string
-    description: Hostname prefix
-    default: sf
+    description: Domain suffix to the hostnames
+    default: sf.dom
   jenkins_master_url:
     type: string
     description: url/hostname(without http://) of jenkins master node to which slave connects 
@@ -117,55 +117,55 @@ resources:
           template: |
             #cloud-config
             output: {all: '| tee -a /var/log/cloud-init-output.log'}
-            hostname: SF_PREFIX-puppetmaster
-            fqdn: SF_PREFIX-puppetmaster.pub
+            hostname: puppetmaster
+            fqdn: puppetmaster.SF_SUFFIX
             disable_root: 0
             write_files:
             - content: |
                 hosts:
                   localhost:
                     ip: 127.0.0.1
-                  SF_PREFIX-puppetmaster.pub:
+                  puppetmaster.SF_SUFFIX:
                     ip: puppermaster-ip-template
-                    host_aliases: [SF_PREFIX-puppetmaster]
-                  SF_PREFIX-ldap.pub:
+                    host_aliases: [puppetmaster]
+                  ldap.SF_SUFFIX:
                     ip: ldap_host
-                    host_aliases: [SF_PREFIX-ldap]
-                  SF_PREFIX-mysql.pub:
+                    host_aliases: [ldap]
+                  mysql.SF_SUFFIX:
                     ip: mysql_host
-                    host_aliases: [SF_PREFIX-mysql]
-                  SF_PREFIX-jenkins.pub:
+                    host_aliases: [mysql]
+                  jenkins.SF_SUFFIX:
                     ip: jenkins_host
-                    host_aliases: [SF_PREFIX-jenkins]
-                  SF_PREFIX-redmine.pub:
+                    host_aliases: [jenkins]
+                  redmine.SF_SUFFIX:
                     ip: redmine_host
-                    host_aliases: [SF_PREFIX-redmine]
-                  SF_PREFIX-gerrit.pub:
+                    host_aliases: [redmine]
+                  gerrit.SF_SUFFIX:
                     ip: gerrit_host
-                    host_aliases: [SF_PREFIX-gerrit]
-                  SF_PREFIX-managesf.pub:
+                    host_aliases: [gerrit]
+                  managesf.SF_SUFFIX:
                     ip: managesf_host
-                    host_aliases: [SF_PREFIX-managesf]
-                  SF_PREFIX-commonservices.pub:
+                    host_aliases: [managesf]
+                  commonservices.SF_SUFFIX:
                     ip: commonservices_host
-                    host_aliases: [SF_PREFIX-commonservices]
+                    host_aliases: [commonservices]
               path: /root/hosts.yaml
             runcmd:
               - /etc/init.d/puppetmaster stop
               - MY_PRIV_IP=`curl -s http://169.254.169.254/latest/meta-data/local-ipv4 | cut -d, -f1`
               - sed -i "s/puppermaster-ip-template/$MY_PRIV_IP/" /root/hosts.yaml
-              - echo "127.0.0.1 SF_PREFIX-puppetmaster.pub SF_PREFIX-puppetmaster" > /etc/hosts
-              - echo "ldap_host SF_PREFIX-ldap.pub SF_PREFIX-ldap" >> /etc/hosts
-              - echo "mysql_host SF_PREFIX-mysql.pub SF_PREFIX-mysql" >> /etc/hosts
-              - echo "jenkins_host SF_PREFIX-jenkins.pub SF_PREFIX-jenkins" >> /etc/hosts
-              - echo "redmine_host SF_PREFIX-redmine.pub SF_PREFIX-redmine" >> /etc/hosts
-              - echo "gerrit_host SF_PREFIX-gerrit.pub SF_PREFIX-gerrit" >> /etc/hosts
-              - echo "managesf_host SF_PREFIX-managesf.pub SF_PREFIX-managesf" >> /etc/hosts
-              - echo "commonservices_host SF_PREFIX-commonservices.pub SF_PREFIX-commonservices" >> /etc/hosts
+              - echo "127.0.0.1 puppetmaster.SF_SUFFIX puppetmaster" > /etc/hosts
+              - echo "ldap_host ldap.SF_SUFFIX ldap" >> /etc/hosts
+              - echo "mysql_host mysql.SF_SUFFIX mysql" >> /etc/hosts
+              - echo "jenkins_host jenkins.SF_SUFFIX jenkins" >> /etc/hosts
+              - echo "redmine_host redmine.SF_SUFFIX redmine" >> /etc/hosts
+              - echo "gerrit_host gerrit.SF_SUFFIX gerrit" >> /etc/hosts
+              - echo "managesf_host managesf.SF_SUFFIX managesf" >> /etc/hosts
+              - echo "commonservices_host commonservices.SF_SUFFIX commonservices" >> /etc/hosts
               - tar -xzf /root/puppet-bootstrapper.tar.gz -C /root/
               - cd /root/puppet-bootstrapper
               - ./config_puppetmaster.sh > /var/log/sf-bootstrap.log 2>&1
-              - HOME=/root/ TEMP_SSH_PWD=SSHPASS SFPREFIX=SF_PREFIX ./bootstrap.sh >> /var/log/sf-bootstrap.log 2>&1
+              - HOME=/root/ TEMP_SSH_PWD=SSHPASS SFSUFFIX=SF_SUFFIX ./bootstrap.sh > /var/log/sf-bootstrap.log 2>&1
           params:
             jenkins_host: { get_attr: [jenkins_instance, first_address] }
             redmine_host: { get_attr: [redmine_instance, first_address] }
@@ -174,7 +174,7 @@ resources:
             commonservices_host: { get_attr: [commonservices_instance, first_address] }
             ldap_host: { get_attr: [ldap_instance, first_address] }
             mysql_host: { get_attr: [mysql_instance, first_address] }
-            SF_PREFIX: { get_param: prefix }
+            SF_SUFFIX: { get_param: suffix }
             SSHPASS: { get_param: temp_ssh_pwd }
 
   jenkins_instance:
@@ -189,17 +189,17 @@ resources:
           template: |
             #cloud-config
             output: {all: '| tee -a /var/log/cloud-init-output.log'}
-            hostname: SF_PREFIX-jenkins
-            fqdn: SF_PREFIX-jenkins.pub
+            hostname: jenkins
+            fqdn: jenkins.SF_SUFFIX
             disable_root: 0
             runcmd:
               - /etc/init.d/puppet stop
-              - echo puppetmaster-ip-template SF_PREFIX-puppetmaster.pub >> /etc/hosts
-              - sed -i -e '0,/^$/s/^$/server=SF_PREFIX-puppetmaster.pub\n/g' /etc/puppet/puppet.conf
+              - echo puppetmaster-ip-template puppetmaster.SF_SUFFIX >> /etc/hosts
+              - sed -i -e '0,/^$/s/^$/server=puppetmaster.SF_SUFFIX\n/g' /etc/puppet/puppet.conf
               - /bin/echo -e "\n[agent]\nenvironment=sf" >> /etc/puppet/puppet.conf
               - echo "root:SSHPASS" | chpasswd
           params:
-            SF_PREFIX: { get_param: prefix }
+            SF_SUFFIX: { get_param: suffix }
             SSHPASS: { get_param: temp_ssh_pwd }
   
   redmine_instance:
@@ -214,17 +214,16 @@ resources:
           template: |
             #cloud-config
             output: {all: '| tee -a /var/log/cloud-init-output.log'}
-            hostname: SF_PREFIX-redmine
-            fqdn: SF_PREFIX-redmine.pub
+            hostname: redmine
+            fqdn: redmine.SF_SUFFIX
             disable_root: 0
             runcmd:
               - /etc/init.d/puppet stop
-              - echo puppetmaster-ip-template SF_PREFIX-puppetmaster.pub >> /etc/hosts
-              - sed -i -e '0,/^$/s/^$/server=SF_PREFIX-puppetmaster.pub\n/g' /etc/puppet/puppet.conf
+              - echo puppetmaster-ip-template puppetmaster.SF_SUFFIX >> /etc/hosts
+              - sed -i -e '0,/^$/s/^$/server=puppetmaster.SF_SUFFIX\n/g' /etc/puppet/puppet.conf
               - /bin/echo -e "\n[agent]\nenvironment=sf" >> /etc/puppet/puppet.conf
-              - echo "root:SSHPASS" | chpasswd
           params:
-            SF_PREFIX: { get_param: prefix }
+            SF_SUFFIX: { get_param: suffix }
             SSHPASS: { get_param: temp_ssh_pwd }
   
   gerrit_instance:
@@ -239,17 +238,17 @@ resources:
           template: |
             #cloud-config
             output: {all: '| tee -a /var/log/cloud-init-output.log'}
-            hostname: SF_PREFIX-gerrit
-            fqdn: SF_PREFIX-gerrit.pub
+            hostname: gerrit
+            fqdn: gerrit.SF_SUFFIX
             disable_root: 0
             runcmd:
               - /etc/init.d/puppet stop
-              - echo puppetmaster-ip-template SF_PREFIX-puppetmaster.pub >> /etc/hosts
-              - sed -i -e '0,/^$/s/^$/server=SF_PREFIX-puppetmaster.pub\n/g' /etc/puppet/puppet.conf
+              - echo puppetmaster-ip-template puppetmaster.SF_SUFFIX >> /etc/hosts
+              - sed -i -e '0,/^$/s/^$/server=puppetmaster.SF_SUFFIX\n/g' /etc/puppet/puppet.conf
               - /bin/echo -e "\n[agent]\nenvironment=sf" >> /etc/puppet/puppet.conf
               - echo "root:SSHPASS" | chpasswd
           params:
-            SF_PREFIX: { get_param: prefix }
+            SF_SUFFIX: { get_param: suffix }
             SSHPASS: { get_param: temp_ssh_pwd }
   
   commonservices_instance:
@@ -264,17 +263,17 @@ resources:
           template: |
             #cloud-config
             output: {all: '| tee -a /var/log/cloud-init-output.log'}
-            hostname: SF_PREFIX-commonservices
-            fqdn: SF_PREFIX-commonservices.pub
+            hostname: commonservices
+            fqdn: commonservices.SF_SUFFIX
             disable_root: 0
             runcmd:
               - /etc/init.d/puppet stop
-              - echo puppetmaster-ip-template SF_PREFIX-puppetmaster.pub >> /etc/hosts
-              - sed -i -e '0,/^$/s/^$/server=SF_PREFIX-puppetmaster.pub\n/g' /etc/puppet/puppet.conf
+              - echo puppetmaster-ip-template puppetmaster.SF_SUFFIX >> /etc/hosts
+              - sed -i -e '0,/^$/s/^$/server=puppetmaster.SF_SUFFIX\n/g' /etc/puppet/puppet.conf
               - /bin/echo -e "\n[agent]\nenvironment=sf" >> /etc/puppet/puppet.conf
               - echo "root:SSHPASS" | chpasswd
           params:
-            SF_PREFIX: { get_param: prefix }
+            SF_SUFFIX: { get_param: suffix }
             SSHPASS: { get_param: temp_ssh_pwd }
   
   managesf_instance:
@@ -289,17 +288,17 @@ resources:
           template: |
             #cloud-config
             output: {all: '| tee -a /var/log/cloud-init-output.log'}
-            hostname: SF_PREFIX-managesf
-            fqdn: SF_PREFIX-managesf.pub
+            hostname: managesf
+            fqdn: managesf.SF_SUFFIX
             disable_root: 0
             runcmd:
               - /etc/init.d/puppet stop
-              - echo puppetmaster-ip-template SF_PREFIX-puppetmaster.pub >> /etc/hosts
-              - sed -i -e '0,/^$/s/^$/server=SF_PREFIX-puppetmaster.pub\n/g' /etc/puppet/puppet.conf
+              - echo puppetmaster-ip-template puppetmaster.SF_SUFFIX >> /etc/hosts
+              - sed -i -e '0,/^$/s/^$/server=puppetmaster.SF_SUFFIX\n/g' /etc/puppet/puppet.conf
               - /bin/echo -e "\n[agent]\nenvironment=sf" >> /etc/puppet/puppet.conf
               - echo "root:SSHPASS" | chpasswd
           params:
-            SF_PREFIX: { get_param: prefix }
+            SF_SUFFIX: { get_param: suffix }
             SSHPASS: { get_param: temp_ssh_pwd }
   
   ldap_instance:
@@ -314,8 +313,8 @@ resources:
           template: |
             #cloud-config
             output: {all: '| tee -a /var/log/cloud-init-output.log'}
-            hostname: SF_PREFIX-ldap
-            fqdn: SF_PREFIX-ldap.pub
+            hostname: ldap
+            fqdn: ldap.SF_SUFFIX
             disable_root: 0
             write_files:
             - content: |
@@ -400,12 +399,12 @@ resources:
               - ldapadd -x -D cn=admin,dc=example,dc=com -w secret -f /root/groups.ldif
               - ldapmodify -Q -Y EXTERNAL -H ldapi:/// -f /root/disable_anon_frontend.ldif
               - ldapmodify -Q -Y EXTERNAL -H ldapi:/// -f /root/disable_anon_backend.ldif
-              - echo puppetmaster-ip-template SF_PREFIX-puppetmaster.pub >> /etc/hosts
-              - sed -i -e '0,/^$/s/^$/server=SF_PREFIX-puppetmaster.pub\n/g' /etc/puppet/puppet.conf
+              - echo puppetmaster-ip-template puppetmaster.SF_SUFFIX >> /etc/hosts
+              - sed -i -e '0,/^$/s/^$/server=puppetmaster.SF_SUFFIX\n/g' /etc/puppet/puppet.conf
               - /bin/echo -e "\n[agent]\nenvironment=sf" >> /etc/puppet/puppet.conf
               - echo "root:SSHPASS" | chpasswd
           params:
-            SF_PREFIX: { get_param: prefix }
+            SF_SUFFIX: { get_param: suffix }
             SSHPASS: { get_param: temp_ssh_pwd }
   
   mysql_instance:
@@ -420,17 +419,17 @@ resources:
           template: |
             #cloud-config
             output: {all: '| tee -a /var/log/cloud-init-output.log'}
-            hostname: SF_PREFIX-mysql
-            fqdn: SF_PREFIX-mysql.pub
+            hostname: mysql
+            fqdn: mysql.SF_SUFFIX
             disable_root: 0
             runcmd:
               - /etc/init.d/puppet stop
-              - echo puppetmaster-ip-template SF_PREFIX-puppetmaster.pub >> /etc/hosts
-              - sed -i -e '0,/^$/s/^$/server=SF_PREFIX-puppetmaster.pub\n/g' /etc/puppet/puppet.conf
+              - echo puppetmaster-ip-template puppetmaster.SF_SUFFIX >> /etc/hosts
+              - sed -i -e '0,/^$/s/^$/server=puppetmaster.SF_SUFFIX\n/g' /etc/puppet/puppet.conf
               - /bin/echo -e "\n[agent]\nenvironment=sf" >> /etc/puppet/puppet.conf
               - echo "root:SSHPASS" | chpasswd
           params:
-            SF_PREFIX: { get_param: prefix }
+            SF_SUFFIX: { get_param: suffix }
             SSHPASS: { get_param: temp_ssh_pwd }
   
   slave_instance:
@@ -445,8 +444,8 @@ resources:
           template: |
             #cloud-config
             output: {all: '| tee -a /var/log/cloud-init-output.log'}
-            hostname: SF_PREFIX-slave
-            fqdn: SF_PREFIX-slave.pub
+            hostname: slave
+            fqdn: slave.SF_SUFFIX
             disable_root: 0
             groups:
               - jenkins: [jenkins]
@@ -458,9 +457,9 @@ resources:
                 homedir: /var/lib/jenkins
             runcmd:
              - chown jenkins /var/lib/jenkins /var/lib/jenkins/plugins
-             - nohup sudo -u jenkins -i java -jar /var/lib/jenkins/swarm-client-1.15-jar-with-dependencies.jar -master http://JENKINS_MASTER_URL:8080 -username jenkins -password JENKINS_USER_PASSWORD -name SF_PREFIX-slave > /dev/null 2>&1 & echo $!
+             - nohup sudo -u jenkins -i java -jar /var/lib/jenkins/swarm-client-1.15-jar-with-dependencies.jar -master http://JENKINS_MASTER_URL:8080 -username jenkins -password JENKINS_USER_PASSWORD -name slave > /dev/null 2>&1 & echo $!
           params:
-            SF_PREFIX: { get_param: prefix }
+            SF_SUFFIX: { get_param: suffix }
             JENKINS_MASTER_URL: { get_param: jenkins_master_url }
             JENKINS_USER_PASSWORD: { get_param: jenkins_user_pwd }
 

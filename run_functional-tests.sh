@@ -17,7 +17,7 @@ function stop {
 }
 
 function get_ip {
-    grep -B 1 "\-$1" /tmp/lxc-conf/sf-lxc.yaml | head -1 | awk '{ print $2 }'
+    grep -B 1 "name:[ \t]*$1" /tmp/lxc-conf/sf-lxc.yaml | head -1 | awk '{ print $2 }'
 }
 
 function scan_and_configure_knownhosts {
@@ -52,10 +52,10 @@ function get_logs {
     echo
     ssh -o StrictHostKeyChecking=no root@`get_ip puppetmaster` cat /var/log/sf-bootstrap.log
     echo "Gerrit logs content: --["
-    ssh -o StrictHostKeyChecking=no root@`get_ip puppetmaster` "ssh root@${SF_PREFIX}-gerrit cat /home/gerrit/site_path/logs/*"
+    ssh -o StrictHostKeyChecking=no root@`get_ip puppetmaster` "ssh root@gerrit.${SF_SUFFIX} cat /home/gerrit/site_path/logs/*"
     echo "]--"
     echo "Gerrit node /var/log/syslog content: --["
-    ssh -o StrictHostKeyChecking=no root@`get_ip puppetmaster` "ssh root@${SF_PREFIX}-gerrit cat /var/log/syslog"
+    ssh -o StrictHostKeyChecking=no root@`get_ip puppetmaster` "ssh root@gerrit.${SF_SUFFIX} cat /var/log/syslog"
     echo "]--"
     # The init option of gerrit.war will rewrite the gerrit config files
     # if the provided files does not follow exactly the expected format by gerrit.
@@ -66,29 +66,29 @@ function get_logs {
     # We have copied *.config files in /tmp just before the gerrit.war init (see the
     # manifest) and create a diff after. Here we just display it to help debug.
     echo "Redmine node /var/log/redmine/default/production.log content: --["
-    ssh -o StrictHostKeyChecking=no root@`get_ip puppetmaster` "ssh root@${SF_PREFIX}-redmine cat /var/log/redmine/default/production.log"
+    ssh -o StrictHostKeyChecking=no root@`get_ip puppetmaster` "ssh root@redmine.${SF_SUFFIX} cat /var/log/redmine/default/production.log"
     echo "]--"
     echo "Gerrit configuration change: --["
-    ssh -o StrictHostKeyChecking=no root@`get_ip puppetmaster` "ssh root@${SF_PREFIX}-gerrit cat /tmp/config.diff"
+    ssh -o StrictHostKeyChecking=no root@`get_ip puppetmaster` "ssh root@gerrit.${SF_SUFFIX} cat /tmp/config.diff"
     echo "]--"
     echo "MySQL node /var/log/syslog content: --["
-    ssh -o StrictHostKeyChecking=no root@`get_ip puppetmaster` "ssh root@${SF_PREFIX}-mysql cat /var/log/syslog"
+    ssh -o StrictHostKeyChecking=no root@`get_ip puppetmaster` "ssh root@mysql.${SF_SUFFIX} cat /var/log/syslog"
     echo "]--"
     echo "Managesf node /var/log/syslog content: --["
-    ssh -o StrictHostKeyChecking=no root@`get_ip puppetmaster` "ssh root@${SF_PREFIX}-managesf cat /var/log/syslog"
+    ssh -o StrictHostKeyChecking=no root@`get_ip puppetmaster` "ssh root@managesf.${SF_SUFFIX} cat /var/log/syslog"
     echo "]--"
     echo "Managesf node /var/log/apache2/error.log content: --["
-    ssh -o StrictHostKeyChecking=no root@`get_ip puppetmaster` "ssh root@${SF_PREFIX}-managesf cat /var/log/apache2/error.log"
+    ssh -o StrictHostKeyChecking=no root@`get_ip puppetmaster` "ssh root@managesf.${SF_SUFFIX} cat /var/log/apache2/error.log"
     echo "]--"
     echo "Managesf node /tmp/debug logs content: --["
-    ssh -o StrictHostKeyChecking=no root@`get_ip puppetmaster` "ssh root@${SF_PREFIX}-managesf cat /tmp/debug"
+    ssh -o StrictHostKeyChecking=no root@`get_ip puppetmaster` "ssh root@managesf.${SF_SUFFIX} cat /tmp/debug"
     echo "]--"
     echo "Local /tmp/debug content: --["
     ssh -o StrictHostKeyChecking=no root@`get_ip puppetmaster` cat /tmp/debug
     echo "]--"
 }
 
-export SF_PREFIX=${SF_PREFIX:-tests}
+export SF_SUFFIX=${SF_SUFFIX:-tests.dom}
 export SKIP_CLEAN_ROLES="y"
 export EDEPLOY_ROLES=/var/lib/sf/roles/
 
@@ -133,7 +133,7 @@ while true; do
     sleep 10
 done
 
-ssh -o StrictHostKeyChecking=no root@`get_ip puppetmaster` "cd puppet-bootstrapper; SF_PREFIX=${SF_PREFIX} SF_ROOT=\$(pwd) nosetests -v"
+ssh -o StrictHostKeyChecking=no root@`get_ip puppetmaster` "cd puppet-bootstrapper; SF_SUFFIX=${SF_SUFFIX} SF_ROOT=\$(pwd) nosetests -v"
 RET=$?
 
 get_logs

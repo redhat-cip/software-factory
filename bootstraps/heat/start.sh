@@ -15,12 +15,12 @@ flavor="standard.xsmall"
 #alt_flavor="standard.small"
 alt_flavor=$flavor
 floating_ip_pool_name="Ext-Net"
-prefix="tests"
+suffix="tests.dom"
 temp_ssh_pwd="heat"
 jenkins_user_pwd="userpass"
-jenkins_master_url="$prefix-jenkins"
+jenkins_master_url="jenkins.$suffix"
 params="key_name=$key_name;floating_ip_pool_name=$floating_ip_pool_name;instance_type=$flavor"
-params="$params;alt_instance_type=$alt_flavor;prefix=$prefix;temp_ssh_pwd=$temp_ssh_pwd"
+params="$params;alt_instance_type=$alt_flavor;suffix=$suffix;temp_ssh_pwd=$temp_ssh_pwd"
 params="$params;jenkins_user_pwd=$jenkins_user_pwd;jenkins_master_url=$jenkins_master_url"
 
 function get_params {

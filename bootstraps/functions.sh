@@ -45,7 +45,7 @@ function generate_hieras {
 
     for role in $ROLES; do
         current_role=`echo "${role}" | sed 's/.*\(gerrit\|redmine\|jenkins\|mysql\|ldap\|managesf\).*/\1/g'`
-        sed -i "s#${current_role}_url:.*#${current_role}_url: ${role}#g" ${OUTPUT}/common.yaml
+        sed -i "s#${current_role}_url:.*#${current_role}_url: ${role}.${SF_SUFFIX}#g" ${OUTPUT}/common.yaml
     done
 
     # MySQL password for services
@@ -67,7 +67,7 @@ function generate_hieras {
     # Jenkins part
     # TODO: Must be randomly generated
     JENKINS_CREDS_ID="a6feb755-3493-4635-8ede-216127d31bb0"
-    JENKINS_DEFAULT_SLAVE="${SF_PREFIX}-slave"
+    JENKINS_DEFAULT_SLAVE="slave.${SF_SUFFIX}"
     sed -i "s#JENKINS_CREDS_ID#${JENKINS_CREDS_ID}#" ${OUTPUT}/jenkins.yaml
     sed -i "s#LDAP_ADMIN_DN#${LDAP_ADMIN_DN}#" ${OUTPUT}/jenkins.yaml
     # using printf instead of echo along with base64 encoding
@@ -121,7 +121,7 @@ function wait_all_nodes {
 }
 
 function scan_and_configure_knownhosts {
-    local role=$1
+    local role=$1.${SF_SUFFIX}
     local ip=$2
     local port=$3
     if [ "$port" != "22" ]; then
@@ -157,7 +157,7 @@ function generate_serverspec {
     OUTPUT=${BUILD}/serverspec
     mkdir -p ${OUTPUT}
     cp serverspec/hosts.yaml.tpl ${OUTPUT}/hosts.yaml
-    sed -i -e "s/SF_PREFIX/${SF_PREFIX}/g" ${OUTPUT}/hosts.yaml
+    sed -i -e "s/SF_SUFFIX/${SF_SUFFIX}/g" ${OUTPUT}/hosts.yaml
 }
 
 function generate_keys {
@@ -203,13 +203,13 @@ function run_puppet_agent {
 }
 
 function trigger_puppet_apply {
-    local puppetmaster_ip=$(getip_from_yaml $SF_PREFIX-puppetmaster)
+    local puppetmaster_ip=$(getip_from_yaml puppetmaster)
     local ssh_port=22
-    MROLES=$(echo $ROLES | sed s/$SF_PREFIX-puppetmaster//)
+    MROLES=$(echo $ROLES | sed s/puppetmaster//)
     for role in ${MROLES}; do
         echo " [+] ${role}"
-        sshpass -p "$TEMP_SSH_PWD" ssh -p$ssh_port root@${role} sed -i "s/puppetmaster-ip-template/$puppetmaster_ip/" /etc/hosts
+        sshpass -p "$TEMP_SSH_PWD" ssh -p$ssh_port root@${role}.${SF_SUFFIX} sed -i "s/puppetmaster-ip-template/$puppetmaster_ip/" /etc/hosts
         # The Puppet run will deactivate the temporary root password
-        sshpass -p "$TEMP_SSH_PWD" ssh -p$ssh_port root@${role} "puppet agent --test --environment sf || true; /etc/init.d/puppet start"
+        sshpass -p "$TEMP_SSH_PWD" ssh -p$ssh_port root@${role}.${SF_SUFFIX} "puppet agent --test --environment sf || true; /etc/init.d/puppet start"
     done
 }
