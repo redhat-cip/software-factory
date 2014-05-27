@@ -9,8 +9,8 @@
     username = <%= @settings['gerrit_mysql_username'] ? @settings['gerrit_mysql_username'] : 'gerrit' %>
     port = <%= @settings['mysql_port'] ? @settings['mysql_port'] : '3306' %>
 [auth]
-    type = LDAP
-    gitBasicAuth = <%= @settings['http_basic_auth'] %>
+    type = HTTP
+    gitBasicAuth = true
 [ldap]
     server = <%= @settings['ldap_uri'] %>
     # lookup user that can read the trees

@@ -20,10 +20,6 @@ import json
 import argparse
 
 
-def validate_auth(auth):
-    return len(auth.split(':')) is 2
-
-
 def split_and_strip(s):
     l = s.split(',')
     return [x.strip() for x in l]
@@ -36,6 +32,9 @@ parser.add_argument('--port', metavar='port-number',
                     help="Managesf HTTP port number", default=80)
 parser.add_argument('--auth', metavar='username:password',
                     help='Authentication information', required=True)
+parser.add_argument('--auth-server', metavar='central-auth-server',
+                    default='auth.sf.dom',
+                    help='Hostname of the central auth server')
 
 sp = parser.add_subparsers(dest="command")
 cp = sp.add_parser('create')
@@ -67,13 +66,21 @@ url = "http://%(host)s:%(port)s/project/%(name)s" % \
      'name': args.name
      }
 
-if not validate_auth(args.auth):
-    raise Exception("'auth' should be mentioned in name:password format")
+
+def get_cookie():
+    (username, password) = args.auth.split(':')
+    r = http.post('http://%s/login' % args.auth_server,
+                  params={'username': username,
+                          'password': password,
+                          'back': '/'},
+                  allow_redirects=False)
+    return r.cookies['auth_pubtkt']
 
 headers = {'Authorization': 'Basic ' + base64.b64encode(args.auth)}
 
 if args.command == 'delete':
-    resp = http.delete(url, headers=headers)
+    resp = http.delete(url, headers=headers,
+                       cookies=dict(auth_pubtkt=get_cookie()))
 elif args.command == 'create':
     if getattr(args, 'core_group'):
         args.core_group = split_and_strip(args.core_group)
@@ -98,7 +105,8 @@ elif args.command == 'create':
     if len(info.keys()):
         data = json.dumps(info)
 
-    resp = http.put(url, headers=headers, data=data)
+    resp = http.put(url, headers=headers, data=data,
+                    cookies=dict(auth_pubtkt=get_cookie()))
 
 print resp.text
 if resp.status_code >= 200 and resp.status_code < 203:

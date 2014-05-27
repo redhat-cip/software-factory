@@ -13,7 +13,9 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-class managesf ($gerrit = hiera_hash('gerrit', ''), $redmine = hiera_hash('redmine', '')) {
+class managesf ($gerrit = hiera_hash('gerrit', ''),
+                $redmine = hiera_hash('redmine', ''),
+                $cauth = hiera_hash("cauth", '')) {
 
   package { 'apache2':
     ensure => present,
@@ -47,7 +49,7 @@ class managesf ($gerrit = hiera_hash('gerrit', ''), $redmine = hiera_hash('redmi
     owner   => 'www-data',
     group   => 'www-data',
     mode    => '0640',
-    content => template('managesf/config.py.erb'),
+    content => template('managesf/managesf-config.py.erb'),
     require => File['/var/www/managesf/'],
     replace => true,
   }
@@ -66,8 +68,7 @@ class managesf ($gerrit = hiera_hash('gerrit', ''), $redmine = hiera_hash('redmi
     mode   => '0640',
     owner  => 'www-data',
     group  => 'www-data',
-    source =>'puppet:///modules/managesf/managesf',
-    notify => Service[apache2],
+    content=> template('managesf/managesf.site.erb'),
   }
 
   file { '/etc/apache2/sites-enabled/000-default':
@@ -77,7 +78,8 @@ class managesf ($gerrit = hiera_hash('gerrit', ''), $redmine = hiera_hash('redmi
   exec {'enable_managesf_site':
     command => 'a2ensite managesf',
     path    => '/usr/sbin/:/usr/bin/:/bin/',
-    require => [File['/etc/apache2/sites-available/managesf'], File['/var/www/managesf/config.py']],
+    require => [File['/etc/apache2/sites-available/managesf'],
+                File['/var/www/managesf/config.py']],
     notify => Service[apache2],
   }
 }

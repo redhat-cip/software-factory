@@ -5,3 +5,5 @@ mysql_url:
 ldap_url:
 gerrit_url:
 managesf_url:
+auth_url: auth.SF_SUFFIX
+top_domain: SF_SUFFIX

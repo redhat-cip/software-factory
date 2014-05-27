@@ -16,8 +16,8 @@
 from pecan import conf
 from pecan import abort
 from pecan import request
-from requests.auth import HTTPBasicAuth
-from managesf.controllers.utils import send_request, template
+from managesf.controllers.utils import send_request, \
+    template, admin_auth_cookie
 
 import json
 import logging
@@ -38,7 +38,8 @@ def create_project(name, description, private):
           {'redmine_host': conf.redmine['host']}
     headers = {'X-Redmine-API-Key': conf.redmine['api_key'],
                'Content-type': 'application/xml'}
-    send_request(url, [201], method='POST', data=data, headers=headers)
+    send_request(url, [201], method='POST', data=data, headers=headers,
+                 cookies=admin_auth_cookie())
 
 
 def get_current_user_id():
@@ -46,9 +47,7 @@ def get_current_user_id():
     url = "http://%(redmine_host)s/users/current.json" % \
           {'redmine_host': conf.redmine['host']}
 
-    resp = send_request(url, [200], method='GET',
-                        auth=HTTPBasicAuth(request.remote_user['username'],
-                                           request.remote_user['password']))
+    resp = send_request(url, [200], method='GET')
     return resp.json()['user']['id']
 
 
@@ -59,7 +58,8 @@ def get_user_id(name):
            'user_name': name}
 
     headers = {'X-Redmine-API-Key': conf.redmine['api_key']}
-    resp = send_request(url, [200], method='GET', headers=headers)
+    resp = send_request(url, [200], method='GET', headers=headers,
+                        cookies=admin_auth_cookie())
 
     j = resp.json()
     if j['total_count'] == 0:
@@ -72,9 +72,7 @@ def get_role_id(role_name):
     logger.debug(' [redmine] fetching id of role ' + role_name)
     url = "http://%(redmine_host)s/roles.json" % \
           {'redmine_host': conf.redmine['host']}
-    resp = send_request(url, [200], method='GET',
-                        auth=HTTPBasicAuth(request.remote_user['username'],
-                                           request.remote_user['password']))
+    resp = send_request(url, [200], method='GET')
     roles = resp.json()['roles']
     for r in roles:
         if r['name'] == role_name:
@@ -93,7 +91,8 @@ def edit_membership(prj_name, memberships):
                'pid': prj_name}
         headers = {'X-Redmine-API-Key': conf.redmine['api_key'],
                    'Content-type': 'application/json'}
-        send_request(url, [201], method='POST', data=data, headers=headers)
+        send_request(url, [201], method='POST', data=data, headers=headers,
+                     cookies=admin_auth_cookie())
 
 
 def update_project_roles(name, ptl, core, dev):
@@ -105,7 +104,7 @@ def update_project_roles(name, ptl, core, dev):
     # of the Developer role
     dev.extend(core)
 
-    cu = request.remote_user['username']
+    cu = request.remote_user
     if cu not in ptl:
         ptl.append(cu)
     if cu not in dev:
@@ -144,9 +143,7 @@ def user_manages_project(prj_name):
           {'redmine_host': conf.redmine['host'],
            'name': prj_name.lower()}
 
-    resp = send_request(url, [200], method='GET',
-                        auth=HTTPBasicAuth(request.remote_user['username'],
-                                           request.remote_user['password']))
+    resp = send_request(url, [200], method='GET')
     membership = resp.json()['memberships']
     uid = get_current_user_id()
 
@@ -171,4 +168,5 @@ def delete_project(name):
           {'redmine_host': conf.redmine['host'],
            'project_id': name.lower()}
     headers = {'X-Redmine-API-Key': conf.redmine['api_key']}
-    send_request(url, [200], method='DELETE', headers=headers)
+    send_request(url, [200], method='DELETE', headers=headers,
+                 cookies=admin_auth_cookie())

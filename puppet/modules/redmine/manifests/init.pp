@@ -13,7 +13,9 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-class redmine ($settings = hiera_hash('redmine', ''),$ldap_sync_settings = hiera_hash('redmine_ldap_setting', '')) {
+class redmine ($settings = hiera_hash('redmine', ''),
+               $ldap_sync_settings = hiera_hash('redmine_ldap_setting', ''),
+               $cauth = hiera_hash('cauth', '')) {
 
     $mysql_url = $settings['redmine_mysql_db_address']
     $mysql_password = $settings['redmine_mysql_db_secret']
@@ -71,7 +73,7 @@ class redmine ($settings = hiera_hash('redmine', ''),$ldap_sync_settings = hiera
         mode   => '0640',
         owner  => 'www-data',
         group  => 'www-data',
-        source =>'puppet:///modules/redmine/redmine',
+        content => template('redmine/redmine.site.erb'),
         notify => Service[apache2],
     }
 

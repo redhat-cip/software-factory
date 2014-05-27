@@ -47,6 +47,7 @@ function generate_hieras {
         current_role=`echo "${role}" | sed 's/.*\(gerrit\|redmine\|jenkins\|mysql\|ldap\|managesf\).*/\1/g'`
         sed -i "s#${current_role}_url:.*#${current_role}_url: ${role}.${SF_SUFFIX}#g" ${OUTPUT}/common.yaml
     done
+    sed -i -e "s/SF_SUFFIX/${SF_SUFFIX}/g" ${OUTPUT}/common.yaml
 
     # MySQL password for services
     REDMINE_MYSQL_SECRET=$(generate_random_pswd 8)
@@ -109,6 +110,11 @@ function generate_hieras {
     LODGEIT_SESSION_KEY=$(generate_random_pswd 10)
     sed -i "s#SESSION_KEY#${LODGEIT_SESSION_KEY}#" ${OUTPUT}/lodgeit.yaml
     sed -i "s#LODGEIT_MYSQL_SECRET#${LODGEIT_MYSQL_SECRET}#" ${OUTPUT}/lodgeit.yaml
+
+    # CAUTH configs
+    sed -i "s#GITHUB_APP_ID#${GITHUB_APP_ID}#" ${OUTPUT}/cauth.yaml
+    sed -i "s#GITHUB_APP_SECRET#${GITHUB_APP_SECRET}#" ${OUTPUT}/cauth.yaml
+    sed -i "s#LDAP_ACCOUNT_BASE#${LDAP_ACCOUNT_BASE}#" ${OUTPUT}/cauth.yaml
 }
 
 function wait_all_nodes {
@@ -191,6 +197,12 @@ function prepare_etc_puppet {
     chown -R puppet:puppet /etc/puppet/environments/sf
     chown -R puppet:puppet /etc/puppet/hiera/sf
     chown -R puppet:puppet /var/lib/puppet
+    
+    # generating keys for cauth
+    keys_dir='/etc/puppet/environments/sf/modules/cauth/files/'
+    mkdir -p $keys_dir
+    openssl genrsa -out $keys_dir/privkey.pem 1024
+    openssl rsa -in $keys_dir/privkey.pem -out $keys_dir/pubkey.pem -pubout
 }
 
 function start_puppetmaster_service {
@@ -213,3 +225,4 @@ function trigger_puppet_apply {
         sshpass -p "$TEMP_SSH_PWD" ssh -p$ssh_port root@${role}.${SF_SUFFIX} "puppet agent --test --environment sf || true; /etc/init.d/puppet start"
     done
 }
+

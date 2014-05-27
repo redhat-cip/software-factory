@@ -10,6 +10,27 @@
         Allow from all
     </Proxy>
 
+    <LocationMatch "/r/(a|login)">
+      Order Allow,Deny
+      Allow from all
+
+      AuthType mod_auth_pubtkt
+      TKTAuthFakeBasicAuth on
+      TKTAuthLoginURL <%= @cauth['signin_url'] %>
+      TKTAuthDebug 1
+      require valid-user
+    </LocationMatch>
+    RewriteEngine On
+    RewriteCond %{REQUEST_URI} ^/r/logout$
+    RewriteCond %{QUERY_STRING} (^.*$)
+    RewriteCond %1 ^$
+    RewriteRule logout http://<%= scope.function_hiera(["auth_url"]) %>/logout?service=gerrit [R,L,CO=GerritAccount:;:;:0:/r]
+  
+    RewriteCond %{REQUEST_URI} ^/r/logout$
+    RewriteCond %{QUERY_STRING} ^services=(.*)$
+    RewriteCond %1 !^$ 
+    RewriteRule logout http://<%= scope.function_hiera(["auth_url"]) %>/logout?services=%1 [R,L,CO=GerritAccount:;:;:0:/r]
+
     AllowEncodedSlashes On
     Redirect / /r/
     ProxyPass /r/ http://127.0.0.1:8080/r/ nocanon

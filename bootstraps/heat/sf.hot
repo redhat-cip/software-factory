@@ -145,7 +145,7 @@ resources:
                     host_aliases: [gerrit]
                   managesf.SF_SUFFIX:
                     ip: managesf_host
-                    host_aliases: [managesf]
+                    host_aliases: [managesf, auth.SF_SUFFIX]
                   commonservices.SF_SUFFIX:
                     ip: commonservices_host
                     host_aliases: [commonservices]
@@ -160,7 +160,7 @@ resources:
               - echo "jenkins_host jenkins.SF_SUFFIX jenkins" >> /etc/hosts
               - echo "redmine_host redmine.SF_SUFFIX redmine" >> /etc/hosts
               - echo "gerrit_host gerrit.SF_SUFFIX gerrit" >> /etc/hosts
-              - echo "managesf_host managesf.SF_SUFFIX managesf" >> /etc/hosts
+              - echo "managesf_host managesf.SF_SUFFIX auth.SF_SUFFIX managesf" >> /etc/hosts
               - echo "commonservices_host commonservices.SF_SUFFIX commonservices" >> /etc/hosts
               - tar -xzf /root/puppet-bootstrapper.tar.gz -C /root/
               - cd /root/puppet-bootstrapper

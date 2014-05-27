@@ -24,11 +24,10 @@ import string
 import random
 import json
 import requests as http
-from redmine import Redmine
 import config
 from requests.auth import HTTPBasicAuth
 from requests.exceptions import HTTPError
-from pygerrit import rest
+from pygerrit.rest import _decode_response
 
 
 def create_random_str():
@@ -72,14 +71,14 @@ class Tool:
 
 
 class ManageSfUtils(Tool):
-    def __init__(self, host, port):
+    def __init__(self, host, port=80):
         Tool.__init__(self)
         self.host = host
         self.port = port
         self.install_dir = "tools/managesf/cli"
-        self.base_cmd = \
-            "python sf-manage.py --host %s --port %s --auth %%s:%%s " \
-            % (self.host, self.port)
+        self.base_cmd = "python sf-manage.py --host %s --auth-server " \
+            "%s --port %s --auth %%s:%%s " % \
+            (self.host, config.AUTH_HOST, self.port)
 
     def createProject(self, name, user, options=None):
         passwd = config.USERS[user]['password']
@@ -187,6 +186,39 @@ class GerritGitUtils(Tool):
         self.exe('git review -v', clone_dir)
 
 
+class GerritRestAPI(object):
+    def __init__(self, url, user):
+        self.cookie = config.USERS[user]['auth_cookie']
+        self.url = url
+
+        if not self.url.endswith('/'):
+            self.url += '/'
+
+    def make_url(self, endpoint):
+        endpoint = endpoint.lstrip('/')
+        return self.url + endpoint
+
+    def get(self, endpoint, **kwargs):
+        kwargs['cookies'] = dict(auth_pubtkt=self.cookie)
+        resp = http.get(self.make_url(endpoint), **kwargs)
+        return _decode_response(resp)
+
+    def put(self, endpoint, **kwargs):
+        kwargs['cookies'] = dict(auth_pubtkt=self.cookie)
+        resp = http.put(self.make_url(endpoint), **kwargs)
+        return _decode_response(resp)
+
+    def post(self, endpoint, **kwargs):
+        kwargs['cookies'] = dict(auth_pubtkt=self.cookie)
+        resp = http.post(self.make_url(endpoint), **kwargs)
+        return _decode_response(resp)
+
+    def delete(self, endpoint, **kwargs):
+        kwargs['cookies'] = dict(auth_pubtkt=self.cookie)
+        resp = http.delete(self.make_url(endpoint), **kwargs)
+        return _decode_response(resp)
+
+
 class GerritUtil:
     def __init__(self, url, username=None):
         password = config.USERS[username]['password'] if username else None
@@ -201,8 +233,7 @@ class GerritUtil:
             self.auth = HTTPBasicAuth(username, password)
         # The original SUFFIX does not fit well with our
         # installation of Gerrit
-        rest.GERRIT_AUTH_SUFFIX = ''
-        self.rest = rest.GerritRestAPI(self.url, self.auth)
+        self.rest = GerritRestAPI(self.url, username)
 
     # project APIs
     def getProjects(self, name=None):
@@ -345,42 +376,54 @@ class GerritUtil:
 
 class RedmineUtil:
     def __init__(self, url, username=None, apiKey=None):
-        password = config.USERS[username]['password'] if username else None
+        self.username = username
         self.api_key = apiKey
-        if apiKey is not None:
-            self.redmine = Redmine(url, key=apiKey)
-        elif username is not None and password is not None:
-            self.redmine = Redmine(url, username=username, password=password)
+        if username:
+            self.cookie = config.USERS[self.username]['auth_cookie']
         else:
-            self.redmine = Redmine(url)
+            self.cookie = config.USERS[config.USER_1]['auth_cookie']
 
     def isProjectExist(self, name):
         url = "%(redmine_server)s/projects/%(prj_name)s.json" % \
               {"redmine_server": config.REDMINE_SERVER,
                "prj_name": name}
         headers = {"X-Redmine-Api-Key": self.api_key}
-        resp = http.get(url, headers=headers)
+        resp = http.get(url, headers=headers,
+                        cookies=dict(auth_pubtkt=self.cookie))
         if resp.status_code == 200:
             return True
 
         return False
 
     def isProjectExist_ex(self, name, username):
-        password = config.USERS[username]['password']
         url = "%(redmine_server)s/projects/%(prj_name)s.json" % \
               {"redmine_server": config.REDMINE_SERVER,
                "prj_name": name}
-        resp = http.get(url, auth=HTTPBasicAuth(username, password))
+        cookie = config.USERS[username]['auth_cookie']
+        resp = http.get(url,
+                        cookies=dict(auth_pubtkt=cookie))
         if resp.status_code == 200:
             return True
 
         return False
 
+    def issueStatus(self, issueId):
+        url = "%(redmine_server)s/issues/%(issue_id)s.json" % \
+              {"redmine_server": config.REDMINE_SERVER,
+               "issue_id": str(issueId)}
+        cookie = config.USERS[self.username]['auth_cookie']
+        resp = http.get(url,
+                        cookies=dict(auth_pubtkt=cookie))
+        if resp.status_code == 200:
+            return resp.json()['issue']['status']['id']
+
+        return None
+
     def isIssueInProgress(self, issueId):
-        return self.redmine.issues[issueId].status.id is 2
+        return self.issueStatus(issueId) is 2
 
     def isIssueClosed(self, issueId):
-        return self.redmine.issues[issueId].status.id is 5
+        return self.issueStatus(issueId) is 5
 
     def createUser(self, username, lastname='None'):
         email = config.USERS[username]['email']
@@ -397,12 +440,14 @@ class RedmineUtil:
               {"redmine_server": config.REDMINE_SERVER}
         headers = {"X-Redmine-API-Key": self.api_key,
                    "Content-type": "application/json"}
-        resp = http.post(url, data=data, headers=headers)
+        resp = http.post(url, data=data, headers=headers,
+                         cookies=dict(auth_pubtkt=self.cookie))
 
         def current_user_id():
             url = "%(redmine_server)s/users/current.json" % \
                   {"redmine_server": config.REDMINE_SERVER}
-            r = http.get(url, auth=HTTPBasicAuth(username, password))
+            r = http.get(url, auth=HTTPBasicAuth(username, password),
+                         cookies=dict(auth_pubtkt=self.cookie))
             if r.status_code != 200:
                 return None
 
@@ -421,7 +466,8 @@ class RedmineUtil:
               {"redmine_server": config.REDMINE_SERVER,
                   "project": prj_name}
         headers = {"X-Redmine-API-Key": self.api_key}
-        resp = http.get(url, headers=headers)
+        resp = http.get(url, headers=headers,
+                        cookies=dict(auth_pubtkt=self.cookie))
         if resp.status_code != 200:
             return False
 
@@ -441,7 +487,8 @@ class RedmineUtil:
                "user_id": user_id}
 
         headers = {"X-Redmine-API-Key": self.api_key}
-        resp = http.delete(url, headers=headers)
+        resp = http.delete(url, headers=headers,
+                           cookies=dict(auth_pubtkt=self.cookie))
         if resp.status_code == 200:
             return True
 

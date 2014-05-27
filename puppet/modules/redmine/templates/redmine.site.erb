@@ -1,0 +1,34 @@
+<VirtualHost *:80>
+  ServerAdmin webmaster@localhost
+
+  LogLevel warn
+  ErrorLog ${APACHE_LOG_DIR}/error.log
+  CustomLog ${APACHE_LOG_DIR}/access.log combined
+
+  Alias /plugin_assets/ /var/cache/redmine/default/plugin_assets/
+
+  DocumentRoot /usr/share/redmine/public
+
+  RewriteEngine On
+  RewriteCond %{REQUEST_URI} ^/logout$
+  RewriteCond %{QUERY_STRING} (^.*$)
+  RewriteCond %1 ^$
+  RewriteRule logout http://<%= scope.function_hiera(["auth_url"]) %>/logout?service=redmine [R,L,CO=_redmine_default:;:;:-1]
+  
+  RewriteCond %{REQUEST_URI} ^/logout$
+  RewriteCond %{QUERY_STRING} ^services=(.*)$
+  RewriteCond %1 !^$ 
+  RewriteRule logout http://<%= scope.function_hiera(["auth_url"]) %>/logout?services=%1 [R,L,CO=_redmine_default:;:;:-1]
+
+  <Directory /usr/share/redmine/public>
+    AllowOverride all
+    Options -MultiViews
+    Order Allow,Deny
+    Allow from all
+    AuthType mod_auth_pubtkt
+    TKTAuthLoginURL <%= @cauth['signin_url'] %>
+    TKTAuthFakeBasicAuth on
+    TKTAuthDebug 1
+    require valid-user
+  </Directory>
+</VirtualHost>

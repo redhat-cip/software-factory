@@ -40,6 +40,9 @@ REDMINE_ADMIN=${ADMIN_NAME}
 LDAP_ADMIN_DN="cn=admin,dc=example,dc=com"
 LDAP_ADMIN_PASSWORD=secret
 JENKINS_USER_EMAIL=jenkins@example.com
+GITHUB_APP_ID="b1576649a671b82aaee8"
+GITHUB_APP_SECRET="87c8f11b7aef93dcf4e1a06bf35c93e6c61871f4"
+LDAP_ACCOUNT_BASE="ou=Users,dc=example,dc=com"
 
 generate_keys
 generate_hieras

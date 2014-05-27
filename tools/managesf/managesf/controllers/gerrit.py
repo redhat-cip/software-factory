@@ -16,9 +16,9 @@
 from pecan import conf
 from pecan import abort
 from pecan import request
-from requests.auth import HTTPBasicAuth
 from gerritlib import gerrit
-from managesf.controllers.utils import send_request, template
+from managesf.controllers.utils import send_request, \
+    template, admin_auth_cookie
 
 import json
 import os
@@ -47,8 +47,7 @@ def get_group_id(grp_name):
 
     resp = send_request(url, [200],
                         method='GET',
-                        auth=HTTPBasicAuth(conf.gerrit['admin'],
-                                           conf.gerrit['http_password']))
+                        cookies=admin_auth_cookie())
     return gerrit_json_resp(resp)['id']
 
 
@@ -59,8 +58,7 @@ def add_user_to_group(grp_name, user):
                              'group_name': grp_name,
                              'user_name': user}
     send_request(url, [200, 201],
-                 auth=HTTPBasicAuth(conf.gerrit['admin'],
-                                    conf.gerrit['http_password']))
+                 cookies=admin_auth_cookie())
 
 
 def create_group(grp_name, grp_desc, prj_name):
@@ -75,9 +73,8 @@ def create_group(grp_name, grp_desc, prj_name):
     }
     send_request(url, [201], data=json.dumps(group_info),
                  headers={'Content-type': 'application/json'},
-                 auth=HTTPBasicAuth(conf.gerrit['admin'],
-                                    conf.gerrit['http_password']))
-    add_user_to_group(grp_name, request.remote_user['username'])
+                 cookies=admin_auth_cookie())
+    add_user_to_group(grp_name, request.remote_user)
 
 
 def create_project(prj_name, prj_desc):
@@ -94,8 +91,7 @@ def create_project(prj_name, prj_desc):
     send_request(url, [201],
                  data=json.dumps(proj_info),
                  headers={'Content-type': 'application/json'},
-                 auth=HTTPBasicAuth(conf.gerrit['admin'],
-                                    conf.gerrit['http_password']))
+                 cookies=admin_auth_cookie())
 
 
 def _delete_project(prj_name):
@@ -108,8 +104,7 @@ def _delete_project(prj_name):
                  method='DELETE',
                  data=data,
                  headers={'Content-type': 'application/json'},
-                 auth=HTTPBasicAuth(conf.gerrit['admin'],
-                                    conf.gerrit['http_password']))
+                 cookies=admin_auth_cookie())
 
 
 def get_groups():
@@ -117,9 +112,7 @@ def get_groups():
     url = "http://%(gerrit_host)s/r/a/accounts/self/groups" % \
           {'gerrit_host': conf.gerrit['host']}
 
-    resp = send_request(url, [200], method='GET',
-                        auth=HTTPBasicAuth(request.remote_user['username'],
-                                           request.remote_user['password']))
+    resp = send_request(url, [200], method='GET')
 
     js = gerrit_json_resp(resp)
 
@@ -138,8 +131,7 @@ def get_project_owner(pn):
 
     resp = send_request(url, [200],
                         method='GET',
-                        auth=HTTPBasicAuth(conf.gerrit['admin'],
-                                           conf.gerrit['http_password']))
+                        cookies=admin_auth_cookie())
     js = gerrit_json_resp(resp)
     return js[pn]['local']['refs/*']['permissions']['owner']['rules'].keys()[0]
 
@@ -169,8 +161,8 @@ class GerritRepo(object):
         if os.path.isdir(self.infos['localcopy_path']):
             shutil.rmtree(self.infos['localcopy_path'])
         self.email = "%(admin)s <%(email)s>" % \
-                     {'admin': conf.gerrit['admin'],
-                      'email': conf.gerrit['admin_email']}
+                     {'admin': conf.admin['name'],
+                      'email': conf.admin['email']}
         ssh_wrapper = "ssh -o StrictHostKeyChecking=no -i" \
                       "%(gerrit-keyfile)s \"$@\"" % \
                       {'gerrit-keyfile': conf.gerrit['sshkey_priv_path']}
@@ -180,8 +172,8 @@ class GerritRepo(object):
         self.env['GIT_SSH'] = '/tmp/ssh_wrapper.sh'
         # Commit will be reject by gerrit if the commiter info
         # is not a registered user (author can be anything else)
-        self.env['GIT_COMMITTER_NAME'] = conf.gerrit['admin']
-        self.env['GIT_COMMITTER_EMAIL'] = conf.gerrit['admin_email']
+        self.env['GIT_COMMITTER_NAME'] = conf.admin['name']
+        self.env['GIT_COMMITTER_EMAIL'] = conf.admin['email']
 
     def _exec(self, cmd, cwd=None):
         cmd = shlex.split(cmd)
@@ -203,7 +195,7 @@ class GerritRepo(object):
         logger.debug(" [gerrit] Clone repository %s" % self.prj_name)
         cmd = "git clone ssh://%(admin)s@%(gerrit-host)s" \
               ":%(gerrit-host-port)s/%(name)s %(localcopy_path)s" % \
-              {'admin': conf.gerrit['admin'],
+              {'admin': conf.admin['name'],
                'gerrit-host': conf.gerrit['host'],
                'gerrit-host-port': conf.gerrit['ssh_port'],
                'name': self.prj_name,
@@ -364,7 +356,7 @@ def init_project(name, json):
         create_group(dev, dev_desc, name)
         if 'dev-group-members' in json:
             for m in json['dev-group-members']:
-                if m != request.remote_user['username']:
+                if m != request.remote_user:
                     add_user_to_group(dev, m)
 
     create_project(name, description)
@@ -379,7 +371,7 @@ def delete_project(name):
 
     #user owns the project, so delete it now
     gerrit_client = CustomGerritClient(conf.gerrit['host'],
-                                       conf.gerrit['admin'],
+                                       conf.admin['name'],
                                        keyfile=conf.gerrit['sshkey_priv_path'])
     gerrit_client.deleteGroup(get_core_group_name(name))
     gerrit_client.deleteGroup(get_ptl_group_name(name))

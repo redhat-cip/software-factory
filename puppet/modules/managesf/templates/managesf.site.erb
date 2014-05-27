@@ -1,4 +1,5 @@
-<VirtualHost *>
+<VirtualHost *:80>
+    ServerName <%= scope.function_hiera(["managesf_url"]) %>
     WSGIDaemonProcess managesf user=www-data group=www-data python-path=/var/www/managesf/
     WSGIScriptAlias / /var/www/managesf/app.wsgi
     WSGIPassAuthorization On
@@ -7,5 +8,10 @@
         WSGIApplicationGroup %{GLOBAL}
         Order deny,allow
         Allow from all
+        AuthType mod_auth_pubtkt
+        TKTAuthLoginURL <%= @cauth['signin_url'] %>
+        TKTAuthFakeBasicAuth on
+        TKTAuthDebug 1
+        require valid-user
     </Directory>
 </VirtualHost>

@@ -5,6 +5,7 @@ GERRIT_SERVER = 'http://gerrit.%s/r/' % environ['SF_SUFFIX']
 REDMINE_SERVER = 'http://redmine.%s' % environ['SF_SUFFIX']
 JENKINS_SERVER = 'http://jenkins.%s:8080' % environ['SF_SUFFIX']
 MANAGESF_HOST = 'managesf.%s' % environ['SF_SUFFIX']
+AUTH_HOST = 'auth.%s' % environ['SF_SUFFIX']
 
 USER_1 = 'user1'
 ADMIN_USER = USER_1
@@ -129,21 +130,25 @@ USERS = {
     USER_1: {"password": "userpass",
              "email": "user1@example.com",
              "pubkey": file(ADMIN_PUB_KEY_PATH).read(),
-             "privkey": file(ADMIN_PRIV_KEY_PATH).read()
+             "privkey": file(ADMIN_PRIV_KEY_PATH).read(),
+             "auth_cookie": "",
              },
     USER_2: {"password": "userpass",
              "email": "user2@example.com",
              "pubkey": USER_2_PUB_KEY,
-             "privkey": USER_2_PRIV_KEY
+             "privkey": USER_2_PRIV_KEY,
+             "auth_cookie": "",
              },
     USER_3: {"password": "userpass",
              "email": "user3@example.com",
              "pubkey": USER_3_PUB_KEY,
-             "privkey": USER_3_PRIV_KEY
+             "privkey": USER_3_PRIV_KEY,
+             "auth_cookie": "",
              },
     USER_4: {"password": "userpass",
              "email": "user4@example.com",
              "pubkey": USER_4_PUB_KEY,
-             "privkey": USER_4_PRIV_KEY
+             "privkey": USER_4_PRIV_KEY,
+             "auth_cookie": "",
              }
 }

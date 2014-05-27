@@ -21,6 +21,7 @@ gerrit_ssh_port=<%= @gerrit['gerrit_sshd_port'] %>
 mh="<%= scope.function_hiera(["managesf_url"]) %>"
 gh="$gerrit_host:$gerrit_ssh_port"
 jh="<%= scope.function_hiera(["jenkins_url"]) %>"
+ah="<%= scope.function_hiera(["auth_url"]) %>"
 admin="<%= @gerrit['gerrit_admin_username'] %>"
 admin_http_password="<%= @gerrit['gerrit_admin_password'] %>"
 admin_email="<%= @gerrit['gerrit_admin_mail'] %>"
@@ -29,7 +30,7 @@ jenkins_kick_script="/usr/local/jenkins/slave_scripts/kick.sh"
 auth=$admin:$admin_http_password
 
 # Create config project (managesf must be up)
-echo "{\"description\":\"Config repository\"}" | curl "http://$mh/project/config" -X PUT -d @- -H "Content-type: application/json" -H "Authorization: Basic `echo -n $auth | base64`"
+sf-manage --host $mh --auth-server $ah --port 80 --auth $auth create --name config --description "Config repository"
 
 # Clone the config project
 echo "ssh -o StrictHostKeyChecking=no -i $gerrit_ssh_key \$@" > /tmp/ssh_wrapper.sh

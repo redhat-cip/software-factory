@@ -71,7 +71,7 @@ NODEJS_NMP="https://www.npmjs.org/install.sh"
 #
 # Other
 #
-OTHER_PACKAGES="git puppet vim mysql-client python-pip python-dateutil monit postfix"
+OTHER_PACKAGES="git puppet vim mysql-client python-pip python-dateutil monit postfix apache2-prefork-dev libapache2-mod-auth-pubtkt"
 
 #
 # Paste (lodgeit)
@@ -121,6 +121,9 @@ EOF
     do_chroot $dir mkdir -p /usr/share/redmine/plugins
     do_chroot $dir git clone git://github.com/backlogs/redmine_backlogs.git /usr/share/redmine/plugins/redmine_backlogs --depth 1
     do_chroot $dir bash -c 'cd /usr/share/redmine/plugins/redmine_backlogs && bundle install'
+
+    # Install Redmine backlog plugin
+    do_chroot $dir git clone git://github.com/kevinfoote/redmine_http_auth.git /usr/share/redmine/plugins/redmine_http_auth --depth 1
 
     #
     # Etherpad_lite
@@ -207,6 +210,12 @@ EOF
     #
     cp -r ../tools/managesf ${dir}/var/www/managesf
     do_chroot $dir pip install -r /var/www/managesf/requirements.txt
+
+    #
+    # Cauth server
+    #
+    cp -r ../tools/cauth ${dir}/var/www/cauth
+
     ;;
   *)
     fatal_error "$package_tool isn't supported for $ROLE role"

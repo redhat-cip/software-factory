@@ -14,11 +14,40 @@
 # under the License.
 
 from managesf import templates
-from pecan import abort
+from pecan import abort, request, conf
+from cookielib import CookieJar
 import requests as http
 import logging
 
 logger = logging.getLogger(__name__)
+
+
+def auth_cookie_in_jar(jar):
+    for cookie in jar:
+        if cookie.name == 'auth_pubtkt':
+            return {cookie.name: cookie.value}
+
+    return None
+
+
+def admin_auth_cookie():
+    if not conf.admin['cookiejar']:
+        conf.admin['cookiejar'] = CookieJar()
+
+    jar = conf.admin['cookiejar']
+    cookie = auth_cookie_in_jar(jar)
+    if not cookie:
+        url = "http://%(auth_host)s/login" % {'auth_host': conf.auth['host']}
+        r = http.post(url, params={'username': conf.admin['name'],
+                                   'password': conf.admin['http_password'],
+                                   'back': '/'},
+                      allow_redirects=False)
+        for c in r.cookies:
+            if c.name == 'auth_pubtkt':
+                cookie = {c.name: c.value}
+            jar.set_cookie(c)
+
+    return cookie
 
 
 def send_request(url, expect_return,
@@ -31,7 +60,13 @@ def send_request(url, expect_return,
         meth = http.delete
     elif method == 'POST':
         meth = http.post
-    resp = meth(url, **kwargs)
+
+    if 'cookies' not in kwargs and \
+       request.cookies and 'auth_pubtkt' in request.cookies.keys():
+        kwargs['cookies'] = dict(auth_pubtkt=request.cookies['auth_pubtkt'])
+
+    resp = meth(url, allow_redirects=False, **kwargs)
+
     if resp.status_code not in expect_return:
         logger.debug("    Request " + method + " " + url +
                      " failed with status code " +

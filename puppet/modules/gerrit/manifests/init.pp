@@ -13,7 +13,8 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-class gerrit ($settings = hiera_hash('gerrit', '')) {
+class gerrit ($settings = hiera_hash('gerrit', ''),
+              $cauth = hiera_hash('cauth', '')) {
 
   # Here we just ensure that some basic stuff are present 
   package { 'openjdk-7-jre':
@@ -269,6 +270,11 @@ class gerrit ($settings = hiera_hash('gerrit', '')) {
     content => template('gerrit/gerrit-set-jenkins-user.sh.erb'),
     replace => true,
   }
+  exec { 'enable_mod_headers':
+    command  => 'a2enmod headers',
+    path    => '/usr/sbin/:/usr/bin/:/bin/',
+  }
+
   file { '/etc/apache2/sites-available/gerrit':
     ensure  => present,
     mode    => '0640',
@@ -277,7 +283,8 @@ class gerrit ($settings = hiera_hash('gerrit', '')) {
   file { '/etc/apache2/sites-enabled/gerrit':
     ensure  => link,
     target  => '/etc/apache2/sites-available/gerrit',
-    require => File['/etc/apache2/sites-available/gerrit'],
+    require => [File['/etc/apache2/sites-available/gerrit'],
+                Exec['enable_mod_headers']]
   }
   file { '/etc/apache2/sites-enabled/default':
     ensure  => absent,

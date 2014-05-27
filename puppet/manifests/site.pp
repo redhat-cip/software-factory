@@ -20,10 +20,12 @@ node /.*jenkins.*/ inherits base {
 
 node /.*redmine.*/ inherits base {
   include redmine
+  include cauth_client
 }
 
 node /.*gerrit.*/ inherits base {
   include gerrit
+  include cauth_client
 }
 
 node /.*mysql.*/ inherits base {
@@ -36,10 +38,13 @@ node /.*ldap.*/ inherits base {
 
 node /.*managesf.*/ inherits base {
   include managesf
+  include cauth
+  include cauth_client
 }
 
 node /.*commonservices.*/ inherits base {
   include commonservices-apache
   include etherpad
   include lodgeit
+  include cauth_client
 }

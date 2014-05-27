@@ -15,68 +15,55 @@
 # Server Specific Configurations
 import os
 
-server = {
-    'port': '9090',
-    'host': '0.0.0.0'
-}
-
 # Pecan Application Configurations
 app = {
     'root': 'managesf.controllers.root.RootController',
     'modules': ['managesf'],
-    'static_root': '%(confdir)s/public',
     'template_path': '%(confdir)s/managesf/templates',
-    'debug': True,
+    'debug': False,
 }
 
 logging = {
     'loggers': {
-        'root': {'level': 'INFO', 'handlers': ['console']},
-        'managesf': {'level': 'DEBUG', 'handlers': ['console']},
-        'py.warnings': {'handlers': ['console']},
+        'managesf': {'level': 'DEBUG',
+                     'handlers': ['file_handler']},
         '__force_dict__': True
     },
     'handlers': {
-        'console': {
+        'file_handler': {
+            'class': 'logging.handlers.RotatingFileHandler',
             'level': 'DEBUG',
-            'class': 'logging.StreamHandler',
-            'formatter': 'simple'
+            'formatter': 'simple',
+            'filename': '/var/log/managesf/managesf.log',
         }
     },
     'formatters': {
         'simple': {
             'format': ('%(asctime)s %(levelname)-5.5s [%(name)s]'
-                       '[%(threadName)s] %(message)s')
+                      '[%(threadName)s] %(message)s')
         }
     }
 }
 
 # Authorization configurations
 auth = {
-    'type': 'ldap',
-    'ldap': {
-        'host': 'ldap://ldap.%s' % (os.environ['SF_SUFFIX']),
-        'dn': 'cn=%(username)s,ou=Users,dc=example,dc=com'
-    }
+    'host': '<%= scope.function_hiera(["auth_url"]) %>',
+}
+
+admin = {
+    'name': '<%= @gerrit['gerrit_admin_username'] %>',
+    'email': '<%= @gerrit['gerrit_admin_mail'] %>',
+    'http_password': '<%= @gerrit['gerrit_admin_password'] %>',
+    'cookiejar': None
 }
 
 gerrit = {
-    'host': 'gerrit.%s' % (os.environ['SF_SUFFIX']),
-    'admin': 'user1',
-    'admin_email': 'user1@example.com',
-    'ssh_port': 29418,
-    'http_password': 'userpass',
-    'sshkey_priv_path': '%s/build/data/gerrit_admin_rsa' %
-    (os.environ['SF_ROOT'])
+    'host': '<%= scope.function_hiera(["gerrit_url"]) %>',
+    'ssh_port': <%= @gerrit['gerrit_sshd_port'] %>,
+    'sshkey_priv_path': '/var/www/managesf/gerrit_admin_rsa',
 }
 
 redmine = {
-    'host': 'redmine.%s' % (os.environ['SF_SUFFIX']),
-    'api_key': '7f094d4e3e327bbd3f67279c95c193825e48f59e'
+    'host': '<%= scope.function_hiera(["redmine_url"]) %>',
+    'api_key': '<%= @redmine['issues_tracker_api_key'] %>'
 }
-# Custom Configurations must be in Python dictionary format::
-#
-# foo = {'bar':'baz'}
-#
-# All configurations are accessible at::
-# pecan.conf
