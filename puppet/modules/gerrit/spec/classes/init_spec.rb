@@ -98,11 +98,18 @@ describe "gerrit" do
                 'group'   => 'gerrit',
             })
             
-            should contain_file('/home/gerrit/site_path/lib/bcprov-jdk16-144.jar').with({
+            should contain_file('/home/gerrit/site_path/lib/bcprov-jdk15on-149.jar').with({
                 'ensure'  => 'present',
                 'owner'   => 'gerrit',
                 'group'   => 'gerrit',
             })
+
+            should contain_file('/home/gerrit/site_path/lib/bcpkix-jdk15on-149.jar').with({
+                'ensure'  => 'present',
+                'owner'   => 'gerrit',
+                'group'   => 'gerrit',
+            })
+ 
             
             should contain_file('/home/gerrit/site_path/hooks/patchset-created').with({
                 'ensure'  => 'present',

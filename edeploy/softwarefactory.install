@@ -27,9 +27,10 @@ ORIG=$(cd $(dirname $0); pwd)
 #
 # Gerrit
 #
-LASTWAR="https://gerrit-releases.storage.googleapis.com/gerrit-2.8.1.war"
+LASTWAR="http://***REMOVED***/v1/AUTH_0e436aacf0854b9abe70aa90f9e0864d/gerrit/gerrit285.war"
 MYSQLJAVA="http://repo2.maven.org/maven2/mysql/mysql-connector-java/5.1.21/mysql-connector-java-5.1.21.jar"
-BCPROVJAVA="http://www.bouncycastle.org/download/bcprov-jdk16-144.jar"
+BCPROVJAVA="http://www.bouncycastle.org/download/bcprov-jdk15on-149.jar"
+BCPKIXJAVA="http://www.bouncycastle.org/download/bcpkix-jdk15on-149.jar"
 PYREDMINEWS="https://pypi.python.org/packages/source/p/pyredmine/pyredmine-0.2.4.tar.gz"
 GERRITHOOKS=../gerrit-hooks
 GERRIT_PACKAGES="openjdk-7-jre apache2 file"
@@ -193,7 +194,8 @@ EOF
     mkdir ${dir}/root/gerrit_data_source/
     wget -q $LASTWAR -O ${dir}/root/gerrit_data_source/gerrit.war
     wget -q $MYSQLJAVA -O ${dir}/root/gerrit_data_source/mysql-connector-java-5.1.21.jar
-    wget -q $BCPROVJAVA -O ${dir}/root/gerrit_data_source/bcprov-jdk16-144.jar
+    wget -q $BCPROVJAVA -O ${dir}/root/gerrit_data_source/bcprov-jdk15on-149.jar
+    wget -q $BCPKIXJAVA -O ${dir}/root/gerrit_data_source/bcpkix-jdk15on-149.jar
     do_chroot $dir pip install $PYREDMINEWS
     cp -Rf $GERRITHOOKS ${dir}/root/gerrit_data_source/
     do_chroot $dir a2enmod proxy_http

@@ -65,4 +65,17 @@ class lodgeit ($lodgeit = hiera_hash('lodgeit', '')) {
     content => template('lodgeit/manage.py.erb'),
   }
 
+  file { "/srv/lodgeit/lodgeit/lodgeit/urls.py":
+    ensure  => present,
+    mode    => '0755',
+    replace => true,
+    source =>'puppet:///modules/lodgeit/urls.py',
+  }
+
+  exec { 'restart_lodgeit': 
+    command   => "/etc/init.d/lodgeit stop; /etc/init.d/lodgeit start",
+    subscribe => File['/srv/lodgeit/lodgeit/lodgeit/urls.py'],
+    refreshonly => true,
+  }
+
 }

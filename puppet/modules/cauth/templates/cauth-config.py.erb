@@ -64,10 +64,10 @@ auth = {
 logout = {
     'services': ['redmine', 'gerrit', 'cauth'],
     'gerrit': {
-        'url': 'http://<%= scope.function_hiera(["gerrit_url"]) %>/r/logout'
+        'url': '/r/logout'
     },
     'redmine': {
-        'url': 'http://<%= scope.function_hiera(["redmine_url"]) %>/logout'
+        'url': '/redmine/logout'
     }
 }
 

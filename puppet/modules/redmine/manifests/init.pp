@@ -74,7 +74,6 @@ class redmine ($settings = hiera_hash('redmine', ''),
         owner  => 'www-data',
         group  => 'www-data',
         content => template('redmine/redmine.site.erb'),
-        notify => Service[apache2],
     }
 
     file { '/etc/apache2/sites-enabled/000-default':
@@ -93,6 +92,7 @@ class redmine ($settings = hiera_hash('redmine', ''),
         path    => '/usr/sbin/:/usr/bin/:/bin/',
         require => [File['/etc/apache2/sites-available/redmine']],
         before  => Class['monit'],
+        notify => Service[apache2],
     }
 
     exec {'create_session_store':

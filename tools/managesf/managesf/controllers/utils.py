@@ -37,7 +37,8 @@ def admin_auth_cookie():
     jar = conf.admin['cookiejar']
     cookie = auth_cookie_in_jar(jar)
     if not cookie:
-        url = "http://%(auth_host)s/login" % {'auth_host': conf.auth['host']}
+        url = "http://%(auth_host)s/auth/login" % \
+            {'auth_host': conf.auth['host']}
         r = http.post(url, params={'username': conf.admin['name'],
                                    'password': conf.admin['http_password'],
                                    'back': '/'},

@@ -43,6 +43,11 @@ class gerrit ($settings = hiera_hash('gerrit', ''),
                 Package['openjdk-7-jre'],
                 Package['apache2']],
   }
+  file { '/home/gerrit/site_path/bin':
+    ensure  => directory,
+    owner   => 'gerrit',
+    require => File['/home/gerrit/site_path'],
+  }
   file { '/home/gerrit/site_path/etc':
     ensure  => directory,
     owner   => 'gerrit',
@@ -132,13 +137,29 @@ class gerrit ($settings = hiera_hash('gerrit', ''),
     source  => '/root/gerrit_data_source/mysql-connector-java-5.1.21.jar',
     require => File['/home/gerrit/site_path/lib'],
   }
-  file { '/home/gerrit/site_path/lib/bcprov-jdk16-144.jar':
+  file { '/home/gerrit/site_path/lib/bcprov-jdk15on-149.jar':
     ensure  => present,
     owner   => 'gerrit',
     group   => 'gerrit',
     mode    => '0640',
-    source  => '/root/gerrit_data_source/bcprov-jdk16-144.jar',
+    source  => '/root/gerrit_data_source/bcprov-jdk15on-149.jar',
     require => File['/home/gerrit/site_path/lib'],
+  }
+  file { '/home/gerrit/site_path/lib/bcpkix-jdk15on-149.jar':
+    ensure  => present,
+    owner   => 'gerrit',
+    group   => 'gerrit',
+    mode    => '0640',
+    source  => '/root/gerrit_data_source/bcpkix-jdk15on-149.jar',
+    require => File['/home/gerrit/site_path/lib'],
+  }
+  file { '/home/gerrit/site_path/bin/gerrit.sh':
+    ensure  => present,
+    owner => 'gerrit',
+    group   => 'gerrit',
+    mode    => '0755',
+    source  => 'puppet:///modules/gerrit/gerrit.sh',
+    require => File['/home/gerrit/site_path/bin'],
   }
   file { '/home/gerrit/site_path/hooks/patchset-created':
     ensure  => present,
@@ -191,30 +212,6 @@ class gerrit ($settings = hiera_hash('gerrit', ''),
     content => template('gerrit/secure.config.erb'),
     require => File['/home/gerrit/site_path/etc'],
     replace => true,
-  }
-  file { '/home/gerrit/site_path/etc/GerritSite.css':
-    ensure  => file,
-    mode    => '0644',
-    owner   => 'root',
-    group   => 'root',
-    require => File['/home/gerrit/site_path/etc'],
-    source  => 'puppet:///modules/gerrit/GerritSite.css'
-  }
-  file { '/home/gerrit/site_path/etc/GerritSiteHeader.html':
-    ensure  => file,
-    mode    => '0644',
-    owner   => 'root',
-    group   => 'root',
-    require => File['/home/gerrit/site_path/etc'],
-    source  => 'puppet:///modules/gerrit/GerritSiteHeader.html'
-  }
-  file { '/home/gerrit/site_path/static/logo.png':
-    ensure  => file,
-    mode    => '0644',
-    owner   => 'root',
-    group   => 'root',
-    require => File['/home/gerrit/site_path/static'],
-    source  => 'puppet:///modules/gerrit/logo.png'
   }
   file { '/home/gerrit/site_path/hooks/hooks.config':
     ensure  => present,
@@ -312,7 +309,8 @@ class gerrit ($settings = hiera_hash('gerrit', ''),
                   File['/home/gerrit/site_path/plugins/delete-project.jar'],
                   File['/home/gerrit/site_path/plugins/reviewersbyblame-2.8.1.jar'],
                   File['/home/gerrit/site_path/lib/mysql-connector-java-5.1.21.jar'],
-                  File['/home/gerrit/site_path/lib/bcprov-jdk16-144.jar'],
+                  File['/home/gerrit/site_path/lib/bcprov-jdk15on-149.jar'],
+                  File['/home/gerrit/site_path/lib/bcpkix-jdk15on-149.jar'],
                   File['/home/gerrit/site_path/plugins/download-commands.jar'],
                   File['/home/gerrit/site_path/plugins/delete-project.jar'],
                   File['/home/gerrit/site_path/hooks/hooks.config'],
@@ -335,6 +333,7 @@ class gerrit ($settings = hiera_hash('gerrit', ''),
   }
   file { '/etc/init.d/gerrit':    
     ensure  => link,
+    owner => 'gerrit',
     target  => '/home/gerrit/site_path/bin/gerrit.sh',
     require => Exec['gerrit-initial-init'],   
   }

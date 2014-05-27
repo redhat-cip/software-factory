@@ -5,5 +5,8 @@ mysql_url:
 ldap_url:
 gerrit_url:
 managesf_url:
-auth_url: auth.SF_SUFFIX
 top_domain: SF_SUFFIX
+http_gateway_host: SF_SUFFIX
+auth_url: auth.SF_SUFFIX
+etherpad_url: etherpad.SF_SUFFIX
+paste_url: paste.SF_SUFFIX

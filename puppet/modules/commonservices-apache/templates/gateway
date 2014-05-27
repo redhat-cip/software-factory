@@ -1,0 +1,47 @@
+<VirtualHost *:80>
+    <IfModule mod_proxy.c>
+        ProxyVia On
+        ProxyRequests Off
+
+        ProxyPass /auth/ http://<%= scope.function_hiera(["auth_url"]) %>:80/auth/ nocanon retry=0
+        ProxyPassReverse /auth/ http://<%= scope.function_hiera(["auth_url"]) %>/auth/
+
+        ProxyPass /r/ http://<%= scope.function_hiera(["gerrit_url"]) %>:80/r/ nocanon retry=0
+        ProxyPassReverse /r/ http://<%= scope.function_hiera(["gerrit_url"]) %>/r/
+
+        ProxyPass /jenkins/ http://<%= scope.function_hiera(["jenkins_url"]) %>:8080/jenkins/ nocanon retry=0
+        ProxyPassReverse /jenkins/ http://<%= scope.function_hiera(["jenkins_url"]) %>:8080/jenkins/
+
+        ProxyPass /redmine/ http://<%= scope.function_hiera(["redmine_url"]) %>:80/redmine/ nocanon retry=0
+        ProxyPassReverse /redmine/ http://<%= scope.function_hiera(["redmine_url"]) %>:8080/redmine/
+
+        ProxyPass /etherpad/ http://127.0.0.1:9001/ retry=0
+        ProxyPassReverse /etherpad/ http://127.0.0.1:9001/
+ 
+        ProxyPass /paste/ http://127.0.0.1:5000/paste/ retry=0
+        ProxyPassReverse /paste/ http://127.0.0.1:5000/paste/
+
+        AllowEncodedSlashes NoDecode
+        ProxyPreserveHost on
+        <Proxy *>
+            Options FollowSymLinks MultiViews
+            AllowOverride All
+            Order allow,deny
+            allow from all
+        </Proxy>
+    </IfModule>
+    
+    DocumentRoot /var/www
+    <Directory />
+        Options FollowSymLinks
+        AllowOverride None
+    </Directory>
+    <Directory /var/www/>
+        Options Indexes FollowSymLinks MultiViews
+        AllowOverride None
+        Order allow,deny
+        allow from all
+    </Directory>
+</VirtualHost>
+
+

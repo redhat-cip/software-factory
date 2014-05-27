@@ -1,7 +1,7 @@
 cauth:
-  signin_url: "http://%{hiera('auth_url')}/login"
-  signout_url: "http://%{hiera('auth_url')}/logout"
-  github_redirect_url: "http://%{hiera('auth_url')}/login/github/callback"
+  signin_url: "/auth/login"
+  signout_url: "/auth/logout"
+  github_redirect_url: "http://%{hiera('http_gateway_host')}/auth/login/github/callback"
   github_app_id: GITHUB_APP_ID
   github_app_secret: GITHUB_APP_SECRET
   ldap_account_base: LDAP_ACCOUNT_BASE

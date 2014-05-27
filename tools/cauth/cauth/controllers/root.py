@@ -111,7 +111,7 @@ class LoginController(RestController):
     @expose(template='login.html')
     def get(self, **kwargs):
         if 'back' not in kwargs:
-            kwargs['back'] = '/logout'
+            kwargs['back'] = '/auth/logout'
 
         return dict(back=kwargs["back"])
 
@@ -156,6 +156,10 @@ class LogoutController(RestController):
             return self.logout_services(services)
 
 
-class RootController(object):
+class AuthController(object):
     login = LoginController()
     logout = LogoutController()
+
+
+class RootController(object):
+    auth = AuthController()

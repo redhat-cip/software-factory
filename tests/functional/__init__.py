@@ -4,7 +4,7 @@ import requests
 
 
 def get_cookie(username, password):
-    url = "http://%(auth_url)s/login" % {'auth_url': config.AUTH_HOST}
+    url = "http://%(auth_url)s/auth/login" % {'auth_url': config.AUTH_HOST}
     resp = requests.post(url, params={'username': username,
                                       'password': password,
                                       'back': '/'},

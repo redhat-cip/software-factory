@@ -8,14 +8,14 @@
 <script src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
 <div class="login">
   <h1>Login to Web App</h1>
-  <form method="POST" action="/login">
+  <form method="POST" action="/auth/login">
     <p><input type="text" name="username" value="" placeholder="Username or Email"></p>
     <p><input type="password" name="password" value="" placeholder="Password"></p>
     <input type="hidden" name="back" value="${back}">
     <p class="submit"><input type="submit" id="commit" value="Login"></p>
   </form>
   <p class='submit'>
-    <a href='/login/github?back=${back}'>Login via Github</a>
+    <a href='/auth/login/github?back=${back}'>Login via Github</a>
   </p>
 </div>
 

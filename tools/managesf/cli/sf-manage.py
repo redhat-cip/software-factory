@@ -69,7 +69,7 @@ url = "http://%(host)s:%(port)s/project/%(name)s" % \
 
 def get_cookie():
     (username, password) = args.auth.split(':')
-    r = http.post('http://%s/login' % args.auth_server,
+    r = http.post('http://%s/auth/login' % args.auth_server,
                   params={'username': username,
                           'password': password,
                           'back': '/'},

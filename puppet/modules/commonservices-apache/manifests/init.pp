@@ -19,35 +19,55 @@ class commonservices-apache {
     ensure => present,
   }
 
-  file {'/etc/apache2/sites-available/etherpad':
+  file {'/etc/apache2/sites-available/gateway':
     ensure => file,
     mode   => '0640',
     owner  => 'www-data',
     group  => 'www-data',
-    source =>'puppet:///modules/commonservices-apache/etherpad',
+    content => template('commonservices-apache/gateway'),
     notify => Service[apache2],
   }
 
-  exec {'enable_etherpad_site':
-    command => 'a2ensite etherpad',
-    path    => '/usr/sbin/:/usr/bin/:/bin/',
-    require => [File['/etc/apache2/sites-available/etherpad']],
-    before  => Class['monit'],
-  }
-
-  file {'/etc/apache2/sites-available/lodgeit':
+  file {'/var/www/index.html':
     ensure => file,
     mode   => '0640',
     owner  => 'www-data',
     group  => 'www-data',
-    source =>'puppet:///modules/commonservices-apache/lodgeit',
+    source  => 'puppet:///modules/commonservices-apache/index.html',
     notify => Service[apache2],
   }
 
-  exec {'enable_lodgeit_site':
-    command => 'a2ensite lodgeit',
+  file {'/var/www/bootstrap.min.css':
+    ensure => file,
+    mode   => '0640',
+    owner  => 'www-data',
+    group  => 'www-data',
+    source  => 'puppet:///modules/commonservices-apache/bootstrap.min.css',
+    notify => Service[apache2],
+  }
+
+  file {'/var/www/bootstrap.min.js':
+    ensure => file,
+    mode   => '0640',
+    owner  => 'www-data',
+    group  => 'www-data',
+    source  => 'puppet:///modules/commonservices-apache/bootstrap.min.js',
+    notify => Service[apache2],
+  }
+
+  file {'/var/www/jquery.min.js':
+    ensure => file,
+    mode   => '0640',
+    owner  => 'www-data',
+    group  => 'www-data',
+    source  => 'puppet:///modules/commonservices-apache/jquery.min.js',
+    notify => Service[apache2],
+  }
+
+  exec {'enable_gateway':
+    command => 'a2ensite gateway',
     path    => '/usr/sbin/:/usr/bin/:/bin/',
-    require => [File['/etc/apache2/sites-available/lodgeit']],
+    require => [File['/etc/apache2/sites-available/gateway']],
     before  => Class['monit'],
   }
 
@@ -60,8 +80,12 @@ class commonservices-apache {
     enable     => true,
     hasrestart => true,
     hasstatus  => true,
-    require    => [Exec['enable_etherpad_site'],
-                   Exec['enable_lodgeit_site']]
+    require    => [Exec['enable_gateway'],]
+  }
+
+  file { '/var/www/static':
+    ensure  => link,
+    target  => '/srv/lodgeit/lodgeit/lodgeit/static/',
   }
 
 }
