@@ -29,6 +29,9 @@ VERSION:=$(PVER).$(REL)
 VERS=$(DVER)-$(VERSION)
 DIST=wheezy
 
+# Prevent edeploy from building .edeploy files (no more pigz/gzip)
+STRIPPED_TARGET=false
+
 ARCH=amd64
 export PATH := /sbin:/bin::$(PATH)
 
