@@ -8,10 +8,28 @@ REL=1.0.0
 VERS=${DVER}-${PVER}.${REL}
 BUILT_ROLES=/var/lib/sf
 
-key_name="enovance fbo pub key"
+key_name="fbo"
+# flavor is used for managesf, ldap, commonservices
+flavor="standard.xsmall"
+# alt_flavor is used for puppetmaster, mysql, redmine, jenkins, gerrit (prefer flavor with at least 2 vCPUs and 2GB RAM)
+#alt_flavor="standard.small"
+alt_flavor=$flavor
+floating_ip_pool_name="Ext-Net"
 prefix="tests"
 temp_ssh_pwd="heat"
-params="key_name=$key_name;prefix=$prefix;temp_ssh_pwd=$temp_ssh_pwd"
+params="key_name=$key_name;floating_ip_pool_name=$floating_ip_pool_name;instance_type=$flavor"
+params="$params;alt_instance_type=$alt_flavor;prefix=$prefix;temp_ssh_pwd=$temp_ssh_pwd"
+
+function get_params {
+    puppetmaster_image_id=`glance image-show install-server-vm | grep "^| id" | awk '{print $4}'`
+    params="$params;puppetmaster_image_id=$puppetmaster_image_id"
+    sf_image_id=`glance image-show softwarefactory | grep "^| id" | awk '{print $4}'`
+    params="$params;sf_image_id=$sf_image_id"
+    ldap_image_id=`glance image-show ldap | grep "^| id" | awk '{print $4}'`
+    params="$params;ldap_image_id=$ldap_image_id"
+    mysql_image_id=`glance image-show mysql | grep "^| id" | awk '{print $4}'`
+    params="$params;mysql_image_id=$mysql_image_id"
+}
 
 function register_images {
     for img in install-server-vm mysql ldap softwarefactory; do
@@ -32,14 +50,7 @@ function unregister_images {
 }
 
 function start_stack {
-    puppetmaster_image_id=`glance image-show install-server-vm | grep "^| id" | awk '{print $4}'`
-    params="$params;puppetmaster_image_id=$puppetmaster_image_id"
-    sf_image_id=`glance image-show softwarefactory | grep "^| id" | awk '{print $4}'`
-    params="$params;sf_image_id=$sf_image_id"
-    ldap_image_id=`glance image-show ldap | grep "^| id" | awk '{print $4}'`
-    params="$params;ldap_image_id=$ldap_image_id"
-    mysql_image_id=`glance image-show mysql | grep "^| id" | awk '{print $4}'`
-    params="$params;mysql_image_id=$mysql_image_id"
+    get_params
     heat stack-create --template-file sf.hot -P "$params" SoftwareFactory
 }
 

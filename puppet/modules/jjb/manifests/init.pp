@@ -16,6 +16,9 @@
 class jjb ($settings = hiera_hash('jenkins', ''),
             $gerrit = hiera_hash('gerrit', ''),
             $redmine = hiera_hash('redmine', '')) {
+
+  require hosts
+
   file {'/etc/jenkins_jobs/jenkins_jobs.ini':
     ensure  => file,
     mode    => '0400',
@@ -68,11 +71,20 @@ class jjb ($settings = hiera_hash('jenkins', ''),
   exec {'init_config_repo':
     command => '/root/init-config-repo.sh',
     path    => '/usr/sbin/:/usr/bin/:/bin/:/usr/local/bin',
+    logoutput => true,
     provider => shell,
     require => [File['/root/init-config-repo.sh'],
-                File['/root/gerrit_admin_rsa'],
+                File['/root/gerrit_admin_rsa']],
+  }
+
+  exec {'kick_jjb':
+    command => '/usr/local/jenkins/slave_scripts/kick.sh',
+    path    => '/usr/sbin/:/usr/bin/:/bin/:/usr/local/bin',
+    logoutput => true,
+    provider => shell,
+    require => [Exec['init_config_repo'],
+                Service['jenkins'],
                 File['/etc/jenkins_jobs/jenkins_jobs.ini'],
-                Exec['wait_for_jenkins'],
                 File['/usr/local/jenkins/slave_scripts/kick.sh']],
   }
 }

@@ -122,8 +122,4 @@ class jenkins ($settings = hiera_hash('jenkins', '')) {
     require => [Package['monit'], File['/etc/monit/conf.d']],
     notify  => Service['monit'],
   }
-  exec { 'wait_for_jenkins':
-    command => '/bin/bash -c "while :; do wget --spider http://localhost:8080; [[ \$? -eq 0 ]] && break; sleep 1; done"',
-    require => [File['/var/lib/jenkins/config.xml'],Service['jenkins']]
-  }
 }

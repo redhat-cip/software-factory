@@ -28,12 +28,10 @@ gerrit_ssh_key="/root/gerrit_admin_rsa"
 jenkins_kick_script="/usr/local/jenkins/slave_scripts/kick.sh"
 auth=$admin:$admin_http_password
 
-echo ""
-echo "==== Creating config project ===="
+# Create config project (managesf must be up)
 echo "{\"description\":\"Config repository\"}" | curl "http://$mh/project/config" -X PUT -d @- -H "Content-type: application/json" -H "Authorization: Basic `echo -n $auth | base64`"
 
-echo ""
-echo "==== Cloning the config repo ===="
+# Clone the config project
 echo "ssh -o StrictHostKeyChecking=no -i $gerrit_ssh_key \$@" > /tmp/ssh_wrapper.sh
 chmod +x /tmp/ssh_wrapper.sh
 export GIT_SSH="/tmp/ssh_wrapper.sh"
@@ -47,33 +45,17 @@ if [ -d "/tmp/config/jjb" ]; then
     exit 0
 fi
 
-
-echo ""
-echo "==== Adding JJB files to the config repo ===="
-cd /tmp/config
+# Add JJB files to the config repo
 cp -Rv /usr/share/sf-jjb /tmp/config/jobs
 
-echo ""
-echo "==== Adding Zuul files to the config repo ===="
-cd /tmp/config
+# Add Zuul files to the config repo
 cp -Rv /usr/share/sf-zuul /tmp/config/zuul
 
-echo ""
-echo "==== Commiting the changes ===="
+# Commit the changes
+cd /tmp/config
 git add .
 git commit -a --author "$admin <$admin_email>" -m "JJB/Zuul files"
-
-echo ""
-echo "==== Pushing changes ===="
 git push origin master
 
-cd /tmp/
 rm -rf /tmp/config
 rm -f /tmp/ssh_wrapper.sh
-
-echo ""
-echo "==== Kick starting JJB ===="
-exec $jenkins_kick_script
-
-echo ""
-echo "Done!"

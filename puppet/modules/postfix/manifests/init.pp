@@ -14,6 +14,8 @@
 
 class postfix ($settings = hiera_hash('postfix', '')) {
 
+  require hosts
+
   package { 'postfix':
     ensure => 'installed',
   }

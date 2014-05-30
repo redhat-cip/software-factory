@@ -26,7 +26,7 @@ ORIG=$(cd $(dirname $0); pwd)
 . ${ORIG}/functions
 
 update_repositories $dir
-install_packages $dir cpp rake make python-pip sshpass bc gcc python-dev libldap2-dev libsasl2-dev
+install_packages $dir cpp rake make python-pip sshpass bc gcc python-dev libldap2-dev libsasl2-dev monit postfix
 
 HOME=/root do_chroot $dir gem install serverspec r10k rspec-extra-formatters
 

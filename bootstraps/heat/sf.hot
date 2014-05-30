@@ -17,11 +17,10 @@ parameters:
     default: heat
   instance_type:
     type: string
-    description: Instance type for sf roles
-    default: small
-    constraints:
-      - allowed_values: [small]
-        description: Flavor type
+    description: Instance type for sf roles (ldap, commonservices, managesf)
+  alt_instance_type:
+    type: string
+    description: Instance type for sf roles (mysql, gerrit, jenkins, redmine, puppetmaster)
   puppetmaster_image_id:
     type: string
     description: Glance image ID for the puppet master node
@@ -34,27 +33,35 @@ parameters:
   sf_image_id:
     type: string
     description: Glance image ID for all the other sf nodes
+  floating_ip_pool_name:
+    type: string
+    description: The name of floating IP pool
 
 resources:
   jenkins_floating_ip:
     type: OS::Nova::FloatingIP
     properties:
-      pool: "nova"
+      pool: { get_param: floating_ip_pool_name }
   
   redmine_floating_ip:
     type: OS::Nova::FloatingIP
     properties:
-      pool: "nova"
+      pool: { get_param: floating_ip_pool_name }
   
   gerrit_floating_ip:
     type: OS::Nova::FloatingIP
     properties:
-      pool: "nova"
+      pool: { get_param: floating_ip_pool_name }
   
   managesf_floating_ip:
     type: OS::Nova::FloatingIP
     properties:
-      pool: "nova"
+      pool: { get_param: floating_ip_pool_name }
+  
+  puppetmaster_floating_ip:
+    type: OS::Nova::FloatingIP
+    properties:
+      pool: { get_param: floating_ip_pool_name }
 
   associate_public_ip_to_jenkins_instance:
     type: OS::Nova::FloatingIPAssociation
@@ -79,13 +86,19 @@ resources:
     properties:
       floating_ip: {get_resource: managesf_floating_ip}
       server_id: {get_resource: managesf_instance}
+  
+  associate_public_ip_to_puppetmaster_instance:
+    type: OS::Nova::FloatingIPAssociation
+    properties:
+      floating_ip: {get_resource: puppetmaster_floating_ip}
+      server_id: {get_resource: puppetmaster_instance}
 
   puppetmaster_instance:
     type: OS::Nova::Server
     depends_on: [ commonservices_instance, managesf_instance, gerrit_instance, jenkins_instance, redmine_instance, ldap_instance, mysql_instance ]
     properties:
       image: { get_param: puppetmaster_image_id }
-      flavor: { get_param: instance_type }
+      flavor: { get_param: alt_instance_type }
       key_name: { get_param: key_name }
       user_data_format: RAW
       user_data:
@@ -107,6 +120,7 @@ resources:
                 templatedir=$confdir/templates
                 certname=SF_PREFIX-puppetmaster.pub
                 server=SF_PREFIX-puppetmaster.pub
+                environmentpath = $confdir/environments
                 autosign=true
                 [master]
                 # These are needed when the puppetmaster is run by passenger
@@ -145,7 +159,7 @@ resources:
               path: /root/hosts.yaml
             runcmd:
               - /etc/init.d/puppetmaster stop
-              - MY_PRIV_IP=`curl -s http://169.254.169.254/latest/meta-data/local-ipv4`
+              - MY_PRIV_IP=`curl -s http://169.254.169.254/latest/meta-data/local-ipv4 | cut -d, -f1`
               - sed -i "s/puppermaster-ip-template/$MY_PRIV_IP/" /root/hosts.yaml
               - echo "127.0.0.1 SF_PREFIX-puppetmaster.pub SF_PREFIX-puppetmaster" > /etc/hosts
               - echo "ldap_host SF_PREFIX-ldap.pub SF_PREFIX-ldap" >> /etc/hosts
@@ -167,14 +181,14 @@ resources:
             commonservices_host: { get_attr: [commonservices_instance, first_address] }
             ldap_host: { get_attr: [ldap_instance, first_address] }
             mysql_host: { get_attr: [mysql_instance, first_address] }
-            SFPREFIX: { get_param: prefix }
+            SF_PREFIX: { get_param: prefix }
             SSHPASS: { get_param: temp_ssh_pwd }
 
   jenkins_instance:
     type: OS::Nova::Server
     properties:
       image: { get_param: sf_image_id }
-      flavor: { get_param: instance_type }
+      flavor: { get_param: alt_instance_type }
       key_name: { get_param: key_name }
       user_data_format: RAW
       user_data:
@@ -198,7 +212,7 @@ resources:
     type: OS::Nova::Server
     properties:
       image: { get_param: sf_image_id }
-      flavor: { get_param: instance_type }
+      flavor: { get_param: alt_instance_type }
       key_name: { get_param: key_name }
       user_data_format: RAW
       user_data:
@@ -222,7 +236,7 @@ resources:
     type: OS::Nova::Server
     properties:
       image: { get_param: sf_image_id }
-      flavor: { get_param: instance_type }
+      flavor: { get_param: alt_instance_type }
       key_name: { get_param: key_name }
       user_data_format: RAW
       user_data:
@@ -270,7 +284,7 @@ resources:
     type: OS::Nova::Server
     properties:
       image: { get_param: sf_image_id }
-      flavor: { get_param: instance_type }
+      flavor: { get_param: alt_instance_type }
       key_name: { get_param: key_name }
       user_data_format: RAW
       user_data:
@@ -399,7 +413,7 @@ resources:
     type: OS::Nova::Server
     properties:
       image: { get_param: mysql_image_id }
-      flavor: { get_param: instance_type }
+      flavor: { get_param: alt_instance_type }
       key_name: { get_param: key_name }
       user_data_format: RAW
       user_data:

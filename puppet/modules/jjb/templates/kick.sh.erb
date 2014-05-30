@@ -1,15 +1,35 @@
 #!/bin/bash
 
-set -e 
 set -x
+
+RETRIES=0
+while true; do
+    wget --spider http://localhost:8080
+    [ $? -eq 0 ] && break
+    let RETRIES=RETRIES+1
+    [ "$RETRIES" == "120" ] && {
+        echo "Jenkins took too long to be up !"
+        exit 1
+    }
+    sleep 1
+done
 
 git clone http://<%= scope.function_hiera(["gerrit_url"]) %>/r/config /root/config
 
 # JJB
-jenkins-jobs update /root/config/jobs
-EXIT_CODE=$?
+RETRIES=0
+while true; do
+    jenkins-jobs update /root/config/jobs
+    [ $? -eq 0 ] && break
+    let RETRIES=RETRIES+1
+    [ "$RETRIES" == "30" ] && {
+        echo "Unable to update jenkins job (jjb) !"
+        exit 1
+    }
+    sleep 1
+done
 
-# Jenkins jobs are not update by gearman plugin
+# Jenkins jobs are not updated by gearman plugin
 # TODO: Find a way to just restart the gearman plugin
 service jenkins restart 
 
@@ -18,4 +38,3 @@ cp /root/config/zuul/layout.yaml /etc/zuul/
 
 # Clean
 rm -Rf /root/config
-exit ${EXIT_CODE}
