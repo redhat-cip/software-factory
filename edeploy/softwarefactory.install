@@ -147,22 +147,23 @@ EOF
     #
     [ -f "jenkins-ci.org.key" ] || wget -q http://pkg.jenkins-ci.org/debian/jenkins-ci.org.key -O jenkins-ci.org.key
     cat jenkins-ci.org.key | do_chroot $dir apt-key add -
-    JREPO="$dir/var/lib/repo-jenkins/debs" 
-    [ ! -d $JREPO ] && mkdir -p $JREPO
-    JCWD=`pwd`
-    cd $JREPO
-    # Jenkins debs repo fails almost always this time
-    # So we set up a local mirror
-    while [ ! -f jenkins_1.560_all.deb ]; do
-        wget http://mirrors.jenkins-ci.org/debian/jenkins_1.560_all.deb
-    done
-    cd ..
-    dpkg-scanpackages -m debs > Packages
-    chmod -R o+r .
-    cd $JCWD
+# Comment that right know (as not so sure it works correclty) - pkg.jenkins-ci.org seems to be more stable now ...
+#    JREPO="$dir/var/lib/repo-jenkins/debs" 
+#    [ ! -d $JREPO ] && mkdir -p $JREPO
+#    JCWD=`pwd`
+#    cd $JREPO
+#    # Jenkins debs repo fails almost always this time
+#    # So we set up a local mirror
+#    while [ ! -f jenkins_1.560_all.deb ]; do
+#        wget http://mirrors.jenkins-ci.org/debian/jenkins_1.560_all.deb
+#    done
+#    cd ..
+#    dpkg-scanpackages -m debs > Packages
+#    chmod -R o+r .
+#    cd $JCWD
+# deb file:/var/lib/ repo-jenkins/
     cat > ${dir}/etc/apt/sources.list.d/jenkins.list <<EOF
     deb http://pkg.jenkins-ci.org/debian binary/
-    deb file:/var/lib/ repo-jenkins/
 EOF
     update_repositories $dir
     # Update kernel for LXC capabilities
