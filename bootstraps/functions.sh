@@ -208,6 +208,5 @@ function trigger_puppet_apply {
         sshpass -p "$TEMP_SSH_PWD" ssh -p$ssh_port root@${role} sed -i "s/puppetmaster-ip-template/$puppetmaster_ip/" /etc/hosts
         # The Puppet run will deactivate the temporary root password
         sshpass -p "$TEMP_SSH_PWD" ssh -p$ssh_port root@${role} "puppet agent --test --environment sf || true; /etc/init.d/puppet start"
-        sleep 5
     done
 }

@@ -7,4 +7,5 @@ runcmd:
   - /etc/init.d/puppet stop
   - echo puppetmaster-ip-template SF_PREFIX-puppetmaster.pub >> /etc/hosts
   - sed -i -e '0,/^$/s/^$/server=SF_PREFIX-puppetmaster.pub\n/g' /etc/puppet/puppet.conf
+  - /bin/echo -e "\n[agent]\nenvironment=sf" >> /etc/puppet/puppet.conf 
   - echo "root:SSHPASS" | chpasswd

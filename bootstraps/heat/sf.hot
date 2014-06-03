@@ -111,24 +111,6 @@ resources:
             disable_root: 0
             write_files:
             - content: |
-                [main]
-                logdir=/var/log/puppet
-                vardir=/var/lib/puppet
-                ssldir=/var/lib/puppet/ssl
-                rundir=/var/run/puppet
-                factpath=$vardir/lib/facter
-                templatedir=$confdir/templates
-                certname=SF_PREFIX-puppetmaster.pub
-                server=SF_PREFIX-puppetmaster.pub
-                environmentpath = $confdir/environments
-                autosign=true
-                [master]
-                # These are needed when the puppetmaster is run by passenger
-                # and can safely be removed if webrick is used.
-                ssl_client_header = SSL_CLIENT_S_DN
-                ssl_client_verify_header = SSL_CLIENT_VERIFY
-              path: /etc/puppet/puppet.conf
-            - content: |
                 hosts:
                   localhost:
                     ip: 127.0.0.1
@@ -169,10 +151,10 @@ resources:
               - echo "gerrit_host SF_PREFIX-gerrit.pub SF_PREFIX-gerrit" >> /etc/hosts
               - echo "managesf_host SF_PREFIX-managesf.pub SF_PREFIX-managesf" >> /etc/hosts
               - echo "commonservices_host SF_PREFIX-commonservices.pub SF_PREFIX-commonservices" >> /etc/hosts
-              - rm -Rf /var/lib/puppet/ssl/*
               - tar -xzf /root/puppet-bootstrapper.tar.gz -C /root/
               - cd /root/puppet-bootstrapper
-              - HOME=/root/ TEMP_SSH_PWD=SSHPASS SFPREFIX=SF_PREFIX ./bootstrap.sh > /var/log/sf-bootstrap.log 2>&1
+              - ./config_puppetmaster.sh > /var/log/sf-bootstrap.log 2>&1
+              - HOME=/root/ TEMP_SSH_PWD=SSHPASS SFPREFIX=SF_PREFIX ./bootstrap.sh >> /var/log/sf-bootstrap.log 2>&1
           params:
             jenkins_host: { get_attr: [jenkins_instance, first_address] }
             redmine_host: { get_attr: [redmine_instance, first_address] }
@@ -203,6 +185,7 @@ resources:
               - /etc/init.d/puppet stop
               - echo puppetmaster-ip-template SF_PREFIX-puppetmaster.pub >> /etc/hosts
               - sed -i -e '0,/^$/s/^$/server=SF_PREFIX-puppetmaster.pub\n/g' /etc/puppet/puppet.conf
+              - /bin/echo -e "\n[agent]\nenvironment=sf" >> /etc/puppet/puppet.conf
               - echo "root:SSHPASS" | chpasswd
           params:
             SF_PREFIX: { get_param: prefix }
@@ -227,6 +210,7 @@ resources:
               - /etc/init.d/puppet stop
               - echo puppetmaster-ip-template SF_PREFIX-puppetmaster.pub >> /etc/hosts
               - sed -i -e '0,/^$/s/^$/server=SF_PREFIX-puppetmaster.pub\n/g' /etc/puppet/puppet.conf
+              - /bin/echo -e "\n[agent]\nenvironment=sf" >> /etc/puppet/puppet.conf
               - echo "root:SSHPASS" | chpasswd
           params:
             SF_PREFIX: { get_param: prefix }
@@ -251,6 +235,7 @@ resources:
               - /etc/init.d/puppet stop
               - echo puppetmaster-ip-template SF_PREFIX-puppetmaster.pub >> /etc/hosts
               - sed -i -e '0,/^$/s/^$/server=SF_PREFIX-puppetmaster.pub\n/g' /etc/puppet/puppet.conf
+              - /bin/echo -e "\n[agent]\nenvironment=sf" >> /etc/puppet/puppet.conf
               - echo "root:SSHPASS" | chpasswd
           params:
             SF_PREFIX: { get_param: prefix }
@@ -275,6 +260,7 @@ resources:
               - /etc/init.d/puppet stop
               - echo puppetmaster-ip-template SF_PREFIX-puppetmaster.pub >> /etc/hosts
               - sed -i -e '0,/^$/s/^$/server=SF_PREFIX-puppetmaster.pub\n/g' /etc/puppet/puppet.conf
+              - /bin/echo -e "\n[agent]\nenvironment=sf" >> /etc/puppet/puppet.conf
               - echo "root:SSHPASS" | chpasswd
           params:
             SF_PREFIX: { get_param: prefix }
@@ -299,6 +285,7 @@ resources:
               - /etc/init.d/puppet stop
               - echo puppetmaster-ip-template SF_PREFIX-puppetmaster.pub >> /etc/hosts
               - sed -i -e '0,/^$/s/^$/server=SF_PREFIX-puppetmaster.pub\n/g' /etc/puppet/puppet.conf
+              - /bin/echo -e "\n[agent]\nenvironment=sf" >> /etc/puppet/puppet.conf
               - echo "root:SSHPASS" | chpasswd
           params:
             SF_PREFIX: { get_param: prefix }
@@ -404,6 +391,7 @@ resources:
               - ldapmodify -Q -Y EXTERNAL -H ldapi:/// -f /root/disable_anon_backend.ldif
               - echo puppetmaster-ip-template SF_PREFIX-puppetmaster.pub >> /etc/hosts
               - sed -i -e '0,/^$/s/^$/server=SF_PREFIX-puppetmaster.pub\n/g' /etc/puppet/puppet.conf
+              - /bin/echo -e "\n[agent]\nenvironment=sf" >> /etc/puppet/puppet.conf
               - echo "root:SSHPASS" | chpasswd
           params:
             SF_PREFIX: { get_param: prefix }
@@ -428,6 +416,7 @@ resources:
               - /etc/init.d/puppet stop
               - echo puppetmaster-ip-template SF_PREFIX-puppetmaster.pub >> /etc/hosts
               - sed -i -e '0,/^$/s/^$/server=SF_PREFIX-puppetmaster.pub\n/g' /etc/puppet/puppet.conf
+              - /bin/echo -e "\n[agent]\nenvironment=sf" >> /etc/puppet/puppet.conf
               - echo "root:SSHPASS" | chpasswd
           params:
             SF_PREFIX: { get_param: prefix }

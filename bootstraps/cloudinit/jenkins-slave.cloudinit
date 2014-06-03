@@ -5,3 +5,4 @@ disable_root: 0
 runcmd:
  - echo PUPPETMASTER SF_PREFIX-puppetmaster.pub >> /etc/hosts
  - sed -i -e '0,/^$/s/^$/server=SF_PREFIX-puppetmaster.pub\n/g' /etc/puppet/puppet.conf
+ - /bin/echo -e "\n[agent]\nenvironment=sf" >> /etc/puppet/puppet.conf 
