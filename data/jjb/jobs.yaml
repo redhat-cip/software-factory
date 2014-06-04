@@ -6,6 +6,7 @@
           ./run_tests.sh
     triggers:
       - zuul
+    node: '{node}'
 
 - job-template:
     name: '{name}-functional-tests'
@@ -15,6 +16,7 @@
           ./run_functional-tests.sh
     triggers:
       - zuul
+    node: '{node}'
 
 - job-template:
     name: '{name}-sloccount'
@@ -24,3 +26,4 @@
           sloccount --duplicates --wide --details . | fgrep -v .svn > sloccount.sc
     triggers:
       - zuul
+    node: '{node}'

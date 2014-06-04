@@ -1,5 +1,6 @@
 - project:
     name: zuul-demo
+    node: sf-prefix-slave
     jobs:
       - '{name}-unit-tests'
       - '{name}-functional-tests'

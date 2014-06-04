@@ -17,8 +17,11 @@ alt_flavor=$flavor
 floating_ip_pool_name="Ext-Net"
 prefix="tests"
 temp_ssh_pwd="heat"
+jenkins_user_pwd="userpass"
+jenkins_master_url="$prefix-jenkins"
 params="key_name=$key_name;floating_ip_pool_name=$floating_ip_pool_name;instance_type=$flavor"
 params="$params;alt_instance_type=$alt_flavor;prefix=$prefix;temp_ssh_pwd=$temp_ssh_pwd"
+params="$params;jenkins_user_pwd=$jenkins_user_pwd;jenkins_master_url=$jenkins_master_url"
 
 function get_params {
     puppetmaster_image_id=`glance image-show install-server-vm | grep "^| id" | awk '{print $4}'`
@@ -29,10 +32,12 @@ function get_params {
     params="$params;ldap_image_id=$ldap_image_id"
     mysql_image_id=`glance image-show mysql | grep "^| id" | awk '{print $4}'`
     params="$params;mysql_image_id=$mysql_image_id"
+    slave_image_id=`glance image-show slave | grep "^| id" | awk '{print $4}'`
+    params="$params;slave_image_id=$slave_image_id"
 }
 
 function register_images {
-    for img in install-server-vm mysql ldap softwarefactory; do
+    for img in install-server-vm mysql slave ldap softwarefactory; do
         checksum=`glance image-show $img | grep checksum | awk '{print $4}'`
         if [ -z "$checksum" ]; then
             glance image-create --name $img --disk-format qcow2 --container-format bare \
@@ -42,7 +47,7 @@ function register_images {
 }
 
 function unregister_images {
-    for img in install-server-vm mysql ldap softwarefactory; do
+    for img in install-server-vm mysql slave ldap softwarefactory; do
         checksum=`glance image-show $img | grep checksum | awk '{print $4}'`
         newchecksum=`cat $BUILT_ROLES/roles/install/$VERS/$img-$DVER-$PVER.$REL.img.md5 | cut -d" " -f1`
         [ "$newchecksum" != "$checksum" ] && glance image-delete $img

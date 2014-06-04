@@ -66,4 +66,5 @@ cd $SF_ROLES
 sudo make TOP=$BUILD_DIR $VIRTUALIZED EDEPLOY_ROLES=$EDEPLOY_ROLES install-server-vm
 sudo make TOP=$BUILD_DIR $VIRTUALIZED ldap
 sudo make TOP=$BUILD_DIR $VIRTUALIZED mysql
+sudo make TOP=$BUILD_DIR $VIRTUALIZED slave
 sudo make TOP=$BUILD_DIR $VIRTUALIZED softwarefactory

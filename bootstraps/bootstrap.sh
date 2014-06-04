@@ -39,6 +39,7 @@ JENKINS_ADMIN=${ADMIN_NAME}
 REDMINE_ADMIN=${ADMIN_NAME}
 LDAP_ADMIN_DN="cn=admin,dc=example,dc=com"
 LDAP_ADMIN_PASSWORD=secret
+JENKINS_USER_EMAIL=jenkins@example.com
 
 generate_keys
 generate_hieras

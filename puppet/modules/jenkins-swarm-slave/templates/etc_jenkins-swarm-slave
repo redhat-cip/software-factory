@@ -1,4 +1,0 @@
-SWARM_JAR=/var/lib/jenkins/swarm-client-1.15-jar-with-dependencies.jar
-MASTER=<%= @settings['jenkins_url'] %>
-USERNAME=<%= @settings['jenkins_username'] %>
-PASSWORD=<%= @settings['jenkins_password'] %>

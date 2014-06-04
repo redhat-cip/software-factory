@@ -168,10 +168,6 @@ EOF
     deb http://pkg.jenkins-ci.org/debian binary/
 EOF
     update_repositories $dir
-    # Update kernel for LXC capabilities
-    wget -q http://198.154.188.142:8080/v1/AUTH_4f1b0b9ce3354a439db8ef19cf456d6f/kernel/linux-image-3.2.54-fbo_3.2.54-fbo-10.00.Custom_amd64.deb -O ${dir}/root/linux-image-3.2.54-fbo_3.2.54-fbo-10.00.Custom_amd64.deb
-    do_chroot $dir dpkg -i /root/linux-image-3.2.54-fbo_3.2.54-fbo-10.00.Custom_amd64.deb
-    do_chroot $dir update-grub
 
     install_packages $dir "$JENKINS_PACKAGES"
 

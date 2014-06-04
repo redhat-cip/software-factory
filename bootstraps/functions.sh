@@ -73,6 +73,7 @@ function generate_hieras {
     # as echo was not giving correct values
     sed -i "s#LDAP_ADMIN_PASSWORD_BASE64#$(printf ${LDAP_ADMIN_PASSWORD} | base64)#" ${OUTPUT}/jenkins.yaml
     sed -i "s#JENKINS_ADMIN_NAME#${JENKINS_ADMIN}#" ${OUTPUT}/jenkins.yaml
+    sed -i "s#JENKINS_USER_EMAIL#${JENKINS_USER_EMAIL}#" ${OUTPUT}/jenkins.yaml
 
     # Redmine part
     REDMINE_API_KEY=$(generate_api_key)

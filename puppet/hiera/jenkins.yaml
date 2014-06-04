@@ -14,3 +14,4 @@ jenkins:
   ldap_userSearch: cn={0}
   ldap_managerDN: LDAP_ADMIN_DN
   ldap_managerPassword: LDAP_ADMIN_PASSWORD_BASE64
+  jenkins_user_email: JENKINS_USER_EMAIL

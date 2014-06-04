@@ -29,11 +29,14 @@ export SF_PREFIX
 
 ROLES="${SF_PREFIX}-puppetmaster ${SF_PREFIX}-ldap ${SF_PREFIX}-mysql ${SF_PREFIX}-redmine"
 ROLES="$ROLES ${SF_PREFIX}-gerrit ${SF_PREFIX}-managesf ${SF_PREFIX}-jenkins ${SF_PREFIX}-commonservices"
+ROLES="$ROLES ${SF_PREFIX}-slave"
 
 EDEPLOY_LXC=/srv/edeploy-lxc/edeploy-lxc
 CONFTEMPDIR=/tmp/lxc-conf
 # Need to be select randomly
 SSHPASS=heat
+JENKINS_MASTER_URL=${SF_PREFIX}-jenkins
+JENKINS_USER_PASSWORD=userpass
 
 function get_ip {
     grep -B 1 "\-$1" sf-lxc.yaml | head -1 | awk '{ print $2 }'
@@ -49,6 +52,9 @@ if [ -z "$1" ] || [ "$1" == "start" ]; then
     sed -i "s#CIPATH#${CONFTEMPDIR}#g" ${CONFTEMPDIR}/sf-lxc.yaml
     sed -i "s#SSH_PUBKEY#${SSH_PUBKEY}#g" ${CONFTEMPDIR}/sf-lxc.yaml
     sed -i "s#EDEPLOY_ROLES#${EDEPLOY_ROLES}#g" ${CONFTEMPDIR}/sf-lxc.yaml
+    # Complete jenkins slave cloudinit 
+    sed -i "s/JENKINS_MASTER_URL/${JENKINS_MASTER_URL}/g" ${CONFTEMPDIR}/slave.cloudinit
+    sed -i "s/JENKINS_USER_PASSWORD/${JENKINS_USER_PASSWORD}/g" ${CONFTEMPDIR}/slave.cloudinit
     # Complete all the cloudinit templates
     sed -i "s/SF_PREFIX/${SF_PREFIX}/g" ${CONFTEMPDIR}/*.cloudinit
     sed -i "s/SSHPASS/${SSHPASS}/g" ${CONFTEMPDIR}/*.cloudinit

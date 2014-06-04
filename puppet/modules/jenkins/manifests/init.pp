@@ -52,6 +52,14 @@ class jenkins ($settings = hiera_hash('jenkins', '')) {
     content => template('jenkins/jenkins.model.JenkinsLocationConfiguration.xml.erb'),
     require => User['jenkins'],
   }
+  file {'/var/lib/jenkins/hudson.plugins.git.GitSCM.xml':
+    ensure  => file,
+    mode    => '0644',
+    owner   => 'jenkins',
+    group   => 'nogroup',
+    content => template('jenkins/hudson.plugins.git.GitSCM.xml.erb'),
+    require => User['jenkins'],
+  }
   file {'/var/lib/jenkins/hudson.plugins.gearman.GearmanPluginConfig.xml':
     ensure  => file,
     mode    => '0644',
@@ -80,7 +88,7 @@ class jenkins ($settings = hiera_hash('jenkins', '')) {
     ensure  => file,
     mode    => '0644',
     owner   => 'jenkins',
-    group   => 'nogroup',
+    group   => 'jenkins',
     notify  => Service['jenkins'],
     content => template('jenkins/config.xml.erb'),
     require => [File['/var/lib/jenkins/credentials.xml'],
@@ -92,28 +100,6 @@ class jenkins ($settings = hiera_hash('jenkins', '')) {
   service { 'jenkins':
     ensure  => 'running',
     enable  => 'true',
-  }
-  package {'rubygems':
-    ensure => 'installed',
-  }
-  package {'rake':
-    ensure => 'installed',
-  }
-  package {'puppet-lint':
-    ensure => 'installed',
-  }
-  package {'python-pip':
-    ensure => 'installed',
-  }
-  package {'flake8':
-    ensure   => 'installed',
-    provider => 'pip',
-    require  => Package['python-pip'],
-  }
-  package {'rspec-puppet':
-    ensure   => 'installed',
-    provider => 'gem',
-    require  => Package['rubygems'],
   }
 
   file { '/etc/monit/conf.d/jenkins':

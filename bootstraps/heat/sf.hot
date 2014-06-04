@@ -11,6 +11,14 @@ parameters:
     type: string
     description: Hostname prefix
     default: sf
+  jenkins_master_url:
+    type: string
+    description: url/hostname(without http://) of jenkins master node to which slave connects 
+    default: tests-jenkins
+  jenkins_user_pwd:
+    type: string
+    description: jenkins user password, jenkins slave has to provide this password to connect to master
+    default: userpass
   temp_ssh_pwd:
     type: string
     description: Used temporary to trigger puppet agents on each node
@@ -26,10 +34,13 @@ parameters:
     description: Glance image ID for the puppet master node
   ldap_image_id:
     type: string
-    description: Glance image ID for the mysql node
+    description: Glance image ID for the ldap node
   mysql_image_id:
     type: string
-    description: Glance image ID for the ldap node
+    description: Glance image ID for the mysql node
+  slave_image_id:
+    type: string
+    description: Glance image ID for the slave node
   sf_image_id:
     type: string
     description: Glance image ID for all the other sf nodes
@@ -95,7 +106,7 @@ resources:
 
   puppetmaster_instance:
     type: OS::Nova::Server
-    depends_on: [ commonservices_instance, managesf_instance, gerrit_instance, jenkins_instance, redmine_instance, ldap_instance, mysql_instance ]
+    depends_on: [ commonservices_instance, managesf_instance, gerrit_instance, jenkins_instance, redmine_instance, ldap_instance, mysql_instance, slave_instance ]
     properties:
       image: { get_param: puppetmaster_image_id }
       flavor: { get_param: alt_instance_type }
@@ -186,6 +197,7 @@ resources:
               - echo puppetmaster-ip-template SF_PREFIX-puppetmaster.pub >> /etc/hosts
               - sed -i -e '0,/^$/s/^$/server=SF_PREFIX-puppetmaster.pub\n/g' /etc/puppet/puppet.conf
               - /bin/echo -e "\n[agent]\nenvironment=sf" >> /etc/puppet/puppet.conf
+              - sed -i "s/sf-prefix/SF_PREFIX/g" /usr/share/sf-jjb/projects.yaml
               - echo "root:SSHPASS" | chpasswd
           params:
             SF_PREFIX: { get_param: prefix }
@@ -422,6 +434,37 @@ resources:
             SF_PREFIX: { get_param: prefix }
             SSHPASS: { get_param: temp_ssh_pwd }
   
+  slave_instance:
+    type: OS::Nova::Server
+    properties:
+      image: { get_param: slave_image_id }
+      flavor: { get_param: instance_type }
+      key_name: { get_param: key_name }
+      user_data_format: RAW
+      user_data:
+        str_replace:
+          template: |
+            #cloud-config
+            output: {all: '| tee -a /var/log/cloud-init-output.log'}
+            hostname: SF_PREFIX-slave
+            fqdn: SF_PREFIX-slave.pub
+            disable_root: 0
+            groups:
+              - jenkins: [jenkins]
+            users:
+              - name: jenkins
+                primary-group: jenkins
+                lock-passwd: false
+                plain_text_passwd: JENKINS_USER_PASSWORD
+                homedir: /var/lib/jenkins
+            runcmd:
+             - chown jenkins /var/lib/jenkins /var/lib/jenkins/plugins
+             - nohup sudo -u jenkins -i java -jar /var/lib/jenkins/swarm-client-1.15-jar-with-dependencies.jar -master http://JENKINS_MASTER_URL:8080 -username jenkins -password JENKINS_USER_PASSWORD -name SF_PREFIX-slave > /dev/null 2>&1 & echo $!
+          params:
+            SF_PREFIX: { get_param: prefix }
+            JENKINS_MASTER_URL: { get_param: jenkins_master_url }
+            JENKINS_USER_PASSWORD: { get_param: jenkins_user_pwd }
+
 
 outputs:
   jenkins_public_address:

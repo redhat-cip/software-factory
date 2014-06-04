@@ -13,7 +13,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-
+export SF_PREFIX=${SF_PREFIX:-tests}
 # Gerrit
 socat TCP-LISTEN:80,fork TCP:${SF_PREFIX}-gerrit:80 &
 # Redmine

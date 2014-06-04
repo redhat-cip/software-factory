@@ -47,3 +47,8 @@ hosts:
     name: SF_PREFIX-commonservices
     role: softwarefactory
     cloudinit: CIPATH/commonservices.cloudinit
+  -
+    address: 192.168.134.57
+    name: SF_PREFIX-slave
+    role: slave
+    cloudinit: CIPATH/slave.cloudinit

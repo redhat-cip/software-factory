@@ -11,9 +11,6 @@ node base {
 node default inherits base {
 }
 
-node /.*jenkins-swarm-slave.*/ inherits base {
-  include jenkins-swarm-slave
-}
 
 node /.*jenkins.*/ inherits base {
   include jenkins

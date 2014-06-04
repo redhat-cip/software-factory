@@ -24,7 +24,7 @@ describe file('/var/lib/jenkins/config.xml') do
     it {
         should be_file
         should be_owned_by 'jenkins'
-        should be_grouped_into 'nogroup'
+        should be_grouped_into 'jenkins'
         should be_mode '644'
     }
 end
