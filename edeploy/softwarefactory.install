@@ -133,6 +133,8 @@ EOF
     # /bin/installDeps.sh is looking for /usr/bin/node
     do_chroot $dir ln -s /usr/bin/nodejs /usr/bin/node
     do_chroot $dir sh /tmp/nmp-install.sh
+    # Use the European mirror
+    do_chroot $dir sed -i "s|npm install|npm --registry http://registry.npmjs.eu/ install|" /var/www/etherpad-lite-1.4.0/bin/installDeps.sh
     do_chroot $dir sh /var/www/etherpad-lite-1.4.0/bin/installDeps.sh
 
     #
