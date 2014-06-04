@@ -44,9 +44,9 @@ parameters:
   sf_image_id:
     type: string
     description: Glance image ID for all the other sf nodes
-  floating_ip_pool_name:
+  ext_net_uuid:
     type: string
-    description: The name of floating IP pool
+    description: The UUID of the external net
   sg_admin_cidr:
     type: string
     description: From Ip range to access node by ssh
@@ -57,6 +57,33 @@ parameters:
     default: 0.0.0.0/0
 
 resources:
+  sf_net:
+    type: OS::Neutron::Net
+    properties:
+      name: SF_Net
+
+  sf_subnet:
+    type: OS::Neutron::Subnet
+    properties:
+      network_id: { get_resource: sf_net }
+      cidr: 192.168.0.0/24
+      enable_dhcp: true
+
+  router:
+    type: OS::Neutron::Router
+
+  router_gateway:
+    type: OS::Neutron::RouterGateway
+    properties:
+      router_id: { get_resource: router }
+      network_id: { get_param: ext_net_uuid }
+
+  router_interface:
+    type: OS::Neutron::RouterInterface
+    properties:
+      router_id: { get_resource: router }
+      subnet_id: { get_resource: sf_subnet }
+
   sf_ext_secgroup_admin:
     type: OS::Neutron::SecurityGroup
     properties:
@@ -111,60 +138,112 @@ resources:
          protocol: icmp,}
         ]
 
-  jenkins_floating_ip:
-    type: OS::Nova::FloatingIP
+  jenkins_neutron_port:
+    type: OS::Neutron::Port
     properties:
-      pool: { get_param: floating_ip_pool_name }
+      network: { get_resource: sf_net }
+      security_groups: [ { get_resource: sf_ext_secgroup_admin },
+                         { get_resource: sf_ext_secgroup_http },
+                         { get_resource: sf_ext_secgroup_alt_http },
+                         { get_resource: sf_int_secgroup_default },
+                         ]
+
+  jenkins_floating_ip:
+    type: OS::Neutron::FloatingIP
+    properties:
+      port_id: { get_resource: jenkins_neutron_port }
+      floating_network_id: { get_param: ext_net_uuid }
+
+  redmine_neutron_port:
+    type: OS::Neutron::Port
+    properties:
+      network: { get_resource: sf_net }
+      security_groups: [ { get_resource: sf_ext_secgroup_admin },
+                         { get_resource: sf_ext_secgroup_http },
+                         { get_resource: sf_int_secgroup_default },
+                         ]
   
   redmine_floating_ip:
-    type: OS::Nova::FloatingIP
+    type: OS::Neutron::FloatingIP
     properties:
-      pool: { get_param: floating_ip_pool_name }
+      port_id: { get_resource: redmine_neutron_port }
+      floating_network_id: { get_param: ext_net_uuid }
+
+  gerrit_neutron_port:
+    type: OS::Neutron::Port
+    properties:
+      network: { get_resource: sf_net }
+      security_groups: [ { get_resource: sf_ext_secgroup_admin },
+                         { get_resource: sf_ext_secgroup_http },
+                         { get_resource: sf_ext_secgroup_gerrit_ssh },
+                         { get_resource: sf_int_secgroup_default },
+                         ]
   
   gerrit_floating_ip:
-    type: OS::Nova::FloatingIP
+    type: OS::Neutron::FloatingIP
     properties:
-      pool: { get_param: floating_ip_pool_name }
+      port_id: { get_resource: gerrit_neutron_port }
+      floating_network_id: { get_param: ext_net_uuid }
+
+  managesf_neutron_port:
+    type: OS::Neutron::Port
+    properties:
+      network: { get_resource: sf_net }
+      security_groups: [ { get_resource: sf_ext_secgroup_admin },
+                         { get_resource: sf_ext_secgroup_http },
+                         { get_resource: sf_ext_secgroup_alt_http },
+                         { get_resource: sf_int_secgroup_default },
+                         ]
   
   managesf_floating_ip:
-    type: OS::Nova::FloatingIP
+    type: OS::Neutron::FloatingIP
     properties:
-      pool: { get_param: floating_ip_pool_name }
+      port_id: { get_resource: managesf_neutron_port }
+      floating_network_id: { get_param: ext_net_uuid }
+
+  puppetmaster_neutron_port:
+    type: OS::Neutron::Port
+    properties:
+      network: { get_resource: sf_net }
+      security_groups: [ { get_resource: sf_ext_secgroup_admin },
+                         { get_resource: sf_int_secgroup_default },
+                        ]
   
   puppetmaster_floating_ip:
-    type: OS::Nova::FloatingIP
+    type: OS::Neutron::FloatingIP
     properties:
-      pool: { get_param: floating_ip_pool_name }
+      port_id: { get_resource: puppetmaster_neutron_port }
+      floating_network_id: { get_param: ext_net_uuid }
 
-  associate_public_ip_to_jenkins_instance:
-    type: OS::Nova::FloatingIPAssociation
+  commonservices_neutron_port:
+    type: OS::Neutron::Port
     properties:
-      floating_ip: {get_resource: jenkins_floating_ip}
-      server_id: {get_resource: jenkins_instance}
-  
-  associate_public_ip_to_redmine_instance:
-    type: OS::Nova::FloatingIPAssociation
-    properties:
-      floating_ip: {get_resource: redmine_floating_ip}
-      server_id: {get_resource: redmine_instance}
-  
-  associate_public_ip_to_gerrit_instance:
-    type: OS::Nova::FloatingIPAssociation
-    properties:
-      floating_ip: {get_resource: gerrit_floating_ip}
-      server_id: {get_resource: gerrit_instance}
+      network: { get_resource: sf_net }
+      security_groups: [ { get_resource: sf_ext_secgroup_admin },
+                         { get_resource: sf_ext_secgroup_http },
+                         { get_resource: sf_ext_secgroup_alt_http },
+                         { get_resource: sf_int_secgroup_default },
+                         ]
 
-  associate_public_ip_to_managesf_instance:
-    type: OS::Nova::FloatingIPAssociation
+  commonservices_floating_ip:
+    type: OS::Neutron::FloatingIP
     properties:
-      floating_ip: {get_resource: managesf_floating_ip}
-      server_id: {get_resource: managesf_instance}
-  
-  associate_public_ip_to_puppetmaster_instance:
-    type: OS::Nova::FloatingIPAssociation
+      port_id: { get_resource: commonservices_neutron_port }
+      floating_network_id: { get_param: ext_net_uuid }
+
+  mysql_neutron_port:
+    type: OS::Neutron::Port
     properties:
-      floating_ip: {get_resource: puppetmaster_floating_ip}
-      server_id: {get_resource: puppetmaster_instance}
+      network: { get_resource: sf_net }
+      security_groups: [ { get_resource: sf_int_secgroup_default },
+                         ]
+
+  ldap_neutron_port:
+    type: OS::Neutron::Port
+    properties:
+      network: { get_resource: sf_net }
+      security_groups: [ { get_resource: sf_int_secgroup_default },
+                         ]
 
   puppetmaster_instance:
     type: OS::Nova::Server
@@ -173,9 +252,8 @@ resources:
       image: { get_param: puppetmaster_image_id }
       flavor: { get_param: alt_instance_type }
       key_name: { get_param: key_name }
-      security_groups: [ { get_resource: sf_ext_secgroup_admin },
-                         { get_resource: sf_int_secgroup_default },
-                        ]
+      networks:
+        - port: { get_resource: puppetmaster_neutron_port }
       user_data_format: RAW
       user_data:
         str_replace:
@@ -248,11 +326,8 @@ resources:
       image: { get_param: sf_image_id }
       flavor: { get_param: alt_instance_type }
       key_name: { get_param: key_name }
-      security_groups: [ { get_resource: sf_ext_secgroup_admin },
-                         { get_resource: sf_ext_secgroup_http },
-                         { get_resource: sf_ext_secgroup_alt_http },
-                         { get_resource: sf_int_secgroup_default },
-                         ]
+      networks:
+        - port: { get_resource: jenkins_neutron_port }
       user_data_format: RAW
       user_data:
         str_replace:
@@ -278,10 +353,8 @@ resources:
       image: { get_param: sf_image_id }
       flavor: { get_param: alt_instance_type }
       key_name: { get_param: key_name }
-      security_groups: [ { get_resource: sf_ext_secgroup_admin },
-                         { get_resource: sf_ext_secgroup_http },
-                         { get_resource: sf_int_secgroup_default },
-                         ]
+      networks:
+        - port: { get_resource: redmine_neutron_port }
       user_data_format: RAW
       user_data:
         str_replace:
@@ -306,11 +379,8 @@ resources:
       image: { get_param: sf_image_id }
       flavor: { get_param: alt_instance_type }
       key_name: { get_param: key_name }
-      security_groups: [ { get_resource: sf_ext_secgroup_admin },
-                         { get_resource: sf_ext_secgroup_http },
-                         { get_resource: sf_ext_secgroup_gerrit_ssh },
-                         { get_resource: sf_int_secgroup_default },
-                         ]
+      networks:
+        - port: { get_resource: gerrit_neutron_port }
       user_data_format: RAW
       user_data:
         str_replace:
@@ -336,11 +406,8 @@ resources:
       image: { get_param: sf_image_id }
       flavor: { get_param: instance_type }
       key_name: { get_param: key_name }
-      security_groups: [ { get_resource: sf_ext_secgroup_admin },
-                         { get_resource: sf_ext_secgroup_http },
-                         { get_resource: sf_ext_secgroup_alt_http },
-                         { get_resource: sf_int_secgroup_default },
-                         ]
+      networks:
+        - port: { get_resource: commonservices_neutron_port }
       user_data_format: RAW
       user_data:
         str_replace:
@@ -366,11 +433,8 @@ resources:
       image: { get_param: sf_image_id }
       flavor: { get_param: alt_instance_type }
       key_name: { get_param: key_name }
-      security_groups: [ { get_resource: sf_ext_secgroup_admin },
-                         { get_resource: sf_ext_secgroup_http },
-                         { get_resource: sf_ext_secgroup_alt_http },
-                         { get_resource: sf_int_secgroup_default },
-                         ]
+      networks:
+        - port: { get_resource: managesf_neutron_port }
       user_data_format: RAW
       user_data:
         str_replace:
@@ -396,8 +460,8 @@ resources:
       image: { get_param: ldap_image_id }
       flavor: { get_param: instance_type }
       key_name: { get_param: key_name }
-      security_groups: [ { get_resource: sf_int_secgroup_default },
-                         ]
+      networks:
+        - port: { get_resource: ldap_neutron_port }
       user_data_format: RAW
       user_data:
         str_replace:
@@ -504,8 +568,8 @@ resources:
       image: { get_param: mysql_image_id }
       flavor: { get_param: alt_instance_type }
       key_name: { get_param: key_name }
-      security_groups: [ { get_resource: sf_int_secgroup_default },
-                         ]
+      networks:
+        - port: { get_resource: mysql_neutron_port }
       user_data_format: RAW
       user_data:
         str_replace:

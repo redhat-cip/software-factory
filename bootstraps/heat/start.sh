@@ -16,6 +16,7 @@ flavor="standard.xsmall"
 alt_flavor=$flavor
 floating_ip_pool_name="Ext-Net"
 suffix="tests.dom"
+ext_net_uuid="122c72de-0924-4b9f-8cf3-b18d5d3d292c"
 # Network from TCP/22 is accessible
 sg_admin_cidr="0.0.0.0/0"
 # Network from ALL SF services are accessible
@@ -27,6 +28,7 @@ params="key_name=$key_name;floating_ip_pool_name=$floating_ip_pool_name;instance
 params="$params;alt_instance_type=$alt_flavor;suffix=$suffix;temp_ssh_pwd=$temp_ssh_pwd"
 params="$params;jenkins_user_pwd=$jenkins_user_pwd;jenkins_master_url=$jenkins_master_url"
 params="$params;sg_admin_cidr=$sg_admin_cidr;sg_user_cidr=$sg_user_cidr"
+params="$params;ext_net_uuid=$ext_net_uuid;"
 
 function get_params {
     puppetmaster_image_id=`glance image-show install-server-vm | grep "^| id" | awk '{print $4}'`
