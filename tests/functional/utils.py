@@ -134,12 +134,17 @@ class GerritGitUtils(Tool):
         self.exe(cmd, clone_dir)
         self.exe('git checkout meta/config', clone_dir)
 
-    def add_commit_in_branch(self, clone_dir, branch):
+    def add_commit_in_branch(self, clone_dir, branch, files=None, commit=None):
         self.exe('git checkout master', clone_dir)
-        self.exe('git checkout -b %s' % branch)
-        file(os.path.join(clone_dir, 'testfile'), 'w').write('data')
-        self.exe('git add testfile', clone_dir)
-        self.exe("git commit --author '%s' testfile" % self.author, clone_dir)
+        self.exe('git checkout -b %s' % branch, clone_dir)
+        if not files:
+            file(os.path.join(clone_dir, 'testfile'), 'w').write('data')
+            files = ['testfile']
+        self.git_add(clone_dir, files)
+        if not commit:
+            commit = "Adding testfile"
+        self.exe("git commit --author '%s' -m '%s'" % (self.author, commit),
+                 clone_dir)
 
     def direct_push_branch(self, clone_dir, branch):
         self.exe('git checkout %s' % branch, clone_dir)
@@ -152,10 +157,7 @@ class GerritGitUtils(Tool):
         self.exe('git checkout master', clone_dir)
 
     def git_add(self, clone_dir, files=[]):
-        to_add = ""
-        for f in files:
-            to_add = to_add + f + " "
-
+        to_add = " ".join(files)
         self.exe('git add %s' % to_add, clone_dir)
 
     def add_commit_and_publish(self, clone_dir, branch,

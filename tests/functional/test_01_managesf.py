@@ -325,3 +325,51 @@ class TestManageSF(Base):
         # Verify master own the .gitreview file
         self.assertTrue(os.path.isfile(os.path.join(clone_dir,
                                                     '.gitreview')))
+
+    def test_upstream(self):
+        """ Validate upstream feature of managesf
+        """
+        # Create a test upstream project
+        pname_us = 'p_%s' % 'upstream'
+        self.createProject(pname_us, config.ADMIN_USER)
+
+        ggu_us = GerritGitUtils(config.ADMIN_USER,
+                                config.ADMIN_PRIV_KEY_PATH,
+                                config.USERS[config.ADMIN_USER]['email'])
+        url = "ssh://%s@%s/%s" % (config.ADMIN_USER,
+                                  config.GERRIT_HOST, pname_us)
+        # clone
+        us_clone_dir = ggu_us.clone(url, pname_us)
+        self.dirs_to_delete.append(os.path.dirname(us_clone_dir))
+        # Test that the clone is a success
+        self.assertTrue(os.path.isdir(us_clone_dir))
+        # push some test files to the upstream project
+        us_files = [str(x) for x in range(1, 10)]
+        for f in us_files:
+            file(os.path.join(us_clone_dir, f), 'w').write(f)
+            os.chmod(os.path.join(us_clone_dir, f), 0755)
+
+        ggu_us.add_commit_in_branch(us_clone_dir, "master",
+                                    commit="Adding files 1-10",
+                                    files=us_files)
+        ggu_us.direct_push_branch(us_clone_dir, "master")
+
+        # No create a test project with upstream pointing to the above
+        upstream_url = config.GERRIT_SERVER + pname_us
+        pname = 'p_%s' % create_random_str()
+        # create the project as admin
+        options = {"upstream": upstream_url}
+        self.createProject(pname, config.ADMIN_USER, options=options)
+
+        ggu = GerritGitUtils(config.ADMIN_USER,
+                             config.ADMIN_PRIV_KEY_PATH,
+                             config.USERS[config.ADMIN_USER]['email'])
+        url = "ssh://%s@%s/%s" % (config.ADMIN_USER,
+                                  config.GERRIT_HOST, pname)
+        # clone
+        clone_dir = ggu.clone(url, pname)
+        self.dirs_to_delete.append(os.path.dirname(clone_dir))
+
+        # Check if the files pushed in upstream project is present
+        files = [f for f in os.listdir(clone_dir) if not f.startswith('.')]
+        assert set(files) == set(us_files)
