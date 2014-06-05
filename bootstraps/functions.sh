@@ -67,6 +67,7 @@ function generate_hieras {
     # Jenkins part
     # TODO: Must be randomly generated
     JENKINS_CREDS_ID="a6feb755-3493-4635-8ede-216127d31bb0"
+    JENKINS_DEFAULT_SLAVE="${SF_PREFIX}-slave"
     sed -i "s#JENKINS_CREDS_ID#${JENKINS_CREDS_ID}#" ${OUTPUT}/jenkins.yaml
     sed -i "s#LDAP_ADMIN_DN#${LDAP_ADMIN_DN}#" ${OUTPUT}/jenkins.yaml
     # using printf instead of echo along with base64 encoding
@@ -74,6 +75,7 @@ function generate_hieras {
     sed -i "s#LDAP_ADMIN_PASSWORD_BASE64#$(printf ${LDAP_ADMIN_PASSWORD} | base64)#" ${OUTPUT}/jenkins.yaml
     sed -i "s#JENKINS_ADMIN_NAME#${JENKINS_ADMIN}#" ${OUTPUT}/jenkins.yaml
     sed -i "s#JENKINS_USER_EMAIL#${JENKINS_USER_EMAIL}#" ${OUTPUT}/jenkins.yaml
+    sed -i "s#JENKINS_DEFAULT_SLAVE#${JENKINS_DEFAULT_SLAVE}#" ${OUTPUT}/jenkins.yaml
 
     # Redmine part
     REDMINE_API_KEY=$(generate_api_key)

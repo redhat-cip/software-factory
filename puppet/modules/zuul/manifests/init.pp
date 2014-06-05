@@ -58,6 +58,20 @@ class zuul ($settings = hiera_hash('jenkins', ''), $gh = hiera('gerrit_url'), $h
     user => 'zuul',
     require => File['/home/zuul/.ssh']
   }
+  file {'/usr/share/sf-zuul':
+    ensure  => directory,
+    mode    => '0640',
+    owner   => 'root',
+    group   => 'root',
+  }
+  file {'/usr/share/sf-zuul/layout.yaml':
+    ensure => file,
+    mode   => '0640',
+    owner  => "root",
+    group  => "root",
+    require => File['/usr/share/sf-zuul'],
+    source => 'puppet:///modules/zuul/layout.yaml',
+  }
   file {'/var/log/zuul/':
     ensure  => directory,
     mode    => '0755',

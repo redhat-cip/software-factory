@@ -15,3 +15,4 @@ jenkins:
   ldap_managerDN: LDAP_ADMIN_DN
   ldap_managerPassword: LDAP_ADMIN_PASSWORD_BASE64
   jenkins_user_email: JENKINS_USER_EMAIL
+  jenkins_default_slave: JENKINS_DEFAULT_SLAVE

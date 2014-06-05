@@ -43,6 +43,58 @@ class jjb ($settings = hiera_hash('jenkins', ''),
     group   => 'root',
     content => template('jjb/init-config-repo.sh.erb'),
   }
+
+  file {'/usr/share/sf-jjb':
+    ensure  => directory,
+    mode    => '0640',
+    owner   => 'root',
+    group   => 'root',
+  }
+  
+  file {'/usr/share/sf-jjb/default.yaml':
+    ensure => file,
+    mode   => '0640',
+    owner  => "root",
+    group  => "root",
+    require => File['/usr/share/sf-jjb'],
+    source => 'puppet:///modules/jjb/default.yaml',
+  }
+  
+  file {'/usr/share/sf-jjb/init.yaml':
+    ensure => file,
+    mode   => '0640',
+    owner  => "root",
+    group  => "root",
+    require => File['/usr/share/sf-jjb'],
+    source => 'puppet:///modules/jjb/init.yaml',
+  }
+  
+  file {'/usr/share/sf-jjb/jobs.yaml':
+    ensure => file,
+    mode   => '0640',
+    owner  => "root",
+    group  => "root",
+    require => File['/usr/share/sf-jjb'],
+    source => 'puppet:///modules/jjb/jobs.yaml',
+  }
+  
+  file {'/usr/share/sf-jjb/macros.yaml':
+    ensure => file,
+    mode   => '0640',
+    owner  => "root",
+    group  => "root",
+    require => File['/usr/share/sf-jjb'],
+    source => 'puppet:///modules/jjb/macros.yaml',
+  }
+  
+  file {'/usr/share/sf-jjb/projects.yaml':
+    ensure => file,
+    mode   => '0640',
+    owner  => "root",
+    group  => "root",
+    require => File['/usr/share/sf-jjb'],
+    content => template('jjb/projects.yaml.erb'),
+  }
   
   file {'/usr/local/jenkins':
     ensure   => directory,
@@ -74,6 +126,12 @@ class jjb ($settings = hiera_hash('jenkins', ''),
     logoutput => true,
     provider => shell,
     require => [File['/root/init-config-repo.sh'],
+                File['/usr/share/sf-jjb/jobs.yaml'],
+                File['/usr/share/sf-jjb/macros.yaml'],
+                File['/usr/share/sf-jjb/init.yaml'],
+                File['/usr/share/sf-jjb/default.yaml'],
+                File['/usr/share/sf-jjb/projects.yaml'],
+                File['/usr/share/sf-zuul/layout.yaml'],
                 File['/root/gerrit_admin_rsa']],
   }
 
