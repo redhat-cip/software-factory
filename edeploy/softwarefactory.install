@@ -192,10 +192,6 @@ EOF
     wget -q $MYSQLJAVA -O ${dir}/root/gerrit_data_source/mysql-connector-java-5.1.21.jar
     wget -q $BCPROVJAVA -O ${dir}/root/gerrit_data_source/bcprov-jdk16-144.jar
     do_chroot $dir pip install $PYREDMINEWS
-    cp $DATA/project.config ${dir}/root/gerrit_data_source/
-    cp $DATA/rules.pl ${dir}/root/gerrit_data_source/
-    cp $DATA/ssh_wrapper.sh ${dir}/root/gerrit_data_source/
-    chmod +x ${dir}/root/gerrit_data_source/ssh_wrapper.sh
     cp -Rf $GERRITHOOKS ${dir}/root/gerrit_data_source/
     do_chroot $dir a2enmod proxy_http
     do_chroot $dir a2enmod rewrite

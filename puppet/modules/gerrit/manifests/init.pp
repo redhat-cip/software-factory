@@ -224,6 +224,27 @@ class gerrit ($settings = hiera_hash('gerrit', '')) {
     require => File['/home/gerrit/site_path/hooks'],
     replace => true,
   }
+  file { '/root/gerrit_data_source/project.config':
+    ensure  => present,
+    owner   => 'root',
+    group   => 'root',
+    mode    => '0640',
+    source  => 'puppet:///modules/gerrit/project.config',
+  }
+  file { '/root/gerrit_data_source/rules.pl':
+    ensure  => present,
+    owner   => 'root',
+    group   => 'root',
+    mode    => '0640',
+    source  => 'puppet:///modules/gerrit/rules.pl',
+  }
+  file { '/root/gerrit_data_source/ssh_wrapper.sh':
+    ensure  => present,
+    owner   => 'root',
+    group   => 'root',
+    mode    => '0740',
+    source  => 'puppet:///modules/gerrit/ssh_wrapper.sh',
+  }
   file { '/root/gerrit-firstuser-init.sql':
     ensure  => present,
     mode    => '0644',
@@ -325,7 +346,10 @@ class gerrit ($settings = hiera_hash('gerrit', '')) {
     command     => '/root/gerrit-set-default-acl.sh',
     logoutput   => on_failure,
     subscribe   => Exec['gerrit-init-firstuser'],
-    require     => Service['gerrit'],
+    require     => [Service['gerrit'],
+                    File['/root/gerrit_data_source/rules.pl'],
+                    File['/root/gerrit_data_source/project.config'],
+                    File['/root/gerrit_data_source/ssh_wrapper.sh']],
     refreshonly => true,
   }
   exec {'gerrit-init-jenkins':
