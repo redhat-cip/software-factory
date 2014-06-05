@@ -68,3 +68,6 @@ sudo make TOP=$BUILD_DIR $VIRTUALIZED ldap
 sudo make TOP=$BUILD_DIR $VIRTUALIZED mysql
 sudo make TOP=$BUILD_DIR $VIRTUALIZED slave
 sudo make TOP=$BUILD_DIR $VIRTUALIZED softwarefactory
+
+# Clean mountpoints
+grep 'debootstrap' /proc/mounts | awk '{ print $2 }' | while read mountpoint; do sudo umount ${mountpoint}; done
