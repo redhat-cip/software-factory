@@ -95,35 +95,6 @@
   <viewsTabBar class="hudson.views.DefaultViewsTabBar"/>
   <myViewsTabBar class="hudson.views.DefaultMyViewsTabBar"/>
   <clouds/>
-  <% if @settings['slaves'] -%>
-  <slaves>
-
-<% @settings['slaves'].each do |slave| -%>
-    <slave>
-      <temporaryOfflineCause class="hudson.node_monitors.DiskSpaceMonitorDescriptor$DiskSpace">
-        <path>/var/lib/jenkins</path>
-        <size>777031680</size>
-        <triggered>true</triggered>
-        <trigger>hudson.node_monitors.DiskSpaceMonitor</trigger>
-      </temporaryOfflineCause>
-      <name><%= slave %></name>
-      <description></description>
-      <remoteFS>/var/lib/jenkins</remoteFS>
-      <numExecutors>1</numExecutors>
-      <mode>NORMAL</mode>
-      <retentionStrategy class="hudson.slaves.RetentionStrategy$Always"/>
-      <launcher class="hudson.plugins.sshslaves.SSHLauncher" plugin="ssh-slaves@1.5">
-        <host><%= slave %></host>
-        <port>22</port>
-        <credentialsId><%= @settings['credential_id'] %></credentialsId>
-      </launcher>
-      <label></label>
-      <nodeProperties/>
-      <userId>jenkins</userId>
-    </slave>
-<% end -%>
-  </slaves>
-<% end -%>
   <scmCheckoutRetryCount>0</scmCheckoutRetryCount>
   <views>
     <hudson.model.AllView>
