@@ -146,17 +146,18 @@ class redmine ($settings = hiera_hash('redmine', ''),$ldap_sync_settings = hiera
   exec {'plugin_install':
     environment => ['RAILS_ENV=production', 'REDMINE_LANG=en'],
     command     => 'rake redmine:plugins:migrate',
-    cwd => '/usr/share/redmine',
-    path => ['/bin', '/usr/bin'],
-    require => File['/usr/share/redmine/public/plugin_assets/redmine_ldap_sync'],
+    cwd         => '/usr/share/redmine',
+    path        => ['/bin', '/usr/bin'],
+    require     => File['/usr/share/redmine/public/plugin_assets/redmine_ldap_sync'],
   }
 
   exec {'ldap_sync_users':
     environment => ['RAILS_ENV=production', 'REDMINE_LANG=en'],
     command     => 'rake redmine:plugins:ldap_sync:sync_users',
-    cwd => '/usr/share/redmine',
-    path => ['/bin', '/usr/bin'],
-    require => Exec['plugin_install'],
+    cwd         => '/usr/share/redmine',
+    path        => ['/bin', '/usr/bin'],
+    require     => Exec['plugin_install'],
+    notify      => Service[apache2],
   }
 
   exec {'rake redmine:backlogs:install RAILS_ENV=production' :
@@ -164,6 +165,7 @@ class redmine ($settings = hiera_hash('redmine', ''),$ldap_sync_settings = hiera
     path        =>  ['/bin', '/usr/bin'],
     environment =>  ["story_trackers=Bug", "task_tracker=Task"],
     require     =>  Exec['create_db'],
+    notify      => Service[apache2],
   }
 
   file { '/root/configure-admin-user.sql':
@@ -181,5 +183,4 @@ class redmine ($settings = hiera_hash('redmine', ''),$ldap_sync_settings = hiera
     subscribe   => File['/root/configure-admin-user.sql'],
     require     => Exec['ldap_sync_users'],
   }
-
 }
