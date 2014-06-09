@@ -67,7 +67,8 @@ if [ -z "$1" ] || [ "$1" == "start" ]; then
     # Fix jenkins for lxc
     sudo sed -i 's/^#*JAVA_ARGS.*/JAVA_ARGS="-Djava.awt.headless=true -Xmx256m"/g' \
         ${EDEPLOY_ROLES}/install/${DVER}-${PVER}.${REL}/softwarefactory/etc/default/jenkins
-    sudo ${EDEPLOY_LXC} --config ${CONFTEMPDIR}/sf-lxc.yaml restart || exit -1
+    echo "Now running edeploy-lxc"
+    sudo ${EDEPLOY_LXC} --config ${CONFTEMPDIR}/sf-lxc.yaml restart > /dev/null || exit -1
 elif [ "$1" == "stop" ]; then
     [ -f "${CONFTEMPDIR}/sf-lxc.yaml" ] && sudo ${EDEPLOY_LXC} --config ${CONFTEMPDIR}/sf-lxc.yaml stop
 elif [ "$1" == "clean" ]; then
