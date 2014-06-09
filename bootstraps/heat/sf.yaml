@@ -11,14 +11,13 @@ parameters:
     type: string
     description: Domain suffix to the hostnames
     default: sf.dom
-  jenkins_master_url:
-    type: string
-    description: url/hostname(without http://) of jenkins master node to which slave connects 
-    default: tests-jenkins
   jenkins_user_pwd:
     type: string
     description: jenkins user password, jenkins slave has to provide this password to connect to master
     default: userpass
+  jenkins_master_url:
+    type: string
+    description: url/hostname(without http://) of jenkins master node to which slave connects
   temp_ssh_pwd:
     type: string
     description: Used temporary to trigger puppet agents on each node
@@ -613,6 +612,7 @@ resources:
             output: {all: '| tee -a /var/log/cloud-init-output.log'}
             hostname: slave
             fqdn: slave.SF_SUFFIX
+            manage_etc_hosts: true
             disable_root: 0
             groups:
               - jenkins: [jenkins]
@@ -622,13 +622,20 @@ resources:
                 lock-passwd: false
                 plain_text_passwd: JENKINS_USER_PASSWORD
                 homedir: /var/lib/jenkins
+            write_files:
+            - content: |
+                127.0.1.1 $fqdn $hostname
+                JENKINS_IP jenkins.SF_SUFFIX jenkins
+              path: /etc/cloud/templates/hosts.tmpl
             runcmd:
              - chown jenkins /var/lib/jenkins /var/lib/jenkins/plugins
-             - nohup sudo -u jenkins -i java -jar /var/lib/jenkins/swarm-client-1.15-jar-with-dependencies.jar -master http://JENKINS_MASTER_URL:8080 -username jenkins -password JENKINS_USER_PASSWORD -name slave > /dev/null 2>&1 & echo $!
+             - echo "JENKINS_IP jenkins.SF_SUFFIX jenkins" >> /etc/hosts
+             - nohup sudo -u jenkins -i java -jar /var/lib/jenkins/swarm-client-1.15-jar-with-dependencies.jar -master http://JENKINS_MASTER_URL:8080 -username jenkins -password JENKINS_USER_PASSWORD -name slave.SF_SUFFIX > /dev/null 2>&1 & echo $!
           params:
             SF_SUFFIX: { get_param: suffix }
             JENKINS_MASTER_URL: { get_param: jenkins_master_url }
             JENKINS_USER_PASSWORD: { get_param: jenkins_user_pwd }
+            JENKINS_IP: { get_attr: [jenkins_instance, first_address] }
 
 
 outputs:
