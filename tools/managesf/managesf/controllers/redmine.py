@@ -20,17 +20,19 @@ from requests.auth import HTTPBasicAuth
 from managesf.controllers.utils import send_request, template
 
 import json
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 def create_project(name, description, private):
-    print ' [redmine] create project ' + name
+    logger.debug(' [redmine] create project ' + name)
     pub = 'false' if private else 'true'
     data = file(template('redmine_project_create.xml')).read() % {
         'name': name,
         'description': description,
         'identifier': name.lower(),
-        'is_public': pub
-        }
+        'is_public': pub}
 
     url = "http://%(redmine_host)s/projects.json" % \
           {'redmine_host': conf.redmine['host']}
@@ -40,7 +42,7 @@ def create_project(name, description, private):
 
 
 def get_current_user_id():
-    print ' [redmine] Fetching id of the current user'
+    logger.debug(' [redmine] Fetching id of the current user')
     url = "http://%(redmine_host)s/users/current.json" % \
           {'redmine_host': conf.redmine['host']}
 
@@ -51,7 +53,7 @@ def get_current_user_id():
 
 
 def get_user_id(name):
-    print ' [redmine] Fetching id for the user ' + name
+    logger.debug(' [redmine] Fetching id for the user ' + name)
     url = "http://%(redmine_host)s/users.json?name=%(user_name)s" % \
           {'redmine_host': conf.redmine['host'],
            'user_name': name}
@@ -67,7 +69,7 @@ def get_user_id(name):
 
 
 def get_role_id(role_name):
-    print ' [redmine] fetching id of role ' + role_name
+    logger.debug(' [redmine] fetching id of role ' + role_name)
     url = "http://%(redmine_host)s/roles.json" % \
           {'redmine_host': conf.redmine['host']}
     resp = send_request(url, [200], method='GET',
@@ -82,7 +84,7 @@ def get_role_id(role_name):
 
 
 def edit_membership(prj_name, memberships):
-    print ' [redmine] editing membership for the project'
+    logger.debug(' [redmine] editing membership for the project')
 
     for m in memberships:
         data = json.dumps({"membership": m})
@@ -137,7 +139,7 @@ def init_project(name, inp):
 
 
 def user_manages_project(prj_name):
-    print ' [redmine] checking if user manages project'
+    logger.debug(' [redmine] checking if user manages project')
     url = "http://%(redmine_host)s/projects/%(name)s/memberships.json" % \
           {'redmine_host': conf.redmine['host'],
            'name': prj_name.lower()}
@@ -164,7 +166,7 @@ def user_manages_project(prj_name):
 def delete_project(name):
     if not user_manages_project(name):
         abort(403)
-    print ' [redmine] deleting project ' + name
+    logger.debug(' [redmine] deleting project ' + name)
     url = "http://%(redmine_host)s/projects/%(project_id)s.xml" % \
           {'redmine_host': conf.redmine['host'],
            'project_id': name.lower()}

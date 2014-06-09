@@ -27,6 +27,9 @@ import re
 import shlex
 import shutil
 import subprocess
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 def gerrit_json_resp(resp):
@@ -37,7 +40,7 @@ def gerrit_json_resp(resp):
 
 
 def get_group_id(grp_name):
-    print ' [gerrit] fetching group id of ' + grp_name
+    logger.debug(' [gerrit] fetching group id of ' + grp_name)
     url = "http://%(gerrit_host)s/r/a/groups/%(group_name)s/detail" % \
           {'gerrit_host': conf.gerrit['host'],
            'group_name': grp_name}
@@ -50,7 +53,7 @@ def get_group_id(grp_name):
 
 
 def add_user_to_group(grp_name, user):
-    print ' [gerrit] adding ' + user + ' to group ' + grp_name
+    logger.debug(' [gerrit] adding ' + user + ' to group ' + grp_name)
     url = "http://%(gerrit_host)s/r/a/groups/%(group_name)s/members/" \
           "%(user_name)s" % {'gerrit_host': conf.gerrit['host'],
                              'group_name': grp_name,
@@ -61,7 +64,7 @@ def add_user_to_group(grp_name, user):
 
 
 def create_group(grp_name, grp_desc, prj_name):
-    print ' [gerrit] creating a group ' + grp_name
+    logger.debug(' [gerrit] creating a group ' + grp_name)
     url = "http://%(gerrit_host)s/r/a/groups/%(group_name)s" % \
           {'gerrit_host': conf.gerrit['host'],
            'group_name': grp_name}
@@ -78,7 +81,7 @@ def create_group(grp_name, grp_desc, prj_name):
 
 
 def create_project(prj_name, prj_desc):
-    print ' [gerrit] creating a project ' + prj_name
+    logger.debug(' [gerrit] creating a project ' + prj_name)
     url = "http://%(gerrit_host)s/r/a/projects/%(project_name)s" % \
           {'gerrit_host': conf.gerrit['host'],
            'project_name': prj_name}
@@ -96,7 +99,7 @@ def create_project(prj_name, prj_desc):
 
 
 def _delete_project(prj_name):
-    print ' [gerrit] deleting project ' + prj_name
+    logger.debug(' [gerrit] deleting project ' + prj_name)
     url = "http://%(gerrit_host)s/r/a/projects/%(project_name)s" % \
           {'gerrit_host': conf.gerrit['host'],
            'project_name': prj_name}
@@ -110,7 +113,7 @@ def _delete_project(prj_name):
 
 
 def get_groups():
-    print ' [gerrit] fetching groups that this user belongs to'
+    logger.debug(' [gerrit] fetching groups that this user belongs to')
     url = "http://%(gerrit_host)s/r/a/accounts/self/groups" % \
           {'gerrit_host': conf.gerrit['host']}
 
@@ -128,7 +131,7 @@ def get_groups():
 
 
 def get_project_owner(pn):
-    print ' [gerrit] fetching the owner group of the project ' + pn
+    logger.debug(' [gerrit] fetching the owner group of the project ' + pn)
     url = "http://%(gerrit_host)s/r/a/access/?project=%(project)s" % \
           {'gerrit_host': conf.gerrit['host'],
            'project': pn}
@@ -149,7 +152,7 @@ def user_owns_project(prj_name):
 
 
 def user_is_administrator():
-    print ' [gerrit] Checking if the user is Administrator'
+    logger.debug(' [gerrit] Checking if the user is Administrator')
     grps = get_groups()
     admin_id = get_group_id('Administrators')
     if admin_id in grps:
@@ -179,21 +182,25 @@ class GerritRepo(object):
         # is not a registered user (author can be anything else)
         self.env['GIT_COMMITTER_NAME'] = conf.gerrit['admin']
         self.env['GIT_COMMITTER_EMAIL'] = conf.gerrit['admin_email']
-        self.debug = file('/tmp/debug', 'a')
 
     def _exec(self, cmd, cwd=None):
         cmd = shlex.split(cmd)
         ocwd = os.getcwd()
         if cwd:
             os.chdir(cwd)
-        p = subprocess.Popen(cmd, stdout=self.debug,
+        p = subprocess.Popen(cmd, stdout=subprocess.PIPE,
                              stderr=subprocess.STDOUT,
                              env=self.env, cwd=cwd)
         p.wait()
+        std_out, std_err = p.communicate()
+        #logging std_out also logs std_error as both use same pipe
+        if std_out:
+            logger.debug(" [gerrit] cmd %s output" % cmd)
+            logger.debug(std_out)
         os.chdir(ocwd)
 
     def clone(self):
-        print(" [gerrit] Clone repository %s" % self.prj_name)
+        logger.debug(" [gerrit] Clone repository %s" % self.prj_name)
         cmd = "git clone ssh://%(admin)s@%(gerrit-host)s" \
               ":%(gerrit-host-port)s/%(name)s %(localcopy_path)s" % \
               {'admin': conf.gerrit['admin'],
@@ -205,7 +212,7 @@ class GerritRepo(object):
         self._exec(cmd)
 
     def add_file(self, path, content):
-        print(" [gerrit] Add file %s to index" % path)
+        logger.debug(" [gerrit] Add file %s to index" % path)
         if path.split('/') > 1:
             d = re.sub(os.path.basename(path), '', path)
             try:
@@ -218,8 +225,8 @@ class GerritRepo(object):
         self._exec(cmd, cwd=self.infos['localcopy_path'])
 
     def push_config(self, paths):
-        print(" [gerrit] Prepare push on config for repository %s" %
-              self.prj_name)
+        logger.debug(" [gerrit] Prepare push on config for repository %s" %
+                     self.prj_name)
         cmd = "git fetch origin " + \
               "refs/meta/config:refs/remotes/origin/meta/config"
         self._exec(cmd, cwd=self.infos['localcopy_path'])
@@ -232,12 +239,12 @@ class GerritRepo(object):
         self._exec(cmd, cwd=self.infos['localcopy_path'])
         cmd = "git push origin meta/config:meta/config"
         self._exec(cmd, cwd=self.infos['localcopy_path'])
-        print(" [gerrit] Push on config for repository %s" %
-              self.prj_name)
+        logger.debug(" [gerrit] Push on config for repository %s" %
+                     self.prj_name)
 
     def push_master(self, paths):
-        print(" [gerrit] Prepare push on master for repository %s" %
-              self.prj_name)
+        logger.debug(" [gerrit] Prepare push on master for repository %s" %
+                     self.prj_name)
         cmd = "git checkout master"
         self._exec(cmd, cwd=self.infos['localcopy_path'])
         for path, content in paths.items():
@@ -246,21 +253,21 @@ class GerritRepo(object):
         self._exec(cmd, cwd=self.infos['localcopy_path'])
         cmd = "git push origin master"
         self._exec(cmd, cwd=self.infos['localcopy_path'])
-        print(" [gerrit] Push on master for repository %s" %
-              self.prj_name)
+        logger.debug(" [gerrit] Push on master for repository %s" %
+                     self.prj_name)
 
     def push_master_from_git_remote(self, upstream):
         remote = upstream
-        print(" [gerrit] Fetch git objects from a remote and push "
-              "to master for repository %s" % self.prj_name)
+        logger.debug(" [gerrit] Fetch git objects from a remote and push "
+                     "to master for repository %s" % self.prj_name)
         cmd = "git checkout master"
         self._exec(cmd, cwd=self.infos['localcopy_path'])
         cmd = "git remote add upstream %s" % remote
         self._exec(cmd, cwd=self.infos['localcopy_path'])
         cmd = "git fetch upstream"
         self._exec(cmd, cwd=self.infos['localcopy_path'])
-        print(" [gerrit] Push remote (master branch) of %s to the "
-              "Gerrit repository" % remote)
+        logger.debug(" [gerrit] Push remote (master branch) of %s to the "
+                     "Gerrit repository" % remote)
         cmd = "git push -f origin upstream/master:master"
         self._exec(cmd, cwd=self.infos['localcopy_path'])
         cmd = "git reset --hard origin/master"
@@ -269,7 +276,7 @@ class GerritRepo(object):
 
 class CustomGerritClient(gerrit.Gerrit):
     def deleteGroup(self, name):
-        print " [gerrit] deleting group " + name
+        logger.debug(" [gerrit] deleting group " + name)
         grp_id = "select group_id from account_group_names " \
                  "where name=\"%s\"" % name
         tables = ['account_group_members',
@@ -366,7 +373,8 @@ def init_project(name, json):
 
 def delete_project(name):
     if not user_owns_project(name) and not user_is_administrator():
-        print " [gerrit] User is neither an Administrator nor does own project"
+        logger.debug(" [gerrit] User is neither an Administrator"
+                     " nor does own project")
         abort(401)
 
     #user owns the project, so delete it now

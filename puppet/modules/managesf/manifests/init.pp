@@ -28,6 +28,13 @@ class managesf ($gerrit = hiera_hash('gerrit', ''), $redmine = hiera_hash('redmi
     require => [Package['apache2'], Package['libapache2-mod-wsgi']],
   }
 
+  file { '/var/log/managesf/':
+    ensure  => directory,
+    owner   => 'www-data',
+    group   => 'www-data',
+    mode    => '0750'
+  }
+
   file { '/var/www/managesf/':
     ensure  => directory,
     owner   => 'www-data',

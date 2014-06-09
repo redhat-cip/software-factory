@@ -23,6 +23,9 @@ from pecan import request, response
 from managesf.controllers import gerrit, redmine
 
 import ldap
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class ProjectController(RestController):
@@ -30,22 +33,30 @@ class ProjectController(RestController):
     def put(self, name, **kwargs):
         if name == '':
             abort(405)
-        #create project
-        inp = request.json if request.content_length else {}
-        gerrit.init_project(name, inp)
-        redmine.init_project(name, inp)
+        try:
+            #create project
+            inp = request.json if request.content_length else {}
+            gerrit.init_project(name, inp)
+            redmine.init_project(name, inp)
 
-        response.status = 201
-        return "Created"
+            response.status = 201
+            return "Created"
+        except:
+            logger.exception('')
+            raise
 
     @expose()
     def delete(self, name):
         if name == '':
             abort(405)
-        #delete project
-        gerrit.delete_project(name)
-        redmine.delete_project(name)
-        return None
+        try:
+            #delete project
+            gerrit.delete_project(name)
+            redmine.delete_project(name)
+            return None
+        except:
+            logger.exception('')
+            raise
 
 
 class RootController(object):

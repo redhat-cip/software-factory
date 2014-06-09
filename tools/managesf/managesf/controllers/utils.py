@@ -16,6 +16,9 @@
 from managesf import templates
 from pecan import abort
 import requests as http
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 def send_request(url, expect_return,
@@ -30,9 +33,9 @@ def send_request(url, expect_return,
         meth = http.post
     resp = meth(url, **kwargs)
     if resp.status_code not in expect_return:
-        print "    Request " + method + " " + url + \
-              " failed with status code " + \
-              str(resp.status_code) + " - " + resp.text
+        logger.debug("    Request " + method + " " + url +
+                     " failed with status code " +
+                     str(resp.status_code) + " - " + resp.text)
 
         abort(resp.status_code)
 
