@@ -47,8 +47,70 @@ parameters:
   floating_ip_pool_name:
     type: string
     description: The name of floating IP pool
+  sg_admin_cidr:
+    type: string
+    description: From Ip range to access node by ssh
+    default: 0.0.0.0/0
+  sg_user_cidr:
+    type: string
+    description: From Ip range to access user services of SF
+    default: 0.0.0.0/0
 
 resources:
+  sf_ext_secgroup_admin:
+    type: OS::Neutron::SecurityGroup
+    properties:
+      rules: [
+        {remote_ip_prefix: { get_param: sg_admin_cidr },
+         protocol: tcp,
+         port_range_min: 22,
+         port_range_max: 22,},
+        {remote_ip_prefix: { get_param: sg_admin_cidr },
+         protocol: icmp,}
+        ]
+  
+  sf_ext_secgroup_http:
+    type: OS::Neutron::SecurityGroup
+    properties:
+      rules: [
+        {remote_ip_prefix: { get_param: sg_user_cidr },
+         protocol: tcp,
+         port_range_min: 80,
+         port_range_max: 80},
+        ]
+  
+  sf_ext_secgroup_alt_http:
+    type: OS::Neutron::SecurityGroup
+    properties:
+      rules: [
+        {remote_ip_prefix: { get_param: sg_user_cidr },
+         protocol: tcp,
+         port_range_min: 8080,
+         port_range_max: 8080},
+        ]
+  
+  sf_ext_secgroup_gerrit_ssh:
+    type: OS::Neutron::SecurityGroup
+    properties:
+      rules: [
+        {remote_ip_prefix: { get_param: sg_user_cidr },
+         protocol: tcp,
+         port_range_min: 29418,
+         port_range_max: 29418},
+        ]
+  
+  sf_int_secgroup_default:
+    type: OS::Neutron::SecurityGroup
+    properties:
+      rules: [
+        {remote_ip_prefix: 192.168.0.0/24,
+         protocol: tcp,
+         port_range_min: 1,
+         port_range_max: 65535},
+        {remote_ip_prefix: 192.168.0.0/24,
+         protocol: icmp,}
+        ]
+
   jenkins_floating_ip:
     type: OS::Nova::FloatingIP
     properties:
@@ -111,6 +173,9 @@ resources:
       image: { get_param: puppetmaster_image_id }
       flavor: { get_param: alt_instance_type }
       key_name: { get_param: key_name }
+      security_groups: [ { get_resource: sf_ext_secgroup_admin },
+                         { get_resource: sf_int_secgroup_default },
+                        ]
       user_data_format: RAW
       user_data:
         str_replace:
@@ -183,6 +248,11 @@ resources:
       image: { get_param: sf_image_id }
       flavor: { get_param: alt_instance_type }
       key_name: { get_param: key_name }
+      security_groups: [ { get_resource: sf_ext_secgroup_admin },
+                         { get_resource: sf_ext_secgroup_http },
+                         { get_resource: sf_ext_secgroup_alt_http },
+                         { get_resource: sf_int_secgroup_default },
+                         ]
       user_data_format: RAW
       user_data:
         str_replace:
@@ -208,6 +278,10 @@ resources:
       image: { get_param: sf_image_id }
       flavor: { get_param: alt_instance_type }
       key_name: { get_param: key_name }
+      security_groups: [ { get_resource: sf_ext_secgroup_admin },
+                         { get_resource: sf_ext_secgroup_http },
+                         { get_resource: sf_int_secgroup_default },
+                         ]
       user_data_format: RAW
       user_data:
         str_replace:
@@ -232,6 +306,11 @@ resources:
       image: { get_param: sf_image_id }
       flavor: { get_param: alt_instance_type }
       key_name: { get_param: key_name }
+      security_groups: [ { get_resource: sf_ext_secgroup_admin },
+                         { get_resource: sf_ext_secgroup_http },
+                         { get_resource: sf_ext_secgroup_gerrit_ssh },
+                         { get_resource: sf_int_secgroup_default },
+                         ]
       user_data_format: RAW
       user_data:
         str_replace:
@@ -257,6 +336,11 @@ resources:
       image: { get_param: sf_image_id }
       flavor: { get_param: instance_type }
       key_name: { get_param: key_name }
+      security_groups: [ { get_resource: sf_ext_secgroup_admin },
+                         { get_resource: sf_ext_secgroup_http },
+                         { get_resource: sf_ext_secgroup_alt_http },
+                         { get_resource: sf_int_secgroup_default },
+                         ]
       user_data_format: RAW
       user_data:
         str_replace:
@@ -282,6 +366,11 @@ resources:
       image: { get_param: sf_image_id }
       flavor: { get_param: alt_instance_type }
       key_name: { get_param: key_name }
+      security_groups: [ { get_resource: sf_ext_secgroup_admin },
+                         { get_resource: sf_ext_secgroup_http },
+                         { get_resource: sf_ext_secgroup_alt_http },
+                         { get_resource: sf_int_secgroup_default },
+                         ]
       user_data_format: RAW
       user_data:
         str_replace:
@@ -307,6 +396,8 @@ resources:
       image: { get_param: ldap_image_id }
       flavor: { get_param: instance_type }
       key_name: { get_param: key_name }
+      security_groups: [ { get_resource: sf_int_secgroup_default },
+                         ]
       user_data_format: RAW
       user_data:
         str_replace:
@@ -413,6 +504,8 @@ resources:
       image: { get_param: mysql_image_id }
       flavor: { get_param: alt_instance_type }
       key_name: { get_param: key_name }
+      security_groups: [ { get_resource: sf_int_secgroup_default },
+                         ]
       user_data_format: RAW
       user_data:
         str_replace:
@@ -493,4 +586,11 @@ outputs:
         template: "Public address of the Managesf instance: host"
         params:
           host: { get_attr: [managesf_floating_ip, ip] }
+  puppetmaster_public_address:
+    description: Public address of Puppetmaster
+    value:
+      str_replace:
+        template: "Public address of the Puppetmaster instance: host"
+        params:
+          host: { get_attr: [puppetmaster_floating_ip, ip] }
 

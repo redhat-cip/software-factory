@@ -16,12 +16,17 @@ flavor="standard.xsmall"
 alt_flavor=$flavor
 floating_ip_pool_name="Ext-Net"
 suffix="tests.dom"
+# Network from TCP/22 is accessible
+sg_admin_cidr="0.0.0.0/0"
+# Network from ALL SF services are accessible
+sg_user_cidr="0.0.0.0/0"
 temp_ssh_pwd="heat"
 jenkins_user_pwd="userpass"
 jenkins_master_url="jenkins.$suffix"
 params="key_name=$key_name;floating_ip_pool_name=$floating_ip_pool_name;instance_type=$flavor"
 params="$params;alt_instance_type=$alt_flavor;suffix=$suffix;temp_ssh_pwd=$temp_ssh_pwd"
 params="$params;jenkins_user_pwd=$jenkins_user_pwd;jenkins_master_url=$jenkins_master_url"
+params="$params;sg_admin_cidr=$sg_admin_cidr;sg_user_cidr=$sg_user_cidr"
 
 function get_params {
     puppetmaster_image_id=`glance image-show install-server-vm | grep "^| id" | awk '{print $4}'`
@@ -56,7 +61,7 @@ function unregister_images {
 
 function start_stack {
     get_params
-    heat stack-create --template-file sf.hot -P "$params" SoftwareFactory
+    heat stack-create --template-file sf.yaml -P "$params" SoftwareFactory
 }
 
 function delete_stack {
