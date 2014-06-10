@@ -78,7 +78,7 @@ elif [ "$1" == "clean" ]; then
     #for instance in $(sudo lxc-ls --active); do
     for instance in $(sudo lxc-ls); do
         #sudo lxc-stop --kill --name ${instance} || echo
-        sudo lxc-stop --name ${instance} || echo
+        sudo lxc-destroy --name ${instance} || echo
     done
 else
     echo "usage: $0 [start|stop|clean]"

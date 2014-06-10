@@ -6,6 +6,26 @@
 
 set -x
 
+ARTIFACTS_RELPATH=$(
+    echo logs/$(date '+%Y-%m')/${GERRIT_PROJECT}/${GERRIT_CHANGE_NUMBER}/${GERRIT_PATCHSET_NUMBER} | \
+        sed 's/[ \t\n\r\.]//g'
+)
+ARTIFACTS_DIR="/var/lib/jenkins/artifacts/${ARTIFACTS_RELPATH}"
+
+function prepare_artifacts {
+    mkdir -p ${ARTIFACTS_DIR}
+}
+
+function publish_artifacts {
+    find ${ARTIFACTS_DIR} -type d -exec chmod 550 {} \;
+    find ${ARTIFACTS_DIR} -type f -exec chmod 440 {} \;
+    sudo chown -R jenkins:www-data ${ARTIFACTS_DIR}
+    echo "Logs are available here: http://46.231.128.203:8081/${ARTIFACTS_RELPATH}"
+}
+
+prepare_artifacts
+
+
 function stop {
     if [ ! ${SF_SKIP_BOOTSTRAP} ]; then
         if [ ! ${DEBUG} ]; then
@@ -45,18 +65,21 @@ function get_logs {
     #in order to not avoid so important logs that can appears some seconds
     #after a failure.
     sleep 30
+    O=${ARTIFACTS_DIR}
 
     echo "=================================================================================="
-    echo "===================================== DEBUG LOGS ================================="
+    echo "================================== FETCHING LOGS ================================="
     echo "=================================================================================="
     echo
-    ssh -o StrictHostKeyChecking=no root@`get_ip puppetmaster` cat /var/log/sf-bootstrap.log
-    echo "Gerrit logs content: --["
-    ssh -o StrictHostKeyChecking=no root@`get_ip puppetmaster` "ssh root@gerrit.${SF_SUFFIX} cat /home/gerrit/site_path/logs/*"
-    echo "]--"
-    echo "Gerrit node /var/log/syslog content: --["
-    ssh -o StrictHostKeyChecking=no root@`get_ip puppetmaster` "ssh root@gerrit.${SF_SUFFIX} cat /var/log/syslog"
-    echo "]--"
+    scp    -o StrictHostKeyChecking=no root@`get_ip puppetmaster`:/var/log/sf-bootstrap.log $O/ 2> /dev/null
+
+    for role in gerrit redmine jenkins mysql managesf commonservices ldap; do
+        mkdir $O/${role}
+        scp -o StrictHostKeyChecking=no root@`get_ip ${role}`:/var/log/syslog $O/${role}  2> /dev/null
+    done
+
+    scp -r -o StrictHostKeyChecking=no root@`get_ip gerrit`:/home/gerrit/site_path/logs/ $O/gerrit/ 2> /dev/null
+    scp    -o StrictHostKeyChecking=no root@`get_ip gerrit`:/tmp/config.diff $O/gerrit/ 2> /dev/null
     # The init option of gerrit.war will rewrite the gerrit config files
     # if the provided files does not follow exactly the expected format by gerrit.
     # If there is a rewrite puppet will detect the change in the *.config files
@@ -65,53 +88,47 @@ function get_logs {
     # appears in the config files (to help debugging).
     # We have copied *.config files in /tmp just before the gerrit.war init (see the
     # manifest) and create a diff after. Here we just display it to help debug.
-    echo "Redmine node /var/log/redmine/default/production.log content: --["
-    ssh -o StrictHostKeyChecking=no root@`get_ip puppetmaster` "ssh root@redmine.${SF_SUFFIX} cat /var/log/redmine/default/production.log"
-    echo "]--"
-    echo "Gerrit configuration change: --["
-    ssh -o StrictHostKeyChecking=no root@`get_ip puppetmaster` "ssh root@gerrit.${SF_SUFFIX} cat /tmp/config.diff"
-    echo "]--"
-    echo "MySQL node /var/log/syslog content: --["
-    ssh -o StrictHostKeyChecking=no root@`get_ip puppetmaster` "ssh root@mysql.${SF_SUFFIX} cat /var/log/syslog"
-    echo "]--"
-    echo "Managesf node /var/log/managesf/managesf.log content: --["
-    ssh -o StrictHostKeyChecking=no root@`get_ip puppetmaster` "ssh root@managesf.${SF_SUFFIX} cat /var/log/managesf/managesf.log"
-    echo "]--"
-    echo "Managesf node /var/log/apache2/error.log content: --["
-    ssh -o StrictHostKeyChecking=no root@`get_ip puppetmaster` "ssh root@managesf.${SF_SUFFIX} cat /var/log/apache2/error.log"
-    echo "]--"
-    echo "Local /tmp/debug content: --["
-    ssh -o StrictHostKeyChecking=no root@`get_ip puppetmaster` cat /tmp/debug
-    echo "]--"
+
+    scp    -o StrictHostKeyChecking=no root@`get_ip redmine`:/var/log/redmine/default/production.log $O/redmine/ 2> /dev/null
+
+    scp    -o StrictHostKeyChecking=no root@`get_ip managesf`:/var/log/managesf/managesf.log $O/managesf/ 2> /dev/null
+    scp -r -o StrictHostKeyChecking=no root@`get_ip managesf`:/var/log/apache2/ $O/managesf/ 2> /dev/null
+
+    scp    -o StrictHostKeyChecking=no root@`get_ip puppetmaster`:/tmp/debug $O/puppetmaster/ 2> /dev/null
 }
 
 export SF_SUFFIX=${SF_SUFFIX:-tests.dom}
 export SKIP_CLEAN_ROLES="y"
 export EDEPLOY_ROLES=/var/lib/sf/roles/
 
+prepare_artifacts
+
 if [ ! ${SF_SKIP_BUILDROLES} ]; then
-    ./build_roles.sh
+    ./build_roles.sh 2>&1 > $O/build_roles.sh.output
 fi
 
 if [ ! ${SF_SKIP_BOOTSTRAP} ]; then
     cd bootstraps/lxc
-    ./start.sh stop
+    ./start.sh stop 2>&1 > /dev/null
     ./start.sh
     cd -
 fi
 
 scan_and_configure_knownhosts `get_ip puppetmaster` 22
 
+ERROR_FATAL=0
+ERROR_RSPEC=0
+ERROR_TESTS=0
+
 retries=0
 while true; do
     # We wait for the bootstrap script that run on puppetmaster node finish its work
-    ssh -o StrictHostKeyChecking=no root@`get_ip puppetmaster` test -f puppet-bootstrapper/build/bootstrap.done 
+    ssh -o StrictHostKeyChecking=no root@`get_ip puppetmaster` test -f puppet-bootstrapper/build/bootstrap.done
     [ "$?" -eq "0" ] && break
     let retries=retries+1
     if [ "$retries" == "30" ]; then
-        get_logs
-        stop
-        exit 1
+        ERROR_FATAL=1
+        break
     fi
     sleep 30
 done
@@ -123,16 +140,22 @@ while true; do
     [ "$RET" == "0" ] && break
         let retries=retries+1
         if [ "$retries" == "5" ]; then
-            get_logs
-            stop
-            exit $RET
+            ERROR_RSPEC=1
+            break
         fi
     sleep 10
 done
 
 ssh -o StrictHostKeyChecking=no root@`get_ip puppetmaster` "cd puppet-bootstrapper; SF_SUFFIX=${SF_SUFFIX} SF_ROOT=\$(pwd) nosetests -v"
-RET=$?
+ERROR_TESTS=$?
+
+set +x
 
 get_logs
+
 stop
-exit $RET
+
+publish_artifacts
+
+set -x
+exit $[ ${ERROR_FATAL} + ${ERROR_RSPEC} + ${ERROR_TESTS} ]
