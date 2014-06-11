@@ -40,17 +40,18 @@ export GIT_COMMITTER_NAME=$admin
 export GIT_COMMITTER_EMAIL=$admin_email
 git clone ssh://$admin@$gh/config /tmp/config
 
-#TODO: find out why this is called multiple times...
-if [ -d "/tmp/config/jjb" ]; then
+if [ -d "/tmp/config/jobs/default.yaml" ]; then
     echo "Config repository already initialised"
     exit 0
 fi
 
 # Add JJB files to the config repo
-cp -Rv /usr/share/sf-jjb /tmp/config/jobs
+mkdir /tmp/config/jobs
+cp -Rv /usr/share/sf-jjb/* /tmp/config/jobs
 
 # Add Zuul files to the config repo
-cp -Rv /usr/share/sf-zuul /tmp/config/zuul
+mkdir /tmp/config/zuul
+cp -Rv /usr/share/sf-zuul/* /tmp/config/zuul
 
 # Commit the changes
 cd /tmp/config
