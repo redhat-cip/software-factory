@@ -16,6 +16,7 @@
 import os
 import config
 import shutil
+import time
 
 from utils import Base
 from utils import set_private_key
@@ -287,6 +288,12 @@ class TestGerrit(Base):
         self.assertEqual(len(change_ids), 1)
         change_id = change_ids[0]
         # Verify first_u has been automatically added to reviewers
+        attempts = 0
+        while True:
+            if len(gu_second_u.getReviewers(change_id)) > 0 or attempts >= 3:
+                break
+            attempts += 1
+            time.sleep(1)
         reviewers = gu_second_u.getReviewers(change_id)
         self.assertEqual(len(reviewers), 1)
         self.assertEqual(reviewers[0], first_u)
