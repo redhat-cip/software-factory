@@ -104,7 +104,7 @@ export EDEPLOY_ROLES=/var/lib/sf/roles/
 prepare_artifacts
 
 if [ ! ${SF_SKIP_BUILDROLES} ]; then
-    ./build_roles.sh 2>&1 > $O/build_roles.sh.output
+    ./build_roles.sh 2>&1 > ${ARTIFACTS_DIR}/build_roles.sh.output
 fi
 
 if [ ! ${SF_SKIP_BOOTSTRAP} ]; then
