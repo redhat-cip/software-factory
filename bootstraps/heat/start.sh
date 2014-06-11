@@ -14,7 +14,6 @@ flavor="standard.xsmall"
 # alt_flavor is used for puppetmaster, mysql, redmine, jenkins, gerrit (prefer flavor with at least 2 vCPUs and 2GB RAM)
 #alt_flavor="standard.small"
 alt_flavor=$flavor
-floating_ip_pool_name="Ext-Net"
 suffix="tests.dom"
 ext_net_uuid="122c72de-0924-4b9f-8cf3-b18d5d3d292c"
 # Network from TCP/22 is accessible
@@ -24,7 +23,7 @@ sg_user_cidr="0.0.0.0/0"
 temp_ssh_pwd="heat"
 jenkins_user_pwd="userpass"
 jenkins_master_url="jenkins.$suffix"
-params="key_name=$key_name;floating_ip_pool_name=$floating_ip_pool_name;instance_type=$flavor"
+params="key_name=$key_name;instance_type=$flavor"
 params="$params;alt_instance_type=$alt_flavor;suffix=$suffix;temp_ssh_pwd=$temp_ssh_pwd"
 params="$params;jenkins_user_pwd=$jenkins_user_pwd;jenkins_master_url=$jenkins_master_url"
 params="$params;sg_admin_cidr=$sg_admin_cidr;sg_user_cidr=$sg_user_cidr"

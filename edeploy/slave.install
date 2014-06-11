@@ -17,7 +17,6 @@
 src="$1"
 dir="$2"
 version="$3"
-DATA=../data
 
 ROLE=slave
 
@@ -36,3 +35,4 @@ do_chroot ${dir} pip install --upgrade pip
 mkdir -p ${dir}/var/lib/jenkins
 cd ${dir}/var/lib/jenkins
 curl -O http://maven.jenkins-ci.org/content/repositories/releases/org/jenkins-ci/plugins/swarm-client/1.15/swarm-client-1.15-jar-with-dependencies.jar
+cd -
