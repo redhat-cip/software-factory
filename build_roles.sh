@@ -3,13 +3,16 @@
 set -e
 set -x
 
+EDEPLOY_REL=${EDEPLOY_REL:-1.2.0}
+SF_REL=${SF_REL:-0.9.0}
+
 if [ "$(sudo losetup -a | wc -l)" -gt 5 ]; then
     # TODO: fix/report this
     echo "Not enough loopback device. This is a known bug, please reboot this jenkins node"
     exit -1
 fi
 
-SKIP_CLEAN_ROLES="y"
+SKIP_CLEAN_ROLES=${SKIP_CLEAN_ROLES:-y}
 VIRTUALIZED=""
 [ -n "$VIRT" ] && {
     VIRTUALIZED="VIRTUALIZED=params.virt"
@@ -23,10 +26,10 @@ WORKSPACE=/var/lib/sf
 CLONES_DIR=$WORKSPACE/git
 BUILD_DIR=$WORKSPACE/roles
 
-EDEPLOY=$WORKSPACE/git/edeploy
-EDEPLOY_ROLES=$WORKSPACE/git/edeploy-roles/
-EDEPLOY_TAG=H.1.0.0
-SF_ROLES=$CURRENT/edeploy
+
+EDEPLOY=$WORKSPACE/git/edeploy-${EDEPLOY_REL}/
+EDEPLOY_ROLES=$WORKSPACE/git/edeploy-roles-${EDEPLOY_REL}/
+SF_ROLES=$CURRENT/edeploy/
 
 BOOTSTRAPPER=$SF_ROLES/puppet_bootstrapper.sh
 
@@ -59,39 +62,41 @@ fi
 [ ! -d "$CLONES_DIR" ] && sudo mkdir -p $CLONES_DIR
 sudo chown -R ${USER} ${CLONES_DIR}
 
-cd $CLONES_DIR
-[ ! -d "edeploy" ] && {
-    git clone $EDEPLOY_PROJECT
-    cd $EDEPLOY/build
-    git checkout $EDEPLOY_TAG
-    cd -
+[ ! -d ${EDEPLOY} ] && {
+    (
+        git clone $EDEPLOY_PROJECT ${EDEPLOY}
+        cd $EDEPLOY/build
+        git checkout H.$EDEPLOY_REL
+    )
 }
-[ ! -d "edeploy-roles" ] && {
-    git clone $EDEPLOY_ROLES_PROJECT
-    cd $EDEPLOY_ROLES
-    git checkout $EDEPLOY_TAG
-    cd -
+
+[ ! -d "${EDEPLOY_ROLES}" ] && {
+    (
+        git clone $EDEPLOY_ROLES_PROJECT ${EDEPLOY_ROLES}
+        cd ${EDEPLOY_ROLES}
+        git checkout H.$EDEPLOY_REL
+    )
 }
 
 cd $EDEPLOY/build
-sudo make TOP=$BUILD_DIR STRIPPED_TARGET=false base
+sudo make TOP=$BUILD_DIR STRIPPED_TARGET=false REL=${EDEPLOY_REL} base
 clear_mountpoint
-
 
 cd $SF_ROLES
 # the nesteed puppet-master role need to be fetched from edeploy-roles
-sudo make TOP=$BUILD_DIR $VIRTUALIZED EDEPLOY_ROLES=$EDEPLOY_ROLES vm
+sudo mkdir -p $BUILD_DIR/install/D7-H.${SF_REL}
+sudo make TOP=$BUILD_DIR $VIRTUALIZED SF_REL=${SF_REL} EDEPLOY_REL=${EDEPLOY_REL} EDEPLOY_ROLES=$EDEPLOY_ROLES vm
 clear_mountpoint
-sudo make TOP=$BUILD_DIR $VIRTUALIZED EDEPLOY_ROLES=$EDEPLOY_ROLES install-server-vm
+sudo make TOP=$BUILD_DIR $VIRTUALIZED SF_REL=${SF_REL} EDEPLOY_REL=${EDEPLOY_REL} EDEPLOY_ROLES=$EDEPLOY_ROLES install-server-vm
 clear_mountpoint
-sudo make TOP=$BUILD_DIR $VIRTUALIZED ldap
+sudo make TOP=$BUILD_DIR $VIRTUALIZED SF_REL=${SF_REL} EDEPLOY_REL=${EDEPLOY_REL} ldap
 clear_mountpoint
-sudo make TOP=$BUILD_DIR $VIRTUALIZED mysql
+sudo make TOP=$BUILD_DIR $VIRTUALIZED SF_REL=${SF_REL} EDEPLOY_REL=${EDEPLOY_REL} mysql
 clear_mountpoint
-sudo make TOP=$BUILD_DIR $VIRTUALIZED slave
+sudo make TOP=$BUILD_DIR $VIRTUALIZED SF_REL=${SF_REL} EDEPLOY_REL=${EDEPLOY_REL} slave
 clear_mountpoint
-sudo make TOP=$BUILD_DIR $VIRTUALIZED softwarefactory
+sudo make TOP=$BUILD_DIR $VIRTUALIZED SF_REL=${SF_REL} EDEPLOY_REL=${EDEPLOY_REL} softwarefactory
 RET=$?
-
 clear_mountpoint
+
 exit $RET

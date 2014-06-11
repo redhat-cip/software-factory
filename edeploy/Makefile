@@ -22,11 +22,7 @@ MAKEFILE_DIR=$(shell pwd)
 SDIR=/srv/edeploy
 TOP=/var/lib/debootstrap
 ARCHIVE=/var/cache/edeploy-roles
-DVER=D7
-PVER=H
-REL=1.0.0
-VERSION:=$(PVER).$(REL)
-VERS=$(DVER)-$(VERSION)
+
 DIST=wheezy
 
 # Prevent edeploy from building .edeploy files (no more pigz/gzip)
@@ -40,8 +36,11 @@ CURRENT_TARGET=$@
 export MAKEFILE_TARGET
 export CURRENT_TARGET
 
-INST=$(TOP)/install/$(VERS)
-META=$(TOP)/metadata/$(VERS)
+SF_VERSION=D7-H.$(SF_REL)
+EDEPLOY_VERSION=D7-H.$(EDEPLOY_REL)
+
+INST=$(TOP)/install/$(SF_VERSION)
+E_INST=$(TOP)/install/$(EDEPLOY_VERSION)
 
 ROLES = install-server-vm mysql slave ldap softwarefactory
 
@@ -49,43 +48,41 @@ all: $(ROLES)
 
 softwarefactory: $(INST)/softwarefactory.done
 $(INST)/softwarefactory.done: softwarefactory.install $(INST)/vm.done
-	rm -f $(INST)/softwarefactory-$(DVER)-$(PVER).$(REL).img
-	./softwarefactory.install $(INST)/vm $(INST)/softwarefactory $(VERS)
+	# FIXME: here we must use EDEPLOY_VERSION as it will failed on /srv/edeploy/build/functions: line 42
+	# because /var/lib/sf/roles/install/D7-H.0.9.0/vm/var/lib/edeploy/D7-H.0.9.0/exclude
+	# does not exists from base role
+	./softwarefactory.install $(INST)/vm $(INST)/softwarefactory $(EDEPLOY_VERSION)
 	touch $(INST)/softwarefactory.done
 
 ldap: $(INST)/ldap.done
 $(INST)/ldap.done: ldap.install $(INST)/vm.done
-	rm -f $(INST)/ldap-$(DVER)-$(PVER).$(REL).img
-	./ldap.install $(INST)/vm $(INST)/ldap $(VERS)
+	./ldap.install $(INST)/vm $(INST)/ldap $(EDEPLOY_VERSION)
 	touch $(INST)/ldap.done
 
 mysql: $(INST)/mysql.done
 $(INST)/mysql.done: mysql.install $(INST)/vm.done
-	rm -f $(INST)/mysql-$(DVER)-$(PVER).$(REL).img
-	./mysql.install $(INST)/vm $(INST)/mysql $(VERS)
+	./mysql.install $(INST)/vm $(INST)/mysql $(EDEPLOY_VERSION)
 	touch $(INST)/mysql.done
 
 slave: $(INST)/slave.done
 $(INST)/slave.done: slave.install $(INST)/vm.done
-	rm -f $(INST)/slave-$(DVER)-$(PVER).$(REL).img
-	./slave.install $(INST)/vm $(INST)/slave $(VERS)
+	./slave.install $(INST)/vm $(INST)/slave $(EDEPLOY_VERSION)
 	touch $(INST)/slave.done
 
 bootstrapper:
 	./puppet_bootstrapper.sh
 
 install-server-vm: $(INST)/vm.done bootstrapper
-	rm -f $(INST)/install-server-vm-$(DVER)-$(PVER).$(REL).img
-	./install-server-vm.install $(INST)/vm $(INST)/install-server-vm $(VERS)
+	./install-server-vm.install $(INST)/vm $(INST)/install-server-vm $(EDEPLOY_VERSION)
 
 vm: $(INST)/vm.done
-$(INST)/vm.done: vm.install $(INST)/base.done
-	./vm.install $(INST)/base $(INST)/vm $(VERS)
+$(INST)/vm.done: vm.install $(E_INST)/base.done
+	./vm.install $(E_INST)/base $(INST)/vm $(EDEPLOY_VERSION)
 	touch $(INST)/vm.done
 
-$(INST)/base.done:
-	mkdir -p $(INST)/base
-	touch $(INST)/base.done
+$(E_INST)/base.done:
+	mkdir -p $(E_INST)/base
+	touch $(E_INST)/base.done
 
 dist:
 	tar zcvf ../edeploy-roles.tgz Makefile README.rst *.install *.exclude
@@ -97,6 +94,6 @@ distclean: clean
 	-for f in $(ROLES); do rm -rf $(INST)/$$f*; done
 
 version:
-	@echo "$(VERS)"
+	@echo "$(SF_VERSION)"
 
 .PHONY: bootstrapper install-server-vm ldap mysql slave softwarefactory vm dist clean distclean version 

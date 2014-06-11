@@ -19,7 +19,7 @@ set -e
 
 DVER=D7
 PVER=H
-REL=1.0.0
+REL=${SF_REL:-0.9.0}
 VERS=${DVER}-${PVER}.${REL}
 
 SF_SUFFIX=${SF_SUFFIX:-sf.dom}

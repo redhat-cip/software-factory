@@ -6,6 +6,9 @@
 
 set -x
 
+export EDEPLOY_REL=1.2.0
+export SF_REL=0.9.0
+
 JENKINS_URL=46.231.128.203
 GERRIT_PROJECT=${GERRIT_PROJECT-sf}
 CURRENT_BRANCH=`git branch | sed -n -e 's/^\* \(.*\)/\1/p'`
@@ -124,6 +127,9 @@ function pre_fail {
     set +x
     echo $1
     stop &> /dev/null
+    echo -e "\n\n\n====== EDEPLOY BUILD OUTPUT ======\n"
+    tail -n 120 ${ARTIFACTS_DIR}/build_roles.sh.output
+    echo -e "\n\n\n====== END OF EDEPLOY BUILD OUTPUT ======\n"
     publish_artifacts
     exit 1
 }
