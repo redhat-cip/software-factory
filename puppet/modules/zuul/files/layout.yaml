@@ -16,8 +16,26 @@ pipelines:
     failure:
       gerrit:
         verified: -1
+  - name: post
+    description: Changes merged enter this pipeline.
+    manager: IndependentPipelineManager
+    precedence: low
+    trigger:
+      gerrit:
+        - event: change-merged
+    success:
+      gerrit:
+        force-message: True
+    failure:
+      gerrit:
+        force-message: True
 
 projects:
+  - name: config
+    check:
+      - config-check
+    post:
+      - config-update
   - name: zuul-demo
     check:
       - zuul-demo-functional-tests

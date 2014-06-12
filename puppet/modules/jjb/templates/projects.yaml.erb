@@ -1,4 +1,11 @@
 - project:
+    name: config
+    node: master
+    jobs:
+      - '{name}-update'
+      - '{name}-check'
+
+- project:
     name: zuul-demo
     node: <%= @settings['jenkins_default_slave'] %>
     jobs:

@@ -29,7 +29,7 @@ update_repositories $dir
 install_ib_if_needed $ORIG $dir
 install_packages $dir "$PACKAGES"
 
-do_chroot ${dir} pip install --upgrade pip
+do_chroot ${dir} pip install --upgrade pip nose flake8
 
 # plugin jenkins
 mkdir -p ${dir}/var/lib/jenkins

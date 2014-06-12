@@ -92,6 +92,14 @@ class jenkins ($settings = hiera_hash('jenkins', '')) {
     source  => 'puppet:///modules/jenkins/etc_default_jenkins',
     replace => true
   }
+  file {'/etc/sudoers.d/jenkins':
+    ensure  => file,
+    mode    => '0440',
+    owner   => 'root',
+    group   => 'root',
+    source  => 'puppet:///modules/jenkins/sudoers_jenkins',
+    replace => true
+  }
   file {'/var/lib/jenkins/config.xml':
     ensure  => file,
     mode    => '0644',
@@ -104,6 +112,7 @@ class jenkins ($settings = hiera_hash('jenkins', '')) {
                 File['/var/lib/jenkins/hudson.plugins.gearman.GearmanPluginConfig.xml'],
                 File['/var/lib/jenkins/hudson.tasks.Mailer.xml'],
                 File['/var/lib/jenkins/plugins/swarm-1.15.hpi'],
+                File['/etc/sudoers.d/jenkins'],
                 File['/etc/default/jenkins']],
   }
   service { 'jenkins':

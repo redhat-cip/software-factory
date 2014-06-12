@@ -71,15 +71,6 @@ class jjb ($settings = hiera_hash('jenkins', ''),
     source => 'puppet:///modules/jjb/default.yaml',
   }
   
-  file {'/usr/share/sf-jjb/init.yaml':
-    ensure => file,
-    mode   => '0640',
-    owner  => "root",
-    group  => "root",
-    require => File['/usr/share/sf-jjb'],
-    source => 'puppet:///modules/jjb/init.yaml',
-  }
-  
   file {'/usr/share/sf-jjb/jobs.yaml':
     ensure => file,
     mode   => '0640',
@@ -139,7 +130,6 @@ class jjb ($settings = hiera_hash('jenkins', ''),
     require => [File['/root/init-config-repo.sh'],
                 File['/usr/share/sf-jjb/jobs.yaml'],
                 File['/usr/share/sf-jjb/macros.yaml'],
-                File['/usr/share/sf-jjb/init.yaml'],
                 File['/usr/share/sf-jjb/default.yaml'],
                 File['/usr/share/sf-jjb/projects.yaml'],
                 File['/usr/share/sf-zuul/layout.yaml'],

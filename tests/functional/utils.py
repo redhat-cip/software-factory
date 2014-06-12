@@ -18,6 +18,7 @@ import os
 import unittest
 import subprocess
 import shlex
+import shutil
 import stat
 import tempfile
 import string
@@ -41,6 +42,16 @@ def set_private_key(priv_key):
     file(priv_key_path, 'w').write(priv_key)
     os.chmod(priv_key_path, stat.S_IREAD | stat.S_IWRITE)
     return priv_key_path
+
+
+def copytree(src, dst, symlinks=False, ignore=None):
+    for item in os.listdir(src):
+        s = os.path.join(src, item)
+        d = os.path.join(dst, item)
+        if os.path.isdir(s):
+            shutil.copytree(s, d, symlinks, ignore)
+        else:
+            shutil.copy2(s, d)
 
 
 class Base(unittest.TestCase):
@@ -145,6 +156,14 @@ class GerritGitUtils(Tool):
         self.exe("git commit --author '%s' -m '%s'" % (self.author, commit),
                  clone_dir)
 
+    def add_commit_for_all_new_additions(self, clone_dir, commit=None):
+        self.exe('git checkout master', clone_dir)
+        if not commit:
+            commit = "Add all the additions"
+        self.exe('git add *', clone_dir)
+        self.exe("git commit --author '%s' -m '%s'" % (self.author, commit),
+                 clone_dir)
+
     def direct_push_branch(self, clone_dir, branch):
         self.exe('git checkout %s' % branch, clone_dir)
         self.exe('git push origin %s' % branch, clone_dir)
@@ -152,7 +171,7 @@ class GerritGitUtils(Tool):
 
     def review_push_branch(self, clone_dir, branch):
         self.exe('git checkout %s' % branch, clone_dir)
-        self.exe('git review' % clone_dir)
+        self.exe('git review', clone_dir)
         self.exe('git checkout master', clone_dir)
 
     def git_add(self, clone_dir, files=[]):
@@ -357,6 +376,13 @@ class GerritUtil:
         changes = self.rest.get(
             '/a/changes/?q=owner:self+project:%s' % project)
         return [c['change_id'] for c in changes]
+
+    def getChangeDetail(self, project, branch, change_id):
+        changeid = "%s %s %s" % (project, branch, change_id)
+        changeid = changeid.replace(' ', '~')
+        change = self.rest.get(
+            '/a/changes/%s' % changeid)
+        return change
 
     def listPlugins(self):
         plugins = self.rest.get('/a/plugins/?all')

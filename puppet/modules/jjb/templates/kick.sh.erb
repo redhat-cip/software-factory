@@ -35,6 +35,7 @@ service jenkins restart
 
 # Zuul
 cp /root/config/zuul/layout.yaml /etc/zuul/
+service zuul restart 
 
 # Clean
 rm -Rf /root/config
