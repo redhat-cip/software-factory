@@ -6,25 +6,34 @@
 
 set -x
 
+JENKINS_URL=46.231.128.203
+GERRIT_PROJECT=${GERRIT_PROJECT-sf}
+CURRENT_BRANCH=`git branch | sed -n -e 's/^\* \(.*\)/\1/p'`
+# If run outside Jenkins use the current branch name
+GERRIT_CHANGE_NUMBER=${GERRIT_CHANGE_NUMBER-$CURRENT_BRANCH}
+GERRIT_PATCHSET_NUMBER=${GERRIT_PATCHSET_NUMBER-0}
+[ "$USER" = "jenkins" ] && GROUP="www-data" || GROUP="$USER"
+
 ARTIFACTS_RELPATH=$(
     echo logs/$(date '+%Y-%m')/${GERRIT_PROJECT}/${GERRIT_CHANGE_NUMBER}/${GERRIT_PATCHSET_NUMBER} | \
         sed 's/[ \t\n\r\.]//g'
 )
-ARTIFACTS_DIR="/var/lib/jenkins/artifacts/${ARTIFACTS_RELPATH}"
+ARTIFACTS_ROOT="/var/lib/sf/artifacts"
+ARTIFACTS_DIR="${ARTIFACTS_ROOT}/${ARTIFACTS_RELPATH}"
 
 function prepare_artifacts {
-    mkdir -p ${ARTIFACTS_DIR}
+    [ -d ${ARTIFACTS_DIR} ] && sudo rm -Rf ${ARTIFACTS_DIR}
+    sudo mkdir -p ${ARTIFACTS_DIR}
+    sudo chown -R $USER:$GROUP ${ARTIFACTS_ROOT}
+    echo "Logs will be available here: http://${JENKINS_URL}:8081/${ARTIFACTS_RELPATH}"
 }
 
 function publish_artifacts {
     find ${ARTIFACTS_DIR} -type d -exec chmod 550 {} \;
     find ${ARTIFACTS_DIR} -type f -exec chmod 440 {} \;
-    sudo chown -R jenkins:www-data ${ARTIFACTS_DIR}
-    echo "Logs are available here: http://46.231.128.203:8081/${ARTIFACTS_RELPATH}"
+    sudo chown -R $USER:$GROUP ${ARTIFACTS_DIR}
+    echo "Logs are available here: http://${JENKINS_URL}:8081/${ARTIFACTS_RELPATH}"
 }
-
-prepare_artifacts
-
 
 function stop {
     if [ ! ${SF_SKIP_BOOTSTRAP} ]; then
@@ -55,8 +64,8 @@ function scan_and_configure_knownhosts {
         fi
         let RETRIES=RETRIES+1
         [ "$RETRIES" == "40" ] && break
-        echo "  [E] ssh-keyscan on $ip:$port failed, will retry in 5 seconds (attempt $RETRIES/40)"
-        sleep 10
+        echo "  [E] ssh-keyscan on $ip:$port failed, will retry in 20 seconds (attempt $RETRIES/40)"
+        sleep 20
     done
 }
 
@@ -103,14 +112,22 @@ export EDEPLOY_ROLES=/var/lib/sf/roles/
 
 prepare_artifacts
 
+function pre_fail {
+    set +x
+    echo $1
+    stop &> /dev/null
+    publish_artifacts
+    exit 1
+}
+
 if [ ! ${SF_SKIP_BUILDROLES} ]; then
-    ./build_roles.sh 2>&1 > ${ARTIFACTS_DIR}/build_roles.sh.output
+    ./build_roles.sh &> ${ARTIFACTS_DIR}/build_roles.sh.output || pre_fail "Roles building FAILED!"
 fi
 
 if [ ! ${SF_SKIP_BOOTSTRAP} ]; then
     cd bootstraps/lxc
-    ./start.sh stop 2>&1 > /dev/null
-    ./start.sh
+    ./start.sh stop &> ${ARTIFACTS_DIR}/lxc-stop.output
+    ./start.sh &> ${ARTIFACTS_DIR}/lxc-start.output || pre_fail "LXC bootstrap FAILED!"
     cd -
 fi
 
@@ -126,11 +143,11 @@ while true; do
     ssh -o StrictHostKeyChecking=no root@`get_ip puppetmaster` test -f puppet-bootstrapper/build/bootstrap.done
     [ "$?" -eq "0" ] && break
     let retries=retries+1
-    if [ "$retries" == "30" ]; then
+    if [ "$retries" == "15" ]; then
         ERROR_FATAL=1
         break
     fi
-    sleep 30
+    sleep 60
 done
 
 retries=0
@@ -154,8 +171,6 @@ set +x
 get_logs
 
 stop
-
 publish_artifacts
-
 set -x
 exit $[ ${ERROR_FATAL} + ${ERROR_RSPEC} + ${ERROR_TESTS} ]

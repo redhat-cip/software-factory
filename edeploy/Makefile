@@ -85,7 +85,6 @@ $(INST)/vm.done: vm.install $(INST)/base.done
 
 $(INST)/base.done:
 	mkdir -p $(INST)/base
-	tar zxf $(ARCHIVE)/$(VERS)/base-$(VERS).edeploy -C $(INST)/base
 	touch $(INST)/base.done
 
 dist:

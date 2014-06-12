@@ -85,3 +85,5 @@ elif [ "$1" == "clean" ]; then
 else
     echo "usage: $0 [start|stop|clean]"
 fi
+
+exit 0
