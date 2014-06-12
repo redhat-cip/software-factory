@@ -79,7 +79,8 @@ elif [ "$1" == "clean" ]; then
     # make sure all lxc are shutdown
     #for instance in $(sudo lxc-ls --active); do
     for instance in $(sudo lxc-ls); do
-        #sudo lxc-stop --kill --name ${instance} || echo
+        # We need to kill first, else it stop because "sf-mysql is running"
+        sudo lxc-stop --kill --name ${instance} || echo
         sudo lxc-destroy --name ${instance} || echo
     done
 else
