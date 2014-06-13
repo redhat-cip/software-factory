@@ -25,14 +25,22 @@ function prepare_artifacts {
     [ -d ${ARTIFACTS_DIR} ] && sudo rm -Rf ${ARTIFACTS_DIR}
     sudo mkdir -p ${ARTIFACTS_DIR}
     sudo chown -R $USER:$GROUP ${ARTIFACTS_ROOT}
-    echo "Logs will be available here: http://${JENKINS_URL}:8081/${ARTIFACTS_RELPATH}"
+    if [ ${GROUP} = 'www-data' ]; then
+        echo "Logs will be available here: http://${JENKINS_URL}:8081/${ARTIFACTS_RELPATH}"
+    else
+        echo "Logs will be available here: ${ARTIFACTS_DIR}"
+    fi
 }
 
 function publish_artifacts {
     find ${ARTIFACTS_DIR} -type d -exec chmod 550 {} \;
     find ${ARTIFACTS_DIR} -type f -exec chmod 440 {} \;
     sudo chown -R $USER:$GROUP ${ARTIFACTS_DIR}
-    echo "Logs are available here: http://${JENKINS_URL}:8081/${ARTIFACTS_RELPATH}"
+    if [ ${GROUP} = 'www-data' ]; then
+        echo "Logs are available here: http://${JENKINS_URL}:8081/${ARTIFACTS_RELPATH}"
+    else
+        echo "Logs will be available here: ${ARTIFACTS_DIR}"
+    fi
 }
 
 function stop {
