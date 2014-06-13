@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 set -e
 set -x
@@ -8,7 +8,6 @@ if [ "$(sudo losetup -a | wc -l)" -gt 5 ]; then
     echo "Not enough loopback device. This is a known bug, please reboot this jenkins node"
     exit -1
 fi
-
 
 SKIP_CLEAN_ROLES="y"
 VIRTUALIZED=""
@@ -30,6 +29,22 @@ EDEPLOY_TAG=H.1.0.0
 SF_ROLES=$CURRENT/edeploy
 
 BOOTSTRAPPER=$SF_ROLES/puppet_bootstrapper.sh
+
+function clear_mountpoint {
+    # Clean mountpoints
+    set +x
+    grep '\/var.*proc' /proc/mounts | awk '{ print $2 }' | while read mountpoint; do
+        echo "[+] UMOUNT ${mountpoint}"
+        sudo umount ${mountpoint};
+    done
+    grep '\/var.*lxc' /proc/mounts | awk '{ print $2 }' | while read mountpoint; do
+        echo "[+] UMOUNT ${mountpoint}"
+        sudo umount ${mountpoint};
+    done
+    set -x
+}
+
+clear_mountpoint
 
 if [ ! -d $WORKSPACE ]; then
     sudo mkdir -m 0770 $WORKSPACE
@@ -59,18 +74,24 @@ cd $CLONES_DIR
 }
 
 cd $EDEPLOY/build
-sudo make TOP=$BUILD_DIR base
+sudo make TOP=$BUILD_DIR STRIPPED_TARGET=false base
+clear_mountpoint
+
 
 cd $SF_ROLES
 # the nesteed puppet-master role need to be fetched from edeploy-roles
+sudo make TOP=$BUILD_DIR $VIRTUALIZED EDEPLOY_ROLES=$EDEPLOY_ROLES vm
+clear_mountpoint
 sudo make TOP=$BUILD_DIR $VIRTUALIZED EDEPLOY_ROLES=$EDEPLOY_ROLES install-server-vm
+clear_mountpoint
 sudo make TOP=$BUILD_DIR $VIRTUALIZED ldap
+clear_mountpoint
 sudo make TOP=$BUILD_DIR $VIRTUALIZED mysql
+clear_mountpoint
 sudo make TOP=$BUILD_DIR $VIRTUALIZED slave
+clear_mountpoint
 sudo make TOP=$BUILD_DIR $VIRTUALIZED softwarefactory
 RET=$?
 
-# Clean mountpoints
-grep '\/var.*proc' /proc/mounts | awk '{ print $2 }' | while read mountpoint; do sudo umount ${mountpoint}; done
-
+clear_mountpoint
 exit $RET
