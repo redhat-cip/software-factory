@@ -20,6 +20,8 @@ class redmine ($settings = hiera_hash('redmine', ''),
     $mysql_url = $settings['redmine_mysql_db_address']
     $mysql_password = $settings['redmine_mysql_db_secret']
 
+    require cauth_client
+
     package {'redmine':
         ensure => 'installed',
         name   => 'redmine',
@@ -41,6 +43,11 @@ class redmine ($settings = hiera_hash('redmine', ''),
         hasrestart => true,
         hasstatus  => true,
         require    => [Package['apache2'], Package['libapache2-mod-passenger']],
+        subscribe  => [Exec['enable_redmine_site'],
+                       Exec['redmine_backlog_install'],
+                       File['/usr/share/redmine/public/plugin_assets'],
+                       Exec['plugin_install'],
+                       File['/usr/share/redmine/public/plugin_assets/redmine_ldap_sync']]
     }
 
     file {'/etc/redmine/default/database.yml':
@@ -65,7 +72,6 @@ class redmine ($settings = hiera_hash('redmine', ''),
         owner  => 'www-data',
         group  => 'www-data',
         source =>'puppet:///modules/redmine/passenger.conf',
-        notify => Service[apache2],
     }
 
     file {'/etc/apache2/sites-available/redmine':
@@ -85,14 +91,6 @@ class redmine ($settings = hiera_hash('redmine', ''),
         mode    => '0640',
         content => template('redmine/post-conf-in-mysql.sql.erb'),
         replace => true,
-    }
-
-    exec {'enable_redmine_site':
-        command => 'a2ensite redmine',
-        path    => '/usr/sbin/:/usr/bin/:/bin/',
-        require => [File['/etc/apache2/sites-available/redmine']],
-        before  => Class['monit'],
-        notify => Service[apache2],
     }
 
     exec {'create_session_store':
@@ -159,17 +157,15 @@ class redmine ($settings = hiera_hash('redmine', ''),
     cwd         => '/usr/share/redmine',
     path        => ['/bin', '/usr/bin'],
     require     => Exec['plugin_install'],
-    notify      => Service[apache2],
   }
 
-  exec {'rake redmine:backlogs:install RAILS_ENV=production' :
+  exec {'redmine_backlog_install':
+    command     =>  'rake redmine:backlogs:install RAILS_ENV=production',
     cwd         =>  '/usr/share/redmine/plugins/redmine_backlogs',
     path        =>  ['/bin', '/usr/bin'],
     environment =>  ["story_trackers=Bug", "task_tracker=Task"],
     require     =>  Exec['create_db'],
-    notify      => Service[apache2],
   }
-
   file { '/root/configure-admin-user.sql':
     ensure  => present,
     mode    => '0640',
@@ -182,7 +178,16 @@ class redmine ($settings = hiera_hash('redmine', ''),
     path        => '/usr/bin/:/bin/',
     cwd         => '/usr/bin',
     refreshonly => true,
-    subscribe   => File['/root/configure-admin-user.sql'],
     require     => Exec['ldap_sync_users'],
+    subscribe   => File['/root/configure-admin-user.sql'],
   }
+  
+  exec {'enable_redmine_site':
+    command => 'a2ensite redmine',
+    path    => '/usr/sbin/:/usr/bin/:/bin/',
+    require => [File['/etc/apache2/sites-available/redmine'],
+                File['/etc/apache2/mods-available/passenger.conf'],
+                Exec['configure-admin-user']],
+  }
+
 }

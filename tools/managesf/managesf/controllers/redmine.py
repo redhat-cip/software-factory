@@ -34,7 +34,7 @@ def create_project(name, description, private):
         'identifier': name.lower(),
         'is_public': pub}
 
-    url = "http://%(redmine_host)s/projects.json" % \
+    url = "http://%(redmine_host)s/redmine/projects.json" % \
           {'redmine_host': conf.redmine['host']}
     headers = {'X-Redmine-API-Key': conf.redmine['api_key'],
                'Content-type': 'application/xml'}
@@ -44,7 +44,7 @@ def create_project(name, description, private):
 
 def get_current_user_id():
     logger.debug(' [redmine] Fetching id of the current user')
-    url = "http://%(redmine_host)s/users/current.json" % \
+    url = "http://%(redmine_host)s/redmine/users/current.json" % \
           {'redmine_host': conf.redmine['host']}
 
     resp = send_request(url, [200], method='GET')
@@ -53,7 +53,7 @@ def get_current_user_id():
 
 def get_user_id(name):
     logger.debug(' [redmine] Fetching id for the user ' + name)
-    url = "http://%(redmine_host)s/users.json?name=%(user_name)s" % \
+    url = "http://%(redmine_host)s/redmine/users.json?name=%(user_name)s" % \
           {'redmine_host': conf.redmine['host'],
            'user_name': name}
 
@@ -70,7 +70,7 @@ def get_user_id(name):
 
 def get_role_id(role_name):
     logger.debug(' [redmine] fetching id of role ' + role_name)
-    url = "http://%(redmine_host)s/roles.json" % \
+    url = "http://%(redmine_host)s/redmine/roles.json" % \
           {'redmine_host': conf.redmine['host']}
     resp = send_request(url, [200], method='GET')
     roles = resp.json()['roles']
@@ -86,8 +86,8 @@ def edit_membership(prj_name, memberships):
 
     for m in memberships:
         data = json.dumps({"membership": m})
-        url = "http://%(redmine_host)s/projects/%(pid)s/memberships.json" % \
-              {'redmine_host': conf.redmine['host'],
+        url = "http://%(rh)s/redmine/projects/%(pid)s/memberships.json" % \
+              {'rh': conf.redmine['host'],
                'pid': prj_name}
         headers = {'X-Redmine-API-Key': conf.redmine['api_key'],
                    'Content-type': 'application/json'}
@@ -139,8 +139,8 @@ def init_project(name, inp):
 
 def user_manages_project(prj_name):
     logger.debug(' [redmine] checking if user manages project')
-    url = "http://%(redmine_host)s/projects/%(name)s/memberships.json" % \
-          {'redmine_host': conf.redmine['host'],
+    url = "http://%(rh)s/redmine/projects/%(name)s/memberships.json" % \
+          {'rh': conf.redmine['host'],
            'name': prj_name.lower()}
 
     resp = send_request(url, [200], method='GET')
@@ -164,7 +164,7 @@ def delete_project(name):
     if not user_manages_project(name):
         abort(403)
     logger.debug(' [redmine] deleting project ' + name)
-    url = "http://%(redmine_host)s/projects/%(project_id)s.xml" % \
+    url = "http://%(redmine_host)s/redmine/projects/%(project_id)s.xml" % \
           {'redmine_host': conf.redmine['host'],
            'project_id': name.lower()}
     headers = {'X-Redmine-API-Key': conf.redmine['api_key']}
