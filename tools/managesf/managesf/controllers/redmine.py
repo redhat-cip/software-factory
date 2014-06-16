@@ -160,8 +160,12 @@ def user_manages_project(prj_name):
     return manager
 
 
+def user_is_administrator():
+    return request.remote_user == conf.admin['name']
+
+
 def delete_project(name):
-    if not user_manages_project(name):
+    if not user_is_administrator() and not user_manages_project(name):
         abort(403)
     logger.debug(' [redmine] deleting project ' + name)
     url = "http://%(redmine_host)s/redmine/projects/%(project_id)s.xml" % \

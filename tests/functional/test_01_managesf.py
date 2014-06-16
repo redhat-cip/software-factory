@@ -373,3 +373,17 @@ class TestManageSF(Base):
         # Check if the files pushed in upstream project is present
         files = [f for f in os.listdir(clone_dir) if not f.startswith('.')]
         assert set(files) == set(us_files)
+
+    def test_delete_project_as_admin(self):
+        """ Checking if admin can delete projects that are not owned by admin
+        """
+        pname = 'p_%s' % create_random_str()
+        self.createProject(pname, config.USER_2)
+        assert self.gu.isPrjExist(pname)
+        assert self.rm.isProjectExist(pname)
+        self.msu.deleteProject(pname, config.ADMIN_USER)
+        assert not self.gu.isPrjExist(pname)
+        assert not self.gu.isGroupExist('%s-ptl' % pname)
+        assert not self.rm.isProjectExist(pname)
+        assert not self.gu.isGroupExist('%s-core' % pname)
+        self.projects.remove(pname)
