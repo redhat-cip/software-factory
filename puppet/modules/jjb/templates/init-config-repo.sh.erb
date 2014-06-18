@@ -30,7 +30,10 @@ jenkins_kick_script="/usr/local/jenkins/slave_scripts/kick.sh"
 auth=$admin:$admin_http_password
 
 # Create config project (managesf must be up)
-sf-manage --host $mh --auth-server $ah --port 80 --auth $auth create --name config --description "Config repository"
+if [ ! -f '/usr/share/config.init.done' ]; then
+    sf-manage --host $mh --auth-server $ah --port 80 --auth $auth create --name config --description "Config repository"
+    touch /usr/share/config.init.done
+fi
 
 # Clone the config project
 echo "ssh -o StrictHostKeyChecking=no -i $gerrit_ssh_key \$@" > /tmp/ssh_wrapper.sh
@@ -40,7 +43,7 @@ export GIT_COMMITTER_NAME=$admin
 export GIT_COMMITTER_EMAIL=$admin_email
 git clone ssh://$admin@$gh/config /tmp/config
 
-if [ -d "/tmp/config/jobs/default.yaml" ]; then
+if [ -d "/tmp/config/jobs" ]; then
     echo "Config repository already initialised"
     exit 0
 fi
