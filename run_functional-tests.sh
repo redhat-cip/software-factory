@@ -113,6 +113,7 @@ function get_logs {
 
     scp    -o StrictHostKeyChecking=no root@`get_ip managesf`:/var/log/managesf/managesf.log $O/managesf/ 2> /dev/null
     scp -r -o StrictHostKeyChecking=no root@`get_ip managesf`:/var/log/apache2/ $O/managesf/ 2> /dev/null
+    scp -r -o StrictHostKeyChecking=no root@`get_ip jenkins`:/var/log/zuul $O/zuul 2> /dev/null
 
     scp    -o StrictHostKeyChecking=no root@`get_ip puppetmaster`:/tmp/debug $O/puppetmaster/ 2> /dev/null
 }
