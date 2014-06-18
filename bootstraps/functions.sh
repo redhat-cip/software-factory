@@ -47,6 +47,8 @@ function generate_hieras {
         current_role=`echo "${role}" | sed 's/.*\(gerrit\|redmine\|jenkins\|mysql\|ldap\|managesf\).*/\1/g'`
         sed -i "s#${current_role}_url:.*#${current_role}_url: ${role}.${SF_SUFFIX}#g" ${OUTPUT}/common.yaml
     done
+    # We need a second Apache virtual host with a "api-" prefix
+    sed -i "s#api_redmine_url:.*#api_redmine_url: api-redmine.${SF_SUFFIX}#g" ${OUTPUT}/common.yaml
     sed -i -e "s/SF_SUFFIX/${SF_SUFFIX}/g" ${OUTPUT}/common.yaml
 
     # MySQL password for services
@@ -99,6 +101,7 @@ function generate_hieras {
     sed -i "s#GERRIT_MYSQL_SECRET#${GERRIT_MYSQL_SECRET}#" ${OUTPUT}/gerrit.yaml
     sed -i "s#GERRIT_EMAIL_PK#${GERRIT_EMAIL_PK}#" ${OUTPUT}/gerrit.yaml
     sed -i "s#GERRIT_TOKEN_PK#${GERRIT_TOKEN_PK}#" ${OUTPUT}/gerrit.yaml
+    sed -i "s#REDMINE_API_KEY#${REDMINE_API_KEY}#" ${OUTPUT}/gerrit.yaml
     
     # Etherpad part
     ETHERPAD_SESSION_KEY=$(generate_random_pswd 10)

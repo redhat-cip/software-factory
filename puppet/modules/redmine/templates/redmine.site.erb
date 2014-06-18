@@ -1,4 +1,37 @@
+NameVirtualHost *:80
+
 <VirtualHost *:80>
+  ServerName <%= scope.function_hiera(["api_redmine_url"]) %>
+
+  LogLevel warn
+  ErrorLog ${APACHE_LOG_DIR}/error.log
+  CustomLog ${APACHE_LOG_DIR}/access.log combined
+  RailsBaseURI /redmine
+  Alias /redmine/plugin_assets/ /var/cache/redmine/default/plugin_assets/
+  PassengerAppRoot /usr/share/redmine
+
+  DocumentRoot /usr/share/redmine/public
+
+  RewriteEngine On
+  RewriteCond %{REQUEST_URI} ^/redmine/logout$
+  RewriteCond %{QUERY_STRING} (^.*$)
+  RewriteCond %1 ^$
+  RewriteRule logout <%= @cauth["signout_url"] %>?service=redmine [R,L,CO=_redmine_default:;:;:0:/redmine]
+  
+  RewriteCond %{REQUEST_URI} ^/redmine/logout$
+  RewriteCond %{QUERY_STRING} ^services=(.*)$
+  RewriteCond %1 !^$ 
+  RewriteRule logout <%= @cauth["signout_url"] %>?services=%1 [R,L,CO=_redmine_default:;:;:0:/redmine]
+
+  <Directory /usr/share/redmine/public>
+    AllowOverride all
+    Options -MultiViews
+  </Directory>
+</VirtualHost>
+
+<VirtualHost *:80>
+  ServerName <%= scope.function_hiera(["redmine_url"]) %>
+  ServerAlias <%= scope.function_hiera(["top_domain"]) %> *.<%= scope.function_hiera(["top_domain"]) %>
   ServerAdmin webmaster@localhost
 
   LogLevel warn

@@ -1,5 +1,6 @@
 ---
 redmine_url:
+api_redmine_url: 
 jenkins_url:
 mysql_url:
 ldap_url:

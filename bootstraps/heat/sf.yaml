@@ -271,6 +271,8 @@ resources:
                   redmine.SF_SUFFIX:
                     ip: redmine_host
                     host_aliases: [redmine]
+                  api-redmine.SF_SUFFIX:
+                    ip: redmine_host
                   gerrit.SF_SUFFIX:
                     ip: gerrit_host
                     host_aliases: [gerrit]
