@@ -70,8 +70,6 @@ class TestZuulOps(Base):
         while True:
             cur = self.get_last_build_number(job_name, type)
             if cur > last:
-                # give some time to zuul to update score on gerrit
-                time.sleep(2)
                 break
             elif retries > 30:
                 break
@@ -128,11 +126,19 @@ class TestZuulOps(Base):
         self.wait_till_job_completes("zuul-demo-unit-tests",
                                      last_fail_build_num_ut, "lastFailedBuild")
 
-        reviewers = gu.getReviewers(change_id)
-        self.assertIn('jenkins', reviewers)
+        attempt = 0
+        while not "jenkins" in gu.getReviewers(change_id) and attempt < 10:
+            time.sleep(1)
+            attempt += 1
 
-        approvals = gu.getReviewerApprovals(change_id, 'jenkins')
-        self.assertEqual(approvals['Verified'], '-1')
+        attempt = 0
+        while gu.getReviewerApprovals(change_id, 'jenkins')['Verified'] != '0'\
+                and attempt < 10:
+            time.sleep(1)
+            attempt += 1
+
+        self.assertEqual(
+            gu.getReviewerApprovals(change_id, 'jenkins')['Verified'], '-1')
 
         # Add the test case files and resubmit for review
         data = "echo Working"
@@ -152,10 +158,18 @@ class TestZuulOps(Base):
                                      last_succeed_build_num_ut,
                                      "lastSuccessfulBuild")
 
-        reviewers = gu.getReviewers(change_id)
-        self.assertIn('jenkins', reviewers)
+        attempt = 0
+        while not "jenkins" in gu.getReviewers(change_id) and attempt < 10:
+            time.sleep(1)
+            attempt += 1
 
-        approvals = gu.getReviewerApprovals(change_id, 'jenkins')
-        self.assertEqual(approvals['Verified'], '+1')
+        attempt = 0
+        while gu.getReviewerApprovals(change_id, 'jenkins')['Verified'] != '0'\
+                and attempt < 10:
+            time.sleep(1)
+            attempt += 1
+
+        self.assertEqual(
+            gu.getReviewerApprovals(change_id, 'jenkins')['Verified'], '+1')
 
         gu.delPubKey(k_index)
