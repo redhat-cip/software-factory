@@ -19,7 +19,7 @@
 .EXPORT_ALL_VARIABLES:
 
 MAKEFILE_DIR=$(shell pwd)
-SDIR=/srv/edeploy
+SDIR=/var/lib/sf/git/edeploy-$(EDEPLOY_REL)
 TOP=/var/lib/debootstrap
 ARCHIVE=/var/cache/edeploy-roles
 
