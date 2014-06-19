@@ -179,6 +179,10 @@ EOF
     do_chroot $dir git clone https://github.com/openstack-infra/zuul /srv/zuul
     do_chroot $dir bash -c "cd /srv/zuul && git checkout -b working a9702ada76" # latest commit as of 09. May 2014
     do_chroot $dir bash -c "cd /srv/zuul && python /srv/zuul/setup.py install"
+    # 06/19/2014 - The two line below manage to quick fix some dependencies problem with Zuul (Need to be removed later)
+    do_chroot $dir bash -c "cd /srv/zuul && pip install -U setuptools"
+    do_chroot $dir bash -c "cd /srv/zuul && pip install -U -r requirements.txt"
+    do_chroot $dir bash -c "cd /srv/zuul && pip install APScheduler==2.1.0"
     curl -L --silent http://getbootstrap.com/2.3.2/assets/bootstrap.zip > $dir/srv/zuul/bootstrap.zip
     unzip -q -o $dir/srv/zuul/bootstrap.zip -d $dir/srv/zuul/etc/status/public_html/
     curl -L --silent https://github.com/teamdf/jquery-visible/archive/1.1.0.zip > $dir/srv/zuul/jquery-visible-1.1.0.zip
