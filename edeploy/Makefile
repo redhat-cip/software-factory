@@ -19,7 +19,7 @@
 .EXPORT_ALL_VARIABLES:
 
 MAKEFILE_DIR=$(shell pwd)
-SDIR=/var/lib/sf/git/edeploy-$(EDEPLOY_REL)
+SDIR=$(EDEPLOY_PATH)
 TOP=/var/lib/debootstrap
 ARCHIVE=/var/cache/edeploy-roles
 
@@ -37,7 +37,7 @@ export MAKEFILE_TARGET
 export CURRENT_TARGET
 
 SF_VERSION=D7-H.$(SF_REL)
-EDEPLOY_VERSION=D7-H.$(EDEPLOY_REL)
+EDEPLOY_VERSION=$(EDEPLOY_REL)
 
 INST=$(TOP)/install/$(SF_VERSION)
 E_INST=$(TOP)/install/$(EDEPLOY_VERSION)
@@ -51,29 +51,34 @@ $(INST)/softwarefactory.done: softwarefactory.install $(INST)/vm.done
 	# FIXME: here we must use EDEPLOY_VERSION as it will failed on /srv/edeploy/build/functions: line 42
 	# because /var/lib/sf/roles/install/D7-H.0.9.0/vm/var/lib/edeploy/D7-H.0.9.0/exclude
 	# does not exists from base role
-	./softwarefactory.install $(INST)/vm $(INST)/softwarefactory $(EDEPLOY_VERSION)
+	rm -f $(INST)/softwarefactory-*.img*
+	./softwarefactory.install $(INST)/vm $(INST)/softwarefactory $(SF_VERSION)
 	touch $(INST)/softwarefactory.done
 
 ldap: $(INST)/ldap.done
 $(INST)/ldap.done: ldap.install $(INST)/vm.done
-	./ldap.install $(INST)/vm $(INST)/ldap $(EDEPLOY_VERSION)
+	rm -f $(INST)/ldap-*.img*
+	./ldap.install $(INST)/vm $(INST)/ldap $(SF_VERSION)
 	touch $(INST)/ldap.done
 
 mysql: $(INST)/mysql.done
 $(INST)/mysql.done: mysql.install $(INST)/vm.done
-	./mysql.install $(INST)/vm $(INST)/mysql $(EDEPLOY_VERSION)
+	rm -f $(INST)/mysql-*.img*
+	./mysql.install $(INST)/vm $(INST)/mysql $(SF_VERSION)
 	touch $(INST)/mysql.done
 
 slave: $(INST)/slave.done
 $(INST)/slave.done: slave.install $(INST)/vm.done
-	./slave.install $(INST)/vm $(INST)/slave $(EDEPLOY_VERSION)
+	rm -f $(INST)/slave-*.img*
+	./slave.install $(INST)/vm $(INST)/slave $(SF_VERSION)
 	touch $(INST)/slave.done
 
 bootstrapper:
 	./puppet_bootstrapper.sh
 
 install-server-vm: $(INST)/vm.done bootstrapper
-	./install-server-vm.install $(INST)/vm $(INST)/install-server-vm $(EDEPLOY_VERSION)
+	rm -f $(INST)/install-server-vm-*.img*
+	./install-server-vm.install $(INST)/vm $(INST)/install-server-vm $(SF_VERSION)
 
 vm: $(INST)/vm.done
 $(INST)/vm.done: vm.install $(E_INST)/base.done

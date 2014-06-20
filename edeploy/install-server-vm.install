@@ -30,10 +30,11 @@ install_packages $dir cpp rake make python-pip sshpass bc gcc python-dev libldap
 
 HOME=/root do_chroot $dir gem install serverspec r10k rspec-extra-formatters
 
+#do_chroot $dir mkdir /var/tmp
 $ORIG/deploy.install $dir $dir $version
 install_packages_disabled $dir dnsmasq
 
-$EDEPLOY_ROLES/puppet-master.install $dir $dir $version
+$EDEPLOY_ROLES_PATH/puppet-master.install $dir $dir $version
 cp /tmp/puppet-bootstrapper.tar.gz $dir/root/
 
 # install requirements for functional tests
