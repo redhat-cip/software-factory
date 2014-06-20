@@ -41,26 +41,28 @@ chmod +x /tmp/ssh_wrapper.sh
 export GIT_SSH="/tmp/ssh_wrapper.sh"
 export GIT_COMMITTER_NAME=$admin
 export GIT_COMMITTER_EMAIL=$admin_email
-git clone ssh://$admin@$gh/config /tmp/config
+CONF_TMP=$(mktemp -d)
+git clone ssh://$admin@$gh/config ${CONF_TMP}
 
-if [ -d "/tmp/config/jobs" ]; then
+if [ -d "${CONF_TMP}/jobs" ]; then
     echo "Config repository already initialised"
+    rm -rf ${CONF_TMP}
     exit 0
 fi
 
 # Add JJB files to the config repo
-mkdir /tmp/config/jobs
-cp -Rv /usr/share/sf-jjb/* /tmp/config/jobs
+mkdir ${CONF_TMP}/jobs
+cp -Rv /usr/share/sf-jjb/* ${CONF_TMP}/jobs
 
 # Add Zuul files to the config repo
-mkdir /tmp/config/zuul
-cp -Rv /usr/share/sf-zuul/* /tmp/config/zuul
+mkdir ${CONF_TMP}/zuul
+cp -Rv /usr/share/sf-zuul/* ${CONF_TMP}/zuul
 
 # Commit the changes
-cd /tmp/config
+cd ${CONF_TMP}
 git add .
 git commit -a --author "$admin <$admin_email>" -m "JJB/Zuul files"
 git push origin master
 
-rm -rf /tmp/config
+rm -rf ${CONF_TMP}
 rm -f /tmp/ssh_wrapper.sh
