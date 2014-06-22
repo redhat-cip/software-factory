@@ -6,6 +6,9 @@
         ProxyPass /auth/ http://<%= scope.function_hiera(["auth_url"]) %>:80/auth/ nocanon retry=0
         ProxyPassReverse /auth/ http://<%= scope.function_hiera(["auth_url"]) %>/auth/
 
+        ProxyPass /manage/ http://<%= scope.function_hiera(["managesf_url"]) %>:80/manage/ nocanon retry=0
+        ProxyPassReverse /manage/ http://<%= scope.function_hiera(["managesf_url"]) %>/manage/
+
         ProxyPass /r/ http://<%= scope.function_hiera(["gerrit_url"]) %>:80/r/ nocanon retry=0
         ProxyPassReverse /r/ http://<%= scope.function_hiera(["gerrit_url"]) %>/r/
 
@@ -22,7 +25,6 @@
         ProxyPassReverse /paste/ http://127.0.0.1:5000/paste/
 
         AllowEncodedSlashes NoDecode
-        ProxyPreserveHost on
         <Proxy *>
             Options FollowSymLinks MultiViews
             AllowOverride All

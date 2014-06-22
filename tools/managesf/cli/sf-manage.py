@@ -27,9 +27,9 @@ def split_and_strip(s):
 parser = argparse.ArgumentParser(
     description="Tool to manage project creation and deletion")
 parser.add_argument('--host', metavar='ip-address',
-                    help='Managesf host IP address', required=True)
+                    help='Softwarefactory public IP address', required=True)
 parser.add_argument('--port', metavar='port-number',
-                    help="Managesf HTTP port number", default=80)
+                    help="Softwarefactory HTTP port number", default=80)
 parser.add_argument('--auth', metavar='username:password',
                     help='Authentication information', required=True)
 parser.add_argument('--auth-server', metavar='central-auth-server',
@@ -60,7 +60,7 @@ dp.add_argument('--name', '-n', nargs='?', metavar='project-name',
                 required=True)
 args = parser.parse_args()
 
-url = "http://%(host)s:%(port)s/project/%(name)s" % \
+url = "http://%(host)s:%(port)s/manage/project/%(name)s" % \
     {'host': args.host,
      'port': args.port,
      'name': args.name

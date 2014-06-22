@@ -31,7 +31,7 @@ class TestSFACLs(Base):
     def setUpClass(cls):
         cls.projects = []
         cls.clone_dirs = []
-        cls.msu = ManageSfUtils(config.MANAGESF_HOST, 80)
+        cls.msu = ManageSfUtils(config.GATEWAY_HOST, 80)
 
     @classmethod
     def tearDownClass(cls):

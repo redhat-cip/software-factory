@@ -56,5 +56,9 @@ class ProjectController(RestController):
             raise
 
 
-class RootController(object):
+class ManageController(object):
     project = ProjectController()
+
+
+class RootController(object):
+    manage = ManageController()

@@ -31,7 +31,7 @@ class TestZuulOps(Base):
     """
     @classmethod
     def setUpClass(cls):
-        cls.msu = ManageSfUtils(config.MANAGESF_HOST, 80)
+        cls.msu = ManageSfUtils(config.GATEWAY_HOST, 80)
         pass
 
     @classmethod

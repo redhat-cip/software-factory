@@ -35,7 +35,7 @@ class TestManageSF(Base):
     """
     @classmethod
     def setUpClass(cls):
-        cls.msu = ManageSfUtils(config.MANAGESF_HOST, 80)
+        cls.msu = ManageSfUtils(config.GATEWAY_HOST, 80)
         with open(os.environ['SF_ROOT'] + "/build/hiera/redmine.yaml") as f:
             ry = yaml.load(f)
         cls.redmine_api_key = ry['redmine']['issues_tracker_api_key']
