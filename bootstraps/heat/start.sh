@@ -2,32 +2,34 @@
 
 set -x
 
-DVER=D7
-PVER=H
-REL=1.0.0
-VERS=${DVER}-${PVER}.${REL}
+VERS=D7-H.0.9.0
 BUILT_ROLES=/var/lib/sf
 
+### Modify here according to your configuration ###
+# The default public key to use
 key_name="fbo"
 # flavor is used for managesf, ldap, commonservices
-flavor="standard.xsmall"
+flavor="m1.small"
 # alt_flavor is used for puppetmaster, mysql, redmine, jenkins, gerrit (prefer flavor with at least 2 vCPUs and 2GB RAM)
 #alt_flavor="standard.small"
 alt_flavor=$flavor
 suffix="tests.dom"
-ext_net_uuid="122c72de-0924-4b9f-8cf3-b18d5d3d292c"
+ext_net_uuid="1013481d-c86b-4a9d-8d3d-e5d9448749fc"
 # Network from TCP/22 is accessible
 sg_admin_cidr="0.0.0.0/0"
 # Network from ALL SF services are accessible
 sg_user_cidr="0.0.0.0/0"
+###################################################
+
 temp_ssh_pwd="heat"
 jenkins_user_pwd="userpass"
 jenkins_master_url="jenkins.$suffix"
+
 params="key_name=$key_name;instance_type=$flavor"
 params="$params;alt_instance_type=$alt_flavor;suffix=$suffix;temp_ssh_pwd=$temp_ssh_pwd"
 params="$params;jenkins_user_pwd=$jenkins_user_pwd;jenkins_master_url=$jenkins_master_url"
 params="$params;sg_admin_cidr=$sg_admin_cidr;sg_user_cidr=$sg_user_cidr"
-params="$params;ext_net_uuid=$ext_net_uuid;"
+params="$params;ext_net_uuid=$ext_net_uuid"
 
 function get_params {
     puppetmaster_image_id=`glance image-show install-server-vm | grep "^| id" | awk '{print $4}'`
@@ -47,7 +49,7 @@ function register_images {
         checksum=`glance image-show $img | grep checksum | awk '{print $4}'`
         if [ -z "$checksum" ]; then
             glance image-create --name $img --disk-format qcow2 --container-format bare \
-                --progress --file $BUILT_ROLES/roles/install/$VERS/$img-$DVER-$PVER.$REL.img
+                --progress --file $BUILT_ROLES/roles/install/${VERS}/$img-*.img
         fi
     done
 }
@@ -55,7 +57,7 @@ function register_images {
 function unregister_images {
     for img in install-server-vm mysql slave ldap softwarefactory; do
         checksum=`glance image-show $img | grep checksum | awk '{print $4}'`
-        newchecksum=`cat $BUILT_ROLES/roles/install/$VERS/$img-$DVER-$PVER.$REL.img.md5 | cut -d" " -f1`
+        newchecksum=`cat $BUILT_ROLES/roles/install/${VERS}/$img-*.img.md5 | cut -d" " -f1`
         [ "$newchecksum" != "$checksum" ] && glance image-delete $img
     done
 }

@@ -147,12 +147,6 @@ resources:
                          { get_resource: sf_int_secgroup_default },
                          ]
 
-  jenkins_floating_ip:
-    type: OS::Neutron::FloatingIP
-    properties:
-      port_id: { get_resource: jenkins_neutron_port }
-      floating_network_id: { get_param: ext_net_uuid }
-
   redmine_neutron_port:
     type: OS::Neutron::Port
     properties:
@@ -161,12 +155,6 @@ resources:
                          { get_resource: sf_ext_secgroup_http },
                          { get_resource: sf_int_secgroup_default },
                          ]
-  
-  redmine_floating_ip:
-    type: OS::Neutron::FloatingIP
-    properties:
-      port_id: { get_resource: redmine_neutron_port }
-      floating_network_id: { get_param: ext_net_uuid }
 
   gerrit_neutron_port:
     type: OS::Neutron::Port
@@ -193,12 +181,6 @@ resources:
                          { get_resource: sf_ext_secgroup_alt_http },
                          { get_resource: sf_int_secgroup_default },
                          ]
-  
-  managesf_floating_ip:
-    type: OS::Neutron::FloatingIP
-    properties:
-      port_id: { get_resource: managesf_neutron_port }
-      floating_network_id: { get_param: ext_net_uuid }
 
   puppetmaster_neutron_port:
     type: OS::Neutron::Port
@@ -639,39 +621,25 @@ resources:
 
 
 outputs:
-  jenkins_public_address:
-    description: Public address of Jenkins
+  commonservices_public_address:
+    description: Public address of Commonservices
     value:
       str_replace:
-        template: "Public address of the Jenkins instance: host"
+        template: "Public address of the commonservices instance: host"
         params:
-          host: { get_attr: [jenkins_floating_ip, ip] }
+          host: { get_attr: [commonservices_floating_ip, floating_ip_address] }
   gerrit_public_address:
     description: Public address of Gerrit
     value:
       str_replace:
         template: "Public address of the Gerrit instance: host"
         params:
-          host: { get_attr: [gerrit_floating_ip, ip] }
-  redmine_public_address:
-    description: Public address of Redmine
-    value:
-      str_replace:
-        template: "Public address of the Redmine instance: host"
-        params:
-          host: { get_attr: [redmine_floating_ip, ip] }
-  managesf_public_address:
-    description: Public address of Managesf
-    value:
-      str_replace:
-        template: "Public address of the Managesf instance: host"
-        params:
-          host: { get_attr: [managesf_floating_ip, ip] }
+          host: { get_attr: [gerrit_floating_ip, floating_ip_address] }
   puppetmaster_public_address:
     description: Public address of Puppetmaster
     value:
       str_replace:
         template: "Public address of the Puppetmaster instance: host"
         params:
-          host: { get_attr: [puppetmaster_floating_ip, ip] }
+          host: { get_attr: [puppetmaster_floating_ip, floating_ip_address] }
 
