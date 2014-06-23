@@ -14,6 +14,7 @@ Contents:
    intro
    admin
    user
+   managesf
 
 Indices and tables
 ==================
