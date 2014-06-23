@@ -5,8 +5,8 @@ set -x
 
 EDEPLOY_REL=${EDEPLOY_REL:-D7-1.4.0}
 SF_REL=${SF_REL:-0.9.0}
-EDEPLOY_TAG=master
-EDEPLOY_ROLES_TAG=master
+EDEPLOY_TAG=1.4.0
+EDEPLOY_ROLES_TAG=I.1.0.0
 
 if [ "$(sudo losetup -a | wc -l)" -gt 5 ]; then
     # TODO: fix/report this
