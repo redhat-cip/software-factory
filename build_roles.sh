@@ -64,17 +64,27 @@ fi
 [ ! -d "$CLONES_DIR" ] && sudo mkdir -p $CLONES_DIR
 sudo chown -R ${USER} ${CLONES_DIR}
 
-rm -Rf ${EDEPLOY}
-git clone $EDEPLOY_PROJECT ${EDEPLOY}
-cd $EDEPLOY/build
-git checkout $EDEPLOY_TAG
-cd -
+# We must handle master better, if we target master we need
+# to enter in $EDEPLOY and pull.
+[ "$EDEPLOY_TAG" == "master" ] && rm -Rf ${EDEPLOY}
 
-rm -Rf ${EDEPLOY_ROLES}
-git clone $EDEPLOY_ROLES_PROJECT ${EDEPLOY_ROLES}
-cd ${EDEPLOY_ROLES}
-git checkout $EDEPLOY_ROLES_TAG
-cd -
+if [ ! -d "${EDEPLOY}" ]; then
+    git clone $EDEPLOY_PROJECT ${EDEPLOY}
+    cd $EDEPLOY/build
+    git checkout $EDEPLOY_TAG
+    cd -
+fi
+
+# We must handle master better, if we target master we need
+# to enter in $EDEPLOY_ROLES and pull.
+[ "$EDEPLOY_ROLES_TAG" == "master" ] && rm -Rf ${EDEPLOY_ROLES}
+
+if [ ! -d "${EDEPLOY_ROLES}" ]; then
+    git clone $EDEPLOY_ROLES_PROJECT ${EDEPLOY_ROLES}
+    cd ${EDEPLOY_ROLES}
+    git checkout $EDEPLOY_ROLES_TAG
+    cd -
+fi
 
 cd $EDEPLOY/build
 sudo make TOP=$BUILD_DIR STRIPPED_TARGET=false base
