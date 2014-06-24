@@ -25,16 +25,12 @@ ORIG=$(cd $(dirname $0); pwd)
 
 . ${ORIG}/functions
 
+restore_apt_repo $dir
 update_repositories $dir
 install_packages $dir cpp rake make python-pip sshpass bc gcc python-dev libldap2-dev libsasl2-dev monit postfix
 
 HOME=/root do_chroot $dir gem install serverspec r10k rspec-extra-formatters
 
-#do_chroot $dir mkdir /var/tmp
-$ORIG/deploy.install $dir $dir $version
-install_packages_disabled $dir dnsmasq
-
-$EDEPLOY_ROLES_PATH/puppet-master.install $dir $dir $version
 cp /tmp/puppet-bootstrapper.tar.gz $dir/root/
 
 # install requirements for functional tests

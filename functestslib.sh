@@ -25,6 +25,7 @@ function prepare_artifacts {
     [ -d ${ARTIFACTS_DIR} ] && sudo rm -Rf ${ARTIFACTS_DIR}
     sudo mkdir -p ${ARTIFACTS_DIR}
     sudo chown -R $USER:$GROUP ${ARTIFACTS_ROOT}
+    sudo chmod -R +w ${ARTIFACTS_ROOT}
     if [ ${GROUP} = 'www-data' ]; then
         echo "Logs will be available here: http://${JENKINS_URL}:8081/${ARTIFACTS_RELPATH}"
     else

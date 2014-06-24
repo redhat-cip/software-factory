@@ -296,7 +296,7 @@ resources:
               - tar -xzf /root/puppet-bootstrapper.tar.gz -C /root/
               - cd /root/puppet-bootstrapper
               - ./config_puppetmaster.sh > /var/log/sf-bootstrap.log 2>&1
-              - HOME=/root/ TEMP_SSH_PWD=SSHPASS SFSUFFIX=SF_SUFFIX ./bootstrap.sh > /var/log/sf-bootstrap.log 2>&1
+              - HOME=/root/ TEMP_SSH_PWD=SSHPASS SFSUFFIX=SF_SUFFIX ./bootstrap.sh >> /var/log/sf-bootstrap.log 2>&1
           params:
             jenkins_host: { get_attr: [jenkins_instance, first_address] }
             redmine_host: { get_attr: [redmine_instance, first_address] }

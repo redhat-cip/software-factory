@@ -25,6 +25,7 @@ PACKAGES="slapd ldap-utils puppet monit postfix"
 
 . ${ORIG}/functions
 
+restore_apt_repo $dir
 update_repositories $dir
 install_ib_if_needed $ORIG $dir
 

@@ -18,7 +18,8 @@ class etherpad ($etherpad = hiera_hash('etherpad', '')) {
   user { 'etherpad':
     name => 'etherpad',
     ensure => 'present',
-    home => '/var/www/etherpad-lite-1.4.0'
+    home => '/var/www/etherpad-lite-1.4.0',
+    require => Group['etherpad'],
   }
 
   group { 'etherpad':

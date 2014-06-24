@@ -3,4 +3,16 @@
 ORIG=${SDIR}/build
 SRC=$(cd $(dirname $0); pwd)
 
+function restore_apt_repo {
+    local dir=$1
+    echo "" > $dir/etc/apt/sources.list
+    rm $dir/etc/apt/sources.list.d/wheezy-backport.list
+    rm $dir/etc/apt/sources.list.d/nonfree.list
+    repository=$(add_main_repository $DIST)
+    echo "deb http://security.debian.org/ wheezy/updates main" > $dir/etc/apt/sources.list.d/updates.list
+    echo "deb $repository wheezy-updates main" >> $dir/etc/apt/sources.list.d/updates.list  
+    echo "deb $repository wheezy main" > $dir/etc/apt/sources.list
+    echo "deb $repository wheezy-backports main" > $dir/etc/apt/sources.list.d/wheezy-backport.list
+}
+
 . ${ORIG}/functions

@@ -40,54 +40,42 @@ SF_VERSION=D7-H.$(SF_REL)
 EDEPLOY_VERSION=$(EDEPLOY_REL)
 
 INST=$(TOP)/install/$(SF_VERSION)
-E_INST=$(TOP)/install/$(EDEPLOY_VERSION)
+EDR_INST=$(TOP)/install/$(PREBUILD_EDR_TARGET)
 
 ROLES = install-server-vm mysql slave ldap softwarefactory
 
 all: $(ROLES)
 
 softwarefactory: $(INST)/softwarefactory.done
-$(INST)/softwarefactory.done: softwarefactory.install $(INST)/vm.done
-	# FIXME: here we must use EDEPLOY_VERSION as it will failed on /srv/edeploy/build/functions: line 42
-	# because /var/lib/sf/roles/install/D7-H.0.9.0/vm/var/lib/edeploy/D7-H.0.9.0/exclude
-	# does not exists from base role
+$(INST)/softwarefactory.done: softwarefactory.install $(EDR_INST)/cloud.done
 	rm -f $(INST)/softwarefactory-*.img*
-	./softwarefactory.install $(INST)/vm $(INST)/softwarefactory $(SF_VERSION)
+	./softwarefactory.install $(EDR_INST)/cloud $(INST)/softwarefactory $(SF_VERSION)
 	touch $(INST)/softwarefactory.done
 
 ldap: $(INST)/ldap.done
-$(INST)/ldap.done: ldap.install $(INST)/vm.done
+$(INST)/ldap.done: ldap.install $(EDR_INST)/cloud.done
 	rm -f $(INST)/ldap-*.img*
-	./ldap.install $(INST)/vm $(INST)/ldap $(SF_VERSION)
+	./ldap.install $(EDR_INST)/cloud $(INST)/ldap $(SF_VERSION)
 	touch $(INST)/ldap.done
 
 mysql: $(INST)/mysql.done
-$(INST)/mysql.done: mysql.install $(INST)/vm.done
+$(INST)/mysql.done: mysql.install $(EDR_INST)/cloud.done
 	rm -f $(INST)/mysql-*.img*
-	./mysql.install $(INST)/vm $(INST)/mysql $(SF_VERSION)
+	./mysql.install $(EDR_INST)/cloud $(INST)/mysql $(SF_VERSION)
 	touch $(INST)/mysql.done
 
 slave: $(INST)/slave.done
-$(INST)/slave.done: slave.install $(INST)/vm.done
+$(INST)/slave.done: slave.install $(EDR_INST)/cloud.done
 	rm -f $(INST)/slave-*.img*
-	./slave.install $(INST)/vm $(INST)/slave $(SF_VERSION)
+	./slave.install $(EDR_INST)/cloud $(INST)/slave $(SF_VERSION)
 	touch $(INST)/slave.done
 
 bootstrapper:
 	./puppet_bootstrapper.sh
 
-install-server-vm: $(INST)/vm.done bootstrapper
+install-server-vm: $(EDR_INST)/install-server.done bootstrapper
 	rm -f $(INST)/install-server-vm-*.img*
-	./install-server-vm.install $(INST)/vm $(INST)/install-server-vm $(SF_VERSION)
-
-vm: $(INST)/vm.done
-$(INST)/vm.done: vm.install $(E_INST)/base.done
-	./vm.install $(E_INST)/base $(INST)/vm $(EDEPLOY_VERSION)
-	touch $(INST)/vm.done
-
-$(E_INST)/base.done:
-	mkdir -p $(E_INST)/base
-	touch $(E_INST)/base.done
+	./install-server-vm.install $(EDR_INST)/install-server $(INST)/install-server-vm $(SF_VERSION)
 
 dist:
 	tar zcvf ../edeploy-roles.tgz Makefile README.rst *.install *.exclude
@@ -101,4 +89,4 @@ distclean: clean
 version:
 	@echo "$(SF_VERSION)"
 
-.PHONY: bootstrapper install-server-vm ldap mysql slave softwarefactory vm dist clean distclean version 
+.PHONY: bootstrapper install-server-vm ldap mysql slave softwarefactory dist clean distclean version 

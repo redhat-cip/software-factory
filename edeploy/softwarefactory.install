@@ -35,21 +35,6 @@ PYREDMINEWS="https://pypi.python.org/packages/source/p/pyredmine/pyredmine-0.2.4
 GERRITHOOKS=../gerrit-hooks
 GERRIT_PACKAGES="openjdk-7-jre apache2 file"
 
-
-#
-# Jenkins
-#
-JENKINS_PACKAGES="jenkins puppet git python-pip sloccount rubygems rake puppet-lint"
-JENKINS_PLUGINS="http://ftp.nluug.nl/programming/jenkins/plugins/ssh-agent/1.4.1/ssh-agent.hpi \
-                 http://ftp.nluug.nl/programming/jenkins/plugins/gearman-plugin/0.0.6/gearman-plugin.hpi \
-                 http://ftp.nluug.nl/programming/jenkins/plugins/promoted-builds/2.17/promoted-builds.hpi \
-                 http://ftp.nluug.nl/programming/jenkins/plugins/git-client/1.9.0/git-client.hpi \
-                 http://ftp.nluug.nl/programming/jenkins/plugins/scm-api/0.2/scm-api.hpi \
-                 http://ftp.nluug.nl/programming/jenkins/plugins/parameterized-trigger/2.24/parameterized-trigger.hpi \
-                 http://ftp.nluug.nl/programming/jenkins/plugins/token-macro/1.10/token-macro.hpi \
-                 http://ftp.nluug.nl/programming/jenkins/plugins/multiple-scms/0.3/multiple-scms.hpi \
-                 http://ftp.nluug.nl/programming/jenkins/plugins/git/2.2.1/git.hpi"
-
 ZUUL_PACKAGES="libjs-jquery"
 
 #
@@ -85,8 +70,11 @@ PACKAGES="${GERRIT_PACKAGES} ${REDMINE_PACKAGES} ${MANAGESF_PACKAGES} ${ETHERPAD
 do_chroot $dir rm /etc/apt/sources.list.d/hwraid.list
 
 
+restore_apt_repo $dir
 update_repositories $dir
 install_ib_if_needed $ORIG $dir
+
+$EDEPLOY_ROLES_PATH/jenkins.install $dir $dir $version
 
 case "$(package_tool)" in
   "apt")
@@ -148,33 +136,6 @@ EOF
     do_chroot $dir git clone https://git.openstack.org/openstack-infra/lodgeit /srv/lodgeit/lodgeit --depth 1
     do_chroot $dir bash -c 'cd /srv/lodgeit/lodgeit && git checkout c69f555032'  # latest commit as of 05. May 2014
 
-    #
-    # Jenkins
-    #
-    [ -f "jenkins-ci.org.key" ] || wget -q http://pkg.jenkins-ci.org/debian/jenkins-ci.org.key -O jenkins-ci.org.key
-    cat jenkins-ci.org.key | do_chroot $dir apt-key add -
-# Comment that right know (as not so sure it works correclty) - pkg.jenkins-ci.org seems to be more stable now ...
-#    JREPO="$dir/var/lib/repo-jenkins/debs" 
-#    [ ! -d $JREPO ] && mkdir -p $JREPO
-#    JCWD=`pwd`
-#    cd $JREPO
-#    # Jenkins debs repo fails almost always this time
-#    # So we set up a local mirror
-#    while [ ! -f jenkins_1.560_all.deb ]; do
-#        wget http://mirrors.jenkins-ci.org/debian/jenkins_1.560_all.deb
-#    done
-#    cd ..
-#    dpkg-scanpackages -m debs > Packages
-#    chmod -R o+r .
-#    cd $JCWD
-# deb file:/var/lib/ repo-jenkins/
-    cat > ${dir}/etc/apt/sources.list.d/jenkins.list <<EOF
-    deb http://pkg.jenkins-ci.org/debian binary/
-EOF
-    update_repositories $dir
-
-    install_packages $dir "$JENKINS_PACKAGES"
-
     # zuul
     do_chroot $dir git clone https://github.com/openstack-infra/zuul /srv/zuul
     do_chroot $dir bash -c "cd /srv/zuul && git checkout -b working a9702ada76" # latest commit as of 09. May 2014
@@ -231,25 +192,6 @@ esac
 
 do_chroot $dir pip install --upgrade pip
 do_chroot $dir /usr/local/bin/pip install flake8
-
-
-#
-# Jenkins Post Inst
-#
-mkdir -p ${dir}/var/lib/jenkins/plugins
-do_chroot $dir chown jenkins /var/lib/jenkins /var/lib/jenkins/plugins
-for plugin in ${JENKINS_PLUGINS}; do
-  plugin_name=$(basename ${plugin})
-  echo "Installing plugin ${plugin_name}"
-  wget -q -O - "${plugin}" > ${dir}/var/lib/jenkins/plugins/${plugin_name}
-done
-# jjb
-mkdir -p ${dir}/opt/
-git clone 'https://git.openstack.org/openstack-infra/jenkins-job-builder' ${dir}/opt/jenkins-job-builder
-do_chroot ${dir} /usr/local/bin/pip install /opt/jenkins-job-builder
-mkdir -p ${dir}/etc/jenkins_jobs
-#Install some addons required for testing
-HOME=/root do_chroot ${dir} gem install --no-rdoc --no-ri rspec-puppet
 
 clear_packages_cache $dir
 
