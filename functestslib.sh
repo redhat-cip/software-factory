@@ -68,6 +68,7 @@ function get_logs {
     #after a failure.
     sleep 30
     O=${ARTIFACTS_DIR}
+    ssh -o StrictHostKeyChecking=no root@`get_ip puppetmaster` "cd puppet-bootstrapper; ./getlogs.sh"
     scp -r -o StrictHostKeyChecking=no root@`get_ip puppetmaster`:/tmp/logs/* $O/
 }
 
