@@ -1,4 +1,4 @@
-from pecan import expose, response, conf, abort
+from pecan import expose, response, conf, abort, render
 from pecan.rest import RestController
 from cauth.controllers import rsa_priv
 import time
@@ -8,6 +8,9 @@ import urllib
 import ldap
 import requests as http
 from cauth.model import db
+
+LOGOUT_MSG = "You have been successfully logged " \
+             "out of all the Software factory services."
 
 
 def signature(data):
@@ -99,21 +102,24 @@ class LoginController(RestController):
         if 'username' in kwargs and 'password' in kwargs:
             username = kwargs['username']
             password = kwargs['password']
-            back = kwargs['back']
+            back = kwargs.get('back', '/r/')
             valid_user = self.check_valid_user_ldap(username, password)
             if not valid_user:
-                abort(401)
-
+                return render(
+                    'login.html',
+                    dict(back=back, message='Authorization failed.'))
             setup_response(username, back)
         else:
-            abort(400)
+            return render(
+                'login.html',
+                dict(back=back, message='Authorization failed.'))
 
     @expose(template='login.html')
     def get(self, **kwargs):
         if 'back' not in kwargs:
             kwargs['back'] = '/auth/logout'
 
-        return dict(back=kwargs["back"])
+        return dict(back=kwargs["back"], message='')
 
     github = GithubController()
 
@@ -131,16 +137,16 @@ class LogoutController(RestController):
                                 domain=conf.app.cookie_domain,
                                 value=None)
             response.status_code = 200
-            return dict()
+            return dict(back='/r/', message=LOGOUT_MSG)
 
         services.pop(0)
         response.status_code = 302
         response.location = conf.logout[cur_service]['url'] + \
             "?services=" + ",".join(services)
         print '  [cauth] redirecting logout req to ' + response.location
-        return dict()
+        return dict(back='/r/', message=LOGOUT_MSG)
 
-    @expose(template='logout.html')
+    @expose(template='login.html')
     def get(self, **kwargs):
         if 'service' in kwargs:
             services = list(conf.logout['services'])
@@ -154,6 +160,8 @@ class LogoutController(RestController):
         elif 'services' in kwargs:
             services = kwargs['services'].split(",")
             return self.logout_services(services)
+        # Fallback if no service name is given
+        return self.logout_services(['gerrit', 'redmine', 'cauth'])
 
 
 class AuthController(object):

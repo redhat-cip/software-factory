@@ -1,23 +1,39 @@
 <!DOCTYPE html>
-<head>
-<meta charset="utf-8">
-<title>Login Form</title>
-<link rel="stylesheet" href="css/style.css">
-</head>
-<body>
-<script src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
-<div class="login">
-  <h1>Login to Web App</h1>
-  <form method="POST" action="/auth/login">
-    <p><input type="text" name="username" value="" placeholder="Username or Email"></p>
-    <p><input type="password" name="password" value="" placeholder="Password"></p>
-    <input type="hidden" name="back" value="${back}">
-    <p class="submit"><input type="submit" id="commit" value="Login"></p>
-  </form>
-  <p class='submit'>
-    <a href='/auth/login/github?back=${back}'>Login via Github</a>
-  </p>
-</div>
-
-</body>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>Login to Software Factory</title>
+        <link href="/bootstrap.min.css" rel="stylesheet">
+        <style type="text/css">body {margin-top: 50px;}</style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="col-md-6 col-md-offset-3">
+    	       <h5>${message}<h5>
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">Login to Software Factory</h3>
+                    </div>
+                    <div class="panel-body">
+                        <form method="post" action="/auth/login/" class="form-signin">
+                            <div class="form-group"> 
+                                <label for="username">Username</label>
+                                <input class="form-control" name="username" id="username" type="text" value="" placeholder="Username" required autofocus>
+                            </div>
+    
+                            <div class="form-group"> 
+                                <label for="username">Password</label>
+                                <input class="form-control" name="password" id="password" type="password" placeholder="Password" required>
+                            </div>
+    
+                            <input type="hidden" name="back" value="${back}">
+                            
+                            <button type="submit" class="btn btn-primary pull-right">Log in<i class="icon-chevron-right icon-white"></i></button>
+                        </form>
+                    </div>
+                </div>
+                <a href='/auth/login/github?back=${back}'>Login via Github</a>
+            </div>
+        </div>
+    </body>
 </html>
