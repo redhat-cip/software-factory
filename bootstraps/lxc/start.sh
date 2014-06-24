@@ -24,7 +24,7 @@ VERS=${DVER}-${PVER}.${REL}
 
 SF_SUFFIX=${SF_SUFFIX:-sf.dom}
 EDEPLOY_ROLES=${EDEPLOY_ROLES:-/var/lib/debootstrap}
-SSH_PUBKEY=/home/ubuntu/.ssh/id_rsa.pub
+SSH_PUBKEY=${SSH_PUBKEY:-/home/ubuntu/.ssh/id_rsa.pub}
 export SF_SUFFIX
 
 ROLES="puppetmaster ldap mysql redmine"
