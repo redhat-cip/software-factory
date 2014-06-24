@@ -66,8 +66,7 @@ function generate_hieras {
     sed -i "s#SERVICE_PUB_KEY#${SERVICE_PUB}#" ${OUTPUT}/ssh.yaml
     
     # Jenkins part
-    # TODO: Must be randomly generated
-    JENKINS_CREDS_ID="a6feb755-3493-4635-8ede-216127d31bb0"
+    JENKINS_CREDS_ID=`cat /proc/sys/kernel/random/uuid`
     JENKINS_DEFAULT_SLAVE="slave.${SF_SUFFIX}"
     sed -i "s#JENKINS_CREDS_ID#${JENKINS_CREDS_ID}#" ${OUTPUT}/jenkins.yaml
     sed -i "s#LDAP_ADMIN_DN#${LDAP_ADMIN_DN}#" ${OUTPUT}/jenkins.yaml
