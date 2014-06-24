@@ -102,7 +102,9 @@ class LoginController(RestController):
         if 'username' in kwargs and 'password' in kwargs:
             username = kwargs['username']
             password = kwargs['password']
-            back = kwargs.get('back', '/r/')
+            if 'back' not in kwargs:
+                abort(422)
+            back = kwargs['back']
             valid_user = self.check_valid_user_ldap(username, password)
             if not valid_user:
                 return render(
