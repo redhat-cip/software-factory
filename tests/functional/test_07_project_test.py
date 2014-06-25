@@ -177,13 +177,13 @@ class TestProjectTestsWorkflow(Base):
             dump(ycontent2))
 
         # Retrieve the previous build number for config-check
-        last_build_num_ch = \
+        last_success_build_num_ch = \
             self.get_last_build_number("config-check",
-                                       "lastBuild")
+                                       "lastSuccessfulBuild")
         # Retrieve the previous build number for config-update
-        last_build_num_cu = \
+        last_success_build_num_cu = \
             self.get_last_build_number("config-update",
-                                       "lastBuild")
+                                       "lastSuccessfulBuild")
 
         # Send review (config-check) will be triggered
         self.push_review_as_admin(
@@ -192,8 +192,8 @@ class TestProjectTestsWorkflow(Base):
 
         # Wait for config-check to finish and verify the success
         self.wait_till_job_completes("config-check",
-                                     last_build_num_ch,
-                                     "lastBuild")
+                                     last_success_build_num_ch,
+                                     "lastSuccessfulBuild")
         last_build_num_ch = \
             self.get_last_build_number("config-check",
                                        "lastBuild")
@@ -216,8 +216,8 @@ class TestProjectTestsWorkflow(Base):
 
         # Wait for config-update to finish and verify the success
         self.wait_till_job_completes("config-update",
-                                     last_build_num_cu,
-                                     "lastBuild")
+                                     last_success_build_num_cu,
+                                     "lastSuccessfulBuild")
         last_build_num_cu = \
             self.get_last_build_number("config-update",
                                        "lastBuild")
@@ -228,12 +228,12 @@ class TestProjectTestsWorkflow(Base):
 
         # Retrieve the prev build number for sample_project-unit-tests
         # Retrieve the prev build number for sample_project-functional-tests
-        last_build_num_sp_ut = \
+        last_success_build_num_sp_ut = \
             self.get_last_build_number("sample_project-unit-tests",
-                                       "lastBuild")
-        last_build_num_sp_ft = \
+                                       "lastSuccessfulBuild")
+        last_success_build_num_sp_ft = \
             self.get_last_build_number("sample_project-functional-tests",
-                                       "lastBuild")
+                                       "lastSuccessfulBuild")
         # Trigger tests on sample_project
         # Send a review and check tests has been run
         self.gitu_admin.add_commit_and_publish(
@@ -241,12 +241,12 @@ class TestProjectTestsWorkflow(Base):
             self.un)
         # Wait for sample_project-unit-tests to finish and verify the success
         self.wait_till_job_completes("sample_project-unit-tests",
-                                     last_build_num_sp_ut,
-                                     "lastBuild")
+                                     last_success_build_num_sp_ut,
+                                     "lastSuccessfulBuild")
         # Wait for sample_project-functional-tests to end and check the success
         self.wait_till_job_completes("sample_project-functional-tests",
-                                     last_build_num_sp_ft,
-                                     "lastBuild")
+                                     last_success_build_num_sp_ft,
+                                     "lastSuccessfulBuild")
         # Check the unit tests succeed
         last_build_num_sp_ut = \
             self.get_last_build_number("sample_project-unit-tests",
