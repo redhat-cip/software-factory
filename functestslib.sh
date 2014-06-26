@@ -144,3 +144,15 @@ function run_tests {
     run_functional_tests
     [ "$ERROR_TESTS" != "0" ] && return
 }
+
+function clear_mountpoint {
+    # Clean mountpoints
+    grep '\/var.*proc' /proc/mounts | awk '{ print $2 }' | while read mountpoint; do
+        echo "[+] UMOUNT ${mountpoint}"
+        sudo umount ${mountpoint} || echo "umount failed";
+    done
+    grep '\/var.*lxc' /proc/mounts | awk '{ print $2 }' | while read mountpoint; do
+        echo "[+] UMOUNT ${mountpoint}"
+        sudo umount ${mountpoint} || echo "umount failed";
+    done
+}
