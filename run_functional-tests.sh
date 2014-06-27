@@ -23,11 +23,13 @@ function stop {
 }
 
 prepare_artifacts
+clear_mountpoint
 
 if [ ! ${SF_SKIP_BUILDROLES} ]; then
     ./build_roles.sh &> ${ARTIFACTS_DIR}/build_roles.sh.output || pre_fail "Roles building FAILED!"
 fi
 
+clear_mountpoint
 if [ ! ${SF_SKIP_BOOTSTRAP} ]; then
     cd bootstraps/lxc
     ./start.sh stop &> ${ARTIFACTS_DIR}/lxc-stop.output
