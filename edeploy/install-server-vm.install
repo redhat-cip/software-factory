@@ -29,8 +29,6 @@ restore_apt_repo $dir
 update_repositories $dir
 install_packages $dir cpp rake make python-pip sshpass bc gcc python-dev libldap2-dev libsasl2-dev monit postfix
 
-HOME=/root do_chroot $dir gem install serverspec r10k rspec-extra-formatters
-
 cp /tmp/puppet-bootstrapper.tar.gz $dir/root/
 
 # install requirements for functional tests
