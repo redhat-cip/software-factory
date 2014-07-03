@@ -437,9 +437,8 @@ class RedmineUtil:
         url = "%(redmine_server)s/issues/%(issue_id)s.json" % \
               {"redmine_server": config.REDMINE_SERVER,
                "issue_id": str(issueId)}
-        cookie = config.USERS[self.username]['auth_cookie']
         resp = http.get(url,
-                        cookies=dict(auth_pubtkt=cookie))
+                        cookies=dict(auth_pubtkt=self.cookie))
         if resp.status_code == 200:
             return resp.json()['issue']['status']['id']
 
@@ -450,6 +449,31 @@ class RedmineUtil:
 
     def isIssueClosed(self, issueId):
         return self.issueStatus(issueId) is 5
+
+    def createIssue(self, project, subject='None'):
+        issue = {"issue":
+                 {"project_id": project,
+                  "subject": subject,
+                  },
+                 }
+        data = json.dumps(issue)
+        url = "%(redmine_server)s/issues.json" % \
+              {"redmine_server": config.REDMINE_SERVER}
+        headers = {"X-Redmine-API-Key": self.api_key,
+                   "Content-type": "application/json"}
+        resp = http.post(url, data=data, headers=headers,
+                         cookies=dict(auth_pubtkt=self.cookie))
+        ret = resp.json()
+        return ret['issue']['id']
+
+    def deleteIssue(self, issue_id):
+        url = "%(redmine_server)s/%(issue_id)s.json" % \
+              {"redmine_server": config.REDMINE_SERVER,
+               "issue_id": issue_id}
+        headers = {"X-Redmine-API-Key": self.api_key,
+                   "Content-type": "application/json"}
+        http.delete(url, headers=headers,
+                    cookies=dict(auth_pubtkt=self.cookie))
 
     def createUser(self, username, lastname='None'):
         email = config.USERS[username]['email']
