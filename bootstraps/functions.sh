@@ -210,6 +210,8 @@ function trigger_puppet_apply {
         sshpass -p $TEMP_SSH_PWD scp $HOME/.ssh/known_hosts root@${role}.${SF_SUFFIX}:/root/.ssh/
         # The Puppet run will deactivate the temporary root password
         sshpass -p $TEMP_SSH_PWD ssh -p$ssh_port root@${role}.${SF_SUFFIX} "puppet agent --test --environment sf || true"
+        # Run another time. Should take only a few seconds per node if nothing needs to be changed
+        sshpass -p $TEMP_SSH_PWD ssh -p$ssh_port root@${role}.${SF_SUFFIX} "puppet agent --test --environment sf || true"
         sshpass -p $TEMP_SSH_PWD ssh -p$ssh_port root@${role}.${SF_SUFFIX} "sleep 1800; /etc/init.d/puppet restart" &
     done
 }

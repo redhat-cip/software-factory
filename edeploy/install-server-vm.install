@@ -27,7 +27,20 @@ ORIG=$(cd $(dirname $0); pwd)
 
 restore_apt_repo $dir
 update_repositories $dir
-install_packages $dir cpp rake make python-pip sshpass bc gcc python-dev libldap2-dev libsasl2-dev monit postfix bup
+
+case "$(package_tool)" in
+    "yum")
+        install_pip
+        install_packages $dir openldap-devel python-devel postfix gcc bc
+        ;;
+    "apt")
+        install_packages $dir cpp rake make python-pip sshpass bc gcc python-dev libldap2-dev libsasl2-dev monit postfix bup
+        ;;
+    *)
+        fatal_error "Unsupported package_tool: $(package_tool)"
+        ;;
+esac
+
 HOME=/root do_chroot $dir gem install specinfra
 
 tar -xzf /tmp/puppet-bootstrapper.tar.gz -C $dir/root/

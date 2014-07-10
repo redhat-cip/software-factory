@@ -1,0 +1,36 @@
+#!/bin/sh
+#
+## Versions stuff
+
+SF_REL=0.9.1
+case "${SF_DIST}" in
+  "CentOS")
+    # Centos based
+    DVER=C7.0
+    DIST=centos
+    ;;
+  *)
+    # Debian based (soon deprecated)
+    DVER=D7
+    DIST=wheezy
+    ;;
+esac
+
+
+SF_VER=${DVER}-${SF_REL}
+
+# Edeploy source version:
+ED_TAG=master
+
+# Paths
+WORKSPACE=/var/lib/sf
+CLONES_DIR=$WORKSPACE/git
+BUILD_DIR=$WORKSPACE/roles
+
+EDEPLOY=$WORKSPACE/git/edeploy-master/
+EDEPLOY_ROLES=$WORKSPACE/git/edeploy-roles-master/
+
+
+MAKE="make DVER=${DVER} DIST=${DIST} SF_REL=${SF_REL} EDEPLOY_PATH=${EDEPLOY} TOP=${BUILD_DIR}"
+
+

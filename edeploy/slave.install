@@ -28,7 +28,19 @@ PACKAGES="openjdk-7-jre git python-pip"
 restore_apt_repo $dir
 update_repositories $dir
 install_ib_if_needed $ORIG $dir
-install_packages $dir "$PACKAGES"
+case "$(package_tool)" in
+    "apt")
+        install_packages $dir "$PACKAGES"
+        ;;
+    "yum")
+        # temp fix for https://github.com/enovance/edeploy/issues/116
+        install_pip
+        do_chroot ${dir} yum install -y git java-1.6.0-openjdk
+        ;;
+    *)
+        fatal_error "Unsupported package_tool: $(package_tool)"
+        ;;
+esac
 
 do_chroot ${dir} pip install --upgrade pip nose flake8
 

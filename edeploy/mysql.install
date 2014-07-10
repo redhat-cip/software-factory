@@ -39,19 +39,17 @@ case "$(package_tool)" in
         do_chroot ${dir} debconf-set-selections <<< 'mysql-server-5.1 mysql-server/root_password password temporarypw'
         do_chroot ${dir} debconf-set-selections <<< 'mysql-server-5.1 mysql-server/root_password_again password temporarypw'
         install_packages $dir "$PACKAGES"
+        do_chroot ${dir} sed -i -e"s/^bind-address.*/bind-address = 0.0.0.0/" /etc/mysql/my.cnf
+        sed -i -e 's/START=.*/START=yes/g' $dir/etc/default/puppet
         ;;
     "yum")
-        install_packages $dir "$PACKAGES"
-        do_chroot ${dir} chkconfig --level 2345 mysqld on
+        install_packages $dir "mariadb-server postfix git"
         ;;
     *)
         fatal_error "$package_tool isn't supported for $ROLE role"
         ;;
 esac
 
-do_chroot ${dir} sed -i -e"s/^bind-address.*/bind-address = 0.0.0.0/" /etc/mysql/my.cnf
-
-sed -i -e 's/START=.*/START=yes/g' $dir/etc/default/puppet
 
 clear_packages_cache $dir
 

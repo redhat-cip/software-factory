@@ -25,6 +25,8 @@ ARCHIVE=/var/cache/edeploy-roles
 
 DIST=wheezy
 
+DVER=D7
+
 # Prevent edeploy from building .edeploy files (no more pigz/gzip)
 STRIPPED_TARGET=false
 
@@ -36,7 +38,7 @@ CURRENT_TARGET=$@
 export MAKEFILE_TARGET
 export CURRENT_TARGET
 
-SF_VERSION=D7-H.$(SF_REL)
+SF_VERSION=$(DVER)-$(SF_REL)
 EDEPLOY_VERSION=$(EDEPLOY_REL)
 
 INST=$(TOP)/install/$(SF_VERSION)

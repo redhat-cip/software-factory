@@ -72,8 +72,6 @@ CAUTH_PACKAGES="libsasl2-dev libldap2-dev"
 
 PACKAGES="${GERRIT_PACKAGES} ${REDMINE_PACKAGES} ${MANAGESF_PACKAGES} ${ETHERPAD_PACKAGES} ${OTHER_PACKAGES} ${PASTE_PACKAGES} ${ZUUL_PACKAGES} ${CAUTH_PACKAGES}"
 
-# To remove (but maybe the the vm role should remove that) :
-do_chroot $dir rm /etc/apt/sources.list.d/hwraid.list
 
 
 restore_apt_repo $dir
@@ -84,6 +82,8 @@ $EDEPLOY_ROLES_PATH/jenkins.install $dir $dir $version
 
 case "$(package_tool)" in
   "apt")
+    # To remove (but maybe the the vm role should remove that) :
+    do_chroot $dir rm /etc/apt/sources.list.d/hwraid.list
     #
     #
     # Add wheezy-backport for Redmine 2.4.2 and nodejs
@@ -171,12 +171,6 @@ EOF
     do_chroot $dir update-rc.d -f jenkins remove
 
     #
-    # Managesf
-    #
-    cp -r ../tools/managesf ${dir}/var/www/managesf
-    do_chroot $dir pip install -r /var/www/managesf/requirements.txt
-
-    #
     # Cauth server
     #
     cp -r ../tools/cauth ${dir}/var/www/cauth
@@ -190,14 +184,23 @@ EOF
     do_chroot $dir cp /root/socat/socat /etc/init.d/
 
     ;;
+  "yum")
+    do_chroot $dir yum install -y $PACKAGES gcc openldap-devel python-devel
+    ;;
   *)
     fatal_error "$package_tool isn't supported for $ROLE role"
     ;;
 esac
 
+#
+# Managesf
+#
+mkdir -p ${dir}/var/www/
+cp -r ../tools/managesf ${dir}/var/www/managesf
+do_chroot $dir pip install -r /var/www/managesf/requirements.txt
 
-do_chroot $dir pip install --upgrade pip
-do_chroot $dir /usr/local/bin/pip install flake8
+#do_chroot $dir pip install --upgrade pip
+do_chroot $dir pip install flake8
 
 clear_packages_cache $dir
 

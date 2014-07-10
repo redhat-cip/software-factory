@@ -3,9 +3,7 @@
 set -e
 set -x
 
-SF_REL=${SF_REL:-0.9.0}
-EDEPLOY_TAG=master
-EDEPLOY_ROLES_TAG=master
+. ./role_configrc
 
 #This is updated by an external builder
 EDEPLOY_ROLES_SRC_ARCHIVES=root@46.231.128.203:/var/lib/sf/roles/install/edeploy-roles_master 
@@ -20,12 +18,6 @@ EDEPLOY_PROJECT=https://github.com/enovance/edeploy.git
 EDEPLOY_ROLES_PROJECT=https://github.com/enovance/edeploy-roles.git
 
 CURRENT=`pwd`
-WORKSPACE=/var/lib/sf
-CLONES_DIR=$WORKSPACE/git
-BUILD_DIR=$WORKSPACE/roles
-
-EDEPLOY=$WORKSPACE/git/edeploy-${EDEPLOY_TAG}/
-EDEPLOY_ROLES=$WORKSPACE/git/edeploy-roles-${EDEPLOY_ROLES_TAG}/
 SF_ROLES=$CURRENT/edeploy/
 
 BOOTSTRAPPER=$SF_ROLES/puppet_bootstrapper.sh
@@ -48,9 +40,8 @@ if [ ! -d "${EDEPLOY}" ]; then
 fi
 
 cd $EDEPLOY/build
-git checkout $EDEPLOY_TAG
+git checkout $ED_TAG
 git pull
-EDEPLOY_REL=$(make version)
 cd -
 
 if [ ! -d "${EDEPLOY_ROLES}" ]; then
@@ -58,9 +49,9 @@ if [ ! -d "${EDEPLOY_ROLES}" ]; then
 fi
 
 cd ${EDEPLOY_ROLES}
-git checkout $EDEPLOY_ROLES_TAG
+git checkout $ED_TAG
 git pull
-EDEPLOY_ROLES_REL=$(make version)
+EDEPLOY_ROLES_REL=$(${MAKE} version)
 cd -
 
 # Prepare prebuild roles
@@ -112,11 +103,11 @@ cd $PREBUILD_TARGET
 cd -
 
 cd $SF_ROLES
-sudo mkdir -p $BUILD_DIR/install/D7-H.${SF_REL}
-sudo make TOP=$BUILD_DIR $VIRTUALIZED SF_REL=${SF_REL} EDEPLOY_PATH=${EDEPLOY} PREBUILD_EDR_TARGET=${EDEPLOY_ROLES_REL} mysql
-sudo make TOP=$BUILD_DIR $VIRTUALIZED SF_REL=${SF_REL} EDEPLOY_PATH=${EDEPLOY} PREBUILD_EDR_TARGET=${EDEPLOY_ROLES_REL} slave
-sudo make TOP=$BUILD_DIR $VIRTUALIZED SF_REL=${SF_REL}  EDEPLOY_PATH=${EDEPLOY} EDEPLOY_ROLES_PATH=${EDEPLOY_ROLES} PREBUILD_EDR_TARGET=${EDEPLOY_ROLES_REL} softwarefactory
-sudo make TOP=$BUILD_DIR $VIRTUALIZED SF_REL=${SF_REL} EDEPLOY_PATH=${EDEPLOY} PREBUILD_EDR_TARGET=${EDEPLOY_ROLES_REL} install-server-vm
+sudo mkdir -p $BUILD_DIR/install/${DVER}-${SF_REL}
+sudo ${MAKE} $VIRTUALIZED PREBUILD_EDR_TARGET=${EDEPLOY_ROLES_REL} mysql
+sudo ${MAKE} $VIRTUALIZED PREBUILD_EDR_TARGET=${EDEPLOY_ROLES_REL} slave
+sudo ${MAKE} $VIRTUALIZED EDEPLOY_ROLES_PATH=${EDEPLOY_ROLES} PREBUILD_EDR_TARGET=${EDEPLOY_ROLES_REL} softwarefactory
+sudo ${MAKE} $VIRTUALIZED PREBUILD_EDR_TARGET=${EDEPLOY_ROLES_REL} install-server-vm
 RET=$?
 
 exit $RET

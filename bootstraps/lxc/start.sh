@@ -18,11 +18,7 @@ set -x
 set -e
 
 source ../functions.sh
-
-DVER=D7
-PVER=H
-REL=${SF_REL:-0.9.0}
-VERS=${DVER}-${PVER}.${REL}
+. ./../../role_configrc
 
 SFCONFIGFILE=../sfconfig.yaml
 DOMAIN=$(cat $SFCONFIGFILE | grep domain | cut -d' ' -f2)
@@ -42,6 +38,8 @@ SSHPASS=heat
 JENKINS_MASTER_URL=jenkins.${SF_SUFFIX}
 JENKINS_USER_PASSWORD=$(generate_random_pswd 8)
 
+ROLES_DIR=${BUILD_DIR}/install/${SF_VER}/
+
 function get_ip {
     grep -B 1 "name:[ \t]*$1" sf-lxc.yaml | head -1 | awk '{ print $2 }'
 }
@@ -53,10 +51,9 @@ if [ -z "$1" ] || [ "$1" == "start" ]; then
     jenkins_ip=`get_ip jenkins`
     # Complete the sf-lxc template used by edeploy-lxc tool
     sed -i "s/SF_SUFFIX/${SF_SUFFIX}/g" ${CONFTEMPDIR}/sf-lxc.yaml
-    sed -i "s/VERS/${VERS}/g" ${CONFTEMPDIR}/sf-lxc.yaml
     sed -i "s#CIPATH#${CONFTEMPDIR}#g" ${CONFTEMPDIR}/sf-lxc.yaml
     sed -i "s#SSH_PUBKEY#${SSH_PUBKEY}#g" ${CONFTEMPDIR}/sf-lxc.yaml
-    sed -i "s#EDEPLOY_ROLES#${EDEPLOY_ROLES}#g" ${CONFTEMPDIR}/sf-lxc.yaml
+    sed -i "s#ROLES_DIR#${ROLES_DIR}#g" ${CONFTEMPDIR}/sf-lxc.yaml
     # Complete jenkins slave cloudinit 
     sed -i "s/JENKINS_MASTER_URL/${JENKINS_MASTER_URL}/g" ${CONFTEMPDIR}/slave.cloudinit
     sed -i "s/JENKINS_USER_PASSWORD/${JENKINS_USER_PASSWORD}/g" ${CONFTEMPDIR}/slave.cloudinit
@@ -74,8 +71,9 @@ if [ -z "$1" ] || [ "$1" == "start" ]; then
     sed -i "s/JENKINS_USER_PASSWORD/${JENKINS_USER_PASSWORD}/" ${CONFTEMPDIR}/puppetmaster.cloudinit
     sed -i "s/MY_PRIV_IP=.*/MY_PRIV_IP=$ip/" ${CONFTEMPDIR}/puppetmaster.cloudinit
     # Fix jenkins for lxc
-    sudo sed -i 's/^#*JAVA_ARGS.*/JAVA_ARGS="-Djava.awt.headless=true -Xmx256m"/g' \
-        ${EDEPLOY_ROLES}/install/${DVER}-${PVER}.${REL}/softwarefactory/etc/default/jenkins
+    # TODO: migrate this change
+    #sudo sed -i 's/^#*JAVA_ARGS.*/JAVA_ARGS="-Djava.awt.headless=true -Xmx256m"/g' \
+    #    ${ROLES_DIR}/softwarefactory/etc/default/jenkins
     echo "Now running edeploy-lxc"
     sudo ${EDEPLOY_LXC} --config ${CONFTEMPDIR}/sf-lxc.yaml stop > /dev/null || exit -1
 

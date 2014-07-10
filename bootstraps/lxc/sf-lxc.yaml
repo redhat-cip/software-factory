@@ -5,7 +5,7 @@ network:
 general:
     ssh_key: SSH_PUBKEY
 edeploy:
-    dir: EDEPLOY_ROLES/install/VERS
+    dir: ROLES_DIR
 hosts:
   -
     address: 192.168.134.49
