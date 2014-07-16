@@ -1,12 +1,9 @@
-<VirtualHost *:80>
-    ServerName <%= scope.function_hiera(["auth_url"]) %>
-    WSGIDaemonProcess cauth user=www-data group=www-data python-path=/var/www/cauth/
-    WSGIScriptAlias / /var/www/cauth/app.wsgi
+WSGIScriptAlias /auth /var/www/cauth/app.wsgi
+WSGIDaemonProcess cauth user=www-data group=www-data python-path=/var/www/cauth/
+<Location /auth>
     WSGIPassAuthorization On
-    <Directory /var/www/cauth/>
-        WSGIProcessGroup cauth
-        WSGIApplicationGroup %{GLOBAL}
-        Order deny,allow
-        Allow from all
-    </Directory>
-</VirtualHost>
+    WSGIProcessGroup cauth
+    WSGIApplicationGroup %{GLOBAL}
+    Order deny,allow
+    Allow from all
+</Location>

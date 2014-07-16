@@ -3,20 +3,20 @@
         ProxyVia On
         ProxyRequests Off
 
-        ProxyPass /auth/ http://<%= scope.function_hiera(["auth_url"]) %>:80/auth/ nocanon retry=0
+        ProxyPass /auth/ http://<%= scope.function_hiera(["auth_url"]) %>/auth/ nocanon retry=0
         ProxyPassReverse /auth/ http://<%= scope.function_hiera(["auth_url"]) %>/auth/
 
-        ProxyPass /manage/ http://<%= scope.function_hiera(["managesf_url"]) %>:80/manage/ nocanon retry=0
+        ProxyPass /manage/ http://<%= scope.function_hiera(["managesf_url"]) %>/manage/ nocanon retry=0
         ProxyPassReverse /manage/ http://<%= scope.function_hiera(["managesf_url"]) %>/manage/
 
-        ProxyPass /r/ http://<%= scope.function_hiera(["gerrit_url"]) %>:80/r/ nocanon retry=0
+        ProxyPass /r/ http://<%= scope.function_hiera(["gerrit_url"]) %>/r/ nocanon retry=0
         ProxyPassReverse /r/ http://<%= scope.function_hiera(["gerrit_url"]) %>/r/
 
         ProxyPass /jenkins/ http://<%= scope.function_hiera(["jenkins_url"]) %>:8080/jenkins/ nocanon retry=0
         ProxyPassReverse /jenkins/ http://<%= scope.function_hiera(["jenkins_url"]) %>:8080/jenkins/
 
-        ProxyPass /redmine/ http://<%= scope.function_hiera(["redmine_url"]) %>:80/redmine/ nocanon retry=0
-        ProxyPassReverse /redmine/ http://<%= scope.function_hiera(["redmine_url"]) %>:8080/redmine/
+        ProxyPass /redmine/ http://<%= scope.function_hiera(["redmine_url"]) %>/redmine/ nocanon retry=0
+        ProxyPassReverse /redmine/ http://<%= scope.function_hiera(["redmine_url"]) %>/redmine/
 
         ProxyPass /etherpad/ http://127.0.0.1:9001/ retry=0
         ProxyPassReverse /etherpad/ http://127.0.0.1:9001/
@@ -24,6 +24,7 @@
         ProxyPass /paste/ http://127.0.0.1:5000/paste/ retry=0
         ProxyPassReverse /paste/ http://127.0.0.1:5000/paste/
 
+        ProxyPreserveHost On
         AllowEncodedSlashes NoDecode
         <Proxy *>
             Options FollowSymLinks MultiViews

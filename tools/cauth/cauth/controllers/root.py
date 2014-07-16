@@ -164,10 +164,6 @@ class LogoutController(RestController):
         return self.logout_services(['gerrit', 'redmine', 'cauth'])
 
 
-class AuthController(object):
+class RootController(object):
     login = LoginController()
     logout = LogoutController()
-
-
-class RootController(object):
-    auth = AuthController()

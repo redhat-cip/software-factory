@@ -89,7 +89,7 @@ class ManageSfUtils(Tool):
         self.install_dir = "tools/managesf/cli"
         self.base_cmd = "python sf-manage.py --host %s --auth-server " \
             "%s --port %s --auth %%s:%%s " % \
-            (self.host, config.AUTH_HOST, self.port)
+            (self.host, config.GATEWAY_HOST, self.port)
 
     def createProject(self, name, user, options=None):
         passwd = config.USERS[user]['password']

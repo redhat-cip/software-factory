@@ -34,7 +34,7 @@ class TestGerritHooks(Base):
     """
     @classmethod
     def setUpClass(cls):
-        cls.msu = ManageSfUtils(config.MANAGESF_HOST, 80)
+        cls.msu = ManageSfUtils(config.GATEWAY_HOST, 80)
         # TODO(fbo): Sould be fetch from the config
         # Fix it in test_01 too.
         with open(os.environ['SF_ROOT'] + "/build/hiera/redmine.yaml") as f:
