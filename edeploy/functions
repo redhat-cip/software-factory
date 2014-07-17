@@ -15,4 +15,25 @@ function restore_apt_repo {
     echo "deb $repository wheezy-backports main" > $dir/etc/apt/sources.list.d/wheezy-backport.list
 }
 
+function pin_local {
+    local dist=$1
+    local dir=$2
+    local priority=$3
+
+    check_usage $# 3 "pin_repository <dist> <chroot> <priority>"
+
+    if [ ! -z "${priority}" ];then
+        case "$dist" in
+            $supported_debian_dists|$supported_ubuntu_dists)
+                cat >> $dir/etc/apt/preferences <<EOF
+
+Package: *
+Pin: origin ""
+Pin-Priority: $priority
+
+EOF
+        esac
+    fi
+}
+
 . ${ORIG}/functions

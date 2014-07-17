@@ -1,0 +1,6 @@
+Backported version of Redmine (2.5.1-2~bpo70+1) (07/16/20014) is uninstallable due to
+missing deps in backports.
+Have a look to that bug :
+https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=755059
+
+Please remove this change once fixed by upstream.
