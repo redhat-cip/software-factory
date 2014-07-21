@@ -8,7 +8,7 @@ function restore_apt_repo {
     echo "" > $dir/etc/apt/sources.list
     rm $dir/etc/apt/sources.list.d/wheezy-backport.list
     rm $dir/etc/apt/sources.list.d/nonfree.list
-    repository=$(add_main_repository $DIST)
+    repository="http://cdn.debian.net/debian"
     echo "deb http://security.debian.org/ wheezy/updates main" > $dir/etc/apt/sources.list.d/updates.list
     echo "deb $repository wheezy-updates main" >> $dir/etc/apt/sources.list.d/updates.list  
     echo "deb $repository wheezy main" > $dir/etc/apt/sources.list
