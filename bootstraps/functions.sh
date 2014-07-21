@@ -207,10 +207,6 @@ function prepare_etc_puppet {
     openssl rsa -in $keys_dir/privkey.pem -out $keys_dir/pubkey.pem -pubout
 }
 
-function start_puppetmaster_service {
-    /etc/init.d/puppetmaster restart
-}
-
 function run_puppet_agent {
     puppet agent --test --environment sf || true
     /etc/init.d/puppet start

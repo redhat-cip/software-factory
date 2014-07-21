@@ -48,8 +48,6 @@ generate_keys
 generate_hieras
 prepare_etc_puppet
 wait_all_nodes
-# Start the puppet master locally
-start_puppetmaster_service
 # Start a run locally and start the puppet agent service
 run_puppet_agent
 # Start a run on each node and start the puppet agent service
