@@ -91,10 +91,12 @@ function generate_hieras {
     GERRIT_EMAIL_PK=$(generate_random_pswd 32)
     GERRIT_TOKEN_PK=$(generate_random_pswd 32)
     sed -i "s#GERRIT_SERV_PUB_KEY#ssh-rsa ${GERRIT_SERV_PUB}#" ${OUTPUT}/gerrit.yaml
+    sed -i "s#GERRIT_SERV_KEY#${GERRIT_SERV_PUB}#" ${OUTPUT}/gerrit.yaml
     # Gerrit Jenkins pub key
     sed -i "s#JENKINS_PUB_KEY#ssh-rsa ${JENKINS_PUB}#" ${OUTPUT}/gerrit.yaml
     # Gerrit Admin pubkey,mail,login
     sed -i "s#GERRIT_ADMIN_PUB_KEY#ssh-rsa ${GERRIT_ADMIN_PUB_KEY}#" ${OUTPUT}/gerrit.yaml
+    sed -i "s#GERRIT_ADMIN_KEY#${GERRIT_ADMIN_PUB_KEY}#" ${OUTPUT}/gerrit.yaml
     sed -i "s#GERRIT_ADMIN_NAME#${GERRIT_ADMIN}#" ${OUTPUT}/gerrit.yaml
     sed -i "s#GERRIT_ADMIN_PASSWORD#${GERRIT_ADMIN_PASSWORD}#" ${OUTPUT}/gerrit.yaml
     sed -i "s#GERRIT_ADMIN_MAIL#${GERRIT_ADMIN_MAIL}#" ${OUTPUT}/gerrit.yaml

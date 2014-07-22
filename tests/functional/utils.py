@@ -63,7 +63,7 @@ class Tool:
         self.debug = file('/tmp/debug', 'a')
         self.env = os.environ.copy()
 
-    def exe(self, cmd, cwd=None, wait=True):
+    def exe(self, cmd, cwd=None):
         self.debug.write("\n\ncmd = %s\n" % cmd)
         self.debug.flush()
         cmd = shlex.split(cmd)
@@ -74,8 +74,7 @@ class Tool:
             p = subprocess.Popen(cmd, stdout=self.debug,
                                  stderr=subprocess.STDOUT,
                                  env=self.env)
-            if wait:
-                p.wait()
+            p.wait()
         finally:
             os.chdir(ocwd)
         return p
@@ -103,6 +102,26 @@ class ManageSfUtils(Tool):
     def deleteProject(self, name, user):
         passwd = config.USERS[user]['password']
         cmd = self.base_cmd % (user, passwd) + "delete --name %s" % name
+        self.exe(cmd, self.install_dir)
+
+    def replicationModifyConfig(self, user, cmd, section,
+                                setting=None, value=None):
+        passwd = config.USERS[user]['password']
+        cmd = self.base_cmd % (user, passwd) \
+            + " replication_config %s --section %s " % (cmd, section)
+        if setting:
+            cmd = cmd + " " + setting
+        if value:
+            cmd = cmd + " " + value
+        self.exe(cmd, self.install_dir)
+
+    def replicationTrigger(self, user, project=None, url=None):
+        passwd = config.USERS[user]['password']
+        cmd = self.base_cmd % (user, passwd) + " trigger_replication "
+        if project:
+            cmd = cmd + " --project " + project
+        if url:
+            cmd = cmd + " --url " + url
         self.exe(cmd, self.install_dir)
 
 

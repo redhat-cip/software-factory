@@ -25,6 +25,39 @@ import logging
 logger = logging.getLogger(__name__)
 
 
+class ReplicationController(RestController):
+    #'add','rename-section'
+    @expose()
+    def put(self, section=None, setting=None, **kwargs):
+        if section is None or ('value' not in request.json):
+            logger.debug("Invalid input. Section is None")
+            abort(403)
+        value = request.json['value']
+        gerrit.replication_apply_config(section, setting, value)
+        return None
+
+    #'unset', 'replace-all', 'remove-section'
+    @expose()
+    def delete(self, section=None, setting=None, **kwargs):
+        if section is None:
+            logger.debug("Invalid input. Section is None")
+            abort(403)
+        gerrit.replication_apply_config(section, setting)
+        return None
+
+    #'get-all', 'list'
+    @expose('json')
+    def get(self, section=None, setting=None, **kwargs):
+        config = gerrit.replication_get_config(section, setting)
+        return config
+
+    @expose()
+    def post(self, *args, **kwargs):
+        inp = request.json if request.content_length else {}
+        gerrit.replication_trigger(inp)
+        return None
+
+
 class ProjectController(RestController):
     @expose()
     def put(self, name, **kwargs):
@@ -58,3 +91,4 @@ class ProjectController(RestController):
 
 class RootController(object):
     project = ProjectController()
+    replication = ReplicationController()

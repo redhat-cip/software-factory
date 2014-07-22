@@ -23,7 +23,7 @@ version="$3"
 ROLE=mysql
 
 ORIG=$(cd $(dirname $0); pwd)
-PACKAGES="mysql-server puppet automysqlbackup monit postfix"
+PACKAGES="mysql-server puppet automysqlbackup monit postfix git"
 
 . ${ORIG}/functions
 

@@ -36,6 +36,29 @@ class gerrit ($settings = hiera_hash('gerrit', ''),
   }
 
 
+  file { '/home/gerrit/.ssh':
+    ensure  => directory,
+    owner   => 'gerrit',
+    require => [User['gerrit'], Group['gerrit']],
+  }
+  file { '/home/gerrit/.ssh/config':
+    ensure  => present,
+    content => template('gerrit/ssh_config.erb'),
+    mode    => '0644',
+    owner  => 'gerrit',
+    group  => 'gerrit',
+    require => File['/home/gerrit/.ssh'],
+  }
+#managesf uses gerrit_admin_key to ssh to gerrit
+# and update replication.config
+  ssh_authorized_key { 'gerrit_admin_user':
+    user => 'gerrit',
+    type => 'rsa',
+    key  => $settings['gerrit_admin_key'],
+    require => File['/home/gerrit/.ssh'],
+  }
+
+
   # Here we build the basic directory tree for Gerrit
   file { '/home/gerrit/site_path':
     ensure  => directory,
@@ -452,6 +475,14 @@ class gerrit ($settings = hiera_hash('gerrit', ''),
     source  => 'puppet:///modules/gerrit/monit-fs',
     require => [Package['monit'], Exec['mount_git'], File['/etc/monit/conf.d']],
     notify  => Service['monit'],
+  }
+#Create an empty file, later this file is configured with init-config-repo
+  file { '/home/gerrit/site_path/etc/replication.config':
+    ensure  => present,
+    owner   => 'gerrit',
+    group   => 'gerrit',
+    mode    => '0644',
+    require => File['/home/gerrit/site_path/etc'],
   }
 
 }

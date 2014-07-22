@@ -19,6 +19,7 @@ from pecan import request
 from gerritlib import gerrit
 from managesf.controllers.utils import send_request, \
     template, admin_auth_cookie
+from subprocess import Popen, PIPE
 
 import json
 import os
@@ -37,6 +38,19 @@ def gerrit_json_resp(resp):
         abort(500)
 
     return json.loads(resp.text[4:])
+
+
+def get_projects_by_user():
+    projects = get_projects()
+    if user_is_administrator():
+        logger.debug(" Projects owned by user - " + " , ".join(projects))
+        return projects
+    names = []
+    for project in projects:
+        if user_owns_project(project):
+            names.append(projects)
+    logger.debug("projects owned by user - " + " , ".join(names))
+    return names
 
 
 def get_group_id(grp_name):
@@ -105,6 +119,22 @@ def _delete_project(prj_name):
                  data=data,
                  headers={'Content-type': 'application/json'},
                  cookies=admin_auth_cookie())
+
+
+def get_projects():
+    logger.debug(' [gerrit] fetching projects that this user belongs to')
+    url = "http://%(gerrit_host)s/r/a/projects/?" % \
+          {'gerrit_host': conf.gerrit['host']}
+
+    resp = send_request(url, [200], method='GET')
+
+    js = gerrit_json_resp(resp)
+
+    projects = []
+    for k in js:
+        projects.append(k)
+
+    return projects
 
 
 def get_groups():
@@ -284,6 +314,16 @@ class CustomGerritClient(gerrit.Gerrit):
               'where name=\"%s\"' % (name)
         out, err = self._ssh(cmd)
 
+    def reload_replication_plugin(self):
+        cmd = 'gerrit plugin reload replication'
+        out, err = self._ssh(cmd)
+
+    def trigger_replication(self, cmd):
+        print "[gerrit] Triggering Replication"
+        out, err = self._ssh(cmd)
+        if err:
+            logger.debug("Replication Trigger error - %s" % err)
+
 
 def init_git_repo(prj_name, prj_desc, upstream, private):
     grps = {}
@@ -381,3 +421,161 @@ def delete_project(name):
     except Exception:
         pass
     _delete_project(name)
+
+
+def replication_ssh_run_cmd(subcmd):
+    host = '%s@%s' % (conf.gerrit['user'], conf.gerrit['host'])
+    sshcmd = ['ssh', '-o', 'LogLevel=ERROR', '-o', 'StrictHostKeyChecking=no',
+              '-o', 'UserKnownHostsFile=/dev/null', '-i',
+              conf.gerrit['sshkey_priv_path'], host]
+    cmd = sshcmd + subcmd
+
+    p1 = Popen(cmd, stdout=PIPE)
+    return p1.communicate()
+
+
+def replication_read_config():
+    lines = []
+    cmd = ['git', 'config', '-f', conf.gerrit['replication_config_path'], '-l']
+    out, err = replication_ssh_run_cmd(cmd)
+    if err:
+        logger.debug(" reading config file err %s " % err)
+        abort(500)
+    elif out:
+        logger.debug(" Contents of replication config file ... \n%s " % out)
+        out = out.strip()
+        lines = out.split("\n")
+    config = {}
+    for line in lines:
+        setting, value = line.split("=")
+        section = setting.split(".")[1]
+        setting = setting.split(".")[2]
+        if setting == 'projects':
+            if (len(value.split()) != 1):
+                logger.debug("Invalid Replication config file.")
+                abort(500)
+            elif section in config and 'projects' in config[section]:
+                logger.debug("Invalid Replication config file.")
+                abort(500)
+        if section not in config.keys():
+            config[section] = {}
+        config[section].setdefault(setting, []).append(value)
+    logger.debug("Contents of the config file - " + str(config))
+    return config
+
+
+def replication_validate(projects, config, section=None, setting=None):
+    settings = ['push', 'projects', 'url', 'receivepack', 'uploadpack',
+                'timeout', 'replicationDelay', 'threads']
+    if setting and (setting not in settings):
+        logger.debug("Setting %s is not supported." % setting)
+        logger.debug("Supported settings - " + " , ".join(settings))
+        abort(400)
+    if len(projects) == 0:
+        logger.debug("User doesn't own any project.")
+        abort(403)
+    if section and (section in config):
+        for project in config[section]['projects']:
+            if project not in projects:
+                logger.debug("User unauthorized for this section %s" % section)
+                abort(403)
+
+
+def replication_apply_config(section, setting=None, value=None):
+    projects = get_projects_by_user()
+    config = replication_read_config()
+    replication_validate(projects, config, section, setting)
+    gitcmd = ['git', 'config', '-f', conf.gerrit['replication_config_path']]
+    _section = 'remote.' + section
+    if value:
+        if setting:
+            if setting == 'url' and ('$' in value):
+                #To allow $ in url
+                value = "\$".join(value.rsplit("$", 1))
+            if setting == 'projects' and (section in config):
+                logger.debug("Project already exist.")
+                abort(400)
+            cmd = ['--add', '%s.%s' % (_section, setting), value]
+        else:
+            cmd = ['--rename-section', _section, 'remote.%s' % value]
+    elif setting:
+        cmd = ['--unset-all', '%s.%s' % (_section, setting)]
+    else:
+        cmd = ['--remove-section', _section]
+    str_cmd = " ".join(cmd)
+    logger.debug(" Requested command is ... \n%s " % str_cmd)
+    cmd = gitcmd + cmd
+    out, err = replication_ssh_run_cmd(cmd)
+    if err:
+        logger.debug(" apply_config err %s " % err)
+        return err
+    else:
+        logger.debug(" Reload the replication plugin to pick up"
+                     " the new configuration")
+        gerrit_client = CustomGerritClient(
+            conf.gerrit['host'],
+            conf.admin['name'],
+            keyfile=conf.gerrit['sshkey_priv_path'])
+        gerrit_client.reload_replication_plugin()
+
+
+def replication_get_config(section=None, setting=None):
+    projects = get_projects_by_user()
+    config = replication_read_config()
+    replication_validate(projects, config, section, setting)
+    userConfig = {}
+    # Return setting
+    if setting:
+        logger.debug("User GET request: %s %s" % (section, setting))
+        if (section in config) and (setting in config[section]):
+            userConfig[setting] = config[section][setting]
+    else:
+        # Return the authorized sections for the user
+        logger.debug("User GET request for all sections")
+        for _section in config:
+            for project in config[_section]['projects']:
+                if project in projects:
+                    userConfig[_section] = config[_section]
+                    break
+    logger.debug("Config for user: %s" % str(userConfig))
+    return userConfig
+
+
+def replication_trigger(json):
+    logger.debug("replication_trigger %s" % str(json))
+    wait = True if 'wait' not in json else json['wait'] in ['True', 'true', 1]
+    url = None if 'url' not in json else json['url']
+    project = None if 'project' not in json else json['project']
+    cmd = " replication start"
+    projects = get_projects_by_user()
+    config = replication_read_config()
+    find_section = None
+    for section in config:
+        if url and 'url' in config[section]:
+            if url in config[section]['url']:
+                find_section = section
+                cmd = cmd + " --url %s" % url
+                break
+        elif project and 'projects' in config[section]:
+            if project in config[section]['projects']:
+                find_section = section
+                cmd = cmd + " %s" % project
+                break
+    if find_section:
+        replication_validate(projects, config, find_section)
+    elif wait:
+        cmd = cmd + " --wait"
+    elif user_is_administrator():
+        cmd = cmd + " --all"
+    else:
+        logger.debug("Trigger replication for all projects owned by user")
+        if len(projects) == 0:
+            logger.debug("User doesn't own any projects, "
+                         "so unauthorized to trigger repilication")
+            abort(403)
+        cmd = cmd + "  " + "  ".join(projects)
+    logger.debug("Replication cmd - %s " % cmd)
+    gerrit_client = CustomGerritClient(conf.gerrit['host'],
+                                       conf.admin['name'],
+                                       keyfile=conf.gerrit['sshkey_priv_path'])
+    gerrit_client.trigger_replication(cmd)

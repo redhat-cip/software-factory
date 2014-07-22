@@ -34,14 +34,14 @@ class managesf ($gerrit = hiera_hash('gerrit', ''),
     ensure  => directory,
     owner   => 'www-data',
     group   => 'www-data',
-    mode    => '0750'
+    mode    => '0750',
   }
 
   file { '/var/www/managesf/':
     ensure  => directory,
     owner   => 'www-data',
     group   => 'www-data',
-    mode    => '0640'
+    mode    => '0640',
   }
 
   file { '/var/www/managesf/config.py':

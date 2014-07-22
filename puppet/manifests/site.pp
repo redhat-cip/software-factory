@@ -30,6 +30,7 @@ node /.*gerrit.*/ inherits base {
 
 node /.*mysql.*/ inherits base {
   include mysql
+  include replication
 }
 
 node /.*ldap.*/ inherits base {

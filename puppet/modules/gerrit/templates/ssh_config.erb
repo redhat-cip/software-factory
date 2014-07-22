@@ -1,0 +1,9 @@
+#gerrit uses this configuration to ssh to managesf host
+#during project replication
+Host "<%= scope.function_hiera(["mysql_url"]) %>"
+User gerrit
+PreferredAuthentications publickey
+IdentityFile /home/gerrit/site_path/etc/ssh_host_rsa_key
+StrictHostKeyChecking no
+UserKnownHostsFile /dev/null
+

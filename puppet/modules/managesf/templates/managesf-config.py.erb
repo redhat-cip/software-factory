@@ -58,9 +58,11 @@ admin = {
 }
 
 gerrit = {
+    'user': 'gerrit',
     'host': '<%= scope.function_hiera(["gerrit_url"]) %>',
     'ssh_port': <%= @gerrit['gerrit_sshd_port'] %>,
     'sshkey_priv_path': '/var/www/managesf/gerrit_admin_rsa',
+    'replication_config_path': '/home/gerrit/site_path/etc/replication.config'
 }
 
 redmine = {
