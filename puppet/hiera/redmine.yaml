@@ -8,13 +8,13 @@ redmine:
   ldap_port: 389
   ldap_tls: 0
   ldap_login_attr: cn
-  ldap_username: cn=admin,dc=example,dc=com
-  ldap_password: secret
-  ldap_account_base: ou=Users,dc=example,dc=com
+  ldap_username: "%{hiera('ldap_admin_dn')}"
+  ldap_password: "%{hiera('ldap_admin_pwd')}"
+  ldap_account_base: "%{hiera('ldap_account_base')}"
   ldap_firstname: cn
   ldap_lastname: sn
   ldap_mail: mail
-  redmine_admin_username: REDMINE_ADMIN_NAME
+  redmine_admin_username: "%{hiera('admin_name')}"
 
 redmine_ldap_setting:
   name: plugin_redmine_ldap_sync
@@ -22,7 +22,7 @@ redmine_ldap_setting:
     --- !ruby/hash:ActiveSupport::HashWithIndifferentAccess
     1: !ruby/hash:ActiveSupport::HashWithIndifferentAccess
       active: true
-      groups_base_dn: ou=Groups,dc=example,dc=com
+      groups_base_dn: %{hiera('ldap_group_base')}
       class_user: person
       class_group: groupOfNames
       groupname_pattern: ''

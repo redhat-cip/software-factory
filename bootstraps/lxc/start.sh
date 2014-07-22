@@ -60,6 +60,8 @@ if [ -z "$1" ] || [ "$1" == "start" ]; then
     # Complete all the cloudinit templates
     sed -i "s/SF_SUFFIX/${SF_SUFFIX}/g" ${CONFTEMPDIR}/*.cloudinit
     sed -i "s/SSHPASS/${SSHPASS}/g" ${CONFTEMPDIR}/*.cloudinit
+    sfconfigcontent=`cat ../sfconfig.yaml | base64 -w 0`
+    sed -i "s|SFCONFIGCONTENT|${sfconfigcontent}|" $CONFTEMPDIR/puppetmaster.cloudinit
     for r in ldap mysql redmine gerrit managesf jenkins commonservices; do
         ip=`get_ip $r`
         sed -i "s/${r}_host/$ip/g" ${CONFTEMPDIR}/puppetmaster.cloudinit

@@ -71,19 +71,12 @@ function generate_hieras {
     JENKINS_CREDS_ID=`cat /proc/sys/kernel/random/uuid`
     JENKINS_DEFAULT_SLAVE="slave.${SF_SUFFIX}"
     sed -i "s#JENKINS_CREDS_ID#${JENKINS_CREDS_ID}#" ${OUTPUT}/jenkins.yaml
-    sed -i "s#LDAP_ADMIN_DN#${LDAP_ADMIN_DN}#" ${OUTPUT}/jenkins.yaml
-    # using printf instead of echo along with base64 encoding
-    # as echo was not giving correct values
-    sed -i "s#LDAP_ADMIN_PASSWORD_BASE64#$(printf ${LDAP_ADMIN_PASSWORD} | base64)#" ${OUTPUT}/jenkins.yaml
-    sed -i "s#JENKINS_ADMIN_NAME#${JENKINS_ADMIN}#" ${OUTPUT}/jenkins.yaml
-    sed -i "s#JENKINS_USER_EMAIL#${JENKINS_USER_EMAIL}#" ${OUTPUT}/jenkins.yaml
     sed -i "s#JENKINS_DEFAULT_SLAVE#${JENKINS_DEFAULT_SLAVE}#" ${OUTPUT}/jenkins.yaml
 
     # Redmine part
     REDMINE_API_KEY=$(generate_api_key)
     sed -i "s#REDMINE_API_KEY#${REDMINE_API_KEY}#" ${OUTPUT}/redmine.yaml
     sed -i "s#REDMINE_MYSQL_SECRET#${REDMINE_MYSQL_SECRET}#" ${OUTPUT}/redmine.yaml
-    sed -i "s#REDMINE_ADMIN_NAME#${REDMINE_ADMIN}#" ${OUTPUT}/redmine.yaml
     
     # Gerrit part
     GERRIT_SERV_PUB="$(cat ${OUTPUT}/../data/gerrit_service_rsa.pub | cut -d' ' -f2)"
@@ -94,12 +87,9 @@ function generate_hieras {
     sed -i "s#GERRIT_SERV_KEY#${GERRIT_SERV_PUB}#" ${OUTPUT}/gerrit.yaml
     # Gerrit Jenkins pub key
     sed -i "s#JENKINS_PUB_KEY#ssh-rsa ${JENKINS_PUB}#" ${OUTPUT}/gerrit.yaml
-    # Gerrit Admin pubkey,mail,login
+    # Gerrit Admin pubkey
     sed -i "s#GERRIT_ADMIN_PUB_KEY#ssh-rsa ${GERRIT_ADMIN_PUB_KEY}#" ${OUTPUT}/gerrit.yaml
     sed -i "s#GERRIT_ADMIN_KEY#${GERRIT_ADMIN_PUB_KEY}#" ${OUTPUT}/gerrit.yaml
-    sed -i "s#GERRIT_ADMIN_NAME#${GERRIT_ADMIN}#" ${OUTPUT}/gerrit.yaml
-    sed -i "s#GERRIT_ADMIN_PASSWORD#${GERRIT_ADMIN_PASSWORD}#" ${OUTPUT}/gerrit.yaml
-    sed -i "s#GERRIT_ADMIN_MAIL#${GERRIT_ADMIN_MAIL}#" ${OUTPUT}/gerrit.yaml
     sed -i "s#GERRIT_MYSQL_SECRET#${GERRIT_MYSQL_SECRET}#" ${OUTPUT}/gerrit.yaml
     sed -i "s#GERRIT_EMAIL_PK#${GERRIT_EMAIL_PK}#" ${OUTPUT}/gerrit.yaml
     sed -i "s#GERRIT_TOKEN_PK#${GERRIT_TOKEN_PK}#" ${OUTPUT}/gerrit.yaml
@@ -114,11 +104,6 @@ function generate_hieras {
     LODGEIT_SESSION_KEY=$(generate_random_pswd 10)
     sed -i "s#SESSION_KEY#${LODGEIT_SESSION_KEY}#" ${OUTPUT}/lodgeit.yaml
     sed -i "s#LODGEIT_MYSQL_SECRET#${LODGEIT_MYSQL_SECRET}#" ${OUTPUT}/lodgeit.yaml
-
-    # CAUTH configs
-    sed -i "s#GITHUB_APP_ID#${GITHUB_APP_ID}#" ${OUTPUT}/cauth.yaml
-    sed -i "s#GITHUB_APP_SECRET#${GITHUB_APP_SECRET}#" ${OUTPUT}/cauth.yaml
-    sed -i "s#LDAP_ACCOUNT_BASE#${LDAP_ACCOUNT_BASE}#" ${OUTPUT}/cauth.yaml
 }
 
 function wait_all_nodes {
@@ -191,6 +176,7 @@ function prepare_etc_puppet {
     cp puppet/hiera.yaml /etc/puppet/
     cp build/hiera/* /etc/puppet/hiera/sf
     cp ../hosts.yaml /etc/puppet/hiera/sf
+    cp /root/sfconfig.yaml /etc/puppet/hiera/sf
     cp $DATA/jenkins_rsa /etc/puppet/environments/sf/modules/jenkins/files/
     cp $DATA/jenkins_rsa /etc/puppet/environments/sf/modules/zuul/files/
     cp $DATA/gerrit_admin_rsa /etc/puppet/environments/sf/modules/jenkins/files/

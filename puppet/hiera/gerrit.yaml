@@ -12,11 +12,11 @@ gerrit:
   gerrit_mysql_username: gerrit
   gerrit_mysql_port: 3306
   ldap_uri: "ldap://%{hiera('ldap_url')}"
-  ldap_username: cn=admin,dc=example,dc=com
-  ldap_password: secret
-  ldap_account_base: ou=Users,dc=example,dc=com
+  ldap_username: "%{hiera('ldap_admin_dn')}"
+  ldap_password: "%{hiera('ldap_admin_pwd')}"
+  ldap_account_base: "%{hiera('ldap_account_base')}"
   ldap_account_pattern: (&(objectClass=inetOrgPerson)(cn=${username}))
-  ldap_group_base: ou=Groups,dc=example,dc=com
+  ldap_group_base: "%{hiera('ldap_group_base')}"
   ldap_group_name: cn
   ldap_group_pattern: (&(objectClass=organizationalRole)(cn=${groupname}))
   ldap_group_member_pattern: (|(roleOccupant=${username})(gidNumber=${gidNumber}))
@@ -24,9 +24,9 @@ gerrit:
   ldap_account_ssh_username: cn
   ldap_ssl_verify: true
   http_basic_auth: true
-  gerrit_admin_username: GERRIT_ADMIN_NAME
-  gerrit_admin_password: GERRIT_ADMIN_PASSWORD
-  gerrit_admin_mail: GERRIT_ADMIN_MAIL
+  gerrit_admin_username: "%{hiera('admin_name')}"
+  gerrit_admin_password: "%{hiera('admin_password')}"
+  gerrit_admin_mail: "%{hiera('admin_mail')}"
   gerrit_admin_sshkey: GERRIT_ADMIN_PUB_KEY
   gerrit_admin_key: GERRIT_ADMIN_KEY
   gerrit_jenkins_sshkey: JENKINS_PUB_KEY
