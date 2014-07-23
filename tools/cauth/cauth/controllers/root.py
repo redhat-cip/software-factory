@@ -8,6 +8,7 @@ import urllib
 import ldap
 import requests as http
 from cauth.model import db
+from cauth.controllers import userdetails
 
 LOGOUT_MSG = "You have been successfully logged " \
              "out of all the Software factory services."
@@ -110,6 +111,12 @@ class LoginController(RestController):
                 return render(
                     'login.html',
                     dict(back=back, message='Authorization failed.'))
+            redmine_api_url = conf.redmine['apihost']
+            redmine_api_key = conf.redmine['apikey']
+            udc = userdetails.UserDetailsCreator(redmine_api_url,
+                                                 redmine_api_key)
+            udc.create_user(username, '%s@example.net' % username,
+                            'User %s' % username)
             setup_response(username, back)
         else:
             return render(

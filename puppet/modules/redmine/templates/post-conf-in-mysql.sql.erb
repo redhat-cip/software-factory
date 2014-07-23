@@ -1,15 +1,3 @@
-SET @ldap_addr="<%= @settings['ldap_address'] %>";
-SET @ldap_port="<%= @settings['ldap_port'] %>";
-SET @ldap_tls="<%= @settings['ldap_tls'] %>";
-SET @ldap_account_base="<%= @settings['ldap_account_base'] %>";
-SET @ldap_login_attr="<%= @settings['ldap_login_attr'] %>";
-SET @ldap_username="<%= @settings['ldap_username'] %>";
-SET @ldap_password="<%= @settings['ldap_password'] %>";
-SET @ldap_firstname="<%= @settings['ldap_firstname'] %>";
-SET @ldap_lastname="<%= @settings['ldap_lastname'] %>";
-SET @ldap_mail="<%= @settings['ldap_mail'] %>";
-SET @ldap_sync_plugin_name="<%= @ldap_sync_settings['name'] %>";
-SET @ldap_sync_plugin_value="<%= @ldap_sync_settings['value'] %>";
 SET @http_auth_config_name="plugin_redmine_http_auth";
 SET @http_auth_config_value="--- !ruby/hash:ActiveSupport::HashWithIndifferentAccess
   enable: 'true'
@@ -17,10 +5,15 @@ SET @http_auth_config_value="--- !ruby/hash:ActiveSupport::HashWithIndifferentAc
   lookup_mode: login
   auto_registration: 'true'
 ";
+SET @api_key="<%= @settings['issues_tracker_api_key'] %>";
+SET @username="<%= @settings['redmine_admin_username'] %>";
+SET @email="<%= @settings['redmine_admin_mail'] %>";
 
 INSERT INTO settings (name, value, updated_on) VALUES ('rest_api_enabled','1', CURRENT_TIMESTAMP());
-INSERT INTO settings (name, value, updated_on) VALUES (@ldap_sync_plugin_name, @ldap_sync_plugin_value, CURRENT_TIMESTAMP());
 INSERT INTO settings (name, value, updated_on) VALUES (@http_auth_config_name, @http_auth_config_value, CURRENT_TIMESTAMP());
 
-INSERT INTO auth_sources (TYPE, NAME, HOST, PORT, BASE_DN, ATTR_LOGIN, ATTR_FIRSTNAME, ATTR_LASTNAME, ATTR_MAIL, ONTHEFLY_REGISTER, ACCOUNT, ACCOUNT_PASSWORD, TLS) VALUES ('AuthSourceLdap', 'LDAP Auth', @ldap_addr, @ldap_port, @ldap_account_base, @ldap_login_attr, @ldap_firstname, @ldap_lastname, @ldap_mail, '1', @ldap_username, @ldap_password, @ldap_tls);
-
+INSERT INTO users VALUES (3, @username, '', @username, 'Redmine Admin', @email, 1, 1, NULL, 'en', NULL, NULL, NULL, 'User', NULL, 'all', '', 0);
+DELETE FROM users WHERE id=1; # Autocreated Admin user
+DELETE FROM users WHERE id=2; # Autocreated Anonymous user
+SELECT id INTO @user_id FROM users WHERE login=@username;
+INSERT INTO tokens (user_id, action, value, created_on) VALUES(@user_id, 'api', @api_key, CURRENT_TIMESTAMP());

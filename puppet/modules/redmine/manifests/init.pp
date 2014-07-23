@@ -14,7 +14,6 @@
 # under the License.
 
 class redmine ($settings = hiera_hash('redmine', ''),
-               $ldap_sync_settings = hiera_hash('redmine_ldap_setting', ''),
                $cauth = hiera_hash('cauth', '')) {
 
     $mysql_url = $settings['redmine_mysql_db_address']
@@ -45,9 +44,7 @@ class redmine ($settings = hiera_hash('redmine', ''),
         require    => [Package['apache2'], Package['libapache2-mod-passenger']],
         subscribe  => [Exec['enable_redmine_site'],
                        Exec['redmine_backlog_install'],
-                       File['/usr/share/redmine/public/plugin_assets'],
-                       Exec['plugin_install'],
-                       File['/usr/share/redmine/public/plugin_assets/redmine_ldap_sync']]
+                       Exec['plugin_install']]
     }
 
     file {'/etc/redmine/default/database.yml':
@@ -125,69 +122,33 @@ class redmine ($settings = hiera_hash('redmine', ''),
         require     => [Exec['default_data']],
     }
 
-  file { '/etc/monit/conf.d/redmine':
-    ensure  => present,
-    content => template('redmine/monit.erb'),
-    require => [Package['monit'], File['/etc/monit/conf.d']],
-    notify  => Service['monit'],
-  }
+    file { '/etc/monit/conf.d/redmine':
+      ensure  => present,
+      content => template('redmine/monit.erb'),
+      require => [Package['monit'], File['/etc/monit/conf.d']],
+      notify  => Service['monit'],
+    }
 
-  file { '/usr/share/redmine/public/plugin_assets':
-    ensure  => directory,
-    require => [Package['redmine'], Exec['post-conf-in-mysql']],
-  }
+    exec {'plugin_install':
+      environment => ['RAILS_ENV=production', 'REDMINE_LANG=en'],
+      command     => 'rake redmine:plugins:migrate',
+      cwd         => '/usr/share/redmine',
+      path        => ['/bin', '/usr/bin'],
+      require     => Exec['post-conf-in-mysql'],
+    }
 
-  file { '/usr/share/redmine/public/plugin_assets/redmine_ldap_sync':
-    ensure  => link,
-    target  => '/usr/share/redmine/plugins/redmine_ldap_sync/assets',
-    require => File['/usr/share/redmine/public/plugin_assets'],
-  }
+    exec {'redmine_backlog_install':
+      command     =>  'rake redmine:backlogs:install RAILS_ENV=production',
+      cwd         =>  '/usr/share/redmine/plugins/redmine_backlogs',
+      path        =>  ['/bin', '/usr/bin'],
+      environment =>  ["story_trackers=Bug", "task_tracker=Task"],
+      require     =>  Exec['create_db'],
+    }
 
-  exec {'plugin_install':
-    environment => ['RAILS_ENV=production', 'REDMINE_LANG=en'],
-    command     => 'rake redmine:plugins:migrate',
-    cwd         => '/usr/share/redmine',
-    path        => ['/bin', '/usr/bin'],
-    require     => File['/usr/share/redmine/public/plugin_assets/redmine_ldap_sync'],
-  }
-
-  exec {'ldap_sync_users':
-    environment => ['RAILS_ENV=production', 'REDMINE_LANG=en'],
-    command     => 'rake redmine:plugins:ldap_sync:sync_users',
-    cwd         => '/usr/share/redmine',
-    path        => ['/bin', '/usr/bin'],
-    require     => Exec['plugin_install'],
-  }
-
-  exec {'redmine_backlog_install':
-    command     =>  'rake redmine:backlogs:install RAILS_ENV=production',
-    cwd         =>  '/usr/share/redmine/plugins/redmine_backlogs',
-    path        =>  ['/bin', '/usr/bin'],
-    environment =>  ["story_trackers=Bug", "task_tracker=Task"],
-    require     =>  Exec['create_db'],
-  }
-  file { '/root/configure-admin-user.sql':
-    ensure  => present,
-    mode    => '0640',
-    content => template('redmine/configure-admin-user.sql.erb'),
-    replace => true,
-  }
-
-  exec {'configure-admin-user':
-    command     => "mysql -u redmine redmine -p\"${mysql_password}\" -h ${mysql_url} < /root/configure-admin-user.sql",
-    path        => '/usr/bin/:/bin/',
-    cwd         => '/usr/bin',
-    refreshonly => true,
-    require     => Exec['ldap_sync_users'],
-    subscribe   => File['/root/configure-admin-user.sql'],
-  }
-  
-  exec {'enable_redmine_site':
-    command => 'a2ensite redmine',
-    path    => '/usr/sbin/:/usr/bin/:/bin/',
-    require => [File['/etc/apache2/sites-available/redmine'],
-                File['/etc/apache2/mods-available/passenger.conf'],
-                Exec['configure-admin-user']],
-  }
-
+    exec {'enable_redmine_site':
+      command => 'a2ensite redmine',
+      path    => '/usr/sbin/:/usr/bin/:/bin/',
+      require => [File['/etc/apache2/sites-available/redmine'],
+                  File['/etc/apache2/mods-available/passenger.conf']],
+    }
 }

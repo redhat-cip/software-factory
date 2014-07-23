@@ -13,7 +13,8 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-class cauth ($cauth = hiera_hash('cauth', '')) {
+class cauth ($cauth = hiera_hash('cauth', ''),
+             $redmine = hiera_hash('redmine', '')) {
   file { '/var/www/cauth/':
     ensure  => directory,
     owner   => 'www-data',

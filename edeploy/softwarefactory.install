@@ -115,16 +115,12 @@ EOF
     do_chroot $dir ln -s /usr/lib/passenger/agents/ /usr/buildout/agents
     do_chroot $dir ln -s /usr/share/passenger/helper-scripts/ /usr/helper-scripts
 
-    # Install Redmine ldap sync plugin
-    do_chroot $dir mkdir -p /usr/share/redmine/plugins
-    do_chroot $dir git clone git://github.com/thorin/redmine_ldap_sync.git /usr/share/redmine/plugins/redmine_ldap_sync --depth 1
-
     # Install Redmine backlog plugin
     do_chroot $dir mkdir -p /usr/share/redmine/plugins
     do_chroot $dir git clone git://github.com/backlogs/redmine_backlogs.git /usr/share/redmine/plugins/redmine_backlogs --depth 1
     do_chroot $dir bash -c 'cd /usr/share/redmine/plugins/redmine_backlogs && bundle install'
 
-    # Install Redmine backlog plugin
+    # Install Redmine http plugin
     do_chroot $dir git clone git://github.com/kevinfoote/redmine_http_auth.git /usr/share/redmine/plugins/redmine_http_auth --depth 1
 
     #
