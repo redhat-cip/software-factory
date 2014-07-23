@@ -11,18 +11,6 @@ gerrit:
   gerrit_mysql_db: gerrit
   gerrit_mysql_username: gerrit
   gerrit_mysql_port: 3306
-  ldap_uri: "ldap://%{hiera('ldap_url')}"
-  ldap_username: "%{hiera('ldap_admin_dn')}"
-  ldap_password: "%{hiera('ldap_admin_pwd')}"
-  ldap_account_base: "%{hiera('ldap_account_base')}"
-  ldap_account_pattern: (&(objectClass=inetOrgPerson)(cn=${username}))
-  ldap_group_base: "%{hiera('ldap_group_base')}"
-  ldap_group_name: cn
-  ldap_group_pattern: (&(objectClass=organizationalRole)(cn=${groupname}))
-  ldap_group_member_pattern: (|(roleOccupant=${username})(gidNumber=${gidNumber}))
-  ldap_account_email_address: mail
-  ldap_account_ssh_username: cn
-  ldap_ssl_verify: true
   http_basic_auth: true
   gerrit_admin_username: "%{hiera('admin_name')}"
   gerrit_admin_password: "%{hiera('admin_password')}"

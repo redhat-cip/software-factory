@@ -11,19 +11,6 @@
 [auth]
     type = HTTP
     gitBasicAuth = true
-[ldap]
-    server = <%= @settings['ldap_uri'] %>
-    # lookup user that can read the trees
-    username = <%= @settings['ldap_username'] %>
-    accountBase = <%= @settings['ldap_account_base'] %>
-    accountPattern = <%= @settings['ldap_account_pattern'] %>
-    accountEmailAddress = <%= @settings['ldap_account_email_address'] %>
-    accountSshUserName = <%= @settings['ldap_account_ssh_username'] %>
-    groupPattern = <%= @settings['ldap_group_pattern'] %>
-    groupBase = <%= @settings['ldap_group_base'] %>
-    groupName = <%= @settings['ldap_group_name'] %>
-    groupMemberPattern = <%= @settings['ldap_group_member_pattern'] %>
-    sslVerify = <%= @settings['ldap_ssl_verify'] %>
 [container]
     user = gerrit
     javaHome = /usr/lib/jvm/java-7-openjdk-amd64/jre
