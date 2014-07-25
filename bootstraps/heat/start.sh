@@ -2,8 +2,12 @@
 
 set -x
 
+source ../functions.sh
+
 VERS=D7-H.0.9.0
 BUILT_ROLES=/var/lib/sf
+SFCONFIGFILE=../sfconfig.yaml
+DOMAIN=$(cat $SFCONFIGFILE | grep domain | cut -d' ' -f2)
 
 ### Modify here according to your configuration ###
 # The default public key to use
@@ -22,7 +26,7 @@ sg_user_cidr="0.0.0.0/0"
 ###################################################
 
 temp_ssh_pwd="heat"
-jenkins_user_pwd="userpass"
+jenkins_user_pwd=$(generate_random_pswd 8)
 jenkins_master_url="jenkins.$suffix"
 
 params="key_name=$key_name;instance_type=$flavor"
@@ -42,6 +46,8 @@ function get_params {
     params="$params;mysql_image_id=$mysql_image_id"
     slave_image_id=`glance image-show slave | grep "^| id" | awk '{print $4}'`
     params="$params;slave_image_id=$slave_image_id"
+    sfconfigcontent=`cat $SFCONFIGFILE | base64 -w 0`
+    params="$params;sf_config_content=$sfconfigcontent"
 }
 
 function register_images {

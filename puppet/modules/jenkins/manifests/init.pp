@@ -36,14 +36,6 @@ class jenkins ($settings = hiera_hash('jenkins', '')) {
       source  => 'puppet:///modules/jenkins/jenkins_rsa',
       require => File['/var/lib/jenkins/.ssh'],
   }
-  file {'/var/lib/jenkins/credentials.xml':
-    ensure  => file,
-    mode    => '0644',
-    owner   => 'jenkins',
-    group   => 'nogroup',
-    content => template('jenkins/credentials.xml.erb'),
-    require => User['jenkins'],
-  }
   file {'/var/lib/jenkins/jenkins.model.JenkinsLocationConfiguration.xml':
     ensure  => file,
     mode    => '0644',
@@ -107,8 +99,7 @@ class jenkins ($settings = hiera_hash('jenkins', '')) {
     group   => 'jenkins',
     notify  => Service['jenkins'],
     content => template('jenkins/config.xml.erb'),
-    require => [File['/var/lib/jenkins/credentials.xml'],
-                File['/var/lib/jenkins/jenkins.model.JenkinsLocationConfiguration.xml'],
+    require => [File['/var/lib/jenkins/jenkins.model.JenkinsLocationConfiguration.xml'],
                 File['/var/lib/jenkins/hudson.plugins.gearman.GearmanPluginConfig.xml'],
                 File['/var/lib/jenkins/hudson.tasks.Mailer.xml'],
                 File['/var/lib/jenkins/plugins/swarm-1.15.hpi'],

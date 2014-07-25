@@ -56,7 +56,7 @@ write_files:
     cn: jenkins
     objectClass: person
     sn: Jenkins
-    userPassword: userpass
+    userPassword: JENKINS_USER_PASSWORD
     mail: jenkins@example.com
     objectClass: inetOrgPerson
   path: /root/demo_users.ldif

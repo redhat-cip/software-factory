@@ -17,13 +17,17 @@
 set -x
 set -e
 
+source ../functions.sh
+
 DVER=D7
 PVER=H
 REL=${SF_REL:-0.9.0}
 VERS=${DVER}-${PVER}.${REL}
 
-SF_SUFFIX=${SF_SUFFIX:-sf.dom}
-EDEPLOY_ROLES=${EDEPLOY_ROLES:-/var/lib/debootstrap}
+SFCONFIGFILE=../sfconfig.yaml
+DOMAIN=$(cat $SFCONFIGFILE | grep domain | cut -d' ' -f2)
+SF_SUFFIX=${SF_SUFFIX:-$DOMAIN}
+EDEPLOY_ROLES=${EDEPLOY_ROLES:-/var/lib/sf/roles/}
 SSH_PUBKEY=${SSH_PUBKEY:-/home/ubuntu/.ssh/id_rsa.pub}
 export SF_SUFFIX
 
@@ -36,7 +40,7 @@ CONFTEMPDIR=/tmp/lxc-conf
 # Need to be select randomly
 SSHPASS=heat
 JENKINS_MASTER_URL=jenkins.${SF_SUFFIX}
-JENKINS_USER_PASSWORD=userpass
+JENKINS_USER_PASSWORD=$(generate_random_pswd 8)
 
 function get_ip {
     grep -B 1 "name:[ \t]*$1" sf-lxc.yaml | head -1 | awk '{ print $2 }'
@@ -60,14 +64,16 @@ if [ -z "$1" ] || [ "$1" == "start" ]; then
     # Complete all the cloudinit templates
     sed -i "s/SF_SUFFIX/${SF_SUFFIX}/g" ${CONFTEMPDIR}/*.cloudinit
     sed -i "s/SSHPASS/${SSHPASS}/g" ${CONFTEMPDIR}/*.cloudinit
-    sfconfigcontent=`cat ../sfconfig.yaml | base64 -w 0`
+    sfconfigcontent=`cat $SFCONFIGFILE | base64 -w 0`
     sed -i "s|SFCONFIGCONTENT|${sfconfigcontent}|" $CONFTEMPDIR/puppetmaster.cloudinit
     for r in ldap mysql redmine gerrit managesf jenkins commonservices; do
         ip=`get_ip $r`
         sed -i "s/${r}_host/$ip/g" ${CONFTEMPDIR}/puppetmaster.cloudinit
     done
     ip=`get_ip puppetmaster`
+    sed -i "s/JENKINS_USER_PASSWORD/${JENKINS_USER_PASSWORD}/" ${CONFTEMPDIR}/puppetmaster.cloudinit
     sed -i "s/MY_PRIV_IP=.*/MY_PRIV_IP=$ip/" ${CONFTEMPDIR}/puppetmaster.cloudinit
+    sed -i "s/JENKINS_USER_PASSWORD/${JENKINS_USER_PASSWORD}/" ${CONFTEMPDIR}/ldap.cloudinit
     # Fix jenkins for lxc
     sudo sed -i 's/^#*JAVA_ARGS.*/JAVA_ARGS="-Djava.awt.headless=true -Xmx256m"/g' \
         ${EDEPLOY_ROLES}/install/${DVER}-${PVER}.${REL}/softwarefactory/etc/default/jenkins

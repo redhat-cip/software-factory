@@ -23,7 +23,7 @@ function getip_from_yaml {
 
 function generate_random_pswd {
     # The sed character replacement makes the base64-string URL safe; for example required by lodgeit
-    echo `dd if=/dev/urandom bs=1 count=$1 2>/dev/null | base64 -w $1 | head -n1 | sed -e 's#/#_#g;s#\+#-#g'`
+    echo `dd if=/dev/urandom bs=1 count=$1 2>/dev/null | base64 -w $1 | head -n1 | sed -e 's#/#_#g;s#\+#_#g'`
 }
 
 function generate_api_key() {
@@ -64,10 +64,10 @@ function generate_hieras {
     sed -i "s#SERVICE_PUB_KEY#${SERVICE_PUB}#" ${OUTPUT}/ssh.yaml
     
     # Jenkins part
-    JENKINS_CREDS_ID=`cat /proc/sys/kernel/random/uuid`
     JENKINS_DEFAULT_SLAVE="slave.${SF_SUFFIX}"
-    sed -i "s#JENKINS_CREDS_ID#${JENKINS_CREDS_ID}#" ${OUTPUT}/jenkins.yaml
+    JENKINS_USER_PASSWORD="${JUP}"
     sed -i "s#JENKINS_DEFAULT_SLAVE#${JENKINS_DEFAULT_SLAVE}#" ${OUTPUT}/jenkins.yaml
+    sed -i "s#JENKINS_USER_PASSWORD#${JENKINS_USER_PASSWORD}#" ${OUTPUT}/jenkins.yaml
 
     # Redmine part
     REDMINE_API_KEY=$(generate_api_key)

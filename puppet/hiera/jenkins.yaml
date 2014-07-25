@@ -2,15 +2,14 @@ jenkins:
   gerrit_url: "http://%{hiera('gerrit_url')}"
   gerrit_hostname: "%{hiera('gerrit_url')}"
   gerrit_username: jenkins
+  jenkins_username: jenkins
   ldap_uri: "ldap://%{hiera('ldap_url')}"
   ldap_root_dn: "%{hiera('ldap_root_dn')}"
   jenkins_url: "http://%{hiera('jenkins_url')}:8080/jenkins"
-  jenkins_username: jenkins
-  jenkins_password: userpass
-  credential_id: JENKINS_CREDS_ID
+  jenkins_password: JENKINS_USER_PASSWORD
   jenkins_admin_username: "%{hiera('admin_name')}"
-  ldap_userSearchBase: ou=Users
-  ldap_userSearch: cn={0}
+  ldap_userSearchBase: "ou=%{hiera('ldap_account_ou_name')}"
+  ldap_userSearch: "%{hiera('ldap_account_username_attribute')}={0}"
   ldap_managerDN: "%{hiera('ldap_admin_dn')}"
   ldap_managerPassword: "%{hiera('ldap_admin_pwd_b64')}"
   jenkins_user_email: "%{hiera('jenkins_user_email')}"

@@ -53,4 +53,4 @@ runcmd:
     - echo NAMESERVER > /etc/resolv.conf
     - cd /root/puppet-bootstrapper
     - ./config_puppetmaster.sh > /var/log/sf-bootstrap.log 2>&1
-    - HOME=/root/ TEMP_SSH_PWD=SSHPASS SFSUFFIX=SF_SUFFIX ./bootstrap.sh >> /var/log/sf-bootstrap.log 2>&1
+    - HOME=/root/ JUP=JENKINS_USER_PASSWORD TEMP_SSH_PWD=SSHPASS SFSUFFIX=SF_SUFFIX ./bootstrap.sh >> /var/log/sf-bootstrap.log 2>&1

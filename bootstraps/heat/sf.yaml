@@ -18,6 +18,9 @@ parameters:
   jenkins_master_url:
     type: string
     description: url/hostname(without http://) of jenkins master node to which slave connects
+  sf_config_content:
+    type: string
+    description: Base64 yaml configuration file for SoftwareFactory
   temp_ssh_pwd:
     type: string
     description: Used temporary to trigger puppet agents on each node
@@ -301,7 +304,7 @@ resources:
               - tar -xzf /root/puppet-bootstrapper.tar.gz -C /root/
               - cd /root/puppet-bootstrapper
               - ./config_puppetmaster.sh > /var/log/sf-bootstrap.log 2>&1
-              - HOME=/root/ TEMP_SSH_PWD=SSHPASS SFSUFFIX=SF_SUFFIX ./bootstrap.sh >> /var/log/sf-bootstrap.log 2>&1
+              - HOME=/root/ JUP=JENKINS_USER_PASSWORD TEMP_SSH_PWD=SSHPASS SFSUFFIX=SF_SUFFIX ./bootstrap.sh >> /var/log/sf-bootstrap.log 2>&1
           params:
             jenkins_host: { get_attr: [jenkins_instance, first_address] }
             redmine_host: { get_attr: [redmine_instance, first_address] }
@@ -311,7 +314,9 @@ resources:
             ldap_host: { get_attr: [ldap_instance, first_address] }
             mysql_host: { get_attr: [mysql_instance, first_address] }
             SF_SUFFIX: { get_param: suffix }
+            SFCONFIGCONTENT: { get_param: sf_config_content }
             SSHPASS: { get_param: temp_ssh_pwd }
+            JENKINS_USER_PASSWORD: { get_param: jenkins_user_pwd }
 
   jenkins_instance:
     type: OS::Nova::Server
@@ -518,7 +523,7 @@ resources:
                 cn: jenkins
                 objectClass: person
                 sn: Jenkins
-                userPassword: userpass
+                userPassword: JENKINS_USER_PASSWORD
                 mail: jenkins@example.com
                 objectClass: inetOrgPerson
               path: /root/demo_users.ldif
@@ -555,6 +560,7 @@ resources:
           params:
             SF_SUFFIX: { get_param: suffix }
             SSHPASS: { get_param: temp_ssh_pwd }
+            JENKINS_USER_PASSWORD: { get_param: jenkins_user_pwd }
   
   mysql_instance:
     type: OS::Nova::Server
