@@ -139,6 +139,7 @@ function run_tests {
     r=$1
     scan_and_configure_knownhosts
     wait_for_bootstrap_done $r
+    [ "$ERROR_FATAL" != "0" ] && return
     run_serverspec
     [ "$ERROR_RSPEC" != "0" ] && return
     run_functional_tests

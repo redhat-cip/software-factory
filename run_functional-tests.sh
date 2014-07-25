@@ -37,7 +37,7 @@ if [ ! ${SF_SKIP_BOOTSTRAP} ]; then
     cd -
 fi
 
-run_tests 15
+run_tests 25
 get_logs
 
 set +x
