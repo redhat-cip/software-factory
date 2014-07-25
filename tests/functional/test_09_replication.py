@@ -74,7 +74,6 @@ class TestProjectReplication(Base):
 #other review commands in clone method
     def clone(self, uri, target):
         assert uri.startswith('ssh://')
-        print self.mt_tempdir
         cmd = "git clone %s %s" % (uri, target)
         self.mt.exe(cmd, self.mt_tempdir)
         clone = os.path.join(self.mt_tempdir, target)
@@ -140,7 +139,6 @@ class TestProjectReplication(Base):
                 files = [f for f in os.listdir(clone) if not f.startswith('.')]
                 shutil.rmtree(clone)
             if us_files and files:
-                print files
                 break
             elif retries > 30:
                 break
