@@ -1,2 +1,2 @@
 postfix:
-  stmp_relay: mail.example.com
+  stmp_relay: "%{hiera('smtp_relay')}"

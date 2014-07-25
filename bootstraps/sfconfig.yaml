@@ -12,6 +12,8 @@ ldap_admin_pwd_b64: c2VjcmV0
 ldap_account_base: ou=Users,dc=example,dc=com
 ldap_group_base: ou=Groups,dc=example,dc=com
 
+smtp_relay: mail.example.com
+
 github_app_id: b1576649a671b82aaee8
 github_app_secret: 87c8f11b7aef93dcf4e1a06bf35c93e6c61871f4
 
