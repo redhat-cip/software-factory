@@ -5,3 +5,4 @@ cauth:
   github_app_id: "%{hiera('gitub_app_id')}"
   github_app_secret: "%{hiera('gitub_app_secret')}"
   ldap_account_base: "%{hiera('ldap_account_base')}"
+  ldap_account_username_attribute: "%{hiera('ldap_account_username_attribute')}"

@@ -11,6 +11,7 @@ ldap_admin_pwd: secret
 ldap_admin_pwd_b64: c2VjcmV0 
 ldap_account_base: ou=Users,dc=example,dc=com
 ldap_group_base: ou=Groups,dc=example,dc=com
+ldap_account_username_attribute: cn
 
 smtp_relay: mail.example.com
 

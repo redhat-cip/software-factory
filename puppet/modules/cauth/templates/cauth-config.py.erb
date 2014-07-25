@@ -51,7 +51,7 @@ logging = {
 auth = {
     'ldap': {
         'host': 'ldap://%s' % '<%= scope.function_hiera(["ldap_url"]) %>',
-        'dn': 'cn=%(username)s,' + '<%= @cauth['ldap_account_base'] %>',
+        'dn': '<%= @cauth['ldap_account_username_attribute'] %>=%(username)s,' + '<%= @cauth['ldap_account_base'] %>',
     },
     'github': {
         'auth_url':  'https://github.com/login/oauth/authorize',
