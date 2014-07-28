@@ -89,21 +89,7 @@ EOF
     pin_repository $DIST $dir 'http.debian.net' 500 'wheezy-backports' 'wheezy-backports' main
     update_repositories $dir
 
-    # Waiting for the fix of backported version of Redmine (07/16/2014)
-    # https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=755059
-    install_packages $dir dpkg-dev
-    cat > ${dir}/etc/apt/sources.list.d/redmine.list <<EOF
-      deb file:/tmp/redmine ./
-EOF
-    do_chroot $dir mkdir /tmp/redmine
-    cp ../data/redmine/*.deb ${dir}/tmp/redmine
-    do_chroot $dir bash -c "cd /tmp/redmine && dpkg-scanpackages . /dev/null | gzip -9c > Packages.gz"
-    pin_local $DIST $dir "1001"
-    update_repositories $dir
-    ### to here ###
-
     # Redmine
-    #
     do_chroot $dir /usr/share/debconf/fix_db.pl
     do_chroot $dir debconf-set-selections <<< "redmine redmine/instances/default/dbconfig-install boolean false"
     do_chroot $dir debconf-set-selections <<< "redmine redmine/instances/default/internal/skip-preseed boolean true"
