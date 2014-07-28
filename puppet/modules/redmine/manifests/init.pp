@@ -44,7 +44,8 @@ class redmine ($settings = hiera_hash('redmine', ''),
         require    => [Package['apache2'], Package['libapache2-mod-passenger']],
         subscribe  => [Exec['enable_redmine_site'],
                        Exec['redmine_backlog_install'],
-                       Exec['plugin_install']]
+                       Exec['plugin_install'],
+                       Exec['set_url_root']],
     }
 
     file {'/etc/redmine/default/database.yml':
@@ -150,5 +151,11 @@ class redmine ($settings = hiera_hash('redmine', ''),
       path    => '/usr/sbin/:/usr/bin/:/bin/',
       require => [File['/etc/apache2/sites-available/redmine'],
                   File['/etc/apache2/mods-available/passenger.conf']],
+    }
+
+    exec {'set_url_root':
+      command => "sed -i '/^.*::relative_url_root =.*/d' /usr/share/redmine/config/environment.rb && echo 'Redmine::Utils::relative_url_root = \"/redmine\"' >> /usr/share/redmine/config/environment.rb",
+      path    => '/usr/sbin/:/usr/bin/:/bin/',
+      require => Exec['default_data'],
     }
 }
