@@ -25,12 +25,11 @@ sg_admin_cidr="0.0.0.0/0"
 sg_user_cidr="0.0.0.0/0"
 ###################################################
 
-temp_ssh_pwd="heat"
 jenkins_user_pwd=$(generate_random_pswd 8)
 jenkins_master_url="jenkins.$suffix"
 
 params="key_name=$key_name;instance_type=$flavor"
-params="$params;alt_instance_type=$alt_flavor;suffix=$suffix;temp_ssh_pwd=$temp_ssh_pwd"
+params="$params;alt_instance_type=$alt_flavor;suffix=$suffix"
 params="$params;jenkins_user_pwd=$jenkins_user_pwd;jenkins_master_url=$jenkins_master_url"
 params="$params;sg_admin_cidr=$sg_admin_cidr;sg_user_cidr=$sg_user_cidr"
 params="$params;ext_net_uuid=$ext_net_uuid"

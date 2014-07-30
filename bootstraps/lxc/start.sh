@@ -30,7 +30,7 @@ export SF_SUFFIX
 EDEPLOY_LXC=/srv/edeploy-lxc/edeploy-lxc
 CONFTEMPDIR=/tmp/lxc-conf
 # Need to be select randomly
-SSHPASS=heat
+SSHPASS=$(generate_random_pswd 8)
 JENKINS_MASTER_URL=jenkins.${SF_SUFFIX}
 JENKINS_USER_PASSWORD=$(generate_random_pswd 8)
 

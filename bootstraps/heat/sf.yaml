@@ -21,10 +21,6 @@ parameters:
   sf_config_content:
     type: string
     description: Base64 yaml configuration file for SoftwareFactory
-  temp_ssh_pwd:
-    type: string
-    description: Used temporary to trigger puppet agents on each node
-    default: heat
   instance_type:
     type: string
     description: Instance type for sf roles (managesf)
@@ -67,6 +63,10 @@ resources:
       network_id: { get_resource: sf_net }
       cidr: 192.168.0.0/24
       enable_dhcp: true
+
+  ssh_password:
+    type: OS::Heat::RandomString
+    length: 8
 
   router:
     type: OS::Neutron::Router
@@ -284,8 +284,8 @@ resources:
             mysql_host: { get_attr: [mysql_instance, first_address] }
             SF_SUFFIX: { get_param: suffix }
             SFCONFIGCONTENT: { get_param: sf_config_content }
-            SSHPASS: { get_param: temp_ssh_pwd }
             JENKINS_USER_PASSWORD: { get_param: jenkins_user_pwd }
+            SSHPASS: {get_attr: [ssh_password, value]}
 
   jenkins_instance:
     type: OS::Nova::Server
@@ -312,7 +312,7 @@ resources:
               - echo "root:SSHPASS" | chpasswd
           params:
             SF_SUFFIX: { get_param: suffix }
-            SSHPASS: { get_param: temp_ssh_pwd }
+            SSHPASS: {get_attr: [ssh_password, value]}
   
   redmine_instance:
     type: OS::Nova::Server
@@ -339,7 +339,7 @@ resources:
               - echo "root:SSHPASS" | chpasswd
           params:
             SF_SUFFIX: { get_param: suffix }
-            SSHPASS: { get_param: temp_ssh_pwd }
+            SSHPASS: {get_attr: [ssh_password, value]}
   
   gerrit_instance:
     type: OS::Nova::Server
@@ -366,7 +366,7 @@ resources:
               - echo "root:SSHPASS" | chpasswd
           params:
             SF_SUFFIX: { get_param: suffix }
-            SSHPASS: { get_param: temp_ssh_pwd }
+            SSHPASS: {get_attr: [ssh_password, value]}
   
   managesf_instance:
     type: OS::Nova::Server
@@ -393,8 +393,7 @@ resources:
               - echo "root:SSHPASS" | chpasswd
           params:
             SF_SUFFIX: { get_param: suffix }
-            SSHPASS: { get_param: temp_ssh_pwd }
-  
+            SSHPASS: {get_attr: [ssh_password, value]}
   
   mysql_instance:
     type: OS::Nova::Server
@@ -421,7 +420,7 @@ resources:
               - echo "root:SSHPASS" | chpasswd
           params:
             SF_SUFFIX: { get_param: suffix }
-            SSHPASS: { get_param: temp_ssh_pwd }
+            SSHPASS: {get_attr: [ssh_password, value]}
   
   slave_instance:
     type: OS::Nova::Server
