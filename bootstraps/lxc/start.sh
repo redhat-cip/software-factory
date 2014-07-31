@@ -102,6 +102,13 @@ if [ -z "$1" ] || [ "$1" == "start" ]; then
         sudo sh -c "echo 'lxc.mount.entry = /mnt/lxc/jenkins/var/lib/jenkins/jobs/ /var/lib/lxc/jenkins/rootfs/var/lib/jenkins/jobs none bind,create=dir 0 0' >  /var/lib/lxc/jenkins.config"
     fi
 
+    # Let's add a default nameserver
+    nameserver=`grep nameserver /etc/resolv.conf`
+    for f in `ls -1 ${CONFTEMPDIR}/*.cloudinit`; do
+        echo "resolv_conf:" >> $f
+        echo "  nameservers: ['$nameserver']" >> $f
+    done
+
     sudo ${EDEPLOY_LXC} --config ${CONFTEMPDIR}/sf-lxc.yaml start > /dev/null || exit -1
 elif [ "$1" == "stop" ]; then
     [ -f "${CONFTEMPDIR}/sf-lxc.yaml" ] && sudo ${EDEPLOY_LXC} --config ${CONFTEMPDIR}/sf-lxc.yaml stop
