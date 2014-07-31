@@ -30,7 +30,7 @@ update_repositories $dir
 install_packages $dir cpp rake make python-pip sshpass bc gcc python-dev libldap2-dev libsasl2-dev monit postfix
 HOME=/root do_chroot $dir gem install specinfra
 
-cp /tmp/puppet-bootstrapper.tar.gz $dir/root/
+tar -xzf /tmp/puppet-bootstrapper.tar.gz -C $dir/root/
 
 # install requirements for functional tests
 do_chroot $dir pip install nose

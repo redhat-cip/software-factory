@@ -26,11 +26,19 @@ ROLES="$ROLES redmine gerrit managesf"
 ROLES="$ROLES jenkins commonservices"
 
 BUILD=build
-[ -d "$BUILD" ] && rm -Rf $BUILD
 
-generate_keys
-generate_hieras
-prepare_etc_puppet
+if [  -f "${BUILD}/bootstrap.done" ]; then
+    rm ${BUILD}/bootstrap.done
+fi
+# Only create config if not yet done
+if [ ! -e "/etc/puppet/environments/sf" ]; then
+    generate_keys
+    generate_hieras
+    prepare_etc_puppet
+else
+    cp ${BUILD}/data/service_rsa /root/.ssh/id_rsa
+fi
+
 wait_all_nodes
 # Start a run locally and start the puppet agent service
 run_puppet_agent

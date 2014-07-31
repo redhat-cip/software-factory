@@ -50,7 +50,6 @@ runcmd:
     - echo "gerrit_host gerrit.SF_SUFFIX gerrit" >> /etc/hosts
     - echo "managesf_host managesf.SF_SUFFIX auth.SF_SUFFIX managesf" >> /etc/hosts
     - echo "commonservices_host commonservices.SF_SUFFIX commonservices" >> /etc/hosts
-    - tar -xzf /root/puppet-bootstrapper.tar.gz -C /root/
     - cd /root/puppet-bootstrapper
     - ./config_puppetmaster.sh > /var/log/sf-bootstrap.log 2>&1
     - HOME=/root/ TEMP_SSH_PWD=SSHPASS SFSUFFIX=SF_SUFFIX ./bootstrap.sh >> /var/log/sf-bootstrap.log 2>&1

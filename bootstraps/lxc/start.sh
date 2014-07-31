@@ -72,7 +72,37 @@ if [ -z "$1" ] || [ "$1" == "start" ]; then
     sudo sed -i 's/^#*JAVA_ARGS.*/JAVA_ARGS="-Djava.awt.headless=true -Xmx256m"/g' \
         ${EDEPLOY_ROLES}/install/${DVER}-${PVER}.${REL}/softwarefactory/etc/default/jenkins
     echo "Now running edeploy-lxc"
-    sudo ${EDEPLOY_LXC} --config ${CONFTEMPDIR}/sf-lxc.yaml restart > /dev/null || exit -1
+    sudo ${EDEPLOY_LXC} --config ${CONFTEMPDIR}/sf-lxc.yaml stop > /dev/null || exit -1
+
+    if [ -e "/mnt/lxc/ldap/var/lib/ldap/" ]; then
+        sudo sh -c "echo 'lxc.mount.entry = /mnt/lxc/ldap/var/lib/ldap/ /var/lib/lxc/ldap/rootfs/var/lib/ldap none bind,create=dir 0 0' >  /var/lib/lxc/ldap.config"
+    fi
+
+    if [ -e "/mnt/lxc/puppetmaster/etc/puppet/" ]; then
+        sudo sh -c "echo 'lxc.mount.entry =  /mnt/lxc/puppetmaster/etc/puppet/ /var/lib/lxc/puppetmaster/rootfs/etc/puppet none bind,create=dir 0 0' >  /var/lib/lxc/puppetmaster.config"
+    fi
+ 
+    if [ -e "/mnt/lxc/puppetmaster/root/puppet-bootstrapper" ]; then
+        sudo sh -c "echo 'lxc.mount.entry =  /mnt/lxc/puppetmaster/root/puppet-bootstrapper /var/lib/lxc/puppetmaster/rootfs/root/puppet-bootstrapper none bind,create=dir 0 0' >>  /var/lib/lxc/puppetmaster.config"
+    fi
+
+    if [ -e "/mnt/lxc/mysql/mysql/" ]; then
+        sudo sh -c "echo 'lxc.mount.entry = /mnt/lxc/mysql/mysql/ /var/lib/lxc/mysql/rootfs/var/lib/mysql none bind,create=dir 0 0' >  /var/lib/lxc/mysql.config"
+    fi
+
+    if [ -e "/mnt/lxc/gerrit/home/gerrit/site_path/git/" ]; then
+        # Path must exist before mounting, otherwise LXC fails
+        sudo mkdir -p ${EDEPLOY_ROLES}/install/${VERS}/softwarefactory/home/gerrit/site_path/git
+        sudo sh -c "echo 'lxc.mount.entry = /mnt/lxc/gerrit/home/gerrit/site_path/git/ /var/lib/lxc/gerrit/rootfs/home/gerrit/site_path/git none bind,create=dir 0 0' >  /var/lib/lxc/gerrit.config"
+    fi
+
+    if [ -e "/mnt/lxc/jenkins/var/lib/jenkins/jobs/" ]; then
+        # Path must exist before mounting, otherwise LXC fails
+        sudo mkdir -p ${EDEPLOY_ROLES}/install/${VERS}/softwarefactory/var/lib/jenkins/jobs/
+        sudo sh -c "echo 'lxc.mount.entry = /mnt/lxc/jenkins/var/lib/jenkins/jobs/ /var/lib/lxc/jenkins/rootfs/var/lib/jenkins/jobs none bind,create=dir 0 0' >  /var/lib/lxc/jenkins.config"
+    fi
+
+    sudo ${EDEPLOY_LXC} --config ${CONFTEMPDIR}/sf-lxc.yaml start > /dev/null || exit -1
 elif [ "$1" == "stop" ]; then
     [ -f "${CONFTEMPDIR}/sf-lxc.yaml" ] && sudo ${EDEPLOY_LXC} --config ${CONFTEMPDIR}/sf-lxc.yaml stop
 elif [ "$1" == "clean" ]; then
@@ -85,6 +115,19 @@ elif [ "$1" == "clean" ]; then
         sudo lxc-stop --kill --name ${instance} || echo
         sudo lxc-destroy --name ${instance} || echo
     done
+elif [ "$1" == "seed" ]; then
+        sudo mkdir -p /mnt/lxc/ldap/var/lib/ldap/
+        sudo rsync -av /var/lib/lxc/ldap/rootfs/var/lib/ldap/ /mnt/lxc/ldap/var/lib/ldap/
+        sudo mkdir -p /mnt/lxc/puppetmaster/etc/puppet/
+        sudo rsync -av /var/lib/lxc/puppetmaster/rootfs/etc/puppet/ /mnt/lxc/puppetmaster/etc/puppet/
+        sudo mkdir -p /mnt/lxc/puppetmaster/root/puppet-bootstrapper/
+        sudo rsync -av /var/lib/lxc/puppetmaster/rootfs/root/puppet-bootstrapper/ /mnt/lxc/puppetmaster/root/puppet-bootstrapper/
+        sudo mkdir -p /mnt/lxc/mysql/mysql/
+        sudo rsync -av /var/lib/lxc/mysql/rootfs/var/lib/mysql/ /mnt/lxc/mysql/mysql/
+        sudo mkdir -p /mnt/lxc/gerrit/home/gerrit/site_path/git/
+        sudo rsync -av /var/lib/lxc/gerrit/rootfs/home/gerrit/site_path/git/ /mnt/lxc/gerrit/home/gerrit/site_path/git/
+        sudo mkdir -p /mnt/lxc/jenkins/var/lib/jenkins/jobs/
+        sudo rsync -av /var/lib/lxc/jenkins/rootfs/var/lib/jenkins/jobs/ /mnt/lxc/jenkins/var/lib/jenkins/jobs/
 else
     echo "usage: $0 [start|stop|clean]"
 fi
