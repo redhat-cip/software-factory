@@ -32,7 +32,17 @@ def create_ticket(**kwargs):
     return ticket
 
 
+def pre_register_user_on_redmine(username):
+    redmine_api_url = conf.redmine['apihost']
+    redmine_api_key = conf.redmine['apikey']
+    udc = userdetails.UserDetailsCreator(redmine_api_url,
+                                         redmine_api_key)
+    udc.create_user(username, '%s@example.net' % username,
+                    'User %s' % username)
+
+
 def setup_response(username, back):
+    pre_register_user_on_redmine(username)
     ticket = create_ticket(uid=username,
                            validuntil=(time.time() + conf.app.cookie_period))
     enc_ticket = urllib.quote_plus(ticket)
@@ -111,12 +121,6 @@ class LoginController(RestController):
                 return render(
                     'login.html',
                     dict(back=back, message='Authorization failed.'))
-            redmine_api_url = conf.redmine['apihost']
-            redmine_api_key = conf.redmine['apikey']
-            udc = userdetails.UserDetailsCreator(redmine_api_url,
-                                                 redmine_api_key)
-            udc.create_user(username, '%s@example.net' % username,
-                            'User %s' % username)
             setup_response(username, back)
         else:
             return render(
