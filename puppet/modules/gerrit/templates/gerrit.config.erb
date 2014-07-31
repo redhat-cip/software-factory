@@ -1,6 +1,6 @@
 [gerrit]
     basePath = <%= @settings['repo_base_path'] ? @settings['repo_base_path'] : 'git' %>
-    canonicalWebUrl = http://<%= @settings['weburl'] %>
+    canonicalWebUrl = http://<%= @settings['weburl'] %>/r/
     gitHttpUrl =<%= @settings['httpurl'] ? @settings['httpurl'] : '' %>
 [database]
     type = MYSQL
