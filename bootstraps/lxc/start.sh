@@ -104,10 +104,7 @@ if [ -z "$1" ] || [ "$1" == "start" ]; then
 
     # Let's add a default nameserver
     nameserver=`grep nameserver /etc/resolv.conf`
-    for f in `ls -1 ${CONFTEMPDIR}/*.cloudinit`; do
-        echo "resolv_conf:" >> $f
-        echo "  nameservers: ['$nameserver']" >> $f
-    done
+    sed -i -e "s/NAMESERVER/${nameserver}/g" ${CONFTEMPDIR}/*.cloudinit
 
     sudo ${EDEPLOY_LXC} --config ${CONFTEMPDIR}/sf-lxc.yaml start > /dev/null || exit -1
 elif [ "$1" == "stop" ]; then

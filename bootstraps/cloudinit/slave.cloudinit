@@ -20,3 +20,4 @@ runcmd:
  - chown jenkins /var/lib/jenkins /var/lib/jenkins/plugins
  - echo "JENKINS_IP jenkins.SF_SUFFIX jenkins" >> /etc/hosts
  - nohup sudo -u jenkins -i java -jar /var/lib/jenkins/swarm-client-1.15-jar-with-dependencies.jar -master http://JENKINS_MASTER_URL:8080/jenkins/ -username jenkins -password JENKINS_USER_PASSWORD -name slave.SF_SUFFIX > /dev/null 2>&1 & echo $!
+  - echo NAMESERVER > /etc/resolv.conf
