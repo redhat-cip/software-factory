@@ -33,6 +33,7 @@
     <permission>hudson.model.Computer.Disconnect:<%= @settings['jenkins_username'] %></permission>
     <permission>hudson.model.Computer.Disconnect:<%= @settings['jenkins_admin_username'] %></permission>
     <permission>hudson.model.Hudson.Administer:<%= @settings['jenkins_admin_username'] %></permission>
+    <permission>hudson.model.Hudson.Administer:<%= @settings['jenkins_username'] %></permission>
     <permission>hudson.model.Hudson.ConfigureUpdateCenter:<%= @settings['jenkins_username'] %></permission>
     <permission>hudson.model.Hudson.ConfigureUpdateCenter:<%= @settings['jenkins_admin_username'] %></permission>
     <permission>hudson.model.Hudson.Read:anonymous</permission>
@@ -106,7 +107,7 @@
     </hudson.model.AllView>
   </views>
   <primaryView>All</primaryView>
-  <slaveAgentPort>0</slaveAgentPort>
+  <slaveAgentPort>45452</slaveAgentPort>
   <label></label>
   <nodeProperties/>
   <globalNodeProperties/>
