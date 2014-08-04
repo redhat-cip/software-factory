@@ -82,30 +82,42 @@ if [ -z "$1" ] || [ "$1" == "start" ]; then
 
     if [ -e "/mnt/lxc/ldap/var/lib/ldap/" ]; then
         sudo sh -c "echo 'lxc.mount.entry = /mnt/lxc/ldap/var/lib/ldap/ /var/lib/lxc/ldap/rootfs/var/lib/ldap none bind,create=dir 0 0' >  /var/lib/lxc/ldap.config"
+    else
+        rm -f /var/lib/lxc/ldap.config
     fi
 
     if [ -e "/mnt/lxc/puppetmaster/etc/puppet/" ]; then
         sudo sh -c "echo 'lxc.mount.entry =  /mnt/lxc/puppetmaster/etc/puppet/ /var/lib/lxc/puppetmaster/rootfs/etc/puppet none bind,create=dir 0 0' >  /var/lib/lxc/puppetmaster.config"
+    else
+        rm -f /var/lib/lxc/puppetmaster.config
     fi
  
     if [ -e "/mnt/lxc/puppetmaster/root/puppet-bootstrapper" ]; then
         sudo sh -c "echo 'lxc.mount.entry =  /mnt/lxc/puppetmaster/root/puppet-bootstrapper /var/lib/lxc/puppetmaster/rootfs/root/puppet-bootstrapper none bind,create=dir 0 0' >>  /var/lib/lxc/puppetmaster.config"
+    else
+        rm -f /var/lib/lxc/puppetmaster.config
     fi
 
     if [ -e "/mnt/lxc/mysql/mysql/" ]; then
         sudo sh -c "echo 'lxc.mount.entry = /mnt/lxc/mysql/mysql/ /var/lib/lxc/mysql/rootfs/var/lib/mysql none bind,create=dir 0 0' >  /var/lib/lxc/mysql.config"
+    else
+        rm -f /var/lib/lxc/mysql.config
     fi
 
     if [ -e "/mnt/lxc/gerrit/home/gerrit/site_path/git/" ]; then
         # Path must exist before mounting, otherwise LXC fails
         sudo mkdir -p ${EDEPLOY_ROLES}/install/${VERS}/softwarefactory/home/gerrit/site_path/git
         sudo sh -c "echo 'lxc.mount.entry = /mnt/lxc/gerrit/home/gerrit/site_path/git/ /var/lib/lxc/gerrit/rootfs/home/gerrit/site_path/git none bind,create=dir 0 0' >  /var/lib/lxc/gerrit.config"
+    else
+        rm -f /var/lib/lxc/gerrit.config
     fi
 
     if [ -e "/mnt/lxc/jenkins/var/lib/jenkins/jobs/" ]; then
         # Path must exist before mounting, otherwise LXC fails
         sudo mkdir -p ${EDEPLOY_ROLES}/install/${VERS}/softwarefactory/var/lib/jenkins/jobs/
         sudo sh -c "echo 'lxc.mount.entry = /mnt/lxc/jenkins/var/lib/jenkins/jobs/ /var/lib/lxc/jenkins/rootfs/var/lib/jenkins/jobs none bind,create=dir 0 0' >  /var/lib/lxc/jenkins.config"
+    else
+        rm -f /var/lib/lxc/jenkins.config
     fi
 
     # Let's add a default nameserver
