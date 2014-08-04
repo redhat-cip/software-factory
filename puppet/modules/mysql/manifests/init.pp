@@ -14,6 +14,13 @@
 # under the License.
 
 class mysql ($settings = hiera_hash('mysql', '')) {
+    $mysql_root_pwd = $settings['mysql_root_pwd']
+    exec { "set_mysql_root_password":
+        unless  => "mysqladmin -uroot -p$mysql_root_pwd status",
+        path    => "/bin:/usr/bin",
+        command => "mysqladmin -uroot -ptemporarypw password $mysql_root_pwd",
+    }
+
     file { '/etc/monit/conf.d/mysql':
         ensure  => present,
         source  => 'puppet:///modules/mysql/monit',
@@ -22,6 +29,7 @@ class mysql ($settings = hiera_hash('mysql', '')) {
     }
     
     service {'mysql':
+        require    => Exec['set_mysql_root_password'],
         ensure     => running,
         enable     => true,
         hasrestart => true,
@@ -35,7 +43,7 @@ class mysql ($settings = hiera_hash('mysql', '')) {
     }
     
     exec {'create_databases':
-        command     => "mysql -u root -pyour_password < /root/create_databases.sql",
+        command     => "mysql -u root -p$mysql_root_pwd < /root/create_databases.sql",
         path        => '/usr/bin/:/bin/',
         refreshonly => true,
         subscribe   => File['/root/create_databases.sql'],

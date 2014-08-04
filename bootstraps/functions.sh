@@ -46,10 +46,12 @@ function generate_hieras {
     sed -i -e "s/SF_SUFFIX/${SF_SUFFIX}/g" ${OUTPUT}/common.yaml
 
     # MySQL password for services
+    MYSQL_ROOT_SECRET=$(generate_random_pswd 8)
     REDMINE_MYSQL_SECRET=$(generate_random_pswd 8)
     GERRIT_MYSQL_SECRET=$(generate_random_pswd 8)
     ETHERPAD_MYSQL_SECRET=$(generate_random_pswd 8)
     LODGEIT_MYSQL_SECRET=$(generate_random_pswd 8)
+    sed -i "s#MYSQL_ROOT_PWD#${MYSQL_ROOT_SECRET}#" ${OUTPUT}/mysql.yaml
     sed -i "s#REDMINE_SQL_PWD#${REDMINE_MYSQL_SECRET}#" ${OUTPUT}/mysql.yaml
     sed -i "s#GERRIT_SQL_PWD#${GERRIT_MYSQL_SECRET}#" ${OUTPUT}/mysql.yaml
     sed -i "s#ETHERPAD_SQL_PWD#${ETHERPAD_MYSQL_SECRET}#" ${OUTPUT}/mysql.yaml
