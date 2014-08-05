@@ -142,11 +142,7 @@ EOF
     do_chroot $dir bash -c "cd /srv/zuul && pip install APScheduler==2.1.0"
     curl -L --silent http://getbootstrap.com/2.3.2/assets/bootstrap.zip > $dir/srv/zuul/bootstrap.zip
     unzip -q -o $dir/srv/zuul/bootstrap.zip -d $dir/srv/zuul/etc/status/public_html/
-    curl -L --silent https://github.com/teamdf/jquery-visible/archive/1.1.0.zip > $dir/srv/zuul/jquery-visible-1.1.0.zip
-    unzip -q -o $dir/srv/zuul/jquery-visible-1.1.0.zip -d $dir/srv/zuul/etc/status/public_html/
-    cp $dir/srv/zuul/etc/status/public_html/jquery-visible-1.1.0/jquery.visible.min.js $dir/srv/zuul/etc/status/public_html/jquery-visible.min.js
-    rm -R $dir/srv/zuul/etc/status/public_html/jquery-visible-1.1.0/
-    rm -R $dir/srv/zuul/jquery-visible-1.1.0.zip
+    curl http://status.openstack.org/jquery-visibility.min.js -o $dir/srv/zuul/etc/status/public_html/jquery-visibility.min.js
     rm -R $dir/srv/zuul/bootstrap.zip
 
     #
