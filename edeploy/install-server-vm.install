@@ -27,7 +27,7 @@ ORIG=$(cd $(dirname $0); pwd)
 
 restore_apt_repo $dir
 update_repositories $dir
-install_packages $dir cpp rake make python-pip sshpass bc gcc python-dev libldap2-dev libsasl2-dev monit postfix
+install_packages $dir cpp rake make python-pip sshpass bc gcc python-dev libldap2-dev libsasl2-dev monit postfix bup
 HOME=/root do_chroot $dir gem install specinfra
 
 tar -xzf /tmp/puppet-bootstrapper.tar.gz -C $dir/root/

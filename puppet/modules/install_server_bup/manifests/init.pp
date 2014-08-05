@@ -13,23 +13,9 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-class ssh_keys ($keys = hiera_hash("ssh_keys")) {
-
-  file { '/root/.ssh':
-    ensure  => directory,
-    owner   => 'root',
-    group   => 'root',
-    mode    => '0755',
-  }
-
-  create_resources('ssh_authorized_key', $keys)
-
-  file { '/root/.ssh/id_rsa':
-    ensure  => present,
-    owner   => 'root',
-    group   => 'root',
-    mode    => '0600',
-    source => 'puppet:///modules/ssh_keys/service_rsa',
-    require => File['/root/.ssh'],
-  }
-} 
+class install_server_bup {
+    bup::scripts{ 'install_server_bup_scripts':
+      backup_script => 'install_server_bup/backup.sh.erb', 
+      restore_script => 'install_server_bup/restore.sh.erb',
+    }
+}

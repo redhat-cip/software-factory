@@ -50,6 +50,22 @@ auth = {
     'host': '<%= scope.function_hiera(["auth_url"]) %>',
 }
 
+mysql = {
+    'host': '<%= scope.function_hiera(["mysql_url"]) %>',
+}
+jenkins = {
+    'host': '<%= scope.function_hiera(["jenkins_url"]) %>',
+}
+
+managesf = {
+    'host': '<%= scope.function_hiera(["managesf_url"]) %>',
+    'sshkey_priv_path': '/var/www/.ssh/id_rsa',
+}
+
+puppetmaster = {
+    'host': '<%= scope.function_hiera(["puppetmaster_url"]) %>',
+}
+
 admin = {
     'name': '<%= @gerrit['gerrit_admin_username'] %>',
     'email': '<%= @gerrit['gerrit_admin_mail'] %>',

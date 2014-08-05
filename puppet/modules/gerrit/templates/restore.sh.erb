@@ -1,0 +1,2 @@
+#!/bin/sh
+bup join -r root@<%= @settings['gerrit_mysql_address'] %>: gerrit | tar -xPf -

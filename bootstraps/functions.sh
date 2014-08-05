@@ -103,6 +103,7 @@ function generate_hieras {
 }
 
 function wait_all_nodes {
+
     local port=22
     for role in $ROLES; do
         ip=$(getip_from_yaml $role)
@@ -173,12 +174,15 @@ function prepare_etc_puppet {
     cp build/hiera/* /etc/puppet/hiera/sf
     cp ../hosts.yaml /etc/puppet/hiera/sf
     cp /root/sfconfig.yaml /etc/puppet/hiera/sf
+    mkdir -p /etc/puppet/environments/sf/modules/ssh_keys/files/
+    cp $DATA/service_rsa /etc/puppet/environments/sf/modules/ssh_keys/files/
     cp $DATA/jenkins_rsa /etc/puppet/environments/sf/modules/jenkins/files/
     cp $DATA/jenkins_rsa /etc/puppet/environments/sf/modules/zuul/files/
     cp $DATA/gerrit_admin_rsa /etc/puppet/environments/sf/modules/jenkins/files/
     cp $DATA/gerrit_service_rsa /etc/puppet/environments/sf/modules/gerrit/files/
     cp $DATA/gerrit_service_rsa.pub /etc/puppet/environments/sf/modules/gerrit/files/
     cp $DATA/gerrit_admin_rsa /etc/puppet/environments/sf/modules/managesf/files/
+    cp $DATA/service_rsa /etc/puppet/environments/sf/modules/managesf/files/
     cp $DATA/gerrit_admin_rsa /etc/puppet/environments/sf/modules/jjb/files/
     chown -R puppet:puppet /etc/puppet/environments/sf
     chown -R puppet:puppet /etc/puppet/hiera/sf
@@ -202,9 +206,9 @@ function trigger_puppet_apply {
     MROLES=$(echo $ROLES | sed s/puppetmaster//)
     for role in ${MROLES}; do
         echo " [+] ${role}"
-        sshpass -p "$TEMP_SSH_PWD" ssh -p$ssh_port root@${role}.${SF_SUFFIX} sed -i "s/puppetmaster-ip-template/$puppetmaster_ip/" /etc/hosts
+        sshpass -p $TEMP_SSH_PWD ssh -p$ssh_port root@${role}.${SF_SUFFIX} sed -i "s/puppetmaster-ip-template/$puppetmaster_ip/" /etc/hosts
+        sshpass -p $TEMP_SSH_PWD scp $HOME/.ssh/known_hosts root@${role}.${SF_SUFFIX}:/root/.ssh/
         # The Puppet run will deactivate the temporary root password
-        sshpass -p "$TEMP_SSH_PWD" ssh -p$ssh_port root@${role}.${SF_SUFFIX} "puppet agent --test --environment sf || true; /etc/init.d/puppet restart"
+        sshpass -p $TEMP_SSH_PWD ssh -p$ssh_port root@${role}.${SF_SUFFIX} "puppet agent --test --environment sf || true; /etc/init.d/puppet restart"
     done
 }
-

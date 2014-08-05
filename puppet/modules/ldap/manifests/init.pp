@@ -41,4 +41,9 @@ class ldap () {
         notify  => Service['monit'],
     }
 
+  bup::scripts{ 'ldap_scripts':
+    backup_script => 'ldap/backup.sh.erb', 
+    restore_script => 'ldap/restore.sh.erb',
+  }
+
 }

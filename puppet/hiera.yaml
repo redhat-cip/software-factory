@@ -7,6 +7,7 @@
   - edeploy_client
   - postfix
   - "%{::clientcert}"
+  - bup
   - mysql
   - jenkins
   - redmine

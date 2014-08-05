@@ -17,10 +17,10 @@ from pecan import expose
 from pecan import abort
 from pecan.rest import RestController
 from pecan import request, response
-
-from managesf.controllers import gerrit, redmine
-
+from managesf.controllers import gerrit, redmine, backup
 import logging
+import os.path
+
 
 logger = logging.getLogger(__name__)
 
@@ -58,6 +58,30 @@ class ReplicationController(RestController):
         return None
 
 
+class BackupController(RestController):
+    @expose('json')
+    def get(self, *args, **kwargs):
+        filepath = '/tmp/sf_backup.tar.gz'
+        backup.backup_get()
+        if not os.path.isfile(filepath):
+            abort(404)
+        response.body_file = open(filepath, 'rb')
+        return response
+
+    @expose()
+    def post(self, *args, **kwargs):
+        backup.backup_start()
+
+
+class RestoreController(RestController):
+    @expose()
+    def post(self, *args, **kwargs):
+        filepath = '/tmp/sf_backup.tar.gz'
+        with open(filepath, 'wb+') as f:
+            f.write(request.POST['file'].file.read())
+        backup.backup_restore()
+
+
 class ProjectController(RestController):
     @expose()
     def put(self, name, **kwargs):
@@ -92,3 +116,5 @@ class ProjectController(RestController):
 class RootController(object):
     project = ProjectController()
     replication = ReplicationController()
+    backup = BackupController()
+    restore = RestoreController()

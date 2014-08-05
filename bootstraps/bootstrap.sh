@@ -32,10 +32,12 @@ if [  -f "${BUILD}/bootstrap.done" ]; then
 fi
 # Only create config if not yet done
 if [ ! -e "/etc/puppet/environments/sf" ]; then
+    echo "Preparing Puppet master"
     generate_keys
     generate_hieras
     prepare_etc_puppet
 else
+    echo "Preparing Puppet master is skipped"
     cp ${BUILD}/data/service_rsa /root/.ssh/id_rsa
 fi
 

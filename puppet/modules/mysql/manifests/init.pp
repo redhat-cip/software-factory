@@ -15,6 +15,7 @@
 
 class mysql ($settings = hiera_hash('mysql', '')) {
     $mysql_root_pwd = $settings['mysql_root_pwd']
+
     exec { "set_mysql_root_password":
         unless  => "mysqladmin -uroot -p$mysql_root_pwd status",
         path    => "/bin:/usr/bin",
@@ -48,5 +49,10 @@ class mysql ($settings = hiera_hash('mysql', '')) {
         refreshonly => true,
         subscribe   => File['/root/create_databases.sql'],
         require     => [Service['mysql'], File['/root/create_databases.sql']],
+    }
+
+    bup::scripts{ 'mysql_scripts':
+      backup_script => 'mysql/backup.sh.erb', 
+      restore_script => 'mysql/restore.sh.erb',
     }
 }

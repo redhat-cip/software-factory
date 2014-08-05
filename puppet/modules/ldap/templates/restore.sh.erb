@@ -1,0 +1,2 @@
+#!/bin/sh
+bup join -r root@<%= scope.function_hiera(["mysql_url"]) %>: ldap | tar -xPf -

@@ -30,6 +30,22 @@ class managesf ($gerrit = hiera_hash('gerrit', ''),
     require => [Package['apache2'], Package['libapache2-mod-wsgi']],
   }
 
+# managesf can't access keys in /root/.ssh and can only
+# access keys from /var/www/.ssh, so creating keys here
+  file { '/var/www/.ssh':
+    ensure  => directory,
+    owner   => 'www-data',
+    group   => 'www-data',
+    mode    => '0755',
+  }
+  file { '/var/www/.ssh/id_rsa':
+    ensure  => present,
+    owner   => 'www-data',
+    group   => 'www-data',
+    mode    => '0600',
+    source  => 'puppet:///modules/managesf/service_rsa',
+    require => File['/var/www/.ssh'],
+  }
   file { '/var/log/managesf/':
     ensure  => directory,
     owner   => 'www-data',

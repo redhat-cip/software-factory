@@ -16,6 +16,10 @@
 from managesf import templates
 from pecan import abort, request, conf
 from cookielib import CookieJar
+from subprocess import Popen, PIPE
+from pwd import getpwnam
+from grp import getgrnam
+import os
 import requests as http
 import logging
 
@@ -80,3 +84,38 @@ def send_request(url, expect_return,
 
 def template(t):
     return templates.__path__[0] + '/' + t
+
+
+def chown(path, user, group):
+    uid = getpwnam(group).pw_uid
+    gid = getgrnam(user).gr_gid
+    os.chown(path, uid, gid)
+
+
+class RemoteUser(object):
+    def __init__(self, user, host, sshkey_path=None):
+        self.opt = ['-o', 'LogLevel=ERROR', '-o', 'StrictHostKeyChecking=no',
+                    '-o', 'UserKnownHostsFile=/dev/null']
+        if sshkey_path:
+            self.opt = self.opt + ['-i', sshkey_path]
+        self.host = '%s@%s' % (user, host)
+
+    def _exe(self, cmd):
+        logger.debug(cmd)
+        p = Popen(cmd, stdout=PIPE)
+        p.wait()
+        return p.communicate()
+
+    def _ssh(self, cmd):
+        cmd = ['ssh'] + self.opt + [self.host] + cmd.split()
+        return self._exe(cmd)
+
+    def _scpFromRemote(self, src, dest):
+        src = '%s:%s' % (self.host, src)
+        cmd = ['scp'] + self.opt + [src, dest]
+        return self._exe(cmd)
+
+    def _scpToRemote(self, src, dest):
+        dest = '%s:%s' % (self.host, dest)
+        cmd = ['scp'] + self.opt + [src, dest]
+        return self._exe(cmd)

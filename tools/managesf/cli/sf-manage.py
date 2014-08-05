@@ -38,6 +38,12 @@ parser.add_argument('--auth-server', metavar='central-auth-server',
                     help='Hostname of the central auth server')
 
 sp = parser.add_subparsers(dest="command")
+bkpg = sp.add_parser('backup_get')
+bkps = sp.add_parser('backup_start')
+rst = sp.add_parser('restore')
+rst.add_argument('--filename', '-n', nargs='?', metavar='tarball-name',
+                 required=True,
+                 help='Tarball used to restore SF')
 cp = sp.add_parser('create')
 cp.add_argument('--name', '-n', nargs='?', metavar='project-name',
                 required=True)
@@ -136,8 +142,32 @@ def get_cookie():
     return r.cookies['auth_pubtkt']
 
 headers = {'Authorization': 'Basic ' + base64.b64encode(args.auth)}
+chunk_size = 1024
+if args.command == 'backup_get':
+    url = base_url + '/backup'
+    resp = http.get(url, headers=headers,
+                    cookies=dict(auth_pubtkt=get_cookie()))
+    if resp.status_code != 200:
+        print "backup_get failed with status_code " + str(resp.status_code)
+        sys.exit("error")
+    with open('sf_backup.tar.gz', 'wb') as fd:
+        for chunk in resp.iter_content(chunk_size):
+            fd.write(chunk)
+elif args.command == 'backup_start':
+    url = base_url + '/backup'
+    resp = http.post(url, headers=headers,
+                     cookies=dict(auth_pubtkt=get_cookie()))
+elif args.command == 'restore':
+    url = base_url + '/restore'
+    filename = args.filename
+    if not os.path.isfile(filename):
+        print "file %s not exist" % filename
+        sys.exit("error")
+    files = {'file': open(filename, 'rb')}
+    resp = http.post(url, headers=headers, files=files,
+                     cookies=dict(auth_pubtkt=get_cookie()))
+elif args.command == 'delete':
 
-if args.command == 'delete':
     resp = http.delete(url, headers=headers,
                        cookies=dict(auth_pubtkt=get_cookie()))
     print resp.text

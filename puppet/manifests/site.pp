@@ -11,12 +11,17 @@ node base {
 node default inherits base {
 }
 
+node /.*puppetmaster.*/ inherits base {
+  include install_server_bup
+  include bup
+}
 
 node /.*jenkins.*/ inherits base {
   include jenkins
   include jjb
   include zuul
   include cauth_client
+  include bup
 }
 
 node /.*redmine.*/ inherits base {
@@ -27,15 +32,18 @@ node /.*redmine.*/ inherits base {
 node /.*gerrit.*/ inherits base {
   include gerrit
   include cauth_client
+  include bup
 }
 
 node /.*mysql.*/ inherits base {
   include mysql
   include replication
+  include bup
 }
 
 node /.*ldap.*/ inherits base {
   include ldap
+  include bup
 }
 
 node /.*managesf.*/ inherits base {

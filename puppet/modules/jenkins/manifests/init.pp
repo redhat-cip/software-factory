@@ -185,4 +185,9 @@ class jenkins ($settings = hiera_hash('jenkins', '')) {
                 Exec['jenkins_user']],
     notify => Service[apache2],
   }
+
+  bup::scripts{ 'jenkins_scripts':
+    backup_script => 'jenkins/backup.sh.erb', 
+    restore_script => 'jenkins/restore.sh.erb',
+  }
 }

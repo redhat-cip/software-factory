@@ -58,7 +58,7 @@ NODEJS_NPM="https://www.npmjs.org/install.sh"
 #
 # Other
 #
-OTHER_PACKAGES="git puppet vim mysql-client python-pip python-dateutil monit postfix apache2-prefork-dev libapache2-mod-auth-pubtkt socat"
+OTHER_PACKAGES="git puppet vim mysql-client python-pip python-dateutil monit postfix apache2-prefork-dev libapache2-mod-auth-pubtkt socat bup"
 
 #
 # Paste (lodgeit)

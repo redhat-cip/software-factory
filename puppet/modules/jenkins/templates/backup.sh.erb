@@ -1,0 +1,2 @@
+#!/bin/sh
+tar --absolute-names -cf - /var/lib/jenkins/jobs | bup split -r root@<%= scope.function_hiera(["mysql_url"]) %>: -n jenkins

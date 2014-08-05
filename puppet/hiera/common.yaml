@@ -9,6 +9,7 @@ ldap_url: ldap.SF_SUFFIX
 gerrit_url: gerrit.SF_SUFFIX
 managesf_url: managesf.SF_SUFFIX
 auth_url: auth.SF_SUFFIX
+puppetmaster_url: puppetmaster.SF_SUFFIX
 redmine_pub_url: SF_SUFFIX/_redmine/
 jenkins_pub_url: SF_SUFFIX/_jenkins/
 gerrit_pub_url: SF_SUFFIX/_r/
