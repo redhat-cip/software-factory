@@ -42,8 +42,38 @@
             </ul>
         </div>
     </div>
-    <iframe src="/r/" width="100%" name="content"></iframe>
+    <iframe src="$target_url" width="100%" id="content" name="content"></iframe>
     <script src="/jquery.min.js"></script>
     <script src="/bootstrap.min.js"></script>
+    <script type="text/javascript">
+      var tid = setTimeout(updateUrl, 1);
+      function updateUrl() {
+        try {
+          // Get iframe location
+          var curl = document.getElementById("content").contentWindow.location.href;
+          // Prepare new path
+          var nurl = "_".concat(getPath(curl));
+          // Get the main document location
+          var nmurl = getPath(window.location.href);
+          // Only append the path if not already appended
+          if (nmurl != nurl) {
+            history.replaceState(null, null, "/".concat(nurl));
+          };
+        }
+        catch (ex) {
+        }
+        tid = setTimeout(updateUrl, 500);
+      };
+      function getPath(url) {
+        var t = url.split("/")
+        var e = 0;
+        while(e < 3) {
+         t.shift();
+         e++;
+        };
+        var t = t.join('/');
+        return t
+      };
+    </script>
   </body>
 </html>

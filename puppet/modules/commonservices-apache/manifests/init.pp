@@ -28,12 +28,21 @@ class commonservices-apache {
     notify => Service[apache2],
   }
 
-  file {'/var/www/index.html':
+  file {'/var/www/index.py':
+    ensure => file,
+    mode   => '0740',
+    owner  => 'www-data',
+    group  => 'www-data',
+    source  => 'puppet:///modules/commonservices-apache/index.py',
+    notify => Service[apache2],
+  }
+
+  file {'/var/www/index.html.tmpl':
     ensure => file,
     mode   => '0640',
     owner  => 'www-data',
     group  => 'www-data',
-    source  => 'puppet:///modules/commonservices-apache/index.html',
+    source  => 'puppet:///modules/commonservices-apache/index.html.tmpl',
     notify => Service[apache2],
   }
 

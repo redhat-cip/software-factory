@@ -34,17 +34,14 @@
         </Proxy>
     </IfModule>
     
-    DocumentRoot /var/www
-    <Directory />
-        Options FollowSymLinks
-        AllowOverride None
-    </Directory>
-    <Directory /var/www/>
-        Options Indexes FollowSymLinks MultiViews
+    ScriptAliasMatch ^/.*[^(css)|(js)]$ /var/www/index.py
+
+    <Directory /var/www>
+        AddHandler cgi-script .py
+        Options +ExecCGI
         AllowOverride None
         Order allow,deny
         allow from all
     </Directory>
+
 </VirtualHost>
-
-
