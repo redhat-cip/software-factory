@@ -7,6 +7,8 @@ pipelines:
     trigger:
       gerrit:
         - event: patchset-created
+        - event: comment-added
+          comment_filter: retrigger
     start:
       gerrit:
         verified: 0
