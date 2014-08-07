@@ -43,12 +43,6 @@ function generate_hieras {
     
     cp puppet/hiera/* ${OUTPUT}/
 
-    for role in $ROLES; do
-        current_role=`echo "${role}" | sed 's/.*\(gerrit\|redmine\|jenkins\|mysql\|ldap\|managesf\).*/\1/g'`
-        sed -i "s#${current_role}_url:.*#${current_role}_url: ${role}.${SF_SUFFIX}#g" ${OUTPUT}/common.yaml
-    done
-    # We need a second Apache virtual host with a "api-" prefix
-    sed -i "s#api_redmine_url:.*#api_redmine_url: api-redmine.${SF_SUFFIX}#g" ${OUTPUT}/common.yaml
     sed -i -e "s/SF_SUFFIX/${SF_SUFFIX}/g" ${OUTPUT}/common.yaml
 
     # MySQL password for services

@@ -77,6 +77,11 @@ class gerrit ($settings = hiera_hash('gerrit', ''),
     owner   => 'gerrit',
     require => File['/home/gerrit/site_path'],
   }
+  file { '/home/gerrit/site_path/etc/mail':
+    ensure  => directory,
+    owner   => 'gerrit',
+    require => File['/home/gerrit/site_path/etc'],
+  }
   file { '/home/gerrit/site_path/hooks':
     ensure  => directory,
     owner   => 'gerrit',
@@ -215,6 +220,14 @@ class gerrit ($settings = hiera_hash('gerrit', ''),
     group   => 'gerrit',
     mode    => '0444',
     require => File['/home/gerrit/site_path'],
+  }
+  file { '/home/gerrit/site_path/etc/mail/RegisterNewEmail.vm':
+    ensure  => present,
+    owner   => 'gerrit',
+    group   => 'gerrit',
+    mode    => '0640',
+    source  => 'puppet:///modules/gerrit/RegisterNewEmail.vm',
+    require => file['/home/gerrit/site_path/etc/mail'],
   }
 
 

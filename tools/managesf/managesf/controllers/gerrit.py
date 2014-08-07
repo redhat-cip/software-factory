@@ -352,7 +352,7 @@ def init_git_repo(prj_name, prj_desc, upstream, private):
         grepo.push_master_from_git_remote(upstream)
     paths = {}
     paths['.gitreview'] = file(template('gitreview')).read() % \
-        {'gerrit-host': conf.gerrit['host'],
+        {'gerrit-host': conf.gerrit['top_domain'],
          'gerrit-host-port': conf.gerrit['ssh_port'],
          'name': prj_name
          }

@@ -25,17 +25,10 @@
             <ul class="nav navbar-nav">
                 <li><a href="/r/" target="content">Gerrit</a></li>
                 <li><a href="/jenkins/" target="content">Jenkins</a></li>
+                <li><a href="/zuul/" target="content">Zuul</a></li>
                 <li><a href="/redmine/" target="content">Redmine</a></li>
                 <li><a href="/etherpad/" target="content">Etherpad</a></li>
                 <li><a href="/paste/" target="content">Paste</a></li>
-                <li class="dropdown">
-                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">Dashboard <b class="caret"></b></a>
-                    <ul class="dropdown-menu">
-                        <li><a href="#">Action</a></li>
-                        <li><a href="#">Another action</a></li>
-                        <li><a href="#">Something else here</a></li>
-                    </ul>
-                </li>
             </ul>
             <ul class="nav navbar-nav pull-right">
                 <li><a href="/auth/logout/" target="content">Logout</a></li>
@@ -57,7 +50,9 @@
           var nmurl = getPath(window.location.href);
           // Only append the path if not already appended
           if (nmurl != nurl) {
-            history.replaceState(null, null, "/".concat(nurl));
+            // Replace the hash char by a pipe to allow the fragment to be
+            // sent to web server
+            history.replaceState(null, null, "/".concat(nurl).replace('#', '|'));
           };
         }
         catch (ex) {

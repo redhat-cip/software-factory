@@ -58,7 +58,7 @@ NODEJS_NPM="https://www.npmjs.org/install.sh"
 #
 # Other
 #
-OTHER_PACKAGES="git puppet vim mysql-client python-pip python-dateutil monit postfix apache2-prefork-dev libapache2-mod-auth-pubtkt"
+OTHER_PACKAGES="git puppet vim mysql-client python-pip python-dateutil monit postfix apache2-prefork-dev libapache2-mod-auth-pubtkt socat"
 
 #
 # Paste (lodgeit)
@@ -178,6 +178,12 @@ EOF
     # Cauth server
     #
     cp -r ../tools/cauth ${dir}/var/www/cauth
+
+    #
+    # Socat as a service
+    #
+    do_chroot $dir git clone https://github.com/asaif/socat-init.git /root/socat --depth 1
+    do_chroot $dir cp /root/socat/socat /etc/init.d/
 
     ;;
   *)
