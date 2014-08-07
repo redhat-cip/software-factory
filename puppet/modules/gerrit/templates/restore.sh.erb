@@ -1,2 +1,4 @@
 #!/bin/sh
+service gerrit stop
 bup join -r root@<%= @settings['gerrit_mysql_address'] %>: gerrit | tar -xPf -
+service gerrit start

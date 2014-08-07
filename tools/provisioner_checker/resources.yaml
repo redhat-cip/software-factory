@@ -1,0 +1,20 @@
+projects:
+ - name: dummy_project1
+   issues: 2
+   files:
+    - name: file1
+    - name: file2
+   jobnames:
+    - name: job1
+    - name: job2
+ - name: dummy_project2
+   issues: 2
+   files:
+    - name: file3
+    - name: file4
+   jobnames:
+    - name: job3
+    - name: job4
+etherpads:
+ - name: pad1
+ - name: pad2

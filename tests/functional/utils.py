@@ -26,9 +26,26 @@ import random
 import json
 import requests as http
 import config
+import requests
 from requests.auth import HTTPBasicAuth
 from requests.exceptions import HTTPError
 from pygerrit.rest import _decode_response
+
+# Empty job for jenkins
+EMPTY_JOB_XML = """<?xml version='1.0' encoding='UTF-8'?>
+<project>
+  <keepDependencies>false</keepDependencies>
+  <properties/>
+  <scm class='jenkins.scm.NullSCM'/>
+  <canRoam>true</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <triggers class='vector'/>
+  <concurrentBuild>false</concurrentBuild>
+  <builders/>
+  <publishers/>
+  <buildWrappers/>
+</project>"""
 
 
 def create_random_str():
@@ -52,6 +69,15 @@ def copytree(src, dst, symlinks=False, ignore=None):
             shutil.copytree(s, d, symlinks, ignore)
         else:
             shutil.copy2(s, d)
+
+
+def get_cookie(username, password):
+    url = "http://%(auth_url)s/auth/login" % {'auth_url': config.GATEWAY_HOST}
+    resp = requests.post(url, params={'username': username,
+                                      'password': password,
+                                      'back': '/'},
+                         allow_redirects=False)
+    return resp.cookies['auth_pubtkt']
 
 
 class Base(unittest.TestCase):
@@ -85,7 +111,8 @@ class ManageSfUtils(Tool):
         Tool.__init__(self)
         self.host = host
         self.port = port
-        self.install_dir = "tools/managesf/cli"
+        self.install_dir = os.path.join(os.environ['SF_ROOT'],
+                                        "tools/managesf/cli")
         self.base_cmd = "python sf-manage.py --host %s --auth-server " \
             "%s --port %s --auth %%s:%%s " % \
             (self.host, config.GATEWAY_HOST, self.port)
@@ -125,6 +152,39 @@ class ManageSfUtils(Tool):
         self.exe(cmd, self.install_dir)
 
 
+class JenkinsUtils():
+    # TODO: migrate more from existing tests to
+    # that class
+    def __init__(self, username, password):
+        self.username = username
+        self.password = password
+
+    def create_job(self, name):
+        url = "http://%s:%s@%s/jenkins/createItem" % (
+            self.username, self.password,
+            config.JENKINS_HOST)
+        headers = {'content-type': 'text/xml'}
+        resp = http.post(url,
+                         params={'name': name},
+                         data=EMPTY_JOB_XML,
+                         headers=headers)
+        return resp.status_code
+
+    def list_jobs(self):
+        from xml.dom import minidom
+        url = "http://%s:%s@%s/jenkins/api/xml" % (
+            self.username, self.password,
+            config.JENKINS_HOST)
+        resp = http.get(url)
+        if resp.status_code == 200:
+            jobs = []
+            for job in minidom.parseString(resp.text).\
+                    getElementsByTagName('job'):
+                jobs.append(job.firstChild.childNodes[0].data)
+            return jobs
+        return None
+
+
 class GerritGitUtils(Tool):
     def __init__(self, user, priv_key_path, email):
         Tool.__init__(self)
@@ -134,7 +194,7 @@ class GerritGitUtils(Tool):
         self.priv_key_path = priv_key_path
         self.tempdir = tempfile.mkdtemp()
         ssh_wrapper = "ssh -o StrictHostKeyChecking=no -i " \
-                      "%s \"$@\"" % self.priv_key_path
+                      "%s \"$@\"" % os.path.abspath(self.priv_key_path)
         wrapper_path = os.path.join(self.tempdir, 'ssh_wrapper.sh')
         file(wrapper_path, 'w').write(ssh_wrapper)
         os.chmod(wrapper_path, stat.S_IRWXU)
@@ -146,7 +206,7 @@ class GerritGitUtils(Tool):
         self.exe("ssh-agent bash -c 'ssh-add %s; git review -s'" %
                  self.priv_key_path, clone_dir)
 
-    def clone(self, uri, target):
+    def clone(self, uri, target, config_review=True):
         assert uri.startswith('ssh://')
         cmd = "git clone %s %s" % (uri, target)
         self.exe(cmd, self.tempdir)
@@ -154,7 +214,8 @@ class GerritGitUtils(Tool):
         assert os.path.isdir(clone)
         self.exe('git config --add gitreview.username %s' %
                  self.user, clone)
-        self.config_review(clone)
+        if config_review:
+            self.config_review(clone)
         return clone
 
     def fetch_meta_config(self, clone_dir):
@@ -421,6 +482,7 @@ class GerritUtil:
 
 class RedmineUtil:
     def __init__(self, url, username=None, apiKey=None):
+        # TODO(fbo); url is useless here
         self.username = username
         self.api_key = apiKey
         if username:
@@ -460,6 +522,17 @@ class RedmineUtil:
                         cookies=dict(auth_pubtkt=self.cookie))
         if resp.status_code == 200:
             return resp.json()['issue']['status']['id']
+
+        return None
+
+    def listIssues(self, project):
+        url = "%(redmine_server)s/issues.json" % \
+              {"redmine_server": config.REDMINE_SERVER}
+        resp = http.get(url,
+                        params={'project_id': project},
+                        cookies=dict(auth_pubtkt=self.cookie))
+        if resp.status_code == 200:
+            return resp.json()
 
         return None
 

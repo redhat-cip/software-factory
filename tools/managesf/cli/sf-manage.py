@@ -265,3 +265,5 @@ elif args.command == 'create':
     print resp.text
     if resp.status_code >= 200 and resp.status_code < 203:
         print "Success"
+    else:
+        sys.exit(1)

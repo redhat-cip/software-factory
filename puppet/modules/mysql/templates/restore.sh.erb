@@ -1,3 +1,4 @@
 #!/bin/bash
 tar -xzPf /root/sf_backup.tar.gz
 gunzip < /root/alldb.sql.gz | mysql -u root -p<%= @settings['mysql_root_pwd'] %>
+service mysql restart

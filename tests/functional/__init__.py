@@ -2,14 +2,7 @@ import config
 import json
 import requests
 
-
-def get_cookie(username, password):
-    url = "http://%(auth_url)s/auth/login" % {'auth_url': config.GATEWAY_HOST}
-    resp = requests.post(url, params={'username': username,
-                                      'password': password,
-                                      'back': '/'},
-                         allow_redirects=False)
-    return resp.cookies['auth_pubtkt']
+from utils import get_cookie
 
 
 def assign_cookies():

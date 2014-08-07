@@ -1,6 +1,7 @@
 ERROR_FATAL=0
 ERROR_RSPEC=0
 ERROR_TESTS=0
+ERROR_PC=0
 
 export SF_SUFFIX=${SF_SUFFIX:-tests.dom}
 export SKIP_CLEAN_ROLES="y"
@@ -146,6 +147,43 @@ function run_tests {
     [ "$ERROR_TESTS" != "0" ] && return
 }
 
+function run_backup_restore_tests {
+    r=$1
+    type=$2
+    if [ "$type" == "provision" ]; then
+        scan_and_configure_knownhosts
+        wait_for_bootstrap_done $r
+        [ "$ERROR_FATAL" != "0" ] && return
+        # Run server spec to be more confident
+        run_serverspec
+        [ "$ERROR_RSPEC" != "0" ] && return
+        # Start the provisioner
+        ./tests/backup_restore/run_provisioner.sh
+        # Create a backup
+        ./tools/managesf/cli/sf-manage.py --host ${SF_SUFFIX} --auth-server ${SF_SUFFIX} --auth user1:userpass backup_start
+        # Fetch the backup
+        ./tools/managesf/cli/sf-manage.py --host ${SF_SUFFIX} --auth-server ${SF_SUFFIX} --auth user1:userpass backup_get
+        mv sf_backup.tar.gz /tmp
+        # We assume if we cannot move the backup file
+        # we need to stop right now
+        ERROR_PC=$?
+    fi
+    if [ "$type" == "check" ]; then
+        scan_and_configure_knownhosts
+        wait_for_bootstrap_done $r
+        [ "$ERROR_FATAL" != "0" ] && return
+        # Run server spec to be more confident
+        run_serverspec
+        [ "$ERROR_RSPEC" != "0" ] && return
+        # Restore backup
+        ./tools/managesf/cli/sf-manage.py --host ${SF_SUFFIX} --auth-server ${SF_SUFFIX} --auth user1:userpass restore --filename /tmp/sf_backup.tar.gz
+        # Start the checker
+        sleep 60
+        ./tests/backup_restore/run_checker.sh
+        ERROR_PC=$?
+    fi
+}
+
 function clear_mountpoint {
     # Clean mountpoints
     grep '\/var.*proc' /proc/mounts | awk '{ print $2 }' | while read mountpoint; do
@@ -157,3 +195,4 @@ function clear_mountpoint {
         sudo umount ${mountpoint} || echo "umount failed";
     done
 }
+
