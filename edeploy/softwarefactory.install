@@ -20,6 +20,7 @@ version="$3"
 DATA=../data
 ROLE=softwarefactory
 ORIG=$(cd $(dirname $0); pwd)
+NPM_INSTALL=1.4.21
 
 . ${ORIG}/functions
 
@@ -52,7 +53,7 @@ MANAGESF_PACKAGES="apache2 libapache2-mod-wsgi puppet python-dev libldap2-dev li
 #
 ETHERPAD_PACKAGES="nodejs apache2"
 ETHERPAD_LITE="https://codeload.github.com/ether/etherpad-lite/tar.gz/1.4.0"
-NODEJS_NMP="https://www.npmjs.org/install.sh"
+NODEJS_NPM="https://www.npmjs.org/install.sh"
 
 #
 # Other
@@ -113,13 +114,13 @@ EOF
     # Etherpad_lite
     #
     do_chroot $dir curl $ETHERPAD_LITE -o /tmp/etherpad_lite.tar.gz
-    do_chroot $dir curl $NODEJS_NMP -o /tmp/nmp-install.sh
+    do_chroot $dir curl $NODEJS_NPM -o /tmp/npm-install.sh
     # Try to avoid the failure in jenkins
-    do_chroot $dir sed -i "s#</dev/tty##" /tmp/nmp-install.sh
+    do_chroot $dir sed -i "s#</dev/tty##" /tmp/npm-install.sh
     do_chroot $dir tar -xzf /tmp/etherpad_lite.tar.gz -C /var/www/
     # /bin/installDeps.sh is looking for /usr/bin/node
     do_chroot $dir ln -s /usr/bin/nodejs /usr/bin/node
-    do_chroot $dir sh /tmp/nmp-install.sh
+    npm_install=$NPM_INSTALL do_chroot $dir sh /tmp/npm-install.sh
     # Use the European mirror
     do_chroot $dir sed -i "s|npm install|npm --registry http://registry.npmjs.eu/ install|" /var/www/etherpad-lite-1.4.0/bin/installDeps.sh
     do_chroot $dir sh /var/www/etherpad-lite-1.4.0/bin/installDeps.sh
