@@ -14,7 +14,9 @@
 # under the License.
 
 class cauth ($cauth = hiera_hash('cauth', ''),
-             $redmine = hiera_hash('redmine', '')) {
+             $redmine = hiera_hash('redmine', ''),
+             $gerrit = hiera_hash('gerrit', ''),
+             $mysql = hiera_hash('mysql', '')) {
   file { '/var/www/cauth/':
     ensure  => directory,
     owner   => 'www-data',

@@ -6,3 +6,5 @@ cauth:
   github_app_secret: "%{hiera('github_app_secret')}"
   ldap_account_base: "%{hiera('ldap_account_base')}"
   ldap_account_username_attribute: "%{hiera('ldap_account_username_attribute')}"
+  ldap_account_mail_attribute: "%{hiera('ldap_account_mail_attribute')}"
+  ldap_account_surname_attribute: "%{hiera('ldap_account_surname_attribute')}"

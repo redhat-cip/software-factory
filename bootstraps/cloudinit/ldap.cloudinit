@@ -52,6 +52,13 @@ write_files:
     mail: user4@example.com
     objectClass: inetOrgPerson
 
+    dn: cn=user5,ou=Users,dc=example,dc=com
+    cn: user5
+    objectClass: person
+    sn: Demo user5
+    userPassword: userpass
+    mail: user5@SF_SUFFIX
+    objectClass: inetOrgPerson
   path: /root/demo_users.ldif
 - content: |
     dn: ou=Groups,dc=example,dc=com

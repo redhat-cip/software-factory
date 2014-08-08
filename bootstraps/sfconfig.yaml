@@ -4,15 +4,10 @@ admin_name: user1
 admin_mail: user1@example.com
 admin_password: userpass
 
-ldap_admin_dn: cn=admin,dc=example,dc=com
-ldap_root_dn: dc=example,dc=com
 ldap_account_base: ou=Users,dc=example,dc=com
-ldap_group_base: ou=Groups,dc=example,dc=com
-ldap_account_ou_name: Users
 ldap_account_username_attribute: cn
-ldap_admin_pwd: secret
-# echo -n "secret" | base64
-ldap_admin_pwd_b64: c2VjcmV0 
+ldap_account_mail_attribute: mail
+ldap_account_surname_attribute: sn
 
 smtp_relay: mail.example.com
 
