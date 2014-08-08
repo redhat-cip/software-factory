@@ -134,7 +134,7 @@ EOF
 
     # zuul
     do_chroot $dir git clone https://github.com/openstack-infra/zuul /srv/zuul
-    do_chroot $dir bash -c "cd /srv/zuul && git checkout -b working a9702ada76" # latest commit as of 09. May 2014
+    do_chroot $dir bash -c "cd /srv/zuul && git checkout -b working 49850b0d81e1d876d27ad49ab4ef478a8c3551ac" # latest commit as of 08. Aug 2014
     do_chroot $dir bash -c "cd /srv/zuul && python /srv/zuul/setup.py install"
     # 06/19/2014 - The two line below manage to quick fix some dependencies problem with Zuul (Need to be removed later)
     do_chroot $dir bash -c "cd /srv/zuul && pip install -U setuptools"
