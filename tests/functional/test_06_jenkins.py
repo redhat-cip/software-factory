@@ -15,7 +15,9 @@
 # under the License.
 
 import config
-import requests as http
+import os
+import requests
+import yaml
 
 from utils import Base
 
@@ -23,10 +25,21 @@ from utils import Base
 class TestJenkinsBasic(Base):
     """ Functional tests to validate config repo bootstrap
     """
+
+    def setUp(self):
+        """ Tests is executed on puppetmaster, so read config from Hiera file
+        and get credentials for the Jenkins user """
+        fh = open('/etc/puppet/hiera/sf/jenkins.yaml')
+        config = yaml.load(fh)
+        self.jenkins_password = config.get('jenkins').get('jenkins_password')
+        fh.close()
+
     def test_config_jobs_exist(self):
         """ Test if jenkins config-update and config-check are created
         """
-        r = http.get('%s/job/config-check' % config.JENKINS_SERVER)
-        self.assertEquals(r.status_code, 200)
-        r = http.get('%s/job/config-update' % config.JENKINS_SERVER)
-        self.assertEquals(r.status_code, 200)
+        url = '%s/job/config-check' % config.JENKINS_SERVER
+        resp = requests.get(url, auth=('jenkins', self.jenkins_password))
+        self.assertEquals(resp.status_code, 200)
+        url = '%s/job/config-update' % config.JENKINS_SERVER
+        resp = requests.get(url, auth=('jenkins', self.jenkins_password))
+        self.assertEquals(resp.status_code, 200)

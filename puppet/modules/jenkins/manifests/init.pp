@@ -14,6 +14,8 @@
 # under the License.
 
 class jenkins ($settings = hiera_hash('jenkins', '')) {
+  $jenkins_password = $settings['jenkins_password']
+
   user { 'jenkins':
     ensure   => present,
   }
@@ -116,5 +118,71 @@ class jenkins ($settings = hiera_hash('jenkins', '')) {
     content => template('jenkins/monit.erb'),
     require => [Package['monit'], File['/etc/monit/conf.d']],
     notify  => Service['monit'],
+  }
+
+  package { 'apache2':
+    ensure => present,
+  }
+
+  service {'apache2':
+    ensure  => running,
+    require => Package['apache2'],
+  }
+
+  file {'/etc/apache2/sites-available/jenkins':
+    ensure => file,
+    mode   => '0640',
+    owner  => 'www-data',
+    group  => 'www-data',
+    source =>'puppet:///modules/jenkins/jenkins.site',
+  }
+
+  file { '/etc/apache2/sites-enabled/000-default':
+    ensure => absent,
+  }
+
+  file {'/etc/apache2/ports.conf':
+    ensure => file,
+    mode   => '0640',
+    owner  => 'www-data',
+    group  => 'www-data',
+    source =>'puppet:///modules/jenkins/apache-ports.conf',
+  }
+
+  exec {'jenkins_user':
+    command   => "/usr/bin/htpasswd -bc /etc/apache2/htpasswd jenkins $jenkins_password",
+    require   => Package['apache2'],
+    subscribe => Package['apache2'],
+    creates => "/etc/apache2/htpasswd",
+  }
+
+  exec { 'a2enmod_headers':
+    command   => "/usr/sbin/a2enmod headers",
+    require   => Package['apache2'],
+    subscribe => Package['apache2'],
+    refreshonly => true,
+  }
+
+  exec { 'a2enmode_proxy':
+    command   => "/usr/sbin/a2enmod proxy",
+    require   => Package['apache2'],
+    subscribe => Package['apache2'],
+    refreshonly => true,
+  }
+
+  exec { 'a2enmode_proxy_http':
+    command   => "/usr/sbin/a2enmod proxy_http",
+    require   => Package['apache2'],
+    subscribe => Package['apache2'],
+    refreshonly => true,
+  }
+
+  exec {'enable_jenkins_site':
+    command => 'a2ensite jenkins',
+    path    => '/usr/sbin/:/usr/bin/:/bin/',
+    require => [File['/etc/apache2/sites-available/jenkins'],
+                File['/etc/apache2/ports.conf'],
+                Exec['jenkins_user']],
+    notify => Service[apache2],
   }
 }

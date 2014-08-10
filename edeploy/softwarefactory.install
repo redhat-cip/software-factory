@@ -161,6 +161,7 @@ EOF
     cp -Rf $GERRITHOOKS ${dir}/root/gerrit_data_source/
     do_chroot $dir a2enmod proxy_http
     do_chroot $dir a2enmod rewrite
+    do_chroot $dir a2enmod headers
 
     do_chroot $dir sed -i -e 's/START=.*/START=yes/g' /etc/default/puppet
     do_chroot $dir update-rc.d puppet defaults

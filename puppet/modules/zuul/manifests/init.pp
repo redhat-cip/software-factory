@@ -16,15 +16,8 @@
 class zuul ($settings = hiera_hash('jenkins', ''), $gh = hiera('gerrit_url'), $hosts = hiera('hosts')){
   $gfqdn = "$gh"
   $gip = $hosts[$gfqdn]['ip']
-  package { 'apache2':
-    ensure => present,
-  }
   package {'libjs-jquery':
     ensure => present,
-  }
-  service {'apache2':
-    ensure  => running,
-    require => Package['apache2'],
   }
   user { 'zuul':
     ensure     => present,
@@ -198,9 +191,6 @@ class zuul ($settings = hiera_hash('jenkins', ''), $gh = hiera('gerrit_url'), $h
     owner  => 'www-data',
     group  => 'www-data',
     source =>'puppet:///modules/zuul/zuul.site',
-  }
-  file { '/etc/apache2/sites-enabled/000-default':
-    ensure => absent,
   }
   exec {'enable_zuul_site':
     command => 'a2ensite zuul',

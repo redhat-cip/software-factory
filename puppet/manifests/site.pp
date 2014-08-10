@@ -16,6 +16,7 @@ node /.*jenkins.*/ inherits base {
   include jenkins
   include jjb
   include zuul
+  include cauth_client
 }
 
 node /.*redmine.*/ inherits base {

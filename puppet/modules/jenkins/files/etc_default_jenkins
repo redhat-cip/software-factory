@@ -40,7 +40,7 @@ JENKINS_LOG=/var/log/jenkins/$NAME.log
 MAXOPENFILES=8192
 
 # port for HTTP connector (default 8080; disable with -1)
-HTTP_PORT=8080
+HTTP_PORT=8082
 
 # port for AJP connector (disabled by default)
 AJP_PORT=-1
@@ -58,4 +58,4 @@ PREFIX=/jenkins
 # --webroot=~/.jenkins/war
 # --prefix=$PREFIX
 
-JENKINS_ARGS="--webroot=/var/cache/jenkins/war --httpPort=$HTTP_PORT --ajp13Port=$AJP_PORT --prefix=$PREFIX"
+JENKINS_ARGS="--webroot=/var/cache/jenkins/war --httpPort=$HTTP_PORT --ajp13Port=$AJP_PORT --prefix=$PREFIX --httpListenAddress=127.0.0.1"

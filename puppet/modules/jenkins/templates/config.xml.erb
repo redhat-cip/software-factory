@@ -75,15 +75,17 @@
     <permission>hudson.scm.SCM.Tag:<%= @settings['jenkins_username'] %></permission>
     <permission>hudson.scm.SCM.Tag:<%= @settings['jenkins_admin_username'] %></permission>
   </authorizationStrategy>
-  <securityRealm class="hudson.security.LDAPSecurityRealm" plugin="ldap@1.6">
-    <server><%= @settings['ldap_uri'] %></server>
-    <rootDN><%= @settings['ldap_root_dn'] %></rootDN>
+  <securityRealm class="org.jenkinsci.plugins.reverse_proxy_auth.ReverseProxySecurityRealm" plugin="reverse-proxy-auth-plugin@1.4.0">
+    <proxyTemplate/>
+    <authContext/>
+    <authorityUpdateCache/>
     <inhibitInferRootDN>false</inhibitInferRootDN>
-    <userSearchBase><%= @settings['ldap_userSearchBase'] %></userSearchBase>
-    <userSearch><%= @settings['ldap_userSearch'] %></userSearch>
-    <managerDN><%= @settings['ldap_managerDN'] %></managerDN>
-    <managerPassword><%= @settings['ldap_managerPassword'] %></managerPassword>
-    <disableMailAddressResolver>false</disableMailAddressResolver>
+    <userSearchBase></userSearchBase>
+    <userSearch>uid={0}</userSearch>
+    <updateInterval>15</updateInterval>
+    <forwardedUser>X-Forwarded-User</forwardedUser>
+    <headerGroups>X-Forwarded-Groups</headerGroups>
+    <headerGroupsDelimiter>|</headerGroupsDelimiter>
   </securityRealm>
   <disableRememberMe>false</disableRememberMe>
   <projectNamingStrategy class="jenkins.model.ProjectNamingStrategy$DefaultProjectNamingStrategy"/>

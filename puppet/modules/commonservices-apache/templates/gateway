@@ -12,8 +12,8 @@
         ProxyPass /r/ http://<%= scope.function_hiera(["gerrit_url"]) %>/r/ nocanon retry=0
         ProxyPassReverse /r/ http://<%= scope.function_hiera(["gerrit_url"]) %>/r/
 
-        ProxyPass /jenkins/ http://<%= scope.function_hiera(["jenkins_url"]) %>:8080/jenkins/ nocanon retry=0
-        ProxyPassReverse /jenkins/ http://<%= scope.function_hiera(["jenkins_url"]) %>:8080/jenkins/
+        ProxyPass /jenkins/ http://<%= scope.function_hiera(["jenkins_url"]) %>:8081/jenkins/ nocanon retry=0
+        ProxyPassReverse /jenkins/ http://<%= scope.function_hiera(["jenkins_url"]) %>:8081/jenkins/
 
         ProxyPass /zuul/ http://<%= scope.function_hiera(["jenkins_url"]) %>/ nocanon retry=0
         ProxyPassReverse /zuul/ http://<%= scope.function_hiera(["jenkins_url"]) %>/
@@ -35,6 +35,7 @@
             Order allow,deny
             allow from all
         </Proxy>
+
     </IfModule>
     
     ScriptAliasMatch ^/.*[^(css)|(js)]$ /var/www/index.py

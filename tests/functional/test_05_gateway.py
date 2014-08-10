@@ -46,7 +46,10 @@ class TestGateway(unittest.TestCase):
         """ Test if Jenkins is accessible on gateway host
         """
         url = "http://%s/jenkins/" % config.GATEWAY_HOST
-        resp = requests.get(url)
+        resp = requests.get(url,
+                            cookies=dict(auth_pubtkt=
+                                         config.USERS[config.USER_1]
+                                         ['auth_cookie']))
         self.assertEqual(resp.status_code, 200)
         self.assertTrue('<title>Dashboard [Jenkins]</title>' in resp.text)
 

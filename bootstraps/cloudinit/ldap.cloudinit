@@ -52,13 +52,6 @@ write_files:
     mail: user4@example.com
     objectClass: inetOrgPerson
 
-    dn: cn=jenkins,ou=Users,dc=example,dc=com
-    cn: jenkins
-    objectClass: person
-    sn: Jenkins
-    userPassword: JENKINS_USER_PASSWORD
-    mail: jenkins@example.com
-    objectClass: inetOrgPerson
   path: /root/demo_users.ldif
 - content: |
     dn: ou=Groups,dc=example,dc=com
