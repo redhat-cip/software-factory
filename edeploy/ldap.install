@@ -46,3 +46,5 @@ do_chroot ${dir} update-rc.d slapd defaults
 
 # Disable root passwd
 do_chroot $dir passwd -l root
+
+put_git_mark $dir

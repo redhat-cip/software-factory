@@ -57,3 +57,5 @@ clear_packages_cache $dir
 
 # Disable root passwd
 do_chroot $dir passwd -l root
+
+put_git_mark $dir

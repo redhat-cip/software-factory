@@ -43,3 +43,5 @@ do_chroot $dir pip install git-review
 
 # Disable root passwd
 do_chroot $dir passwd -l root
+
+put_git_mark $dir

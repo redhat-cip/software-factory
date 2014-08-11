@@ -38,3 +38,5 @@ mkdir -p ${dir}/var/lib/jenkins/plugins
 cd ${dir}/var/lib/jenkins
 curl -O http://maven.jenkins-ci.org/content/repositories/releases/org/jenkins-ci/plugins/swarm-client/1.15/swarm-client-1.15-jar-with-dependencies.jar
 cd -
+
+put_git_mark $dir

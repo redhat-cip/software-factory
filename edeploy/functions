@@ -36,4 +36,10 @@ EOF
     fi
 }
 
+function put_git_mark {
+    local dir=$1
+    sha=`git rev-parse HEAD`
+    echo $sha >> $dir/etc/SF_GIT_COMMIT
+}
+
 . ${ORIG}/functions
