@@ -35,4 +35,8 @@
     Redirect / /r/
     ProxyPass /r/ http://127.0.0.1:8080/r/ nocanon
     ProxyPassReverse /r/ http://<%= scope.function_hiera(["gerrit_url"]) %>/
+
+    # Requires internal authentication in Gerrit (without SSO)
+    ProxyPass /api/ http://127.0.0.1:8080/r/ nocanon
+    ProxyPassReverse /api/ http://<%= scope.function_hiera(["gerrit_url"]) %>/
 </VirtualHost>

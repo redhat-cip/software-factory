@@ -32,17 +32,18 @@ def create_ticket(**kwargs):
     return ticket
 
 
-def pre_register_user_on_redmine(username):
-    redmine_api_url = conf.redmine['apihost']
-    redmine_api_key = conf.redmine['apikey']
-    udc = userdetails.UserDetailsCreator(redmine_api_url,
-                                         redmine_api_key)
-    udc.create_user(username, '%s@example.net' % username,
-                    'User %s' % username)
+def pre_register_user(username, email=None, lastname=None, keys=None):
+    if lastname is None:
+        lastname = 'User %s' % username
+    if email is None:
+        email = '%s@%s' % (username, conf.app.cookie_domain)
+
+    udc = userdetails.UserDetailsCreator(conf)
+    udc.create_user(username, email, lastname, keys)
 
 
-def setup_response(username, back):
-    pre_register_user_on_redmine(username)
+def setup_response(username, back, email=None, lastname=None, keys=None):
+    pre_register_user(username, email, lastname, keys)
     ticket = create_ticket(uid=username,
                            validuntil=(time.time() + conf.app.cookie_period))
     enc_ticket = urllib.quote_plus(ticket)
@@ -80,7 +81,14 @@ class GithubController(object):
         token = self.get_access_token(state, code)
         resp = http.get("https://api.github.com/user",
                         headers={'Authorization': 'token ' + token})
-        setup_response(resp.json()['login'], back)
+        data = resp.json()
+        login = data.get('login')
+        email = data.get('email')
+        name = data.get('name')
+        resp = http.get("https://api.github.com/users/%s/keys" % login,
+                        headers={'Authorization': 'token ' + token})
+        ssh_keys = resp.json()
+        setup_response(login, back, email, name, ssh_keys)
 
     @expose()
     def index(self, **kwargs):
@@ -105,8 +113,15 @@ class LoginController(RestController):
         try:
             conn.simple_bind_s(who, password)
         except ldap.INVALID_CREDENTIALS:
-            return False
-        return True
+            return None
+        result = conn.search_s(who, ldap.SCOPE_SUBTREE, attrlist=[l['sn'],l['mail']])
+        if len(result) == 1:
+            user = result[0]  # user is a tuple
+            mail = user[1].get(l['mail'], [None])
+            lastname = user[1].get(l['sn'], [None])
+            return mail[0], lastname[0]
+        # Something went wrong if no or more than one result is retrieved
+        return (None, None)
 
     @expose()
     def post(self, **kwargs):
@@ -121,7 +136,8 @@ class LoginController(RestController):
                 return render(
                     'login.html',
                     dict(back=back, message='Authorization failed.'))
-            setup_response(username, back)
+            email, lastname = valid_user
+            setup_response(username, back, email, lastname)
         else:
             return render(
                 'login.html',
