@@ -7,7 +7,19 @@ export SF_SUFFIX=${SF_SUFFIX:-tests.dom}
 export SKIP_CLEAN_ROLES="y"
 export EDEPLOY_ROLES=/var/lib/sf/roles/
 
-JENKINS_URL=46.231.128.203
+
+case "$(hostname)" in
+    "bigger-jenkins")
+        JENKINS_URL=46.231.128.203
+        ;;
+    "faster-jenkins")
+        JENKINS_URL=94.143.114.171
+        ;;
+    "stronger-jenkins")
+        JENKINS_URL=46.231.128.54
+        ;;
+esac
+
 GERRIT_PROJECT=${GERRIT_PROJECT-sf}
 CURRENT_BRANCH=`git branch | sed -n -e 's/^\* \(.*\)/\1/p'`
 # If run outside Jenkins use the current branch name
