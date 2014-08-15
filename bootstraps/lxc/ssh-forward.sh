@@ -18,19 +18,19 @@ pkill -f "ssh -N -L 127.0.10.*"
 sleep 2
 
 # Gerrit
-ssh -N -L 127.0.10.1:80:192.168.134.53:80 $host &
+ssh -N -L 127.0.10.1:80:192.168.134.52:80 $host &
 # Redmine
-ssh -N -L 127.0.10.2:80:192.168.134.52:80 $host &
+ssh -N -L 127.0.10.2:80:192.168.134.51:80 $host &
 # Jenkins
-ssh -N -L 127.0.10.3:8080:192.168.134.54:8080 $host &
+ssh -N -L 127.0.10.3:8080:192.168.134.53:8080 $host &
 # Zuul status
-ssh -N -L 127.0.10.3:80:192.168.134.54:80 $host &
+ssh -N -L 127.0.10.3:80:192.168.134.53:80 $host &
 # Common services - Etherpad
-ssh -N -L 127.0.10.4:80:192.168.134.56:80 $host &
+ssh -N -L 127.0.10.4:80:192.168.134.55:80 $host &
 # Common services - Pastie
-ssh -N -L 127.0.10.4:8080:192.168.134.56:8080 $host &
+ssh -N -L 127.0.10.4:8080:192.168.134.55:8080 $host &
 # Managesf and Cauth (SSO)
-ssh -N -L 127.0.10.5:80:192.168.134.55:80 $host &
+ssh -N -L 127.0.10.5:80:192.168.134.54:80 $host &
 
 echo "\
 You can add that to you /etc/hosts

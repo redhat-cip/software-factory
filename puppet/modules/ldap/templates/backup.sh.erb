@@ -1,2 +1,0 @@
-#!/bin/sh
-tar --absolute-names -cf - /var/lib/ldap | bup split -r root@<%= scope.function_hiera(["mysql_url"]) %>: -n ldap

@@ -41,11 +41,6 @@ node /.*mysql.*/ inherits base {
   include bup
 }
 
-node /.*ldap.*/ inherits base {
-  include ldap
-  include bup
-}
-
 node /.*managesf.*/ inherits base {
   include managesf
   include cauth

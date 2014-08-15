@@ -31,7 +31,7 @@ EDEPLOY_ROLES=${EDEPLOY_ROLES:-/var/lib/sf/roles/}
 SSH_PUBKEY=${SSH_PUBKEY:-/home/ubuntu/.ssh/id_rsa.pub}
 export SF_SUFFIX
 
-ROLES="puppetmaster ldap mysql redmine"
+ROLES="puppetmaster mysql redmine"
 ROLES="$ROLES gerrit managesf jenkins commonservices"
 ROLES="$ROLES slave"
 
@@ -66,25 +66,18 @@ if [ -z "$1" ] || [ "$1" == "start" ]; then
     sed -i "s/SSHPASS/${SSHPASS}/g" ${CONFTEMPDIR}/*.cloudinit
     sfconfigcontent=`cat $SFCONFIGFILE | base64 -w 0`
     sed -i "s|SFCONFIGCONTENT|${sfconfigcontent}|" $CONFTEMPDIR/puppetmaster.cloudinit
-    for r in ldap mysql redmine gerrit managesf jenkins commonservices; do
+    for r in mysql redmine gerrit managesf jenkins commonservices; do
         ip=`get_ip $r`
         sed -i "s/${r}_host/$ip/g" ${CONFTEMPDIR}/puppetmaster.cloudinit
     done
     ip=`get_ip puppetmaster`
     sed -i "s/JENKINS_USER_PASSWORD/${JENKINS_USER_PASSWORD}/" ${CONFTEMPDIR}/puppetmaster.cloudinit
     sed -i "s/MY_PRIV_IP=.*/MY_PRIV_IP=$ip/" ${CONFTEMPDIR}/puppetmaster.cloudinit
-    sed -i "s/JENKINS_USER_PASSWORD/${JENKINS_USER_PASSWORD}/" ${CONFTEMPDIR}/ldap.cloudinit
     # Fix jenkins for lxc
     sudo sed -i 's/^#*JAVA_ARGS.*/JAVA_ARGS="-Djava.awt.headless=true -Xmx256m"/g' \
         ${EDEPLOY_ROLES}/install/${DVER}-${PVER}.${REL}/softwarefactory/etc/default/jenkins
     echo "Now running edeploy-lxc"
     sudo ${EDEPLOY_LXC} --config ${CONFTEMPDIR}/sf-lxc.yaml stop > /dev/null || exit -1
-
-    if [ -e "/mnt/lxc/ldap/var/lib/ldap/" ]; then
-        sudo sh -c "echo 'lxc.mount.entry = /mnt/lxc/ldap/var/lib/ldap/ /var/lib/lxc/ldap/rootfs/var/lib/ldap none bind,create=dir 0 0' >  /var/lib/lxc/ldap.config"
-    else
-        rm -f /var/lib/lxc/ldap.config
-    fi
 
     if [ -e "/mnt/lxc/puppetmaster/etc/puppet/" ]; then
         sudo sh -c "echo 'lxc.mount.entry =  /mnt/lxc/puppetmaster/etc/puppet/ /var/lib/lxc/puppetmaster/rootfs/etc/puppet none bind,create=dir 0 0' >  /var/lib/lxc/puppetmaster.config"
@@ -138,8 +131,6 @@ elif [ "$1" == "clean" ]; then
         sudo lxc-destroy --name ${instance} || echo
     done
 elif [ "$1" == "seed" ]; then
-        sudo mkdir -p /mnt/lxc/ldap/var/lib/ldap/
-        sudo rsync -av /var/lib/lxc/ldap/rootfs/var/lib/ldap/ /mnt/lxc/ldap/var/lib/ldap/
         sudo mkdir -p /mnt/lxc/puppetmaster/etc/puppet/
         sudo rsync -av /var/lib/lxc/puppetmaster/rootfs/etc/puppet/ /mnt/lxc/puppetmaster/etc/puppet/
         sudo mkdir -p /mnt/lxc/puppetmaster/root/puppet-bootstrapper/

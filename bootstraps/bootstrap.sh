@@ -21,7 +21,7 @@ source functions.sh
 
 SF_SUFFIX=${SFSUFFIX:-sf.dom}
 
-ROLES="puppetmaster ldap mysql"
+ROLES="puppetmaster mysql"
 ROLES="$ROLES redmine gerrit managesf"
 ROLES="$ROLES jenkins commonservices"
 

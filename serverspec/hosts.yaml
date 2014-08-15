@@ -12,13 +12,6 @@ mysql:
   :username: root
   :hostname: mysql.tests.dom
 
-ldap:
-  :roles:
-    - base
-    - ldap
-  :username: root
-  :hostname: ldap.tests.dom
-
 gerrit:
   :roles:
     - base

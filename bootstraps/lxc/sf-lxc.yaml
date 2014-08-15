@@ -14,41 +14,36 @@ hosts:
     cloudinit: CIPATH/puppetmaster.cloudinit
   -
     address: 192.168.134.50
-    name: ldap
-    role: ldap
-    cloudinit: CIPATH/ldap.cloudinit
-  -
-    address: 192.168.134.51
     name: mysql
     role: mysql
     cloudinit: CIPATH/mysql.cloudinit
   -
-    address: 192.168.134.52
+    address: 192.168.134.51
     name: redmine
     role: softwarefactory
     cloudinit: CIPATH/redmine.cloudinit
   -
-    address: 192.168.134.53
+    address: 192.168.134.52
     name: gerrit
     role: softwarefactory
     cloudinit: CIPATH/gerrit.cloudinit
   -
-    address: 192.168.134.54
+    address: 192.168.134.53
     name: jenkins
     role: softwarefactory
     cloudinit: CIPATH/jenkins.cloudinit
   -
-    address: 192.168.134.55
+    address: 192.168.134.54
     name: managesf
     role: softwarefactory
     cloudinit: CIPATH/managesf.cloudinit
   -
-    address: 192.168.134.56
+    address: 192.168.134.55
     name: commonservices
     role: softwarefactory
     cloudinit: CIPATH/commonservices.cloudinit
   -
-    address: 192.168.134.57
+    address: 192.168.134.56
     name: slave
     role: slave
     cloudinit: CIPATH/slave.cloudinit

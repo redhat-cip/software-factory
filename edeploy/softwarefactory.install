@@ -64,8 +64,13 @@ OTHER_PACKAGES="git puppet vim mysql-client python-pip python-dateutil monit pos
 # Paste (lodgeit)
 #
 PASTE_PACKAGES="python-dev python-setuptools python-virtualenv build-essential python-imaging python-werkzeug python-babel python-jinja2 python-pygments python-sqlalchemy python-simplejson python-mysqldb"
- 
-PACKAGES="${GERRIT_PACKAGES} ${REDMINE_PACKAGES} ${MANAGESF_PACKAGES} ${ETHERPAD_PACKAGES} ${OTHER_PACKAGES} ${PASTE_PACKAGES} ${ZUUL_PACKAGES}"
+
+#
+# Cauth
+#
+CAUTH_PACKAGES="libsasl2-dev libldap2-dev"
+
+PACKAGES="${GERRIT_PACKAGES} ${REDMINE_PACKAGES} ${MANAGESF_PACKAGES} ${ETHERPAD_PACKAGES} ${OTHER_PACKAGES} ${PASTE_PACKAGES} ${ZUUL_PACKAGES} ${CAUTH_PACKAGES}"
 
 # To remove (but maybe the the vm role should remove that) :
 do_chroot $dir rm /etc/apt/sources.list.d/hwraid.list
@@ -175,6 +180,8 @@ EOF
     # Cauth server
     #
     cp -r ../tools/cauth ${dir}/var/www/cauth
+    do_chroot $dir bash -c "cd /srv/zuul && pip install -U funcparserlib"
+    do_chroot $dir bash -c "cd /srv/zuul && pip install -U mockldap"
 
     #
     # Socat as a service

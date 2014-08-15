@@ -14,14 +14,6 @@ mysql:
   :username: root
   :hostname: mysql.SF_SUFFIX
 
-ldap:
-  :roles:
-    - base
-    - ldap
-    - postfix
-  :username: root
-  :hostname: ldap.SF_SUFFIX
-
 gerrit:
   :roles:
     - base

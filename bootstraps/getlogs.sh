@@ -34,7 +34,7 @@ mkdir $dlogs
 cp /var/log/sf-bootstrap.log $dlogs/
 
 # Retrieve Syslog
-for role in gerrit redmine jenkins mysql managesf commonservices ldap; do
+for role in gerrit redmine jenkins mysql managesf commonservices; do
     mkdir $dlogs/${role}
     scp root@`getip_from_yaml ${role}`:/var/log/syslog $dlogs/${role} &> /dev/null
 done

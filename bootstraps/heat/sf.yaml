@@ -27,16 +27,13 @@ parameters:
     default: heat
   instance_type:
     type: string
-    description: Instance type for sf roles (ldap, commonservices, managesf)
+    description: Instance type for sf roles (commonservices, managesf)
   alt_instance_type:
     type: string
     description: Instance type for sf roles (mysql, gerrit, jenkins, redmine, puppetmaster)
   puppetmaster_image_id:
     type: string
     description: Glance image ID for the puppet master node
-  ldap_image_id:
-    type: string
-    description: Glance image ID for the ldap node
   mysql_image_id:
     type: string
     description: Glance image ID for the mysql node
@@ -229,16 +226,9 @@ resources:
       security_groups: [ { get_resource: sf_int_secgroup_default },
                          ]
 
-  ldap_neutron_port:
-    type: OS::Neutron::Port
-    properties:
-      network: { get_resource: sf_net }
-      security_groups: [ { get_resource: sf_int_secgroup_default },
-                         ]
-
   puppetmaster_instance:
     type: OS::Nova::Server
-    depends_on: [ commonservices_instance, managesf_instance, gerrit_instance, jenkins_instance, redmine_instance, ldap_instance, mysql_instance, slave_instance ]
+    depends_on: [ commonservices_instance, managesf_instance, gerrit_instance, jenkins_instance, redmine_instance, mysql_instance, slave_instance ]
     properties:
       image: { get_param: puppetmaster_image_id }
       flavor: { get_param: alt_instance_type }
@@ -262,9 +252,6 @@ resources:
                   puppetmaster.SF_SUFFIX:
                     ip: puppermaster-ip-template
                     host_aliases: [puppetmaster]
-                  ldap.SF_SUFFIX:
-                    ip: ldap_host
-                    host_aliases: [ldap]
                   mysql.SF_SUFFIX:
                     ip: mysql_host
                     host_aliases: [mysql]
@@ -294,7 +281,6 @@ resources:
               - MY_PRIV_IP=`curl -s http://169.254.169.254/latest/meta-data/local-ipv4 | cut -d, -f1`
               - sed -i "s/puppermaster-ip-template/$MY_PRIV_IP/" /root/hosts.yaml
               - echo "127.0.0.1 puppetmaster.SF_SUFFIX puppetmaster" > /etc/hosts
-              - echo "ldap_host ldap.SF_SUFFIX ldap" >> /etc/hosts
               - echo "mysql_host mysql.SF_SUFFIX mysql" >> /etc/hosts
               - echo "jenkins_host jenkins.SF_SUFFIX jenkins" >> /etc/hosts
               - echo "redmine_host redmine.SF_SUFFIX redmine" >> /etc/hosts
@@ -311,7 +297,6 @@ resources:
             gerrit_host: { get_attr: [gerrit_instance, first_address] }
             managesf_host: { get_attr: [managesf_instance, first_address] }
             commonservices_host: { get_attr: [commonservices_instance, first_address] }
-            ldap_host: { get_attr: [ldap_instance, first_address] }
             mysql_host: { get_attr: [mysql_instance, first_address] }
             SF_SUFFIX: { get_param: suffix }
             SFCONFIGCONTENT: { get_param: sf_config_content }
@@ -453,114 +438,6 @@ resources:
             SF_SUFFIX: { get_param: suffix }
             SSHPASS: { get_param: temp_ssh_pwd }
   
-  ldap_instance:
-    type: OS::Nova::Server
-    properties:
-      image: { get_param: ldap_image_id }
-      flavor: { get_param: instance_type }
-      key_name: { get_param: key_name }
-      networks:
-        - port: { get_resource: ldap_neutron_port }
-      user_data_format: RAW
-      user_data:
-        str_replace:
-          template: |
-            #cloud-config
-            output: {all: '| tee -a /var/log/cloud-init-output.log'}
-            hostname: ldap
-            fqdn: ldap.SF_SUFFIX
-            disable_root: 0
-            write_files:
-            - content: |
-                dn: olcDatabase={-1}frontend,cn=config
-                add: olcRequires
-                olcRequires: authc
-              path: /root/disable_anon_frontend.ldif
-            - content: |
-                dn: olcDatabase={1}hdb,cn=config
-                add: olcRequires
-                olcRequires: authc
-              path: /root/disable_anon_backend.ldif
-            - content: |
-                dn: ou=Users,dc=example,dc=com
-                objectClass: organizationalUnit
-                ou: Users
-              path: /root/users_ou.ldif
-            - content: |
-                dn: cn=user1,ou=Users,dc=example,dc=com
-                cn: user1
-                objectClass: person
-                sn: Demo user1
-                userPassword: userpass
-                mail: user1@example.com
-                objectClass: inetOrgPerson
-
-                dn: cn=user2,ou=Users,dc=example,dc=com
-                cn: user2
-                objectClass: person
-                sn: Demo user2
-                userPassword: userpass
-                mail: user2@example.com
-                objectClass: inetOrgPerson
-
-                dn: cn=user3,ou=Users,dc=example,dc=com
-                cn: user3
-                objectClass: person
-                sn: Demo user3
-                userPassword: userpass
-                mail: user3@example.com
-                objectClass: inetOrgPerson
-
-                dn: cn=user4,ou=Users,dc=example,dc=com
-                cn: user4
-                objectClass: person
-                sn: Demo user4
-                userPassword: userpass
-                mail: user4@example.com
-                objectClass: inetOrgPerson
-
-                dn: cn=jenkins,ou=Users,dc=example,dc=com
-                cn: jenkins
-                objectClass: person
-                sn: Jenkins
-                userPassword: JENKINS_USER_PASSWORD
-                mail: jenkins@example.com
-                objectClass: inetOrgPerson
-              path: /root/demo_users.ldif
-            - content: |
-                dn: ou=Groups,dc=example,dc=com
-                objectClass: organizationalUnit
-                ou: Groups
-              path: /root/groups_ou.ldif
-            - content: |
-                dn: cn=group01,ou=Groups,dc=example,dc=com
-                cn: group01
-                objectClass: organizationalRole
-                roleOccupant: cn=user1,dc=example,dc=com
-                roleOccupant: cn=user2,dc=example,dc=com
-
-                dn: cn=group02,ou=Groups,dc=example,dc=com
-                cn: group02
-                objectClass: organizationalRole
-                roleOccupant: cn=user1,dc=example,dc=com
-                roleOccupant: cn=user3,dc=example,dc=com
-              path: /root/groups.ldif
-            runcmd:
-              - /etc/init.d/puppet stop
-              - ldapadd -x -D cn=admin,dc=example,dc=com -w secret -f /root/users_ou.ldif
-              - ldapadd -x -D cn=admin,dc=example,dc=com -w secret -f /root/demo_users.ldif
-              - ldapadd -x -D cn=admin,dc=example,dc=com -w secret -f /root/groups_ou.ldif
-              - ldapadd -x -D cn=admin,dc=example,dc=com -w secret -f /root/groups.ldif
-              - ldapmodify -Q -Y EXTERNAL -H ldapi:/// -f /root/disable_anon_frontend.ldif
-              - ldapmodify -Q -Y EXTERNAL -H ldapi:/// -f /root/disable_anon_backend.ldif
-              - echo puppetmaster-ip-template puppetmaster.SF_SUFFIX >> /etc/hosts
-              - sed -i -e '0,/^$/s/^$/server=puppetmaster.SF_SUFFIX\n/g' /etc/puppet/puppet.conf
-              - /bin/echo -e "\n[agent]\nenvironment=sf" >> /etc/puppet/puppet.conf
-              - echo "root:SSHPASS" | chpasswd
-          params:
-            SF_SUFFIX: { get_param: suffix }
-            SSHPASS: { get_param: temp_ssh_pwd }
-            JENKINS_USER_PASSWORD: { get_param: jenkins_user_pwd }
   
   mysql_instance:
     type: OS::Nova::Server

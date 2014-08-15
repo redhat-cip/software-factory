@@ -17,7 +17,3 @@
 # under the License.
 
 set -x
-
-./upgrade-from ldap D7-H.1.0.0 D7-H.1.0.1 /var/lib/debootstrap
-#./upgrade-from ldap D7-H.1.0.1 D7-H.1.0.2 /var/lib/debootstrap
-

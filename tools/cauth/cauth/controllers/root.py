@@ -6,6 +6,7 @@ import hashlib
 import base64
 import urllib
 import ldap
+from mockldap import LDAPObject
 import requests as http
 from cauth.model import db
 from cauth.controllers import userdetails
@@ -56,6 +57,40 @@ def setup_response(username, back, email=None, lastname=None, keys=None):
     response.location = back
 
 
+def dummy_ldap():
+    com     = ('dc=com', {'dc': 'com'})
+    example = ('dc=example,dc=com', {'dc': 'example'})
+    users = ('ou=Users,dc=example,dc=com', {'ou': 'Users'})
+    user1   = ('cn=user1,ou=Users,dc=example,dc=com', {
+        'cn': 'user1',
+        'mail': ['user1@example.com'],
+        'sn': ['Demo user1'],
+        'userPassword': ['userpass']})
+    user2   = ('cn=user2,ou=Users,dc=example,dc=com', {
+        'cn': 'user2',
+        'mail': ['user2@example.com'],
+        'sn': ['Demo user2'],
+        'userPassword': ['userpass']})
+    user3   = ('cn=user3,ou=Users,dc=example,dc=com', {
+        'cn': 'user3',
+        'mail': ['user3@example.com'],
+        'sn': ['Demo user3'],
+        'userPassword': ['userpass']})
+    user4   = ('cn=user4,ou=Users,dc=example,dc=com', {
+        'cn': 'user4',
+        'mail': ['user4@example.com'],
+        'sn': ['Demo user4'],
+        'userPassword': ['userpass']})
+    user5   = ('cn=user5,ou=Users,dc=example,dc=com', {
+        'cn': 'user5',
+        'mail': ['user5@tests.dom'],
+        'sn': ['Demo user5'],
+        'userPassword': ['userpass']})
+
+    directory = dict([com, example, users, user1, user2, user3, user4, user5])
+    return LDAPObject(directory)
+
+
 class GithubController(object):
     def get_access_token(self, state, code):
         github = conf.auth['github']
@@ -104,17 +139,21 @@ class GithubController(object):
                               })
 
 
+
 class LoginController(RestController):
     def check_valid_user_ldap(self, username, password):
         l = conf.auth['ldap']
-        conn = ldap.initialize(l['host'])
+        if l['host'] == 'ldap://ldap.tests.dom':
+            conn = dummy_ldap()
+        else:
+            conn = ldap.initialize(l['host'])
         conn.set_option(ldap.OPT_REFERRALS, 0)
         who = l['dn'] % {'username': username}
         try:
             conn.simple_bind_s(who, password)
         except ldap.INVALID_CREDENTIALS:
             return None
-        result = conn.search_s(who, ldap.SCOPE_SUBTREE, attrlist=[l['sn'],l['mail']])
+        result = conn.search_s(who, ldap.SCOPE_SUBTREE, '(cn=*)', attrlist=[l['sn'],l['mail']])
         if len(result) == 1:
             user = result[0]  # user is a tuple
             mail = user[1].get(l['mail'], [None])

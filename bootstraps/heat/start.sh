@@ -12,7 +12,7 @@ DOMAIN=$(cat $SFCONFIGFILE | grep domain | cut -d' ' -f2)
 ### Modify here according to your configuration ###
 # The default public key to use
 key_name="fbo"
-# flavor is used for managesf, ldap, commonservices
+# flavor is used for managesf, commonservices
 flavor="m1.small"
 # alt_flavor is used for puppetmaster, mysql, redmine, jenkins, gerrit (prefer flavor with at least 2 vCPUs and 2GB RAM)
 #alt_flavor="standard.small"
@@ -40,8 +40,6 @@ function get_params {
     params="$params;puppetmaster_image_id=$puppetmaster_image_id"
     sf_image_id=`glance image-show softwarefactory | grep "^| id" | awk '{print $4}'`
     params="$params;sf_image_id=$sf_image_id"
-    ldap_image_id=`glance image-show ldap | grep "^| id" | awk '{print $4}'`
-    params="$params;ldap_image_id=$ldap_image_id"
     mysql_image_id=`glance image-show mysql | grep "^| id" | awk '{print $4}'`
     params="$params;mysql_image_id=$mysql_image_id"
     slave_image_id=`glance image-show slave | grep "^| id" | awk '{print $4}'`
@@ -51,7 +49,7 @@ function get_params {
 }
 
 function register_images {
-    for img in install-server-vm mysql slave ldap softwarefactory; do
+    for img in install-server-vm mysql slave softwarefactory; do
         checksum=`glance image-show $img | grep checksum | awk '{print $4}'`
         if [ -z "$checksum" ]; then
             glance image-create --name $img --disk-format qcow2 --container-format bare \
@@ -61,7 +59,7 @@ function register_images {
 }
 
 function unregister_images {
-    for img in install-server-vm mysql slave ldap softwarefactory; do
+    for img in install-server-vm mysql slave softwarefactory; do
         checksum=`glance image-show $img | grep checksum | awk '{print $4}'`
         newchecksum=`cat $BUILT_ROLES/roles/install/${VERS}/$img-*.img.md5 | cut -d" " -f1`
         [ "$newchecksum" != "$checksum" ] && glance image-delete $img
