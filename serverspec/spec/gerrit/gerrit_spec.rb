@@ -19,12 +19,7 @@ describe user('gerrit') do
         should exist 
         should belong_to_group 'gerrit'
         should have_home_directory '/home/gerrit'
-        should have_login_shell '/bin/sh'
     }
-end
-
-describe package('openjdk-7-jre') do
-    it { should be_installed }
 end
 
 describe file('/home/gerrit/site_path') do
@@ -167,25 +162,28 @@ describe file('/home/gerrit/site_path/lib/bcpkix-jdk15on-149.jar') do
     }
 end
 
-describe file('/etc/init.d/gerrit') do
-    it {
-        should be_file
-        should be_mode '755'
-        should be_owned_by 'gerrit'
-        should be_grouped_into 'gerrit'
-    }
-end
-
-describe file('/etc/default/gerritcodereview') do
-    it {
-        should be_file
-        should be_owned_by 'gerrit'
-        should be_grouped_into 'gerrit'
-        should be_mode '444'
-        should contain 'GERRIT_SITE=/home/gerrit/site_path'
-    }
+if os[:family] == 'RedHat7'
+  describe file('/lib/systemd/system/gerrit.service') do
+      it {
+          should be_file
+      }
+  end
+else
+  describe file('/etc/init.d/gerrit') do
+      it {
+          should be_linked_to '/home/gerrit/site_path/bin/gerrit.sh'
+      }
+  end
 end
 
 describe service('gerrit') do
   it { should be_enabled }
+end
+
+describe port(8080) do
+  it { should be_listening }
+end
+
+describe port(29418) do
+  it { should be_listening }
 end

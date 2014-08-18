@@ -23,7 +23,6 @@ version="$3"
 ROLE=mysql
 
 ORIG=$(cd $(dirname $0); pwd)
-PACKAGES="mysql-server puppet automysqlbackup monit postfix git bup"
 
 . ${ORIG}/functions
 
@@ -33,17 +32,21 @@ install_ib_if_needed $ORIG $dir
 
 case "$(package_tool)" in
     "apt")
-        # trick to allow to test and demo updates: remove the update source for this role
-        rm -f ${dir}/etc/apt/sources.list.d/updates.list
         # Set a temporary password for the root account, Puppet will change it to a random one later on
         do_chroot ${dir} debconf-set-selections <<< 'mysql-server-5.1 mysql-server/root_password password temporarypw'
         do_chroot ${dir} debconf-set-selections <<< 'mysql-server-5.1 mysql-server/root_password_again password temporarypw'
-        install_packages $dir "$PACKAGES"
+        install_packages $dir "mysql-server puppet monit postfix git bup"
         do_chroot ${dir} sed -i -e"s/^bind-address.*/bind-address = 0.0.0.0/" /etc/mysql/my.cnf
         sed -i -e 's/START=.*/START=yes/g' $dir/etc/default/puppet
         ;;
     "yum")
-        install_packages $dir "mariadb-server postfix git"
+        CODENAME_MAJOR=7
+        PUPPET_RELEASE=$CODENAME_MAJOR-10
+        # The puppetlas-release package install repo desc for puppet in yum
+        install_packages ${dir} http://yum.puppetlabs.com/el/$CODENAME_MAJOR/products/x86_64/puppetlabs-release-$PUPPET_RELEASE.noarch.rpm
+        add_epel_repository $DIST
+        install_packages $dir "vim-enhanced puppet monit mariadb-server postfix git"
+        install_bup $dir
         ;;
     *)
         fatal_error "$package_tool isn't supported for $ROLE role"

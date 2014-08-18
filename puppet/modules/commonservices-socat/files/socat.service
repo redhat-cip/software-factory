@@ -1,0 +1,10 @@
+[Unit]
+Description=Socat for redirect 29418 to gerrit node.
+After=syslog.target network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/socat TCP4-LISTEN:29418,fork TCP4:192.168.134.52:29418 
+
+[Install]
+WantedBy=multi-user.target

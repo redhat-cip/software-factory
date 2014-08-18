@@ -27,10 +27,6 @@ EDEPLOY_ROLES=${EDEPLOY_ROLES:-/var/lib/sf/roles/}
 SSH_PUBKEY=${SSH_PUBKEY:-/home/ubuntu/.ssh/id_rsa.pub}
 export SF_SUFFIX
 
-ROLES="puppetmaster mysql redmine"
-ROLES="$ROLES gerrit managesf jenkins commonservices"
-ROLES="$ROLES slave"
-
 EDEPLOY_LXC=/srv/edeploy-lxc/edeploy-lxc
 CONFTEMPDIR=/tmp/lxc-conf
 # Need to be select randomly
@@ -49,6 +45,7 @@ if [ -z "$1" ] || [ "$1" == "start" ]; then
     cp sf-lxc.yaml $CONFTEMPDIR
     cp ../cloudinit/* $CONFTEMPDIR
     jenkins_ip=`get_ip jenkins`
+    commonservices_ip=`get_ip commonservices`
     # Complete the sf-lxc template used by edeploy-lxc tool
     sed -i "s/SF_SUFFIX/${SF_SUFFIX}/g" ${CONFTEMPDIR}/sf-lxc.yaml
     sed -i "s#CIPATH#${CONFTEMPDIR}#g" ${CONFTEMPDIR}/sf-lxc.yaml
@@ -58,12 +55,13 @@ if [ -z "$1" ] || [ "$1" == "start" ]; then
     sed -i "s/JENKINS_MASTER_URL/${JENKINS_MASTER_URL}/g" ${CONFTEMPDIR}/slave.cloudinit
     sed -i "s/JENKINS_USER_PASSWORD/${JENKINS_USER_PASSWORD}/g" ${CONFTEMPDIR}/slave.cloudinit
     sed -i "s/JENKINS_IP/${jenkins_ip}/g" ${CONFTEMPDIR}/slave.cloudinit
+    sed -i "s/COMMONSERVICES_IP/${commonservices_ip}/g" ${CONFTEMPDIR}/slave.cloudinit
     # Complete all the cloudinit templates
     sed -i "s/SF_SUFFIX/${SF_SUFFIX}/g" ${CONFTEMPDIR}/*.cloudinit
     sed -i "s/SSHPASS/${SSHPASS}/g" ${CONFTEMPDIR}/*.cloudinit
     sfconfigcontent=`cat $SFCONFIGFILE | base64 -w 0`
     sed -i "s|SFCONFIGCONTENT|${sfconfigcontent}|" $CONFTEMPDIR/puppetmaster.cloudinit
-    for r in mysql redmine gerrit managesf jenkins commonservices; do
+    for r in `echo $ROLES | sed s/puppetmaster//`; do
         ip=`get_ip $r`
         sed -i "s/${r}_host/$ip/g" ${CONFTEMPDIR}/puppetmaster.cloudinit
     done

@@ -16,10 +16,24 @@
 class mysql ($settings = hiera_hash('mysql', '')) {
     $mysql_root_pwd = $settings['mysql_root_pwd']
 
+    case $operatingsystem {
+        centos: {
+            $mysql = "mariadb"
+            $resetpass_cmd = "mysqladmin -uroot password $mysql_root_pwd"
+            $provider = "systemd"
+        }
+        debian: {
+            $mysql = "mysql"
+            $resetpass_cmd = "mysqladmin -uroot -ptemporarypw password $mysql_root_pwd"
+            $provider = "debian"
+        }
+    }
+
     exec { "set_mysql_root_password":
         unless  => "mysqladmin -uroot -p$mysql_root_pwd status",
         path    => "/bin:/usr/bin",
-        command => "mysqladmin -uroot -ptemporarypw password $mysql_root_pwd",
+        command => $resetpass_cmd,
+        require => Service['mysql'],
     }
 
     file { '/etc/monit/conf.d/mysql':
@@ -28,21 +42,22 @@ class mysql ($settings = hiera_hash('mysql', '')) {
         require => Package['monit'],
         notify  => Service['monit'],
     }
-    
+
     service {'mysql':
-        require    => Exec['set_mysql_root_password'],
+        name       => $mysql,
         ensure     => running,
         enable     => true,
         hasrestart => true,
         hasstatus  => true,
+        provider   => $provider,
     }
-    
+
     file {'/root/create_databases.sql':
         ensure  => file,
         mode    => '0600',
         content => template('mysql/create_databases.sql.erb'),
     }
-    
+
     exec {'create_databases':
         command     => "mysql -u root -p$mysql_root_pwd < /root/create_databases.sql",
         path        => '/usr/bin/:/bin/',
@@ -52,7 +67,7 @@ class mysql ($settings = hiera_hash('mysql', '')) {
     }
 
     bup::scripts{ 'mysql_scripts':
-      backup_script => 'mysql/backup.sh.erb', 
+      backup_script => 'mysql/backup.sh.erb',
       restore_script => 'mysql/restore.sh.erb',
     }
 }

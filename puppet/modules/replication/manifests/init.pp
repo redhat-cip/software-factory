@@ -21,7 +21,8 @@ class replication ($gerrit = hiera_hash('gerrit', '')) {
     home => '/home/gerrit',
     system => true,
     managehome => true,
-    comment => 'Gerrit sys user'
+    comment => 'Gerrit sys user',
+    require => Group['gerrit']
   }
   group { 'gerrit':
     ensure => present,

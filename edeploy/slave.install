@@ -21,7 +21,6 @@ version="$3"
 ROLE=slave
 
 ORIG=$(cd $(dirname $0); pwd)
-PACKAGES="openjdk-7-jre git python-pip"
 
 . ${ORIG}/functions
 
@@ -30,19 +29,20 @@ update_repositories $dir
 install_ib_if_needed $ORIG $dir
 case "$(package_tool)" in
     "apt")
+        PACKAGES="openjdk-7-jre git python-pip"
         install_packages $dir "$PACKAGES"
         ;;
     "yum")
-        # temp fix for https://github.com/enovance/edeploy/issues/116
-        install_pip
-        do_chroot ${dir} yum install -y git java-1.6.0-openjdk
+        PACKAGES="git python-pip java-1.6.0-openjdk"
+        add_epel_repository $DIST
+        install_packages $dir "$PACKAGES" 
         ;;
     *)
         fatal_error "Unsupported package_tool: $(package_tool)"
         ;;
 esac
 
-do_chroot ${dir} pip install --upgrade pip nose flake8
+do_chroot ${dir} pip install nose flake8
 
 # plugin jenkins
 mkdir -p ${dir}/var/lib/jenkins

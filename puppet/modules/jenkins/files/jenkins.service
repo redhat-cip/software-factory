@@ -1,0 +1,12 @@
+[Unit]
+Description=Jenkins Daemon
+After=syslog.target
+
+[Service]
+Type=simple
+Environment="JENKINS_HOME=/var/lib/jenkins"
+ExecStart=/usr/bin/java -jar /usr/lib/jenkins/jenkins.war --webroot=/var/cache/jenkins/war --httpPort=8082 --ajp13Port=-1 --prefix=/jenkins --httpListenAddress=127.0.0.1
+User=jenkins
+
+[Install]
+WantedBy=multi-user.target

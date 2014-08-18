@@ -24,6 +24,7 @@ from utils import set_private_key
 from utils import ManageSfUtils
 from utils import GerritGitUtils
 from utils import GerritUtil
+from utils import JenkinsUtils
 
 
 class TestZuulOps(Base):
@@ -55,27 +56,6 @@ class TestZuulOps(Base):
                                options)
         self.projects.append(name)
 
-    def get_last_build_number(self, job_name, type):
-        url = config.JENKINS_SERVER
-        url += "/job/%(job_name)s/%(type)s/buildNumber" \
-               % {'job_name': job_name, 'type': type}
-        try:
-            resp = http.get(url)
-            return int(resp.text)
-        except:
-            return 0
-
-    def wait_till_job_completes(self, job_name, last, type):
-        retries = 0
-        while True:
-            cur = self.get_last_build_number(job_name, type)
-            if cur > last:
-                break
-            elif retries > 30:
-                break
-            else:
-                time.sleep(1)
-                retries += 1
 
     def test_check_zuul_operations(self):
         """ Test if zuul verifies project correctly through zuul-demo project
@@ -89,6 +69,7 @@ class TestZuulOps(Base):
         # Clone the project and submit it for review
         un = config.ADMIN_USER
         gu = GerritUtil(config.GERRIT_SERVER, username=un)
+        ju = JenkinsUtils()
         k_index = gu.addPubKey(config.USERS[un]["pubkey"])
         # Gerrit part
         assert gu.isPrjExist(pname)
@@ -102,17 +83,17 @@ class TestZuulOps(Base):
         self.dirs_to_delete.append(os.path.dirname(clone_dir))
 
         last_fail_build_num_ft = \
-            self.get_last_build_number("zuul-demo-functional-tests",
-                                       "lastFailedBuild")
+            ju.get_last_build_number("zuul-demo-functional-tests",
+                                     "lastFailedBuild")
         last_fail_build_num_ut = \
-            self.get_last_build_number("zuul-demo-unit-tests",
-                                       "lastFailedBuild")
+            ju.get_last_build_number("zuul-demo-unit-tests",
+                                      "lastFailedBuild")
         last_succeed_build_num_ft = \
-            self.get_last_build_number("zuul-demo-functional-tests",
-                                       "lastSuccessfulBuild")
+            ju.get_last_build_number("zuul-demo-functional-tests",
+                                     "lastSuccessfulBuild")
         last_succeed_build_num_ut = \
-            self.get_last_build_number("zuul-demo-unit-tests",
-                                       "lastSuccessfulBuild")
+            ju.get_last_build_number("zuul-demo-unit-tests",
+                                     "lastSuccessfulBuild")
 
         gitu.add_commit_and_publish(clone_dir, "master", "Test commit")
 
@@ -121,19 +102,22 @@ class TestZuulOps(Base):
         change_id = change_ids[0]
 
         # Give some time for jenkins to work
-        self.wait_till_job_completes("zuul-demo-functional-tests",
-                                     last_fail_build_num_ft, "lastFailedBuild")
-        self.wait_till_job_completes("zuul-demo-unit-tests",
-                                     last_fail_build_num_ut, "lastFailedBuild")
+        ju.wait_till_job_completes("zuul-demo-functional-tests",
+                                   last_fail_build_num_ft, "lastFailedBuild")
+        ju.wait_till_job_completes("zuul-demo-unit-tests",
+                                   last_fail_build_num_ut, "lastFailedBuild")
 
         attempt = 0
-        while not "jenkins" in gu.getReviewers(change_id) and attempt < 10:
+        while not "jenkins" in gu.getReviewers(change_id):
+            if attempt >= 10:
+                break
             time.sleep(1)
             attempt += 1
 
         attempt = 0
-        while gu.getReviewerApprovals(change_id, 'jenkins')['Verified'] != '0'\
-                and attempt < 10:
+        while gu.getReviewerApprovals(change_id, 'jenkins')['Verified'] != '-1':
+            if attempt >= 10:
+                break
             time.sleep(1)
             attempt += 1
 
@@ -151,21 +135,24 @@ class TestZuulOps(Base):
         gitu.add_commit_and_publish(clone_dir, "master", None, fnames=files)
 
         # Give some time for jenkins to work
-        self.wait_till_job_completes("zuul-demo-functional-tests",
-                                     last_succeed_build_num_ft,
+        ju.wait_till_job_completes("zuul-demo-functional-tests",
+                                   last_succeed_build_num_ft,
                                      "lastSuccessfulBuild")
-        self.wait_till_job_completes("zuul-demo-unit-tests",
-                                     last_succeed_build_num_ut,
-                                     "lastSuccessfulBuild")
+        ju.wait_till_job_completes("zuul-demo-unit-tests",
+                                   last_succeed_build_num_ut,
+                                   "lastSuccessfulBuild")
 
         attempt = 0
-        while not "jenkins" in gu.getReviewers(change_id) and attempt < 10:
+        while not "jenkins" in gu.getReviewers(change_id):
+            if attempt >= 10:
+                break
             time.sleep(1)
             attempt += 1
 
         attempt = 0
-        while gu.getReviewerApprovals(change_id, 'jenkins')['Verified'] != '0'\
-                and attempt < 10:
+        while gu.getReviewerApprovals(change_id, 'jenkins')['Verified'] != '+1':
+            if attempt >= 10:
+                break
             time.sleep(1)
             attempt += 1
 

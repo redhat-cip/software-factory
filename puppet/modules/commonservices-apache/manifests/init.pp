@@ -15,82 +15,114 @@
 
 class commonservices-apache {
 
-  package { 'apache2':
+  case $operatingsystem {
+    centos: {
+      $http = "httpd"
+      $provider = "systemd"
+      $gateway_conf = "/etc/httpd/conf.d/gateway.conf"
+      $httpd_user = "apache"
+
+      service {'webserver':
+        name       => $http,
+        ensure     => running,
+        enable     => true,
+        hasrestart => true,
+        hasstatus  => true,
+        provider   => $provider,
+      }
+
+    }
+    debian: {
+      $http = "apache2"
+      $provider = "debian"
+      $gateway_conf = "/etc/apache2/sites-available/gateway"
+      $httpd_user = "www-data"
+
+      file { '/etc/apache2/sites-enabled/000-default':
+        ensure => absent,
+        require => Package['webserver'],
+      }
+
+      exec {'enable_gateway':
+        command => 'a2ensite gateway',
+        path    => '/usr/sbin/:/usr/bin/:/bin/',
+        require => File['gateway_conf'],
+        before  => Class['monit'],
+      }
+
+      service {'webserver':
+        name       => $http,
+        ensure     => running,
+        enable     => true,
+        hasrestart => true,
+        hasstatus  => true,
+        provider   => $provider,
+        require    => Exec['enable_gateway'],
+      }
+
+    }
+  }
+
+  package {'webserver':
+    name   => $http,
     ensure => present,
   }
 
-  file {'/etc/apache2/sites-available/gateway':
+  file {'gateway_conf':
+    path   => $gateway_conf,
     ensure => file,
     mode   => '0640',
-    owner  => 'www-data',
-    group  => 'www-data',
+    owner  => $httpd_user,
+    group  => $httpd_user,
     content => template('commonservices-apache/gateway'),
-    notify => Service[apache2],
+    notify => Service['webserver'],
   }
 
   file {'/var/www/index.py':
     ensure => file,
     mode   => '0740',
-    owner  => 'www-data',
-    group  => 'www-data',
+    owner  => $httpd_user,
+    group  => $httpd_user,
     source  => 'puppet:///modules/commonservices-apache/index.py',
-    notify => Service[apache2],
+    notify => Service['webserver'],
   }
 
   file {'/var/www/index.html.tmpl':
     ensure => file,
     mode   => '0640',
-    owner  => 'www-data',
-    group  => 'www-data',
+    owner  => $httpd_user,
+    group  => $httpd_user,
     source  => 'puppet:///modules/commonservices-apache/index.html.tmpl',
-    notify => Service[apache2],
+    notify => Service['webserver'],
   }
 
   file {'/var/www/bootstrap.min.css':
     ensure => file,
     mode   => '0640',
-    owner  => 'www-data',
-    group  => 'www-data',
+    owner  => $httpd_user,
+    group  => $httpd_user,
     source  => 'puppet:///modules/commonservices-apache/bootstrap.min.css',
-    notify => Service[apache2],
+    notify => Service['webserver'],
   }
 
   file {'/var/www/bootstrap.min.js':
     ensure => file,
     mode   => '0640',
-    owner  => 'www-data',
-    group  => 'www-data',
+    owner  => $httpd_user,
+    group  => $httpd_user,
     source  => 'puppet:///modules/commonservices-apache/bootstrap.min.js',
-    notify => Service[apache2],
+    notify => Service['webserver'],
   }
 
   file {'/var/www/jquery.min.js':
     ensure => file,
     mode   => '0640',
-    owner  => 'www-data',
-    group  => 'www-data',
+    owner  => $httpd_user,
+    group  => $httpd_user,
     source  => 'puppet:///modules/commonservices-apache/jquery.min.js',
-    notify => Service[apache2],
+    notify => Service['webserver'],
   }
 
-  exec {'enable_gateway':
-    command => 'a2ensite gateway',
-    path    => '/usr/sbin/:/usr/bin/:/bin/',
-    require => [File['/etc/apache2/sites-available/gateway']],
-    before  => Class['monit'],
-  }
-
-  file { '/etc/apache2/sites-enabled/000-default':
-    ensure => absent,
-  }
-
-  service {'apache2':
-    ensure     => running,
-    enable     => true,
-    hasrestart => true,
-    hasstatus  => true,
-    require    => [Exec['enable_gateway'],]
-  }
 
   file { '/var/www/static':
     ensure  => link,

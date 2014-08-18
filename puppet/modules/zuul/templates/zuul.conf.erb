@@ -24,7 +24,7 @@ status_url=http://<%= scope.function_hiera(["zuul_pub_url"]) %>
 git_dir=/var/lib/zuul/git
 ;git_user_email=zuul@example.com
 ;git_user_name=zuul
-zuul_url=http://<%= scope.function_hiera(["jenkins_url"]) %>/p
+zuul_url=http://<%= scope.function_hiera(["top_domain"]) %>/zuul/p
 log_config=/etc/zuul/merger-logging.conf
 
 #[swift]

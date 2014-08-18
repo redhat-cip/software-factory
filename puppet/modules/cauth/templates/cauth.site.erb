@@ -1,5 +1,5 @@
 WSGIScriptAlias /auth /var/www/cauth/app.wsgi
-WSGIDaemonProcess cauth user=www-data group=www-data python-path=/var/www/cauth/
+WSGIDaemonProcess cauth python-path=/var/www/cauth/
 <Location /auth>
     WSGIPassAuthorization On
     WSGIProcessGroup cauth

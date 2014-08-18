@@ -17,6 +17,14 @@
 set -e
 set -x
 
+ROLES="puppetmaster"
+ROLES="$ROLES mysql"
+ROLES="$ROLES redmine"
+ROLES="$ROLES gerrit"
+ROLES="$ROLES managesf"
+ROLES="$ROLES commonservices"
+ROLES="$ROLES jenkins"
+
 function getip_from_yaml {
     cat ../hosts.yaml  | grep -A 1 "^  $1" | grep 'ip:' | cut -d: -f2 | sed 's/ *//g'
 }
@@ -197,7 +205,16 @@ function prepare_etc_puppet {
 
 function run_puppet_agent {
     puppet agent --test --environment sf || true
-    /etc/init.d/puppet start
+    service puppet start
+}
+
+function run_puppet_agent_stop {
+    # Be sure puppet agent is stopped
+    local ssh_port=22
+    MROLES=$(echo $ROLES | sed s/puppetmaster//)
+    for role in ${MROLES}; do
+        sshpass -p $TEMP_SSH_PWD ssh -p$ssh_port root@${role}.${SF_SUFFIX} "service puppet stop"
+    done
 }
 
 function trigger_puppet_apply {
@@ -211,7 +228,15 @@ function trigger_puppet_apply {
         # The Puppet run will deactivate the temporary root password
         sshpass -p $TEMP_SSH_PWD ssh -p$ssh_port root@${role}.${SF_SUFFIX} "puppet agent --test --environment sf || true"
         # Run another time. Should take only a few seconds per node if nothing needs to be changed
-        sshpass -p $TEMP_SSH_PWD ssh -p$ssh_port root@${role}.${SF_SUFFIX} "puppet agent --test --environment sf || true"
-        sshpass -p $TEMP_SSH_PWD ssh -p$ssh_port root@${role}.${SF_SUFFIX} "sleep 1800; /etc/init.d/puppet restart" &
+        #ssh -p$ssh_port root@${role}.${SF_SUFFIX} "puppet agent --test --environment sf || true"
+    done
+}
+
+function run_puppet_agent_start {
+    # Start puppet agent at the end of the bootstrap
+    local ssh_port=22
+    MROLES=$(echo $ROLES | sed s/puppetmaster//)
+    for role in ${MROLES}; do
+        ssh -p$ssh_port root@${role}.${SF_SUFFIX} "sleep 2700; service puppet start" &
     done
 }

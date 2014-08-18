@@ -17,53 +17,112 @@ class managesf ($gerrit = hiera_hash('gerrit', ''),
                 $redmine = hiera_hash('redmine', ''),
                 $cauth = hiera_hash("cauth", '')) {
 
-  package { 'apache2':
-    ensure => present,
+  case $operatingsystem {
+    centos: {
+      $http = "httpd"
+      $provider = "systemd"
+      $httpd_user = "apache"
+
+      package { $http:
+        ensure => present,
+      }
+
+      file {'/etc/httpd/conf.d/managesf.conf':
+        ensure => file,
+        mode   => '0640',
+        owner  => $httpd_user,
+        group  => $httpd_user,
+        content=> template('managesf/managesf.site.erb'),
+        notify => Service['webserver'],
+      }
+
+      service {'webserver':
+        name       => $http,
+        ensure     => running,
+        enable     => true,
+        hasrestart => true,
+        hasstatus  => true,
+        provider   => $provider,
+      }
+
+    }
+    debian: {
+      $http = "apache2"
+      $provider = "debian"
+      $httpd_user = "www-data"
+
+      package { $http:
+        ensure => present,
+      }
+
+      file { '/etc/apache2/sites-enabled/000-default':
+        ensure => absent,
+      }
+
+      file {'/etc/apache2/sites-available/managesf':
+        ensure => file,
+        mode   => '0640',
+        owner  => $httpd_user,
+        group  => $httpd_user,
+        content=> template('managesf/managesf.site.erb'),
+      }
+
+      exec {'enable_managesf_site':
+        command => 'a2ensite managesf',
+        path    => '/usr/sbin/:/usr/bin/:/bin/',
+        require => [File['/etc/apache2/sites-available/managesf'],
+                    File['/var/www/managesf/config.py']],
+        notify => Service['webserver'],
+      }
+
+      service {'webserver':
+        name       => $http,
+        ensure     => running,
+        enable     => true,
+        hasrestart => true,
+        hasstatus  => true,
+        provider   => $provider,
+        require    => Package[$http],
+      }
+
+    }
   }
 
-  package { 'libapache2-mod-wsgi':
-    ensure => present,
-  }
-
-  service {'apache2':
-    ensure  => running,
-    require => [Package['apache2'], Package['libapache2-mod-wsgi']],
-  }
 
 # managesf can't access keys in /root/.ssh and can only
 # access keys from /var/www/.ssh, so creating keys here
   file { '/var/www/.ssh':
     ensure  => directory,
-    owner   => 'www-data',
-    group   => 'www-data',
+    owner   => $httpd_user,
+    group   => $httpd_user,
     mode    => '0755',
   }
   file { '/var/www/.ssh/id_rsa':
     ensure  => present,
-    owner   => 'www-data',
-    group   => 'www-data',
+    owner   => $httpd_user,
+    group   => $httpd_user,
     mode    => '0600',
     source  => 'puppet:///modules/managesf/service_rsa',
     require => File['/var/www/.ssh'],
   }
   file { '/var/log/managesf/':
     ensure  => directory,
-    owner   => 'www-data',
-    group   => 'www-data',
+    owner   => $httpd_user,
+    group   => $httpd_user,
     mode    => '0750',
   }
 
   file { '/var/www/managesf/':
     ensure  => directory,
-    owner   => 'www-data',
-    group   => 'www-data',
+    owner   => $httpd_user,
+    group   => $httpd_user,
     mode    => '0640',
   }
 
   file { '/var/www/managesf/config.py':
     ensure  => present,
-    owner   => 'www-data',
-    group   => 'www-data',
+    owner   => $httpd_user,
+    group   => $httpd_user,
     mode    => '0640',
     content => template('managesf/managesf-config.py.erb'),
     require => File['/var/www/managesf/'],
@@ -72,30 +131,11 @@ class managesf ($gerrit = hiera_hash('gerrit', ''),
 
   file { '/var/www/managesf/gerrit_admin_rsa':
     ensure => present,
-    owner  => 'www-data',
-    group  => 'www-data',
+    owner   => $httpd_user,
+    group   => $httpd_user,
     mode   => '0400',
     source => 'puppet:///modules/managesf/gerrit_admin_rsa',
     require => File['/var/www/managesf/'],
   }
 
-  file {'/etc/apache2/sites-available/managesf':
-    ensure => file,
-    mode   => '0640',
-    owner  => 'www-data',
-    group  => 'www-data',
-    content=> template('managesf/managesf.site.erb'),
-  }
-
-  file { '/etc/apache2/sites-enabled/000-default':
-    ensure => absent,
-  }
-
-  exec {'enable_managesf_site':
-    command => 'a2ensite managesf',
-    path    => '/usr/sbin/:/usr/bin/:/bin/',
-    require => [File['/etc/apache2/sites-available/managesf'],
-                File['/var/www/managesf/config.py']],
-    notify => Service[apache2],
-  }
 }

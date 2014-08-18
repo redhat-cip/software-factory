@@ -4,11 +4,11 @@ hostname: mysql
 fqdn: mysql.SF_SUFFIX
 disable_root: 0
 runcmd:
-  - /etc/init.d/puppet stop
+  - service puppet stop
   - echo puppetmaster-ip-template puppetmaster.SF_SUFFIX puppet puppetmaster >> /etc/hosts
   - sed -i -e '0,/^$/s/^$/server=puppetmaster.SF_SUFFIX\n/g' /etc/puppet/puppet.conf
   - /bin/echo -e "\n[agent]\nenvironment=sf" >> /etc/puppet/puppet.conf
   - echo "root:SSHPASS" | chpasswd
   - echo NAMESERVER > /etc/resolv.conf
   - echo UseDNS no >> /etc/ssh/sshd_config
-  - /etc/init.d/ssh reload
+  - service ssh reload || service sshd reload

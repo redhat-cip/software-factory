@@ -23,7 +23,7 @@ class jjb ($settings = hiera_hash('jenkins', ''),
     ensure  => file,
     mode    => '0400',
     owner   => 'jenkins',
-    group   => 'nogroup',
+    group   => 'jenkins',
     content => template('jjb/jenkins_jobs.ini.erb'),
     require => User['jenkins'],
   }
@@ -45,7 +45,7 @@ class jjb ($settings = hiera_hash('jenkins', ''),
     ensure  => link,
     target  => '/var/www/managesf/cli/sf-manage.py',
     require => File['/var/www/managesf/cli/sf-manage.py']
-  } 
+  }
 
   file {'/root/init-config-repo.sh':
     ensure  => file,
@@ -61,7 +61,7 @@ class jjb ($settings = hiera_hash('jenkins', ''),
     owner   => 'root',
     group   => 'root',
   }
-  
+
   file {'/usr/share/sf-jjb/default.yaml':
     ensure => file,
     mode   => '0640',
@@ -70,7 +70,7 @@ class jjb ($settings = hiera_hash('jenkins', ''),
     require => File['/usr/share/sf-jjb'],
     source => 'puppet:///modules/jjb/default.yaml',
   }
-  
+
   file {'/usr/share/sf-jjb/jobs.yaml':
     ensure => file,
     mode   => '0640',
@@ -79,7 +79,7 @@ class jjb ($settings = hiera_hash('jenkins', ''),
     require => File['/usr/share/sf-jjb'],
     source => 'puppet:///modules/jjb/jobs.yaml',
   }
-  
+
   file {'/usr/share/sf-jjb/macros.yaml':
     ensure => file,
     mode   => '0640',
@@ -88,7 +88,7 @@ class jjb ($settings = hiera_hash('jenkins', ''),
     require => File['/usr/share/sf-jjb'],
     source => 'puppet:///modules/jjb/macros.yaml',
   }
-  
+
   file {'/usr/share/sf-jjb/projects.yaml':
     ensure => file,
     mode   => '0640',
@@ -97,7 +97,7 @@ class jjb ($settings = hiera_hash('jenkins', ''),
     require => File['/usr/share/sf-jjb'],
     content => template('jjb/projects.yaml.erb'),
   }
-  
+
   file {'/usr/local/jenkins':
     ensure   => directory,
     mode     => '0540',
@@ -121,7 +121,7 @@ class jjb ($settings = hiera_hash('jenkins', ''),
     content  => template('jjb/kick.sh.erb'),
     require  => File['/usr/local/jenkins/slave_scripts'],
   }
-  
+
   exec {'init_config_repo':
     command => '/root/init-config-repo.sh',
     path    => '/usr/sbin/:/usr/bin/:/bin/:/usr/local/bin',

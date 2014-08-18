@@ -27,6 +27,8 @@ import json
 import requests as http
 import config
 import requests
+import time
+import yaml
 from requests.auth import HTTPBasicAuth
 from requests.exceptions import HTTPError
 from pygerrit.rest import _decode_response
@@ -154,39 +156,6 @@ class ManageSfUtils(Tool):
         if url:
             cmd = cmd + " --url " + url
         self.exe(cmd, self.install_dir)
-
-
-class JenkinsUtils():
-    # TODO: migrate more from existing tests to
-    # that class
-    def __init__(self, username, password):
-        self.username = username
-        self.password = password
-
-    def create_job(self, name):
-        url = "http://%s:%s@%s/jenkins/createItem" % (
-            self.username, self.password,
-            config.JENKINS_HOST)
-        headers = {'content-type': 'text/xml'}
-        resp = http.post(url,
-                         params={'name': name},
-                         data=EMPTY_JOB_XML,
-                         headers=headers)
-        return resp.status_code
-
-    def list_jobs(self):
-        from xml.dom import minidom
-        url = "http://%s:%s@%s/jenkins/api/xml" % (
-            self.username, self.password,
-            config.JENKINS_HOST)
-        resp = http.get(url)
-        if resp.status_code == 200:
-            jobs = []
-            for job in minidom.parseString(resp.text).\
-                    getElementsByTagName('job'):
-                jobs.append(job.firstChild.childNodes[0].data)
-            return jobs
-        return None
 
 
 class GerritGitUtils(Tool):
@@ -639,3 +608,66 @@ class RedmineUtil:
             return True
 
         return False
+
+class JenkinsUtils:
+    def __init__(self):
+        with open('/etc/puppet/hiera/sf/jenkins.yaml') as fh:
+            yconfig = yaml.load(fh)
+            self.jenkins_user = 'jenkins'
+            self.jenkins_password = yconfig.get('jenkins').get('jenkins_password')
+        self.server = config.JENKINS_SERVER
+        
+    
+    def get(self, url):
+        return requests.get(url, auth=(self.jenkins_user,
+                                       self.jenkins_password))
+    
+    def post(self, url, param, data, headers):
+        return requests.post(url,
+                             params=params,
+                             data=data,
+                             headers=headers,
+                             auth=(self.jenkins_user,
+                                   self.jenkins_password))
+    
+    def create_job(self, name):
+        url = "%s/createItem" % self.server
+        headers = {'content-type': 'text/xml'}
+        resp = self.post(url,
+                         params={'name': name},
+                         data=EMPTY_JOB_XML,
+                         headers=headers)
+        return resp.status_code
+
+    def list_jobs(self):
+        from xml.dom import minidom
+        url = "%s/api/xml" % self.server
+        resp = self.get(url)
+        if resp.status_code == 200:
+            jobs = []
+            for job in minidom.parseString(resp.text).\
+                    getElementsByTagName('job'):
+                jobs.append(job.firstChild.childNodes[0].data)
+            return jobs
+        return None
+    
+    def get_last_build_number(self, job_name, type):
+        url = "%(server)s/job/%(job_name)s/%(type)s/buildNumber" \
+              % {'server': self.server, 'job_name': job_name, 'type': type}
+        try:
+            resp = self.get(url)
+            return int(resp.text)
+        except:
+            return 0
+    
+    def wait_till_job_completes(self, job_name, last, type):
+        retries = 0
+        while True:
+            cur = self.get_last_build_number(job_name, type)
+            if cur > last:
+                break
+            elif retries > 30:
+                break
+            else:
+                time.sleep(1)
+                retries += 1

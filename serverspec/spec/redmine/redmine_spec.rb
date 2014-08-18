@@ -14,8 +14,8 @@
 # under the License.
 require 'spec_helper'
 
-describe package('redmine') do
-  it { should be_installed }
+if os[:family] == 'Debian7'
+  describe package('redmine') do
+    it { should be_installed }
+  end
 end
-
-

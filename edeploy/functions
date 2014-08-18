@@ -56,4 +56,17 @@ function put_git_mark {
     echo $sha >> $dir/etc/SF_GIT_COMMIT
 }
 
+function install_bup {
+    local dir=$1
+    if [ -d "${dir}/etc/apt/" ]; then
+        # This is only usage on yum based dist
+        return
+    fi
+    install_packages $dir "cpp gcc python-devel pyxattr pylibacl perl-Time-HiRes"
+    do_chroot $dir mkdir -p /opt/bup
+    do_chroot $dir git clone https://github.com/bup/bup.git /opt/bup/
+    do_chroot $dir bash -c 'cd /opt/bup && git checkout 0.26'
+    do_chroot $dir bash -c 'cd /opt/bup && ./configure && make && make install'
+}
+
 . ${ORIG}/functions

@@ -30,8 +30,9 @@ update_repositories $dir
 
 case "$(package_tool)" in
     "yum")
-        install_pip
-        install_packages $dir openldap-devel python-devel postfix gcc bc
+        sshpass="http://downloads.sourceforge.net/project/sshpass/sshpass/1.05/sshpass-1.05.tar.gz"
+        install_packages $dir vim-enhanced openldap-devel python-devel postfix gcc bc
+        do_chroot $dir bash -c "cd /tmp/ && wget $sshpass && tar -xvzf sshpass-1.05.tar.gz && cd sshpass-1.05 && ./configure && make install"
         ;;
     "apt")
         install_packages $dir cpp rake make python-pip sshpass bc gcc python-dev libldap2-dev libsasl2-dev monit postfix bup
@@ -49,6 +50,11 @@ HOME=/root do_chroot $dir gem install specinfra
     mkdir $dir/root/puppet-bootstrapper
     cp -Rv $PUPPET_BOOTSTRAPPER $dir/root/puppet-bootstrapper/
 )
+
+# install-server-vm embed Jenkins (We dont want to have it here ...)
+# The role Jenkins does not deactivate the jenkins service at startup
+# https://github.com/enovance/edeploy-roles/issues/80
+do_chroot $dir bash -c "for x in {0..6}; do ls /etc/rc\${x}.d/*jenkins | xargs rm -f ; done"
 
 # install requirements for functional tests
 do_chroot $dir pip install nose

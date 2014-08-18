@@ -16,12 +16,129 @@
 class jenkins ($settings = hiera_hash('jenkins', '')) {
   $jenkins_password = $settings['jenkins_password']
 
+  case $operatingsystem {
+    centos: {
+      $http = "httpd"
+      $provider = "systemd"
+      $httpd_user = "apache"
+      $htpasswd = "/etc/httpd/htpasswd"
+
+      file {'/etc/httpd/conf.d/ports.conf':
+        ensure => file,
+        mode   => '0640',
+        owner  => $httpd_user,
+        group  => $httpd_user,
+        source =>'puppet:///modules/jenkins/ports.conf',
+      }
+
+      file {'/etc/httpd/conf.d/jenkins.conf':
+        ensure => file,
+        mode   => '0640',
+        owner  => $httpd_user,
+        group  => $httpd_user,
+        content => template('jenkins/jenkins.site.erb'),
+        require => File['/etc/httpd/conf.d/ports.conf'],
+        notify => Service['webserver'],
+      }
+
+      file {'/etc/init.d/jenkins':
+        ensure  => 'absent',
+      }
+
+      file {'/lib/systemd/system/jenkins.service':
+        ensure => file,
+        mode   => '0640',
+        owner  => $httpd_user,
+        group  => $httpd_user,
+        source =>'puppet:///modules/jenkins/jenkins.service',
+      }
+
+      service { 'jenkins':
+        ensure  => 'running',
+        enable  => 'true',
+        require => File['/lib/systemd/system/jenkins.service'],
+      }
+    }
+    debian: {
+      $http = "apache2"
+      $provider = "debian"
+      $httpd_user = "www-data"
+      $htpasswd = "/etc/apache2/htpasswd"
+
+      file {'/etc/apache2/sites-available/jenkins':
+        ensure => file,
+        mode   => '0640',
+        owner  => $httpd_user,
+        group  => $httpd_user,
+        content => template('jenkins/jenkins.site.erb'),
+      }
+
+      file { '/etc/apache2/sites-enabled/000-default':
+        ensure => absent,
+      }
+
+      file {'/etc/apache2/ports.conf':
+        ensure => file,
+        mode   => '0640',
+        owner  => $httpd_user,
+        group  => $httpd_user,
+        source =>'puppet:///modules/jenkins/apache-ports.conf',
+      }
+
+      exec { 'a2enmod_headers':
+        command   => "/usr/sbin/a2enmod headers",
+        require   => Package[$http],
+        subscribe => Package[$http],
+        refreshonly => true,
+      }
+
+      exec { 'a2enmode_proxy':
+        command   => "/usr/sbin/a2enmod proxy",
+        require   => Package[$http],
+        subscribe => Package[$http],
+        refreshonly => true,
+      }
+
+      exec { 'a2enmode_proxy_http':
+        command   => "/usr/sbin/a2enmod proxy_http",
+        require   => Package[$http],
+        subscribe => Package[$http],
+        refreshonly => true,
+      }
+
+      exec {'enable_jenkins_site':
+        command => 'a2ensite jenkins',
+        path    => '/usr/sbin/:/usr/bin/:/bin/',
+        require => [File['/etc/apache2/sites-available/jenkins'],
+                    File['/etc/apache2/ports.conf'],
+                    Exec['jenkins_user']],
+        notify => Service['webserver'],
+      }
+
+      service { 'jenkins':
+        ensure  => 'running',
+        enable  => 'true',
+        require => File['/etc/default/jenkins'],
+      }
+    }
+  }
+
   user { 'jenkins':
-    ensure   => present,
+    ensure  => present,
+    require => Group['jenkins'],
   }
 
   group { 'jenkins':
     ensure => present,
+  }
+
+  file {'/etc/default/jenkins':
+    ensure  => file,
+    mode    => '0644',
+    owner   => 'root',
+    group   => 'root',
+    source  => 'puppet:///modules/jenkins/etc_default_jenkins',
+    replace => true
   }
 
   file { "/var/lib/jenkins/.ssh":
@@ -42,7 +159,7 @@ class jenkins ($settings = hiera_hash('jenkins', '')) {
     ensure  => file,
     mode    => '0644',
     owner   => 'jenkins',
-    group   => 'nogroup',
+    group   => 'jenkins',
     content => template('jenkins/jenkins.model.JenkinsLocationConfiguration.xml.erb'),
     require => User['jenkins'],
   }
@@ -50,7 +167,7 @@ class jenkins ($settings = hiera_hash('jenkins', '')) {
     ensure  => file,
     mode    => '0644',
     owner   => 'jenkins',
-    group   => 'nogroup',
+    group   => 'jenkins',
     content => template('jenkins/hudson.plugins.git.GitSCM.xml.erb'),
     require => User['jenkins'],
   }
@@ -58,7 +175,7 @@ class jenkins ($settings = hiera_hash('jenkins', '')) {
     ensure  => file,
     mode    => '0644',
     owner   => 'jenkins',
-    group   => 'nogroup',
+    group   => 'jenkins',
     source  => 'puppet:///modules/jenkins/gearman_config.xml',
     require => User['jenkins'],
   }
@@ -66,7 +183,7 @@ class jenkins ($settings = hiera_hash('jenkins', '')) {
     ensure  => file,
     mode    => '0644',
     owner   => 'jenkins',
-    group   => 'nogroup',
+    group   => 'jenkins',
     content => template('jenkins/hudson.tasks.Mailer.xml'),
     require => User['jenkins'],
   }
@@ -74,25 +191,9 @@ class jenkins ($settings = hiera_hash('jenkins', '')) {
     ensure  => file,
     mode    => '0644',
     owner   => 'jenkins',
-    group   => 'nogroup',
+    group   => 'jenkins',
     source  =>'puppet:///modules/jenkins/swarm-1.15.hpi',
     require => User['jenkins'],
-  }
-  file {'/etc/default/jenkins':
-    ensure  => file,
-    mode    => '0644',
-    owner   => 'root',
-    group   => 'root',
-    source  => 'puppet:///modules/jenkins/etc_default_jenkins',
-    replace => true
-  }
-  file {'/etc/sudoers.d/jenkins':
-    ensure  => file,
-    mode    => '0440',
-    owner   => 'root',
-    group   => 'root',
-    source  => 'puppet:///modules/jenkins/sudoers_jenkins',
-    replace => true
   }
   file {'/var/lib/jenkins/config.xml':
     ensure  => file,
@@ -105,12 +206,16 @@ class jenkins ($settings = hiera_hash('jenkins', '')) {
                 File['/var/lib/jenkins/hudson.plugins.gearman.GearmanPluginConfig.xml'],
                 File['/var/lib/jenkins/hudson.tasks.Mailer.xml'],
                 File['/var/lib/jenkins/plugins/swarm-1.15.hpi'],
-                File['/etc/sudoers.d/jenkins'],
-                File['/etc/default/jenkins']],
+                File['/etc/sudoers.d/jenkins']],
   }
-  service { 'jenkins':
-    ensure  => 'running',
-    enable  => 'true',
+
+  file {'/etc/sudoers.d/jenkins':
+    ensure  => file,
+    mode    => '0440',
+    owner   => 'root',
+    group   => 'root',
+    source  => 'puppet:///modules/jenkins/sudoers_jenkins',
+    replace => true
   }
 
   file { '/etc/monit/conf.d/jenkins':
@@ -120,74 +225,26 @@ class jenkins ($settings = hiera_hash('jenkins', '')) {
     notify  => Service['monit'],
   }
 
-  package { 'apache2':
+  exec {'jenkins_user':
+    command   => "/usr/bin/htpasswd -bc $htpasswd jenkins $jenkins_password",
+    require   => Package[$http],
+    subscribe => Package[$http],
+    creates => $htpasswd,
+  }
+
+  package { $http:
     ensure => present,
   }
 
-  service {'apache2':
+  service {'webserver':
+    name    => $http,
     ensure  => running,
-    require => Package['apache2'],
+    require => Package[$http],
   }
 
-  file {'/etc/apache2/sites-available/jenkins':
-    ensure => file,
-    mode   => '0640',
-    owner  => 'www-data',
-    group  => 'www-data',
-    source =>'puppet:///modules/jenkins/jenkins.site',
-  }
-
-  file { '/etc/apache2/sites-enabled/000-default':
-    ensure => absent,
-  }
-
-  file {'/etc/apache2/ports.conf':
-    ensure => file,
-    mode   => '0640',
-    owner  => 'www-data',
-    group  => 'www-data',
-    source =>'puppet:///modules/jenkins/apache-ports.conf',
-  }
-
-  exec {'jenkins_user':
-    command   => "/usr/bin/htpasswd -bc /etc/apache2/htpasswd jenkins $jenkins_password",
-    require   => Package['apache2'],
-    subscribe => Package['apache2'],
-    creates => "/etc/apache2/htpasswd",
-  }
-
-  exec { 'a2enmod_headers':
-    command   => "/usr/sbin/a2enmod headers",
-    require   => Package['apache2'],
-    subscribe => Package['apache2'],
-    refreshonly => true,
-  }
-
-  exec { 'a2enmode_proxy':
-    command   => "/usr/sbin/a2enmod proxy",
-    require   => Package['apache2'],
-    subscribe => Package['apache2'],
-    refreshonly => true,
-  }
-
-  exec { 'a2enmode_proxy_http':
-    command   => "/usr/sbin/a2enmod proxy_http",
-    require   => Package['apache2'],
-    subscribe => Package['apache2'],
-    refreshonly => true,
-  }
-
-  exec {'enable_jenkins_site':
-    command => 'a2ensite jenkins',
-    path    => '/usr/sbin/:/usr/bin/:/bin/',
-    require => [File['/etc/apache2/sites-available/jenkins'],
-                File['/etc/apache2/ports.conf'],
-                Exec['jenkins_user']],
-    notify => Service[apache2],
-  }
 
   bup::scripts{ 'jenkins_scripts':
-    backup_script => 'jenkins/backup.sh.erb', 
+    backup_script => 'jenkins/backup.sh.erb',
     restore_script => 'jenkins/restore.sh.erb',
   }
 }

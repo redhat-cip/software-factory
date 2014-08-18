@@ -20,189 +20,182 @@ version="$3"
 DATA=../data
 ROLE=softwarefactory
 ORIG=$(cd $(dirname $0); pwd)
-NPM_INSTALL=1.4.21
 
 . ${ORIG}/functions
 
-
-#
-# Gerrit
-#
+NPM_INSTALL=1.4.21
 LASTWAR="http://***REMOVED***/v1/AUTH_0e436aacf0854b9abe70aa90f9e0864d/gerrit/gerrit285.war"
 MYSQLJAVA="http://repo2.maven.org/maven2/mysql/mysql-connector-java/5.1.21/mysql-connector-java-5.1.21.jar"
 BCPROVJAVA="http://www.bouncycastle.org/download/bcprov-jdk15on-149.jar"
 BCPKIXJAVA="http://www.bouncycastle.org/download/bcpkix-jdk15on-149.jar"
 PYREDMINEWS="https://pypi.python.org/packages/source/p/pyredmine/pyredmine-0.2.4.tar.gz"
-GERRITHOOKS=../gerrit-hooks
-GERRIT_PACKAGES="openjdk-7-jre apache2 file"
-
-ZUUL_PACKAGES="libjs-jquery"
-
-#
-# Redmine
-#
-REDMINE_PACKAGES="apache2 libapache2-mod-passenger redmine-sqlite redmine-mysql redmine vim puppet git cron bundler libxml2-dev libxslt-dev build-essential ruby1.9.1-dev ruby1.9.1"
-
-#
-# Managesf
-#
-MANAGESF_PACKAGES="apache2 libapache2-mod-wsgi puppet python-dev libldap2-dev libsasl2-dev libssl-dev gcc"
-
-#
-# Etherpad
-#
-ETHERPAD_PACKAGES="nodejs apache2"
 ETHERPAD_LITE="https://codeload.github.com/ether/etherpad-lite/tar.gz/1.4.0"
 NODEJS_NPM="https://www.npmjs.org/install.sh"
+REDMINE_RHEL="http://www.redmine.org/releases/redmine-2.5.2.tar.gz"
+MOD_AUTH_PUBTKT="https://neon1.net/mod_auth_pubtkt/mod_auth_pubtkt-0.8.tar.gz"
 
-#
-# Other
-#
-OTHER_PACKAGES="git puppet vim mysql-client python-pip python-dateutil monit postfix apache2-prefork-dev libapache2-mod-auth-pubtkt socat bup"
+GERRITHOOKS=../gerrit-hooks
 
-#
-# Paste (lodgeit)
-#
-PASTE_PACKAGES="python-dev python-setuptools python-virtualenv build-essential python-imaging python-werkzeug python-babel python-jinja2 python-pygments python-sqlalchemy python-simplejson python-mysqldb"
-
-#
-# Cauth
-#
-CAUTH_PACKAGES="libsasl2-dev libldap2-dev"
-
-PACKAGES="${GERRIT_PACKAGES} ${REDMINE_PACKAGES} ${MANAGESF_PACKAGES} ${ETHERPAD_PACKAGES} ${OTHER_PACKAGES} ${PASTE_PACKAGES} ${ZUUL_PACKAGES} ${CAUTH_PACKAGES}"
-
-
-
+# This function will check the target OS kind and skip if needed
 restore_apt_repo $dir
-update_repositories $dir
-install_ib_if_needed $ORIG $dir
 
 $EDEPLOY_ROLES_PATH/jenkins.install $dir $dir $version
+# The role Jenkins does not deactivate the jenkins service at startup
+# https://github.com/enovance/edeploy-roles/issues/80
+do_chroot $dir bash -c "for x in {0..6}; do ls /etc/rc\${x}.d/*jenkins | xargs rm -f ; done"
 
 case "$(package_tool)" in
   "apt")
-    # To remove (but maybe the the vm role should remove that) :
-    do_chroot $dir rm /etc/apt/sources.list.d/hwraid.list
-    #
-    #
-    # Add wheezy-backport for Redmine 2.4.2 and nodejs
-    #
-    repository=$(add_main_repository $DIST)
-    cat > ${dir}/etc/apt/sources.list.d/$RELEASE-backport.list <<EOF
-      deb $repository ${RELEASE}-backports main
+     GERRIT_PACKAGES="openjdk-7-jre apache2 file"
+     REDMINE_PACKAGES="apache2 libapache2-mod-passenger redmine-sqlite redmine-mysql redmine vim puppet git cron bundler libxml2-dev libxslt-dev build-essential ruby1.9.1-dev ruby1.9.1"
+     MANAGESF_PACKAGES="apache2 libapache2-mod-wsgi puppet python-dev libldap2-dev libsasl2-dev libssl-dev gcc"
+     ETHERPAD_PACKAGES="nodejs apache2"
+     OTHER_PACKAGES="git puppet vim mysql-client python-pip python-dateutil monit postfix apache2-prefork-dev libapache2-mod-auth-pubtkt socat bup"
+     PASTE_PACKAGES="python-dev python-setuptools python-virtualenv build-essential python-imaging python-werkzeug python-babel python-jinja2 python-pygments python-sqlalchemy python-simplejson python-mysqldb"
+     CAUTH_PACKAGES="libsasl2-dev libldap2-dev"
+     PACKAGES="${GERRIT_PACKAGES} ${REDMINE_PACKAGES} ${MANAGESF_PACKAGES} ${ETHERPAD_PACKAGES} ${OTHER_PACKAGES} ${PASTE_PACKAGES} ${CAUTH_PACKAGES}"
+     
+     update_repositories $dir
+     install_ib_if_needed $ORIG $dir
+
+     do_chroot $dir rm /etc/apt/sources.list.d/hwraid.list
+     # Add wheezy-backport for Redmine 2.4.2 and nodejs
+     repository=$(add_main_repository $DIST)
+     cat > ${dir}/etc/apt/sources.list.d/$RELEASE-backport.list <<EOF
+       deb $repository ${RELEASE}-backports main
 EOF
-    pin_repository $DIST $dir 'http.debian.net' 500 'wheezy-backports' 'wheezy-backports' main
-    update_repositories $dir
+     pin_repository $DIST $dir 'http.debian.net' 500 'wheezy-backports' 'wheezy-backports' main
+     update_repositories $dir
 
-    # Redmine
-    do_chroot $dir /usr/share/debconf/fix_db.pl
-    do_chroot $dir debconf-set-selections <<< "redmine redmine/instances/default/dbconfig-install boolean false"
-    do_chroot $dir debconf-set-selections <<< "redmine redmine/instances/default/internal/skip-preseed boolean true"
+     # Redmine
+     do_chroot $dir /usr/share/debconf/fix_db.pl
+     do_chroot $dir debconf-set-selections <<< "redmine redmine/instances/default/dbconfig-install boolean false"
+     do_chroot $dir debconf-set-selections <<< "redmine redmine/instances/default/internal/skip-preseed boolean true"
 
-    install_packages $dir "$PACKAGES"
+     install_packages $dir "$PACKAGES"
 
-    # Fix Redmine backport inconcistency
-    do_chroot $dir mkdir -p /usr/buildout
-    do_chroot $dir ln -s /usr/lib/passenger/agents/ /usr/buildout/agents
-    do_chroot $dir ln -s /usr/share/passenger/helper-scripts/ /usr/helper-scripts
+     # Socat as a service
+     do_chroot $dir git clone https://github.com/asaif/socat-init.git /root/socat --depth 1
+     do_chroot $dir cp /root/socat/socat /etc/init.d/
 
-    # Install Redmine backlog plugin
-    do_chroot $dir mkdir -p /usr/share/redmine/plugins
-    do_chroot $dir git clone git://github.com/backlogs/redmine_backlogs.git /usr/share/redmine/plugins/redmine_backlogs --depth 1
-    HOME=/root do_chroot $dir bash -c 'cd /usr/share/redmine/plugins/redmine_backlogs && bundle install'
+     # Fix Redmine backport inconcistency
+     do_chroot $dir mkdir -p /usr/buildout
+     do_chroot $dir ln -s /usr/lib/passenger/agents/ /usr/buildout/agents
+     do_chroot $dir ln -s /usr/share/passenger/helper-scripts/ /usr/helper-scripts
 
-    # Install Redmine http plugin
-    do_chroot $dir git clone git://github.com/kevinfoote/redmine_http_auth.git /usr/share/redmine/plugins/redmine_http_auth --depth 1
-
-    #
-    # Etherpad_lite
-    #
-    do_chroot $dir curl $ETHERPAD_LITE -o /tmp/etherpad_lite.tar.gz
-    do_chroot $dir curl $NODEJS_NPM -o /tmp/npm-install.sh
-    # Try to avoid the failure in jenkins
-    do_chroot $dir sed -i "s#</dev/tty##" /tmp/npm-install.sh
-    do_chroot $dir tar -xzf /tmp/etherpad_lite.tar.gz -C /var/www/
-    # /bin/installDeps.sh is looking for /usr/bin/node
-    do_chroot $dir ln -s /usr/bin/nodejs /usr/bin/node
-    npm_install=$NPM_INSTALL do_chroot $dir sh /tmp/npm-install.sh
-    # Use the European mirror
-    do_chroot $dir sed -i "s|npm install|npm --registry http://registry.npmjs.eu/ install|" /var/www/etherpad-lite-1.4.0/bin/installDeps.sh
-    do_chroot $dir sh /var/www/etherpad-lite-1.4.0/bin/installDeps.sh
-
-    #
-    # Paste (Lodgeit)
-    #
-    do_chroot $dir mkdir -p /srv/lodgeit
-    do_chroot $dir git clone https://git.openstack.org/openstack-infra/lodgeit /srv/lodgeit/lodgeit --depth 1
-    do_chroot $dir bash -c 'cd /srv/lodgeit/lodgeit && git checkout c69f555032'  # latest commit as of 05. May 2014
-
-    # zuul
-    do_chroot $dir git clone https://github.com/openstack-infra/zuul /srv/zuul
-    do_chroot $dir bash -c "cd /srv/zuul && git checkout -b working 84bbc2589ef34556130a31782e482d4e5871be1e"
-    do_chroot $dir bash -c "cd /srv/zuul && python /srv/zuul/setup.py install"
-    # 06/19/2014 - The two line below manage to quick fix some dependencies problem with Zuul (Need to be removed later)
-    do_chroot $dir bash -c "cd /srv/zuul && pip install -U setuptools"
-    do_chroot $dir bash -c "cd /srv/zuul && pip install -U -r requirements.txt"
-    do_chroot $dir bash -c "cd /srv/zuul && pip install APScheduler==2.1.0"
-    curl -L --silent https://github.com/twbs/bootstrap/releases/download/v3.2.0/bootstrap-3.2.0-dist.zip > $dir/srv/zuul/bootstrap.zip
-    unzip -q -o $dir/srv/zuul/bootstrap.zip -d $dir/srv/zuul/etc/status/public_html/
-    curl http://status.openstack.org/jquery-visibility.min.js -o $dir/srv/zuul/etc/status/public_html/jquery-visibility.min.js
-    curl http://status.openstack.org/jquery-graphite.js -o $dir/srv/zuul/etc/status/public_html/jquery.graphite.js
-    rm -R $dir/srv/zuul/bootstrap.zip
-
-    #
-    # Gerrit
-    #
-    mkdir ${dir}/root/gerrit_data_source/
-    wget -q $LASTWAR -O ${dir}/root/gerrit_data_source/gerrit.war
-    wget -q $MYSQLJAVA -O ${dir}/root/gerrit_data_source/mysql-connector-java-5.1.21.jar
-    wget -q $BCPROVJAVA -O ${dir}/root/gerrit_data_source/bcprov-jdk15on-149.jar
-    wget -q $BCPKIXJAVA -O ${dir}/root/gerrit_data_source/bcpkix-jdk15on-149.jar
-    do_chroot $dir pip install $PYREDMINEWS
-    cp -Rf $GERRITHOOKS ${dir}/root/gerrit_data_source/
-    do_chroot $dir a2enmod proxy_http
-    do_chroot $dir a2enmod rewrite
-    do_chroot $dir a2enmod headers
-
-    do_chroot $dir sed -i -e 's/START=.*/START=yes/g' /etc/default/puppet
-    do_chroot $dir update-rc.d puppet defaults
-    do_chroot $dir update-rc.d -f apache2 remove
-    do_chroot $dir update-rc.d -f gerrit remove
-    do_chroot $dir update-rc.d -f jenkins remove
-
-    #
-    # Cauth server
-    #
-    cp -r ../tools/cauth ${dir}/var/www/cauth
-    do_chroot $dir bash -c "cd /srv/zuul && pip install -U funcparserlib"
-    do_chroot $dir bash -c "cd /srv/zuul && pip install -U mockldap"
-    do_chroot $dir pip install httmock
-
-    #
-    # Socat as a service
-    #
-    do_chroot $dir git clone https://github.com/asaif/socat-init.git /root/socat --depth 1
-    do_chroot $dir cp /root/socat/socat /etc/init.d/
-
-    ;;
+     # Activate apache mods for Gerrit
+     do_chroot $dir a2enmod proxy_http
+     do_chroot $dir a2enmod rewrite
+     do_chroot $dir a2enmod headers
+     
+     # Be sure service are stopped
+     do_chroot $dir update-rc.d -f apache2 remove
+     do_chroot $dir update-rc.d -f jenkins remove
+     
+     do_chroot $dir sed -i -e 's/START=.*/START=yes/g' /etc/default/puppet
+     do_chroot $dir update-rc.d puppet defaults
+     ;;
   "yum")
-    do_chroot $dir yum install -y $PACKAGES gcc openldap-devel python-devel
-    ;;
+     CODENAME_MAJOR=7
+     PUPPET_RELEASE=$CODENAME_MAJOR-10
+     # The puppetlas-release package install repo desc for puppet in yum
+     install_packages ${dir} http://yum.puppetlabs.com/el/$CODENAME_MAJOR/products/x86_64/puppetlabs-release-$PUPPET_RELEASE.noarch.rpm
+     add_epel_repository $DIST
+     install_packages $dir "puppet monit postfix git python-pip vim-enhanced gcc cpp python-devel libxml2-devel libxslt-devel nodejs openldap-devel httpd java-1.6.0-openjdk zlib-devel libcurl-devel openssl-devel httpd-devel apr-devel apr-util-devel mariadb-devel gcc-c++ ruby-devel ImageMagick-devel python-werkzeug python-babel python-jinja2 MySQL-python socat mod_wsgi m2crypto mariadb gitweb"
+     # Install SQLAlchemy for paste lodegit (not available in yum)
+     do_chroot $dir pip install SQLAlchemy 
+     install_bup $dir
+     # Install mod authpub tkt for apache (SSO)
+     do_chroot $dir bash -c "cd /tmp && curl -O $MOD_AUTH_PUBTKT && tar -xvzf mod_auth_pubtkt-0.8.tar.gz"
+     do_chroot $dir bash -c "cd /tmp/mod_auth_pubtkt-0.8 && ./configure --apxs=/usr/bin/apxs && make && make install"
+     do_chroot $dir rm -Rf /tmp/mod_auth_pubtkt-0.8
+     # Install Passenger for Redmine
+     mkdir -p $dir/var/www/html
+     mkdir -p $dir/var/log/httpd
+     HOME=/root do_chroot $dir gem install passenger bundler
+     HOME=/root do_chroot $dir passenger-install-apache2-module -a
+     do_chroot $dir bash -c "ln -s \$(find /usr/local/share/gems/gems/passenger-4.0.* -maxdepth 0) /usr/lib/passenger"
+     # Install Redmine
+     do_chroot $dir bash -c "curl $REDMINE_RHEL -o /usr/share/redmine.tar.gz && cd /usr/share && tar -xzpf redmine.tar.gz && mv redmine-2.5.2 redmine && chown -R root:root redmine"
+     HOME=/root do_chroot $dir gem install mysql
+     # We install this fake database file in order to force the bundle to activate the mysql lib
+     # Redmine puppet manifest will overwrite it
+     cp $DATA/database.yml $dir/usr/share/redmine/config/
+     HOME=/root do_chroot $dir bash -c 'cd /usr/share/redmine && bundle install'
+     do_chroot $dir bash -c "pip install python-dateutil"
+     ;;
   *)
-    fatal_error "$package_tool isn't supported for $ROLE role"
-    ;;
+     fatal_error "$package_tool isn't supported for $ROLE role"
+     ;;
 esac
 
-#
+# Gerrit
+mkdir ${dir}/root/gerrit_data_source/
+wget -q $LASTWAR -O ${dir}/root/gerrit_data_source/gerrit.war
+wget -q $MYSQLJAVA -O ${dir}/root/gerrit_data_source/mysql-connector-java-5.1.21.jar
+wget -q $BCPROVJAVA -O ${dir}/root/gerrit_data_source/bcprov-jdk15on-149.jar
+wget -q $BCPKIXJAVA -O ${dir}/root/gerrit_data_source/bcpkix-jdk15on-149.jar
+cp -Rf $GERRITHOOKS ${dir}/root/gerrit_data_source/
+
+# PyRedmine
+do_chroot $dir pip install $PYREDMINEWS
+
+# Install Redmine backlog plugin
+do_chroot $dir mkdir -p /usr/share/redmine/plugins
+do_chroot $dir git clone git://github.com/backlogs/redmine_backlogs.git /usr/share/redmine/plugins/redmine_backlogs --depth 1
+HOME=/root do_chroot $dir bash -c 'cd /usr/share/redmine/plugins/redmine_backlogs && bundle install'
+if [ "$(package_tool)" == "yum" ]; then
+  HOME=/root do_chroot $dir bash -c 'cd /usr/share/redmine && bundle update'
+fi
+
+# Install Redmine http plugin
+do_chroot $dir git clone git://github.com/kevinfoote/redmine_http_auth.git /usr/share/redmine/plugins/redmine_http_auth --depth 1
+
+# zuul
+do_chroot $dir git clone https://github.com/openstack-infra/zuul /srv/zuul
+do_chroot $dir bash -c "cd /srv/zuul && git checkout -b working 49850b0d81e1d876d27ad49ab4ef478a8c3551ac" # latest commit as of 08. Aug 2014
+do_chroot $dir bash -c "cd /srv/zuul && python /srv/zuul/setup.py install"
+# 06/19/2014 - The two line below manage to quick fix some dependencies problem with Zuul (Need to be removed later)
+do_chroot $dir bash -c "cd /srv/zuul && pip install -U setuptools"
+do_chroot $dir bash -c "cd /srv/zuul && pip install -U -r requirements.txt"
+do_chroot $dir bash -c "cd /srv/zuul && pip install APScheduler==2.1.0"
+curl -L --silent http://getbootstrap.com/2.3.2/assets/bootstrap.zip > $dir/srv/zuul/bootstrap.zip
+unzip -q -o $dir/srv/zuul/bootstrap.zip -d $dir/srv/zuul/etc/status/public_html/
+curl http://status.openstack.org/jquery-visibility.min.js -o $dir/srv/zuul/etc/status/public_html/jquery-visibility.min.js
+curl http://status.openstack.org/jquery-graphite.js -o $dir/srv/zuul/etc/status/public_html/jquery.graphite.js
+rm -R $dir/srv/zuul/bootstrap.zip
+
+# Etherpad_lite
+do_chroot $dir curl $ETHERPAD_LITE -o /tmp/etherpad_lite.tar.gz
+do_chroot $dir curl $NODEJS_NPM -o /tmp/npm-install.sh
+## Try to avoid the failure in jenkins
+do_chroot $dir sed -i "s#</dev/tty##" /tmp/npm-install.sh
+[ ! -d "$dir/var/www" ] && mkdir $dir/var/www
+do_chroot $dir tar -xzf /tmp/etherpad_lite.tar.gz -C /var/www/
+# /bin/installDeps.sh is looking for /usr/bin/node
+[ ! -e "$dir/usr/bin/node" ] && do_chroot $dir ln -s /usr/bin/nodejs /usr/bin/node
+# Node or npm seems to deals with SUDO_UID and SUDO_GID that for results set new created
+# files as user id/gid referenced by sudo. So force id/gid to 0 (root)
+SUDO_UID=0 SUDO_GID=0 HOME=/root npm_install=$NPM_INSTALL do_chroot $dir sh /tmp/npm-install.sh
+## Use the European mirror
+do_chroot $dir sed -i "s|npm install|npm --registry http://registry.npmjs.eu/ install|" /var/www/etherpad-lite-1.4.0/bin/installDeps.sh
+SUDO_UID=0 SUDO_GID=0 HOME=/root do_chroot $dir sh /var/www/etherpad-lite-1.4.0/bin/installDeps.sh
+
+# Paste (Lodgeit)
+do_chroot $dir mkdir -p /srv/lodgeit
+do_chroot $dir git clone https://git.openstack.org/openstack-infra/lodgeit /srv/lodgeit/lodgeit --depth 1
+do_chroot $dir bash -c 'cd /srv/lodgeit/lodgeit && git checkout c69f555032'  # latest commit as of 05. May 2014
+
+# Cauth server
+cp -r ../tools/cauth ${dir}/var/www/cauth
+do_chroot $dir pip install -U funcparserlib # TODO We need to manage a requirement file for cauth
+do_chroot $dir pip install -U mockldap
+do_chroot $dir pip install httmock
+
 # Managesf
-#
-mkdir -p ${dir}/var/www/
+[ ! -d "$dir/var/www" ] && mkdir $dir/var/www
 cp -r ../tools/managesf ${dir}/var/www/managesf
 do_chroot $dir pip install -r /var/www/managesf/requirements.txt
-
-#do_chroot $dir pip install --upgrade pip
-do_chroot $dir pip install flake8
 
 clear_packages_cache $dir
 

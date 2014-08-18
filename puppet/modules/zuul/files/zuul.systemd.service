@@ -1,0 +1,11 @@
+[Unit]
+Description=Run Zuul.
+After=syslog.target network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/zuul-server -d
+ExecReload=/bin/kill -HUP $MAINPID
+
+[Install]
+WantedBy=multi-user.target

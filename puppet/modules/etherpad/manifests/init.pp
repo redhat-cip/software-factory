@@ -15,6 +15,27 @@
 
 class etherpad ($etherpad = hiera_hash('etherpad', '')) {
 
+  case $operatingsystem {
+      centos: {
+         $etherpad_init = 'etherpad'
+         file { 'init_script':
+           path    => '/lib/systemd/system/etherpad.service',
+           ensure  => present,
+           mode    => '0740',
+           source  => 'puppet:///modules/etherpad/etherpad.service',
+         }
+      }
+      debian: {
+         $etherpad_init = 'etherpad-lite'
+         file { 'init_script':
+           path    => '/etc/init.d/etherpad-lite',
+           ensure  => present,
+           mode    => '0740',
+           source  => 'puppet:///modules/etherpad/etherpad-lite',
+         }
+      }
+  }
+
   user { 'etherpad':
     name => 'etherpad',
     ensure => 'present',
@@ -51,13 +72,6 @@ class etherpad ($etherpad = hiera_hash('etherpad', '')) {
     require => File['/var/www/etherpad-lite-1.4.0'],
   }
 
-  file { '/etc/init.d/etherpad-lite':
-    ensure  => present,
-    owner   => 'etherpad',
-    group   => 'etherpad',
-    mode    => '0740',
-    source  => 'puppet:///modules/etherpad/etherpad-lite',
-  }
 
   file { '/var/www/etherpad-lite-1.4.0/settings.json':
     ensure   => present,
@@ -66,18 +80,18 @@ class etherpad ($etherpad = hiera_hash('etherpad', '')) {
     mode     => '0640',
     content  => template('etherpad/settings.json.erb'),
     require  => File['/var/www/etherpad-lite-1.4.0'],
-    notify   => Service[etherpad-lite],
+    notify   => Service[$etherpad_init],
   }
 
   exec {'change_owner':
     command => 'chown -R etherpad:etherpad /var/www/etherpad-lite-1.4.0',
     path    => '/usr/sbin/:/usr/bin/:/bin/',
     require => [File['/var/www/etherpad-lite-1.4.0/run.sh'],
-                File['/etc/init.d/etherpad-lite'],
+                File['init_script'],
                 File['/var/www/etherpad-lite-1.4.0/settings.json']]
   }
 
-  service {'etherpad-lite':
+  service { $etherpad_init:
     ensure     => running,
     enable     => true,
     hasrestart => true,

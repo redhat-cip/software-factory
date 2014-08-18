@@ -27,6 +27,7 @@ from utils import set_private_key
 from utils import ManageSfUtils
 from utils import GerritGitUtils
 from utils import GerritUtil
+from utils import JenkinsUtils
 from utils import copytree
 
 
@@ -49,6 +50,7 @@ class TestProjectTestsWorkflow(Base):
         self.un = config.ADMIN_USER
         self.gu = GerritUtil(config.GERRIT_SERVER, username=self.un)
         self.gu2 = GerritUtil(config.GERRIT_SERVER, username=config.USER_2)
+        self.ju = JenkinsUtils()
         self.gu.addPubKey(config.USERS[self.un]["pubkey"])
         priv_key_path = set_private_key(config.USERS[self.un]["privkey"])
         self.gitu_admin = GerritGitUtils(self.un,
@@ -102,30 +104,6 @@ class TestProjectTestsWorkflow(Base):
         self.gitu_admin.add_commit_for_all_new_additions(clone_dir, msg)
         self.gitu_admin.review_push_branch(clone_dir, 'master')
 
-    def get_last_build_number(self, job_name, type):
-        url = config.JENKINS_SERVER
-        url += "/job/%(job_name)s/%(type)s/buildNumber" \
-               % {'job_name': job_name, 'type': type}
-        try:
-            resp = http.get(url)
-            return int(resp.text)
-        except:
-            return 0
-
-    def wait_till_job_completes(self, job_name, last, type):
-        retries = 0
-        while True:
-            cur = self.get_last_build_number(job_name, type)
-            if cur > last:
-                # give some time to zuul to update score on gerrit
-                time.sleep(2)
-                break
-            elif retries > 30:
-                break
-            else:
-                time.sleep(1)
-                retries += 1
-
     def createProject(self, name, user,
                       options=None):
         self.msu.createProject(name, user,
@@ -178,12 +156,12 @@ class TestProjectTestsWorkflow(Base):
 
         # Retrieve the previous build number for config-check
         last_success_build_num_ch = \
-            self.get_last_build_number("config-check",
-                                       "lastSuccessfulBuild")
+            self.ju.get_last_build_number("config-check",
+                                          "lastSuccessfulBuild")
         # Retrieve the previous build number for config-update
         last_success_build_num_cu = \
-            self.get_last_build_number("config-update",
-                                       "lastSuccessfulBuild")
+            self.ju.get_last_build_number("config-update",
+                                          "lastSuccessfulBuild")
 
         # Send review (config-check) will be triggered
         self.push_review_as_admin(
@@ -191,15 +169,15 @@ class TestProjectTestsWorkflow(Base):
             "Add config definition in Zuul/JJB config for sample_project")
 
         # Wait for config-check to finish and verify the success
-        self.wait_till_job_completes("config-check",
-                                     last_success_build_num_ch,
-                                     "lastSuccessfulBuild")
+        self.ju.wait_till_job_completes("config-check",
+                                        last_success_build_num_ch,
+                                        "lastSuccessfulBuild")
         last_build_num_ch = \
-            self.get_last_build_number("config-check",
-                                       "lastBuild")
+            self.ju.get_last_build_number("config-check",
+                                          "lastBuild")
         last_success_build_num_ch = \
-            self.get_last_build_number("config-check",
-                                       "lastSuccessfulBuild")
+            self.ju.get_last_build_number("config-check",
+                                          "lastSuccessfulBuild")
         self.assertEqual(last_build_num_ch, last_success_build_num_ch)
         # let some time to Zuul to update the test result to Gerrit.
         time.sleep(2)
@@ -215,53 +193,53 @@ class TestProjectTestsWorkflow(Base):
             self.gu.submitPatch(change_id, "current")['status'], 'MERGED')
 
         # Wait for config-update to finish and verify the success
-        self.wait_till_job_completes("config-update",
-                                     last_success_build_num_cu,
-                                     "lastSuccessfulBuild")
+        self.ju.wait_till_job_completes("config-update",
+                                        last_success_build_num_cu,
+                                        "lastSuccessfulBuild")
         last_build_num_cu = \
-            self.get_last_build_number("config-update",
-                                       "lastBuild")
+            self.ju.get_last_build_number("config-update",
+                                          "lastBuild")
         last_success_build_num_cu = \
-            self.get_last_build_number("config-update",
-                                       "lastSuccessfulBuild")
+            self.ju.get_last_build_number("config-update",
+                                          "lastSuccessfulBuild")
         self.assertEqual(last_build_num_cu, last_success_build_num_cu)
 
         # Retrieve the prev build number for sample_project-unit-tests
         # Retrieve the prev build number for sample_project-functional-tests
         last_success_build_num_sp_ut = \
-            self.get_last_build_number("sample_project-unit-tests",
-                                       "lastSuccessfulBuild")
+            self.ju.get_last_build_number("sample_project-unit-tests",
+                                          "lastSuccessfulBuild")
         last_success_build_num_sp_ft = \
-            self.get_last_build_number("sample_project-functional-tests",
-                                       "lastSuccessfulBuild")
+            self.ju.get_last_build_number("sample_project-functional-tests",
+                                          "lastSuccessfulBuild")
         # Trigger tests on sample_project
         # Send a review and check tests has been run
         self.gitu_admin.add_commit_and_publish(
             clone_dir, 'master', "Add useless file",
             self.un)
         # Wait for sample_project-unit-tests to finish and verify the success
-        self.wait_till_job_completes("sample_project-unit-tests",
-                                     last_success_build_num_sp_ut,
-                                     "lastSuccessfulBuild")
+        self.ju.wait_till_job_completes("sample_project-unit-tests",
+                                        last_success_build_num_sp_ut,
+                                        "lastSuccessfulBuild")
         # Wait for sample_project-functional-tests to end and check the success
-        self.wait_till_job_completes("sample_project-functional-tests",
-                                     last_success_build_num_sp_ft,
-                                     "lastSuccessfulBuild")
+        self.ju.wait_till_job_completes("sample_project-functional-tests",
+                                        last_success_build_num_sp_ft,
+                                        "lastSuccessfulBuild")
         # Check the unit tests succeed
         last_build_num_sp_ut = \
-            self.get_last_build_number("sample_project-unit-tests",
-                                       "lastBuild")
+            self.ju.get_last_build_number("sample_project-unit-tests",
+                                          "lastBuild")
         last_success_build_num_sp_ut = \
-            self.get_last_build_number("sample_project-unit-tests",
-                                       "lastSuccessfulBuild")
+            self.ju.get_last_build_number("sample_project-unit-tests",
+                                          "lastSuccessfulBuild")
         self.assertEqual(last_build_num_sp_ut, last_success_build_num_sp_ut)
         # Check the functional tests succeed
         last_build_num_sp_ft = \
-            self.get_last_build_number("sample_project-functional-tests",
-                                       "lastBuild")
+            self.ju.get_last_build_number("sample_project-functional-tests",
+                                          "lastBuild")
         last_success_build_num_sp_ft = \
-            self.get_last_build_number("sample_project-functional-tests",
-                                       "lastSuccessfulBuild")
+            self.ju.get_last_build_number("sample_project-functional-tests",
+                                          "lastSuccessfulBuild")
         self.assertEqual(last_build_num_sp_ft, last_success_build_num_sp_ft)
 
         # let some time to Zuul to update the test result to Gerrit.

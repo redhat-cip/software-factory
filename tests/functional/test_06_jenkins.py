@@ -14,12 +14,10 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import config
 import os
-import requests
-import yaml
 
 from utils import Base
+from utils import JenkinsUtils
 
 
 class TestJenkinsBasic(Base):
@@ -27,19 +25,14 @@ class TestJenkinsBasic(Base):
     """
 
     def setUp(self):
-        """ Tests is executed on puppetmaster, so read config from Hiera file
-        and get credentials for the Jenkins user """
-        fh = open('/etc/puppet/hiera/sf/jenkins.yaml')
-        config = yaml.load(fh)
-        self.jenkins_password = config.get('jenkins').get('jenkins_password')
-        fh.close()
+        self.ju = JenkinsUtils()
 
     def test_config_jobs_exist(self):
         """ Test if jenkins config-update and config-check are created
         """
-        url = '%s/job/config-check' % config.JENKINS_SERVER
-        resp = requests.get(url, auth=('jenkins', self.jenkins_password))
+        url = '%s/job/config-check' % self.ju.server
+        resp = self.ju.get(url)
         self.assertEquals(resp.status_code, 200)
-        url = '%s/job/config-update' % config.JENKINS_SERVER
-        resp = requests.get(url, auth=('jenkins', self.jenkins_password))
+        url = '%s/job/config-update' % self.ju.server
+        resp = self.ju.get(url)
         self.assertEquals(resp.status_code, 200)

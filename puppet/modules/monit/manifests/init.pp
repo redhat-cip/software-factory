@@ -14,6 +14,15 @@
 
 class monit ($settings = hiera_hash('monit', '')) {
 
+  case $operatingsystem {
+        centos: {
+            $provider = "systemd"
+        }
+        debian: {
+            $provider = "debian"
+        }
+    }
+
   package { 'monit':
     ensure => present,
   }
@@ -39,7 +48,7 @@ class monit ($settings = hiera_hash('monit', '')) {
     ensure      => running,
     enable      => true,
     hasrestart  => true,
-    provider    => debian,
+    provider    => $provider,
     require     => Package['monit'],
     subscribe   => File['/etc/monit/monitrc'],
   }

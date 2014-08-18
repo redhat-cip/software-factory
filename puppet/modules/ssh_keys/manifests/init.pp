@@ -32,4 +32,4 @@ class ssh_keys ($keys = hiera_hash("ssh_keys")) {
     source => 'puppet:///modules/ssh_keys/service_rsa',
     require => File['/root/.ssh'],
   }
-} 
+}

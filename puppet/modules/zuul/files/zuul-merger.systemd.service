@@ -1,0 +1,10 @@
+[Unit]
+Description=Run Zuul-merger.
+After=syslog.target network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/zuul-merger -d
+
+[Install]
+WantedBy=multi-user.target

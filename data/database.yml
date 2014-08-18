@@ -1,0 +1,7 @@
+production:
+  adapter: mysql
+  database: redmine
+  host: localhost
+  username: root
+  password: ""
+  encoding: utf8

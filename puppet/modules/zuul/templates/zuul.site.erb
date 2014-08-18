@@ -1,11 +1,7 @@
 <VirtualHost *:80>
-  DocumentRoot /srv/zuul/etc/status/public_html
-
-  ErrorLog ${APACHE_LOG_DIR}/error.log
+  DocumentRoot <%= @pub_html_path %>
 
   LogLevel warn
-
-  CustomLog ${APACHE_LOG_DIR}/access.log combined
 
   RewriteEngine on
   RewriteRule ^/status.json$ http://127.0.0.1:8001/status.json [P]
@@ -13,7 +9,13 @@
   SetEnv GIT_PROJECT_ROOT /var/lib/zuul/git/
   SetEnv GIT_HTTP_EXPORT_ALL
 
+  <% if @operatingsystem == "CentOS" %>
+  <Directory <%= @gitweb_path %>/>
+    require all granted
+  </Directory>
+  <% end %>
+
   AliasMatch ^/p/(.*/objects/[0-9a-f]{2}/[0-9a-f]{38})$ /var/lib/zuul/git/$1
   AliasMatch ^/p/(.*/objects/pack/pack-[0-9a-f]{40}.(pack|idx))$ /var/lib/zuul/git/$1
-  ScriptAlias /p/ /usr/lib/git-core/git-http-backend/
+  ScriptAlias /p/ <%= @gitweb_path %>/git-http-backend/
 </VirtualHost>

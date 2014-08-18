@@ -39,6 +39,7 @@
     </IfModule>
     
     ScriptAliasMatch ^/.*[^(css)|(js)]$ /var/www/index.py
+    Alias / /var/www/
 
     <Directory /var/www>
         AddHandler cgi-script .py

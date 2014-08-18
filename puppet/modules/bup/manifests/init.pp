@@ -20,16 +20,11 @@ class bup ($settings = hiera_hash('bup', '')){
     $bup_month = $settings['bup_month']
     $bup_weekday = $settings['bup_weekday']
 
-    package { 'bup':
-        ensure => present,
-    }
-
     exec {'bup_init':
         path    => '/usr/bin:/usr/sbin:/bin',
         command => 'bup init',
         cwd => '/root',
         user => 'root',
-        require => Package['bup'],
     }
 
     cron { "backup":
@@ -59,4 +54,4 @@ define bup::scripts($backup_script, $restore_script) {
     content  => template($restore_script),
   }
 }
- 
+

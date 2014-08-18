@@ -18,11 +18,10 @@ set -e
 
 gerrit_host=<%= scope.function_hiera(["gerrit_url"]) %>
 gerrit_ssh_port=<%= @gerrit['gerrit_sshd_port'] %>
-mh="<%= scope.function_hiera(["managesf_url"]) %>"
+gateway="<%= scope.function_hiera(["http_gateway_host"]) %>"
 mysqlh="<%= scope.function_hiera(["mysql_url"]) %>"
 gh="$gerrit_host:$gerrit_ssh_port"
 jh="<%= scope.function_hiera(["jenkins_url"]) %>"
-ah="<%= scope.function_hiera(["auth_url"]) %>"
 admin="<%= @gerrit['gerrit_admin_username'] %>"
 admin_http_password="<%= @gerrit['gerrit_admin_password'] %>"
 admin_email="<%= @gerrit['gerrit_admin_mail'] %>"
@@ -32,14 +31,14 @@ auth=$admin:$admin_http_password
 
 # Create config project (managesf must be up)
 if [ ! -f '/usr/share/config.init.done' ]; then
-    sf-manage --host $mh --auth-server $ah --port 80 --auth $auth create --name config --description "Config repository"
-    sf-manage --host $mh --auth-server $ah --port 80 --auth $auth replication_config add --section mysql_config projects config
-    sf-manage --host $mh --auth-server $ah --port 80 --auth $auth replication_config add --section mysql_config url gerrit@$mysqlh:/home/gerrit/site_path/git/\${name}.git
-    sf-manage --host $mh --auth-server $ah --port 80 --auth $auth replication_config add --section mysql_config push +refs/heads/*:refs/heads/*
-    sf-manage --host $mh --auth-server $ah --port 80 --auth $auth replication_config add --section mysql_config push +refs/tags/*:refs/tags/*
+    sf-manage --host $gateway --auth-server $gateway --auth $auth create --name config --description "Config repository"
+    sf-manage --host $gateway --auth-server $gateway --auth $auth replication_config add --section mysql_config projects config
+    sf-manage --host $gateway --auth-server $gateway --auth $auth replication_config add --section mysql_config url gerrit@$mysqlh:/home/gerrit/site_path/git/\${name}.git
+    sf-manage --host $gateway --auth-server $gateway --auth $auth replication_config add --section mysql_config push +refs/heads/*:refs/heads/*
+    sf-manage --host $gateway --auth-server $gateway --auth $auth replication_config add --section mysql_config push +refs/tags/*:refs/tags/*
 # wait for 10 seconds so that replication plugin reloading will be finished
     sleep 10
-    sf-manage --host $mh --auth-server $ah --port 80 --auth $auth trigger_replication --project config
+    sf-manage --host $gateway --auth-server $gateway --auth $auth trigger_replication --project config
     touch /usr/share/config.init.done
 fi
 

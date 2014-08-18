@@ -16,6 +16,15 @@ class postfix ($settings = hiera_hash('postfix', '')) {
 
   require hosts
 
+  case $operatingsystem {
+        centos: {
+            $provider = "systemd"
+        }
+        debian: {
+            $provider = "debian"
+        }
+    }
+
   package { 'postfix':
     ensure => 'installed',
   }
@@ -41,7 +50,7 @@ class postfix ($settings = hiera_hash('postfix', '')) {
     ensure      => running,
     enable      => true,
     hasrestart  => true,
-    provider    => debian,
+    provider    => $provider,
     require     => [Package['postfix'], Exec['/etc/mailname']],
     subscribe   => File['/etc/postfix/main.cf'],
   }

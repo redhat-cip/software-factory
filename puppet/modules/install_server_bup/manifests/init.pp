@@ -15,7 +15,7 @@
 
 class install_server_bup {
     bup::scripts{ 'install_server_bup_scripts':
-      backup_script => 'install_server_bup/backup.sh.erb', 
+      backup_script => 'install_server_bup/backup.sh.erb',
       restore_script => 'install_server_bup/restore.sh.erb',
     }
 }

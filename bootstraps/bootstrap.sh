@@ -20,11 +20,6 @@ set -x
 source functions.sh
 
 SF_SUFFIX=${SFSUFFIX:-sf.dom}
-
-ROLES="puppetmaster mysql"
-ROLES="$ROLES redmine gerrit managesf"
-ROLES="$ROLES jenkins commonservices"
-
 BUILD=build
 
 if [  -f "${BUILD}/bootstrap.done" ]; then
@@ -44,7 +39,11 @@ fi
 wait_all_nodes
 # Start a run locally and start the puppet agent service
 run_puppet_agent
+# Force a stop of puppet agent on each roles
+run_puppet_agent_stop
 # Start a run on each node and start the puppet agent service
 trigger_puppet_apply
+# Force a start of puppet agent on each roles after a delay that let us run func tests smoosly
+run_puppet_agent_start
 # Set a witness file that tell the bootstraping is done
 touch ${BUILD}/bootstrap.done

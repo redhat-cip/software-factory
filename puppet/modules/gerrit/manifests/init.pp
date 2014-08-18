@@ -16,11 +16,118 @@
 class gerrit ($settings = hiera_hash('gerrit', ''),
               $cauth = hiera_hash('cauth', '')) {
 
-  # Here we just ensure that some basic stuff are present 
-  package { 'openjdk-7-jre':
+  case $operatingsystem {
+    centos: {
+      $http = "httpd"
+      $provider = "systemd"
+      $httpd_user = "apache"
+      $java_home = "/usr/lib/jvm/java-1.6.0-openjdk-1.6.0.0.x86_64/jre"
+      $gitweb_cgi = "/var/www/git/gitweb.cgi"
+
+      file { '/etc/httpd/conf.d/gerrit.conf':
+        ensure  => present,
+        mode    => '0640',
+        content => template('gerrit/apache_gerrit.erb'),
+      }
+
+      file { 'gerrit_init':
+        path  => '/lib/systemd/system/gerrit.service',
+        owner => 'gerrit',
+        source  => 'puppet:///modules/gerrit/gerrit.service',
+        require => Exec['gerrit-initial-init'],
+      }
+
+      # Apache process restart only when one of the configuration files
+      # change
+      service { 'webserver':
+        name        => $http,
+        ensure      => running,
+        enable      => true,
+        hasrestart  => true,
+        provider    => $provider,
+        require     => Service['gerrit'],
+        subscribe   => File['/etc/httpd/conf.d/gerrit.conf'],
+      }
+    }
+    debian: {
+      $http = "apache2"
+      $provider = "debian"
+      $httpd_user = "www-data"
+      $java_home = "/usr/lib/jvm/java-7-openjdk-amd64/jre"
+      $gitweb_cgi = "/usr/share/gitweb/gitweb.cgi"
+
+      exec { 'enable_mod_headers':
+        command  => 'a2enmod headers',
+        path    => '/usr/sbin/:/usr/bin/:/bin/',
+      }
+
+      file { '/etc/apache2/sites-available/gerrit':
+        ensure  => present,
+        mode    => '0640',
+        content => template('gerrit/apache_gerrit.erb'),
+      }
+
+      file { '/etc/apache2/sites-enabled/gerrit':
+        ensure  => link,
+        target  => '/etc/apache2/sites-available/gerrit',
+        require => [File['/etc/apache2/sites-available/gerrit'],
+                    Exec['enable_mod_headers']]
+      }
+
+      file { '/etc/apache2/sites-enabled/default':
+        ensure  => absent,
+      }
+
+      file { '/etc/apache2/sites-enabled/000-default':
+        ensure  => absent,
+      }
+
+      file { '/etc/default/gerritcodereview':
+        ensure  => present,
+        content => 'GERRIT_SITE=/home/gerrit/site_path',
+        owner   => 'gerrit',
+        group   => 'gerrit',
+        mode    => '0444',
+        require => File['/home/gerrit/site_path'],
+      }
+
+      file { '/home/gerrit/site_path/bin/gerrit.sh':
+        ensure  => present,
+        owner => 'gerrit',
+        group   => 'gerrit',
+        mode    => '0755',
+        source  => 'puppet:///modules/gerrit/gerrit.sh',
+        require => File['/home/gerrit/site_path/bin'],
+      }
+
+      file { 'gerrit_init':
+        path  => '/etc/init.d/gerrit',
+        ensure  => link,
+        owner => 'gerrit',
+        target  => '/home/gerrit/site_path/bin/gerrit.sh',
+        require => Exec['gerrit-initial-init'],
+      }
+
+      # Apache process restart only when one of the configuration files
+      # change
+      service { 'webserver':
+        name        => $http,
+        ensure      => running,
+        enable      => true,
+        hasrestart  => true,
+        provider    => $provider,
+        require     => Service['gerrit'],
+        subscribe   => [File['/etc/apache2/sites-enabled/gerrit'],
+                        File['/etc/apache2/sites-available/gerrit']],
+      }
+    }
+  }
+
+  package { $http:
     ensure => present,
   }
-  package { 'apache2':
+
+  group { 'gerrit':
     ensure => present,
   }
   user { 'gerrit':
@@ -31,10 +138,6 @@ class gerrit ($settings = hiera_hash('gerrit', ''),
     comment => 'Gerrit sys user',
     require => Group['gerrit'],
   }
-  group { 'gerrit':
-    ensure => present,
-  }
-
 
   file { '/home/gerrit/.ssh':
     ensure  => directory,
@@ -63,9 +166,8 @@ class gerrit ($settings = hiera_hash('gerrit', ''),
   file { '/home/gerrit/site_path':
     ensure  => directory,
     owner   => 'gerrit',
-    require => [User['gerrit'], Group['gerrit'],
-                Package['openjdk-7-jre'],
-                Package['apache2']],
+    require => [User['gerrit'],
+                Group['gerrit']],
   }
   file { '/home/gerrit/site_path/bin':
     ensure  => directory,
@@ -182,14 +284,6 @@ class gerrit ($settings = hiera_hash('gerrit', ''),
     source  => '/root/gerrit_data_source/bcpkix-jdk15on-149.jar',
     require => File['/home/gerrit/site_path/lib'],
   }
-  file { '/home/gerrit/site_path/bin/gerrit.sh':
-    ensure  => present,
-    owner => 'gerrit',
-    group   => 'gerrit',
-    mode    => '0755',
-    source  => 'puppet:///modules/gerrit/gerrit.sh',
-    require => File['/home/gerrit/site_path/bin'],
-  }
   file { '/home/gerrit/site_path/hooks/patchset-created':
     ensure  => present,
     owner   => 'gerrit',
@@ -213,14 +307,6 @@ class gerrit ($settings = hiera_hash('gerrit', ''),
     mode    => '0644',
     source  => '/root/gerrit_data_source/gerrit.war',
   }
-  file { '/etc/default/gerritcodereview':
-    ensure  => present,
-    content => 'GERRIT_SITE=/home/gerrit/site_path',
-    owner   => 'gerrit',
-    group   => 'gerrit',
-    mode    => '0444',
-    require => File['/home/gerrit/site_path'],
-  }
   file { '/home/gerrit/site_path/etc/mail/RegisterNewEmail.vm':
     ensure  => present,
     owner   => 'gerrit',
@@ -229,7 +315,6 @@ class gerrit ($settings = hiera_hash('gerrit', ''),
     source  => 'puppet:///modules/gerrit/RegisterNewEmail.vm',
     require => file['/home/gerrit/site_path/etc/mail'],
   }
-
 
   # Here we setup file based on templates
   file { '/home/gerrit/site_path/etc/gerrit.config':
@@ -304,29 +389,13 @@ class gerrit ($settings = hiera_hash('gerrit', ''),
     content => template('gerrit/gerrit-set-jenkins-user.sh.erb'),
     replace => true,
   }
-  exec { 'enable_mod_headers':
-    command  => 'a2enmod headers',
-    path    => '/usr/sbin/:/usr/bin/:/bin/',
+  
+  file { 'wait4gerrit':
+    path    => '/root/wait4gerrit.sh',
+    mode    => '0740',
+    source  => 'puppet:///modules/gerrit/wait4gerrit.sh',
   }
 
-  file { '/etc/apache2/sites-available/gerrit':
-    ensure  => present,
-    mode    => '0640',
-    content => template('gerrit/apache_gerrit.erb'),
-  }
-  file { '/etc/apache2/sites-enabled/gerrit':
-    ensure  => link,
-    target  => '/etc/apache2/sites-available/gerrit',
-    require => [File['/etc/apache2/sites-available/gerrit'],
-                Exec['enable_mod_headers']]
-  }
-  file { '/etc/apache2/sites-enabled/default':
-    ensure  => absent,
-  }
-  file { '/etc/apache2/sites-enabled/000-default':
-    ensure  => absent,
-  }
-  
   # Just to help debug
   exec { 'debug-copy-config-just-before-init':
     command   => "/bin/cp /home/gerrit/site_path/etc/*.config /tmp/",
@@ -362,19 +431,13 @@ class gerrit ($settings = hiera_hash('gerrit', ''),
     refreshonly => true,
     logoutput => on_failure,
   }
-
-  exec { 'gerrit-change-start-timeout':
-    command   => "/bin/sed -i 's/TIMEOUT=90/TIMEOUT=400/' /etc/init.d/gerrit",
-    require   => File['/etc/init.d/gerrit'],
-    logoutput => on_failure,
+  
+  # This ressource wait for gerrit TCP ports are up
+  exec { 'wait4gerrit':
+    path    => '/usr/bin:/usr/sbin:/bin',
+    command => '/root/wait4gerrit.sh',
+    require => [File['wait4gerrit'],  Service['gerrit']],
   }
-  file { '/etc/init.d/gerrit':    
-    ensure  => link,
-    owner => 'gerrit',
-    target  => '/home/gerrit/site_path/bin/gerrit.sh',
-    require => Exec['gerrit-initial-init'],   
-  }
-
 
   # Init default in Gerrit. Require a running gerrit but
   # must be done the first time after gerrit-init-init
@@ -382,14 +445,14 @@ class gerrit ($settings = hiera_hash('gerrit', ''),
     command     => '/root/gerrit-firstuser-init.sh',
     logoutput   => on_failure,
     subscribe   => Exec['gerrit-initial-init'],
-    require     => Service['gerrit'],
+    require     => [Service['gerrit'], Exec['wait4gerrit']],
     refreshonly => true,
   }
   exec {'gerrit-init-acl':
     command     => '/root/gerrit-set-default-acl.sh',
     logoutput   => on_failure,
     subscribe   => Exec['gerrit-init-firstuser'],
-    require     => [Service['gerrit'],
+    require     => [Service['gerrit'], Exec['wait4gerrit'],
                     File['/root/gerrit_data_source/rules.pl'],
                     File['/root/gerrit_data_source/project.config'],
                     File['/root/gerrit_data_source/ssh_wrapper.sh']],
@@ -399,7 +462,7 @@ class gerrit ($settings = hiera_hash('gerrit', ''),
     command     => '/root/gerrit-set-jenkins-user.sh',
     logoutput   => on_failure,
     subscribe   => Exec['gerrit-init-firstuser'],
-    require     => Service['gerrit'],
+    require     => [Service['gerrit'], Exec['wait4gerrit']],
     refreshonly => true,
   }
   # Just to help debug, we do a diff after the gerrit.war init
@@ -409,7 +472,7 @@ class gerrit ($settings = hiera_hash('gerrit', ''),
     command   => "diff -rup gerrit.config /home/gerrit/site_path/etc/gerrit.config > /tmp/config.diff; diff -rup secure.config /home/gerrit/site_path/etc/secure.config >> /tmp/config.diff",
     logoutput => on_failure,
     subscribe   => Exec['gerrit-init-firstuser'],
-    require     => Service['gerrit'],
+    require     => [Service['gerrit'], Exec['wait4gerrit']],
     refreshonly => true,
   }
 
@@ -420,26 +483,12 @@ class gerrit ($settings = hiera_hash('gerrit', ''),
     ensure      => running,
     enable      => true,
     hasrestart  => true,
-    provider    => debian,
+    provider    => $provider,
     require     => [Exec['gerrit-initial-init'],
-    Exec['gerrit-change-start-timeout'],
-    File['/etc/init.d/gerrit']],
+                    File['gerrit_init']],
     subscribe   => [File['/home/gerrit/gerrit.war'],
-    File['/home/gerrit/site_path/etc/gerrit.config'],
-    File['/home/gerrit/site_path/etc/secure.config']],
-  }
-
-
-  # Apache process restart only when one of the configuration files
-  # change
-  service { 'apache2':
-    ensure      => running,
-    enable      => true,
-    hasrestart  => true,
-    provider    => debian,
-    require     => Service['gerrit'],
-    subscribe   => [File['/etc/apache2/sites-enabled/gerrit'],
-    File['/etc/apache2/sites-available/gerrit']],
+                    File['/home/gerrit/site_path/etc/gerrit.config'],
+                    File['/home/gerrit/site_path/etc/secure.config']],
   }
 
   # Create ext3 filesystem if the Cinder device is available
@@ -489,7 +538,8 @@ class gerrit ($settings = hiera_hash('gerrit', ''),
     require => [Package['monit'], Exec['mount_git'], File['/etc/monit/conf.d']],
     notify  => Service['monit'],
   }
-#Create an empty file, later this file is configured with init-config-repo
+
+  #Create an empty file, later this file is configured with init-config-repo
   file { '/home/gerrit/site_path/etc/replication.config':
     ensure  => present,
     owner   => 'gerrit',
@@ -498,7 +548,7 @@ class gerrit ($settings = hiera_hash('gerrit', ''),
     require => File['/home/gerrit/site_path/etc'],
   }
   bup::scripts{ 'gerrit_scripts':
-    backup_script => 'gerrit/backup.sh.erb', 
+    backup_script => 'gerrit/backup.sh.erb',
     restore_script => 'gerrit/restore.sh.erb',
   }
 }

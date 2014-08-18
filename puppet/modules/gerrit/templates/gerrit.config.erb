@@ -13,7 +13,7 @@
     gitBasicAuth = true
 [container]
     user = gerrit
-    javaHome = /usr/lib/jvm/java-7-openjdk-amd64/jre
+    javaHome = <%= @java_home %>
 [sshd]
     listenAddress = <%= @settings['sshd_listen_address'] ? @settings['sshd_listen_address'] : '*:29418' %>
 [httpd]
@@ -22,7 +22,7 @@
     match = ([Bb]ug:\\s+)(\\d+)
     html = $1<a href=\"http://<%= scope.function_hiera(["redmine_pub_url"]) %>/issues/$2\">$2</a>
 [gitweb]
-    cgi = /usr/share/gitweb/gitweb.cgi
+    cgi = <%= @gitweb_cgi %>
 [sendemail]
     enable = true
     from = MIXED

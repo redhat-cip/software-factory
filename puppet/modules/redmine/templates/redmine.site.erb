@@ -4,8 +4,6 @@ NameVirtualHost *:80
   ServerName <%= scope.function_hiera(["api_redmine_url"]) %>
 
   LogLevel warn
-  ErrorLog ${APACHE_LOG_DIR}/error.log
-  CustomLog ${APACHE_LOG_DIR}/access.log combined
   RailsBaseURI /redmine
   Alias /redmine/plugin_assets/ /var/cache/redmine/default/plugin_assets/
   PassengerAppRoot /usr/share/redmine
@@ -26,6 +24,9 @@ NameVirtualHost *:80
   <Directory /usr/share/redmine/public>
     AllowOverride all
     Options -MultiViews
+    <% if @operatingsystem == "CentOS" %>
+    Require all granted
+    <% end %>
   </Directory>
 </VirtualHost>
 
@@ -35,8 +36,6 @@ NameVirtualHost *:80
   ServerAdmin webmaster@localhost
 
   LogLevel warn
-  ErrorLog ${APACHE_LOG_DIR}/error.log
-  CustomLog ${APACHE_LOG_DIR}/access.log combined
   RailsBaseURI /redmine
   Alias /redmine/plugin_assets/ /var/cache/redmine/default/plugin_assets/
   PassengerAppRoot /usr/share/redmine

@@ -17,10 +17,49 @@ class cauth ($cauth = hiera_hash('cauth', ''),
              $redmine = hiera_hash('redmine', ''),
              $gerrit = hiera_hash('gerrit', ''),
              $mysql = hiera_hash('mysql', '')) {
+
+  case $operatingsystem {
+    centos: {
+      $http = "httpd"
+      $httpd_user = "apache"
+
+      file {'/etc/httpd/conf.d/cauth.conf':
+        ensure => file,
+        mode   => '0640',
+        owner  => $httpd_user,
+        group  => $httpd_user,
+        content=> template('cauth/cauth.site.erb'),
+        notify => Service['webserver'],
+      }
+
+    }
+    debian: {
+      $http = "apache2"
+      $httpd_user = "www-data"
+
+      file {'/etc/apache2/sites-available/cauth':
+        ensure => file,
+        mode   => '0640',
+        owner  => $httpd_user,
+        group  => $httpd_user,
+        content=> template('cauth/cauth.site.erb'),
+      }
+
+      exec {'enable_cauth_site':
+        command => 'a2ensite cauth',
+        path    => '/usr/sbin/:/usr/bin/:/bin/',
+        require => [File['/etc/apache2/sites-available/cauth'],
+                    File['/var/www/cauth/config.py']],
+        notify => Service['webserver'],
+      }
+
+    }
+  }
+
   file { '/var/www/cauth/':
     ensure  => directory,
-    owner   => 'www-data',
-    group   => 'www-data',
+    owner  => $httpd_user,
+    group  => $httpd_user,
     mode    => '0640'
   }
 
@@ -41,27 +80,12 @@ class cauth ($cauth = hiera_hash('cauth', ''),
 
   file { '/var/www/cauth/config.py':
     ensure  => present,
-    owner   => 'www-data',
-    group   => 'www-data',
+    owner  => $httpd_user,
+    group  => $httpd_user,
     mode    => '0640',
     content => template('cauth/cauth-config.py.erb'),
     require => File['/var/www/cauth/'],
     replace => true,
   }
 
-  file {'/etc/apache2/sites-available/cauth':
-    ensure => file,
-    mode   => '0640',
-    owner  => 'www-data',
-    group  => 'www-data',
-    content=> template('cauth/cauth.site.erb'),
-  }
-
-  exec {'enable_cauth_site':
-    command => 'a2ensite cauth',
-    path    => '/usr/sbin/:/usr/bin/:/bin/',
-    require => [File['/etc/apache2/sites-available/cauth'],
-                File['/var/www/cauth/config.py']],
-    notify => Service[apache2],
-  }
 }
