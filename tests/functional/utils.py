@@ -441,7 +441,7 @@ class GerritUtil:
                                headers=headers)
             return r
         except Exception as e:
-            return e
+            return e.response.status_code
 
     def getReviewerApprovals(self, changeid, reviewer):
         resp = self.rest.get('/a/changes/%(change-id)s/reviewers/%(reviewer)s'
