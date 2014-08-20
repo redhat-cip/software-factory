@@ -75,7 +75,7 @@ if [ -z "$1" ] || [ "$1" == "start" ]; then
     #sudo sed -i 's/^#*JAVA_ARGS.*/JAVA_ARGS="-Djava.awt.headless=true -Xmx256m"/g' \
     #    ${ROLES_DIR}/softwarefactory/etc/default/jenkins
     echo "Now running edeploy-lxc"
-    sudo ${EDEPLOY_LXC} --config ${CONFTEMPDIR}/sf-lxc.yaml stop > /dev/null || exit -1
+    sudo ${EDEPLOY_LXC} --config ${CONFTEMPDIR}/sf-lxc.yaml stop || exit -1
 
     if [ -e "/mnt/lxc/puppetmaster/etc/puppet/" ]; then
         sudo sh -c "echo 'lxc.mount.entry =  /mnt/lxc/puppetmaster/etc/puppet/ /var/lib/lxc/puppetmaster/rootfs/etc/puppet none bind,create=dir 0 0' >  /var/lib/lxc/puppetmaster.config"

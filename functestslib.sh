@@ -83,11 +83,19 @@ function get_logs {
     scp -r -o StrictHostKeyChecking=no root@`get_ip puppetmaster`:/tmp/logs/* $O/
 }
 
+function host_debug {
+    sudo dmesg -c > ${ARTIFACTS_DIR}/host_debug
+    ps afx >> ${ARTIFACTS_DIR}/host_debug
+    free -m | tee -a ${ARTIFACTS_DIR}/host_debug
+}
 
 function pre_fail {
     set +x
+    checkpoint "FAIL"
+    host_debug
     echo $1
     stop &> /dev/null
+    checkpoint "lxc-stop"
     echo -e "\n\n\n====== EDEPLOY BUILD OUTPUT ======\n"
     tail -n 120 ${ARTIFACTS_DIR}/build_roles.sh.output
     echo -e "\n\n\n====== END OF EDEPLOY BUILD OUTPUT ======\n"
@@ -126,6 +134,7 @@ function wait_for_bootstrap_done {
 }
 
 function run_serverspec {
+    echo "$(date) ======= Starting serverspec tests ========="
     retries=0
     while true; do
         ssh -o StrictHostKeyChecking=no root@`get_ip puppetmaster` "cd puppet-bootstrapper/serverspec/; rake spec"
@@ -141,6 +150,7 @@ function run_serverspec {
 }
 
 function run_functional_tests {
+    echo "$(date) ======= Starting functional tests ========="
     ssh -o StrictHostKeyChecking=no root@`get_ip puppetmaster` "cd puppet-bootstrapper; SF_SUFFIX=${SF_SUFFIX} SF_ROOT=\$(pwd) nosetests -v"
     ERROR_TESTS=$?
 }
@@ -148,11 +158,15 @@ function run_functional_tests {
 function run_tests {
     r=$1
     scan_and_configure_knownhosts
+    checkpoint "scan_and_configure_knownhosts"
     wait_for_bootstrap_done $r
+    checkpoint "wait_for_bootstrap_done"
     [ "$ERROR_FATAL" != "0" ] && return
     run_serverspec
+    checkpoint "run_serverspec"
     [ "$ERROR_RSPEC" != "0" ] && return
     run_functional_tests
+    checkpoint "run_functional_tests"
     [ "$ERROR_TESTS" != "0" ] && return
 }
 
@@ -205,3 +219,15 @@ function clear_mountpoint {
     done
 }
 
+START=$(date '+%s')
+
+function checkpoint {
+    set +x
+    NOW=$(date '+%s')
+    ELAPSED=$(python -c "print('%03.2fmin' % (($NOW - $START) / 60.0))")
+    echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+    echo "$ELAPSED - $* " | sudo tee -a ${ARTIFACTS_DIR}/tests_profiling
+    echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+    START=$(date '+%s')
+    set -x
+}
