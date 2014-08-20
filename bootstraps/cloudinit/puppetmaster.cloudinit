@@ -36,17 +36,19 @@ write_files:
   content: SFCONFIGCONTENT
   path: /root/sfconfig.yaml
 runcmd:
-    - /etc/init.d/puppetmaster stop
-    - MY_PRIV_IP=`curl -s http://169.254.169.254/latest/meta-data/local-ipv4 | cut -d, -f1`
-    - sed -i "s/puppermaster-ip-template/$MY_PRIV_IP/" /root/hosts.yaml
-    - echo "127.0.0.1 puppetmaster.SF_SUFFIX puppetmaster" > /etc/hosts
-    - echo "mysql_host mysql.SF_SUFFIX mysql" >> /etc/hosts
-    - echo "jenkins_host jenkins.SF_SUFFIX jenkins" >> /etc/hosts
-    - echo "redmine_host redmine.SF_SUFFIX redmine" >> /etc/hosts
-    - echo "gerrit_host gerrit.SF_SUFFIX gerrit" >> /etc/hosts
-    - echo "managesf_host managesf.SF_SUFFIX auth.SF_SUFFIX managesf" >> /etc/hosts
-    - echo "commonservices_host commonservices.SF_SUFFIX commonservices SF_SUFFIX" >> /etc/hosts
-    - echo NAMESERVER > /etc/resolv.conf
-    - cd /root/puppet-bootstrapper
-    - ./config_puppetmaster.sh > /var/log/sf-bootstrap.log 2>&1
-    - HOME=/root/ JUP=JENKINS_USER_PASSWORD TEMP_SSH_PWD=SSHPASS SFSUFFIX=SF_SUFFIX ./bootstrap.sh >> /var/log/sf-bootstrap.log 2>&1
+  - /etc/init.d/puppetmaster stop
+  - MY_PRIV_IP=`curl -s http://169.254.169.254/latest/meta-data/local-ipv4 | cut -d, -f1`
+  - sed -i "s/puppermaster-ip-template/$MY_PRIV_IP/" /root/hosts.yaml
+  - echo "127.0.0.1 puppetmaster.SF_SUFFIX puppetmaster" > /etc/hosts
+  - echo "mysql_host mysql.SF_SUFFIX mysql" >> /etc/hosts
+  - echo "jenkins_host jenkins.SF_SUFFIX jenkins" >> /etc/hosts
+  - echo "redmine_host redmine.SF_SUFFIX redmine" >> /etc/hosts
+  - echo "gerrit_host gerrit.SF_SUFFIX gerrit" >> /etc/hosts
+  - echo "managesf_host managesf.SF_SUFFIX auth.SF_SUFFIX managesf" >> /etc/hosts
+  - echo "commonservices_host commonservices.SF_SUFFIX commonservices SF_SUFFIX" >> /etc/hosts
+  - echo NAMESERVER > /etc/resolv.conf
+  - cd /root/puppet-bootstrapper
+  - ./config_puppetmaster.sh > /var/log/sf-bootstrap.log 2>&1
+  - HOME=/root/ JUP=JENKINS_USER_PASSWORD TEMP_SSH_PWD=SSHPASS SFSUFFIX=SF_SUFFIX ./bootstrap.sh >> /var/log/sf-bootstrap.log 2>&1
+  - echo UseDNS no >> /etc/ssh/sshd_config
+  - /etc/init.d/ssh reload
