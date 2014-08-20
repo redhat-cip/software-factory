@@ -43,7 +43,12 @@ esac
 
 HOME=/root do_chroot $dir gem install specinfra
 
-tar -xzf /tmp/puppet-bootstrapper.tar.gz -C $dir/root/
+(
+    cd ..;
+    . role_configrc
+    mkdir $dir/root/puppet-bootstrapper
+    cp -Rv $PUPPET_BOOTSTRAPPER $dir/root/puppet-bootstrapper/
+)
 
 # install requirements for functional tests
 do_chroot $dir pip install nose

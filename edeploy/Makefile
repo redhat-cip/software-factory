@@ -51,27 +51,30 @@ all: $(ROLES)
 softwarefactory: $(INST)/softwarefactory.done
 $(INST)/softwarefactory.done: softwarefactory.install $(EDR_INST)/cloud.done
 	rm -f $(INST)/softwarefactory-*.img*
+	@(echo "----| Building softwarefactory role |----")
 	./softwarefactory.install $(EDR_INST)/cloud $(INST)/softwarefactory $(SF_VERSION)
 	touch $(INST)/softwarefactory.done
 
 mysql: $(INST)/mysql.done
 $(INST)/mysql.done: mysql.install $(EDR_INST)/cloud.done
 	rm -f $(INST)/mysql-*.img*
+	@(echo "----| Building mysql role |----")
 	./mysql.install $(EDR_INST)/cloud $(INST)/mysql $(SF_VERSION)
 	touch $(INST)/mysql.done
 
 slave: $(INST)/slave.done
 $(INST)/slave.done: slave.install $(EDR_INST)/cloud.done
 	rm -f $(INST)/slave-*.img*
+	@(echo "----| Building slave role |----")
 	./slave.install $(EDR_INST)/cloud $(INST)/slave $(SF_VERSION)
 	touch $(INST)/slave.done
 
-bootstrapper:
-	./puppet_bootstrapper.sh
-
-install-server-vm: $(EDR_INST)/install-server.done bootstrapper
+install-server-vm: $(INST)/install-server-vm.done
+$(INST)/install-server-vm.done: install-server-vm.install $(EDR_INST)/install-server.done
 	rm -f $(INST)/install-server-vm-*.img*
+	@(echo "----| Building install-server-vm |----")
 	./install-server-vm.install $(EDR_INST)/install-server $(INST)/install-server-vm $(SF_VERSION)
+	touch $(INST)/install-server-vm.done
 
 dist:
 	tar zcvf ../edeploy-roles.tgz Makefile README.rst *.install *.exclude

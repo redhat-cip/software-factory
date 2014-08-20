@@ -107,6 +107,15 @@ sudo mkdir -p $BUILD_DIR/install/${DVER}-${SF_REL}
 sudo ${MAKE} $VIRTUALIZED PREBUILD_EDR_TARGET=${EDEPLOY_ROLES_REL} mysql
 sudo ${MAKE} $VIRTUALIZED PREBUILD_EDR_TARGET=${EDEPLOY_ROLES_REL} slave
 sudo ${MAKE} $VIRTUALIZED EDEPLOY_ROLES_PATH=${EDEPLOY_ROLES} PREBUILD_EDR_TARGET=${EDEPLOY_ROLES_REL} softwarefactory
+
+# Calc puppet_bootstrapper md5 files
+PB_MD5=$(cd ..; find ${PUPPET_BOOTSTRAPPER} -type f | sort | xargs cat | md5sum | awk '{ print $1}')
+# Compare with previous run
+if [ -f "${INST}/puppet-bootstrapper.md5" ] && [ "$(cat ${INST}/puppet-bootstrapper.md5)" != "${PB_MD5}" ]; then
+    echo "Puppet bootstrapper have been updated, let's rebuild install-server-vm..."
+    sudo rm -f ${INST}/install-server-vm.done
+fi
+echo $PB_MD5 | sudo tee ${INST}/puppet-bootstrapper.md5
 sudo ${MAKE} $VIRTUALIZED PREBUILD_EDR_TARGET=${EDEPLOY_ROLES_REL} install-server-vm
 RET=$?
 
