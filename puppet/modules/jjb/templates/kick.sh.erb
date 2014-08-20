@@ -1,6 +1,11 @@
 #!/bin/bash
 
 set -x
+if [ -f /root/config.kicked ]; then
+    echo "Already kicked..."
+#    exit 1
+fi
+
 
 RETRIES=0
 while true; do
@@ -14,7 +19,9 @@ while true; do
     sleep 1
 done
 
-git clone http://<%= scope.function_hiera(["gerrit_url"]) %>/r/config /root/config
+if [ ! -d "/root/config" ]; then
+    git clone http://<%= scope.function_hiera(["gerrit_url"]) %>/r/config /root/config
+fi
 
 # JJB
 RETRIES=0
@@ -36,6 +43,4 @@ service jenkins restart
 # Zuul
 cp /root/config/zuul/layout.yaml /etc/zuul/
 service zuul restart 
-
-# Clean
-rm -Rf /root/config
+touch /root/config.kicked

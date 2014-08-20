@@ -6,8 +6,7 @@
           set -e
           mkdir build
           jenkins-jobs test jobs/ -o build/
-          cp zuul/layout.yaml /tmp
-          sudo zuul-server -t -l /tmp/layout.yaml
+          zuul-server -t -l zuul/layout.yaml
     triggers:
       - zuul
     node: '{node}'
@@ -43,16 +42,6 @@
     builders:
       - shell: |
           ./run_functional-tests.sh
-    triggers:
-      - zuul
-    node: '{node}'
-
-- job-template:
-    name: '{name}-sloccount'
-    defaults: zuul
-    builders:
-      - shell: |
-          sloccount --duplicates --wide --details . | fgrep -v .svn > sloccount.sc
     triggers:
       - zuul
     node: '{node}'

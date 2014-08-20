@@ -8,4 +8,3 @@
         refspec: '$ZUUL_REF'
         wipe-workspace: false
         clean: true
-

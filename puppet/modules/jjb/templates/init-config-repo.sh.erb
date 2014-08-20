@@ -43,9 +43,9 @@ if [ ! -f '/usr/share/config.init.done' ]; then
 fi
 
 # Clone the config project
-echo "ssh -o StrictHostKeyChecking=no -i $gerrit_ssh_key \$@" > /tmp/ssh_wrapper.sh
-chmod +x /tmp/ssh_wrapper.sh
-export GIT_SSH="/tmp/ssh_wrapper.sh"
+echo "ssh -o StrictHostKeyChecking=no -i $gerrit_ssh_key \$@" > /root/ssh_wrapper.sh
+chmod +x /root/ssh_wrapper.sh
+export GIT_SSH="/root/ssh_wrapper.sh"
 export GIT_COMMITTER_NAME=$admin
 export GIT_COMMITTER_EMAIL=$admin_email
 CONF_TMP=$(mktemp -d)
@@ -72,4 +72,3 @@ git commit -a --author "$admin <$admin_email>" -m "JJB/Zuul files"
 git push origin master
 
 rm -rf ${CONF_TMP}
-rm -f /tmp/ssh_wrapper.sh

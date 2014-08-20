@@ -171,12 +171,21 @@ class TestProjectTestsWorkflow(Base):
         self.ju.wait_till_job_completes("config-check",
                                         last_success_build_num_ch,
                                         "lastSuccessfulBuild")
-        last_build_num_ch = \
-            self.ju.get_last_build_number("config-check",
-                                          "lastBuild")
-        last_success_build_num_ch = \
-            self.ju.get_last_build_number("config-check",
-                                          "lastSuccessfulBuild")
+
+        last_build_num_ch, last_success_build_num_ch = 0, 1
+        attempt = 0
+        while last_build_num_ch != last_success_build_num_ch:
+            if attempt >= 30:
+                break
+            time.sleep(1)
+            last_build_num_ch = \
+                self.ju.get_last_build_number("config-check",
+                                              "lastBuild")
+            last_success_build_num_ch = \
+                self.ju.get_last_build_number("config-check",
+                                              "lastSuccessfulBuild")
+            attempt += 1
+
         self.assertEqual(last_build_num_ch, last_success_build_num_ch)
         # let some time to Zuul to update the test result to Gerrit.
         time.sleep(2)
@@ -188,8 +197,18 @@ class TestProjectTestsWorkflow(Base):
         self.gu.setPlus2CodeReview(change_id, "current")
         self.gu.setPlus1Approved(change_id, "current")
         self.gu2.setPlus2CodeReview(change_id, "current")
-        self.assertEqual(
-            self.gu.submitPatch(change_id, "current")['status'], 'MERGED')
+        submit_result = self.gu.submitPatch(change_id, "current")
+
+        attempt = 0
+        while isinstance(submit_result, int):
+            if attempt >= 30:
+                break
+            time.sleep(1)
+            submit_result = self.gu.submitPatch(change_id, "current")
+            attempt += 1
+        if (isinstance(submit_result, int)):
+            print("Could not submit result: %d" % submit_result)
+        self.assertEqual(submit_result['status'], 'MERGED')
 
         # Wait for config-update to finish and verify the success
         self.ju.wait_till_job_completes("config-update",
