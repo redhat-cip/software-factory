@@ -44,8 +44,9 @@ function prepare_artifacts {
 }
 
 function publish_artifacts {
-    find ${ARTIFACTS_DIR} -type d -exec chmod 550 {} \;
-    find ${ARTIFACTS_DIR} -type f -exec chmod 440 {} \;
+    set +x
+    sudo find ${ARTIFACTS_DIR} -type d -exec chmod 550 {} \;
+    sudo find ${ARTIFACTS_DIR} -type f -exec chmod 440 {} \;
     sudo chown -R $USER:$GROUP ${ARTIFACTS_DIR}
     if [ ${GROUP} = 'www-data' ]; then
         echo "Logs are available here: http://${JENKINS_URL}:8081/${ARTIFACTS_RELPATH}"
@@ -84,9 +85,11 @@ function get_logs {
 }
 
 function host_debug {
-    sudo dmesg -c > ${ARTIFACTS_DIR}/host_debug
-    ps afx >> ${ARTIFACTS_DIR}/host_debug
-    free -m | tee -a ${ARTIFACTS_DIR}/host_debug
+    set +x
+    sudo dmesg -c > ${ARTIFACTS_DIR}/host_debug_dmesg
+    ps aufx >> ${ARTIFACTS_DIR}/host_debug_ps-aufx
+    free -m | tee -a ${ARTIFACTS_DIR}/host_debug_free
+    set -x
 }
 
 function pre_fail {
