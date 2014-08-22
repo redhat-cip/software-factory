@@ -39,6 +39,12 @@
     <script src="/jquery.min.js"></script>
     <script src="/bootstrap.min.js"></script>
     <script type="text/javascript">
+        // Prevent nested topmenu
+        if (self != top) {
+            top.location = self.location;
+        }
+    </script>
+    <script type="text/javascript">
       var tid = setTimeout(updateUrl, 1);
       function updateUrl() {
         try {

@@ -15,6 +15,15 @@ LOGOUT_MSG = "You have been successfully logged " \
              "out of all the Software factory services."
 
 
+def clean_back(value):
+    # Enforce/limit redirect page
+    if "jenkins" in value:
+        return "/_jenkins/"
+    if "redmine" in value:
+        return "/_redmine/"
+    return "/r/"
+
+
 def signature(data):
     dgst = hashlib.sha1(data).digest()
     sig = rsa_priv.sign(dgst, 'sha1')
@@ -54,7 +63,7 @@ def setup_response(username, back, email=None, lastname=None, keys=None):
                         max_age=conf.app.cookie_period,
                         overwrite=True)
     response.status_code = 303
-    response.location = back
+    response.location = clean_back(back)
 
 
 def dummy_ldap():
