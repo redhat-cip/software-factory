@@ -36,6 +36,8 @@ parser.add_argument('--auth', metavar='username:password',
 parser.add_argument('--auth-server', metavar='central-auth-server',
                     default='auth.sf.dom',
                     help='Hostname of the central auth server')
+parser.add_argument('--cookie', metavar='Authentication cookie',
+                    help='cookie of the user if known')
 
 sp = parser.add_subparsers(dest="command")
 bkpg = sp.add_parser('backup_get')
@@ -133,6 +135,8 @@ else:
 
 
 def get_cookie():
+    if args.cookie is not None:
+        return args.cookie
     (username, password) = args.auth.split(':')
     r = http.post('http://%s/auth/login' % args.auth_server,
                   params={'username': username,

@@ -56,6 +56,7 @@ auth = {
         'mail': '<%= @cauth['ldap_account_mail_attribute'] %>',
     },
     'github': {
+        'top_domain': '<%= scope.function_hiera(["top_domain"]) %>',
         'auth_url':  'https://github.com/login/oauth/authorize',
         'redirect_uri': '<%= @cauth['github_redirect_url'] %>',
         'client_id': '<%= @cauth['github_app_id'] %>',

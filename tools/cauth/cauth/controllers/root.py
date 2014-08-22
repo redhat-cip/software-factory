@@ -10,6 +10,9 @@ from mockldap import LDAPObject
 import requests as http
 from cauth.model import db
 from cauth.controllers import userdetails
+import httmock
+import urlparse
+
 
 LOGOUT_MSG = "You have been successfully logged " \
              "out of all the Software factory services."
@@ -99,22 +102,70 @@ def dummy_ldap():
     directory = dict([com, example, users, user1, user2, user3, user4, user5])
     return LDAPObject(directory)
 
+mockoauth_users = {
+    "user6": {"login": "user6",
+              "password": "userpass",
+              "email": "user6@tests.dom",
+              "name": "Demo user6",
+              "ssh_keys": "",
+              "code": "user6_code",
+              "token": "user6_token"}
+}
+
+
+#@urlmatch(netloc=r'(.*\.)?oauth\.com$')
+@httmock.urlmatch(netloc=r'(.*\.)?github\.com$')
+def oauthmock_request(url, request):
+    users = mockoauth_users
+    headers = {'content-type': 'application/json'}
+
+    if request.method == 'POST':
+        code = urlparse.parse_qs(url.query)['code'][0]
+        for user in users:
+            if users[user]['code'] == code:
+                token = users[user]['token']
+                break
+        content = {"access_token": token}
+    else:
+        for user in users:
+            if users[user]['token'] in request.headers['Authorization']:
+                u = user
+                break
+        if 'keys' in url.path:
+            content = {'key': users[u]['ssh_keys']}
+        else:
+            content = {'login': u,
+                       'email': users[u]['email'],
+                       'name': users[u]['name']}
+    return httmock.response(200, content, headers, None, 5, request)
+
+
+def oauth_request(method, url=None, headers=None, params=None, mockoauth=None):
+    if mockoauth:
+        with httmock.HTTMock(oauthmock_request):
+            return method(url, headers=headers, params=params)
+    else:
+        return method(url, headers=headers, params=params)
+
 
 class GithubController(object):
-    def get_access_token(self, state, code):
+    def get_access_token(self, state, code, mockoauth):
         github = conf.auth['github']
-        resp = http.post("https://github.com/login/oauth/access_token",
-                         params={"client_id": github['client_id'],
-                                 "client_secret": github['client_secret'],
-                                 "code": code,
-                                 "redirect_uri": github['redirect_uri']},
-                         headers={'Accept': 'application/json'})
+        resp = oauth_request(http.post,
+                             "https://github.com/login/oauth/access_token",
+                             params={"client_id": github['client_id'],
+                                     "client_secret": github['client_secret'],
+                                     "code": code,
+                                     "redirect_uri": github['redirect_uri']},
+                             headers={'Accept': 'application/json'},
+                             mockoauth=mockoauth)
         return resp.json()['access_token']
 
     @expose()
     def callback(self, **kwargs):
         state = kwargs.get('state', None)
         code = kwargs.get('code', None)
+        mockoauth = kwargs.get('mockoauth', None)
         if not state or not code:
             abort(400)
 
@@ -122,31 +173,50 @@ class GithubController(object):
         if not back:
             abort(401)
 
-        token = self.get_access_token(state, code)
-        resp = http.get("https://api.github.com/user",
-                        headers={'Authorization': 'token ' + token})
+        token = self.get_access_token(state, code, mockoauth)
+        resp = oauth_request(http.get, "https://api.github.com/user",
+                             headers={'Authorization': 'token ' + token},
+                             mockoauth=mockoauth)
         data = resp.json()
         login = data.get('login')
         email = data.get('email')
         name = data.get('name')
-        resp = http.get("https://api.github.com/users/%s/keys" % login,
-                        headers={'Authorization': 'token ' + token})
+        resp = oauth_request(http.get,
+                             "https://api.github.com/users/%s/keys" % login,
+                             headers={'Authorization': 'token ' + token},
+                             mockoauth=mockoauth)
         ssh_keys = resp.json()
         setup_response(login, back, email, name, ssh_keys)
+
+    def mockoauth_authorize(self, username, password, state, scope):
+        users = mockoauth_users
+        if username not in users:
+            abort(401)
+        if users[username]['password'] != password:
+            abort(401)
+        code = users[username]['code']
+        kwargs = {'state': state, 'code': code, 'mockoauth': True}
+        self.callback(**kwargs)
 
     @expose()
     def index(self, **kwargs):
         back = kwargs['back']
         state = db.put_url(back)
-        response.status_code = 302
-        github = conf.auth['github']
-        response.location = github['auth_url'] + "?" + \
-            urllib.urlencode({'client_id': github['client_id'],
-                              'redirect_uri': github['redirect_uri'],
-                              'state': state,
-                              'scope': 'user, user:email'
-                              })
-
+        #mock oauth for functional tests
+        if (conf.auth['github']['top_domain'] == 'tests.dom') and \
+           ('username' in kwargs):
+                username = kwargs['username']
+                password = kwargs['password']
+                scope = 'user, user:email'
+                self.mockoauth_authorize(username, password, state, scope)
+        else:
+            response.status_code = 302
+            github = conf.auth['github']
+            response.location = github['auth_url'] + "?" + \
+                urllib.urlencode({'client_id': github['client_id'],
+                                  'redirect_uri': github['redirect_uri'],
+                                  'state': state,
+                                  'scope': 'user, user:email'})
 
 
 class LoginController(RestController):

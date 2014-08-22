@@ -177,6 +177,7 @@ EOF
     cp -r ../tools/cauth ${dir}/var/www/cauth
     do_chroot $dir bash -c "cd /srv/zuul && pip install -U funcparserlib"
     do_chroot $dir bash -c "cd /srv/zuul && pip install -U mockldap"
+    do_chroot $dir pip install httmock
 
     #
     # Socat as a service

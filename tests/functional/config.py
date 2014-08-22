@@ -130,6 +130,9 @@ e8Hn4MD7cWUwUa2k/bDgp0El8Hfiiwicd2d/Q3tzAEy76n7HwEJ0X0ZjrgYMnak8
 GImOmKYg2lO4r6X5SO3RzrNxQnEBKk4q4r7j70meLkxqDj5WdbvirA==
 -----END RSA PRIVATE KEY-----
 """
+USER_6 = "user6"
+USER_6_PUB_KEY = USER_4_PUB_KEY
+USER_6_PRIV_KEY = USER_4_PRIV_KEY
 
 USERS = {
     USER_1: {"password": "userpass",
@@ -156,4 +159,7 @@ USERS = {
              "privkey": USER_4_PRIV_KEY,
              "auth_cookie": "",
              }
+#USER_5 AND USER_6 are added to this dictionary in
+#test_10_userdata.py file. So if new users to be added
+#to this dictionary please start with USER_7
 }

@@ -77,7 +77,7 @@ def get_cookie(username, password):
                                       'password': password,
                                       'back': '/'},
                          allow_redirects=False)
-    return resp.cookies['auth_pubtkt']
+    return resp.cookies.get('auth_pubtkt')
 
 
 class Base(unittest.TestCase):
@@ -117,9 +117,13 @@ class ManageSfUtils(Tool):
             "%s --port %s --auth %%s:%%s " % \
             (self.host, config.GATEWAY_HOST, self.port)
 
-    def createProject(self, name, user, options=None):
+    def createProject(self, name, user, options=None, cookie=None):
         passwd = config.USERS[user]['password']
-        cmd = self.base_cmd % (user, passwd) + "create --name %s" % name
+        base_cmd = self.base_cmd % (user, passwd)
+        if cookie:
+            base_cmd = base_cmd + "--cookie %s " % (cookie)
+        
+        cmd = base_cmd + "create --name %s" % name
         if options:
             for k, v in options.items():
                 cmd = cmd + " --" + k + " " + v
