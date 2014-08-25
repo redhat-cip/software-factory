@@ -148,6 +148,7 @@ EOF
     curl -L --silent https://github.com/twbs/bootstrap/releases/download/v3.2.0/bootstrap-3.2.0-dist.zip > $dir/srv/zuul/bootstrap.zip
     unzip -q -o $dir/srv/zuul/bootstrap.zip -d $dir/srv/zuul/etc/status/public_html/
     curl http://status.openstack.org/jquery-visibility.min.js -o $dir/srv/zuul/etc/status/public_html/jquery-visibility.min.js
+    curl http://status.openstack.org/jquery-graphite.js -o $dir/srv/zuul/etc/status/public_html/jquery.graphite.js
     rm -R $dir/srv/zuul/bootstrap.zip
 
     #
