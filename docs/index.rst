@@ -15,6 +15,7 @@ Contents:
    admin
    user
    managesf
+   graphs
 
 Indices and tables
 ==================

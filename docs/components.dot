@@ -1,0 +1,126 @@
+digraph {
+    # General settings
+    nodesep = 0.75
+    node [shape=doublecircle,color=orange,fontsize=10,width=1.0]
+    edge [fontsize=10];
+
+    # Node definitions
+    "User" [shape=box];
+    "LDAP" [color=gray];
+    "Github" [color=gray label="Github\n(OAuth)"];
+
+    subgraph cluster_agenda {
+        # We fake an agenda here by making the nodes invisible,
+        # showing only the edges with a label
+        style=invis;
+
+        node [fontsize=0 width=0 style=invis]
+
+        {rank=same; h1; h2;}
+        h1 -> h2 [label="HTTP" color="blue" dir=none];
+
+        {rank=same; s1; s2;}
+        s1 -> s2 [label="SSH" color="red" dir=none];
+
+        {rank=same; m1; m2;}
+        m1 -> m2 [label="MySQL" color="orange" dir=none];
+
+        {rank=same; i1; i2;}
+        i1 -> i2 [label="internal" color="gray" dir=none];
+
+        {rank=same; l1; l2;}
+        l1 -> l2 [label="LDAP" color="green" dir=none];
+    }
+
+    subgraph cluster_common {
+        style = dashed;
+        label="Commonservices";
+        "Apache";
+        "Etherpad";
+        "Paste";
+    }
+
+    subgraph cluster_gerrit {
+        style = dashed;
+        label="Gerrit";
+        "Gerrit";
+        "GerritApache" [label="Apache"];
+    }
+
+    subgraph cluster_jenkins {
+        style = dashed;
+        label="Jenkins";
+        "master" [label="Jenkins"];
+        "JenkinsApache" [label="Apache"];
+        "Zuul";
+    }
+
+    subgraph cluster_redmine {
+        style = dashed;
+        label="Redmine";
+        "Redmine";
+        "RedmineApache" [label="Apache"];
+    }
+
+    subgraph cluster_mysql {
+        style = dashed;
+        label="Mysql";
+        "MySQL";
+    }
+
+    subgraph cluster_slave {
+        style = dashed;
+        label="Jenkins slave";
+        "slave" [label="Jenkins"];
+    }
+
+    subgraph cluster_managesf {
+        style = dashed;
+        label="Managesf";
+        "ManagesfApache" [label="Apache"];
+        "managesf";
+        "cauth";
+    }
+
+    # Now all the connections (edges) between the nodes
+
+    edge [color=blue];
+    "User" -> "Apache";
+    "Apache" -> "Etherpad";
+    "Apache" -> "Paste";
+    "Apache" -> "GerritApache";
+    "Apache" -> "JenkinsApache";
+    "Apache" -> "RedmineApache";
+    "Apache" -> "ManagesfApache";
+    "GerritApache" -> "Gerrit";
+    "JenkinsApache" -> "master";
+    "slave" -> "master";
+    "cauth" -> "Github";
+    "cauth" -> "Redmine";
+    "cauth" -> "Gerrit";
+    "managesf" -> "Redmine";
+    "managesf" -> "Gerrit";
+    "Gerrit" -> "Redmine" [constraint=False];
+
+    edge [color=red];
+    "User" -> "Gerrit";
+
+    edge [color=orange];
+    "Redmine" -> "MySQL";
+    "Gerrit" -> "MySQL";
+    "Etherpad" -> "MySQL";
+    "Paste" -> "MySQL";
+
+    edge [color=gray];
+    "RedmineApache" -> "Redmine";
+    "ManagesfApache" -> "cauth";
+    "ManagesfApache" -> "managesf";
+    "master" -> "Zuul" [constraint=False];
+    "Zuul" -> "Gerrit";
+
+    edge [color=green];
+    "cauth" -> "LDAP";
+
+    # This is a hack to push the agenda below the other nodes
+    MySQL -> m1 [style=invis];
+}
