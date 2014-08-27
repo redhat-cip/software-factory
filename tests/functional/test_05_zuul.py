@@ -72,7 +72,7 @@ class TestZuulOps(Base):
         ju = JenkinsUtils()
         k_index = gu.addPubKey(config.USERS[un]["pubkey"])
         # Gerrit part
-        assert gu.isPrjExist(pname)
+        self.assertTrue(gu.isPrjExist(pname))
         priv_key_path = set_private_key(config.USERS[un]["privkey"])
         gitu = GerritGitUtils(un,
                               priv_key_path,

@@ -73,7 +73,7 @@ class TestProjectReplication(Base):
 #So this clone may succeed or fail, we don't need 'git review -s' and
 #other review commands in clone method
     def clone(self, uri, target):
-        assert uri.startswith('ssh://')
+        self.assertTrue(uri.startswith('ssh://'))
         cmd = "git clone %s %s" % (uri, target)
         self.mt.exe(cmd, self.mt_tempdir)
         clone = os.path.join(self.mt_tempdir, target)
@@ -148,7 +148,7 @@ class TestProjectReplication(Base):
         if us_files:
             for f in us_files:
                 self.assertIn(f, files)
-            assert (len(us_files) < len(files))
+            self.assertTrue((len(us_files) < len(files)))
 
     def test_replication(self):
         """ Test gerrit replication for review process

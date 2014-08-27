@@ -36,7 +36,7 @@ class TestConfigRepo(Base):
     def test_check_config_repo_exists(self):
         pname = 'config'
         gu = GerritUtil(config.GERRIT_SERVER, username=config.ADMIN_USER)
-        assert gu.isPrjExist(pname)
+        self.assertTrue(gu.isPrjExist(pname))
 
         ggu = GerritGitUtils(config.ADMIN_USER,
                              config.ADMIN_PRIV_KEY_PATH,

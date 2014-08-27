@@ -180,11 +180,13 @@ class GerritGitUtils(Tool):
                  self.priv_key_path, clone_dir)
 
     def clone(self, uri, target, config_review=True):
-        assert uri.startswith('ssh://')
+        if not uri.startswith('ssh://'):
+            raise Exception("%s doesn't start with ssh://" % uri)
         cmd = "git clone %s %s" % (uri, target)
         self.exe(cmd, self.tempdir)
         clone = os.path.join(self.tempdir, target)
-        assert os.path.isdir(clone)
+        if not os.path.isdir(clone):
+            raise Exception("%s is not a directory" % clone)
         self.exe('git config --add gitreview.username %s' %
                  self.user, clone)
         if config_review:

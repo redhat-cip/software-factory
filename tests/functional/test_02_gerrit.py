@@ -62,15 +62,15 @@ class TestGerrit(Base):
         gu = GerritUtil(config.GERRIT_SERVER, username=config.ADMIN_USER)
         pname = 'p_%s' % create_random_str()
         self.createProject(pname)
-        assert gu.isPrjExist(pname)
+        self.assertTrue(gu.isPrjExist(pname))
         NEW_USER = 'user2'
         GROUP_NAME = '%s-core' % pname
-        assert gu.isGroupExist(GROUP_NAME)
-        assert not gu.isMemberInGroup(NEW_USER, GROUP_NAME)
+        self.assertTrue(gu.isGroupExist(GROUP_NAME))
+        self.assertFalse(gu.isMemberInGroup(NEW_USER, GROUP_NAME))
         gu.addGroupMember(NEW_USER, GROUP_NAME)
-        assert gu.isMemberInGroup(NEW_USER, GROUP_NAME)
+        self.assertTrue(gu.isMemberInGroup(NEW_USER, GROUP_NAME))
         gu.deleteGroupMember(NEW_USER, GROUP_NAME)
-        assert not gu.isMemberInGroup(NEW_USER, GROUP_NAME)
+        self.assertFalse(gu.isMemberInGroup(NEW_USER, GROUP_NAME))
 
     def test_add_remove_user_in_ptl_as_admin(self):
         """ Add/remove user from ptl group as admin
@@ -78,15 +78,15 @@ class TestGerrit(Base):
         gu = GerritUtil(config.GERRIT_SERVER, username=config.ADMIN_USER)
         pname = 'p_%s' % create_random_str()
         self.createProject(pname)
-        assert gu.isPrjExist(pname)
+        self.assertTrue(gu.isPrjExist(pname))
         NEW_USER = 'user2'
         GROUP_NAME = '%s-ptl' % pname
-        assert gu.isGroupExist(GROUP_NAME)
-        assert not gu.isMemberInGroup(NEW_USER, GROUP_NAME)
+        self.assertTrue(gu.isGroupExist(GROUP_NAME))
+        self.assertFalse(gu.isMemberInGroup(NEW_USER, GROUP_NAME))
         gu.addGroupMember(NEW_USER, GROUP_NAME)
-        assert gu.isMemberInGroup(NEW_USER, GROUP_NAME)
+        self.assertTrue(gu.isMemberInGroup(NEW_USER, GROUP_NAME))
         gu.deleteGroupMember(NEW_USER, GROUP_NAME)
-        assert not gu.isMemberInGroup(NEW_USER, GROUP_NAME)
+        self.assertFalse(gu.isMemberInGroup(NEW_USER, GROUP_NAME))
 
     def test_review_labels(self):
         """ Test if list of review labels are as expected
@@ -96,7 +96,7 @@ class TestGerrit(Base):
         un = config.ADMIN_USER
         gu = GerritUtil(config.GERRIT_SERVER, username=un)
         k_index = gu.addPubKey(config.USERS[un]["pubkey"])
-        assert gu.isPrjExist(pname)
+        self.assertTrue(gu.isPrjExist(pname))
         priv_key_path = set_private_key(config.USERS[un]["privkey"])
         gitu = GerritGitUtils(un,
                               priv_key_path,
@@ -131,7 +131,7 @@ class TestGerrit(Base):
         un = config.ADMIN_USER
         gu = GerritUtil(config.GERRIT_SERVER, username=un)
         k_index = gu.addPubKey(config.USERS[un]["pubkey"])
-        assert gu.isPrjExist(pname)
+        self.assertTrue(gu.isPrjExist(pname))
         priv_key_path = set_private_key(config.USERS[un]["privkey"])
         gitu = GerritGitUtils(un,
                               priv_key_path,
@@ -193,7 +193,7 @@ class TestGerrit(Base):
         self.createProject(pname)
         un = config.ADMIN_USER
         gu = GerritUtil(config.GERRIT_SERVER, username=un)
-        assert gu.isPrjExist(pname)
+        self.assertTrue(gu.isPrjExist(pname))
         k_index = gu.addPubKey(config.USERS[un]["pubkey"])
         priv_key_path = set_private_key(config.USERS[un]["privkey"])
         gitu = GerritGitUtils(un,
@@ -240,7 +240,7 @@ class TestGerrit(Base):
         self.createProject(pname, options)
         first_u = config.ADMIN_USER
         gu_first_u = GerritUtil(config.GERRIT_SERVER, username=first_u)
-        assert gu_first_u.isPrjExist(pname)
+        self.assertTrue(gu_first_u.isPrjExist(pname))
         # Push data in the create project as Admin user
         k1_index = gu_first_u.addPubKey(config.USERS[first_u]["pubkey"])
         priv_key_path = set_private_key(config.USERS[first_u]["privkey"])

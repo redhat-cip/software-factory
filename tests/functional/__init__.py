@@ -21,7 +21,8 @@ def create_gerrit_user(user):
     if r.status_code == 200:
         return
 
-    assert r.status_code == 404
+    if r.status_code != 404:
+        raise Exception("Status code for %s: %s != 404" % (url, r.status_code))
 
     # login to create an account
     user_cookie = config.USERS[user]['auth_cookie']
