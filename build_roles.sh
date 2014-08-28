@@ -62,20 +62,27 @@ PREBUILD_TARGET=$WORKSPACE/roles/install/$EDEPLOY_ROLES_REL
 }
 cloud_img="cloud-$EDEPLOY_ROLES_REL.edeploy"
 install_server_img="install-server-$EDEPLOY_ROLES_REL.edeploy"
-scp -o StrictHostKeyChecking=no $EDEPLOY_ROLES_SRC_ARCHIVES/$install_server_img.md5 /tmp
-scp -o StrictHostKeyChecking=no $EDEPLOY_ROLES_SRC_ARCHIVES/$cloud_img.md5 /tmp
+
+TEMP_DIR=$(mktemp -d /tmp/edeploy-check-XXXXX)
+BASE_URL="http://***REMOVED***/v1/AUTH_70aab03f69b549cead3cb5f463174a51/edeploy-roles"
+
+curl -o ${TEMP_DIR}/$install_server_img.md5 ${BASE_URL}/$install_server_img.md5
+curl -o ${TEMP_DIR}/$cloud_img.md5 ${BASE_URL}/$cloud_img.md5
 [ ! -f $PREBUILD_TARGET/$install_server_img.md5 ] && touch $PREBUILD_TARGET/$install_server_img.md5 
-diff $PREBUILD_TARGET/$install_server_img.md5 /tmp/$install_server_img.md5 || {
-    scp -o StrictHostKeyChecking=no $EDEPLOY_ROLES_SRC_ARCHIVES/$install_server_img* $PREBUILD_TARGET/
+diff $PREBUILD_TARGET/$install_server_img.md5 ${TEMP_DIR}/$install_server_img.md5 || {
+    curl -o ${TEMP_DIR}/$install_server_img ${BASE_URL}/$install_server_img
+    mv ${TEMP_DIR}/$install_server_img* $PREBUILD_TARGET
     # Remove the previously unziped archive
     [ -d $PREBUILD_TARGET/install-server ] && sudo rm -Rf $PREBUILD_TARGET/install-server 
 }
 [ ! -f $PREBUILD_TARGET/$cloud_img.md5 ] && touch $PREBUILD_TARGET/$cloud_img.md5 
-diff $PREBUILD_TARGET/$cloud_img.md5 /tmp/$cloud_img.md5 || {
-    scp -o StrictHostKeyChecking=no $EDEPLOY_ROLES_SRC_ARCHIVES/$cloud_img* $PREBUILD_TARGET/
+diff $PREBUILD_TARGET/$cloud_img.md5 ${TEMP_DIR}/$cloud_img.md5 || {
+    curl -o ${TEMP_DIR}/$cloud_img ${BASE_URL}/$cloud_img
+    mv ${TEMP_DIR}/$cloud_img* $PREBUILD_TARGET
     # Remove the previously unziped archive
     [ -d $PREBUILD_TARGET/cloud ] && sudo rm -Rf $PREBUILD_TARGET/cloud
 }
+rm -Rf ${TEMP_DIR}
 
 # Verified the prebuild role we have with the md5
 install_server_md5=$(cat $PREBUILD_TARGET/$install_server_img | md5sum - | cut -d ' ' -f1) 
@@ -120,3 +127,4 @@ sudo ${MAKE} $VIRTUALIZED PREBUILD_EDR_TARGET=${EDEPLOY_ROLES_REL} install-serve
 RET=$?
 
 exit $RET
+
