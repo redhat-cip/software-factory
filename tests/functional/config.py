@@ -130,6 +130,11 @@ e8Hn4MD7cWUwUa2k/bDgp0El8Hfiiwicd2d/Q3tzAEy76n7HwEJ0X0ZjrgYMnak8
 GImOmKYg2lO4r6X5SO3RzrNxQnEBKk4q4r7j70meLkxqDj5WdbvirA==
 -----END RSA PRIVATE KEY-----
 """
+
+USER_5 = "user5"
+USER_5_PUB_KEY = USER_4_PUB_KEY
+USER_5_PRIV_KEY = USER_4_PRIV_KEY
+
 USER_6 = "user6"
 USER_6_PUB_KEY = USER_4_PUB_KEY
 USER_6_PRIV_KEY = USER_4_PRIV_KEY
@@ -162,5 +167,19 @@ USERS = {
              "pubkey": USER_4_PUB_KEY,
              "privkey": USER_4_PRIV_KEY,
              "auth_cookie": "",
+             },
+    USER_5: {"password": "userpass",
+             "email": "user5@example.com",
+             "pubkey": USER_5_PUB_KEY,
+             "privkey": USER_5_PRIV_KEY,
+             "auth_cookie": "",
+             "lastname": "Demo user5",
+             },
+    USER_6: {"password": "userpass",
+             "email": "user6@example.com",
+             "pubkey": USER_6_PUB_KEY,
+             "privkey": USER_6_PRIV_KEY,
+             "auth_cookie": "",
+             "lastname": "Demo user6",
              }
 }

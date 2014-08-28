@@ -56,16 +56,16 @@ class TestUserdata(Base):
                                cookie)
         self.projects.append(name)
 
-    def verify_userdata_gerrit(self, login, lastname, email):
+    def verify_userdata_gerrit(self, login):
         # Now check that the correct data was stored in Gerrit
         url = "http://gerrit.%s/api/accounts/%s" % (os.environ['SF_SUFFIX'],
                                                     login)
         resp = requests.get(url)
         data = json.loads(resp.content[4:])
-        self.assertEqual(lastname, data.get('name'))
-        self.assertEqual(email, data.get('email'))
+        self.assertEqual(config.USERS[login]['lastname'], data.get('name'))
+        self.assertEqual(config.USERS[login]['email'], data.get('email'))
 
-    def verify_userdata_redmine(self, login, lastname, email):
+    def verify_userdata_redmine(self, login):
         headers = {'X-Redmine-API-Key': self.redmine_api_key,
                    'Content-Type': 'application/json'}
         user = {}
@@ -80,32 +80,24 @@ class TestUserdata(Base):
                 if u.get('login') == login:
                     user = u
                     break
-        self.assertEqual(lastname, user.get('lastname'))
-        self.assertEqual(email, user.get('mail'))
+        self.assertEqual(config.USERS[login]['lastname'], user.get('lastname'))
+        self.assertEqual(config.USERS[login]['email'], user.get('mail'))
 
     def test_userdata_ldap(self):
         """ Functional tests to verify the ldap user
         """
-        self.user5_email = 'user5@%s' % os.environ['SF_SUFFIX']
         data = {'username': 'user5', 'password': 'userpass', 'back': '/'}
         # Trigger a login as user5, this should fetch the userdata from LDAP
         url = "http://%s/auth/login/" % config.GATEWAY_HOST
         requests.post(url, data=data, allow_redirects=False)
 
         # verify if ldap user is created in gerrit and redmine
-        self.verify_userdata_gerrit('user5', 'Demo user5', self.user5_email)
-        self.verify_userdata_redmine('user5', 'Demo user5', self.user5_email)
+        self.verify_userdata_gerrit('user5')
+        self.verify_userdata_redmine('user5')
 
     def test_userdata_github(self):
         """ Functional tests to verify the github user
         """
-        self.user6_email = 'user6@%s' % os.environ['SF_SUFFIX']
-        config.USERS['user6'] = {"password": "userpass",
-                                 "email": "user6@tests.dom",
-                                 "pubkey": config.USER_6_PUB_KEY,
-                                 "privkey": config.USER_6_PRIV_KEY,
-                                 "auth_cookie": "",
-                                 }
         # Trigger a oauth login as user6,
         # this should fetch the userdata from oauth mock
         # allow_redirects=False is not working for GET
@@ -125,5 +117,5 @@ class TestUserdata(Base):
                 break
 
         # verify if github user is created in gerrit and redmine
-        self.verify_userdata_gerrit('user6', 'Demo user6', self.user6_email)
-        self.verify_userdata_redmine('user6', 'Demo user6', self.user6_email)
+        self.verify_userdata_gerrit('user6')
+        self.verify_userdata_redmine('user6')

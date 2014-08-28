@@ -119,7 +119,7 @@ def dummy_ldap():
         'userPassword': ['userpass']})
     user5 = ('cn=user5,ou=Users,dc=example,dc=com', {
         'cn': 'user5',
-        'mail': ['user5@tests.dom'],
+        'mail': ['user5@example.com'],
         'sn': ['Demo user5'],
         'userPassword': ['userpass']})
 
@@ -129,7 +129,7 @@ def dummy_ldap():
 mockoauth_users = {
     "user6": {"login": "user6",
               "password": "userpass",
-              "email": "user6@tests.dom",
+              "email": "user6@example.com",
               "name": "Demo user6",
               "ssh_keys": "",
               "code": "user6_code",

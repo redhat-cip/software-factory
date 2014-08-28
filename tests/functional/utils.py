@@ -79,7 +79,7 @@ def get_cookie(username, password):
                                       'password': password,
                                       'back': '/'},
                          allow_redirects=False)
-    return resp.cookies.get('auth_pubtkt')
+    return resp.cookies.get('auth_pubtkt', '')
 
 
 class Base(unittest.TestCase):
