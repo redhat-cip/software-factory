@@ -1,6 +1,22 @@
 Software-factory
 ================
 
+
+How to sfstack
+--------------
+
+sfstack will build a complete SoftwareFactory development environment.
+
+ * Setup a fresh supported Linux installation.  ("Ubuntu 14.04 x86-64" on eNocloud)
+ * git clone http://46.231.128.110/r/sfstack
+ * cd sfstack && ./sfstack.sh
+
+At the end, it will run functionnal tests in DEBUG mode that will keep the
+container up and running. Here is the recommended way to connect to your instance:
+
+ * ssh -L 8080:192.168.134.54:80 -L 29418:192.168.134.52:29418 your-instance-ip
+ * firefox http://localhost:8080/
+
 How to begin development on SF
 ------------------------------
 
