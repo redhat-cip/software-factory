@@ -1,6 +1,7 @@
 #!/usr/bin/python
 
 import os
+from urllib import unquote
 
 from string import Template
 
@@ -11,7 +12,8 @@ tmpl = Template(file('index.html.tmpl').read())
 target = os.environ['REQUEST_URI']
 if target.startswith('/_'):
     target = '/' + target.lstrip('/').lstrip('_')
-    target = target.replace('%7C', '#', 1)
+    target = unquote(target)
+    target = target.replace('|', '#', 1)
 else:
     target = '/r/'
 content = tmpl.substitute(target_url=target)
