@@ -116,7 +116,7 @@ class TestZuulOps(Base):
 
         attempt = 0
         while gu.getReviewerApprovals(change_id, 'jenkins')['Verified'] != '-1':
-            if attempt >= 10:
+            if attempt >= 30:
                 break
             time.sleep(1)
             attempt += 1
@@ -144,14 +144,14 @@ class TestZuulOps(Base):
 
         attempt = 0
         while not "jenkins" in gu.getReviewers(change_id):
-            if attempt >= 10:
+            if attempt >= 30:
                 break
             time.sleep(1)
             attempt += 1
 
         attempt = 0
         while gu.getReviewerApprovals(change_id, 'jenkins')['Verified'] != '+1':
-            if attempt >= 10:
+            if attempt >= 30:
                 break
             time.sleep(1)
             attempt += 1
