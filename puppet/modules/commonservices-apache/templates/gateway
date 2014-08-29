@@ -3,12 +3,6 @@
         ProxyVia On
         ProxyRequests Off
 
-        ProxyPass /auth/ http://<%= scope.function_hiera(["auth_url"]) %>/auth/ nocanon retry=0
-        ProxyPassReverse /auth/ http://<%= scope.function_hiera(["auth_url"]) %>/auth/
-
-        ProxyPass /manage/ http://<%= scope.function_hiera(["managesf_url"]) %>/manage/ nocanon retry=0
-        ProxyPassReverse /manage/ http://<%= scope.function_hiera(["managesf_url"]) %>/manage/
-
         ProxyPass /r/ http://<%= scope.function_hiera(["gerrit_url"]) %>/r/ nocanon retry=0
         ProxyPassReverse /r/ http://<%= scope.function_hiera(["gerrit_url"]) %>/r/
 
@@ -38,8 +32,7 @@
 
     </IfModule>
     
-    ScriptAliasMatch ^/.*[^(css)|(js)]$ /var/www/index.py
-    Alias / /var/www/
+    ScriptAliasMatch ^/[^(auth)|(managesf)].*[^(css)|(js)]$ /var/www/index.py
 
     <Directory /var/www>
         AddHandler cgi-script .py

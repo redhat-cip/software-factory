@@ -39,11 +39,6 @@ hosts:
     cloudinit: CIPATH/managesf.cloudinit
   -
     address: 192.168.134.55
-    name: commonservices
-    role: softwarefactory
-    cloudinit: CIPATH/commonservices.cloudinit
-  -
-    address: 192.168.134.56
     name: slave
     role: slave
     cloudinit: CIPATH/slave.cloudinit

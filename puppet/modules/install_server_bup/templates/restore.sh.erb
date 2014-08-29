@@ -5,7 +5,7 @@ set -x
 
 bup join -r root@<%= scope.function_hiera(["mysql_url"]) %>:  puppetmaster | tar -xPf -
 puppet agent --test --environment sf || true
-ROLES="mysql redmine gerrit managesf jenkins commonservices"
+ROLES="mysql redmine gerrit managesf jenkins"
 for role in ${ROLES}; do
     ssh root@${role}.<%= scope.function_hiera(["top_domain"]) %>  "puppet agent --test --environment sf || true"
 done

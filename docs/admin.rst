@@ -35,10 +35,9 @@ The SF Heat deployment will spawn 9 virtual machines:
  - The Redmine node: Hosts only the Redmine service.
  - The Jenkins master node: Hosts Jenkins master and ZUUL services
  - The Jenkins slave node: Where Jenkins master will triggers the tests.
- - The commonservices node: Hosts Etherpad, Lodgeit, the Apache reverse proxy
-   for all services, and the SSO server.
- - The managesf node: Host the REST based service to manage projects and the 
-   central authentication service
+ - The managesf node: Host the REST based service to manage projects and the
+   central authentication service as well as the Etherpad, Lodgeit, Apache
+   reverse proxy for all services, and the SSO server.
 
 Security groups and nedeed floating IPs will be set by Heat.
 Cloudinit will setup each VM but most of the configuration occurs
@@ -144,8 +143,8 @@ the root's authorized_keys file). Wait for the file
 created once all puppet agents has finished to play their manifests to
 configure all SF services.
 
-The Software Factory Apache gateway is accessible on the commonservices
-IP address via HTTP. You can retrieve the commonservices floating
+The Software Factory Apache gateway is accessible on the managesf 
+IP address via HTTP. You can retrieve the managesf floating
 IP via heat output-show.
 
 Troubleshooting deployment problems

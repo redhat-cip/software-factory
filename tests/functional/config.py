@@ -6,7 +6,7 @@ GERRIT_SERVER = 'http://gerrit.%s/r/' % environ['SF_SUFFIX']
 REDMINE_SERVER = 'http://redmine.%s/redmine/' % environ['SF_SUFFIX']
 JENKINS_SERVER = 'http://jenkins.%s:8080/jenkins/' % environ['SF_SUFFIX']
 MYSQL_HOST = 'mysql.%s' % environ['SF_SUFFIX']
-GATEWAY_HOST = 'commonservices.%s' % environ['SF_SUFFIX']
+GATEWAY_HOST = 'managesf.%s' % environ['SF_SUFFIX']
 
 GERRIT_USER = 'gerrit'
 GERRIT_SERVICE_PRIV_KEY_PATH = '%s/build/data/gerrit_service_rsa' \

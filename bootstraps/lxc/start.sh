@@ -45,7 +45,7 @@ if [ -z "$1" ] || [ "$1" == "start" ]; then
     cp sf-lxc.yaml $CONFTEMPDIR
     cp ../cloudinit/* $CONFTEMPDIR
     jenkins_ip=`get_ip jenkins`
-    commonservices_ip=`get_ip commonservices`
+    managesf_ip=`get_ip managesf`
     # Complete the sf-lxc template used by edeploy-lxc tool
     sed -i "s/SF_SUFFIX/${SF_SUFFIX}/g" ${CONFTEMPDIR}/sf-lxc.yaml
     sed -i "s#CIPATH#${CONFTEMPDIR}#g" ${CONFTEMPDIR}/sf-lxc.yaml
@@ -55,7 +55,7 @@ if [ -z "$1" ] || [ "$1" == "start" ]; then
     sed -i "s/JENKINS_MASTER_URL/${JENKINS_MASTER_URL}/g" ${CONFTEMPDIR}/slave.cloudinit
     sed -i "s/JENKINS_USER_PASSWORD/${JENKINS_USER_PASSWORD}/g" ${CONFTEMPDIR}/slave.cloudinit
     sed -i "s/JENKINS_IP/${jenkins_ip}/g" ${CONFTEMPDIR}/slave.cloudinit
-    sed -i "s/COMMONSERVICES_IP/${commonservices_ip}/g" ${CONFTEMPDIR}/slave.cloudinit
+    sed -i "s/MANAGESF_IP/${managesf_ip}/g" ${CONFTEMPDIR}/slave.cloudinit
     # Complete all the cloudinit templates
     sed -i "s/SF_SUFFIX/${SF_SUFFIX}/g" ${CONFTEMPDIR}/*.cloudinit
     sed -i "s/SSHPASS/${SSHPASS}/g" ${CONFTEMPDIR}/*.cloudinit

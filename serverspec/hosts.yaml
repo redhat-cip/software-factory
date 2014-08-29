@@ -26,9 +26,10 @@ jenkins:
   :username: root
   :hostname: jenkins.tests.dom
 
-commonservices:
+managesf:
   :roles:
     - base
+    - managesf
     - commonservices
   :username: root
-  :hostname: commonservices.tests.dom
+  :hostname: managesf.tests.dom

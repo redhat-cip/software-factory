@@ -45,12 +45,8 @@ node /.*managesf.*/ inherits base {
   include managesf
   include cauth
   include cauth_client
-}
-
-node /.*commonservices.*/ inherits base {
   include commonservices-apache
   include commonservices-socat
   include etherpad
   include lodgeit
-  include cauth_client
 }

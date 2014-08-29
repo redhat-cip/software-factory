@@ -27,10 +27,7 @@ write_files:
         host_aliases: [gerrit]
       managesf.SF_SUFFIX:
         ip: managesf_host
-        host_aliases: [managesf, auth.SF_SUFFIX]
-      commonservices.SF_SUFFIX:
-        ip: commonservices_host
-        host_aliases: [commonservices, SF_SUFFIX]
+        host_aliases: [managesf, auth.SF_SUFFIX, SF_SUFFIX]
   path: /root/hosts.yaml
 - encoding: b64
   content: SFCONFIGCONTENT
@@ -43,8 +40,7 @@ runcmd:
   - echo "jenkins_host jenkins.SF_SUFFIX jenkins" >> /etc/hosts
   - echo "redmine_host redmine.SF_SUFFIX redmine" >> /etc/hosts
   - echo "gerrit_host gerrit.SF_SUFFIX gerrit" >> /etc/hosts
-  - echo "managesf_host managesf.SF_SUFFIX auth.SF_SUFFIX managesf" >> /etc/hosts
-  - echo "commonservices_host commonservices.SF_SUFFIX commonservices SF_SUFFIX" >> /etc/hosts
+  - echo "managesf_host managesf.SF_SUFFIX auth.SF_SUFFIX managesf SF_SUFFIX" >> /etc/hosts
   - echo NAMESERVER > /etc/resolv.conf
   - cd /root/puppet-bootstrapper
   - ./config_puppetmaster.sh > /var/log/sf-bootstrap.log 2>&1

@@ -22,7 +22,6 @@ ROLES="$ROLES mysql"
 ROLES="$ROLES redmine"
 ROLES="$ROLES gerrit"
 ROLES="$ROLES managesf"
-ROLES="$ROLES commonservices"
 ROLES="$ROLES jenkins"
 
 function getip_from_yaml {

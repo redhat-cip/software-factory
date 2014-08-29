@@ -21,27 +21,13 @@ class commonservices-apache {
       $provider = "systemd"
       $gateway_conf = "/etc/httpd/conf.d/gateway.conf"
       $httpd_user = "apache"
-
-      service {'webserver':
-        name       => $http,
-        ensure     => running,
-        enable     => true,
-        hasrestart => true,
-        hasstatus  => true,
-        provider   => $provider,
-      }
-
     }
+
     debian: {
       $http = "apache2"
       $provider = "debian"
       $gateway_conf = "/etc/apache2/sites-available/gateway"
       $httpd_user = "www-data"
-
-      file { '/etc/apache2/sites-enabled/000-default':
-        ensure => absent,
-        require => Package['webserver'],
-      }
 
       exec {'enable_gateway':
         command => 'a2ensite gateway',
@@ -49,23 +35,7 @@ class commonservices-apache {
         require => File['gateway_conf'],
         before  => Class['monit'],
       }
-
-      service {'webserver':
-        name       => $http,
-        ensure     => running,
-        enable     => true,
-        hasrestart => true,
-        hasstatus  => true,
-        provider   => $provider,
-        require    => Exec['enable_gateway'],
-      }
-
     }
-  }
-
-  package {'webserver':
-    name   => $http,
-    ensure => present,
   }
 
   file {'gateway_conf':

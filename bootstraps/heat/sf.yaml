@@ -27,7 +27,7 @@ parameters:
     default: heat
   instance_type:
     type: string
-    description: Instance type for sf roles (commonservices, managesf)
+    description: Instance type for sf roles (managesf)
   alt_instance_type:
     type: string
     description: Instance type for sf roles (mysql, gerrit, jenkins, redmine, puppetmaster)
@@ -182,6 +182,12 @@ resources:
                          { get_resource: sf_int_secgroup_default },
                          ]
 
+  managesf_floating_ip:
+    type: OS::Neutron::FloatingIP
+    properties:
+      port_id: { get_resource: managesf_neutron_port }
+      floating_network_id: { get_param: ext_net_uuid }
+
   puppetmaster_neutron_port:
     type: OS::Neutron::Port
     properties:
@@ -194,22 +200,6 @@ resources:
     type: OS::Neutron::FloatingIP
     properties:
       port_id: { get_resource: puppetmaster_neutron_port }
-      floating_network_id: { get_param: ext_net_uuid }
-
-  commonservices_neutron_port:
-    type: OS::Neutron::Port
-    properties:
-      network: { get_resource: sf_net }
-      security_groups: [ { get_resource: sf_ext_secgroup_admin },
-                         { get_resource: sf_ext_secgroup_http },
-                         { get_resource: sf_ext_secgroup_alt_http },
-                         { get_resource: sf_int_secgroup_default },
-                         ]
-
-  commonservices_floating_ip:
-    type: OS::Neutron::FloatingIP
-    properties:
-      port_id: { get_resource: commonservices_neutron_port }
       floating_network_id: { get_param: ext_net_uuid }
 
   slave_neutron_port:
@@ -228,7 +218,7 @@ resources:
 
   puppetmaster_instance:
     type: OS::Nova::Server
-    depends_on: [ commonservices_instance, managesf_instance, gerrit_instance, jenkins_instance, redmine_instance, mysql_instance, slave_instance ]
+    depends_on: [ managesf_instance, gerrit_instance, jenkins_instance, redmine_instance, mysql_instance, slave_instance ]
     properties:
       image: { get_param: puppetmaster_image_id }
       flavor: { get_param: alt_instance_type }
@@ -268,10 +258,7 @@ resources:
                     host_aliases: [gerrit]
                   managesf.SF_SUFFIX:
                     ip: managesf_host
-                    host_aliases: [managesf, auth.SF_SUFFIX]
-                  commonservices.SF_SUFFIX:
-                    ip: commonservices_host
-                    host_aliases: [commonservices, SF_SUFFIX]
+                    host_aliases: [managesf, auth.SF_SUFFIX, SF_SUFFIX]
               path: /root/hosts.yaml
             - encoding: b64
               content: SFCONFIGCONTENT
@@ -284,8 +271,7 @@ resources:
               - echo "jenkins_host jenkins.SF_SUFFIX jenkins" >> /etc/hosts
               - echo "redmine_host redmine.SF_SUFFIX redmine" >> /etc/hosts
               - echo "gerrit_host gerrit.SF_SUFFIX gerrit" >> /etc/hosts
-              - echo "managesf_host managesf.SF_SUFFIX auth.SF_SUFFIX managesf" >> /etc/hosts
-              - echo "commonservices_host commonservices.SF_SUFFIX commonservices SF_SUFFIX" >> /etc/hosts
+              - echo "managesf_host managesf.SF_SUFFIX auth.SF_SUFFIX managesf SF_SUFFIX" >> /etc/hosts
               - tar -xzf /root/puppet-bootstrapper.tar.gz -C /root/
               - cd /root/puppet-bootstrapper
               - ./config_puppetmaster.sh > /var/log/sf-bootstrap.log 2>&1
@@ -295,7 +281,6 @@ resources:
             redmine_host: { get_attr: [redmine_instance, first_address] }
             gerrit_host: { get_attr: [gerrit_instance, first_address] }
             managesf_host: { get_attr: [managesf_instance, first_address] }
-            commonservices_host: { get_attr: [commonservices_instance, first_address] }
             mysql_host: { get_attr: [mysql_instance, first_address] }
             SF_SUFFIX: { get_param: suffix }
             SFCONFIGCONTENT: { get_param: sf_config_content }
@@ -372,33 +357,6 @@ resources:
             output: {all: '| tee -a /var/log/cloud-init-output.log'}
             hostname: gerrit
             fqdn: gerrit.SF_SUFFIX
-            disable_root: 0
-            runcmd:
-              - /etc/init.d/puppet stop
-              - echo puppetmaster-ip-template puppetmaster.SF_SUFFIX >> /etc/hosts
-              - sed -i -e '0,/^$/s/^$/server=puppetmaster.SF_SUFFIX\n/g' /etc/puppet/puppet.conf
-              - /bin/echo -e "\n[agent]\nenvironment=sf" >> /etc/puppet/puppet.conf
-              - echo "root:SSHPASS" | chpasswd
-          params:
-            SF_SUFFIX: { get_param: suffix }
-            SSHPASS: { get_param: temp_ssh_pwd }
-  
-  commonservices_instance:
-    type: OS::Nova::Server
-    properties:
-      image: { get_param: sf_image_id }
-      flavor: { get_param: instance_type }
-      key_name: { get_param: key_name }
-      networks:
-        - port: { get_resource: commonservices_neutron_port }
-      user_data_format: RAW
-      user_data:
-        str_replace:
-          template: |
-            #cloud-config
-            output: {all: '| tee -a /var/log/cloud-init-output.log'}
-            hostname: commonservices
-            fqdn: commonservices.SF_SUFFIX
             disable_root: 0
             runcmd:
               - /etc/init.d/puppet stop
@@ -508,13 +466,13 @@ resources:
 
 
 outputs:
-  commonservices_public_address:
-    description: Public address of Commonservices
+  managesf_public_address:
+    description: Public address of managesf
     value:
       str_replace:
-        template: "Public address of the commonservices instance: host"
+        template: "Public address of the managesf instance: host"
         params:
-          host: { get_attr: [commonservices_floating_ip, floating_ip_address] }
+          host: { get_attr: [managesf_floating_ip, floating_ip_address] }
   gerrit_public_address:
     description: Public address of Gerrit
     value:

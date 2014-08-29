@@ -68,7 +68,6 @@ class lodgeit ($lodgeit = hiera_hash('lodgeit', '')) {
   service {'lodgeit':
     enable     => true,
     ensure     => running,
-    hasrestart => true,
     hasstatus  => true,
     require    => [File['init'],
                    File['/srv/lodgeit/lodgeit/manage.py'],

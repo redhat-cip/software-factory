@@ -32,14 +32,6 @@ digraph {
         l1 -> l2 [label="LDAP" color="green" dir=none];
     }
 
-    subgraph cluster_common {
-        style = dashed;
-        label="Commonservices";
-        "Apache";
-        "Etherpad";
-        "Paste";
-    }
-
     subgraph cluster_gerrit {
         style = dashed;
         label="Gerrit";
@@ -77,7 +69,9 @@ digraph {
     subgraph cluster_managesf {
         style = dashed;
         label="Managesf";
-        "ManagesfApache" [label="Apache"];
+        "Apache";
+        "Etherpad";
+        "Paste";
         "managesf";
         "cauth";
     }
@@ -91,7 +85,6 @@ digraph {
     "Apache" -> "GerritApache";
     "Apache" -> "JenkinsApache";
     "Apache" -> "RedmineApache";
-    "Apache" -> "ManagesfApache";
     "GerritApache" -> "Gerrit";
     "JenkinsApache" -> "master";
     "slave" -> "master";
@@ -113,8 +106,8 @@ digraph {
 
     edge [color=gray];
     "RedmineApache" -> "Redmine";
-    "ManagesfApache" -> "cauth";
-    "ManagesfApache" -> "managesf";
+    "Apache" -> "cauth";
+    "Apache" -> "managesf";
     "master" -> "Zuul" [constraint=False];
     "Zuul" -> "Gerrit";
 

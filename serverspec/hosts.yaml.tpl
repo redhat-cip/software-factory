@@ -30,16 +30,10 @@ jenkins:
   :username: root
   :hostname: jenkins.SF_SUFFIX
 
-commonservices:
-  :roles:
-    - base
-    - commonservices
-  :username: root
-  :hostname: commonservices.SF_SUFFIX
-
 managesf:
   :roles:
     - base
     - managesf
+    - commonservices
   :username: root
   :hostname: managesf.SF_SUFFIX
