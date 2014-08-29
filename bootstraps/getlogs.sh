@@ -38,6 +38,7 @@ for role in gerrit redmine jenkins mysql managesf; do
     mkdir $dlogs/${role}
     scp root@`getip_from_yaml ${role}`:/var/log/syslog $dlogs/${role} &> /dev/null
 done
+mkdir $dlogs/puppetmaster
 
 # The init option of gerrit.war will rewrite the gerrit config files
 # if the provided files does not follow exactly the expected format by gerrit.  
