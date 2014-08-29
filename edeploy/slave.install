@@ -26,7 +26,7 @@ ORIG=$(cd $(dirname $0); pwd)
 
 restore_apt_repo $dir
 update_repositories $dir
-install_ib_if_needed $ORIG $dir
+
 case "$(package_tool)" in
     "apt")
         PACKAGES="openjdk-7-jre git python-pip"

@@ -56,7 +56,6 @@ case "$(package_tool)" in
      PACKAGES="${GERRIT_PACKAGES} ${REDMINE_PACKAGES} ${MANAGESF_PACKAGES} ${ETHERPAD_PACKAGES} ${OTHER_PACKAGES} ${PASTE_PACKAGES} ${CAUTH_PACKAGES}"
      
      update_repositories $dir
-     install_ib_if_needed $ORIG $dir
 
      do_chroot $dir rm /etc/apt/sources.list.d/hwraid.list
      # Add wheezy-backport for Redmine 2.4.2 and nodejs
