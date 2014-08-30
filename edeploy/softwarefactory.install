@@ -54,7 +54,7 @@ case "$(package_tool)" in
      PASTE_PACKAGES="python-dev python-setuptools python-virtualenv build-essential python-imaging python-werkzeug python-babel python-jinja2 python-pygments python-sqlalchemy python-simplejson python-mysqldb"
      CAUTH_PACKAGES="libsasl2-dev libldap2-dev"
      PACKAGES="${GERRIT_PACKAGES} ${REDMINE_PACKAGES} ${MANAGESF_PACKAGES} ${ETHERPAD_PACKAGES} ${OTHER_PACKAGES} ${PASTE_PACKAGES} ${CAUTH_PACKAGES}"
-     
+
      update_repositories $dir
 
      do_chroot $dir rm /etc/apt/sources.list.d/hwraid.list
@@ -86,11 +86,11 @@ EOF
      do_chroot $dir a2enmod proxy_http
      do_chroot $dir a2enmod rewrite
      do_chroot $dir a2enmod headers
-     
+
      # Be sure service are stopped
      do_chroot $dir update-rc.d -f apache2 remove
      do_chroot $dir update-rc.d -f jenkins remove
-     
+
      do_chroot $dir sed -i -e 's/START=.*/START=yes/g' /etc/default/puppet
      do_chroot $dir update-rc.d puppet defaults
      ;;
@@ -102,7 +102,7 @@ EOF
      add_epel_repository $DIST
      install_packages $dir "puppet monit postfix git python-pip vim-enhanced gcc cpp python-devel libxml2-devel libxslt-devel nodejs openldap-devel httpd java-1.6.0-openjdk zlib-devel libcurl-devel openssl-devel httpd-devel apr-devel apr-util-devel mariadb-devel gcc-c++ ruby-devel ImageMagick-devel python-werkzeug python-babel python-jinja2 MySQL-python socat mod_wsgi m2crypto mariadb gitweb"
      # Install SQLAlchemy for paste lodegit (not available in yum)
-     do_chroot $dir pip install SQLAlchemy 
+     do_chroot $dir pip install SQLAlchemy
      install_bup $dir
      # Install mod authpub tkt for apache (SSO)
      do_chroot $dir bash -c "cd /tmp && curl -O $MOD_AUTH_PUBTKT && tar -xvzf mod_auth_pubtkt-0.8.tar.gz"
@@ -186,10 +186,9 @@ do_chroot $dir git clone https://git.openstack.org/openstack-infra/lodgeit /srv/
 do_chroot $dir bash -c 'cd /srv/lodgeit/lodgeit && git checkout c69f555032'  # latest commit as of 05. May 2014
 
 # Cauth server
+[ ! -d "$dir/var/www" ] && mkdir $dir/var/www
 cp -r ../tools/cauth ${dir}/var/www/cauth
-do_chroot $dir pip install -U funcparserlib # TODO We need to manage a requirement file for cauth
-do_chroot $dir pip install -U mockldap
-do_chroot $dir pip install httmock
+do_chroot $dir pip install -r /var/www/cauth/requirements.txt
 
 # Managesf
 [ ! -d "$dir/var/www" ] && mkdir $dir/var/www

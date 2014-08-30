@@ -24,10 +24,10 @@
     RewriteCond %{QUERY_STRING} (^.*$)
     RewriteCond %1 ^$
     RewriteRule logout <%= @cauth["signout_url"] %>?service=gerrit [R,L,CO=GerritAccount:;:;:0:/r]
-  
+
     RewriteCond %{REQUEST_URI} ^/r/logout$
     RewriteCond %{QUERY_STRING} ^services=(.*)$
-    RewriteCond %1 !^$ 
+    RewriteCond %1 !^$
     RewriteRule logout <%= @cauth["signout_url"] %>?services=%1 [R,L,CO=GerritAccount:;:;:0:/r]
 
     AllowEncodedSlashes On

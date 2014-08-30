@@ -33,14 +33,33 @@ class Gerrit:
         self.db_user = conf.gerrit['db_user']
         self.db_password = conf.gerrit['db_password']
 
+    def install_sshkeys(self, username, keys):
+        url = "%s/%s/sshkeys" % (self.gerrit_url, username)
+        for entry in keys:
+            requests.post(url, data=entry.get('key'),
+                          auth=(self.admin_user, self.admin_password))
+
+    def add_in_acc_external(self, account_id, username):
+        db = MySQLdb.connect(passwd=self.db_password, db=self.db_name,
+                             host=self.db_host, user=self.db_user)
+        c = db.cursor()
+        sql = "INSERT INTO account_external_ids VALUES (%d, NULL, NULL, 'gerrit:%s');" %\
+            (account_id, username)
+        try:
+            c.execute(sql)  # Will be only successful if entry does not exist
+            db.commit()
+            return True
+        except:
+            return False
+
     def create_gerrit_user(self, username, email, lastname, keys):
         user = {"name": lastname, "email": email}
         data = json.dumps(user)
 
         headers = {"Content-type": "application/json"}
         url = "%s/%s" % (self.gerrit_url, username)
-        resp = requests.put(url, data=data, headers=headers,
-                            auth=(self.admin_user, self.admin_password))
+        requests.put(url, data=data, headers=headers,
+                     auth=(self.admin_user, self.admin_password))
 
         resp = requests.get(url, headers=headers,
                             auth=(self.admin_user, self.admin_password))
@@ -49,24 +68,13 @@ class Gerrit:
             account_id = json.loads(data).get('_account_id')
         except:
             account_id = None
-        if account_id:
-            db=MySQLdb.connect(passwd=self.db_password, db=self.db_name,
-                               host=self.db_host, user=self.db_user)
-            c=db.cursor()
-            sql = "INSERT INTO account_external_ids VALUES (%d, NULL, NULL, 'gerrit:%s');" % (account_id, username)
-            try:
-                c.execute(sql)  # Will be only successful if entry does not exist
-                db.commit()
-                fetch_ssh_keys = True
-            except:
-                fetch_ssh_keys = False
 
-            if keys and fetch_ssh_keys:
-                headers = {"Content-type": "plain/text"}
-                url = "%s/%s/sshkeys" % (self.gerrit_url, username)
-                for entry in keys:
-                    requests.post(url, data=entry.get('key'),
-                                  auth=(self.admin_user, self.admin_password))
+        fetch_ssh_keys = False
+        if account_id:
+            fetch_ssh_keys = self.add_in_acc_external(account_id, username)
+
+        if keys and fetch_ssh_keys:
+            self.install_sshkeys(username, keys)
 
 
 class UserDetailsCreator:
@@ -75,7 +83,7 @@ class UserDetailsCreator:
         self.g = Gerrit(conf)
 
     def create_user(self, username, email, lastname, keys):
-        redmine = self.r.create_redmine_user(username, email, lastname)
-        gerrit = self.g.create_gerrit_user(username, email, lastname, keys)
+        self.r.create_redmine_user(username, email, lastname)
+        self.g.create_gerrit_user(username, email, lastname, keys)
         # Here we don't care of the error
         return True

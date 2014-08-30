@@ -1,0 +1,8 @@
+pecan
+mock
+mockldap
+httmock
+SQLAlchemy
+nose
+M2Crypto
+MySQL-python

@@ -1,1 +1,1 @@
-recursive-include public *
+recursive-include cauth/templates *
