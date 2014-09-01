@@ -87,7 +87,8 @@ digraph {
     "Apache" -> "RedmineApache";
     "GerritApache" -> "Gerrit";
     "JenkinsApache" -> "master";
-    "slave" -> "master";
+    "slave" -> "master" [constraint=False];
+    "master" -> "slave" [style=invis];
     "cauth" -> "Github";
     "cauth" -> "Redmine";
     "cauth" -> "Gerrit";

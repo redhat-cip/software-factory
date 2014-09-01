@@ -12,7 +12,7 @@ digraph {
             label = "";
             color=lightgrey;
             "A1" [shape="point" color="blue" label="" width=0.25];
-            "A2" [shape="box" color="white" label="#78c76b1"];
+            "A2" [shape="box" color="white" label="#1"];
             A1 -> A2 [style=invis]
         }
     
@@ -20,7 +20,7 @@ digraph {
             label = "";
             color=lightgrey;
             "B1" [shape="point" color="blue" label="" width=0.25];
-            "B2" [shape="box" color="white" label="#96bfb74"];
+            "B2" [shape="box" color="white" label="#2"];
             B1 -> B2 [style=invis]
         }
     
@@ -28,7 +28,7 @@ digraph {
             label = "";
             color=lightgrey;
             "C1" [shape="point" color="blue" label="" width=0.25];
-            "C2" [shape="box" color="white" label="#bdc31ba"];
+            "C2" [shape="box" color="white" label="#3"];
             C1 -> C2 [style=invis]
         }
 
@@ -44,7 +44,7 @@ digraph {
             label = "";
             color=lightgrey;
             "D1" [shape="point" color="blue" label="" width=0.25];
-            "D2" [shape="box" color="white" label="#78c76b1"];
+            "D2" [shape="box" color="white" label="#1"];
             D1 -> D2 [style=invis]
         }
     
@@ -52,7 +52,7 @@ digraph {
             label = "";
             color=lightgrey;
             "E1" [shape="point" color="red" label="" width=0.25];
-            "E2" [shape="box" color="white" label="#96bfb74"];
+            "E2" [shape="box" color="white" label="#2"];
             E1 -> E2 [style=invis]
         }
     
@@ -60,7 +60,7 @@ digraph {
             label = "";
             color=lightgrey;
             "F1" [shape="point" color="blue" label="" width=0.25];
-            "F2" [shape="box" color="white" label="#bdc31ba"];
+            "F2" [shape="box" color="white" label="#3"];
             F1 -> F2 [style=invis]
         }
 
@@ -77,7 +77,7 @@ digraph {
             label = "";
             color=lightgrey;
             "G1" [shape="point" color="green" label="" width=0.25];
-            "G2" [shape="box" color="white" label="#78c76b1"];
+            "G2" [shape="box" color="white" label="#1"];
             G1 -> G2 [style=invis]
         }
     
@@ -86,7 +86,7 @@ digraph {
             color=gray;
             style=dashed;
             "H1" [shape="point" color="gray" label="" width=0.25];
-            "H2" [shape="box" color="white" label="#96bfb74" fontcolor=gray];
+            "H2" [shape="box" color="white" label="#2" fontcolor=gray];
             H1 -> H2 [style=invis]
         }
     
@@ -94,7 +94,7 @@ digraph {
             label = "";
             color=lightgrey;
             "I1" [shape="point" color="green" label="" width=0.25];
-            "I2" [shape="box" color="white" label="#bdc31ba"];
+            "I2" [shape="box" color="white" label="#3"];
             I1 -> I2 [style=invis]
         }
         H2 -> G2 [constraint=False style=invis];
