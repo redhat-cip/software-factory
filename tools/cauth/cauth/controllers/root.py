@@ -254,13 +254,12 @@ class GithubController(object):
             abort(422)
         back = kwargs['back']
         state = db.put_url(back)
-        scope = 'user, user:email'
+        scope = 'user:email, read:public_key, read:org'
         # mock oauth for functional tests
         if (conf.auth['github']['top_domain'] == 'tests.dom') and \
            ('username' in kwargs):
                 username = kwargs['username']
                 password = kwargs['password']
-                scope = scope
                 logger.info('Client requests authentication via mocked GITHUB')
                 self.mockoauth_authorize(username, password, state, scope)
         else:
