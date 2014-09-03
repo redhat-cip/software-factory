@@ -36,6 +36,9 @@ PUPPET_BOOTSTRAPPER="./puppet/ ./tests/ ./serverspec/ ./tools/ ./bootstraps/*.sh
 SF_DEPS="./softwarefactory.install ../data/database.yml ../tools/cauth ../tools/managesf"
 IS_DEPS="${PUPPET_BOOTSTRAPPER}"
 
+SF_DEPS="./edeploy/softwarefactory.install ./data/database.yml ./tools/cauth/ ./tools/managesf/"
+IS_DEPS="${PUPPET_BOOTSTRAPPER}"
+
 MAKE="make DVER=${DVER} DIST=${DIST} SF_REL=${SF_REL} EDEPLOY_PATH=${EDEPLOY} TOP=${BUILD_DIR}"
 
 

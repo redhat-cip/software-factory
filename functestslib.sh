@@ -31,6 +31,10 @@ ARTIFACTS_RELPATH="logs/${LOG_PATH}"
 ARTIFACTS_ROOT="/var/lib/sf/artifacts"
 ARTIFACTS_DIR="${ARTIFACTS_ROOT}/${ARTIFACTS_RELPATH}"
 
+function get_ip {
+    grep -B 1 "name:[ \t]*$1" /tmp/lxc-conf/sf-lxc.yaml | head -1 | awk '{ print $2 }'
+}
+
 function prepare_artifacts {
     [ -d ${ARTIFACTS_DIR} ] && sudo rm -Rf ${ARTIFACTS_DIR}
     sudo mkdir -p ${ARTIFACTS_DIR}

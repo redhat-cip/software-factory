@@ -3,7 +3,7 @@
 LOCK="/var/run/sf-build_roles.lock"
 if [ -f ${LOCK} ]; then
    echo "Lock file present: ${LOCK}"
-   exit 1;
+   killall make
 fi
 sudo touch ${LOCK}
 trap "sudo rm ${LOCK}" 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
@@ -14,7 +14,7 @@ set -x
 . ./role_configrc
 
 #This is updated by an external builder
-EDEPLOY_ROLES_SRC_ARCHIVES=root@46.231.128.203:/var/lib/sf/roles/install/edeploy-roles_master 
+EDEPLOY_ROLES_SRC_ARCHIVES=root@46.231.128.203:/var/lib/sf/roles/install/edeploy-roles_master
 
 SKIP_CLEAN_ROLES=${SKIP_CLEAN_ROLES:-y}
 VIRTUALIZED=""
@@ -61,20 +61,10 @@ if [ ! -d "${EDEPLOY}" ]; then
     git clone $EDEPLOY_PROJECT ${EDEPLOY}
 fi
 
-cd $EDEPLOY/build
-git checkout $ED_TAG
-git pull
-cd -
-
 if [ ! -d "${EDEPLOY_ROLES}" ]; then
     git clone $EDEPLOY_ROLES_PROJECT ${EDEPLOY_ROLES}
 fi
-
-cd ${EDEPLOY_ROLES}
-git checkout $ED_TAG
-git pull
-EDEPLOY_ROLES_REL=$(${MAKE} version)
-cd -
+EDEPLOY_ROLES_REL=$(cd ${EDEPLOY_ROLES}; ${MAKE} version)
 
 # Prepare prebuild roles
 PREBUILD_TARGET=$WORKSPACE/roles/install/$EDEPLOY_ROLES_REL
@@ -85,38 +75,53 @@ PREBUILD_TARGET=$WORKSPACE/roles/install/$EDEPLOY_ROLES_REL
 cloud_img="cloud-$EDEPLOY_ROLES_REL.edeploy"
 install_server_img="install-server-$EDEPLOY_ROLES_REL.edeploy"
 
-TEMP_DIR=$(mktemp -d /tmp/edeploy-check-XXXXX)
 BASE_URL="http://***REMOVED***/v1/AUTH_70aab03f69b549cead3cb5f463174a51/edeploy-roles"
 
-curl -o ${TEMP_DIR}/$install_server_img.md5 ${BASE_URL}/$install_server_img.md5
-curl -o ${TEMP_DIR}/$cloud_img.md5 ${BASE_URL}/$cloud_img.md5
-[ ! -f $PREBUILD_TARGET/$install_server_img.md5 ] && touch $PREBUILD_TARGET/$install_server_img.md5 
-diff $PREBUILD_TARGET/$install_server_img.md5 ${TEMP_DIR}/$install_server_img.md5 || {
-    curl -o ${TEMP_DIR}/$install_server_img ${BASE_URL}/$install_server_img
-    mv ${TEMP_DIR}/$install_server_img* $PREBUILD_TARGET
-    # Remove the previously unziped archive
-    [ -d $PREBUILD_TARGET/install-server ] && sudo rm -Rf $PREBUILD_TARGET/install-server 
-}
-[ ! -f $PREBUILD_TARGET/$cloud_img.md5 ] && touch $PREBUILD_TARGET/$cloud_img.md5 
-diff $PREBUILD_TARGET/$cloud_img.md5 ${TEMP_DIR}/$cloud_img.md5 || {
-    curl -o ${TEMP_DIR}/$cloud_img ${BASE_URL}/$cloud_img
-    mv ${TEMP_DIR}/$cloud_img* $PREBUILD_TARGET
-    # Remove the previously unziped archive
-    [ -d $PREBUILD_TARGET/cloud ] && sudo rm -Rf $PREBUILD_TARGET/cloud
-}
-rm -Rf ${TEMP_DIR}
+# Check if role synced recently (< 1h)
+TIME_DIFF=$(echo $(date '+%s') - 0$(stat -c '%Y' $PREBUILD_TARGET/$install_server_img.md5 2> /dev/null) | bc)
+if [ ${TIME_DIFF} -gt 3600 ]; then
+    (cd ${EDEPLOY};       git checkout $ED_TAG; git pull)
+    (cd ${EDEPLOY_ROLES}; git checkout $ED_TAG; git pull)
 
-# Verified the prebuild role we have with the md5
-install_server_md5=$(cat $PREBUILD_TARGET/$install_server_img | md5sum - | cut -d ' ' -f1) 
-[ "$install_server_md5" != "$(cat $PREBUILD_TARGET/$install_server_img.md5 | cut -d ' ' -f1)" ] && {
-    echo "Install server role archive md5 mismatch ! exit."
-    exit 1
-}
-cloud_md5=$(cat $PREBUILD_TARGET/$cloud_img | md5sum - | cut -d ' ' -f1) 
-[ "$cloud_md5" != "$(cat $PREBUILD_TARGET/$cloud_img.md5 | cut -d ' ' -f1)" ] && {
-    echo "cloud role archive md5 mismatch ! exit."
-    exit 1
-}
+    if [ ${EDEPLOY_ROLES_REL} != "$(cd ${EDEPLOY_ROLES}; ${MAKE} version)" ]; then
+        echo "============================================================================"
+        echo "Edeploy roles version bump from ${EDEPLOY_ROLES_REL} to $(cd ${EDEPLOY_ROLES}; ${MAKE} version)..."
+        echo "============================================================================"
+        exec ./build_roles.sh
+    fi
+    TEMP_DIR=$(mktemp -d /tmp/edeploy-check-XXXXX)
+    curl -o ${TEMP_DIR}/$install_server_img.md5 ${BASE_URL}/$install_server_img.md5
+    curl -o ${TEMP_DIR}/$cloud_img.md5 ${BASE_URL}/$cloud_img.md5
+    [ ! -f $PREBUILD_TARGET/$install_server_img.md5 ] && sudo touch $PREBUILD_TARGET/$install_server_img.md5
+    diff $PREBUILD_TARGET/$install_server_img.md5 ${TEMP_DIR}/$install_server_img.md5 || {
+        curl -o ${TEMP_DIR}/$install_server_img ${BASE_URL}/$install_server_img
+        mv ${TEMP_DIR}/$install_server_img* $PREBUILD_TARGET
+        # Remove the previously unziped archive
+        [ -d $PREBUILD_TARGET/install-server ] && sudo rm -Rf $PREBUILD_TARGET/install-server
+    }
+    [ ! -f $PREBUILD_TARGET/$cloud_img.md5 ] && sudo touch $PREBUILD_TARGET/$cloud_img.md5
+    diff $PREBUILD_TARGET/$cloud_img.md5 ${TEMP_DIR}/$cloud_img.md5 || {
+        curl -o ${TEMP_DIR}/$cloud_img ${BASE_URL}/$cloud_img
+        mv ${TEMP_DIR}/$cloud_img* $PREBUILD_TARGET
+        # Remove the previously unziped archive
+        [ -d $PREBUILD_TARGET/cloud ] && sudo rm -Rf $PREBUILD_TARGET/cloud
+    }
+    rm -Rf ${TEMP_DIR}
+
+    # Verified the prebuild role we have with the md5
+    install_server_md5=$(cat $PREBUILD_TARGET/$install_server_img | md5sum - | cut -d ' ' -f1)
+    [ "$install_server_md5" != "$(cat $PREBUILD_TARGET/$install_server_img.md5 | cut -d ' ' -f1)" ] && {
+        echo "Install server role archive md5 mismatch ! exit."
+        exit 1
+    }
+    cloud_md5=$(cat $PREBUILD_TARGET/$cloud_img | md5sum - | cut -d ' ' -f1)
+    [ "$cloud_md5" != "$(cat $PREBUILD_TARGET/$cloud_img.md5 | cut -d ' ' -f1)" ] && {
+        echo "cloud role archive md5 mismatch ! exit."
+        exit 1
+    }
+    sudo touch $PREBUILD_TARGET/$install_server_img.md5
+fi
+
 # Uncompress prebuild images if needed
 cd $PREBUILD_TARGET
 [ ! -d cloud ] && {
@@ -135,9 +140,12 @@ cd $SF_ROLES
 [ ! -d "$BUILD_DIR/install/${DVER}-${SF_REL}" ] && sudo mkdir -p $BUILD_DIR/install/${DVER}-${SF_REL}
 
 build_role "mysql" $(cat mysql.install | md5sum | awk '{ print $1}')
+ME=$?
 build_role "slave" $(cat slave.install | md5sum | awk '{ print $1}')
+SE=$?
 build_role "softwarefactory" $(find -type f ${SF_DEPS} | sort | xargs cat | md5sum | awk '{ print $1}')
+SFE=$?
 build_role "install-server-vm" $(find -type f ${IS_DEPS} | sort | xargs cat | md5sum | awk '{ print $1}')
+IE=$?
 
-exit $RET
-
+exit $[ $ME + $SE + $SFE + $IE ];

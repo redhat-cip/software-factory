@@ -9,30 +9,29 @@ echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
 # Then will start the SF in LXC containers
 # Then will run the serverspecs and functional tests
 
-LOCK="/var/run/sf-run_functional-tests.lock"
-if [ -f ${LOCK} ]; then
-   echo "Lock file present: ${LOCK}"
-   exit 1;
-fi
-sudo touch ${LOCK}
-trap "sudo rm ${LOCK}" 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
-
-
 function get_ip {
     grep -B 1 "name:[ \t]*$1" /tmp/lxc-conf/sf-lxc.yaml | head -1 | awk '{ print $2 }'
 }
 
 source functestslib.sh
 
-function stop {
+function lxc_stop {
     if [ ! ${SF_SKIP_BOOTSTRAP} ]; then
         if [ ! ${DEBUG} ]; then
-            cd bootstraps/lxc
-            ./start.sh clean &> ${ARTIFACTS_DIR}/lxc-clean.output
-            cd -
+            (cd bootstraps/lxc; ./start.sh clean &> ${ARTIFACTS_DIR}/lxc-clean.output)
         fi
     fi
 }
+
+LOCK="/var/run/sf-run_functional-tests.lock"
+if [ -f ${LOCK} ]; then
+   echo "Lock file present: ${LOCK}"
+   lxc_stop
+fi
+sudo touch ${LOCK}
+trap "sudo rm ${LOCK}" 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+
+
 
 function build {
     if [ ! ${SF_SKIP_BUILDROLES} ]; then
@@ -41,7 +40,7 @@ function build {
     fi
 }
 
-function start {
+function lxc_start {
     if [ ! ${SF_SKIP_BOOTSTRAP} ]; then
         clear_mountpoint
         cd bootstraps/lxc
@@ -54,9 +53,11 @@ function start {
 set -x
 prepare_artifacts
 checkpoint "$(date) - $(hostname)"
+(cd bootstraps/lxc; ./start.sh clean &> ${ARTIFACTS_DIR}/lxc-first-clean.output)
+checkpoint "lxc-first-clean"
 build
 checkpoint "build_roles"
-start
+lxc_start
 checkpoint "lxc-start"
 if [ -z "$1" ]; then
     # This test is run by default when no argument provided
@@ -65,10 +66,10 @@ if [ -z "$1" ]; then
 fi
 if [ "$1" == "backup_restore_tests" ]; then
     run_backup_restore_tests 25 "provision"
-    stop
+    lxc_stop
     if [ "$ERROR_PC" == "0" ] && [ "$ERROR_FATAL" == "0" ] && [ "$ERROR_RSPEC" == "0" ]; then
         # No error occured at provision so continue
-        start
+        lxc_start
         run_backup_restore_tests 25 "check"
     fi
 fi
@@ -77,7 +78,7 @@ get_logs
 checkpoint "get-logs"
 set +x
 host_debug
-stop
+lxc_stop
 checkpoint "lxc-stop"
 publish_artifacts
 checkpoint "publish-artifacts"
