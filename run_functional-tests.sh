@@ -1,5 +1,10 @@
 #!/bin/bash
 
+echo "Running functional-tests with this HEAD"
+echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+git log -n 1
+echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+
 # This script will build the roles for SoftwareFactory
 # Then will start the SF in LXC containers
 # Then will run the serverspecs and functional tests
