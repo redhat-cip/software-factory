@@ -50,7 +50,7 @@ case "$(package_tool)" in
      REDMINE_PACKAGES="apache2 libapache2-mod-passenger redmine-sqlite redmine-mysql redmine vim puppet git cron bundler libxml2-dev libxslt-dev build-essential ruby1.9.1-dev ruby1.9.1"
      MANAGESF_PACKAGES="apache2 libapache2-mod-wsgi puppet python-dev libldap2-dev libsasl2-dev libssl-dev gcc"
      ETHERPAD_PACKAGES="nodejs apache2"
-     OTHER_PACKAGES="git puppet vim mysql-client python-pip python-dateutil monit postfix apache2-prefork-dev libapache2-mod-auth-pubtkt socat bup"
+     OTHER_PACKAGES="git puppet vim mysql-client python-pip python-dateutil monit postfix apache2-prefork-dev libapache2-mod-auth-pubtkt socat bup unzip pigz debootstrap"
      PASTE_PACKAGES="python-dev python-setuptools python-virtualenv build-essential python-imaging python-werkzeug python-babel python-jinja2 python-pygments python-sqlalchemy python-simplejson python-mysqldb"
      CAUTH_PACKAGES="libsasl2-dev libldap2-dev"
      PACKAGES="${GERRIT_PACKAGES} ${REDMINE_PACKAGES} ${MANAGESF_PACKAGES} ${ETHERPAD_PACKAGES} ${OTHER_PACKAGES} ${PASTE_PACKAGES} ${CAUTH_PACKAGES}"
@@ -100,7 +100,7 @@ EOF
      # The puppetlas-release package install repo desc for puppet in yum
      install_packages ${dir} http://yum.puppetlabs.com/el/$CODENAME_MAJOR/products/x86_64/puppetlabs-release-$PUPPET_RELEASE.noarch.rpm
      add_epel_repository $DIST
-     install_packages $dir "puppet monit postfix git python-pip vim-enhanced gcc cpp python-devel libxml2-devel libxslt-devel nodejs openldap-devel httpd java-1.6.0-openjdk zlib-devel libcurl-devel openssl-devel httpd-devel apr-devel apr-util-devel mariadb-devel gcc-c++ ruby-devel ImageMagick-devel python-werkzeug python-babel python-jinja2 MySQL-python socat mod_wsgi m2crypto mariadb gitweb"
+     install_packages $dir "puppet monit postfix git python-pip vim-enhanced gcc cpp python-devel libxml2-devel libxslt-devel nodejs openldap-devel httpd java-1.6.0-openjdk zlib-devel libcurl-devel openssl-devel httpd-devel apr-devel apr-util-devel mariadb-devel gcc-c++ ruby-devel ImageMagick-devel python-werkzeug python-babel python-jinja2 MySQL-python socat mod_wsgi m2crypto mariadb gitweb debootstrap unzip pigz"
      # Install SQLAlchemy for paste lodegit (not available in yum)
      do_chroot $dir pip install SQLAlchemy
      install_bup $dir
