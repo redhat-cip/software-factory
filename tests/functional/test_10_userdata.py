@@ -17,15 +17,14 @@ import config
 import json
 import os
 import requests
-import shutil
 import yaml
 import urllib
 
 from utils import Base
-from utils import create_random_str
 from utils import ManageSfUtils
 from utils import GerritUtil
 from utils import RedmineUtil
+
 
 class TestUserdata(Base):
     @classmethod
@@ -61,7 +60,7 @@ class TestUserdata(Base):
         # Now check that the correct data was stored in Gerrit
         url = "http://gerrit.%s/api/accounts/%s" % (os.environ['SF_SUFFIX'],
                                                     login)
-        resp=requests.get(url)
+        resp = requests.get(url)
         data = json.loads(resp.content[4:])
         self.assertEqual(lastname, data.get('name'))
         self.assertEqual(email, data.get('email'))
@@ -72,8 +71,9 @@ class TestUserdata(Base):
         user = {}
         # We need to iterate over the existing users
         for i in range(15):  # check only the first 15 user ids
-            url = 'http://api-redmine.%s/users/%d.json' % (os.environ['SF_SUFFIX'], i)
-            resp=requests.get(url, headers=headers)
+            url = 'http://api-redmine.%s/users/%d.json' % \
+                (os.environ['SF_SUFFIX'], i)
+            resp = requests.get(url, headers=headers)
             if resp.status_code == 200:
                 data = resp.json()
                 u = data.get('user')
@@ -90,7 +90,7 @@ class TestUserdata(Base):
         data = {'username': 'user5', 'password': 'userpass', 'back': '/'}
         # Trigger a login as user5, this should fetch the userdata from LDAP
         url = "http://%s/auth/login/" % config.GATEWAY_HOST
-        resp=requests.post(url, data=data, allow_redirects=False)
+        requests.post(url, data=data, allow_redirects=False)
 
         # verify if ldap user is created in gerrit and redmine
         self.verify_userdata_gerrit('user5', 'Demo user5', self.user5_email)
@@ -105,16 +105,16 @@ class TestUserdata(Base):
                                  "pubkey": config.USER_6_PUB_KEY,
                                  "privkey": config.USER_6_PRIV_KEY,
                                  "auth_cookie": "",
-                                }
+                                 }
         # Trigger a oauth login as user6,
         # this should fetch the userdata from oauth mock
         # allow_redirects=False is not working for GET
         github_url = "http://%s/auth/login/github" % config.GATEWAY_HOST
         url = github_url + "?" + \
-               urllib.urlencode({'username': 'user6',
-                                  'password': 'userpass',
-                                  'back': '/'})
-        resp=requests.get(url)
+            urllib.urlencode({'username': 'user6',
+                              'password': 'userpass',
+                              'back': '/'})
+        resp = requests.get(url)
         for r in resp.history:
             if r.cookies:
                 for cookie in r.cookies:
@@ -123,7 +123,7 @@ class TestUserdata(Base):
                         break
             if config.USERS['user6']['auth_cookie'] != "":
                 break
-            
+
         # verify if github user is created in gerrit and redmine
         self.verify_userdata_gerrit('user6', 'Demo user6', self.user6_email)
         self.verify_userdata_redmine('user6', 'Demo user6', self.user6_email)

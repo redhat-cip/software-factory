@@ -124,7 +124,7 @@ class ManageSfUtils(Tool):
         base_cmd = self.base_cmd % (user, passwd)
         if cookie:
             base_cmd = base_cmd + "--cookie %s " % (cookie)
-        
+
         cmd = base_cmd + "create --name %s" % name
         if options:
             for k, v in options.items():
@@ -611,27 +611,28 @@ class RedmineUtil:
 
         return False
 
+
 class JenkinsUtils:
     def __init__(self):
         with open('/etc/puppet/hiera/sf/jenkins.yaml') as fh:
             yconfig = yaml.load(fh)
             self.jenkins_user = 'jenkins'
-            self.jenkins_password = yconfig.get('jenkins').get('jenkins_password')
+            self.jenkins_password = \
+                yconfig.get('jenkins').get('jenkins_password')
         self.server = config.JENKINS_SERVER
-        
-    
+
     def get(self, url):
         return requests.get(url, auth=(self.jenkins_user,
                                        self.jenkins_password))
-    
-    def post(self, url, param, data, headers):
+
+    def post(self, url, params, data, headers):
         return requests.post(url,
                              params=params,
                              data=data,
                              headers=headers,
                              auth=(self.jenkins_user,
                                    self.jenkins_password))
-    
+
     def create_job(self, name):
         url = "%s/createItem" % self.server
         headers = {'content-type': 'text/xml'}
@@ -652,7 +653,7 @@ class JenkinsUtils:
                 jobs.append(job.firstChild.childNodes[0].data)
             return jobs
         return None
-    
+
     def get_last_build_number(self, job_name, type):
         url = "%(server)s/job/%(job_name)s/%(type)s/buildNumber" \
               % {'server': self.server, 'job_name': job_name, 'type': type}
@@ -661,7 +662,7 @@ class JenkinsUtils:
             return int(resp.text)
         except:
             return 0
-    
+
     def wait_till_job_completes(self, job_name, last, type):
         retries = 0
         while True:

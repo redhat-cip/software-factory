@@ -132,7 +132,7 @@ def init_project(name, inp):
     core = [] if 'core-group-members' not in inp else inp['core-group-members']
     dev = [] if 'dev-group-members' not in inp else inp['dev-group-members']
 
-    #create the project
+    # create the project
     create_project(name, description, private)
     update_project_roles(name, ptl, core, dev)
 

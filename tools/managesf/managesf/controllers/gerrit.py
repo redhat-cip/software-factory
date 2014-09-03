@@ -215,7 +215,7 @@ class GerritRepo(object):
                              env=self.env, cwd=cwd)
         p.wait()
         std_out, std_err = p.communicate()
-        #logging std_out also logs std_error as both use same pipe
+        # logging std_out also logs std_error as both use same pipe
         if std_out:
             logger.debug(" [gerrit] cmd %s output" % cmd)
             logger.debug(std_out)
@@ -409,14 +409,14 @@ def delete_project(name):
                      " nor does own project")
         abort(401)
 
-    #user owns the project, so delete it now
+    # user owns the project, so delete it now
     gerrit_client = CustomGerritClient(conf.gerrit['host'],
                                        conf.admin['name'],
                                        keyfile=conf.gerrit['sshkey_priv_path'])
     gerrit_client.deleteGroup(get_core_group_name(name))
     gerrit_client.deleteGroup(get_ptl_group_name(name))
     try:
-        #if dev group exists, no exception will be thrown
+        # if dev group exists, no exception will be thrown
         gerrit_client.deleteGroup(get_dev_group_name(name))
     except Exception:
         pass
@@ -490,7 +490,7 @@ def replication_apply_config(section, setting=None, value=None):
     if value:
         if setting:
             if setting == 'url' and ('$' in value):
-                #To allow $ in url
+                # To allow $ in url
                 value = "\$".join(value.rsplit("$", 1))
             if setting == 'projects' and (section in config):
                 logger.debug("Project already exist.")

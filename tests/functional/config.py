@@ -134,6 +134,10 @@ USER_6 = "user6"
 USER_6_PUB_KEY = USER_4_PUB_KEY
 USER_6_PRIV_KEY = USER_4_PRIV_KEY
 
+# USER_5 AND USER_6 are added to this dictionary in
+# test_10_userdata.py file. So if new users to be added
+# to this dictionary please start with USER_7
+
 USERS = {
     USER_1: {"password": "userpass",
              "email": "user1@example.com",
@@ -159,7 +163,4 @@ USERS = {
              "privkey": USER_4_PRIV_KEY,
              "auth_cookie": "",
              }
-#USER_5 AND USER_6 are added to this dictionary in
-#test_10_userdata.py file. So if new users to be added
-#to this dictionary please start with USER_7
 }

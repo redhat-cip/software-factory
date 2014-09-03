@@ -68,10 +68,10 @@ class TestProjectReplication(Base):
         os.chmod(wrapper_path, stat.S_IRWXU)
         self.mt.env['GIT_SSH'] = wrapper_path
 
-#Can't use GerritGitUtils.clone as not sure when source uri repo in mysql be
-#ready.(i.e gerrit is taking time to create the mirror repo in mysql node)
-#So this clone may succeed or fail, we don't need 'git review -s' and
-#other review commands in clone method
+    # Can't use GerritGitUtils.clone as not sure when source uri repo in mysql
+    # be ready.(i.e gerrit is taking time to create the mirror repo in mysql
+    # node) So this clone may succeed or fail, we don't need 'git review -s'
+    # and other review commands in clone method
     def clone(self, uri, target):
         self.assertTrue(uri.startswith('ssh://'))
         cmd = "git clone %s %s" % (uri, target)
@@ -133,8 +133,8 @@ class TestProjectReplication(Base):
         files = []
         while True:
             clone = self.clone(url, pname)
-            #clone may fail, as mirror repo is not yet ready(i.e gerrit not
-            #yet replicated the project)
+            # clone may fail, as mirror repo is not yet ready(i.e gerrit not
+            # yet replicated the project)
             if os.path.isdir(clone):
                 files = [f for f in os.listdir(clone) if not f.startswith('.')]
                 shutil.rmtree(clone)
