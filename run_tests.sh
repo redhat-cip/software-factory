@@ -24,10 +24,20 @@ echo "$(date) - $(hostname)"
 set -e
 
 echo "FLAKE8 tests"
+echo "~~~~~~~~~~~~"
 find . -iname "*.py" | grep -v .tox | xargs flake8
+FLAKE8_ERRORS=$?
+echo
+
+echo "BASH8 tests"
+echo "~~~~~~~~~~~"
+find . -name "*.sh" | grep -v '\.tox' | xargs bash8
+BASH8_ERRORS=$?
 echo
 
 echo "Cauth tests"
-cd tools/cauth
-tox
-cd -
+echo "~~~~~~~~~~~"
+(cd tools/cauth; tox)
+CAUTH_ERRORS=$?
+
+exit $[${FLAKE8_ERRORS} + ${BASH8_ERRORS} + ${CAUTH_ERRORS}];
