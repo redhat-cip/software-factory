@@ -1,6 +1,4 @@
 import config
-import json
-import requests
 
 from utils import get_cookie
 
