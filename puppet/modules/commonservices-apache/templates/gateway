@@ -17,7 +17,7 @@
 
         ProxyPass /etherpad/ http://127.0.0.1:9001/ retry=0
         ProxyPassReverse /etherpad/ http://127.0.0.1:9001/
- 
+
         ProxyPass /paste/ http://127.0.0.1:5000/paste/ retry=0
         ProxyPassReverse /paste/ http://127.0.0.1:5000/paste/
 
@@ -31,8 +31,12 @@
         </Proxy>
 
     </IfModule>
-    
-    ScriptAliasMatch ^/[^(auth)|(managesf)].*[^(css)|(js)]$ /var/www/index.py
+
+    Alias /bootstrap.min.css /var/www/bootstrap.min.css
+    Alias /bootstrap.min.js /var/www/bootstrap.min.js
+    Alias /jquery.min.js /var/www/jquery.min.js
+    Alias /static/ /var/www/static/
+    ScriptAliasMatch ^/[^(auth)|(managesf)].*$ /var/www/index.py
 
     <Directory /var/www>
         AddHandler cgi-script .py
