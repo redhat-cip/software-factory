@@ -33,6 +33,9 @@ EDEPLOY_ROLES=$WORKSPACE/git/edeploy-roles-master/
 INST=${BUILD_DIR}/install/${SF_VER}
 PUPPET_BOOTSTRAPPER="./puppet/ ./tests/ ./serverspec/ ./tools/ ./bootstraps/*.sh"
 
+SF_DEPS="./softwarefactory.install ../data/database.yml ../tools/cauth ../tools/managesf"
+IS_DEPS="${PUPPET_BOOTSTRAPPER}"
+
 MAKE="make DVER=${DVER} DIST=${DIST} SF_REL=${SF_REL} EDEPLOY_PATH=${EDEPLOY} TOP=${BUILD_DIR}"
 
 

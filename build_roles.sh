@@ -1,5 +1,13 @@
 #!/bin/bash
 
+LOCK="/var/run/sf-build_roles.lock"
+if [ -f ${LOCK} ]; then
+   echo "Lock file present: ${LOCK}"
+   exit 1;
+fi
+sudo touch ${LOCK}
+trap "sudo rm ${LOCK}" 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+
 set -e
 set -x
 
@@ -21,6 +29,20 @@ CURRENT=`pwd`
 SF_ROLES=$CURRENT/edeploy/
 
 BOOTSTRAPPER=$SF_ROLES/puppet_bootstrapper.sh
+
+function build_role {
+    ROLE_NAME=$1
+    ROLE_MD5=$2
+
+    if [ ! -f "${INST}/${ROLE_NAME}.md5" ] || [ "$(cat ${INST}/${ROLE_NAME}.md5)" != "${ROLE_MD5}" ]; then
+        echo "${ROLE_NAME} have been updated"
+        sudo rm -f ${INST}/${ROLE_NAME}.done
+        echo ${ROLE_MD5} | sudo tee ${INST}/${ROLE_NAME}.md5
+        sudo ${MAKE} ${VIRTUALIZED} EDEPLOY_ROLES_PATH=${EDEPLOY_ROLES} PREBUILD_EDR_TARGET=${EDEPLOY_ROLES_REL} ${ROLE_NAME}
+    else
+        echo "${ROLE_NAME} is up-to-date"
+    fi
+}
 
 if [ ! -d $WORKSPACE ]; then
     sudo mkdir -m 0770 $WORKSPACE
@@ -111,20 +133,11 @@ cd -
 
 cd $SF_ROLES
 [ ! -d "$BUILD_DIR/install/${DVER}-${SF_REL}" ] && sudo mkdir -p $BUILD_DIR/install/${DVER}-${SF_REL}
-sudo ${MAKE} $VIRTUALIZED PREBUILD_EDR_TARGET=${EDEPLOY_ROLES_REL} mysql
-sudo ${MAKE} $VIRTUALIZED PREBUILD_EDR_TARGET=${EDEPLOY_ROLES_REL} slave
-sudo ${MAKE} $VIRTUALIZED EDEPLOY_ROLES_PATH=${EDEPLOY_ROLES} PREBUILD_EDR_TARGET=${EDEPLOY_ROLES_REL} softwarefactory
 
-# Calc puppet_bootstrapper md5 files
-PB_MD5=$(cd ..; find ${PUPPET_BOOTSTRAPPER} -type f | sort | xargs cat | md5sum | awk '{ print $1}')
-# Compare with previous run
-if [ -f "${INST}/puppet-bootstrapper.md5" ] && [ "$(cat ${INST}/puppet-bootstrapper.md5)" != "${PB_MD5}" ]; then
-    echo "Puppet bootstrapper have been updated, let's rebuild install-server-vm..."
-    sudo rm -f ${INST}/install-server-vm.done
-fi
-echo $PB_MD5 | sudo tee ${INST}/puppet-bootstrapper.md5
-sudo ${MAKE} $VIRTUALIZED PREBUILD_EDR_TARGET=${EDEPLOY_ROLES_REL} install-server-vm
-RET=$?
+build_role "mysql" $(cat mysql.install | md5sum | awk '{ print $1}')
+build_role "slave" $(cat slave.install | md5sum | awk '{ print $1}')
+build_role "softwarefactory" $(find -type f ${SF_DEPS} | sort | xargs cat | md5sum | awk '{ print $1}')
+build_role "install-server-vm" $(find -type f ${IS_DEPS} | sort | xargs cat | md5sum | awk '{ print $1}')
 
 exit $RET
 
