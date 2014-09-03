@@ -4,7 +4,7 @@ set -x
 # Start that script on your laptop to get access
 # to SF services that run on LXC containers on the $host
 # node. Set accordingly your /etc/hosts to have name resolution
-# to enjoy SSO feature. Please run that script as root and 
+# to enjoy SSO feature. Please run that script as root and
 # also add user's ssh key before running the script i.e
 #sudo -i
 #ssh-agent bash

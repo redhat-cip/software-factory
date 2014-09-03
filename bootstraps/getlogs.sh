@@ -41,7 +41,7 @@ done
 mkdir $dlogs/puppetmaster
 
 # The init option of gerrit.war will rewrite the gerrit config files
-# if the provided files does not follow exactly the expected format by gerrit.  
+# if the provided files does not follow exactly the expected format by gerrit.
 # If there is a rewrite puppet will detect the change in the *.config files
 # and then trigger a restart. We want to avoid that because the gerrit restart
 # can occured during functional tests. So here we display the changes that can

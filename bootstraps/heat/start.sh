@@ -78,7 +78,7 @@ function delete_stack {
 function restart_stack {
     delete_stack || true
     while true; do
-        heat stack-list | grep "SoftwareFactory" 
+        heat stack-list | grep "SoftwareFactory"
         [ "$?" != "0" ] && break
         sleep 2
     done
@@ -110,6 +110,6 @@ function full_restart_stack {
         full_restart_stack )
             full_restart_stack ;;
         * )
-           echo "Not available option" ;;
+            echo "Not available option" ;;
     esac
 }

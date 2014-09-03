@@ -51,7 +51,7 @@ if [ -z "$1" ] || [ "$1" == "start" ]; then
     sed -i "s#CIPATH#${CONFTEMPDIR}#g" ${CONFTEMPDIR}/sf-lxc.yaml
     sed -i "s#SSH_PUBKEY#${SSH_PUBKEY}#g" ${CONFTEMPDIR}/sf-lxc.yaml
     sed -i "s#ROLES_DIR#${ROLES_DIR}#g" ${CONFTEMPDIR}/sf-lxc.yaml
-    # Complete jenkins slave cloudinit 
+    # Complete jenkins slave cloudinit
     sed -i "s/JENKINS_MASTER_URL/${JENKINS_MASTER_URL}/g" ${CONFTEMPDIR}/slave.cloudinit
     sed -i "s/JENKINS_USER_PASSWORD/${JENKINS_USER_PASSWORD}/g" ${CONFTEMPDIR}/slave.cloudinit
     sed -i "s/JENKINS_IP/${jenkins_ip}/g" ${CONFTEMPDIR}/slave.cloudinit
@@ -80,7 +80,7 @@ if [ -z "$1" ] || [ "$1" == "start" ]; then
     else
         sudo rm -f /var/lib/lxc/puppetmaster.config
     fi
- 
+
     if [ -e "/mnt/lxc/puppetmaster/root/puppet-bootstrapper" ]; then
         sudo sh -c "echo 'lxc.mount.entry =  /mnt/lxc/puppetmaster/root/puppet-bootstrapper /var/lib/lxc/puppetmaster/rootfs/root/puppet-bootstrapper none bind,create=dir 0 0' >>  /var/lib/lxc/puppetmaster.config"
     else

@@ -43,8 +43,9 @@ class Gerrit:
         db = MySQLdb.connect(passwd=self.db_password, db=self.db_name,
                              host=self.db_host, user=self.db_user)
         c = db.cursor()
-        sql = "INSERT INTO account_external_ids VALUES (%d, NULL, NULL, 'gerrit:%s');" %\
-            (account_id, username)
+        sql = ("INSERT INTO account_external_ids VALUES"
+               "(%d, NULL, NULL, 'gerrit:%s');" %
+               (account_id, username))
         try:
             c.execute(sql)  # Will be only successful if entry does not exist
             db.commit()

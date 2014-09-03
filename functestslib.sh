@@ -60,7 +60,7 @@ function publish_artifacts {
 }
 
 function scan_and_configure_knownhosts {
-    local ip=`get_ip puppetmaster` 
+    local ip=`get_ip puppetmaster`
     ssh-keygen -f "$HOME/.ssh/known_hosts" -R "$ip" > /dev/null 2>&1 || echo
     RETRIES=0
     echo " [+] Starting ssh-keyscan on $ip:22"

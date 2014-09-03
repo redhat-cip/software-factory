@@ -62,7 +62,7 @@ case $dist in
         ;;
 esac
 
-sed -i -e "s!SSLCertificateFile.*!SSLCertificateFile /var/lib/puppet/ssl/certs/${FQDN}.pem!" $PM_A_CONF 
+sed -i -e "s!SSLCertificateFile.*!SSLCertificateFile /var/lib/puppet/ssl/certs/${FQDN}.pem!" $PM_A_CONF
 sed -i -e "s!SSLCertificateKeyFile.*!SSLCertificateKeyFile /var/lib/puppet/ssl/private_keys/${FQDN}.pem!" $PM_A_CONF
 
 rm -rf /var/lib/puppet/ssl && puppet cert generate ${FQDN}
@@ -70,11 +70,11 @@ rm -rf /var/lib/puppet/ssl && puppet cert generate ${FQDN}
 case $dist in
     debian)
         cp /var/lib/puppet/ssl/private_keys/${FQDN}.pem /etc/puppetdb/ssl/key.pem \
-	    && chown puppetdb:puppetdb /etc/puppetdb/ssl/key.pem
+            && chown puppetdb:puppetdb /etc/puppetdb/ssl/key.pem
         cp /var/lib/puppet/ssl/certs/${FQDN}.pem /etc/puppetdb/ssl/cert.pem \
-	    && chown puppetdb:puppetdb /etc/puppetdb/ssl/cert.pem
+            && chown puppetdb:puppetdb /etc/puppetdb/ssl/cert.pem
         cp /var/lib/puppet/ssl/certs/ca.pem /etc/puppetdb/ssl/ca.pem \
-	    && chown puppetdb:puppetdb /etc/puppetdb/ssl/ca.pem
+            && chown puppetdb:puppetdb /etc/puppetdb/ssl/ca.pem
         echo '. /etc/default/locale' | tee --append /etc/apache2/envvars
         puppet resource service puppetmaster ensure=stopped enable=false
         a2ensite puppetmaster

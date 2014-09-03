@@ -33,12 +33,11 @@ function generate_random_pswd {
     echo `dd if=/dev/urandom bs=1 count=$1 2>/dev/null | base64 -w $1 | head -n1 | sed -e 's#/#_#g;s#\+#_#g'`
 }
 
-function generate_api_key() {
+function generate_api_key {
     out=""
-    while [ ${#out} -lt 40 ];
-        do
+    while [ ${#out} -lt 40 ]; do
             out=$out`echo "obase=16; $RANDOM" | bc`
-        done
+    done
 
     out=${out:0:40}
     echo $out | awk '{print tolower($0)}'
@@ -47,7 +46,7 @@ function generate_api_key() {
 function generate_hieras {
     OUTPUT=${BUILD}/hiera
     mkdir -p ${OUTPUT}
-    
+
     cp puppet/hiera/* ${OUTPUT}/
 
     sed -i -e "s/SF_SUFFIX/${SF_SUFFIX}/g" ${OUTPUT}/common.yaml
@@ -69,7 +68,7 @@ function generate_hieras {
     sed -i "s#JENKINS_PUB_KEY#${JENKINS_PUB}#" ${OUTPUT}/ssh.yaml
     SERVICE_PUB="$(cat ${OUTPUT}/../data/service_rsa.pub | cut -d' ' -f2)"
     sed -i "s#SERVICE_PUB_KEY#${SERVICE_PUB}#" ${OUTPUT}/ssh.yaml
-    
+
     # Jenkins part
     JENKINS_DEFAULT_SLAVE="slave.${SF_SUFFIX}"
     JENKINS_USER_PASSWORD="${JUP}"
@@ -80,7 +79,7 @@ function generate_hieras {
     REDMINE_API_KEY=$(generate_api_key)
     sed -i "s#REDMINE_API_KEY#${REDMINE_API_KEY}#" ${OUTPUT}/redmine.yaml
     sed -i "s#REDMINE_MYSQL_SECRET#${REDMINE_MYSQL_SECRET}#" ${OUTPUT}/redmine.yaml
-    
+
     # Gerrit part
     GERRIT_SERV_PUB="$(cat ${OUTPUT}/../data/gerrit_service_rsa.pub | cut -d' ' -f2)"
     GERRIT_ADMIN_PUB_KEY="$(cat ${OUTPUT}/../data/gerrit_admin_rsa.pub | cut -d' ' -f2)"
@@ -97,7 +96,7 @@ function generate_hieras {
     sed -i "s#GERRIT_EMAIL_PK#${GERRIT_EMAIL_PK}#" ${OUTPUT}/gerrit.yaml
     sed -i "s#GERRIT_TOKEN_PK#${GERRIT_TOKEN_PK}#" ${OUTPUT}/gerrit.yaml
     sed -i "s#REDMINE_API_KEY#${REDMINE_API_KEY}#" ${OUTPUT}/gerrit.yaml
-    
+
     # Etherpad part
     ETHERPAD_SESSION_KEY=$(generate_random_pswd 10)
     sed -i "s#SESSION_KEY#${ETHERPAD_SESSION_KEY}#" ${OUTPUT}/etherpad.yaml
@@ -194,7 +193,7 @@ function prepare_etc_puppet {
     chown -R puppet:puppet /etc/puppet/environments/sf
     chown -R puppet:puppet /etc/puppet/hiera/sf
     chown -R puppet:puppet /var/lib/puppet
-    
+
     # generating keys for cauth
     keys_dir='/etc/puppet/environments/sf/modules/cauth/files/'
     mkdir -p $keys_dir

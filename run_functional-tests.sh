@@ -9,10 +9,6 @@ echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
 # Then will start the SF in LXC containers
 # Then will run the serverspecs and functional tests
 
-function get_ip {
-    grep -B 1 "name:[ \t]*$1" /tmp/lxc-conf/sf-lxc.yaml | head -1 | awk '{ print $2 }'
-}
-
 source functestslib.sh
 
 function lxc_stop {
@@ -22,16 +18,6 @@ function lxc_stop {
         fi
     fi
 }
-
-LOCK="/var/run/sf-run_functional-tests.lock"
-if [ -f ${LOCK} ]; then
-   echo "Lock file present: ${LOCK}"
-   lxc_stop
-fi
-sudo touch ${LOCK}
-trap "sudo rm ${LOCK}" 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
-
-
 
 function build {
     if [ ! ${SF_SKIP_BUILDROLES} ]; then

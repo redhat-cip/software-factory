@@ -2,8 +2,8 @@
 
 LOCK="/var/run/sf-build_roles.lock"
 if [ -f ${LOCK} ]; then
-   echo "Lock file present: ${LOCK}"
-   killall make
+    echo "Lock file present: ${LOCK}"
+    killall make
 fi
 sudo touch ${LOCK}
 trap "sudo rm ${LOCK}" 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
