@@ -24,7 +24,7 @@ SFCONFIGFILE=../sfconfig.yaml
 DOMAIN=$(cat $SFCONFIGFILE | grep domain | cut -d' ' -f2)
 SF_SUFFIX=${SF_SUFFIX:-$DOMAIN}
 EDEPLOY_ROLES=${EDEPLOY_ROLES:-/var/lib/sf/roles/}
-SSH_PUBKEY=${SSH_PUBKEY:-/home/ubuntu/.ssh/id_rsa.pub}
+SSH_PUBKEY=${SSH_PUBKEY:-${HOME}/.ssh/id_rsa.pub}
 export SF_SUFFIX
 
 EDEPLOY_LXC=/srv/edeploy-lxc/edeploy-lxc
