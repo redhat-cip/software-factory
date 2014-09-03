@@ -32,12 +32,12 @@ def get_config_value(section, option):
 
 
 def main():
-    #check config file is present or not
+    # check config file is present or not
     if not os.path.isfile('config.ini'):
         print "ERROR :: config file is missing"
         sys.exit(1)
 
-    #read the config file and populate the data
+    # read the config file and populate the data
     github = {'git_username': '', 'git_password': '', 'repos': ''}
     for key in github.iterkeys():
         github[key] = get_config_value('GITHUB', key)
@@ -47,7 +47,7 @@ def main():
     for key in redmine.iterkeys():
         redmine[key] = get_config_value('REDMINE', key)
 
-    #if url edswith backslash, remove it before use.
+    # if url edswith backslash, remove it before use.
     if redmine['url'].endswith('/'):
         redmine['url'] = redmine['url'][:-1]
 
@@ -63,7 +63,7 @@ def main():
         r = Redmine(redmine['url'], username=redmine['rm_username'],
                     password=redmine['rm_password'])
 
-    #if project id not given, find
+    # if project id not given, find
     if redmine['id'] is None:
         projects = r.project.all()
         for p in projects:

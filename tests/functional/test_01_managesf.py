@@ -74,13 +74,17 @@ class TestManageSF(Base):
         self.assertTrue(self.gu.isPrjExist(pname))
         self.assertTrue(self.gu.isGroupExist('%s-ptl' % pname))
         self.assertTrue(self.gu.isGroupExist('%s-core' % pname))
-        #TODO(Project creator, as project owner, should only be in ptl group)
-        self.assertTrue(self.gu.isMemberInGroup(config.ADMIN_USER, '%s-ptl' % pname))
-        self.assertTrue(self.gu.isMemberInGroup(config.ADMIN_USER, '%s-core' % pname))
+        # TODO(Project creator, as project owner, should only be in ptl group)
+        self.assertTrue(
+            self.gu.isMemberInGroup(config.ADMIN_USER, '%s-ptl' % pname))
+        self.assertTrue(
+            self.gu.isMemberInGroup(config.ADMIN_USER, '%s-core' % pname))
         # Redmine part
         self.assertTrue(self.rm.isProjectExist(pname))
-        self.assertTrue(self.rm.checkUserRole(pname, config.ADMIN_USER, 'Manager'))
-        self.assertTrue(self.rm.checkUserRole(pname, config.ADMIN_USER, 'Developer'))
+        self.assertTrue(
+            self.rm.checkUserRole(pname, config.ADMIN_USER, 'Manager'))
+        self.assertTrue(
+            self.rm.checkUserRole(pname, config.ADMIN_USER, 'Developer'))
         # Test here the project is public
         # ( Redmine API project detail does not return this flag)
         self.assertTrue(self.rm.isProjectExist_ex(pname, config.USER_2))
@@ -97,17 +101,23 @@ class TestManageSF(Base):
         self.assertTrue(self.gu.isGroupExist('%s-ptl' % pname))
         self.assertTrue(self.gu.isGroupExist('%s-core' % pname))
         self.assertTrue(self.gu.isGroupExist('%s-dev' % pname))
-        #TODO(Project creator, as project owner, should only be in ptl group)
-        self.assertTrue(self.gu.isMemberInGroup(config.ADMIN_USER, '%s-ptl' % pname))
-        self.assertTrue(self.gu.isMemberInGroup(config.ADMIN_USER, '%s-core' % pname))
-        self.assertTrue(self.gu.isMemberInGroup(config.ADMIN_USER, '%s-dev' % pname))
+        # TODO(Project creator, as project owner, should only be in ptl group)
+        self.assertTrue(
+            self.gu.isMemberInGroup(config.ADMIN_USER, '%s-ptl' % pname))
+        self.assertTrue(
+            self.gu.isMemberInGroup(config.ADMIN_USER, '%s-core' % pname))
+        self.assertTrue(
+            self.gu.isMemberInGroup(config.ADMIN_USER, '%s-dev' % pname))
         # Redmine part
         self.assertTrue(self.rm.isProjectExist(pname))
-        self.assertTrue(self.rm.checkUserRole(pname, config.ADMIN_USER, 'Manager'))
-        self.assertTrue(self.rm.checkUserRole(pname, config.ADMIN_USER, 'Developer'))
+        self.assertTrue(
+            self.rm.checkUserRole(pname, config.ADMIN_USER, 'Manager'))
+        self.assertTrue(
+            self.rm.checkUserRole(pname, config.ADMIN_USER, 'Developer'))
         # Test here the project is private
         # ( Redmine API project detail does not return this flag)
-        self.assertFalse(self.rm.isProjectExist_ex(pname, config.USER_2))
+        self.assertFalse(
+            self.rm.isProjectExist_ex(pname, config.USER_2))
 
     def test_delete_public_project_as_admin(self):
         """ Delete public project on redmine and gerrit as admin
@@ -132,14 +142,19 @@ class TestManageSF(Base):
         self.assertTrue(self.gu.isPrjExist(pname))
         self.assertTrue(self.gu.isGroupExist('%s-ptl' % pname))
         self.assertTrue(self.gu.isGroupExist('%s-core' % pname))
-        #TODO(Project creator, as project owner, should only be in ptl group)
-        self.assertTrue(self.gu.isMemberInGroup(config.ADMIN_USER, '%s-ptl' % pname))
-        self.assertTrue(self.gu.isMemberInGroup(config.ADMIN_USER, '%s-core' % pname))
+        # TODO(Project creator, as project owner, should only be in ptl group)
+        self.assertTrue(
+            self.gu.isMemberInGroup(config.ADMIN_USER, '%s-ptl' % pname))
+        self.assertTrue(
+            self.gu.isMemberInGroup(config.ADMIN_USER, '%s-core' % pname))
         # Redmine part
         self.assertTrue(self.rm.isProjectExist(pname))
-        self.assertTrue(self.rm.isProjectExist_ex(pname, config.USER_2))
-        self.assertTrue(self.rm.checkUserRole(pname, config.USER_2, 'Manager'))
-        self.assertTrue(self.rm.checkUserRole(pname, config.USER_2, 'Developer'))
+        self.assertTrue(
+            self.rm.isProjectExist_ex(pname, config.USER_2))
+        self.assertTrue(
+            self.rm.checkUserRole(pname, config.USER_2, 'Manager'))
+        self.assertTrue(
+            self.rm.checkUserRole(pname, config.USER_2, 'Developer'))
         # Test here the project is public
         # ( Redmine API project detail does not return this flag)
         self.assertTrue(self.rm.isProjectExist_ex(pname, config.USER_3))
@@ -156,15 +171,20 @@ class TestManageSF(Base):
         self.assertTrue(self.gu.isGroupExist('%s-ptl' % pname))
         self.assertTrue(self.gu.isGroupExist('%s-core' % pname))
         self.assertTrue(self.gu.isGroupExist('%s-dev' % pname))
-        #TODO(Project creator, as project owner, should only be in ptl group)
-        self.assertTrue(self.gu.isMemberInGroup(config.USER_2, '%s-ptl' % pname))
-        self.assertTrue(self.gu.isMemberInGroup(config.USER_2, '%s-core' % pname))
-        self.assertTrue(self.gu.isMemberInGroup(config.USER_2, '%s-dev' % pname))
+        # TODO(Project creator, as project owner, should only be in ptl group)
+        self.assertTrue(
+            self.gu.isMemberInGroup(config.USER_2, '%s-ptl' % pname))
+        self.assertTrue(
+            self.gu.isMemberInGroup(config.USER_2, '%s-core' % pname))
+        self.assertTrue(
+            self.gu.isMemberInGroup(config.USER_2, '%s-dev' % pname))
         # Redmine part
         self.assertTrue(self.rm.isProjectExist(pname))
         self.assertTrue(self.rm.isProjectExist_ex(pname, config.USER_2))
-        self.assertTrue(self.rm.checkUserRole(pname, config.USER_2, 'Manager'))
-        self.assertTrue(self.rm.checkUserRole(pname, config.USER_2, 'Developer'))
+        self.assertTrue(
+            self.rm.checkUserRole(pname, config.USER_2, 'Manager'))
+        self.assertTrue(
+            self.rm.checkUserRole(pname, config.USER_2, 'Developer'))
         # Test here the project is private
         # ( Redmine API project detail does not return this flag)
         self.assertFalse(self.rm.isProjectExist_ex(pname, config.USER_3))
@@ -180,13 +200,15 @@ class TestManageSF(Base):
                            options=options)
         # Gerrit part
         self.assertTrue(self.gu.isPrjExist(pname))
-        #TODO(Project creator, as project owner, should only be in ptl group)
-        self.assertTrue(self.gu.isMemberInGroup(config.ADMIN_USER, '%s-ptl' % pname))
+        # TODO(Project creator, as project owner, should only be in ptl group)
+        self.assertTrue(
+            self.gu.isMemberInGroup(config.ADMIN_USER, '%s-ptl' % pname))
         for user in (config.ADMIN_USER, config.USER_2, config.USER_3):
             self.assertTrue(self.gu.isMemberInGroup(user, '%s-core' % pname))
         # Redmine part
         self.assertTrue(self.rm.isProjectExist(pname))
-        self.assertTrue(self.rm.checkUserRole(pname, config.ADMIN_USER, 'Manager'))
+        self.assertTrue(
+            self.rm.checkUserRole(pname, config.ADMIN_USER, 'Manager'))
         for user in (config.ADMIN_USER, config.USER_2, config.USER_3):
             self.assertTrue(self.rm.checkUserRole(pname, user, 'Developer'))
 
@@ -203,14 +225,18 @@ class TestManageSF(Base):
                            options=options)
         # Gerrit part
         self.assertTrue(self.gu.isPrjExist(pname))
-        #TODO(Project creator, as project owner, should only be in ptl group)
-        self.assertTrue(self.gu.isMemberInGroup(config.ADMIN_USER, '%s-ptl' % pname))
+        # TODO(Project creator, as project owner, should only be in ptl group)
+        self.assertTrue(
+            self.gu.isMemberInGroup(config.ADMIN_USER, '%s-ptl' % pname))
         for user in (config.ADMIN_USER, config.USER_2, config.USER_3):
             self.assertTrue(self.gu.isMemberInGroup(user, '%s-core' % pname))
-        self.assertTrue(self.gu.isMemberInGroup(config.USER_4, '%s-dev' % pname))
+        self.assertTrue(
+            self.gu.isMemberInGroup(config.USER_4, '%s-dev' % pname))
         # Redmine part
-        self.assertTrue(self.rm.isProjectExist(pname))  # it should be visible to admin
-        self.assertTrue(self.rm.checkUserRole(pname, config.ADMIN_USER, 'Manager'))
+        # it should be visible to admin
+        self.assertTrue(self.rm.isProjectExist(pname))
+        self.assertTrue(
+            self.rm.checkUserRole(pname, config.ADMIN_USER, 'Manager'))
         for user in (config.ADMIN_USER, config.USER_2,
                      config.USER_3, config.USER_4):
             self.assertTrue(self.rm.checkUserRole(pname, user, 'Developer'))

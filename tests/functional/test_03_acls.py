@@ -18,10 +18,6 @@ import config
 
 from utils import Base
 from utils import ManageSfUtils
-#from utils import GerritGitUtils
-#from utils import create_random_str
-#from utils import GerritUtil
-#from utils import RedmineUtil
 
 
 class TestSFACLs(Base):

@@ -22,7 +22,7 @@ except ImportError:
     from setuptools import setup, find_packages
 
 try:
-    import multiprocessing
+    import multiprocessing  # noqa
 except:
     pass
 
@@ -44,6 +44,6 @@ setup(
     test_suite='nose.collector',
     zip_safe=False,
     include_package_data=True,
-    package_data = {'cauth': ['template/*',]},
+    package_data={'cauth': ['template/*', ]},
     packages=find_packages(exclude=['ez_setup'])
 )

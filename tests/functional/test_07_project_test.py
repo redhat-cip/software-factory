@@ -20,7 +20,6 @@ import copy
 import shutil
 import time
 from yaml import load, dump
-import requests as http
 
 from utils import Base
 from utils import set_private_key
@@ -241,7 +240,7 @@ class TestProjectTestsWorkflow(Base):
             self.ju.get_last_build_number("sample_project-functional-tests",
                                           "lastSuccessfulBuild")
         self.assertEqual(last_build_num_sp_ft, last_success_build_num_sp_ft)
-        
+
         # Get the change id
         change_ids = self.gu.getMyChangesForProject("sample_project")
         self.assertGreater(len(change_ids), 0)
@@ -249,14 +248,15 @@ class TestProjectTestsWorkflow(Base):
 
         # let some time to Zuul to update the test result to Gerrit.
         attempt = 0
-        while not "jenkins" in self.gu.getReviewers(change_id):
+        while "jenkins" not in self.gu.getReviewers(change_id):
             if attempt >= 30:
                 break
             time.sleep(1)
             attempt += 1
 
         attempt = 0
-        while self.gu.getReviewerApprovals(change_id, 'jenkins')['Verified'] != '+1':
+        while self.gu.getReviewerApprovals(change_id, 'jenkins')['Verified'] \
+                != '+1':
             if attempt >= 30:
                 break
             time.sleep(1)

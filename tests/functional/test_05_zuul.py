@@ -17,7 +17,6 @@ import os
 import config
 import shutil
 import time
-import requests as http
 
 from utils import Base
 from utils import set_private_key
@@ -56,7 +55,6 @@ class TestZuulOps(Base):
                                options)
         self.projects.append(name)
 
-
     def test_check_zuul_operations(self):
         """ Test if zuul verifies project correctly through zuul-demo project
         """
@@ -87,7 +85,7 @@ class TestZuulOps(Base):
                                      "lastFailedBuild")
         last_fail_build_num_ut = \
             ju.get_last_build_number("zuul-demo-unit-tests",
-                                      "lastFailedBuild")
+                                     "lastFailedBuild")
         last_succeed_build_num_ft = \
             ju.get_last_build_number("zuul-demo-functional-tests",
                                      "lastSuccessfulBuild")
@@ -108,14 +106,15 @@ class TestZuulOps(Base):
                                    last_fail_build_num_ut, "lastFailedBuild")
 
         attempt = 0
-        while not "jenkins" in gu.getReviewers(change_id):
+        while "jenkins" not in gu.getReviewers(change_id):
             if attempt >= 10:
                 break
             time.sleep(1)
             attempt += 1
 
         attempt = 0
-        while gu.getReviewerApprovals(change_id, 'jenkins')['Verified'] != '-1':
+        while gu.getReviewerApprovals(change_id, 'jenkins')['Verified'] \
+                != '-1':
             if attempt >= 30:
                 break
             time.sleep(1)
@@ -137,20 +136,21 @@ class TestZuulOps(Base):
         # Give some time for jenkins to work
         ju.wait_till_job_completes("zuul-demo-functional-tests",
                                    last_succeed_build_num_ft,
-                                     "lastSuccessfulBuild")
+                                   "lastSuccessfulBuild")
         ju.wait_till_job_completes("zuul-demo-unit-tests",
                                    last_succeed_build_num_ut,
                                    "lastSuccessfulBuild")
 
         attempt = 0
-        while not "jenkins" in gu.getReviewers(change_id):
+        while "jenkins" not in gu.getReviewers(change_id):
             if attempt >= 30:
                 break
             time.sleep(1)
             attempt += 1
 
         attempt = 0
-        while gu.getReviewerApprovals(change_id, 'jenkins')['Verified'] != '+1':
+        while gu.getReviewerApprovals(change_id, 'jenkins')['Verified'] \
+                != '+1':
             if attempt >= 30:
                 break
             time.sleep(1)

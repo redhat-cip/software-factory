@@ -26,7 +26,7 @@ logger = logging.getLogger(__name__)
 
 
 class ReplicationController(RestController):
-    #'add','rename-section'
+    # 'add','rename-section'
     @expose()
     def put(self, section=None, setting=None, **kwargs):
         if section is None or ('value' not in request.json):
@@ -36,7 +36,7 @@ class ReplicationController(RestController):
         gerrit.replication_apply_config(section, setting, value)
         return None
 
-    #'unset', 'replace-all', 'remove-section'
+    # 'unset', 'replace-all', 'remove-section'
     @expose()
     def delete(self, section=None, setting=None, **kwargs):
         if section is None:
@@ -45,7 +45,7 @@ class ReplicationController(RestController):
         gerrit.replication_apply_config(section, setting)
         return None
 
-    #'get-all', 'list'
+    # 'get-all', 'list'
     @expose('json')
     def get(self, section=None, setting=None, **kwargs):
         config = gerrit.replication_get_config(section, setting)
@@ -88,7 +88,7 @@ class ProjectController(RestController):
         if name == '':
             abort(405)
         try:
-            #create project
+            # create project
             inp = request.json if request.content_length else {}
             gerrit.init_project(name, inp)
             redmine.init_project(name, inp)
@@ -104,7 +104,7 @@ class ProjectController(RestController):
         if name == '':
             abort(405)
         try:
-            #delete project
+            # delete project
             gerrit.delete_project(name)
             redmine.delete_project(name)
             return None
