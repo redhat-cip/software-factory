@@ -21,8 +21,6 @@ echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
 
 echo "$(date) - $(hostname)"
 
-set -e
-
 echo "FLAKE8 tests"
 echo "~~~~~~~~~~~~"
 find . -iname "*.py" | grep -v .tox | xargs flake8
