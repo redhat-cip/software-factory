@@ -6,19 +6,18 @@
           set -e
           mkdir build
           jenkins-jobs test jobs/ -o build/
-          zuul-server -t -l zuul/layout.yaml
+          sudo zuul-server -t -l zuul/layout.yaml
     triggers:
       - zuul
     node: '{node}'
 
 - job-template:
     name: '{name}-update'
-    defaults: zuul
+    defaults: global
     builders:
+      - gerrit-git-prep
       - shell: |
-          mkdir build
           rm -Rf /var/lib/jenkins/.cache/jenkins_jobs
-          jenkins-jobs test jobs/ -o build/
           jenkins-jobs -l debug --ignore-cache update --delete-old jobs/
           sudo cp zuul/layout.yaml /etc/zuul/
           sudo service zuul reload

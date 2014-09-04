@@ -12,6 +12,7 @@
       <p>Job triggered by zuul</p>
 
     project-type: freestyle
+    concurrent: true
 
     scm:
      - zuul-git

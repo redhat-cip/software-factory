@@ -6,7 +6,7 @@ if [ -f ${LOCK} ]; then
     killall make
 fi
 sudo touch ${LOCK}
-trap "sudo rm ${LOCK}" 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+trap "sudo rm -f ${LOCK}" 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
 
 set -e
 set -x
@@ -37,8 +37,8 @@ function build_role {
     if [ ! -f "${INST}/${ROLE_NAME}.md5" ] || [ "$(cat ${INST}/${ROLE_NAME}.md5)" != "${ROLE_MD5}" ]; then
         echo "${ROLE_NAME} have been updated"
         sudo rm -f ${INST}/${ROLE_NAME}.done
-        echo ${ROLE_MD5} | sudo tee ${INST}/${ROLE_NAME}.md5
         sudo ${MAKE} ${VIRTUALIZED} EDEPLOY_ROLES_PATH=${EDEPLOY_ROLES} PREBUILD_EDR_TARGET=${EDEPLOY_ROLES_REL} ${ROLE_NAME}
+        echo ${ROLE_MD5} | sudo tee ${INST}/${ROLE_NAME}.md5
     else
         echo "${ROLE_NAME} is up-to-date"
     fi
@@ -143,9 +143,9 @@ build_role "mysql" $(cat mysql.install | md5sum | awk '{ print $1}')
 ME=$?
 build_role "slave" $(cat slave.install | md5sum | awk '{ print $1}')
 SE=$?
-build_role "softwarefactory" $(find -type f ${SF_DEPS} | sort | xargs cat | md5sum | awk '{ print $1}')
+build_role "softwarefactory"   $(cd ..; find ${SF_DEPS} -type f | sort | grep -v '\.tox' | xargs cat | md5sum | awk '{ print $1}')
 SFE=$?
-build_role "install-server-vm" $(find -type f ${IS_DEPS} | sort | xargs cat | md5sum | awk '{ print $1}')
+build_role "install-server-vm" $(cd ..; find ${IS_DEPS} -type f | sort | grep -v '\.tox' | xargs cat | md5sum | awk '{ print $1}')
 IE=$?
 
 exit $[ $ME + $SE + $SFE + $IE ];

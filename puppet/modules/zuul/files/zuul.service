@@ -62,7 +62,7 @@ do_stop()
     #   2 if daemon could not be stopped
     #   other if a failure occurred
     if [ ! -f $PIDFILE ]; then
-        killall $NAME
+        killall $(basename ${DAEMON})
         return $?
     fi
     start-stop-daemon --stop --signal 10 --pidfile $PIDFILE

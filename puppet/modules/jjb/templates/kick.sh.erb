@@ -6,6 +6,9 @@ if [ -f /root/config.kicked ]; then
 #    exit 1
 fi
 
+# temp check just to be sure...
+service apache2 reload || true
+service httpd reload || true
 
 RETRIES=0
 while true; do
@@ -42,5 +45,5 @@ service jenkins restart
 
 # Zuul
 cp /root/config/zuul/layout.yaml /etc/zuul/
-service zuul restart 
+service zuul reload
 touch /root/config.kicked

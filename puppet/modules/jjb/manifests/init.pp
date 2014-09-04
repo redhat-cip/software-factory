@@ -86,7 +86,7 @@ class jjb ($settings = hiera_hash('jenkins', ''),
     owner  => "root",
     group  => "root",
     require => File['/usr/share/sf-jjb'],
-    source => 'puppet:///modules/jjb/macros.yaml',
+    content => template('jjb/macros.yaml.erb'),
   }
 
   file {'/usr/share/sf-jjb/projects.yaml':
@@ -100,17 +100,26 @@ class jjb ($settings = hiera_hash('jenkins', ''),
 
   file {'/usr/local/jenkins':
     ensure   => directory,
-    mode     => '0540',
+    mode     => '0555',
     owner    => 'root',
     group    => 'root',
   }
 
   file {'/usr/local/jenkins/slave_scripts':
     ensure   => directory,
-    mode     => '0540',
+    mode     => '0555',
     owner    => 'root',
     group    => 'root',
     require  => File['/usr/local/jenkins']
+  }
+
+  file {'/usr/local/jenkins/slave_scripts/gerrit-git-prep.sh':
+    ensure   => file,
+    mode     => '0555',
+    owner    => 'root',
+    group    => 'root',
+    source   => 'puppet:///modules/jjb/gerrit-git-prep.sh',
+    require  => File['/usr/local/jenkins'],
   }
 
   file {'/usr/local/jenkins/slave_scripts/kick.sh':

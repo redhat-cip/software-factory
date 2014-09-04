@@ -18,7 +18,12 @@ case "$(hostname)" in
     "stronger-jenkins")
         JENKINS_URL=46.231.128.54
         ;;
+    *)
+        JENKINS_URL=$(hostname | sed -e 's/sfstack-//' -e 's/-/./g')
+        ;;
 esac
+
+[ -z "${JENKINS_URL}" ] && JENKINS_URL="localhost"
 
 GERRIT_PROJECT=${GERRIT_PROJECT-sf}
 CURRENT_BRANCH=`git branch | sed -n -e 's/^\* \(.*\)/\1/p'`
@@ -72,7 +77,7 @@ function scan_and_configure_knownhosts {
             break
         fi
         let RETRIES=RETRIES+1
-        [ "$RETRIES" == "40" ] && break
+        [ "$RETRIES" == "40" ] && exit 1
         echo "  [E] ssh-keyscan on $ip:22 failed, will retry in 20 seconds (attempt $RETRIES/40)"
         sleep 20
     done
@@ -93,6 +98,7 @@ function host_debug {
     sudo dmesg -c > ${ARTIFACTS_DIR}/host_debug_dmesg
     ps aufx >> ${ARTIFACTS_DIR}/host_debug_ps-aufx
     free -m | tee -a ${ARTIFACTS_DIR}/host_debug_free
+    df -h | tee -a ${ARTIFACTS_DIR}/host_debug_dm
     set -x
 }
 

@@ -8,3 +8,9 @@
         refspec: '$ZUUL_REF'
         wipe-workspace: false
         clean: true
+
+- builder:
+    name: gerrit-git-prep
+    builders:
+      - shell: "/usr/local/jenkins/slave_scripts/gerrit-git-prep.sh http://<%= scope.function_hiera(["http_gateway_host"]) %>"
+
