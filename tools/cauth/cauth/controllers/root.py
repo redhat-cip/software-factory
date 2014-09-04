@@ -349,14 +349,37 @@ class LoginController(RestController):
 
 
 class LogoutController(RestController):
-    @expose(template='login.html')
-    def get(self, **kwargs):
+    def final_logout(self):
         logger.info(
             'Client requests a logout. Set cookie auth_pubtkt to empty.')
         response.set_cookie('auth_pubtkt',
                             domain=conf.app.cookie_domain,
                             value=None)
         response.status_code = 200
+
+    def gerrit_logout(self):
+        logger.info('Client request a logout. Explicit logout on Gerrit')
+        response.status_code = 302
+        response.location = conf.logout['gerrit']['url']
+
+    @expose(template='login.html')
+    def get(self, **kwargs):
+        """ Here we need to unset the auth_pubtkt cookie
+        but also request an explicit logout on gerrit.
+        """
+        service = kwargs.get('service', None)
+        if service == 'gerrit':
+            # Here the call come from the inner gerrit logout link
+            # so the Gerrit session has been already cleared.
+            self.final_logout()
+        if service == 'redmine':
+            # Here the call come from the inner redmine logout link
+            # We need then to close the Gerrit session.
+            self.gerrit_logout()
+        if not service:
+            # Here the call come from the topmenu logout link
+            # We need then to close the Gerrit session.
+            self.gerrit_logout()
         return dict(back='/', message=LOGOUT_MSG)
 
 

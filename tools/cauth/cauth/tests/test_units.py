@@ -74,6 +74,7 @@ class dummy_conf():
                            'echo': False,
                            'encoding': 'utf-8',
                            }
+        self.logout = {'gerrit': {'url': '/r/logout'}}
         self.logging = {'loggers':
                         {'root': {'level': 'INFO', 'handlers': ['console']},
                          'cauth': {'level': 'DEBUG', 'handlers': ['console']},
@@ -116,6 +117,7 @@ class FunctionalTest(TestCase):
                   'gerrit': c.gerrit,
                   'app': c.app,
                   'auth': c.auth,
+                  'logout': c.logout,
                   'sqlalchemy': c.sqlalchemy}
         # deactivate loggin that polute test output
         # even nologcapture option of nose effetcs
@@ -358,9 +360,21 @@ class TestCauthApp(FunctionalTest):
         self.assertIn('Set-Cookie', response.headers)
 
     def test_get_logout(self):
-        response = self.app.get('/logout')
+        response = self.app.get('/logout?service=gerrit')
         self.assertEqual(response.status_int, 200)
         self.assertIn('Set-Cookie', response.headers)
         self.assertEqual(
             '', response.headers['Set-Cookie'].split(';')[0].split('=')[-1])
         self.assertGreater(response.body.find(root.LOGOUT_MSG), 0)
+
+        response = self.app.get('/logout')
+        self.assertEqual(response.status_int, 302)
+        self.assertIn('Location', response.headers)
+        self.assertEqual('http://localhost/r/logout',
+                         response.headers['Location'])
+
+        response = self.app.get('/logout?service=redmine')
+        self.assertEqual(response.status_int, 302)
+        self.assertIn('Location', response.headers)
+        self.assertEqual('http://localhost/r/logout',
+                         response.headers['Location'])
