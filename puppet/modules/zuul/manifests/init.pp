@@ -38,6 +38,8 @@ class zuul ($settings = hiera_hash('jenkins', ''), $gh = hiera('gerrit_url'), $h
         owner  => $httpd_user,
         group  => $httpd_user,
         content => template('zuul/zuul.site.erb'),
+        require => File['/srv/zuul/etc/status/public_html/jquery.min.js'],
+        notify => Service['webserver'],
       }
 
       file {'zuul_init':
@@ -79,8 +81,7 @@ class zuul ($settings = hiera_hash('jenkins', ''), $gh = hiera('gerrit_url'), $h
         command => 'a2ensite zuul',
         path    => '/usr/sbin/:/usr/bin/:/bin/',
         require => [File['/etc/apache2/sites-available/zuul'],
-                    Service['zuul'],
-                    Service['zuul-merger']],
+                    File['/srv/zuul/etc/status/public_html/jquery.min.js'],],
         notify => Service['webserver'],
       }
 
@@ -235,8 +236,7 @@ class zuul ($settings = hiera_hash('jenkins', ''), $gh = hiera('gerrit_url'), $h
     mode    => '0644',
     owner   => 'zuul',
     group   => 'zuul',
-    require => [File['/etc/zuul'],
-                Exec['kick_jjb']],
+    require => [File['/etc/zuul']],
   }
 
   file {'/srv/zuul/etc/status/public_html/jquery.min.js':
@@ -249,9 +249,9 @@ class zuul ($settings = hiera_hash('jenkins', ''), $gh = hiera('gerrit_url'), $h
 
   service {'zuul':
     ensure  => running,
+    enable  => 'true',
     require => [File[$zuul_init_path],
                 File['/etc/zuul/zuul.conf'],
-                File['/srv/zuul/etc/status/public_html/jquery.min.js'],
                 File['/etc/zuul/layout.yaml'],
                 File['/var/log/zuul/'],
                 File['/var/run/zuul/']]
@@ -259,6 +259,7 @@ class zuul ($settings = hiera_hash('jenkins', ''), $gh = hiera('gerrit_url'), $h
 
   service {'zuul-merger':
     ensure  => running,
+    enable  => 'true',
     require => [File[$zuul_merger_init_path],
                 File['/var/lib/zuul'],
                 Service['zuul'],

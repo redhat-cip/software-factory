@@ -18,6 +18,8 @@ class jjb ($settings = hiera_hash('jenkins', ''),
             $redmine = hiera_hash('redmine', '')) {
 
   require hosts
+  require jenkins
+  require zuul
 
   file {'/etc/jenkins_jobs/jenkins_jobs.ini':
     ensure  => file,
@@ -152,7 +154,6 @@ class jjb ($settings = hiera_hash('jenkins', ''),
     logoutput => true,
     provider => shell,
     require => [Exec['init_config_repo'],
-                Service['jenkins'],
                 File['/etc/jenkins_jobs/jenkins_jobs.ini'],
                 File['/usr/local/jenkins/slave_scripts/kick.sh']],
   }

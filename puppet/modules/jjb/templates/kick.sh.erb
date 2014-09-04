@@ -6,16 +6,12 @@ if [ -f /root/config.kicked ]; then
 #    exit 1
 fi
 
-# temp check just to be sure...
-service apache2 reload || true
-service httpd reload || true
-
 RETRIES=0
 while true; do
     wget --spider --user=<%= @settings['jenkins_username'] %> --password=<%= @settings['jenkins_password'] %> http://localhost:8080/jenkins/
     [ $? -eq 0 ] && break
     let RETRIES=RETRIES+1
-    [ "$RETRIES" == "120" ] && {
+    [ "$RETRIES" == "240" ] && {
         echo "Jenkins took too long to be up !"
         exit 1
     }
@@ -41,9 +37,11 @@ done
 
 # Jenkins jobs are not updated by gearman plugin
 # TODO: Find a way to just restart the gearman plugin
-service jenkins restart 
+service jenkins restart
 
 # Zuul
 cp /root/config/zuul/layout.yaml /etc/zuul/
-service zuul reload
+pkill -9 -f "zuul*"
+service zuul restart
+service zuul-merger restart
 touch /root/config.kicked

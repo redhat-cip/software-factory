@@ -37,6 +37,8 @@ cp /var/log/sf-bootstrap.log $dlogs/
 for role in gerrit redmine jenkins mysql managesf; do
     mkdir $dlogs/${role}
     scp root@`getip_from_yaml ${role}`:/var/log/syslog $dlogs/${role} &> /dev/null
+    ssh root@`getip_from_yaml ${role}` "journalctl -la --no-pager > /tmp/syslog"
+    [ "$?" == "0" ]  && scp root@`getip_from_yaml ${role}`:/tmp/syslog $dlogs/${role} &> /dev/null
 done
 mkdir $dlogs/puppetmaster
 

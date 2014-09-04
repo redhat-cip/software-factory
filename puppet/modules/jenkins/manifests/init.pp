@@ -56,7 +56,17 @@ class jenkins ($settings = hiera_hash('jenkins', '')) {
       service { 'jenkins':
         ensure  => 'running',
         enable  => 'true',
-        require => File['/lib/systemd/system/jenkins.service'],
+        require => [File['/lib/systemd/system/jenkins.service'],
+                    File['/etc/init.d/jenkins'],]
+       }
+
+      service {'webserver':
+        name    => $http,
+        ensure  => running,
+        enable  => 'true',
+        require => [Package[$http],
+                    File['/etc/httpd/conf.d/jenkins.conf'],
+                    File['/etc/httpd/conf.d/ports.conf']]
       }
     }
     debian: {
@@ -87,38 +97,40 @@ class jenkins ($settings = hiera_hash('jenkins', '')) {
 
       exec { 'a2enmod_headers':
         command   => "/usr/sbin/a2enmod headers",
-        require   => Package[$http],
-        subscribe => Package[$http],
-        refreshonly => true,
       }
 
-      exec { 'a2enmode_proxy':
+      exec { 'a2enmod_proxy':
         command   => "/usr/sbin/a2enmod proxy",
-        require   => Package[$http],
-        subscribe => Package[$http],
-        refreshonly => true,
       }
 
-      exec { 'a2enmode_proxy_http':
+      exec { 'a2enmod_proxy_http':
         command   => "/usr/sbin/a2enmod proxy_http",
-        require   => Package[$http],
-        subscribe => Package[$http],
-        refreshonly => true,
       }
 
       exec {'enable_jenkins_site':
         command => 'a2ensite jenkins',
         path    => '/usr/sbin/:/usr/bin/:/bin/',
         require => [File['/etc/apache2/sites-available/jenkins'],
+                    File['/etc/apache2/sites-enabled/000-default'],
                     File['/etc/apache2/ports.conf'],
+                    Exec['a2enmod_headers'],
+                    Exec['a2enmod_proxy'],
+                    Exec['a2enmod_proxy_http'],
                     Exec['jenkins_user']],
-        notify => Service['webserver'],
       }
 
       service { 'jenkins':
         ensure  => 'running',
         enable  => 'true',
-        require => File['/etc/default/jenkins'],
+        require => [File['/etc/default/jenkins'],]
+      }
+
+      service {'webserver':
+        name    => $http,
+        ensure  => running,
+        enable  => 'true',
+        require => [Package[$http],
+                    Exec['enable_jenkins_site'],]
       }
     }
   }
@@ -235,13 +247,6 @@ class jenkins ($settings = hiera_hash('jenkins', '')) {
   package { $http:
     ensure => present,
   }
-
-  service {'webserver':
-    name    => $http,
-    ensure  => running,
-    require => Package[$http],
-  }
-
 
   bup::scripts{ 'jenkins_scripts':
     backup_script => 'jenkins/backup.sh.erb',
