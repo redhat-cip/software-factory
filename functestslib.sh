@@ -1,7 +1,6 @@
-ERROR_FATAL=0
-ERROR_RSPEC=0
-ERROR_TESTS=0
-ERROR_PC=0
+#!/bin/bash
+
+DISABLE_SETX=0
 
 export SF_SUFFIX=${SF_SUFFIX:-tests.dom}
 export SKIP_CLEAN_ROLES="y"
@@ -45,11 +44,13 @@ function prepare_artifacts {
     sudo mkdir -p ${ARTIFACTS_DIR}
     sudo chown -R $USER:$GROUP ${ARTIFACTS_ROOT}
     sudo chmod -R +w ${ARTIFACTS_ROOT}
+    set +x
     if [ ${GROUP} = 'www-data' ]; then
         echo "Logs will be available here: http://${JENKINS_URL}:8081/${ARTIFACTS_RELPATH}"
     else
         echo "Logs will be available here: ${ARTIFACTS_DIR}"
     fi
+    set -x
 }
 
 function publish_artifacts {
@@ -74,10 +75,10 @@ function scan_and_configure_knownhosts {
         if [ "$KEY" != ""  ]; then
             ssh-keyscan $ip 2> /dev/null >> "$HOME/.ssh/known_hosts"
             echo "  -> $role:22 is up!"
-            break
+            return 0
         fi
         let RETRIES=RETRIES+1
-        [ "$RETRIES" == "40" ] && exit 1
+        [ "$RETRIES" == "40" ] && return 1
         echo "  [E] ssh-keyscan on $ip:22 failed, will retry in 20 seconds (attempt $RETRIES/40)"
         sleep 20
     done
@@ -98,21 +99,69 @@ function host_debug {
     sudo dmesg -c > ${ARTIFACTS_DIR}/host_debug_dmesg
     ps aufx >> ${ARTIFACTS_DIR}/host_debug_ps-aufx
     free -m | tee -a ${ARTIFACTS_DIR}/host_debug_free
-    df -h | tee -a ${ARTIFACTS_DIR}/host_debug_dm
-    set -x
+    sudo df -h | tee -a ${ARTIFACTS_DIR}/host_debug_df
+    [ ${DISABLE_SETX} -eq 0 ] && set -x
+}
+
+function display_head {
+    [ ! -z "${GERRIT_PROJECT}" ] && echo "${GERRIT_PROJECT} - change ${GERRIT_CHANGE_NUMBER} patchset ${GERRIT_PATCHSET_NUMBER}  (${CURRENT_BRANCH})"
+    echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+    git log -n 1
+    echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+    echo
 }
 
 function pre_fail {
     set +x
-    checkpoint "FAIL"
+    DISABLE_SETX=1
+    exec 6>&1                                   # Link file descriptor #6 with stdout.
+    exec > ${ARTIFACTS_DIR}/failure-reason.txt  # stdout replaced with file "logfile.txt".
+
+    echo "$(hostname) FAIL to run functionnal tests of this change:"
+    display_head
+
+    checkpoint "FAIL: $1"
     host_debug
-    echo $1
-    stop &> /dev/null
+    checkpoint "host_debug"
+    get_logs
+    checkpoint "get-logs"
+    lxc_stop
     checkpoint "lxc-stop"
-    echo -e "\n\n\n====== EDEPLOY BUILD OUTPUT ======\n"
-    tail -n 120 ${ARTIFACTS_DIR}/build_roles.sh.output
-    echo -e "\n\n\n====== END OF EDEPLOY BUILD OUTPUT ======\n"
+    [ -f ${ARTIFACTS_DIR}/sf-bootstrap.log ] && {
+            echo "Typical error message ---["
+            grep -i 'err:\|could not\|fail\|error' ${ARTIFACTS_DIR}/sf-bootstrap.log | grep -v '^-'
+            echo "]---"
+    }
+    echo -e "\n\n\n====== $1 OUTPUT ======\n"
+    case $1 in
+        "Roles building FAILED")
+            tail -n 120 ${ARTIFACTS_DIR}/build_roles.sh.output
+            ;;
+        "LXC bootstrap FAILED")
+            tail -n 120 ${ARTIFACTS_DIR}/lxc-start.output
+            ;;
+        "Can't SSH")
+            more ${ARTIFACTS_DIR}/host_debug*
+            ;;
+        "Bootstrap did not complete")
+            tail -n 120 ${ARTIFACTS_DIR}/sf-bootstrap.log
+            ;;
+        "Serverspec failed")
+            tail -n 10 ${ARTIFACTS_DIR}/sf-bootstrap.log
+            cat ${ARTIFACTS_DIR}/serverspec.output
+            ;;
+        "Functional tests failed")
+            tail -n 10 ${ARTIFACTS_DIR}/sf-bootstrap.log
+            cat ${ARTIFACTS_DIR}/functional-tests.output
+            ;;
+    esac
+    echo -e "\n\n\n====== END OF $1 OUTPUT ======\n"
     publish_artifacts
+    checkpoint "publish-artifacts"
+
+    exec 1>&6 6>&-      # Restore stdout and close file descriptor #6.
+    echo -e "\n\n\n"
+    cat ${ARTIFACTS_DIR}/failure-reason.txt
     exit 1
 }
 
@@ -136,12 +185,10 @@ function wait_for_bootstrap_done {
     while true; do
         # We wait for the bootstrap script that run on puppetmaster node finish its work
         ssh -o StrictHostKeyChecking=no root@`get_ip puppetmaster` test -f puppet-bootstrapper/build/bootstrap.done
-        [ "$?" -eq "0" ] && break
+        [ "$?" -eq "0" ] && return 0
+        ssh -o StrictHostKeyChecking=no root@`get_ip puppetmaster` "echo 'Last lines are: --['; tail -n 3 /var/log/sf-bootstrap.log; echo ']--';"
         let retries=retries+1
-        if [ "$retries" == "$max_retries" ]; then
-            ERROR_FATAL=1
-            break
-        fi
+        [ "$retries" == "$max_retries" ] && return 1
         sleep 60
     done
 }
@@ -150,37 +197,33 @@ function run_serverspec {
     echo "$(date) ======= Starting serverspec tests ========="
     retries=0
     while true; do
-        ssh -o StrictHostKeyChecking=no root@`get_ip puppetmaster` "cd puppet-bootstrapper/serverspec/; rake spec"
-        RET=$?
-        [ "$RET" == "0" ] && break
-            let retries=retries+1
-            if [ "$retries" == "5" ]; then
-                ERROR_RSPEC=1
-                break
-            fi
+        ssh -o StrictHostKeyChecking=no root@`get_ip puppetmaster` "cd puppet-bootstrapper/serverspec/; rake spec" | \
+            tee ${ARTIFACTS_DIR}/serverspec.output
+        [ "${PIPESTATUS[0]}" -eq "0" ] && return 0
+        let retries=retries+1
+        [ "$retries" == "5" ] && return 1
         sleep 10
     done
 }
 
 function run_functional_tests {
     echo "$(date) ======= Starting functional tests ========="
-    ssh -o StrictHostKeyChecking=no root@`get_ip puppetmaster` "cd puppet-bootstrapper; SF_SUFFIX=${SF_SUFFIX} SF_ROOT=\$(pwd) nosetests -v"
-    ERROR_TESTS=$?
+    ssh -o StrictHostKeyChecking=no root@`get_ip puppetmaster` \
+            "cd puppet-bootstrapper; SF_SUFFIX=${SF_SUFFIX} SF_ROOT=\$(pwd) nosetests -v" \
+            | tee ${ARTIFACTS_DIR}/functional-tests.output
+    return ${PIPESTATUS[0]}
 }
 
 function run_tests {
     r=$1
-    scan_and_configure_knownhosts
+    scan_and_configure_knownhosts || pre_fail "Can't SSH"
     checkpoint "scan_and_configure_knownhosts"
-    wait_for_bootstrap_done $r
+    wait_for_bootstrap_done $r || pre_fail "Bootstrap did not complete"
     checkpoint "wait_for_bootstrap_done"
-    [ "$ERROR_FATAL" != "0" ] && return
-    run_serverspec
+    run_serverspec || pre_fail "Serverspec failed"
     checkpoint "run_serverspec"
-    [ "$ERROR_RSPEC" != "0" ] && return
-    run_functional_tests
+    run_functional_tests || pre_fail "Functional tests failed"
     checkpoint "run_functional_tests"
-    [ "$ERROR_TESTS" != "0" ] && return
 }
 
 function run_backup_restore_tests {
@@ -188,11 +231,9 @@ function run_backup_restore_tests {
     type=$2
     if [ "$type" == "provision" ]; then
         scan_and_configure_knownhosts
-        wait_for_bootstrap_done $r
-        [ "$ERROR_FATAL" != "0" ] && return
+        wait_for_bootstrap_done $r || pre_fail "Bootstrap did not complete"
         # Run server spec to be more confident
-        run_serverspec
-        [ "$ERROR_RSPEC" != "0" ] && return
+        run_serverspec || pre_fail "Serverspec failed"
         # Start the provisioner
         ./tests/backup_restore/run_provisioner.sh
         # Create a backup
@@ -202,21 +243,19 @@ function run_backup_restore_tests {
         mv sf_backup.tar.gz /tmp
         # We assume if we cannot move the backup file
         # we need to stop right now
-        ERROR_PC=$?
+        return $?
     fi
     if [ "$type" == "check" ]; then
-        scan_and_configure_knownhosts
-        wait_for_bootstrap_done $r
-        [ "$ERROR_FATAL" != "0" ] && return
+        scan_and_configure_knownhosts || pre_fail "Can't SSH"
+        wait_for_bootstrap_done $r || pre_fail "Bootstrap did not complete"
         # Run server spec to be more confident
-        run_serverspec
-        [ "$ERROR_RSPEC" != "0" ] && return
+        run_serverspec || pre_fail "Serverspec failed"
         # Restore backup
         ./tools/managesf/cli/sf-manage.py --host ${SF_SUFFIX} --auth-server ${SF_SUFFIX} --auth user1:userpass restore --filename /tmp/sf_backup.tar.gz
         # Start the checker
         sleep 60
         ./tests/backup_restore/run_checker.sh
-        ERROR_PC=$?
+        return $?
     fi
 }
 
@@ -242,5 +281,5 @@ function checkpoint {
     echo "$ELAPSED - $* " | sudo tee -a ${ARTIFACTS_DIR}/tests_profiling
     echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
     START=$(date '+%s')
-    set -x
+    [ ${DISABLE_SETX} -eq 0 ] && set -x
 }
