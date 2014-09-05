@@ -157,6 +157,22 @@ class ManageSfUtils(Tool):
             cmd = cmd + " --url " + url
         self.exe(cmd, self.install_dir)
 
+    def addUsertoProjectGroups(self, auth_user, project, new_user, groups):
+        passwd = config.USERS[auth_user]['password']
+        cmd = self.base_cmd % (auth_user, passwd)
+        cmd = cmd + " add_user --name %s " % project
+        cmd = cmd + " --user %s --groups %s" % (new_user, groups)
+        self.exe(cmd, self.install_dir)
+
+    def deleteUserFromProjectGroups(self, auth_user,
+                                    project, user, group=None):
+        passwd = config.USERS[auth_user]['password']
+        cmd = self.base_cmd % (auth_user, passwd) + " delete_user "
+        cmd = cmd + " --name %s --user %s " % (project, user)
+        if group:
+            cmd = cmd + " --group %s " % group
+        self.exe(cmd, self.install_dir)
+
 
 class GerritGitUtils(Tool):
     def __init__(self, user, priv_key_path, email):

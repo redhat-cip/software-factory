@@ -53,6 +53,21 @@ def get_projects_by_user():
     return names
 
 
+def check_if_group_exists(grp_name):
+    logger.debug(' [gerrit] check if group exists ' + grp_name)
+    url = "http://%(gerrit_host)s/r/a/groups/%(group_name)s/detail" % \
+          {'gerrit_host': conf.gerrit['host'],
+           'group_name': grp_name}
+
+    resp = send_request(url, [200, 404],
+                        method='GET',
+                        cookies=admin_auth_cookie())
+    if resp.status_code == 200:
+        return True
+    else:
+        return False
+
+
 def get_group_id(grp_name):
     logger.debug(' [gerrit] fetching group id of ' + grp_name)
     url = "http://%(gerrit_host)s/r/a/groups/%(group_name)s/detail" % \
@@ -63,6 +78,38 @@ def get_group_id(grp_name):
                         method='GET',
                         cookies=admin_auth_cookie())
     return gerrit_json_resp(resp)['id']
+
+
+def get_group_member_id(gid, user):
+    logger.debug(' [gerrit] fetching group member id of user' + user)
+    url = "http://%(gerrit_host)s/r/a/groups/%(group_id)s/members/" % \
+          {'gerrit_host': conf.gerrit['host'],
+           'group_id': gid}
+
+    resp = send_request(url, [200],
+                        method='GET',
+                        cookies=admin_auth_cookie())
+    j = gerrit_json_resp(resp)
+    uid = None
+    for m in j:
+        if m['username'] == user:
+            uid = m['_account_id']
+            break
+    return uid
+
+
+def delete_group_member(gid, mem_id):
+    logger.debug(' [gerrit] deleting member from group ')
+    url = "http://%(gerrit_host)s/r/a/groups/%(group_id)s/members/%(account-id)s" % \
+          {'gerrit_host': conf.gerrit['host'],
+           'group_id': gid,
+           'account-id': mem_id}
+    data = json.dumps({"force": True})
+    send_request(url, [204],
+                 method='DELETE',
+                 data=data,
+                 headers={'Content-type': 'application/json'},
+                 cookies=admin_auth_cookie())
 
 
 def add_user_to_group(grp_name, user):
@@ -401,6 +448,83 @@ def init_project(name, json):
 
     create_project(name, description)
     init_git_repo(name, description, upstream, private)
+
+
+def add_user_to_projectgroups(project, user, groups):
+    for g in groups:
+        if g not in ['ptl-group', 'core-group', 'dev-group']:
+            abort(400)
+    grps = get_groups()
+    ptl_gid = get_group_id(get_ptl_group_name(project))
+    core_gid = get_group_id(get_core_group_name(project))
+    # only PTL can add user to ptl group
+    if 'ptl-group' in groups:
+        if (ptl_gid not in grps) and (not user_is_administrator()):
+            logger.debug(" [gerrit] Current user is not ptl or admin")
+            abort(401)
+        ptl = get_ptl_group_name(project)
+        add_user_to_group(ptl, user)
+    if 'core-group' in groups:
+        if (core_gid not in grps) and (ptl_gid not in grps) and \
+           (not user_is_administrator()):
+            logger.debug(" [gerrit] Current user is not core,ptl, or admin")
+            abort(401)
+        core = get_core_group_name(project)
+        add_user_to_group(core, user)
+    if 'dev-group' in groups:
+        dev = get_dev_group_name(project)
+        if check_if_group_exists(dev):
+            dev_gid = get_group_id(dev)
+            if (core_gid not in grps) and (ptl_gid not in grps) and \
+               (dev_gid not in grps) and (not user_is_administrator()):
+                logger.debug(" [gerrit] Current user is "
+                             " not ptl,core,dev,admin")
+                abort(401)
+            add_user_to_group(dev, user)
+
+
+def delete_user_from_projectgroups(project, user, group):
+    if group:
+        if group not in ['ptl-group', 'core-group', 'dev-group']:
+            abort(400)
+        groups = [group]
+    else:
+        groups = ['ptl-group', 'core-group', 'dev-group']
+
+    core_gid = get_group_id(get_core_group_name(project))
+    ptl_gid = get_group_id(get_ptl_group_name(project))
+    # get the groups of the current user
+    grps = get_groups()
+    dev = get_dev_group_name(project)
+    # delete dev group if requested
+    if ('dev-group' in groups) and check_if_group_exists(dev):
+        dev_gid = get_group_id(dev)
+        if (dev_gid not in grps) and (core_gid not in grps) and \
+           (ptl_gid not in grps) and (not user_is_administrator()):
+            logger.debug(" [gerrit] User is not dev, core, ptl, admin")
+            abort(401)
+        dev_mid = get_group_member_id(dev_gid, user)
+        if dev_mid:
+            delete_group_member(dev_gid, dev_mid)
+
+    # delete ptl group if requested
+    if 'ptl-group' in groups:
+        if (ptl_gid not in grps) and (not user_is_administrator()):
+            logger.debug(" [gerrit] User is not ptl, admin")
+            abort(401)
+        ptl_mid = get_group_member_id(ptl_gid, user)
+        if ptl_mid:
+            delete_group_member(ptl_gid, ptl_mid)
+
+    # delete core group if requested
+    if 'core-group' in groups:
+        if (ptl_gid not in grps) and (core_gid not in grps) and \
+           (not user_is_administrator()):
+            logger.debug(" [gerrit] User is not core, ptl, admin")
+            abort(401)
+        core_mid = get_group_member_id(core_gid, user)
+        if core_mid:
+            delete_group_member(core_gid, core_mid)
 
 
 def delete_project(name):

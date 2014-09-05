@@ -47,6 +47,22 @@ rst = sp.add_parser('restore')
 rst.add_argument('--filename', '-n', nargs='?', metavar='tarball-name',
                  required=True,
                  help='Tarball used to restore SF')
+dup = sp.add_parser('delete_user')
+dup.add_argument('--name', '-n', nargs='?', metavar='project-name',
+                 required=True)
+dup.add_argument('--user', '-u', nargs='?',
+                 metavar='user-name', required=True)
+dup.add_argument('--group', '-g', nargs='?',
+                 metavar='group-name')
+aup = sp.add_parser('add_user')
+aup.add_argument('--name', '-n', nargs='?', metavar='project-name',
+                 required=True)
+aup.add_argument('--user', '-u', nargs='?',
+                 metavar='user-name', required=True)
+aup.add_argument('--groups', '-p', metavar='ptl-group-members',
+                 help='group names serarated by comma, allowed group names' +
+                      ' are core-group, dev-group, ptl-group', nargs='?',
+                 required=True)
 cp = sp.add_parser('create')
 cp.add_argument('--name', '-n', nargs='?', metavar='project-name',
                 required=True)
@@ -124,11 +140,17 @@ reprm.add_argument('--section',  nargs='?', required=True,
 
 args = parser.parse_args()
 
-if args.command in ['delete', 'create']:
+if args.command in ['delete', 'create', 'add_user', 'delete_user']:
     url = "http://%(host)s:%(port)s/manage/project/%(name)s" % \
         {'host': args.host,
          'port': args.port,
          'name': args.name}
+    if args.command in['add_user', 'delete_user']:
+        url = url + '/membership/%(user)s' % {'user': args.user}
+    if args.command == 'delete_user' and args.group:
+        # if a group name is provided, delete user from that group,
+        # otherwise delete user from all groups
+        url = url + '/%(group)s' % {'group': args.group}
 else:
     base_url = "http://%(host)s:%(port)s/manage" % \
         {'host': args.host,
@@ -238,6 +260,19 @@ elif args.command == 'trigger_replication':
     resp = http.post(url, headers=headers, data=json.dumps(info),
                      cookies=dict(auth_pubtkt=get_cookie()))
     print resp.text
+    if resp.status_code >= 200 and resp.status_code < 203:
+        print "Success"
+elif args.command == 'add_user':
+    groups = split_and_strip(args.groups)
+    data = json.dumps({'groups': groups})
+    resp = http.put(url, headers=headers, data=data,
+                    cookies=dict(auth_pubtkt=get_cookie()))
+
+    print resp.text
+    print resp.status_code
+elif args.command == 'delete_user':
+    resp = http.delete(url, headers=headers,
+                       cookies=dict(auth_pubtkt=get_cookie()))
     if resp.status_code >= 200 and resp.status_code < 203:
         print "Success"
 elif args.command == 'create':

@@ -82,7 +82,53 @@ class RestoreController(RestController):
         backup.backup_restore()
 
 
+class MembershipController(RestController):
+    # Get method is mandatory for routing
+    @expose()
+    def get(self, project, user):
+        return None
+
+    @expose()
+    def put(self, project, user):
+        if project == '' or user == '':
+            abort(405)
+        try:
+            # Add/update user for the project groups
+            inp = request.json if request.content_length else {}
+            if 'groups' not in inp:
+                abort(400)
+            gerrit.add_user_to_projectgroups(project, user, inp['groups'])
+            redmine.add_user_to_projectgroups(project, user, inp['groups'])
+
+            response.status = 201
+            return "UserAdded"
+        except:
+            logger.exception('')
+            raise
+
+    @expose()
+    def delete(self, project, user, group=None):
+        if project == '' or user == '':
+            abort(405)
+        try:
+            # delete user from all project groups
+            gerrit.delete_user_from_projectgroups(project, user, group)
+            redmine.delete_user_from_projectgroups(project, user, group)
+            return None
+        except:
+            logger.exception('')
+            raise
+
+
 class ProjectController(RestController):
+
+    membership = MembershipController()
+
+    # Get method is mandatory for routing
+    @expose()
+    def get(self, name):
+        return None
+
     @expose()
     def put(self, name, **kwargs):
         if name == '':
