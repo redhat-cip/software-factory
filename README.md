@@ -14,8 +14,10 @@ sfstack will build a complete SoftwareFactory development environment.
 At the end, it will run functionnal tests in DEBUG mode that will keep the
 container up and running. Here is the recommended way to connect to your instance:
 
- * ssh -L 8080:192.168.134.54:80 -L 29418:192.168.134.52:29418 your-instance-ip
- * firefox http://localhost:8080/
+ * echo 127.0.0.1 tests.dom | sudo tee -a /etc/hosts
+ * sudo iptables -t nat -I OUTPUT -o lo -p tcp --dport 80 -j REDIRECT --to-port 8080
+ * ssh -L 8080:192.168.134.54:80 -L 29418:192.168.134.52:29418 ubuntu@your-instance-ip
+ * firefox http://tests.dom/
 
 How to begin development on SF
 ------------------------------
