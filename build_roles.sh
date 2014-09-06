@@ -31,14 +31,23 @@ SF_ROLES=$CURRENT/edeploy/
 BOOTSTRAPPER=$SF_ROLES/puppet_bootstrapper.sh
 
 function build_role {
-    ROLE_NAME=$1
-    ROLE_MD5=$2
+    ROLE_NAME="$1"
+    ROLE_MD5="$2"
+    ROLE_FILE="${INST}/${ROLE_NAME}-${SF_REL}"
+    UPSTREAM_FILE="${INST}/upstream/${ROLE_NAME}-${SF_REL}"
 
-    if [ ! -f "${INST}/${ROLE_NAME}.md5" ] || [ "$(cat ${INST}/${ROLE_NAME}.md5)" != "${ROLE_MD5}" ]; then
+    if [ ! -f "${ROLE_FILE}.md5" ] || [ "$(cat ${ROLE_FILE}.md5)" != "${ROLE_MD5}" ]; then
         echo "${ROLE_NAME} have been updated"
-        sudo rm -f ${INST}/${ROLE_NAME}.done
-        sudo ${MAKE} ${VIRTUALIZED} EDEPLOY_ROLES_PATH=${EDEPLOY_ROLES} PREBUILD_EDR_TARGET=${EDEPLOY_ROLES_REL} ${ROLE_NAME}
-        echo ${ROLE_MD5} | sudo tee ${INST}/${ROLE_NAME}.md5
+        # check if upstream is similar
+        if [ -f "${UPSTREAM_FILE}.md5" ] && [ "$(cat ${UPSTREAM_FILE}.md5)" == "${ROLE_MD5}" ]; then
+            echo "${ROLE_NAME} have already been built upstream, updating local repository"
+            sudo cp ${UPSTREAM_FILE}.md5 ${ROLE_FILE}.md5
+            sudo tar -xjf ${UPSTREAM_FILE}.edeploy -C ${INST}
+        else
+            sudo rm -f ${INST}/${ROLE_NAME}.done
+            sudo ${MAKE} ${VIRTUALIZED} EDEPLOY_ROLES_PATH=${EDEPLOY_ROLES} PREBUILD_EDR_TARGET=${EDEPLOY_ROLES_REL} ${ROLE_NAME}
+            echo ${ROLE_MD5} | sudo tee ${ROLE_FILE}.md5
+        fi
     else
         echo "${ROLE_NAME} is up-to-date"
     fi
@@ -50,6 +59,7 @@ if [ ! -d $WORKSPACE ]; then
 fi
 
 [ ! -d "$BUILD_DIR" ] && sudo mkdir -p $BUILD_DIR
+[ ! -d "${INST}/upstream" ] && sudo mkdir -p ${INST}/upstream
 
 if [ "$SKIP_CLEAN_ROLES" != "y" ]; then
     [ -d "$BUILD_DIR/install" ] && sudo rm -Rf $BUILD_DIR/install
@@ -90,23 +100,40 @@ if [ ${TIME_DIFF} -gt 3600 ]; then
         exec ./build_roles.sh
     fi
     TEMP_DIR=$(mktemp -d /tmp/edeploy-check-XXXXX)
-    curl -o ${TEMP_DIR}/$install_server_img.md5 ${BASE_URL}/$install_server_img.md5
-    curl -o ${TEMP_DIR}/$cloud_img.md5 ${BASE_URL}/$cloud_img.md5
+    curl -s -o ${TEMP_DIR}/$install_server_img.md5 ${BASE_URL}/$install_server_img.md5
+    curl -s -o ${TEMP_DIR}/$cloud_img.md5 ${BASE_URL}/$cloud_img.md5
     [ ! -f $PREBUILD_TARGET/$install_server_img.md5 ] && sudo touch $PREBUILD_TARGET/$install_server_img.md5
     diff $PREBUILD_TARGET/$install_server_img.md5 ${TEMP_DIR}/$install_server_img.md5 || {
-        curl -o ${TEMP_DIR}/$install_server_img ${BASE_URL}/$install_server_img
+        curl -s -o ${TEMP_DIR}/$install_server_img ${BASE_URL}/$install_server_img
         mv ${TEMP_DIR}/$install_server_img* $PREBUILD_TARGET
         # Remove the previously unziped archive
         [ -d $PREBUILD_TARGET/install-server ] && sudo rm -Rf $PREBUILD_TARGET/install-server
     }
     [ ! -f $PREBUILD_TARGET/$cloud_img.md5 ] && sudo touch $PREBUILD_TARGET/$cloud_img.md5
     diff $PREBUILD_TARGET/$cloud_img.md5 ${TEMP_DIR}/$cloud_img.md5 || {
-        curl -o ${TEMP_DIR}/$cloud_img ${BASE_URL}/$cloud_img
+        curl -s -o ${TEMP_DIR}/$cloud_img ${BASE_URL}/$cloud_img
         mv ${TEMP_DIR}/$cloud_img* $PREBUILD_TARGET
         # Remove the previously unziped archive
         [ -d $PREBUILD_TARGET/cloud ] && sudo rm -Rf $PREBUILD_TARGET/cloud
     }
+    for role in mysql slave install-server-vm softwarefactory; do
+        role=${role}-${SF_REL}
+        curl -s -o ${TEMP_DIR}/${role}.md5 ${BASE_URL}/${role}.md5 || continue
+        # Swift does not return 404 but 'Not Found'
+        grep -q 'Not Found' ${TEMP_DIR}/${role}.md5 && continue
+        diff ${TEMP_DIR}/${role}.md5 ${INST}/upstream/${role}.md5 || {
+            sudo curl -s -o ${INST}/upstream/${role}.edeploy ${BASE_URL}/${role}.edeploy
+            sudo curl -s -o ${INST}/upstream/${role}.edeploy.md5 ${BASE_URL}/${role}.edeploy.md5
+            sudo mv ${TEMP_DIR}/${role}.md5 ${INST}/upstream/${role}.md5
+            role_md5=$(cat ${INST}/upstream/${role}.edeploy | md5sum - | cut -d ' ' -f1)
+            [ "${role_md5}" != "$(cat ${INST}/upstream/${role}.edeploy.md5 | cut -d ' ' -f1)" ] && {
+                echo "${role} archive md5 mismatch ! exit."
+                exit 1
+            }
+        }
+    done
     rm -Rf ${TEMP_DIR}
+
 
     # Verified the prebuild role we have with the md5
     install_server_md5=$(cat $PREBUILD_TARGET/$install_server_img | md5sum - | cut -d ' ' -f1)
