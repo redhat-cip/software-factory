@@ -14,10 +14,9 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+source functestslib.sh
 echo "Running unit-tests with this HEAD"
-echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
-git log -n 1
-echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+display_head
 
 echo "$(date) - $(hostname)"
 

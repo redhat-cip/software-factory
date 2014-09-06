@@ -1,15 +1,12 @@
 #!/bin/bash
-
-echo "Running functional-tests with this HEAD"
-echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
-git log -n 1
-echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
-
 # This script will build the roles for SoftwareFactory
 # Then will start the SF in LXC containers
 # Then will run the serverspecs and functional tests
 
 source functestslib.sh
+
+echo "Running functional-tests with this HEAD"
+display_head
 
 function lxc_stop {
     if [ ! ${SF_SKIP_BOOTSTRAP} ]; then
@@ -22,7 +19,7 @@ function lxc_stop {
 function build {
     if [ ! ${SF_SKIP_BUILDROLES} ]; then
         clear_mountpoint
-        ./build_roles.sh &> ${ARTIFACTS_DIR}/build_roles.sh.output || pre_fail "Roles building FAILED!"
+        ./build_roles.sh &> ${ARTIFACTS_DIR}/build_roles.sh.output || pre_fail "Roles building FAILED"
     fi
 }
 
@@ -31,7 +28,7 @@ function lxc_start {
         clear_mountpoint
         cd bootstraps/lxc
         ./start.sh stop &> ${ARTIFACTS_DIR}/lxc-stop.output
-        ./start.sh &> ${ARTIFACTS_DIR}/lxc-start.output || pre_fail "LXC bootstrap FAILED!"
+        ./start.sh &> ${ARTIFACTS_DIR}/lxc-start.output || pre_fail "LXC bootstrap FAILED"
         cd -
     fi
 }
@@ -51,22 +48,21 @@ if [ -z "$1" ]; then
     checkpoint "run_tests"
 fi
 if [ "$1" == "backup_restore_tests" ]; then
-    run_backup_restore_tests 25 "provision"
+    run_backup_restore_tests 25 "provision" || pre_fail "Backup test: provision"
     lxc_stop
     if [ "$ERROR_PC" == "0" ] && [ "$ERROR_FATAL" == "0" ] && [ "$ERROR_RSPEC" == "0" ]; then
         # No error occured at provision so continue
         lxc_start
-        run_backup_restore_tests 25 "check"
+        run_backup_restore_tests 25 "check" || pre_fail "Backup test: check"
     fi
 fi
-checkpoint "test-done"
+
+DISABLE_SETX=1
+checkpoint "end_tests"
 get_logs
 checkpoint "get-logs"
-set +x
-host_debug
 lxc_stop
 checkpoint "lxc-stop"
 publish_artifacts
 checkpoint "publish-artifacts"
-set -x
-exit $[ ${ERROR_FATAL} + ${ERROR_RSPEC} + ${ERROR_TESTS} + ${ERROR_PC} ]
+exit 0;

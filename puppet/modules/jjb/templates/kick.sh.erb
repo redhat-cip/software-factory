@@ -12,6 +12,7 @@ while true; do
     [ $? -eq 0 ] && break
     let RETRIES=RETRIES+1
     [ "$RETRIES" == "240" ] && {
+        ps afxww
         echo "Jenkins took too long to be up !"
         exit 1
     }
