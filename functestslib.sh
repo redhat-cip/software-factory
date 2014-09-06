@@ -160,7 +160,7 @@ function pre_fail {
     checkpoint "publish-artifacts"
 
     exec 1>&6 6>&-      # Restore stdout and close file descriptor #6.
-    echo -e "\n\n\n"
+    echo -e "\n---------------------------------------------------------------------------\n"
     cat ${ARTIFACTS_DIR}/failure-reason.txt
     exit 1
 }
@@ -197,7 +197,7 @@ function run_serverspec {
     echo "$(date) ======= Starting serverspec tests ========="
     retries=0
     while true; do
-        ssh -o StrictHostKeyChecking=no root@`get_ip puppetmaster` "cd puppet-bootstrapper/serverspec/; rake spec" | \
+        ssh -o StrictHostKeyChecking=no root@`get_ip puppetmaster` "cd puppet-bootstrapper/serverspec/; rake spec" 2>&1 | \
             tee ${ARTIFACTS_DIR}/serverspec.output
         [ "${PIPESTATUS[0]}" -eq "0" ] && return 0
         let retries=retries+1
@@ -209,7 +209,7 @@ function run_serverspec {
 function run_functional_tests {
     echo "$(date) ======= Starting functional tests ========="
     ssh -o StrictHostKeyChecking=no root@`get_ip puppetmaster` \
-            "cd puppet-bootstrapper; SF_SUFFIX=${SF_SUFFIX} SF_ROOT=\$(pwd) nosetests -v" \
+            "cd puppet-bootstrapper; SF_SUFFIX=${SF_SUFFIX} SF_ROOT=\$(pwd) nosetests -v" 2>&1 \
             | tee ${ARTIFACTS_DIR}/functional-tests.output
     return ${PIPESTATUS[0]}
 }
