@@ -50,7 +50,7 @@ class jenkins ($settings = hiera_hash('jenkins', '')) {
         mode   => '0640',
         owner  => $httpd_user,
         group  => $httpd_user,
-        source =>'puppet:///modules/jenkins/jenkins.service',
+        content => template('jenkins/jenkins.service.erb'),
       }
 
       service { 'jenkins':
@@ -149,7 +149,7 @@ class jenkins ($settings = hiera_hash('jenkins', '')) {
     mode    => '0644',
     owner   => 'root',
     group   => 'root',
-    source  => 'puppet:///modules/jenkins/etc_default_jenkins',
+    content => template('jenkins/etc_default_jenkins.erb'),
     replace => true
   }
 

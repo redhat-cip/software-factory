@@ -33,7 +33,7 @@ class gerrit ($settings = hiera_hash('gerrit', ''),
       file { 'gerrit_init':
         path  => '/lib/systemd/system/gerrit.service',
         owner => 'gerrit',
-        source  => 'puppet:///modules/gerrit/gerrit.service',
+        content => template('gerrit/gerrit.service.erb'),
         require => Exec['gerrit-initial-init'],
       }
 
