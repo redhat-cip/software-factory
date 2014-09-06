@@ -81,8 +81,21 @@ def get_role_id(role_name):
     return None
 
 
+def update_membership(mid, role_ids):
+    logger.debug(' [redmine] updating membership for the project')
+
+    data = json.dumps({"membership": {"role_ids": role_ids}})
+    url = "http://%(rh)s/redmine//memberships/%(id)s.json" % \
+          {'rh': conf.redmine['host'],
+           'id': mid}
+    headers = {'X-Redmine-API-Key': conf.redmine['api_key'],
+               'Content-type': 'application/json'}
+    send_request(url, [200], method='PUT', data=data, headers=headers,
+                 cookies=admin_auth_cookie())
+
+
 def edit_membership(prj_name, memberships):
-    logger.debug(' [redmine] editing membership for the project')
+    logger.debug(' [redmine] editing membership for the project ' + prj_name)
 
     for m in memberships:
         data = json.dumps({"membership": m})
@@ -137,31 +150,132 @@ def init_project(name, inp):
     update_project_roles(name, ptl, core, dev)
 
 
-def user_manages_project(prj_name):
-    logger.debug(' [redmine] checking if user manages project')
+def add_user_to_projectgroups(project, user, groups):
+    for g in groups:
+        if g not in ['ptl-group', 'core-group', 'dev-group']:
+            abort(400)
+    memberships = []
+    roles = get_project_roles_for_current_user(project)
+    uid = get_user_id(user)
+    role_id = []
+    # only admin or manager can add manager
+    if 'ptl-group' in groups:
+        if (not user_is_administrator) and ('Manager' not in roles):
+            logger.debug(" [gerrit] User is not admin,Manager")
+            abort(401)
+        mgr_role_id = get_role_id('Manager')
+        role_id.append(mgr_role_id)
+    if ('core-group' in groups) or ('dev-group' in groups):
+        if (not user_is_administrator) and ('Manager' not in roles) and \
+           ('Developer' not in roles):
+            logger.debug(" [gerrit] User is not admin,Manager,Developer")
+            abort(401)
+        dev_role_id = get_role_id('Developer')
+        role_id.append(dev_role_id)
+    # if user already a project member, then update roles
+    m = get_project_membership_for_user(project, uid)
+    if m is None:
+        memberships = [{'user_id': uid, 'role_ids': role_id}]
+        edit_membership(project, memberships)
+    else:
+        update_membership(m['id'], role_id)
+
+
+def delete_user_from_projectgroups(project, user, group):
+    # if user is not project member, then return
+    uid = get_user_id(user)
+    m = get_project_membership_for_user(project, uid)
+    if m is None:
+        return None
+
+    # get current user roles
+    roles = get_project_roles_for_current_user(project)
+
+    # if user not requested a single group, then delete all groups,
+    # otherwise delete requested group
+    if group is None:
+        # delete all groups
+        if (not user_is_administrator) and ('Manager' not in roles):
+            logger.debug(" [gerrit] User is not admin,Manager")
+            abort(401)
+        delete_membership(m['id'])
+    else:
+        if group and group not in ['ptl-group', 'core-group', 'dev-group']:
+            abort(400)
+        # Get the role id from requested group name
+        if group in ['dev-group', 'core-group']:
+            if (not user_is_administrator) and ('Manager' not in roles) and \
+               ('Developer' not in roles):
+                logger.debug(" [gerrit] User is not admin,Manager,developer")
+                abort(401)
+            role_id = get_role_id('Developer')
+        else:
+            if (not user_is_administrator) and ('Manager' not in roles):
+                logger.debug(" [gerrit] User is not admin,Manager")
+                abort(401)
+            role_id = get_role_id('Manager')
+        # Get list of current role_ids for this user
+        role_ids = []
+        for r in m['roles']:
+            role_ids.append(r['id'])
+        # check if requested role is present in the membership roles
+        if role_id in role_ids:
+            role_ids.remove(role_id)
+            # delete te requested role
+            update_membership(m['id'], role_ids)
+
+
+def get_project_membership_for_user(prj_name, uid):
+    logger.debug(' [redmine] Get project membership for user')
     url = "http://%(rh)s/redmine/projects/%(name)s/memberships.json" % \
           {'rh': conf.redmine['host'],
            'name': prj_name.lower()}
 
     resp = send_request(url, [200], method='GET')
     membership = resp.json()['memberships']
-    uid = get_current_user_id()
 
-    manager = False
+    user_membership = None
     for m in membership:
         if m['user']['id'] == uid:
-            for r in m['roles']:
-                if r['name'] == 'Manager':
-                    manager = True
-                    break
-        if manager:
+            user_membership = m
             break
 
-    return manager
+    return user_membership
+
+
+def get_project_roles_for_current_user(prj_name):
+    uid = get_current_user_id()
+    m = get_project_membership_for_user(prj_name, uid)
+    roles = []
+    # if no roles for this user, return empty list
+    if m is None:
+        return roles
+    for r in m['roles']:
+        roles.append(r['name'])
+
+    return roles
+
+
+def user_manages_project(prj_name):
+    logger.debug(' [redmine] checking if user manages project')
+    roles = get_project_roles_for_current_user(prj_name)
+    if 'Manager' in roles:
+        return True
+    return False
 
 
 def user_is_administrator():
     return request.remote_user == conf.admin['name']
+
+
+def delete_membership(id):
+    logger.debug(' [redmine] deleting membership ')
+    url = "http://%(redmine_host)s/redmine/memberships/%(membership_id)s.xml" % \
+          {'redmine_host': conf.redmine['host'],
+           'membership_id': id}
+    headers = {'X-Redmine-API-Key': conf.redmine['api_key']}
+    send_request(url, [200], method='DELETE', headers=headers,
+                 cookies=admin_auth_cookie())
 
 
 def delete_project(name):
