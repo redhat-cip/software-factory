@@ -44,16 +44,16 @@ lxc_start
 checkpoint "lxc-start"
 if [ -z "$1" ]; then
     # This test is run by default when no argument provided
-    run_tests 25
+    run_tests 45
     checkpoint "run_tests"
 fi
 if [ "$1" == "backup_restore_tests" ]; then
-    run_backup_restore_tests 25 "provision" || pre_fail "Backup test: provision"
+    run_backup_restore_tests 45 "provision" || pre_fail "Backup test: provision"
     lxc_stop
     if [ "$ERROR_PC" == "0" ] && [ "$ERROR_FATAL" == "0" ] && [ "$ERROR_RSPEC" == "0" ]; then
         # No error occured at provision so continue
         lxc_start
-        run_backup_restore_tests 25 "check" || pre_fail "Backup test: check"
+        run_backup_restore_tests 45 "check" || pre_fail "Backup test: check"
     fi
 fi
 
