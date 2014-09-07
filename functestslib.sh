@@ -127,11 +127,6 @@ function pre_fail {
     checkpoint "get-logs"
     lxc_stop
     checkpoint "lxc-stop"
-    [ -f ${ARTIFACTS_DIR}/sf-bootstrap.log ] && {
-            echo "Typical error message ---["
-            grep -i 'err:\|could not\|fail\|error' ${ARTIFACTS_DIR}/sf-bootstrap.log | grep -v '^-'
-            echo "]---"
-    }
     echo -e "\n\n\n====== $1 OUTPUT ======\n"
     case $1 in
         "Roles building FAILED")
@@ -155,6 +150,11 @@ function pre_fail {
             cat ${ARTIFACTS_DIR}/functional-tests.output
             ;;
     esac
+    [ -f ${ARTIFACTS_DIR}/sf-bootstrap.log ] && {
+            echo "Typical error message ---["
+            grep -A 3 -B 3 -i 'err:\|could not\|fail\|error' ${ARTIFACTS_DIR}/sf-bootstrap.log | grep -v '^-'
+            echo "]---"
+    }
     echo -e "\n\n\n====== END OF $1 OUTPUT ======\n"
     publish_artifacts
     checkpoint "publish-artifacts"
@@ -184,9 +184,9 @@ function wait_for_bootstrap_done {
     max_retries=$1
     while true; do
         # We wait for the bootstrap script that run on puppetmaster node finish its work
+        ssh -o StrictHostKeyChecking=no root@`get_ip puppetmaster` "echo 'Last lines are: --['; tail -n 3 /var/log/sf-bootstrap.log; echo ']--';"
         ssh -o StrictHostKeyChecking=no root@`get_ip puppetmaster` test -f puppet-bootstrapper/build/bootstrap.done
         [ "$?" -eq "0" ] && return 0
-        ssh -o StrictHostKeyChecking=no root@`get_ip puppetmaster` "echo 'Last lines are: --['; tail -n 3 /var/log/sf-bootstrap.log; echo ']--';"
         let retries=retries+1
         [ "$retries" == "$max_retries" ] && return 1
         sleep 60
