@@ -185,8 +185,8 @@ function wait_for_bootstrap_done {
     while true; do
         # We wait for the bootstrap script that run on puppetmaster node finish its work
         ssh -o StrictHostKeyChecking=no root@`get_ip puppetmaster` "echo 'Last lines are: --['; tail -n 3 /var/log/sf-bootstrap.log; echo ']--';"
-        ssh -o StrictHostKeyChecking=no root@`get_ip puppetmaster` test -f puppet-bootstrapper/build/bootstrap.done
-        [ "$?" -eq "0" ] && return 0
+        RET=$(ssh -o StrictHostKeyChecking=no root@`get_ip puppetmaster` cat puppet-bootstrapper/build/bootstrap.done 2> /dev/null)
+        [ ! -z "${RET}" ] && return ${RET}
         let retries=retries+1
         [ "$retries" == "$max_retries" ] && return 1
         sleep 60

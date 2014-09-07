@@ -65,7 +65,7 @@ function generate_hieras {
 
     # Default authorized ssh keys on each node
     JENKINS_PUB="$(cat ${OUTPUT}/../data/jenkins_rsa.pub | cut -d' ' -f2)"
-    sed -i "s#JENKINS_PUB_KEY#${JENKINS_PUB}#" ${OUTPUT}/ssh.yaml
+    sed -i "s#JENKINS_PUB_KEY#${JENKINS_PUB}#" ${OUTPUT}/ssh_*.yaml
     SERVICE_PUB="$(cat ${OUTPUT}/../data/service_rsa.pub | cut -d' ' -f2)"
     sed -i "s#SERVICE_PUB_KEY#${SERVICE_PUB}#" ${OUTPUT}/ssh.yaml
 
@@ -202,7 +202,15 @@ function prepare_etc_puppet {
 }
 
 function run_puppet_agent {
-    puppet agent --test --environment sf || true
+    # Puppet agent will return code 2 on success...
+    # We create a sub-process () and convert the error
+    puppet agent --test --environment sf || (
+        [ "$?" == 2 ] && exit 0
+        echo "========================================="
+        echo "FAIL: Puppet agent failed on puppetmaster"
+        echo "========================================="
+        exit 1
+    )
     service puppet start
 }
 
@@ -224,7 +232,15 @@ function trigger_puppet_apply {
         sshpass -p $TEMP_SSH_PWD ssh -p$ssh_port root@${role}.${SF_SUFFIX} sed -i "s/puppetmaster-ip-template/$puppetmaster_ip/" /etc/hosts
         sshpass -p $TEMP_SSH_PWD scp $HOME/.ssh/known_hosts root@${role}.${SF_SUFFIX}:/root/.ssh/
         # The Puppet run will deactivate the temporary root password
-        sshpass -p $TEMP_SSH_PWD ssh -p$ssh_port root@${role}.${SF_SUFFIX} "puppet agent --test --environment sf" || true
+        # Puppet agent will return code 2 on success...
+        # We create a sub-process () and convert the error
+        sshpass -p $TEMP_SSH_PWD ssh -p$ssh_port root@${role}.${SF_SUFFIX} "puppet agent --test --environment sf" || (
+            [ "$?" == 2 ] && exit 0
+            echo "======================================"
+            echo "FAIL: Puppet agent failed for ${role}"
+            echo "======================================"
+            exit 1
+        )
         # Run another time. Should take only a few seconds per node if nothing needs to be changed
         #ssh -p$ssh_port root@${role}.${SF_SUFFIX} "puppet agent --test --environment sf || true"
     done

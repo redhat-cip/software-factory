@@ -3,13 +3,3 @@ ssh_keys:
     user: root
     type: rsa
     key: SERVICE_PUB_KEY
-
-  ssh_gerrit_jenkins:
-    user: gerrit
-    type: rsa
-    key: JENKINS_PUB_KEY
-
-  ssh_jenkins_jenkins:
-    user: jenkins
-    type: rsa
-    key: JENKINS_PUB_KEY
