@@ -85,8 +85,6 @@ PREBUILD_TARGET=$WORKSPACE/roles/install/$EDEPLOY_ROLES_REL
 cloud_img="cloud-$EDEPLOY_ROLES_REL.edeploy"
 install_server_img="install-server-$EDEPLOY_ROLES_REL.edeploy"
 
-BASE_URL="http://***REMOVED***/v1/AUTH_70aab03f69b549cead3cb5f463174a51/edeploy-roles"
-
 # Check if role synced recently (< 1h)
 TIME_DIFF=$(echo $(date '+%s') - 0$(stat -c '%Y' $PREBUILD_TARGET/$install_server_img.md5 2> /dev/null) | bc)
 if [ ${TIME_DIFF} -gt 3600 ]; then
