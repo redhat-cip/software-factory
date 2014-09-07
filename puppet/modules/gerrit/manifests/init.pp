@@ -433,9 +433,12 @@ class gerrit ($settings = hiera_hash('gerrit', ''),
   }
   
   # This ressource wait for gerrit TCP ports are up
+  # Be really tolenrant with the timeout Gerrit can take long
+  # to start in, it seems, low mem env ...
   exec { 'wait4gerrit':
     path    => '/usr/bin:/usr/sbin:/bin',
     command => '/root/wait4gerrit.sh',
+    timeout => 900,
     require => [File['wait4gerrit'],  Service['gerrit']],
   }
 

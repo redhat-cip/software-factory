@@ -6,17 +6,22 @@ if [ -f /root/config.kicked ]; then
 #    exit 1
 fi
 
+# Let 910 secs to Jenkins to be up. It seems
+# in low mem env that Jenkins take really long
+# to start ...
+# Set the command timeout to 900 in puppet so
+# puppet command will fails before
 RETRIES=0
 while true; do
     wget --spider --user=<%= @settings['jenkins_username'] %> --password=<%= @settings['jenkins_password'] %> http://localhost:8080/jenkins/
     [ $? -eq 0 ] && break
     let RETRIES=RETRIES+1
-    [ "$RETRIES" == "240" ] && {
+    [ "$RETRIES" == "91" ] && {
         ps afxww
         echo "Jenkins took too long to be up !"
         exit 1
     }
-    sleep 1
+    sleep 10
 done
 
 if [ ! -d "/root/config" ]; then
