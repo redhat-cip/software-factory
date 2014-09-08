@@ -1,0 +1,5 @@
+ssh_keys_gerrit:
+  ssh_gerrit_jenkins:
+    user: gerrit
+    type: rsa
+    key: JENKINS_PUB_KEY

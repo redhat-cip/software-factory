@@ -4,6 +4,8 @@
   - monit
   - hosts
   - ssh
+  - ssh_gerrit
+  - ssh_jenkins
   - edeploy_client
   - postfix
   - "%{::clientcert}"

@@ -164,9 +164,9 @@ cd -
 cd $SF_ROLES
 [ ! -d "$BUILD_DIR/install/${DVER}-${SF_REL}" ] && sudo mkdir -p $BUILD_DIR/install/${DVER}-${SF_REL}
 
-build_role "mysql" $(cat mysql.install | md5sum | awk '{ print $1}')
+build_role "mysql" $(cat mysql.install functions | md5sum | awk '{ print $1}')
 ME=$?
-build_role "slave" $(cat slave.install | md5sum | awk '{ print $1}')
+build_role "slave" $(cat slave.install functions | md5sum | awk '{ print $1}')
 SE=$?
 build_role "softwarefactory"   $(cd ..; find ${SF_DEPS} -type f | sort | grep -v '\.tox' | xargs cat | md5sum | awk '{ print $1}')
 SFE=$?

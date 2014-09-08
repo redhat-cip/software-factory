@@ -22,9 +22,12 @@ source functions.sh
 SF_SUFFIX=${SFSUFFIX:-sf.dom}
 BUILD=build
 
+# If boostrap.done does not exist, something bad happened, write 1
+trap "[ -f ${BUILD}/bootstrap.done ] || (echo 1 > ${BUILD}/bootstrap.done)" 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16
 if [  -f "${BUILD}/bootstrap.done" ]; then
     rm ${BUILD}/bootstrap.done
 fi
+
 # Only create config if not yet done
 if [ ! -e "/etc/puppet/environments/sf" ]; then
     echo "Preparing Puppet master"
@@ -46,4 +49,4 @@ trigger_puppet_apply
 # Force a start of puppet agent on each roles after a delay that let us run func tests smoosly
 run_puppet_agent_start
 # Set a witness file that tell the bootstraping is done
-touch ${BUILD}/bootstrap.done
+echo 0 > ${BUILD}/bootstrap.done
