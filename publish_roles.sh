@@ -16,7 +16,7 @@ for role_name in install-server-vm mysql slave softwarefactory; do
     curl -s -o ${TEMP_DIR}/${role}.md5 ${BASE_URL}/${role}.md5 || true
     [ "$(cat ${TEMP_DIR}/${role}.md5)" == "$(cat ${role}.md5)" ] && continue
     echo "[+] Upstream is out dated, creating edeploy tarball"
-    sudo tar cjf ${role}.edeploy ${role_name}
+    (cd ${role_name}; sudo tar czf ../${role}.edeploy *)
     md5sum ${role}.edeploy | sudo tee ${role}.edeploy.md5
 done
 rm -Rf ${TEMP_DIR}
