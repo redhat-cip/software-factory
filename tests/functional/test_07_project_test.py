@@ -175,7 +175,7 @@ class TestProjectTestsWorkflow(Base):
         last_build_num_ch, last_success_build_num_ch = 0, 1
         attempt = 0
         while last_build_num_ch != last_success_build_num_ch:
-            if attempt >= 30:
+            if attempt >= 90:
                 break
             time.sleep(1)
             last_build_num_ch = \
@@ -201,7 +201,7 @@ class TestProjectTestsWorkflow(Base):
 
         attempt = 0
         while isinstance(submit_result, int):
-            if attempt >= 30:
+            if attempt >= 90:
                 break
             time.sleep(1)
             submit_result = self.gu.submitPatch(change_id, "current")
@@ -268,7 +268,7 @@ class TestProjectTestsWorkflow(Base):
         # let some time to Zuul to update the test result to Gerrit.
         attempt = 0
         while "jenkins" not in self.gu.getReviewers(change_id):
-            if attempt >= 30:
+            if attempt >= 90:
                 break
             time.sleep(1)
             attempt += 1
@@ -276,7 +276,7 @@ class TestProjectTestsWorkflow(Base):
         attempt = 0
         while self.gu.getReviewerApprovals(change_id, 'jenkins')['Verified'] \
                 != '+1':
-            if attempt >= 30:
+            if attempt >= 90:
                 break
             time.sleep(1)
             attempt += 1
