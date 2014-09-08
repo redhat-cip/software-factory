@@ -58,6 +58,7 @@ scp root@`getip_from_yaml redmine`:/var/log/redmine/default/production.log $dlog
 scp root@`getip_from_yaml managesf`:/var/log/managesf/managesf.log $dlogs/managesf/ &> /dev/null
 scp -r root@`getip_from_yaml managesf`:/var/log/apache2/ $dlogs/managesf/ &> /dev/null
 scp -r root@`getip_from_yaml jenkins`:/var/log/zuul $dlogs/zuul/ &> /dev/null
+scp -r root@`getip_from_yaml jenkins`:/var/lib/jenkins/jobs/ $dlogs/jenkins/ &> /dev/null
 scp root@`getip_from_yaml puppetmaster`:/tmp/debug $dlogs/puppetmaster/ &> /dev/null
 
 echo "Done."
