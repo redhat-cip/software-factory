@@ -12,11 +12,12 @@ cd ${INST}
 TEMP_DIR=$(mktemp -d /tmp/edeploy-check-XXXXX)
 for role_name in install-server-vm mysql slave softwarefactory; do
     role=${role_name}-${SF_VER}
-    # check if role have changed
+    echo "[+] Check if ${role} have changed"
     curl -s -o ${TEMP_DIR}/${role}.md5 ${BASE_URL}/${role}.md5 || true
     [ "$(cat ${TEMP_DIR}/${role}.md5)" == "$(cat ${role}.md5)" ] && continue
+    echo "[+] Upstream is out dated, creating edeploy tarball"
     sudo tar cjf ${role}.edeploy ${role_name}
-    md5sum ${role}.edeploy | sudo tee ${role}.edploy.md5
+    md5sum ${role}.edeploy | sudo tee ${role}.edeploy.md5
 done
 rm -Rf ${TEMP_DIR}
 swift upload --changed --verbose edeploy-roles *-${SF_VER}.*

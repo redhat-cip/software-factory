@@ -32,7 +32,7 @@ BUILD_DIR=$WORKSPACE/roles
 EDEPLOY=$WORKSPACE/git/edeploy-master/
 EDEPLOY_ROLES=$WORKSPACE/git/edeploy-roles-master/
 
-UPSTREAM=${BUILD_DIR}/upstream/
+UPSTREAM=${BUILD_DIR}/upstream
 INST=${BUILD_DIR}/install/${SF_VER}
 PUPPET_BOOTSTRAPPER="./puppet/ ./tests/ ./serverspec/ ./tools/ ./bootstraps/*.sh"
 

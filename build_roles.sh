@@ -124,7 +124,7 @@ if [ ${TIME_DIFF} -gt 3600 ]; then
             sudo curl -s -o ${UPSTREAM}/${role}.edeploy.md5 ${BASE_URL}/${role}.edeploy.md5
             sudo mv -f ${TEMP_DIR}/${role}.md5 ${UPSTREAM}/${role}.md5
             role_md5=$(cat ${UPSTREAM}/${role}.edeploy | md5sum - | cut -d ' ' -f1)
-            [ "${role_md5}" != "$(cat ${UPSTREAM}}/${role}.edeploy.md5 | cut -d ' ' -f1)" ] && {
+            [ "${role_md5}" != "$(cat ${UPSTREAM}/${role}.edeploy.md5 | cut -d ' ' -f1)" ] && {
                 echo "${role} archive md5 mismatch ! exit."
                 exit 1
             }
