@@ -41,15 +41,10 @@ function build_role {
         # check if upstream is similar
         if [ -f "${UPSTREAM_FILE}.md5" ] && [ "$(cat ${UPSTREAM_FILE}.md5)" == "${ROLE_MD5}" ]; then
             echo "${ROLE_NAME} have already been built upstream, updating local repository"
-            rm -Rf ${INST}/${ROLE_NAME}
-            # Old compatibility mode, edeploy file were not generated correctly
-            file ${UPSTREAM_FILE}.edeploy | grep -q bzip2 && (
-                exec sudo tar -xjf ${UPSTREAM_FILE}.edeploy -C ${INST}
-            )
-            file ${UPSTREAM_FILE}.edeploy | grep -q gzip && (
-                mkdir ${INST}/${ROLE_NAME}
-                exec sudo tar -xzf ${UPSTREAM_FILE}.edeploy -C "${INST}/${ROLE_NAME}"
-            )
+            sudo rm -Rf ${INST}/${ROLE_NAME}
+            sudo mkdir ${INST}/${ROLE_NAME}
+            sudo tar -xzf ${UPSTREAM_FILE}.edeploy -C "${INST}/${ROLE_NAME}"
+            sudo touch ${INST}/${ROLE_NAME}.done
         else
             sudo rm -f ${INST}/${ROLE_NAME}.done
             sudo ${MAKE} ${VIRTUALIZED} EDEPLOY_ROLES_PATH=${EDEPLOY_ROLES} PREBUILD_EDR_TARGET=${EDEPLOY_ROLES_REL} ${ROLE_NAME}
