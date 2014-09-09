@@ -46,6 +46,7 @@ case "$(package_tool)" in
         add_epel_repository $DIST
         install_packages $dir "vim-enhanced puppet monit mariadb-server postfix git"
         install_bup $dir
+        remove_epel_repository $DIST
         ;;
     *)
         fatal_error "$package_tool isn't supported for $ROLE role"

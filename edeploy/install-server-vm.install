@@ -31,8 +31,11 @@ update_repositories $dir
 case "$(package_tool)" in
     "yum")
         sshpass="http://downloads.sourceforge.net/project/sshpass/sshpass/1.05/sshpass-1.05.tar.gz"
-        install_packages $dir vim-enhanced openldap-devel python-devel postfix gcc bc
+        add_epel_repository $DIST
+        install_packages $dir vim-enhanced openldap-devel python-devel postfix gcc bc monit
         do_chroot $dir bash -c "cd /tmp/ && wget $sshpass && tar -xvzf sshpass-1.05.tar.gz && cd sshpass-1.05 && ./configure && make install"
+        install_bup $dir
+        remove_epel_repository $DIST
         ;;
     "apt")
         install_packages $dir cpp rake make python-pip sshpass bc gcc python-dev libldap2-dev libsasl2-dev monit postfix bup
