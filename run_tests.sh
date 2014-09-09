@@ -37,4 +37,9 @@ echo "~~~~~~~~~~~"
 (cd tools/cauth; tox)
 CAUTH_ERRORS=$?
 
-exit $[${FLAKE8_ERRORS} + ${BASH8_ERRORS} + ${CAUTH_ERRORS}];
+echo "ManageSF tests"
+echo "~~~~~~~~~~~~~~"
+(cd tools/managesf; tox)
+MANAGESF_ERRORS=$?
+
+exit $[${FLAKE8_ERRORS} + ${BASH8_ERRORS} + ${CAUTH_ERRORS} + ${MANAGESF_ERRORS}];

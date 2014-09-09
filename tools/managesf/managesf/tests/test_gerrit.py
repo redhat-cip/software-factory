@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 #
 # Copyright (C) 2014 eNovance SAS <licensing@enovance.com>
 #
@@ -16,7 +17,14 @@
 from unittest import TestCase
 
 
-class TestUnits(TestCase):
+class TestGerritController(TestCase):
+    @classmethod
+    def setupClass(cls):
+        pass
 
-    def test_units(self):
-        assert 5 * 5 == 25
+    @classmethod
+    def tearDownClass(cls):
+        pass
+
+    def test_dummy(self):
+        pass
