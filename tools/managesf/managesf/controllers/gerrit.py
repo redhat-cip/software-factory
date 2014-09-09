@@ -29,6 +29,7 @@ import shlex
 import shutil
 import subprocess
 import logging
+import tempfile
 
 logger = logging.getLogger(__name__)
 
@@ -48,7 +49,7 @@ def get_projects_by_user():
     names = []
     for project in projects:
         if user_owns_project(project):
-            names.append(projects)
+            names.append(project)
     logger.debug("projects owned by user - " + " , ".join(names))
     return names
 
@@ -169,35 +170,21 @@ def _delete_project(prj_name):
 
 
 def get_projects():
-    logger.debug(' [gerrit] fetching projects that this user belongs to')
+    logger.debug(' [gerrit] fetching projects list')
     url = "http://%(gerrit_host)s/r/a/projects/?" % \
           {'gerrit_host': conf.gerrit['host']}
 
     resp = send_request(url, [200], method='GET')
-
-    js = gerrit_json_resp(resp)
-
-    projects = []
-    for k in js:
-        projects.append(k)
-
-    return projects
+    return gerrit_json_resp(resp)
 
 
 def get_groups():
-    logger.debug(' [gerrit] fetching groups that this user belongs to')
+    logger.debug(' [gerrit] fetching groups list')
     url = "http://%(gerrit_host)s/r/a/accounts/self/groups" % \
           {'gerrit_host': conf.gerrit['host']}
 
     resp = send_request(url, [200], method='GET')
-
-    js = gerrit_json_resp(resp)
-
-    groups = []
-    for g in js:
-        groups.append(g['id'])
-
-    return groups
+    return [g['id'] for g in gerrit_json_resp(resp)]
 
 
 def get_project_owner(pn):
@@ -229,12 +216,25 @@ def user_is_administrator():
     return False
 
 
+def get_core_group_name(prj_name):
+    return "%s-core" % prj_name
+
+
+def get_ptl_group_name(prj_name):
+    return "%s-ptl" % prj_name
+
+
+def get_dev_group_name(prj_name):
+    return "%s-dev" % prj_name
+
+
 class GerritRepo(object):
     def __init__(self, prj_name):
+        # TODO: manage to destroy temp dir/file after usage
         self.prj_name = prj_name
         self.infos = {}
-        self.infos['localcopy_path'] = '/tmp/clone-%(name)s' % \
-                                       {'name': prj_name}
+        self.infos['localcopy_path'] = os.path.join(
+            tempfile.mkdtemp(), 'clone-%s' % prj_name)
         if os.path.isdir(self.infos['localcopy_path']):
             shutil.rmtree(self.infos['localcopy_path'])
         self.email = "%(admin)s <%(email)s>" % \
@@ -243,10 +243,11 @@ class GerritRepo(object):
         ssh_wrapper = "ssh -o StrictHostKeyChecking=no -i" \
                       "%(gerrit-keyfile)s \"$@\"" % \
                       {'gerrit-keyfile': conf.gerrit['sshkey_priv_path']}
-        file('/tmp/ssh_wrapper.sh', 'w').write(ssh_wrapper)
-        os.chmod('/tmp/ssh_wrapper.sh', stat.S_IRWXU)
+        wrapper_path = os.path.join(tempfile.mkdtemp(), 'ssh_wrapper.sh')
+        file(wrapper_path, 'w').write(ssh_wrapper)
+        os.chmod(wrapper_path, stat.S_IRWXU)
         self.env = os.environ.copy()
-        self.env['GIT_SSH'] = '/tmp/ssh_wrapper.sh'
+        self.env['GIT_SSH'] = wrapper_path
         # Commit will be reject by gerrit if the commiter info
         # is not a registered user (author can be anything else)
         self.env['GIT_COMMITTER_NAME'] = conf.admin['name']
@@ -325,8 +326,7 @@ class GerritRepo(object):
         logger.debug(" [gerrit] Push on master for repository %s" %
                      self.prj_name)
 
-    def push_master_from_git_remote(self, upstream):
-        remote = upstream
+    def push_master_from_git_remote(self, remote):
         logger.debug(" [gerrit] Fetch git objects from a remote and push "
                      "to master for repository %s" % self.prj_name)
         cmd = "git checkout master"
@@ -366,7 +366,7 @@ class CustomGerritClient(gerrit.Gerrit):
         out, err = self._ssh(cmd)
 
     def trigger_replication(self, cmd):
-        print "[gerrit] Triggering Replication"
+        logger.info("[gerrit] Triggering Replication")
         out, err = self._ssh(cmd)
         if err:
             logger.debug("Replication Trigger error - %s" % err)
@@ -404,18 +404,6 @@ def init_git_repo(prj_name, prj_desc, upstream, private):
          'name': prj_name
          }
     grepo.push_master(paths)
-
-
-def get_core_group_name(prj_name):
-    return "%s-core" % prj_name
-
-
-def get_ptl_group_name(prj_name):
-    return "%s-ptl" % prj_name
-
-
-def get_dev_group_name(prj_name):
-    return "%s-dev" % prj_name
 
 
 def init_project(name, json):
@@ -555,14 +543,15 @@ def replication_ssh_run_cmd(subcmd):
     cmd = sshcmd + subcmd
 
     p1 = Popen(cmd, stdout=PIPE)
-    return p1.communicate()
+    out, err = p1.communicate()
+    return out, err, p1.returncode
 
 
 def replication_read_config():
     lines = []
     cmd = ['git', 'config', '-f', conf.gerrit['replication_config_path'], '-l']
-    out, err = replication_ssh_run_cmd(cmd)
-    if err:
+    out, err, code = replication_ssh_run_cmd(cmd)
+    if code:
         logger.debug(" reading config file err %s " % err)
         abort(500)
     elif out:
@@ -572,8 +561,8 @@ def replication_read_config():
     config = {}
     for line in lines:
         setting, value = line.split("=")
-        section = setting.split(".")[1]
-        setting = setting.split(".")[2]
+        section = setting.split(".")[0]
+        setting = setting.split(".")[1]
         if setting == 'projects':
             if (len(value.split()) != 1):
                 logger.debug("Invalid Replication config file.")
@@ -629,8 +618,8 @@ def replication_apply_config(section, setting=None, value=None):
     str_cmd = " ".join(cmd)
     logger.debug(" Requested command is ... \n%s " % str_cmd)
     cmd = gitcmd + cmd
-    out, err = replication_ssh_run_cmd(cmd)
-    if err:
+    out, err, code = replication_ssh_run_cmd(cmd)
+    if code:
         logger.debug(" apply_config err %s " % err)
         return err
     else:
