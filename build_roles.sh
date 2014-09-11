@@ -152,14 +152,14 @@ fi
 # Uncompress prebuild images if needed
 cd $PREBUILD_TARGET
 [ ! -d cloud ] && {
-    mkdir cloud
+    sudo mkdir cloud
     sudo tar -xzf $cloud_img -C cloud
-    touch cloud.done
+    sudo touch cloud.done
 }
 [ ! -d install-server ] && {
-    mkdir install-server
+    sudo mkdir install-server
     sudo tar -xzf $install_server_img -C install-server
-    touch install-server.done
+    sudo touch install-server.done
 }
 cd -
 
