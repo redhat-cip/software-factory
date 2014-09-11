@@ -160,13 +160,13 @@ def add_user_to_projectgroups(project, user, groups):
     role_id = []
     # only admin or manager can add manager
     if 'ptl-group' in groups:
-        if (not user_is_administrator) and ('Manager' not in roles):
+        if (not user_is_administrator()) and ('Manager' not in roles):
             logger.debug(" [gerrit] User is not admin,Manager")
             abort(401)
         mgr_role_id = get_role_id('Manager')
         role_id.append(mgr_role_id)
     if ('core-group' in groups) or ('dev-group' in groups):
-        if (not user_is_administrator) and ('Manager' not in roles) and \
+        if (not user_is_administrator()) and ('Manager' not in roles) and \
            ('Developer' not in roles):
             logger.debug(" [gerrit] User is not admin,Manager,Developer")
             abort(401)
@@ -195,7 +195,7 @@ def delete_user_from_projectgroups(project, user, group):
     # otherwise delete requested group
     if group is None:
         # delete all groups
-        if (not user_is_administrator) and ('Manager' not in roles):
+        if (not user_is_administrator()) and ('Manager' not in roles):
             logger.debug(" [gerrit] User is not admin,Manager")
             abort(401)
         delete_membership(m['id'])
@@ -204,13 +204,13 @@ def delete_user_from_projectgroups(project, user, group):
             abort(400)
         # Get the role id from requested group name
         if group in ['dev-group', 'core-group']:
-            if (not user_is_administrator) and ('Manager' not in roles) and \
+            if (not user_is_administrator()) and ('Manager' not in roles) and \
                ('Developer' not in roles):
                 logger.debug(" [gerrit] User is not admin,Manager,developer")
                 abort(401)
             role_id = get_role_id('Developer')
         else:
-            if (not user_is_administrator) and ('Manager' not in roles):
+            if (not user_is_administrator()) and ('Manager' not in roles):
                 logger.debug(" [gerrit] User is not admin,Manager")
                 abort(401)
             role_id = get_role_id('Manager')
