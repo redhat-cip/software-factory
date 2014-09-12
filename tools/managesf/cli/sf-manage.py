@@ -140,21 +140,23 @@ reprm.add_argument('--section',  nargs='?', required=True,
 
 args = parser.parse_args()
 
-if args.command in ['delete', 'create', 'add_user', 'delete_user']:
-    url = "http://%(host)s:%(port)s/manage/project/%(name)s" % \
-        {'host': args.host,
-         'port': args.port,
-         'name': args.name}
-    if args.command in['add_user', 'delete_user']:
-        url = url + '/membership/%(user)s' % {'user': args.user}
-    if args.command == 'delete_user' and args.group:
-        # if a group name is provided, delete user from that group,
-        # otherwise delete user from all groups
-        url = url + '/%(group)s' % {'group': args.group}
-else:
-    base_url = "http://%(host)s:%(port)s/manage" % \
-        {'host': args.host,
-         'port': args.port}
+base_url = "http://%(host)s:%(port)s/manage" % \
+           {'host': args.host,
+            'port': args.port}
+
+if args.command in ['delete', 'create']:
+    url = base_url + "/project/%s" % args.name
+if args.command == 'add_user':
+    url = base_url + "/project/membership/%s/%s" % (args.name, args.user)
+if args.command == 'delete_user':
+    # if a group name is provided, delete user from that group,
+    # otherwise delete user from all groups
+    if args.group:
+        url = base_url + "/project/membership/%s/%s/%s" % (args.name,
+                                                           args.user,
+                                                           args.group)
+    else:
+        url = base_url + "/project/membership/%s/%s" % (args.name, args.user)
 
 
 def get_cookie():
