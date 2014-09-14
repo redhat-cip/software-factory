@@ -36,6 +36,12 @@ function build_role {
     ROLE_FILE="${INST}/${ROLE_NAME}-${SF_VER}"
     UPSTREAM_FILE="${UPSTREAM}/${ROLE_NAME}-${SF_VER}"
 
+    # Make sure role tree is not mounted
+    grep -q "${SF_VER}\/${ROLE_NAME}\/proc" /proc/mounts && {
+        while true; do
+            sudo umount ${INST}/${ROLE_NAME}/proc || break
+        done
+    }
     if [ ! -f "${ROLE_FILE}.md5" ] || [ "$(cat ${ROLE_FILE}.md5)" != "${ROLE_MD5}" ]; then
         echo "${ROLE_NAME} have been updated"
         # check if upstream is similar
