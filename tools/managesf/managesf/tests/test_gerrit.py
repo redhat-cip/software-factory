@@ -25,6 +25,7 @@ import json
 import tempfile
 
 from managesf.controllers import gerrit
+from managesf.tests import dummy_conf
 
 repl_content = """[repl]
     projects = p1
@@ -58,23 +59,6 @@ def fake_get_group_id(name):
         return 3
     if name == 'Non-Interactive%20Users':
         return 4
-
-
-class dummy_conf():
-    gerrit = {
-        'user': 'gerrit',
-        'host': 'gerrit.test.dom',
-        'top_domain': 'tests.dom',
-        'ssh_port': 2929,
-        'sshkey_priv_path': '/tmp/gerrit_admin_rsa',
-        'replication_config_path': '/tmp/replication.config'
-    }
-    admin = {
-        'name': 'user1',
-        'email': 'user1@tests.dom',
-        'http_password': 'userpass',
-        'cookiejar': None
-    }
 
 
 class FakeResponse():
