@@ -27,6 +27,7 @@ from cauth.controllers import root
 from webtest import TestApp
 from pecan import load_app
 
+import tempfile
 import json
 import os
 
@@ -70,7 +71,7 @@ class dummy_conf():
                       'client_id': 'XXX',
                       'client_secret': 'YYY', },
                      }
-        self.sqlalchemy = {'url': 'sqlite:////tmp/state_mapping.db',
+        self.sqlalchemy = {'url': 'sqlite:///%s' % tempfile.mkstemp()[1],
                            'echo': False,
                            'encoding': 'utf-8',
                            }
