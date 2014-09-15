@@ -26,6 +26,10 @@ class dummy_conf():
         'sshkey_priv_path': tempfile.mkstemp()[1],
         'replication_config_path': tempfile.mkstemp()[1],
     }
+    redmine = {
+        'api_key': 'XXX',
+        'host': 'redmine.tests.dom',
+    }
     managesf = {
         'host': 'managesf.tests.dom',
         'sshkey_priv_path': '/tmp/id_rsa',
@@ -39,6 +43,7 @@ class dummy_conf():
     puppetmaster = {
         'host': 'puppetmaster.test.dom',
     }
+    auth = {'host': 'auth.tests.dom'}
     admin = {
         'name': 'user1',
         'email': 'user1@tests.dom',

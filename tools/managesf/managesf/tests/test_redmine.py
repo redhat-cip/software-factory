@@ -19,19 +19,8 @@ from mock import patch
 from mock import call
 from pecan.core import exc
 from managesf.controllers import redmine
+from managesf.tests import dummy_conf
 import json
-
-
-class dummy_conf():
-    def __init__(self):
-        self.redmine = {'api_key': 'XXX',
-                        'host': 'redmine.tests.dom',
-                        }
-        self.admin = {'name': 'user1',
-                      'email': 'user1@example.com',
-                      'http_password': 'userpass',
-                      'cookiejar': None}
-        self.auth = {'host': 'auth.tests.dom'}
 
 
 class FakeResponse():
