@@ -26,6 +26,19 @@ class dummy_conf():
         'sshkey_priv_path': tempfile.mkstemp()[1],
         'replication_config_path': tempfile.mkstemp()[1],
     }
+    managesf = {
+        'host': 'managesf.tests.dom',
+        'sshkey_priv_path': '/tmp/id_rsa',
+    }
+    jenkins = {
+        'host': 'jenkins.test.dom',
+    }
+    mysql = {
+        'host': 'mysql.test.dom',
+    }
+    puppetmaster = {
+        'host': 'puppetmaster.test.dom',
+    }
     admin = {
         'name': 'user1',
         'email': 'user1@tests.dom',
