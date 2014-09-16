@@ -18,6 +18,9 @@ import tempfile
 
 
 class dummy_conf():
+    auth = {
+        'host': 'auth.tests.dom',
+    }
     gerrit = {
         'user': 'gerrit',
         'host': 'gerrit.test.dom',
@@ -43,7 +46,6 @@ class dummy_conf():
     puppetmaster = {
         'host': 'puppetmaster.test.dom',
     }
-    auth = {'host': 'auth.tests.dom'}
     admin = {
         'name': 'user1',
         'email': 'user1@tests.dom',
