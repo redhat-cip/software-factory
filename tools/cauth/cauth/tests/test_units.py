@@ -21,7 +21,6 @@ from M2Crypto import RSA, BIO
 from pecan.core import exc
 
 from cauth.controllers.userdetails import Gerrit
-from cauth.controllers.userdetails import Redmine
 from cauth.controllers import root
 
 from webtest import TestApp
@@ -160,15 +159,6 @@ class TestUserDetails(TestCase):
         # Simulate the garbage that occurs in live tests
         data = 'garb' + data
         return FakeResponse(200, data)
-
-    def test_redmine_create_user(self):
-        red = Redmine(self.conf)
-        with patch('cauth.controllers.userdetails.requests') as r:
-            r.post = redmine_create_user_mock
-            code = red.create_redmine_user('john',
-                                           'john@tests.dom',
-                                           'John Doe')
-        self.assertEqual(code, 200)
 
     def test_gerrit_install_ssh_keys(self):
         ger = Gerrit(self.conf)

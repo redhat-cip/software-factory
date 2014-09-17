@@ -13,28 +13,3 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-
-try:
-    from setuptools import setup, find_packages
-except ImportError:
-    from ez_setup import use_setuptools
-    use_setuptools()
-    from setuptools import setup, find_packages
-
-try:
-    import multiprocessing  # noqa
-except:
-    pass
-
-setup(
-    name='cauth',
-    version='0.1',
-    description='',
-    author='',
-    author_email='',
-    test_suite='nose.collector',
-    zip_safe=False,
-    include_package_data=True,
-    package_data={'cauth': ['template/*', ]},
-    packages=find_packages(exclude=['ez_setup'])
-)

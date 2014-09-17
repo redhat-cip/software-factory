@@ -14,27 +14,22 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-try:
-    from setuptools import setup, find_packages
-except ImportError:
-    from ez_setup import use_setuptools
-    use_setuptools()
-    from setuptools import setup, find_packages
+from unittest import TestCase
+from mock import patch
 
-try:
-    import multiprocessing  # noqa
-except:
-    pass
+from pysflib import sfauth
 
-setup(
-    name='cauth',
-    version='0.1',
-    description='',
-    author='',
-    author_email='',
-    test_suite='nose.collector',
-    zip_safe=False,
-    include_package_data=True,
-    package_data={'cauth': ['template/*', ]},
-    packages=find_packages(exclude=['ez_setup'])
-)
+
+def fake_send_request(*args, **kwargs):
+    class Fake:
+        cookies = {'auth_pubtkt': '1234'}
+    return Fake()
+
+
+class TestSFAuth(TestCase):
+    def test_get_cookie(self):
+        with patch('pysflib.sfauth.requests.post',
+                   new_callable=lambda: fake_send_request):
+            self.assertEqual(
+                '1234',
+                sfauth.get_cookie('auth.tests.dom', 'user1', 'userpass'))

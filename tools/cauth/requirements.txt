@@ -1,3 +1,4 @@
+../pysflib
 pecan
 mock
 mockldap

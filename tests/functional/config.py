@@ -2,6 +2,7 @@ from os import environ
 
 GERRIT_HOST = 'gerrit.%s:29418' % environ['SF_SUFFIX']
 JENKINS_HOST = 'jenkins.%s:8080' % environ['SF_SUFFIX']
+REDMINE_HOST = 'redmine.%s' % environ['SF_SUFFIX']
 GERRIT_SERVER = 'http://gerrit.%s/r/' % environ['SF_SUFFIX']
 REDMINE_SERVER = 'http://redmine.%s/redmine/' % environ['SF_SUFFIX']
 JENKINS_SERVER = 'http://jenkins.%s:8080/jenkins/' % environ['SF_SUFFIX']

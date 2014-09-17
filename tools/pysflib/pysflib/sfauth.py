@@ -14,27 +14,13 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-try:
-    from setuptools import setup, find_packages
-except ImportError:
-    from ez_setup import use_setuptools
-    use_setuptools()
-    from setuptools import setup, find_packages
+import requests
 
-try:
-    import multiprocessing  # noqa
-except:
-    pass
 
-setup(
-    name='cauth',
-    version='0.1',
-    description='',
-    author='',
-    author_email='',
-    test_suite='nose.collector',
-    zip_safe=False,
-    include_package_data=True,
-    package_data={'cauth': ['template/*', ]},
-    packages=find_packages(exclude=['ez_setup'])
-)
+def get_cookie(auth_server, username, password):
+    url = "http://%s/auth/login" % auth_server
+    resp = requests.post(url, params={'username': username,
+                                      'password': password,
+                                      'back': '/'},
+                         allow_redirects=False)
+    return resp.cookies.get('auth_pubtkt', '')

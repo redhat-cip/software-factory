@@ -35,10 +35,11 @@
 import argparse
 import os
 import re
-import redmine
 import subprocess
 import sys
 import yaml
+
+from pysflib.sfredmine import RedmineUtils
 
 # Look for the config in the Gerrit hooks directory
 HOOKS_CONFIG = os.path.join(os.path.dirname(os.path.realpath(__file__)),
@@ -77,7 +78,6 @@ if __name__ == "__main__":
         config = yaml.load(file(HOOKS_CONFIG))
         redmine_host = 'http://' + config['redmine_host']
         redmine_key = config['redmine_key']
-        redmine_version = config['redmine_version']
     except Exception, err:
         print "Unable to read hooks config file (Missing key ? Bad format ?)"
         print err
@@ -101,20 +101,10 @@ if __name__ == "__main__":
                          'url': args.change_url}
 
     # Post message on the Redmine issue
-    redmine_client = redmine.Redmine(redmine_host,
-                                     redmine_key,
-                                     version=redmine_version)
-    try:
-        obj = redmine_client.issues.get(issue)
-    except Exception, err:
-        print "It seems there is no issue %s registered on Redmine (%s)" % \
-            (issue, err)
+    redmine_client = RedmineUtils(redmine_host,
+                                  key=redmine_key)
+    if redmine_client.set_issue_status(issue, 2,
+                                       message=message):
         sys.exit(0)
-
-    # Set the issue as In-Progess
-    try:
-        obj.set_status(2, message)
-    except err:
-        print "Unable to change the issue %s status on Redmine (%s)" % \
-            (issue, err)
-        sys.exit(0)
+    else:
+        sys.exit(1)

@@ -53,6 +53,9 @@ HOME=/root do_chroot $dir gem install specinfra
     mkdir $dir/root/puppet-bootstrapper
     cp -Rv $PUPPET_BOOTSTRAPPER $dir/root/puppet-bootstrapper/
 )
+# install pysflib
+do_chroot $dir bash -c "cd /root/puppet-bootstrapper/tools/pysflib; pip install -r requirements.txt"
+do_chroot $dir bash -c "cd /root/puppet-bootstrapper/tools/pysflib; python setup.py install"
 
 # install-server-vm embed Jenkins (We dont want to have it here ...)
 # The role Jenkins does not deactivate the jenkins service at startup
@@ -60,11 +63,12 @@ HOME=/root do_chroot $dir gem install specinfra
 do_chroot $dir bash -c "for x in {0..6}; do ls /etc/rc\${x}.d/*jenkins | xargs rm -f ; done"
 
 # install requirements for functional tests
+# TODO if those deps are required by func test then
+#      put it in the requirement file of func tests.
 do_chroot $dir pip install nose
 do_chroot $dir pip install python-dateutil
 do_chroot $dir pip install python-ldap
 do_chroot $dir pip install requests
-do_chroot $dir pip install pyredmine
 do_chroot $dir pip install pygerrit
 do_chroot $dir pip install git-review
 

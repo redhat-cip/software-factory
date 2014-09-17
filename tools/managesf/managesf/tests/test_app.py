@@ -57,7 +57,7 @@ class TestManageSFAppProjectController(FunctionalTest):
         self.assertEqual(response.status_int, 400)
         # Create a project with name
         ctx = [patch('managesf.controllers.gerrit.init_project'),
-               patch('managesf.controllers.redmine.init_project')]
+               patch('managesf.controllers.redminec.init_project')]
         with nested(*ctx) as (gip, rip):
             response = self.app.put('/project/p1', status="*")
             self.assertTupleEqual(('p1', {}), gip.mock_calls[0][1])
@@ -66,7 +66,7 @@ class TestManageSFAppProjectController(FunctionalTest):
             self.assertEqual(response.body, 'Project p1 has been created.')
         # Create a project with name - an error occurs
         ctx = [patch('managesf.controllers.gerrit.init_project'),
-               patch('managesf.controllers.redmine.init_project',
+               patch('managesf.controllers.redminec.init_project',
                side_effect=raiseexc)]
         with nested(*ctx) as (gip, rip):
             response = self.app.put('/project/p1', status="*")
@@ -81,7 +81,7 @@ class TestManageSFAppProjectController(FunctionalTest):
         self.assertEqual(response.status_int, 400)
         # Delete a project with name
         ctx = [patch('managesf.controllers.gerrit.delete_project'),
-               patch('managesf.controllers.redmine.delete_project')]
+               patch('managesf.controllers.redminec.delete_project')]
         with nested(*ctx) as (gdp, rdp):
             response = self.app.delete('/project/p1', status="*")
             self.assertTupleEqual(('p1',), gdp.mock_calls[0][1])
@@ -90,7 +90,7 @@ class TestManageSFAppProjectController(FunctionalTest):
             self.assertEqual(response.body, 'Project p1 has been deleted.')
         # Delete a project with name - an error occurs
         ctx = [patch('managesf.controllers.gerrit.delete_project'),
-               patch('managesf.controllers.redmine.delete_project',
+               patch('managesf.controllers.redminec.delete_project',
                side_effect=raiseexc)]
         with nested(*ctx) as (gip, rip):
             response = self.app.delete('/project/p1', status="*")
@@ -177,7 +177,8 @@ class TestManageSFAppMembershipController(FunctionalTest):
                                      status="*")
         self.assertEqual(response.status_int, 400)
         ctx = [patch('managesf.controllers.gerrit.add_user_to_projectgroups'),
-               patch('managesf.controllers.redmine.add_user_to_projectgroups')]
+               patch(
+                   'managesf.controllers.redminec.add_user_to_projectgroups')]
         with nested(*ctx) as (gaupg, raupg):
             response = self.app.put_json(
                 '/project/membership/p1/john',
@@ -189,7 +190,7 @@ class TestManageSFAppMembershipController(FunctionalTest):
                 "core-group for project p1",
                 response.body)
         ctx = [patch('managesf.controllers.gerrit.add_user_to_projectgroups'),
-               patch('managesf.controllers.redmine.add_user_to_projectgroups',
+               patch('managesf.controllers.redminec.add_user_to_projectgroups',
                side_effect=raiseexc)]
         with nested(*ctx) as (gaupg, raupg):
             response = self.app.put_json(
@@ -210,7 +211,8 @@ class TestManageSFAppMembershipController(FunctionalTest):
             patch(
                 'managesf.controllers.gerrit.delete_user_from_projectgroups'),
             patch(
-                'managesf.controllers.redmine.delete_user_from_projectgroups')]
+                'managesf.controllers.redminec.'
+                'delete_user_from_projectgroups')]
         with nested(*ctx) as (gdupg, rdupg):
             response = self.app.delete(
                 '/project/membership/p1/john',
@@ -231,7 +233,7 @@ class TestManageSFAppMembershipController(FunctionalTest):
             patch(
                 'managesf.controllers.gerrit.delete_user_from_projectgroups'),
             patch(
-                'managesf.controllers.redmine.delete_user_from_projectgroups',
+                'managesf.controllers.redminec.delete_user_from_projectgroups',
                 side_effect=raiseexc)]
         with nested(*ctx) as (gdupg, rdupg):
             response = self.app.delete(

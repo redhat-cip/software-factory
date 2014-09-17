@@ -20,15 +20,17 @@ except ImportError:
     use_setuptools()
     from setuptools import setup, find_packages
 
+try:
+    import multiprocessing  # noqa
+except:
+    pass
+
 setup(
     name='managesf',
     version='0.1',
     description='',
     author='',
     author_email='',
-    install_requires=[
-        "pecan",
-    ],
     test_suite='managesf',
     zip_safe=False,
     include_package_data=True,

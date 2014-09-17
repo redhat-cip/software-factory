@@ -14,9 +14,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import os
 import config
-import yaml
 import shutil
 import time
 
@@ -26,7 +24,8 @@ from utils import GerritGitUtils
 from utils import create_random_str
 from utils import set_private_key
 from utils import GerritUtil
-from utils import RedmineUtil
+
+from pysflib.sfredmine import RedmineUtils
 
 
 class TestGerritHooks(Base):
@@ -35,11 +34,6 @@ class TestGerritHooks(Base):
     @classmethod
     def setUpClass(cls):
         cls.msu = ManageSfUtils(config.GATEWAY_HOST, 80)
-        # TODO(fbo): Sould be fetch from the config
-        # Fix it in test_01 too.
-        with open(os.environ['SF_ROOT'] + "/build/hiera/redmine.yaml") as f:
-            ry = yaml.load(f)
-        cls.redmine_api_key = ry['redmine']['issues_tracker_api_key']
 
     @classmethod
     def tearDownClass(cls):
@@ -51,8 +45,9 @@ class TestGerritHooks(Base):
         self.issues = []
         self.u = config.ADMIN_USER
         self.u2 = config.USER_2
-        self.rm = RedmineUtil(config.REDMINE_SERVER,
-                              apiKey=self.redmine_api_key)
+        self.rm = RedmineUtils(
+            'http://%s' % config.REDMINE_HOST,
+            auth_cookie=config.USERS[config.ADMIN_USER]['auth_cookie'])
         self.gu = GerritUtil(config.GERRIT_SERVER,
                              username=self.u)
         self.gu2 = GerritUtil(config.GERRIT_SERVER,
@@ -65,7 +60,7 @@ class TestGerritHooks(Base):
 
     def tearDown(self):
         for issue in self.issues:
-            self.rm.deleteIssue(issue)
+            self.rm.delete_issue(issue)
         for name in self.projects:
             self.msu.deleteProject(name, self.u)
         for dirs in self.dirs_to_delete:
@@ -91,7 +86,7 @@ class TestGerritHooks(Base):
         self.gu.addGroupMember(self.u2, "%s-core" % pname)
 
         # Create an issue on the project
-        issue_id = self.rm.createIssue(pname, "There is a problem")
+        issue_id = self.rm.create_issue(pname, "There is a problem")
 
         # Clone and commit something
         url = "ssh://%s@%s/%s" % (self.u, config.GERRIT_HOST,
@@ -101,8 +96,15 @@ class TestGerritHooks(Base):
         self.gitu.add_commit_and_publish(clone_dir, 'master', cmt_msg)
 
         # Check issue status (Gerrit hook updates the issue to in progress)
-        time.sleep(3)
-        self.assertTrue(self.rm.isIssueInProgress(issue_id))
+        attempt = 0
+        while True:
+            if self.rm.test_issue_status(issue_id, 'In Progress'):
+                break
+            if attempt > 10:
+                break
+            time.sleep(1)
+            attempt += 1
+        self.assertTrue(self.rm.test_issue_status(issue_id, 'In Progress'))
 
         # Get the change id and merge the patch
         change_ids = self.gu.getMyChangesForProject(pname)
@@ -116,5 +118,12 @@ class TestGerritHooks(Base):
             self.gu.submitPatch(change_id, "current")['status'], 'MERGED')
 
         # Check issue status (Gerrit hook updates the issue to in progress)
-        time.sleep(3)
-        self.assertTrue(self.rm.isIssueClosed(issue_id))
+        attempt = 0
+        while True:
+            if self.rm.test_issue_status(issue_id, 'Closed'):
+                break
+            if attempt > 10:
+                break
+            time.sleep(1)
+            attempt += 1
+        self.assertTrue(self.rm.test_issue_status(issue_id, 'Closed'))

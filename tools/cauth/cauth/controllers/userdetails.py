@@ -1,25 +1,27 @@
+#!/usr/bin/env python
+#
+# Copyright (C) 2014 eNovance SAS <licensing@enovance.com>
+#
+# Licensed under the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License. You may obtain
+# a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations
+# under the License.
+
 import json
 import requests
+import logging
 import MySQLdb
 
+from pysflib.sfredmine import RedmineUtils
 
-class Redmine:
-    def __init__(self, conf):
-        self.redmine_url = "http://%s/users.json" % conf.redmine['apihost']
-        self.api_key = conf.redmine['apikey']
-
-    def create_redmine_user(self, username, email, lastname):
-        user = {"login":  username,
-                "firstname": username,
-                "lastname": lastname,
-                "mail": email,
-                }
-        data = json.dumps({"user": user})
-        headers = {"X-Redmine-API-Key": self.api_key,
-                   "Content-type": "application/json"}
-        resp = requests.post(self.redmine_url, data=data, headers=headers)
-
-        return resp.status_code
+logger = logging.getLogger(__name__)
 
 
 class Gerrit:
@@ -80,11 +82,15 @@ class Gerrit:
 
 class UserDetailsCreator:
     def __init__(self, conf):
-        self.r = Redmine(conf)
+        self.r = RedmineUtils('http://' + conf.redmine['apihost'],
+                              key=conf.redmine['apikey'])
         self.g = Gerrit(conf)
 
     def create_user(self, username, email, lastname, keys):
-        self.r.create_redmine_user(username, email, lastname)
+        try:
+            self.r.create_user(username, email, lastname)
+        except Exception, e:
+            logger.info('When adding user %s: %s' % (username, str(e)))
         self.g.create_gerrit_user(username, email, lastname, keys)
         # Here we don't care of the error
         return True

@@ -1,0 +1,4 @@
+nose
+requests
+python-redmine
+mock

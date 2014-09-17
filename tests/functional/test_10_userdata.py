@@ -17,22 +17,19 @@ import config
 import json
 import os
 import requests
-import yaml
 import urllib
 
 from utils import Base
 from utils import ManageSfUtils
 from utils import GerritUtil
-from utils import RedmineUtil
+
+from pysflib.sfredmine import RedmineUtils
 
 
 class TestUserdata(Base):
     @classmethod
     def setUpClass(cls):
         cls.msu = ManageSfUtils(config.GATEWAY_HOST, 80)
-        with open(os.environ['SF_ROOT'] + "/build/hiera/redmine.yaml") as f:
-            ry = yaml.load(f)
-        cls.redmine_api_key = ry['redmine']['issues_tracker_api_key']
 
     @classmethod
     def tearDownClass(cls):
@@ -40,8 +37,9 @@ class TestUserdata(Base):
 
     def setUp(self):
         self.projects = []
-        self.rm = RedmineUtil(config.REDMINE_SERVER,
-                              apiKey=self.redmine_api_key)
+        self.rm = RedmineUtils(
+            'http://%s' % config.REDMINE_HOST,
+            auth_cookie=config.USERS[config.ADMIN_USER]['auth_cookie'])
         self.gu = GerritUtil(config.GERRIT_SERVER,
                              username=config.ADMIN_USER)
 
@@ -66,22 +64,10 @@ class TestUserdata(Base):
         self.assertEqual(config.USERS[login]['email'], data.get('email'))
 
     def verify_userdata_redmine(self, login):
-        headers = {'X-Redmine-API-Key': self.redmine_api_key,
-                   'Content-Type': 'application/json'}
-        user = {}
-        # We need to iterate over the existing users
-        for i in range(15):  # check only the first 15 user ids
-            url = 'http://api-redmine.%s/users/%d.json' % \
-                (os.environ['SF_SUFFIX'], i)
-            resp = requests.get(url, headers=headers)
-            if resp.status_code == 200:
-                data = resp.json()
-                u = data.get('user')
-                if u.get('login') == login:
-                    user = u
-                    break
-        self.assertEqual(config.USERS[login]['lastname'], user.get('lastname'))
-        self.assertEqual(config.USERS[login]['email'], user.get('mail'))
+        users = self.rm.r.user.filter(limit=10)
+        user = [u for u in users if u.firstname == login][0]
+        self.assertEqual(config.USERS[login]['lastname'], user.lastname)
+        self.assertEqual(config.USERS[login]['email'], user.mail)
 
     def test_userdata_ldap(self):
         """ Functional tests to verify the ldap user

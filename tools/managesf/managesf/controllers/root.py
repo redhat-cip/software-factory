@@ -17,7 +17,7 @@ from pecan import expose
 from pecan import abort
 from pecan.rest import RestController
 from pecan import request, response
-from managesf.controllers import gerrit, redmine, backup
+from managesf.controllers import gerrit, redminec, backup
 import logging
 import os.path
 
@@ -133,7 +133,7 @@ class MembershipController(RestController):
         try:
             # Add/update user for the project groups
             gerrit.add_user_to_projectgroups(project, user, inp['groups'])
-            redmine.add_user_to_projectgroups(project, user, inp['groups'])
+            redminec.add_user_to_projectgroups(project, user, inp['groups'])
             response.status = 201
             return "User %s has been added in group(s): %s for project %s" % \
                 (user, ", ".join(inp['groups']), project)
@@ -147,7 +147,7 @@ class MembershipController(RestController):
         try:
             # delete user from all project groups
             gerrit.delete_user_from_projectgroups(project, user, group)
-            redmine.delete_user_from_projectgroups(project, user, group)
+            redminec.delete_user_from_projectgroups(project, user, group)
             response.status = 200
             if group:
                 return "User %s has been deleted from group %s for project %s." % \
@@ -176,7 +176,7 @@ class ProjectController(RestController):
             # create project
             inp = request.json if request.content_length else {}
             gerrit.init_project(name, inp)
-            redmine.init_project(name, inp)
+            redminec.init_project(name, inp)
             response.status = 201
             return "Project %s has been created." % name
         except Exception, e:
@@ -189,7 +189,7 @@ class ProjectController(RestController):
         try:
             # delete project
             gerrit.delete_project(name)
-            redmine.delete_project(name)
+            redminec.delete_project(name)
             response.status = 200
             return "Project %s has been deleted." % name
         except Exception, e:

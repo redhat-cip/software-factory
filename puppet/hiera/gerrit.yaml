@@ -5,7 +5,6 @@ gerrit:
   sshd_listen_address: "*:29418"  # use the same port as above
   issues_tracker_api: "%{hiera('api_redmine_url')}"
   issues_tracker_api_key: REDMINE_API_KEY
-  issues_tracker_version: 1.4
   gerrit_mysql_address: "%{hiera('mysql_url')}"
   gerrit_mysql_db: gerrit
   gerrit_mysql_username: gerrit
