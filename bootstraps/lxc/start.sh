@@ -75,8 +75,8 @@ if [ -z "$1" ] || [ "$1" == "start" ]; then
     echo "Now running edeploy-lxc"
     sudo ${EDEPLOY_LXC} --config ${CONFTEMPDIR}/sf-lxc.yaml stop || exit -1
 
-    if [ -e "/mnt/lxc/puppetmaster/etc/puppet/" ]; then
-        sudo sh -c "echo 'lxc.mount.entry =  /mnt/lxc/puppetmaster/etc/puppet/ /var/lib/lxc/puppetmaster/rootfs/etc/puppet none bind,create=dir 0 0' >  /var/lib/lxc/puppetmaster.config"
+    if [ -e "/mnt/lxc/puppetmaster/etc/puppet/hiera/sf" ]; then
+        sudo sh -c "echo 'lxc.mount.entry =  /mnt/lxc/puppetmaster/etc/puppet/hiera/sf /var/lib/lxc/puppetmaster/rootfs/etc/puppet/hiera/sf none bind,create=dir 0 0' >  /var/lib/lxc/puppetmaster.config"
     else
         sudo rm -f /var/lib/lxc/puppetmaster.config
     fi
@@ -127,8 +127,8 @@ elif [ "$1" == "clean" ]; then
         sudo lxc-destroy --name ${instance} || echo
     done
 elif [ "$1" == "seed" ]; then
-        sudo mkdir -p /mnt/lxc/puppetmaster/etc/puppet/
-        sudo rsync -av /var/lib/lxc/puppetmaster/rootfs/etc/puppet/ /mnt/lxc/puppetmaster/etc/puppet/
+        sudo mkdir -p /mnt/lxc/puppetmaster/etc/puppet/hiera/sf/
+        sudo rsync -av /var/lib/lxc/puppetmaster/rootfs/etc/puppet/hiera/sf/ /mnt/lxc/puppetmaster/etc/puppet/hiera/sf/
         sudo mkdir -p /mnt/lxc/puppetmaster/root/puppet-bootstrapper/
         sudo rsync -av /var/lib/lxc/puppetmaster/rootfs/root/puppet-bootstrapper/ /mnt/lxc/puppetmaster/root/puppet-bootstrapper/
         sudo mkdir -p /mnt/lxc/mysql/mysql/
