@@ -410,14 +410,17 @@ class GerritUtil:
     def setPlus1Verified(self, change_id, revision_id):
         self._submitVerified(change_id, revision_id, '+1')
 
+    def setPlus2Verified(self, change_id, revision_id):
+        self._submitVerified(change_id, revision_id, '+2')
+
     def setMinus1Verified(self, change_id, revision_id):
         self._submitVerified(change_id, revision_id, '-1')
 
     def setNoScoreVerified(self, change_id, revision_id):
         self._submitVerified(change_id, revision_id, '0')
 
-    def setPlus1Approved(self, change_id, revision_id):
-        reviewInput = json.dumps({"labels": {"Approved": 1}})
+    def setPlus1Workflow(self, change_id, revision_id):
+        reviewInput = json.dumps({"labels": {"Workflow": 1}})
         headers = {'Content-Type': 'application/json'}
         self.rest.post('/a/changes/%s/revisions/%s/review' %
                        (change_id, revision_id), data=reviewInput,

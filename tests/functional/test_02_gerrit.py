@@ -115,7 +115,7 @@ class TestGerrit(Base):
         url = '/a/changes/%s/?o=LABELS' % change_id
         labels = gu.rest.get(url)['labels']
 
-        self.assertIn('Approved', labels)
+        self.assertIn('Workflow', labels)
         self.assertIn('Code-Review', labels)
         self.assertIn('Verified', labels)
         self.assertEqual(len(labels.keys()), 3)
@@ -123,7 +123,7 @@ class TestGerrit(Base):
         gu.delPubKey(k_index)
 
     def test_review_submit_approval(self):
-        """ Test submit criteria - CR(2 +2s), V(+1), A(+1)
+        """ Test submit criteria - CR(2 +2s), V(+2), A(+1)
         """
         pname = 'p_%s' % create_random_str()
         options = {'core-group': 'user2'}
@@ -150,10 +150,10 @@ class TestGerrit(Base):
         gu.setPlus1CodeReview(change_id, "current")
         self.assertEqual(gu.submitPatch(change_id, "current"), 409)
 
-        gu.setPlus1Verified(change_id, "current")
+        gu.setPlus2Verified(change_id, "current")
         self.assertEqual(gu.submitPatch(change_id, "current"), 409)
 
-        gu.setPlus1Approved(change_id, "current")
+        gu.setPlus1Workflow(change_id, "current")
         self.assertEqual(gu.submitPatch(change_id, "current"), 409)
 
         gu.setPlus2CodeReview(change_id, "current")
@@ -262,8 +262,8 @@ class TestGerrit(Base):
         change_id = change_ids[0]
         # Merge the change
         gu_first_u.setPlus2CodeReview(change_id, "current")
-        gu_first_u.setPlus1Verified(change_id, "current")
-        gu_first_u.setPlus1Approved(change_id, "current")
+        gu_first_u.setPlus2Verified(change_id, "current")
+        gu_first_u.setPlus1Workflow(change_id, "current")
         second_u = config.USER_2
         gu_second_u = GerritUtil(config.GERRIT_SERVER, username=second_u)
         gu_second_u.setPlus2CodeReview(change_id, "current")

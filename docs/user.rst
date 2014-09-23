@@ -246,9 +246,11 @@ links and buttons that you need to be aware of.
       As the name implies, it contains the approvals for code review. Only
       **core-developers** can give '+2' for Code-Review
 
-  - Approved
+  - Workflow
       A '+1' in this means that this patch is approved for merging. Only
-      **core-developers** can give '+1' for 'Approved'
+      **core-developers** can give '+1' for 'Workflow'
+      A '0' in this means that this patch is ready for review.
+      A '-1' in this means that this patch is in work in progress status.
 
 **Add Reviewer**
   This button enables you to add new reviewers. As and when you enter a name
@@ -317,7 +319,7 @@ For any patch, following scores are need
 *Code-Review*
   At least two '+2' (not cummulative) and no negative scoring.
 
-*Approved*
+*Workflow*
   At least one '+1'
 
 

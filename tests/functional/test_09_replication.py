@@ -198,8 +198,8 @@ class TestProjectReplication(Base):
         self.assertGreater(len(change_ids), 0)
         change_id = change_ids[0]
         self.gu.setPlus2CodeReview(change_id, "current")
-        self.gu.setPlus1Verified(change_id, "current")
-        self.gu.setPlus1Approved(change_id, "current")
+        self.gu.setPlus2Verified(change_id, "current")
+        self.gu.setPlus1Workflow(change_id, "current")
         # Put USER_2 as core for config project
         grp_name = '%s-core' % pname
         self.gu.addGroupMember(config.USER_2, grp_name)

@@ -109,8 +109,8 @@ class TestGerritHooks(Base):
         self.assertGreater(len(change_ids), 0)
         change_id = change_ids[0]
         self.gu.setPlus2CodeReview(change_id, "current")
-        self.gu.setPlus1Approved(change_id, "current")
-        self.gu.setPlus1Verified(change_id, "current")
+        self.gu.setPlus1Workflow(change_id, "current")
+        self.gu.setPlus2Verified(change_id, "current")
         self.gu2.setPlus2CodeReview(change_id, "current")
         self.assertEqual(
             self.gu.submitPatch(change_id, "current")['status'], 'MERGED')

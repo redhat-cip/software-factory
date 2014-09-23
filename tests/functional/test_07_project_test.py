@@ -194,22 +194,80 @@ class TestProjectTestsWorkflow(Base):
         change_ids = self.gu.getMyChangesForProject("config")
         self.assertGreater(len(change_ids), 0)
         change_id = change_ids[0]
-        self.gu.setPlus2CodeReview(change_id, "current")
-        self.gu.setPlus1Approved(change_id, "current")
-        self.gu2.setPlus2CodeReview(change_id, "current")
-        submit_result = self.gu.submitPatch(change_id, "current")
 
+        # Check whether zuul sets verified to +1 after running the tests
+        # let some time to Zuul to update the test result to Gerrit.
         attempt = 0
-        while isinstance(submit_result, int):
+        while self.gu.getReviewerApprovals(change_id, 'jenkins')['Verified'] \
+                != '+1':
             if attempt >= 90:
                 break
             time.sleep(1)
-            submit_result = self.gu.submitPatch(change_id, "current")
             attempt += 1
-        if (isinstance(submit_result, int)):
-            print("Could not submit result: %d" % submit_result)
-        self.assertEqual(submit_result['status'], 'MERGED')
 
+        self.assertEqual(
+            self.gu.getReviewerApprovals(change_id, 'jenkins')['Verified'],
+            "+1")
+
+        # review the change
+        self.gu2.setPlus2CodeReview(change_id, "current")
+        time.sleep(5)
+        self.gu.setPlus2CodeReview(change_id, "current")
+        time.sleep(5)
+        self.gu2.setPlus1Workflow(change_id, "current")
+        time.sleep(5)
+
+        # now zuul processes gate pipeline and runs config-check job
+        # Wait for config-check to finish and verify the success
+        self.ju.wait_till_job_completes("config-check",
+                                        last_success_build_num_ch,
+                                        "lastSuccessfulBuild")
+
+        last_build_num_ch, last_success_build_num_ch = 0, 1
+        attempt = 0
+        while last_build_num_ch != last_success_build_num_ch:
+            if attempt >= 90:
+                break
+            time.sleep(1)
+            last_build_num_ch = \
+                self.ju.get_last_build_number("config-check",
+                                              "lastBuild")
+            last_success_build_num_ch = \
+                self.ju.get_last_build_number("config-check",
+                                              "lastSuccessfulBuild")
+            attempt += 1
+
+        self.assertEqual(last_build_num_ch, last_success_build_num_ch)
+
+        # Check whether zuul sets verified to +2 after running the tests
+        # let some time to Zuul to update the test result to Gerrit.
+        attempt = 0
+        while self.gu.getReviewerApprovals(change_id, 'jenkins')['Verified'] \
+                != '+2':
+            if attempt >= 90:
+                break
+            time.sleep(1)
+            attempt += 1
+
+        self.assertEqual(
+            self.gu.getReviewerApprovals(change_id, 'jenkins')['Verified'],
+            "+2")
+
+        # verify whether zuul merged the patch
+        change = self.gu.getChangeDetail('config', 'master', change_id)
+        change_status = change['status']
+        attempt = 0
+        while change_status != 'MERGED':
+            if attempt >= 90:
+                break
+            time.sleep(1)
+            change = self.gu.getChangeDetail('config', 'master', change_id)
+            change_status = change['status']
+            attempt += 1
+        self.assertEqual(change_status, 'MERGED')
+
+        # Test post pipe line
+        # as the patch is merged, post pieline should run config-update job
         # Wait for config-update to finish and verify the success
         self.ju.wait_till_job_completes("config-update",
                                         last_success_build_num_cu,
@@ -230,6 +288,8 @@ class TestProjectTestsWorkflow(Base):
         last_success_build_num_sp_ft = \
             self.ju.get_last_build_number("sample_project-functional-tests",
                                           "lastSuccessfulBuild")
+        # Test config-update
+        # config-update should have created jobs for sample_project
         # Trigger tests on sample_project
         # Send a review and check tests has been run
         self.gitu_admin.add_commit_and_publish(
