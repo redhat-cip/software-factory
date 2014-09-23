@@ -92,6 +92,9 @@ function get_logs {
     O=${ARTIFACTS_DIR}
     ssh -o StrictHostKeyChecking=no root@`get_ip puppetmaster` "cd puppet-bootstrapper; ./getlogs.sh"
     scp -r -o StrictHostKeyChecking=no root@`get_ip puppetmaster`:/tmp/logs/* $O/
+
+    # Retrieve Xunit output and store it in Jenkins workspace
+    scp -r -o StrictHostKeyChecking=no root@`get_ip puppetmaster`:~/puppet-bootstrapper/nosetests.xml .
 }
 
 function host_debug {
@@ -209,7 +212,7 @@ function run_serverspec {
 function run_functional_tests {
     echo "$(date) ======= Starting functional tests ========="
     ssh -o StrictHostKeyChecking=no root@`get_ip puppetmaster` \
-            "cd puppet-bootstrapper; SF_SUFFIX=${SF_SUFFIX} SF_ROOT=\$(pwd) nosetests -v" 2>&1 \
+            "cd puppet-bootstrapper; SF_SUFFIX=${SF_SUFFIX} SF_ROOT=\$(pwd) nosetests --with-xunit -v" 2>&1 \
             | tee ${ARTIFACTS_DIR}/functional-tests.output
     return ${PIPESTATUS[0]}
 }
