@@ -82,6 +82,9 @@ fi
 if [ ! -d "${EDEPLOY_ROLES}" ]; then
     git clone $EDEPLOY_ROLES_PROJECT ${EDEPLOY_ROLES}
 fi
+
+(cd ${EDEPLOY};       git checkout $ED_TAG; git pull)
+(cd ${EDEPLOY_ROLES}; git checkout $ED_TAG; git pull)
 EDEPLOY_ROLES_REL=$(cd ${EDEPLOY_ROLES}; ${MAKE} version)
 
 # Prepare prebuild roles
@@ -93,67 +96,41 @@ PREBUILD_TARGET=$WORKSPACE/roles/install/$EDEPLOY_ROLES_REL
 cloud_img="cloud-$EDEPLOY_ROLES_REL.edeploy"
 install_server_img="install-server-$EDEPLOY_ROLES_REL.edeploy"
 
-# Check if role synced recently (< 1h)
-TIME_DIFF=$(echo $(date '+%s') - 0$(stat -c '%Y' $PREBUILD_TARGET/$install_server_img.md5 2> /dev/null) | bc)
-if [ ${TIME_DIFF} -gt 3600 ]; then
-    (cd ${EDEPLOY};       git checkout $ED_TAG; git pull)
-    (cd ${EDEPLOY_ROLES}; git checkout $ED_TAG; git pull)
-
-    if [ ${EDEPLOY_ROLES_REL} != "$(cd ${EDEPLOY_ROLES}; ${MAKE} version)" ]; then
-        echo "============================================================================"
-        echo "Edeploy roles version bump from ${EDEPLOY_ROLES_REL} to $(cd ${EDEPLOY_ROLES}; ${MAKE} version)..."
-        echo "============================================================================"
-        exec ./build_roles.sh
-    fi
-    TEMP_DIR=$(mktemp -d /tmp/edeploy-check-XXXXX)
-    curl -s -o ${TEMP_DIR}/$install_server_img.md5 ${BASE_URL}/$install_server_img.md5
-    curl -s -o ${TEMP_DIR}/$cloud_img.md5 ${BASE_URL}/$cloud_img.md5
-    [ ! -f $PREBUILD_TARGET/$install_server_img.md5 ] && sudo touch $PREBUILD_TARGET/$install_server_img.md5
-    diff $PREBUILD_TARGET/$install_server_img.md5 ${TEMP_DIR}/$install_server_img.md5 || {
-        curl -s -o ${TEMP_DIR}/$install_server_img ${BASE_URL}/$install_server_img
-        sudo mv -f ${TEMP_DIR}/$install_server_img* $PREBUILD_TARGET
-        # Remove the previously unziped archive
-        [ -d $PREBUILD_TARGET/install-server ] && sudo rm -Rf $PREBUILD_TARGET/install-server
-    }
-    [ ! -f $PREBUILD_TARGET/$cloud_img.md5 ] && sudo touch $PREBUILD_TARGET/$cloud_img.md5
-    diff $PREBUILD_TARGET/$cloud_img.md5 ${TEMP_DIR}/$cloud_img.md5 || {
-        curl -s -o ${TEMP_DIR}/$cloud_img ${BASE_URL}/$cloud_img
-        sudo mv -f ${TEMP_DIR}/$cloud_img* $PREBUILD_TARGET
-        # Remove the previously unziped archive
-        [ -d $PREBUILD_TARGET/cloud ] && sudo rm -Rf $PREBUILD_TARGET/cloud
-    }
-    for role in mysql slave install-server-vm softwarefactory; do
-        role=${role}-${SF_VER}
-        curl -s -o ${TEMP_DIR}/${role}.md5 ${BASE_URL}/${role}.md5 || continue
-        # Swift does not return 404 but 'Not Found'
-        grep -q 'Not Found' ${TEMP_DIR}/${role}.md5 && continue
-        diff ${TEMP_DIR}/${role}.md5 ${UPSTREAM}/${role}.md5 || {
-            sudo curl -s -o ${UPSTREAM}/${role}.edeploy ${BASE_URL}/${role}.edeploy
-            sudo curl -s -o ${UPSTREAM}/${role}.edeploy.md5 ${BASE_URL}/${role}.edeploy.md5
-            sudo mv -f ${TEMP_DIR}/${role}.md5 ${UPSTREAM}/${role}.md5
-            role_md5=$(cat ${UPSTREAM}/${role}.edeploy | md5sum - | cut -d ' ' -f1)
-            [ "${role_md5}" != "$(cat ${UPSTREAM}/${role}.edeploy.md5 | cut -d ' ' -f1)" ] && {
-                echo "${role} archive md5 mismatch ! exit."
-                exit 1
-            }
+# Check if edeploy roles are up-to-date
+[ ! -f $PREBUILD_TARGET/$install_server_img.md5 ] && sudo touch $PREBUILD_TARGET/$install_server_img.md5
+[ ! -f $PREBUILD_TARGET/$cloud_img.md5 ] &&          sudo touch $PREBUILD_TARGET/$cloud_img.md5
+TEMP_DIR=$(mktemp -d /tmp/edeploy-check-XXXXX)
+curl -s -o ${TEMP_DIR}/$install_server_img.md5 ${BASE_URL}/$install_server_img.md5
+curl -s -o ${TEMP_DIR}/$cloud_img.md5          ${BASE_URL}/$cloud_img.md5
+diff $PREBUILD_TARGET/$install_server_img.md5 ${TEMP_DIR}/$install_server_img.md5 || {
+    curl -s -o ${TEMP_DIR}/$install_server_img ${BASE_URL}/$install_server_img
+    sudo mv -f ${TEMP_DIR}/$install_server_img* $PREBUILD_TARGET
+    # Remove the previously unziped archive
+    [ -d $PREBUILD_TARGET/install-server ] && sudo rm -Rf $PREBUILD_TARGET/install-server
+}
+diff $PREBUILD_TARGET/$cloud_img.md5 ${TEMP_DIR}/$cloud_img.md5 || {
+    curl -s -o ${TEMP_DIR}/$cloud_img ${BASE_URL}/$cloud_img
+    sudo mv -f ${TEMP_DIR}/$cloud_img* $PREBUILD_TARGET
+    # Remove the previously unziped archive
+    [ -d $PREBUILD_TARGET/cloud ] && sudo rm -Rf $PREBUILD_TARGET/cloud
+}
+for role in mysql slave install-server-vm softwarefactory; do
+    role=${role}-${SF_VER}
+    curl -s -o ${TEMP_DIR}/${role}.md5 ${BASE_URL}/${role}.md5 || continue
+    # Swift does not return 404 but 'Not Found'
+    grep -q 'Not Found' ${TEMP_DIR}/${role}.md5 && continue
+    diff ${TEMP_DIR}/${role}.md5 ${UPSTREAM}/${role}.md5 || {
+        sudo curl -s -o ${UPSTREAM}/${role}.edeploy ${BASE_URL}/${role}.edeploy
+        sudo curl -s -o ${UPSTREAM}/${role}.edeploy.md5 ${BASE_URL}/${role}.edeploy.md5
+        sudo mv -f ${TEMP_DIR}/${role}.md5 ${UPSTREAM}/${role}.md5
+        role_md5=$(cat ${UPSTREAM}/${role}.edeploy | md5sum - | cut -d ' ' -f1)
+        [ "${role_md5}" != "$(cat ${UPSTREAM}/${role}.edeploy.md5 | cut -d ' ' -f1)" ] && {
+            echo "${role} archive md5 mismatch ! exit."
+            exit 1
         }
-    done
-    rm -Rf ${TEMP_DIR}
-
-
-    # Verified the prebuild role we have with the md5
-    install_server_md5=$(cat $PREBUILD_TARGET/$install_server_img | md5sum - | cut -d ' ' -f1)
-    [ "$install_server_md5" != "$(cat $PREBUILD_TARGET/$install_server_img.md5 | cut -d ' ' -f1)" ] && {
-        echo "Install server role archive md5 mismatch ! exit."
-        exit 1
     }
-    cloud_md5=$(cat $PREBUILD_TARGET/$cloud_img | md5sum - | cut -d ' ' -f1)
-    [ "$cloud_md5" != "$(cat $PREBUILD_TARGET/$cloud_img.md5 | cut -d ' ' -f1)" ] && {
-        echo "cloud role archive md5 mismatch ! exit."
-        exit 1
-    }
-    sudo touch $PREBUILD_TARGET/$install_server_img.md5
-fi
+done
+rm -Rf ${TEMP_DIR}
 
 # Uncompress prebuild images if needed
 cd $PREBUILD_TARGET
