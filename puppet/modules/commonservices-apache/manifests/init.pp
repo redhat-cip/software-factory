@@ -93,10 +93,17 @@ class commonservices-apache {
     notify => Service['webserver'],
   }
 
-
   file { '/var/www/static':
     ensure  => link,
     target  => '/srv/lodgeit/lodgeit/lodgeit/static/',
+  }
+
+  file {'/var/www/docs':
+    ensure => directory,
+    recurse => true,
+    mode   => '0644',
+    owner  => $httpd_user,
+    group  => $httpd_user,
   }
 
 }

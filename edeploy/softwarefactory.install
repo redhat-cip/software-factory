@@ -33,7 +33,8 @@ NODEJS_NPM="https://www.npmjs.org/install.sh"
 REDMINE_RHEL="http://www.redmine.org/releases/redmine-2.5.2.tar.gz"
 MOD_AUTH_PUBTKT="https://neon1.net/mod_auth_pubtkt/mod_auth_pubtkt-0.8.tar.gz"
 
-GERRITHOOKS=../gerrit-hooks
+DOCDIR="../docs"
+GERRITHOOKS="../gerrit-hooks"
 
 # This function will check the target OS kind and skip if needed
 restore_apt_repo $dir
@@ -204,6 +205,12 @@ do_chroot $dir bash -c "cd /var/www/managesf; pip install -r requirements.txt"
 
 # JJB need pbr > 0.8
 do_chroot $dir bash -c "pip install -U pbr==0.8.2"
+
+# Documentation
+[ ! -d "${dir}/var/www/docs" ] && mkdir $dir/var/www/docs
+[ ! -d "${DOCDIR}/_build/html" ] && cd ${DOCDIR} && make html ; cd -
+cp -r ${DOCDIR}/_build/html/* ${dir}/var/www/docs/
+rm -rf ${DOCDIR}/_build/html/
 
 clear_packages_cache $dir
 

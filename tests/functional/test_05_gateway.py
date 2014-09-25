@@ -25,7 +25,7 @@ class TestGateway(unittest.TestCase):
         """ Test if all service links are shown in topmenu
         """
         subpaths = ["/r/", "/jenkins/", "/redmine/",
-                    "/zuul/", "/etherpad/", "/paste/"]
+                    "/zuul/", "/etherpad/", "/paste/", "/docs/"]
         url = "http://%s/" % config.GATEWAY_HOST
         resp = requests.get(url)
         self.assertEqual(resp.status_code, 200)
@@ -101,5 +101,12 @@ class TestGateway(unittest.TestCase):
         """ Test if static dir for paste is accessible on gateway host
         """
         url = "http://%s/static/jquery.js" % config.GATEWAY_HOST
+        resp = requests.get(url)
+        self.assertEqual(resp.status_code, 200)
+
+    def test_docs_accessible(self):
+        """ Test if Sphinx docs are accessible on gateway host
+        """
+        url = "http://%s/docs/index.html" % config.GATEWAY_HOST
         resp = requests.get(url)
         self.assertEqual(resp.status_code, 200)

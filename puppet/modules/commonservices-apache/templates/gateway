@@ -36,6 +36,7 @@
     Alias /bootstrap.min.js /var/www/bootstrap.min.js
     Alias /jquery.min.js /var/www/jquery.min.js
     Alias /static/ /var/www/static/
+    Alias /docs/ /var/www/docs/
     ScriptAliasMatch ^/[^(auth)|(managesf)].*$ /var/www/index.py
 
     <Directory /var/www>
