@@ -53,6 +53,37 @@ function prepare_artifacts {
     set -x
 }
 
+function swift_upload_artifacts {
+    # Environment variables HOST, ACCOUNT, CONTAINER and SECRET must be set
+    if [ -z "${HOST}" ] || [ -z "${ACCOUNT}" ] || [ -z "${CONTAINER}" ] || [ -z "${SECRET}" ]; then
+        return
+    fi
+
+    PREFIX=${BUILD_ID:-""}
+    if [ "${PREFIX}" == "" ]; then
+        PREFIX=`date +"%Y%m%d-%H%M%S"`
+    fi
+
+    INDEXFILE=`mktemp`
+
+    echo "<html><body>" > ${INDEXFILE}
+    for OBJECT in `find $1 -type f`; do
+        SWIFT_PATH="/v1/${ACCOUNT}/${CONTAINER}/${PREFIX}/${OBJECT}"
+        TEMPURL=`swift tempurl PUT 3600 ${SWIFT_PATH} ${SECRET}`
+        curl -s -H "X-Delete-After: 864000" -H "Content-Type: text/plain" -X PUT --upload-file "$OBJECT" "http://${HOST}${TEMPURL}"
+        echo -e "<a href=\"http://${HOST}${SWIFT_PATH}\">${OBJECT}</a><br />\n" >> ${INDEXFILE}
+    done
+    echo "</body></html>" >> ${INDEXFILE}
+
+    SWIFT_PATH="/v1/${ACCOUNT}/${CONTAINER}/${PREFIX}/index.html"
+    TEMPURL=`swift tempurl PUT 3600 ${SWIFT_PATH} ${SECRET}`
+    curl -i -H "X-Delete-After: 864000" -X PUT --upload-file ${INDEXFILE} "http://${HOST}${TEMPURL}"
+
+    echo "Artifacts uploaded to Swift: http://${HOST}${SWIFT_PATH}"
+
+    rm ${INDEXFILE}
+}
+
 function publish_artifacts {
     set +x
     sudo find ${ARTIFACTS_DIR} -type d -exec chmod 550 {} \;
@@ -63,6 +94,7 @@ function publish_artifacts {
     else
         echo "Logs will be available here: ${ARTIFACTS_DIR}"
     fi
+    swift_upload_artifacts ${ARTIFACTS_DIR}
 }
 
 function scan_and_configure_knownhosts {
