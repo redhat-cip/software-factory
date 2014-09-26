@@ -20,12 +20,12 @@ import shutil
 
 from utils import Base
 from utils import ManageSfUtils
-from utils import GerritUtil
 from utils import GerritGitUtils
 from utils import create_random_str
 from utils import set_private_key
 
 from pysflib.sfredmine import RedmineUtils
+from pysflib.sfgerrit import GerritUtils
 
 
 class TestManageSF(Base):
@@ -47,8 +47,9 @@ class TestManageSF(Base):
         self.rm = RedmineUtils(
             'http://%s' % config.REDMINE_HOST,
             auth_cookie=config.USERS[config.ADMIN_USER]['auth_cookie'])
-        self.gu = GerritUtil(config.GERRIT_SERVER,
-                             username=config.ADMIN_USER)
+        self.gu = GerritUtils(
+            'http://%s' % config.GERRIT_HOST,
+            auth_cookie=config.USERS[config.ADMIN_USER]['auth_cookie'])
 
     def project_exists_ex(self, name, user):
         # Test here the project is "public"
@@ -68,8 +69,8 @@ class TestManageSF(Base):
         for dirs in self.dirs_to_delete:
             shutil.rmtree(dirs)
 
-    def createProject(self, name, user,
-                      options=None):
+    def create_project(self, name, user,
+                       options=None):
         self.msu.createProject(name, user,
                                options)
         self.projects.append(name)
@@ -78,16 +79,16 @@ class TestManageSF(Base):
         """ Create public project on redmine and gerrit as admin
         """
         pname = 'p_%s' % create_random_str()
-        self.createProject(pname, config.ADMIN_USER)
+        self.create_project(pname, config.ADMIN_USER)
         # Gerrit part
-        self.assertTrue(self.gu.isPrjExist(pname))
-        self.assertTrue(self.gu.isGroupExist('%s-ptl' % pname))
-        self.assertTrue(self.gu.isGroupExist('%s-core' % pname))
+        self.assertTrue(self.gu.project_exists(pname))
+        self.assertTrue(self.gu.group_exists('%s-ptl' % pname))
+        self.assertTrue(self.gu.group_exists('%s-core' % pname))
         # TODO(Project creator, as project owner, should only be in ptl group)
         self.assertTrue(
-            self.gu.isMemberInGroup(config.ADMIN_USER, '%s-ptl' % pname))
+            self.gu.member_in_group(config.ADMIN_USER, '%s-ptl' % pname))
         self.assertTrue(
-            self.gu.isMemberInGroup(config.ADMIN_USER, '%s-core' % pname))
+            self.gu.member_in_group(config.ADMIN_USER, '%s-core' % pname))
         # Redmine part
         self.assertTrue(self.rm.project_exists(pname))
         self.assertTrue(
@@ -101,20 +102,20 @@ class TestManageSF(Base):
         """
         pname = 'p_%s' % create_random_str()
         options = {"private": ""}
-        self.createProject(pname, config.ADMIN_USER,
-                           options=options)
+        self.create_project(pname, config.ADMIN_USER,
+                            options=options)
         # Gerrit part
-        self.assertTrue(self.gu.isPrjExist(pname))
-        self.assertTrue(self.gu.isGroupExist('%s-ptl' % pname))
-        self.assertTrue(self.gu.isGroupExist('%s-core' % pname))
-        self.assertTrue(self.gu.isGroupExist('%s-dev' % pname))
+        self.assertTrue(self.gu.project_exists(pname))
+        self.assertTrue(self.gu.group_exists('%s-ptl' % pname))
+        self.assertTrue(self.gu.group_exists('%s-core' % pname))
+        self.assertTrue(self.gu.group_exists('%s-dev' % pname))
         # TODO(Project creator, as project owner, should only be in ptl group)
         self.assertTrue(
-            self.gu.isMemberInGroup(config.ADMIN_USER, '%s-ptl' % pname))
+            self.gu.member_in_group(config.ADMIN_USER, '%s-ptl' % pname))
         self.assertTrue(
-            self.gu.isMemberInGroup(config.ADMIN_USER, '%s-core' % pname))
+            self.gu.member_in_group(config.ADMIN_USER, '%s-core' % pname))
         self.assertTrue(
-            self.gu.isMemberInGroup(config.ADMIN_USER, '%s-dev' % pname))
+            self.gu.member_in_group(config.ADMIN_USER, '%s-dev' % pname))
         # Redmine part
         self.assertTrue(self.rm.project_exists(pname))
         self.assertTrue(
@@ -127,30 +128,30 @@ class TestManageSF(Base):
         """ Delete public project on redmine and gerrit as admin
         """
         pname = 'p_%s' % create_random_str()
-        self.createProject(pname, config.ADMIN_USER)
-        self.assertTrue(self.gu.isPrjExist(pname))
+        self.create_project(pname, config.ADMIN_USER)
+        self.assertTrue(self.gu.project_exists(pname))
         self.assertTrue(self.rm.project_exists(pname))
         self.msu.deleteProject(pname, config.ADMIN_USER)
-        self.assertFalse(self.gu.isPrjExist(pname))
-        self.assertFalse(self.gu.isGroupExist('%s-ptl' % pname))
+        self.assertFalse(self.gu.project_exists(pname))
+        self.assertFalse(self.gu.group_exists('%s-ptl' % pname))
         self.assertFalse(self.rm.project_exists(pname))
-        self.assertFalse(self.gu.isGroupExist('%s-core' % pname))
+        self.assertFalse(self.gu.group_exists('%s-core' % pname))
         self.projects.remove(pname)
 
     def test_create_public_project_as_user(self):
         """ Create public project on redmine and gerrit as user
         """
         pname = 'p_%s' % create_random_str()
-        self.createProject(pname, config.USER_2)
+        self.create_project(pname, config.USER_2)
         # Gerrit part
-        self.assertTrue(self.gu.isPrjExist(pname))
-        self.assertTrue(self.gu.isGroupExist('%s-ptl' % pname))
-        self.assertTrue(self.gu.isGroupExist('%s-core' % pname))
+        self.assertTrue(self.gu.project_exists(pname))
+        self.assertTrue(self.gu.group_exists('%s-ptl' % pname))
+        self.assertTrue(self.gu.group_exists('%s-core' % pname))
         # TODO(Project creator, as project owner, should only be in ptl group)
         self.assertTrue(
-            self.gu.isMemberInGroup(config.ADMIN_USER, '%s-ptl' % pname))
+            self.gu.member_in_group(config.ADMIN_USER, '%s-ptl' % pname))
         self.assertTrue(
-            self.gu.isMemberInGroup(config.ADMIN_USER, '%s-core' % pname))
+            self.gu.member_in_group(config.ADMIN_USER, '%s-core' % pname))
         # Redmine part
         self.assertTrue(self.rm.project_exists(pname))
         self.assertTrue(self.project_exists_ex(pname, config.USER_2))
@@ -165,20 +166,20 @@ class TestManageSF(Base):
         """
         pname = 'p_%s' % create_random_str()
         options = {"private": ""}
-        self.createProject(pname, config.USER_2,
-                           options=options)
+        self.create_project(pname, config.USER_2,
+                            options=options)
         # Gerrit part
-        self.assertTrue(self.gu.isPrjExist(pname))
-        self.assertTrue(self.gu.isGroupExist('%s-ptl' % pname))
-        self.assertTrue(self.gu.isGroupExist('%s-core' % pname))
-        self.assertTrue(self.gu.isGroupExist('%s-dev' % pname))
+        self.assertTrue(self.gu.project_exists(pname))
+        self.assertTrue(self.gu.group_exists('%s-ptl' % pname))
+        self.assertTrue(self.gu.group_exists('%s-core' % pname))
+        self.assertTrue(self.gu.group_exists('%s-dev' % pname))
         # TODO(Project creator, as project owner, should only be in ptl group)
         self.assertTrue(
-            self.gu.isMemberInGroup(config.USER_2, '%s-ptl' % pname))
+            self.gu.member_in_group(config.USER_2, '%s-ptl' % pname))
         self.assertTrue(
-            self.gu.isMemberInGroup(config.USER_2, '%s-core' % pname))
+            self.gu.member_in_group(config.USER_2, '%s-core' % pname))
         self.assertTrue(
-            self.gu.isMemberInGroup(config.USER_2, '%s-dev' % pname))
+            self.gu.member_in_group(config.USER_2, '%s-dev' % pname))
         # Redmine part
         self.assertTrue(self.rm.project_exists(pname))
         self.assertTrue(self.project_exists_ex(pname, config.USER_2))
@@ -195,15 +196,15 @@ class TestManageSF(Base):
         options = {"ptl-group": "",
                    "core-group": "%s,%s" % (config.USER_2, config.USER_3),
                    }
-        self.createProject(pname, config.ADMIN_USER,
-                           options=options)
+        self.create_project(pname, config.ADMIN_USER,
+                            options=options)
         # Gerrit part
-        self.assertTrue(self.gu.isPrjExist(pname))
+        self.assertTrue(self.gu.project_exists(pname))
         # TODO(Project creator, as project owner, should only be in ptl group)
         self.assertTrue(
-            self.gu.isMemberInGroup(config.ADMIN_USER, '%s-ptl' % pname))
+            self.gu.member_in_group(config.ADMIN_USER, '%s-ptl' % pname))
         for user in (config.ADMIN_USER, config.USER_2, config.USER_3):
-            self.assertTrue(self.gu.isMemberInGroup(user, '%s-core' % pname))
+            self.assertTrue(self.gu.member_in_group(user, '%s-core' % pname))
         # Redmine part
         self.assertTrue(self.rm.project_exists(pname))
         self.assertTrue(
@@ -220,17 +221,17 @@ class TestManageSF(Base):
                    "core-group": "%s,%s" % (config.USER_2, config.USER_3),
                    "dev-group": "%s" % (config.USER_4),
                    }
-        self.createProject(pname, config.ADMIN_USER,
-                           options=options)
+        self.create_project(pname, config.ADMIN_USER,
+                            options=options)
         # Gerrit part
-        self.assertTrue(self.gu.isPrjExist(pname))
+        self.assertTrue(self.gu.project_exists(pname))
         # TODO(Project creator, as project owner, should only be in ptl group)
         self.assertTrue(
-            self.gu.isMemberInGroup(config.ADMIN_USER, '%s-ptl' % pname))
+            self.gu.member_in_group(config.ADMIN_USER, '%s-ptl' % pname))
         for user in (config.ADMIN_USER, config.USER_2, config.USER_3):
-            self.assertTrue(self.gu.isMemberInGroup(user, '%s-core' % pname))
+            self.assertTrue(self.gu.member_in_group(user, '%s-core' % pname))
         self.assertTrue(
-            self.gu.isMemberInGroup(config.USER_4, '%s-dev' % pname))
+            self.gu.member_in_group(config.USER_4, '%s-dev' % pname))
         # Redmine part
         # it should be visible to admin
         self.assertTrue(self.rm.project_exists(pname))
@@ -244,12 +245,12 @@ class TestManageSF(Base):
         """ Clone public project as admin and check content
         """
         pname = 'p_%s' % create_random_str()
-        self.createProject(pname, config.ADMIN_USER)
+        self.create_project(pname, config.ADMIN_USER)
         ggu = GerritGitUtils(config.ADMIN_USER,
                              config.ADMIN_PRIV_KEY_PATH,
                              config.USERS[config.ADMIN_USER]['email'])
-        url = "ssh://%s@%s/%s" % (config.ADMIN_USER,
-                                  config.GERRIT_HOST, pname)
+        url = "ssh://%s@%s:29418/%s" % (config.ADMIN_USER,
+                                        config.GERRIT_HOST, pname)
         clone_dir = ggu.clone(url, pname)
         self.dirs_to_delete.append(os.path.dirname(clone_dir))
         # Test that the clone is a success
@@ -274,12 +275,12 @@ class TestManageSF(Base):
         """
         pname = 'p_%s' % create_random_str()
         options = {"private": ""}
-        self.createProject(pname, config.ADMIN_USER, options=options)
+        self.create_project(pname, config.ADMIN_USER, options=options)
         ggu = GerritGitUtils(config.ADMIN_USER,
                              config.ADMIN_PRIV_KEY_PATH,
                              config.USERS[config.ADMIN_USER]['email'])
-        url = "ssh://%s@%s/%s" % (config.ADMIN_USER,
-                                  config.GERRIT_HOST, pname)
+        url = "ssh://%s@%s:29418/%s" % (config.ADMIN_USER,
+                                        config.GERRIT_HOST, pname)
         clone_dir = ggu.clone(url, pname)
         self.dirs_to_delete.append(os.path.dirname(clone_dir))
         # Test that the clone is a success
@@ -304,18 +305,20 @@ class TestManageSF(Base):
         """
         pname = 'p_%s' % create_random_str()
         # create the project as admin
-        self.createProject(pname, config.ADMIN_USER)
+        self.create_project(pname, config.ADMIN_USER)
         # add user2 ssh pubkey to user2
-        gu = GerritUtil(config.GERRIT_SERVER, username=config.USER_2)
-        gu.addPubKey(config.USER_2_PUB_KEY)
+        gu = GerritUtils(
+            'http://' + config.GERRIT_HOST,
+            auth_cookie=config.USERS[config.USER_2]['auth_cookie'])
+        gu.add_pubkey(config.USER_2_PUB_KEY)
         # prepare to clone
         priv_key_path = set_private_key(config.USER_2_PRIV_KEY)
         self.dirs_to_delete.append(os.path.dirname(priv_key_path))
         ggu = GerritGitUtils(config.USER_2,
                              priv_key_path,
                              config.USERS[config.USER_2]['email'])
-        url = "ssh://%s@%s/%s" % (config.USER_2,
-                                  config.GERRIT_HOST, pname)
+        url = "ssh://%s@%s:29418/%s" % (config.USER_2,
+                                        config.GERRIT_HOST, pname)
         # clone
         clone_dir = ggu.clone(url, pname)
         self.dirs_to_delete.append(os.path.dirname(clone_dir))
@@ -330,18 +333,20 @@ class TestManageSF(Base):
         """
         pname = 'p_%s' % create_random_str()
         # create the project as admin
-        self.createProject(pname, config.USER_2)
+        self.create_project(pname, config.USER_2)
         # add user2 ssh pubkey to user2
-        gu = GerritUtil(config.GERRIT_SERVER, username=config.USER_2)
-        gu.addPubKey(config.USER_2_PUB_KEY)
+        gu = GerritUtils(
+            'http://' + config.GERRIT_HOST,
+            auth_cookie=config.USERS[config.USER_2]['auth_cookie'])
+        gu.add_pubkey(config.USER_2_PUB_KEY)
         # prepare to clone
         priv_key_path = set_private_key(config.USER_2_PRIV_KEY)
         self.dirs_to_delete.append(os.path.dirname(priv_key_path))
         ggu = GerritGitUtils(config.USER_2,
                              priv_key_path,
                              config.USERS[config.USER_2]['email'])
-        url = "ssh://%s@%s/%s" % (config.USER_2,
-                                  config.GERRIT_HOST, pname)
+        url = "ssh://%s@%s:29418/%s" % (config.USER_2,
+                                        config.GERRIT_HOST, pname)
         # clone
         clone_dir = ggu.clone(url, pname)
         self.dirs_to_delete.append(os.path.dirname(clone_dir))
@@ -356,13 +361,13 @@ class TestManageSF(Base):
         """
         # Create a test upstream project
         pname_us = 'p_%s' % 'upstream'
-        self.createProject(pname_us, config.ADMIN_USER)
+        self.create_project(pname_us, config.ADMIN_USER)
 
         ggu_us = GerritGitUtils(config.ADMIN_USER,
                                 config.ADMIN_PRIV_KEY_PATH,
                                 config.USERS[config.ADMIN_USER]['email'])
-        url = "ssh://%s@%s/%s" % (config.ADMIN_USER,
-                                  config.GERRIT_HOST, pname_us)
+        url = "ssh://%s@%s:29418/%s" % (config.ADMIN_USER,
+                                        config.GERRIT_HOST, pname_us)
         # clone
         us_clone_dir = ggu_us.clone(url, pname_us)
         self.dirs_to_delete.append(os.path.dirname(us_clone_dir))
@@ -384,13 +389,13 @@ class TestManageSF(Base):
         pname = 'p_%s' % create_random_str()
         # create the project as admin
         options = {"upstream": upstream_url}
-        self.createProject(pname, config.ADMIN_USER, options=options)
+        self.create_project(pname, config.ADMIN_USER, options=options)
 
         ggu = GerritGitUtils(config.ADMIN_USER,
                              config.ADMIN_PRIV_KEY_PATH,
                              config.USERS[config.ADMIN_USER]['email'])
-        url = "ssh://%s@%s/%s" % (config.ADMIN_USER,
-                                  config.GERRIT_HOST, pname)
+        url = "ssh://%s@%s:29418/%s" % (config.ADMIN_USER,
+                                        config.GERRIT_HOST, pname)
         # clone
         clone_dir = ggu.clone(url, pname)
         self.dirs_to_delete.append(os.path.dirname(clone_dir))
@@ -403,12 +408,12 @@ class TestManageSF(Base):
         """ Checking if admin can delete projects that are not owned by admin
         """
         pname = 'p_%s' % create_random_str()
-        self.createProject(pname, config.USER_2)
-        self.assertTrue(self.gu.isPrjExist(pname))
+        self.create_project(pname, config.USER_2)
+        self.assertTrue(self.gu.project_exists(pname))
         self.assertTrue(self.rm.project_exists(pname))
         self.msu.deleteProject(pname, config.ADMIN_USER)
-        self.assertFalse(self.gu.isPrjExist(pname))
-        self.assertFalse(self.gu.isGroupExist('%s-ptl' % pname))
+        self.assertFalse(self.gu.project_exists(pname))
+        self.assertFalse(self.gu.group_exists('%s-ptl' % pname))
         self.assertFalse(self.rm.project_exists(pname))
-        self.assertFalse(self.gu.isGroupExist('%s-core' % pname))
+        self.assertFalse(self.gu.group_exists('%s-core' % pname))
         self.projects.remove(pname)

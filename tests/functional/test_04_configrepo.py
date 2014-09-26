@@ -19,7 +19,8 @@ import config
 
 from utils import Base
 from utils import GerritGitUtils
-from utils import GerritUtil
+
+from pysflib.sfgerrit import GerritUtils
 
 
 class TestConfigRepo(Base):
@@ -35,14 +36,16 @@ class TestConfigRepo(Base):
 
     def test_check_config_repo_exists(self):
         pname = 'config'
-        gu = GerritUtil(config.GERRIT_SERVER, username=config.ADMIN_USER)
-        self.assertTrue(gu.isPrjExist(pname))
+        gu = GerritUtils(
+            'http://%s/' % config.GERRIT_HOST,
+            auth_cookie=config.USERS[config.ADMIN_USER]['auth_cookie'])
+        self.assertTrue(gu.project_exists(pname))
 
         ggu = GerritGitUtils(config.ADMIN_USER,
                              config.ADMIN_PRIV_KEY_PATH,
                              config.USERS[config.ADMIN_USER]['email'])
-        url = "ssh://%s@%s/%s" % (config.ADMIN_USER,
-                                  config.GERRIT_HOST, pname)
+        url = "ssh://%s@%s:29418/%s" % (config.ADMIN_USER,
+                                        config.GERRIT_HOST, pname)
         clone_dir = ggu.clone(url, pname)
         # Test that the clone is a success
         self.assertTrue(os.path.isdir(clone_dir))

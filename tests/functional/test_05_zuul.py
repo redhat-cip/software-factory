@@ -22,8 +22,9 @@ from utils import Base
 from utils import set_private_key
 from utils import ManageSfUtils
 from utils import GerritGitUtils
-from utils import GerritUtil
 from utils import JenkinsUtils
+
+from pysflib.sfgerrit import GerritUtils
 
 
 class TestZuulOps(Base):
@@ -49,8 +50,8 @@ class TestZuulOps(Base):
         for dirs in self.dirs_to_delete:
             shutil.rmtree(dirs)
 
-    def createProject(self, name, user,
-                      options=None):
+    def create_project(self, name, user,
+                       options=None):
         self.msu.createProject(name, user,
                                options)
         self.projects.append(name)
@@ -62,21 +63,21 @@ class TestZuulOps(Base):
         # The necessary project descriptions are already declared in Jenkins
         # and zuul
         pname = 'zuul-demo'
-        self.createProject(pname, config.ADMIN_USER)
-
-        # Clone the project and submit it for review
+        self.create_project(pname, config.ADMIN_USER)
         un = config.ADMIN_USER
-        gu = GerritUtil(config.GERRIT_SERVER, username=un)
+        gu = GerritUtils(
+            'http://%s/' % config.GERRIT_HOST,
+            auth_cookie=config.USERS[un]['auth_cookie'])
         ju = JenkinsUtils()
-        k_index = gu.addPubKey(config.USERS[un]["pubkey"])
+        k_index = gu.add_pubkey(config.USERS[un]["pubkey"])
         # Gerrit part
-        self.assertTrue(gu.isPrjExist(pname))
+        self.assertTrue(gu.project_exists(pname))
         priv_key_path = set_private_key(config.USERS[un]["privkey"])
         gitu = GerritGitUtils(un,
                               priv_key_path,
                               config.USERS[un]['email'])
-        url = "ssh://%s@%s/%s" % (un, config.GERRIT_HOST,
-                                  pname)
+        url = "ssh://%s@%s:29418/%s" % (un, config.GERRIT_HOST,
+                                        pname)
         clone_dir = gitu.clone(url, pname)
         self.dirs_to_delete.append(os.path.dirname(clone_dir))
 
@@ -95,7 +96,7 @@ class TestZuulOps(Base):
 
         gitu.add_commit_and_publish(clone_dir, "master", "Test commit")
 
-        change_ids = gu.getMyChangesForProject(pname)
+        change_ids = gu.get_my_changes_for_project(pname)
         self.assertEqual(len(change_ids), 1)
         change_id = change_ids[0]
 
@@ -106,14 +107,14 @@ class TestZuulOps(Base):
                                    last_fail_build_num_ut, "lastFailedBuild")
 
         attempt = 0
-        while "jenkins" not in gu.getReviewers(change_id):
+        while "jenkins" not in gu.get_reviewers(change_id):
             if attempt >= 90:
                 break
             time.sleep(1)
             attempt += 1
 
         attempt = 0
-        while gu.getReviewerApprovals(change_id, 'jenkins')['Verified'] \
+        while gu.get_reviewer_approvals(change_id, 'jenkins')['Verified'] \
                 != '-1':
             if attempt >= 90:
                 break
@@ -121,7 +122,7 @@ class TestZuulOps(Base):
             attempt += 1
 
         self.assertEqual(
-            gu.getReviewerApprovals(change_id, 'jenkins')['Verified'], '-1')
+            gu.get_reviewer_approvals(change_id, 'jenkins')['Verified'], '-1')
 
         # Add the test case files and resubmit for review
         data = "echo Working"
@@ -142,14 +143,14 @@ class TestZuulOps(Base):
                                    "lastSuccessfulBuild")
 
         attempt = 0
-        while "jenkins" not in gu.getReviewers(change_id):
+        while "jenkins" not in gu.get_reviewers(change_id):
             if attempt >= 90:
                 break
             time.sleep(1)
             attempt += 1
 
         attempt = 0
-        while gu.getReviewerApprovals(change_id, 'jenkins')['Verified'] \
+        while gu.get_reviewer_approvals(change_id, 'jenkins')['Verified'] \
                 != '+1':
             if attempt >= 90:
                 break
@@ -157,6 +158,6 @@ class TestZuulOps(Base):
             attempt += 1
 
         self.assertEqual(
-            gu.getReviewerApprovals(change_id, 'jenkins')['Verified'], '+1')
+            gu.get_reviewer_approvals(change_id, 'jenkins')['Verified'], '+1')
 
-        gu.delPubKey(k_index)
+        gu.del_pubkey(k_index)

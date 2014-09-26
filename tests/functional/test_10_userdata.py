@@ -14,16 +14,14 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import config
-import json
-import os
 import requests
 import urllib
 
 from utils import Base
 from utils import ManageSfUtils
-from utils import GerritUtil
 
 from pysflib.sfredmine import RedmineUtils
+from pysflib.sfgerrit import GerritUtils
 
 
 class TestUserdata(Base):
@@ -40,26 +38,24 @@ class TestUserdata(Base):
         self.rm = RedmineUtils(
             'http://%s' % config.REDMINE_HOST,
             auth_cookie=config.USERS[config.ADMIN_USER]['auth_cookie'])
-        self.gu = GerritUtil(config.GERRIT_SERVER,
-                             username=config.ADMIN_USER)
+        self.gu = GerritUtils(
+            'http://%s' % config.GERRIT_HOST,
+            auth_cookie=config.USERS[config.ADMIN_USER]['auth_cookie'])
 
     def tearDown(self):
         for name in self.projects:
             self.msu.deleteProject(name,
                                    config.ADMIN_USER)
 
-    def createProject(self, name, user, options=None,
-                      cookie=None):
+    def create_project(self, name, user, options=None,
+                       cookie=None):
         self.msu.createProject(name, user, options,
                                cookie)
         self.projects.append(name)
 
     def verify_userdata_gerrit(self, login):
         # Now check that the correct data was stored in Gerrit
-        url = "http://gerrit.%s/api/accounts/%s" % (os.environ['SF_SUFFIX'],
-                                                    login)
-        resp = requests.get(url)
-        data = json.loads(resp.content[4:])
+        data = self.gu.get_account(login)
         self.assertEqual(config.USERS[login]['lastname'], data.get('name'))
         self.assertEqual(config.USERS[login]['email'], data.get('email'))
 
