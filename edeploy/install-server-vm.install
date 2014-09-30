@@ -46,6 +46,8 @@ case "$(package_tool)" in
 esac
 
 HOME=/root do_chroot $dir gem install specinfra
+# Install the most recent version of PIP at early stage
+do_chroot $dir bash -c "pip install -U pip>=1.5.6"
 
 (
     cd ..;

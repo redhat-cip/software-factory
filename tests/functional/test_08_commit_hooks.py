@@ -23,9 +23,9 @@ from utils import ManageSfUtils
 from utils import GerritGitUtils
 from utils import create_random_str
 from utils import set_private_key
-from utils import GerritUtil
 
 from pysflib.sfredmine import RedmineUtils
+from pysflib.sfgerrit import GerritUtils
 
 
 class TestGerritHooks(Base):
@@ -48,11 +48,13 @@ class TestGerritHooks(Base):
         self.rm = RedmineUtils(
             'http://%s' % config.REDMINE_HOST,
             auth_cookie=config.USERS[config.ADMIN_USER]['auth_cookie'])
-        self.gu = GerritUtil(config.GERRIT_SERVER,
-                             username=self.u)
-        self.gu2 = GerritUtil(config.GERRIT_SERVER,
-                              username=self.u2)
-        self.gu.addPubKey(config.USERS[self.u]["pubkey"])
+        self.gu = GerritUtils(
+            'http://%s/' % config.GERRIT_HOST,
+            auth_cookie=config.USERS[self.u]['auth_cookie'])
+        self.gu2 = GerritUtils(
+            'http://%s/' % config.GERRIT_HOST,
+            auth_cookie=config.USERS[self.u2]['auth_cookie'])
+        self.gu.add_pubkey(config.USERS[self.u]["pubkey"])
         priv_key_path = set_private_key(config.USERS[self.u]["privkey"])
         self.gitu = GerritGitUtils(self.u,
                                    priv_key_path,
@@ -66,8 +68,8 @@ class TestGerritHooks(Base):
         for dirs in self.dirs_to_delete:
             shutil.rmtree(dirs)
 
-    def createProject(self, name, user,
-                      options=None):
+    def create_project(self, name, user,
+                       options=None):
         self.msu.createProject(name, user,
                                options)
         self.projects.append(name)
@@ -81,16 +83,16 @@ class TestGerritHooks(Base):
         self.msu.deleteProject(pname, self.u)
 
         # Create the project
-        self.createProject(pname, self.u)
+        self.create_project(pname, self.u)
         # Put USER_2 as core for the project
-        self.gu.addGroupMember(self.u2, "%s-core" % pname)
+        self.gu.add_group_member(self.u2, "%s-core" % pname)
 
         # Create an issue on the project
         issue_id = self.rm.create_issue(pname, "There is a problem")
 
         # Clone and commit something
-        url = "ssh://%s@%s/%s" % (self.u, config.GERRIT_HOST,
-                                  pname)
+        url = "ssh://%s@%s:29418/%s" % (self.u, config.GERRIT_HOST,
+                                        pname)
         clone_dir = self.gitu.clone(url, pname)
         cmt_msg = "Fix bug: %s" % issue_id
         self.gitu.add_commit_and_publish(clone_dir, 'master', cmt_msg)
@@ -107,15 +109,14 @@ class TestGerritHooks(Base):
         self.assertTrue(self.rm.test_issue_status(issue_id, 'In Progress'))
 
         # Get the change id and merge the patch
-        change_ids = self.gu.getMyChangesForProject(pname)
+        change_ids = self.gu.get_my_changes_for_project(pname)
         self.assertGreater(len(change_ids), 0)
         change_id = change_ids[0]
-        self.gu.setPlus2CodeReview(change_id, "current")
-        self.gu.setPlus1Workflow(change_id, "current")
-        self.gu.setPlus2Verified(change_id, "current")
-        self.gu2.setPlus2CodeReview(change_id, "current")
-        self.assertEqual(
-            self.gu.submitPatch(change_id, "current")['status'], 'MERGED')
+        self.gu.submit_change_note(change_id, "current", "Code-Review", "2")
+        self.gu.submit_change_note(change_id, "current", "Workflow", "1")
+        self.gu.submit_change_note(change_id, "current", "Verified", "2")
+        self.gu2.submit_change_note(change_id, "current", "Code-Review", "2")
+        self.assertTrue(self.gu.submit_patch(change_id, "current"))
 
         # Check issue status (Gerrit hook updates the issue to in progress)
         attempt = 0

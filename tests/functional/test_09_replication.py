@@ -25,8 +25,10 @@ from utils import Base
 from utils import set_private_key
 from utils import ManageSfUtils
 from utils import GerritGitUtils
-from utils import GerritUtil, Tool
+from utils import Tool
 from subprocess import Popen, PIPE
+
+from pysflib.sfgerrit import GerritUtils
 
 
 class TestProjectReplication(Base):
@@ -42,9 +44,13 @@ class TestProjectReplication(Base):
 
     def setUp(self):
         self.un = config.ADMIN_USER
-        self.gu = GerritUtil(config.GERRIT_SERVER, username=self.un)
-        self.gu2 = GerritUtil(config.GERRIT_SERVER, username=config.USER_2)
-        self.k_idx = self.gu2.addPubKey(config.USERS[config.USER_2]["pubkey"])
+        self.gu = GerritUtils(
+            'http://%s/' % config.GERRIT_HOST,
+            auth_cookie=config.USERS[self.un]['auth_cookie'])
+        self.gu2 = GerritUtils(
+            'http://%s/' % config.GERRIT_HOST,
+            auth_cookie=config.USERS[config.USER_2]['auth_cookie'])
+        self.k_idx = self.gu2.add_pubkey(config.USERS[config.USER_2]["pubkey"])
         priv_key_path = set_private_key(config.USERS[self.un]["privkey"])
         self.gitu_admin = GerritGitUtils(self.un,
                                          priv_key_path,
@@ -80,10 +86,10 @@ class TestProjectReplication(Base):
         return clone
 
     def tearDown(self):
-        self.gu2.delPubKey(self.k_idx)
+        self.gu2.del_pubkey(self.k_idx)
 
-    def createProject(self, name, user,
-                      options=None):
+    def create_project(self, name, user,
+                       options=None):
         self.msu.createProject(name, user,
                                options)
 
@@ -162,7 +168,7 @@ class TestProjectReplication(Base):
                                config.ADMIN_USER)
 
         # Create the project
-        self.createProject(pname, config.ADMIN_USER)
+        self.create_project(pname, config.ADMIN_USER)
 
         # Create new section for this project in replication.config
         self.createConfigSection(un, pname)
@@ -177,8 +183,8 @@ class TestProjectReplication(Base):
         gitu = GerritGitUtils(un,
                               priv_key_path,
                               config.USERS[un]['email'])
-        url = "ssh://%s@%s/%s" % (un, config.GERRIT_HOST,
-                                  pname)
+        url = "ssh://%s@%s:29418/%s" % (un, config.GERRIT_HOST,
+                                        pname)
         clone_dir = gitu.clone(url, pname)
 
         gitu.add_commit_and_publish(clone_dir, "master", "Test commit")
@@ -194,18 +200,17 @@ class TestProjectReplication(Base):
         gitu.add_commit_and_publish(clone_dir, "master", None, fnames=us_files)
 
         # Review the patch and merge it
-        change_ids = self.gu.getMyChangesForProject(pname)
+        change_ids = self.gu.get_my_changes_for_project(pname)
         self.assertGreater(len(change_ids), 0)
         change_id = change_ids[0]
-        self.gu.setPlus2CodeReview(change_id, "current")
-        self.gu.setPlus2Verified(change_id, "current")
-        self.gu.setPlus1Workflow(change_id, "current")
+        self.gu.submit_change_note(change_id, "current", "Code-Review", "2")
+        self.gu.submit_change_note(change_id, "current", "Verified", "2")
+        self.gu.submit_change_note(change_id, "current", "Workflow", "1")
         # Put USER_2 as core for config project
         grp_name = '%s-core' % pname
-        self.gu.addGroupMember(config.USER_2, grp_name)
-        self.gu2.setPlus2CodeReview(change_id, "current")
-        self.assertEqual(
-            self.gu.submitPatch(change_id, "current")['status'], 'MERGED')
+        self.gu.add_group_member(config.USER_2, grp_name)
+        self.gu2.submit_change_note(change_id, "current", "Code-Review", "2")
+        self.assertTrue(self.gu.submit_patch(change_id, "current"))
         shutil.rmtree(clone_dir)
 
         time.sleep(5)

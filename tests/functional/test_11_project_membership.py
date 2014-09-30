@@ -19,9 +19,9 @@ import config
 from utils import Base
 from utils import ManageSfUtils
 from utils import create_random_str
-from utils import GerritUtil
 
 from pysflib.sfredmine import RedmineUtils
+from pysflib.sfgerrit import GerritUtils
 
 
 class TestProjectMembership(Base):
@@ -41,16 +41,17 @@ class TestProjectMembership(Base):
         self.rm = RedmineUtils(
             'http://%s' % config.REDMINE_HOST,
             auth_cookie=config.USERS[config.ADMIN_USER]['auth_cookie'])
-        self.gu = GerritUtil(config.GERRIT_SERVER,
-                             username=config.ADMIN_USER)
+        self.gu = GerritUtils(
+            'http://%s/' % config.GERRIT_HOST,
+            auth_cookie=config.USERS[config.ADMIN_USER]['auth_cookie'])
 
     def tearDown(self):
         for name in self.projects:
             self.msu.deleteProject(name,
                                    config.ADMIN_USER)
 
-    def createProject(self, name, user,
-                      options=None):
+    def create_project(self, name, user,
+                       options=None):
         self.msu.createProject(name, user,
                                options)
         self.projects.append(name)
@@ -59,19 +60,19 @@ class TestProjectMembership(Base):
         """ Test admin can add and delete users from all project groups
         """
         pname = 'p_%s' % create_random_str()
-        self.createProject(pname, config.ADMIN_USER)
+        self.create_project(pname, config.ADMIN_USER)
         # Gerrit part
-        self.assertTrue(self.gu.isPrjExist(pname))
-        self.assertTrue(self.gu.isGroupExist('%s-ptl' % pname))
-        self.assertTrue(self.gu.isGroupExist('%s-core' % pname))
+        self.assertTrue(self.gu.project_exists(pname))
+        self.assertTrue(self.gu.group_exists('%s-ptl' % pname))
+        self.assertTrue(self.gu.group_exists('%s-core' % pname))
         groups = 'ptl-group,core-group'
         # Add user2 to ptl and core groups
         self.msu.addUsertoProjectGroups(config.ADMIN_USER, pname,
                                         config.USER_2, groups)
         # Test if user2 exists in ptl and core groups
-        self.assertTrue(self.gu.isMemberInGroup(config.USER_2,
+        self.assertTrue(self.gu.member_in_group(config.USER_2,
                                                 '%s-ptl' % pname))
-        self.assertTrue(self.gu.isMemberInGroup(config.USER_2,
+        self.assertTrue(self.gu.member_in_group(config.USER_2,
                                                 '%s-core' % pname))
         # Redmine part
         self.assertTrue(self.rm.check_user_role(pname,
@@ -83,9 +84,9 @@ class TestProjectMembership(Base):
         self.msu.deleteUserFromProjectGroups(config.ADMIN_USER, pname,
                                              config.USER_2)
         # Test if user exists in ptl and core groups
-        self.assertFalse(self.gu.isMemberInGroup(config.USER_2,
+        self.assertFalse(self.gu.member_in_group(config.USER_2,
                                                  '%s-ptl' % pname))
-        self.assertFalse(self.gu.isMemberInGroup(config.USER_2,
+        self.assertFalse(self.gu.member_in_group(config.USER_2,
                                                  '%s-core' % pname))
         # Redmine part
         self.assertFalse(self.rm.check_user_role(pname,
@@ -98,11 +99,11 @@ class TestProjectMembership(Base):
         """
         # Let user2 create the project, so he will be ptl for this project
         pname = 'p_%s' % create_random_str()
-        self.createProject(pname, config.USER_2)
+        self.create_project(pname, config.USER_2)
         # Gerrit part
-        self.assertTrue(self.gu.isPrjExist(pname))
-        self.assertTrue(self.gu.isGroupExist('%s-ptl' % pname))
-        self.assertTrue(self.gu.isGroupExist('%s-core' % pname))
+        self.assertTrue(self.gu.project_exists(pname))
+        self.assertTrue(self.gu.group_exists('%s-ptl' % pname))
+        self.assertTrue(self.gu.group_exists('%s-core' % pname))
         groups = 'ptl-group,core-group'
 
         # ptl should be ale to add users to all groups
@@ -110,9 +111,9 @@ class TestProjectMembership(Base):
         self.msu.addUsertoProjectGroups(config.USER_2, pname,
                                         config.USER_3, groups)
         # Test if user3 exists in ptl and core groups
-        self.assertTrue(self.gu.isMemberInGroup(config.USER_3,
+        self.assertTrue(self.gu.member_in_group(config.USER_3,
                                                 '%s-ptl' % pname))
-        self.assertTrue(self.gu.isMemberInGroup(config.USER_3,
+        self.assertTrue(self.gu.member_in_group(config.USER_3,
                                                 '%s-core' % pname))
         # Redmine part
         self.assertTrue(self.rm.check_user_role(pname,
@@ -124,9 +125,9 @@ class TestProjectMembership(Base):
         self.msu.deleteUserFromProjectGroups(config.USER_2, pname,
                                              config.USER_3)
         # user3 shouldn't exist in any group
-        self.assertFalse(self.gu.isMemberInGroup(config.USER_3,
+        self.assertFalse(self.gu.member_in_group(config.USER_3,
                                                  '%s-ptl' % pname))
-        self.assertFalse(self.gu.isMemberInGroup(config.USER_3,
+        self.assertFalse(self.gu.member_in_group(config.USER_3,
                                                  '%s-core' % pname))
         # Redmine part
         self.assertFalse(self.rm.check_user_role(pname,
@@ -139,18 +140,18 @@ class TestProjectMembership(Base):
         """
         # let admin create the project
         pname = 'p_%s' % create_random_str()
-        self.createProject(pname, config.ADMIN_USER)
+        self.create_project(pname, config.ADMIN_USER)
         # Gerrit part
-        self.assertTrue(self.gu.isPrjExist(pname))
-        self.assertTrue(self.gu.isGroupExist('%s-ptl' % pname))
-        self.assertTrue(self.gu.isGroupExist('%s-core' % pname))
+        self.assertTrue(self.gu.project_exists(pname))
+        self.assertTrue(self.gu.group_exists('%s-ptl' % pname))
+        self.assertTrue(self.gu.group_exists('%s-core' % pname))
         groups = 'core-group'
 
         # Add user2 as core user
         self.msu.addUsertoProjectGroups(config.ADMIN_USER, pname,
                                         config.USER_2, groups)
         # Test if user2 exists in core group
-        self.assertTrue(self.gu.isMemberInGroup(config.USER_2,
+        self.assertTrue(self.gu.member_in_group(config.USER_2,
                                                 '%s-core' % pname))
         # Redmine part
         self.assertTrue(self.rm.check_user_role(pname,
@@ -163,7 +164,7 @@ class TestProjectMembership(Base):
         self.msu.addUsertoProjectGroups(config.USER_2, pname,
                                         config.USER_3, groups)
         # user3 should exist in core group
-        self.assertTrue(self.gu.isMemberInGroup(config.USER_3,
+        self.assertTrue(self.gu.member_in_group(config.USER_3,
                                                 '%s-core' % pname))
         # Redmine part
         self.assertTrue(self.rm.check_user_role(pname,
@@ -175,7 +176,7 @@ class TestProjectMembership(Base):
         self.msu.addUsertoProjectGroups(config.USER_2, pname,
                                         config.USER_3, groups)
         # user3 shouldn't exist in ptl group
-        self.assertFalse(self.gu.isMemberInGroup(config.USER_3,
+        self.assertFalse(self.gu.member_in_group(config.USER_3,
                                                  '%s-ptl' % pname))
         # Redmine part
         self.assertFalse(self.rm.check_user_role(pname,
@@ -186,7 +187,7 @@ class TestProjectMembership(Base):
         self.msu.deleteUserFromProjectGroups(config.USER_2, pname,
                                              config.USER_3, group)
         # user3 shouldn't exist in core group
-        self.assertFalse(self.gu.isMemberInGroup(config.USER_3,
+        self.assertFalse(self.gu.member_in_group(config.USER_3,
                                                  '%s-core' % pname))
         # Redmine part
         self.assertFalse(self.rm.check_user_role(pname,
@@ -197,11 +198,11 @@ class TestProjectMembership(Base):
         """
         # Let admin create the project
         pname = 'p_%s' % create_random_str()
-        self.createProject(pname, config.ADMIN_USER)
+        self.create_project(pname, config.ADMIN_USER)
         # Gerrit part
-        self.assertTrue(self.gu.isPrjExist(pname))
-        self.assertTrue(self.gu.isGroupExist('%s-ptl' % pname))
-        self.assertTrue(self.gu.isGroupExist('%s-core' % pname))
+        self.assertTrue(self.gu.project_exists(pname))
+        self.assertTrue(self.gu.group_exists('%s-ptl' % pname))
+        self.assertTrue(self.gu.group_exists('%s-core' % pname))
 
         # non project meber can't add user to core group
         # user2 can't add user3 to core group
@@ -209,7 +210,7 @@ class TestProjectMembership(Base):
         self.msu.addUsertoProjectGroups(config.USER_2, pname,
                                         config.USER_3, groups)
         # user3 shouldn't exist in core group
-        self.assertFalse(self.gu.isMemberInGroup(config.USER_3,
+        self.assertFalse(self.gu.member_in_group(config.USER_3,
                                                  '%s-core' % pname))
         # Redmine part
         self.assertFalse(self.rm.check_user_role(pname,
@@ -221,7 +222,7 @@ class TestProjectMembership(Base):
         self.msu.addUsertoProjectGroups(config.USER_2, pname,
                                         config.USER_3, groups)
         # user3 shouldn't exist in ptl group
-        self.assertFalse(self.gu.isMemberInGroup(config.USER_3,
+        self.assertFalse(self.gu.member_in_group(config.USER_3,
                                                  '%s-ptl' % pname))
         # Redmine part
         self.assertFalse(self.rm.check_user_role(pname,
@@ -238,9 +239,9 @@ class TestProjectMembership(Base):
         self.msu.deleteUserFromProjectGroups(config.USER_2, pname,
                                              config.USER_3)
         # user3 should exist in ptl and core group
-        self.assertTrue(self.gu.isMemberInGroup(config.USER_3,
+        self.assertTrue(self.gu.member_in_group(config.USER_3,
                                                 '%s-ptl' % pname))
-        self.assertTrue(self.gu.isMemberInGroup(config.USER_3,
+        self.assertTrue(self.gu.member_in_group(config.USER_3,
                                                 '%s-core' % pname))
         # Redmine part
         self.assertTrue(self.rm.check_user_role(pname,
@@ -254,14 +255,14 @@ class TestProjectMembership(Base):
         """
         pname = 'p_%s' % create_random_str()
         options = {"private": ""}
-        self.createProject(pname, config.ADMIN_USER,
-                           options=options)
+        self.create_project(pname, config.ADMIN_USER,
+                            options=options)
         # Gerrit part
-        self.assertTrue(self.gu.isPrjExist(pname))
-        self.assertTrue(self.gu.isGroupExist('%s-ptl' % pname))
-        self.assertTrue(self.gu.isGroupExist('%s-core' % pname))
-        self.assertTrue(self.gu.isGroupExist('%s-dev' % pname))
-        self.assertTrue(self.gu.isMemberInGroup(config.ADMIN_USER,
+        self.assertTrue(self.gu.project_exists(pname))
+        self.assertTrue(self.gu.group_exists('%s-ptl' % pname))
+        self.assertTrue(self.gu.group_exists('%s-core' % pname))
+        self.assertTrue(self.gu.group_exists('%s-dev' % pname))
+        self.assertTrue(self.gu.member_in_group(config.ADMIN_USER,
                                                 '%s-dev' % pname))
         # Redmine part
         self.assertTrue(self.rm.project_exists(pname))
@@ -274,7 +275,7 @@ class TestProjectMembership(Base):
         self.msu.addUsertoProjectGroups(config.ADMIN_USER, pname,
                                         config.USER_3, groups)
         # Test if user3 exists in dev group
-        self.assertTrue(self.gu.isMemberInGroup(config.USER_3,
+        self.assertTrue(self.gu.member_in_group(config.USER_3,
                                                 '%s-dev' % pname))
         # Redmine part
         self.assertTrue(self.rm.check_user_role(pname,
@@ -284,7 +285,7 @@ class TestProjectMembership(Base):
         self.msu.deleteUserFromProjectGroups(config.ADMIN_USER, pname,
                                              config.USER_3)
         # user3 shouldn't exist in dev group
-        self.assertFalse(self.gu.isMemberInGroup(config.USER_3,
+        self.assertFalse(self.gu.member_in_group(config.USER_3,
                                                  '%s-dev' % pname))
         # Redmine part
         self.assertFalse(self.rm.check_user_role(pname,
@@ -299,7 +300,7 @@ class TestProjectMembership(Base):
         self.msu.addUsertoProjectGroups(config.USER_2, pname,
                                         config.USER_3, groups)
         # Test if user3 exists in dev group
-        self.assertTrue(self.gu.isMemberInGroup(config.USER_3,
+        self.assertTrue(self.gu.member_in_group(config.USER_3,
                                                 '%s-dev' % pname))
         # Redmine part
         self.assertTrue(self.rm.check_user_role(pname,
@@ -309,7 +310,7 @@ class TestProjectMembership(Base):
         self.msu.deleteUserFromProjectGroups(config.USER_2, pname,
                                              config.USER_3)
         # user3 shouldn't exist in dev group
-        self.assertFalse(self.gu.isMemberInGroup(config.USER_3,
+        self.assertFalse(self.gu.member_in_group(config.USER_3,
                                                  '%s-dev' % pname))
         # Redmine part
         self.assertFalse(self.rm.check_user_role(pname,
@@ -327,7 +328,7 @@ class TestProjectMembership(Base):
         self.msu.addUsertoProjectGroups(config.USER_2, pname,
                                         config.USER_3, groups)
         # Test if user3 exists in dev group
-        self.assertTrue(self.gu.isMemberInGroup(config.USER_3,
+        self.assertTrue(self.gu.member_in_group(config.USER_3,
                                                 '%s-dev' % pname))
         # Redmine part
         self.assertTrue(self.rm.check_user_role(pname,
@@ -338,7 +339,7 @@ class TestProjectMembership(Base):
         self.msu.deleteUserFromProjectGroups(config.USER_2, pname,
                                              config.USER_3, group)
         # user3 shouldn't exist in dev group
-        self.assertFalse(self.gu.isMemberInGroup(config.USER_3,
+        self.assertFalse(self.gu.member_in_group(config.USER_3,
                                                  '%s-dev' % pname))
         # Redmine part
         self.assertFalse(self.rm.check_user_role(pname,
@@ -356,7 +357,7 @@ class TestProjectMembership(Base):
         self.msu.addUsertoProjectGroups(config.USER_2, pname,
                                         config.USER_3, groups)
         # Test if user3 exists in dev group
-        self.assertTrue(self.gu.isMemberInGroup(config.USER_3,
+        self.assertTrue(self.gu.member_in_group(config.USER_3,
                                                 '%s-dev' % pname))
         # Redmine part
         self.assertTrue(self.rm.check_user_role(pname,
@@ -367,7 +368,7 @@ class TestProjectMembership(Base):
         self.msu.deleteUserFromProjectGroups(config.USER_2, pname,
                                              config.USER_3, group)
         # user3 shouldn't exist in dev group
-        self.assertFalse(self.gu.isMemberInGroup(config.USER_3,
+        self.assertFalse(self.gu.member_in_group(config.USER_3,
                                                  '%s-dev' % pname))
         # Redmine part
         self.assertFalse(self.rm.check_user_role(pname,

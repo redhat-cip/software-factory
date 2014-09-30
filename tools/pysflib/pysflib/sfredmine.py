@@ -96,8 +96,9 @@ class SFRedmine(Redmine):
 
 class RedmineUtils:
     """ Utility class that eases calls on the Redmine API
-    for SoftwareFactory. Provide the SFRedmine instance as
-    argument and start to use it.
+    for SoftwareFactory. Provide the args you used to pass
+    to python-redmine.Redmine and add auth_cookie to authenticate
+    through SSO.
     """
     def __init__(self, *args, **kwargs):
         self.r = SFRedmine(*args, **kwargs)

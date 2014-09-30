@@ -25,9 +25,10 @@ from utils import Base
 from utils import set_private_key
 from utils import ManageSfUtils
 from utils import GerritGitUtils
-from utils import GerritUtil
 from utils import JenkinsUtils
 from utils import copytree
+
+from pysflib.sfgerrit import GerritUtils
 
 
 class TestProjectTestsWorkflow(Base):
@@ -47,10 +48,14 @@ class TestProjectTestsWorkflow(Base):
         self.projects = []
         self.dirs_to_delete = []
         self.un = config.ADMIN_USER
-        self.gu = GerritUtil(config.GERRIT_SERVER, username=self.un)
-        self.gu2 = GerritUtil(config.GERRIT_SERVER, username=config.USER_2)
+        self.gu = GerritUtils(
+            'http://%s/' % config.GERRIT_HOST,
+            auth_cookie=config.USERS[self.un]['auth_cookie'])
+        self.gu2 = GerritUtils(
+            'http://%s/' % config.GERRIT_HOST,
+            auth_cookie=config.USERS[config.USER_2]['auth_cookie'])
         self.ju = JenkinsUtils()
-        self.gu.addPubKey(config.USERS[self.un]["pubkey"])
+        self.gu.add_pubkey(config.USERS[self.un]["pubkey"])
         priv_key_path = set_private_key(config.USERS[self.un]["privkey"])
         self.gitu_admin = GerritGitUtils(self.un,
                                          priv_key_path,
@@ -63,7 +68,7 @@ class TestProjectTestsWorkflow(Base):
         self.original_project = file(os.path.join(
             self.config_clone_dir, "jobs/projects.yaml")).read()
         # Put USER_2 as core for config project
-        self.gu.addGroupMember(config.USER_2, "config-core")
+        self.gu.add_group_member(config.USER_2, "config-core")
 
     def tearDown(self):
         self.restore_config_repo(self.original_layout,
@@ -75,8 +80,8 @@ class TestProjectTestsWorkflow(Base):
             shutil.rmtree(dirs)
 
     def clone_as_admin(self, pname):
-        url = "ssh://%s@%s/%s" % (self.un, config.GERRIT_HOST,
-                                  pname)
+        url = "ssh://%s@%s:29418/%s" % (self.un, config.GERRIT_HOST,
+                                        pname)
         clone_dir = self.gitu_admin.clone(url, pname)
         if os.path.dirname(clone_dir) not in self.dirs_to_delete:
             self.dirs_to_delete.append(os.path.dirname(clone_dir))
@@ -103,8 +108,8 @@ class TestProjectTestsWorkflow(Base):
         self.gitu_admin.add_commit_for_all_new_additions(clone_dir, msg)
         self.gitu_admin.review_push_branch(clone_dir, 'master')
 
-    def createProject(self, name, user,
-                      options=None):
+    def create_project(self, name, user,
+                       options=None):
         self.msu.createProject(name, user,
                                options)
         self.projects.append(name)
@@ -123,7 +128,7 @@ class TestProjectTestsWorkflow(Base):
         self.msu.deleteProject(pname,
                                config.ADMIN_USER)
         # Create it
-        self.createProject(pname, config.ADMIN_USER)
+        self.create_project(pname, config.ADMIN_USER)
 
         # Add the sample-project to the empty repository
         clone_dir = self.clone_as_admin("sample_project")
@@ -191,14 +196,14 @@ class TestProjectTestsWorkflow(Base):
         time.sleep(2)
 
         # Get the change id
-        change_ids = self.gu.getMyChangesForProject("config")
+        change_ids = self.gu.get_my_changes_for_project("config")
         self.assertGreater(len(change_ids), 0)
         change_id = change_ids[0]
 
         # Check whether zuul sets verified to +1 after running the tests
         # let some time to Zuul to update the test result to Gerrit.
         attempt = 0
-        while self.gu.getReviewerApprovals(change_id, 'jenkins')['Verified'] \
+        while self.gu.get_reviewer_approvals(change_id, 'jenkins')['Verified'] \
                 != '+1':
             if attempt >= 90:
                 break
@@ -206,16 +211,13 @@ class TestProjectTestsWorkflow(Base):
             attempt += 1
 
         self.assertEqual(
-            self.gu.getReviewerApprovals(change_id, 'jenkins')['Verified'],
+            self.gu.get_reviewer_approvals(change_id, 'jenkins')['Verified'],
             "+1")
 
         # review the change
-        self.gu2.setPlus2CodeReview(change_id, "current")
-        time.sleep(5)
-        self.gu.setPlus2CodeReview(change_id, "current")
-        time.sleep(5)
-        self.gu2.setPlus1Workflow(change_id, "current")
-        time.sleep(5)
+        self.gu2.submit_change_note(change_id, "current", "Code-Review", "2")
+        self.gu.submit_change_note(change_id, "current", "Code-Review", "2")
+        self.gu2.submit_change_note(change_id, "current", "Workflow", "1")
 
         # now zuul processes gate pipeline and runs config-check job
         # Wait for config-check to finish and verify the success
@@ -242,7 +244,7 @@ class TestProjectTestsWorkflow(Base):
         # Check whether zuul sets verified to +2 after running the tests
         # let some time to Zuul to update the test result to Gerrit.
         attempt = 0
-        while self.gu.getReviewerApprovals(change_id, 'jenkins')['Verified'] \
+        while self.gu.get_reviewer_approvals(change_id, 'jenkins')['Verified'] \
                 != '+2':
             if attempt >= 90:
                 break
@@ -250,18 +252,18 @@ class TestProjectTestsWorkflow(Base):
             attempt += 1
 
         self.assertEqual(
-            self.gu.getReviewerApprovals(change_id, 'jenkins')['Verified'],
+            self.gu.get_reviewer_approvals(change_id, 'jenkins')['Verified'],
             "+2")
 
         # verify whether zuul merged the patch
-        change = self.gu.getChangeDetail('config', 'master', change_id)
+        change = self.gu.get_change('config', 'master', change_id)
         change_status = change['status']
         attempt = 0
         while change_status != 'MERGED':
             if attempt >= 90:
                 break
             time.sleep(1)
-            change = self.gu.getChangeDetail('config', 'master', change_id)
+            change = self.gu.get_change('config', 'master', change_id)
             change_status = change['status']
             attempt += 1
         self.assertEqual(change_status, 'MERGED')
@@ -321,20 +323,20 @@ class TestProjectTestsWorkflow(Base):
         self.assertEqual(last_build_num_sp_ft, last_success_build_num_sp_ft)
 
         # Get the change id
-        change_ids = self.gu.getMyChangesForProject("sample_project")
+        change_ids = self.gu.get_my_changes_for_project("sample_project")
         self.assertGreater(len(change_ids), 0)
         change_id = change_ids[0]
 
         # let some time to Zuul to update the test result to Gerrit.
         attempt = 0
-        while "jenkins" not in self.gu.getReviewers(change_id):
+        while "jenkins" not in self.gu.get_reviewers(change_id):
             if attempt >= 90:
                 break
             time.sleep(1)
             attempt += 1
 
         attempt = 0
-        while self.gu.getReviewerApprovals(change_id, 'jenkins')['Verified'] \
+        while self.gu.get_reviewer_approvals(change_id, 'jenkins')['Verified'] \
                 != '+1':
             if attempt >= 90:
                 break
@@ -342,5 +344,5 @@ class TestProjectTestsWorkflow(Base):
             attempt += 1
 
         self.assertEqual(
-            self.gu.getReviewerApprovals(change_id, 'jenkins')['Verified'],
+            self.gu.get_reviewer_approvals(change_id, 'jenkins')['Verified'],
             "+1")
