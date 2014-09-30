@@ -151,7 +151,7 @@ class zuul ($settings = hiera_hash('jenkins', ''), $gh = hiera('gerrit_url'), $h
     owner  => "root",
     group  => "root",
     require => File['/usr/share/sf-zuul'],
-    source => 'puppet:///modules/zuul/layout.yaml',
+    content => template('zuul/layout.yaml.erb'),
   }
   file {'/var/log/zuul/':
     ensure  => directory,

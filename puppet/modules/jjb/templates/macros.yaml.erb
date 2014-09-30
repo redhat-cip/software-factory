@@ -12,3 +12,11 @@
     builders:
       - shell: "/usr/local/jenkins/slave_scripts/gerrit-git-prep.sh http://<%= scope.function_hiera(["http_gateway_host"]) %>"
 
+- builder:
+    name: branch-git-prep
+    builders:
+      - shell: |
+          #!/bin/bash
+          export BRANCH={branch}
+          /usr/local/jenkins/slave_scripts/gerrit-git-prep.sh http://<%= scope.function_hiera(["http_gateway_host"]) %>
+

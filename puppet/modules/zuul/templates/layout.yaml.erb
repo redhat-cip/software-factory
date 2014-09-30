@@ -65,6 +65,19 @@ pipelines:
         - event: ref-updated
           ref: ^(?!(devnull|refs/.*)).*$
 
+  - name: periodic
+    description: Jobs in this queue are triggered daily.
+    manager: IndependentPipelineManager
+    precedence: low
+    trigger:
+      timer:
+        - time: '0 0 * * *'
+    failure:
+      smtp:
+        from: jenkins@<%= scope.function_hiera(["top_domain"]) %>
+        to: dev-robot@<%= scope.function_hiera(["top_domain"]) %>
+        subject: 'Stable check of {change.project} failed'
+
 projects:
   - name: config
     check:
@@ -80,3 +93,5 @@ projects:
     gate:
       - zuul-demo-functional-tests
       - zuul-demo-unit-tests
+    periodic:
+      - periodic-zuul-demo

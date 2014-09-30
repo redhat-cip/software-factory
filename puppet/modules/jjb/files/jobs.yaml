@@ -44,3 +44,15 @@
     triggers:
       - zuul
     node: '{node}'
+
+- job-template:
+    name: 'periodic-{name}'
+    defaults: global
+    builders:
+      - branch-git-prep:
+          branch: master
+      - shell: '{periodic_cmd}'
+    triggers:
+      - zuul
+    node: '{node}'
+
