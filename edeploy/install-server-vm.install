@@ -65,14 +65,7 @@ do_chroot $dir bash -c "cd /root/puppet-bootstrapper/tools/pysflib; python setup
 do_chroot $dir bash -c "for x in {0..6}; do ls /etc/rc\${x}.d/*jenkins | xargs rm -f ; done"
 
 # install requirements for functional tests
-# TODO if those deps are required by func test then
-#      put it in the requirement file of func tests.
-do_chroot $dir pip install nose
-do_chroot $dir pip install python-dateutil
-do_chroot $dir pip install python-ldap
-do_chroot $dir pip install requests
-do_chroot $dir pip install pygerrit
-do_chroot $dir pip install git-review
+do_chroot $dir bash -c "cd /root/puppet-bootstrapper/tests; pip install -r requirements.txt"
 
 # Disable root passwd
 do_chroot $dir passwd -l root

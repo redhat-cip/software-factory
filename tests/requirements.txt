@@ -1,5 +1,3 @@
-python-ldap
+nose
 requests
-pyredmine
-pygerrit
 git-review
