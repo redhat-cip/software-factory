@@ -8,3 +8,4 @@ cauth:
   ldap_account_username_attribute: "%{hiera('ldap_account_username_attribute')}"
   ldap_account_mail_attribute: "%{hiera('ldap_account_mail_attribute')}"
   ldap_account_surname_attribute: "%{hiera('ldap_account_surname_attribute')}"
+  sso_cookie_timeout: "%{hiera('sso_cookie_timeout')}"

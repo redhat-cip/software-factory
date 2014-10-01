@@ -11,6 +11,8 @@ ldap_account_surname_attribute: sn
 
 smtp_relay: mail.example.com
 
+sso_cookie_timeout: 3600
+
 github_app_id: b1576649a671b82aaee8
 github_app_secret: 87c8f11b7aef93dcf4e1a06bf35c93e6c61871f4
 

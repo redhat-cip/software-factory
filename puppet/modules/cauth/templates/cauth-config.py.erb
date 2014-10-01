@@ -21,8 +21,8 @@ app = {
     'template_path': '%(confdir)s/cauth/templates',
     'priv_key_path': '/srv/cauth_keys/privkey.pem',
     'cookie_domain': '<%= scope.function_hiera(["top_domain"]) %>',
-    'cookie_period': 3600,
     'debug': False,
+    'cookie_period': <%= @cauth['sso_cookie_timeout'] %>
 }
 
 logging = {
