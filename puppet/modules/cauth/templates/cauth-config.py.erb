@@ -19,24 +19,26 @@ app = {
     'modules': ['cauth'],
     'static_root': '%(confdir)s/public',
     'template_path': '%(confdir)s/cauth/templates',
-    'debug': True,
     'priv_key_path': '/srv/cauth_keys/privkey.pem',
     'cookie_domain': '<%= scope.function_hiera(["top_domain"]) %>',
-    'cookie_period': 3600
+    'cookie_period': 3600,
+    'debug': False,
 }
 
 logging = {
     'loggers': {
-        'root': {'level': 'INFO', 'handlers': ['console']},
-        'cauth': {'level': 'DEBUG', 'handlers': ['console']},
-        'py.warnings': {'handlers': ['console']},
+        'cauth': {'level': 'DEBUG',
+                  'handlers': ['file_handler']},
+        'pysflib': {'level': 'DEBUG',
+                     'handlers': ['file_handler']},
         '__force_dict__': True
     },
     'handlers': {
-        'console': {
+        'file_handler': {
+            'class': 'logging.handlers.RotatingFileHandler',
             'level': 'DEBUG',
-            'class': 'logging.StreamHandler',
-            'formatter': 'simple'
+            'formatter': 'simple',
+            'filename': '/var/log/cauth/cauth.log',
         }
     },
     'formatters': {

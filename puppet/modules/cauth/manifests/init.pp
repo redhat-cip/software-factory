@@ -70,6 +70,13 @@ class cauth ($cauth = hiera_hash('cauth', ''),
     mode    => '0655'
   }
 
+  file { '/var/log/cauth/':
+    ensure  => directory,
+    owner   => $httpd_user,
+    group   => $httpd_user,
+    mode    => '0750',
+  }
+
   file { '/srv/cauth_keys/privkey.pem':
     ensure => present,
     owner => 'root',
