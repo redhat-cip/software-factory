@@ -16,12 +16,12 @@
 
 from unittest import TestCase
 from mock import patch
+from mock import Mock
 from contextlib import nested
 from pecan.core import exc
 from subprocess import Popen, PIPE
 
 import os
-import json
 import tempfile
 
 from managesf.controllers import gerrit
@@ -48,8 +48,8 @@ def fake_replication_ssh_run_cmd(cmd):
     return out, err, p1.returncode
 
 
-def fake_get_group_id(name):
-    if name == 'Administrator':
+def fake_get_group_id(cls, name):
+    if name == 'Administrators':
         return 0
     if name == 'p1-ptl':
         return 1
@@ -76,10 +76,11 @@ class TestGerritController(TestCase):
 
     def test_get_projects_by_user(self):
         all_projects = ('p1', 'p2', 'p3')
-        ctx = [patch('managesf.controllers.gerrit.get_projects'),
+        ctx = [patch('managesf.controllers.gerrit.get_cookie'),
+               patch('managesf.controllers.gerrit.GerritUtils.get_projects'),
                patch('managesf.controllers.gerrit.user_is_administrator'),
                patch('managesf.controllers.gerrit.user_owns_project')]
-        with nested(*ctx) as (gp, uia, uop):
+        with nested(*ctx) as (gc, gp, uia, uop):
             gp.return_value = all_projects
             uia.return_value = True
             projects = gerrit.get_projects_by_user()
@@ -92,128 +93,49 @@ class TestGerritController(TestCase):
             projects = gerrit.get_projects_by_user()
             self.assertTupleEqual(tuple(projects), ('p1',))
 
-    def test_check_if_group_exists(self):
-        with patch('managesf.controllers.gerrit.send_request') as sr:
-            with patch('managesf.controllers.gerrit.admin_auth_cookie'):
-                sr.return_value = FakeResponse(200)
-                self.assertEqual(True,
-                                 gerrit.check_if_group_exists('groupname'))
-                sr.return_value = FakeResponse(404)
-                self.assertEqual(False,
-                                 gerrit.check_if_group_exists('groupname'))
-
-    def test_group_id(self):
-        with patch('managesf.controllers.gerrit.send_request') as sr:
-            with patch('managesf.controllers.gerrit.admin_auth_cookie'):
-                sr.return_value = FakeResponse(
-                    200, text=")]}'" + json.dumps({'id': '42'}))
-                self.assertEqual('42', gerrit.get_group_id('devgroup'))
-
-    def test_group_member_id(self):
-        with patch('managesf.controllers.gerrit.send_request') as sr:
-            with patch('managesf.controllers.gerrit.admin_auth_cookie'):
-                mapping = [{'username': 'user1', '_account_id': 1},
-                           {'username': 'user2', '_account_id': 2}]
-                sr.return_value = FakeResponse(
-                    200, text=")]}'" + json.dumps(mapping))
-                self.assertEqual(1, gerrit.get_group_member_id('142', 'user1'))
-
-    def test_delete_group_member(self):
-        def fake_send_request(*args, **kwargs):
-            self.assertEqual('DELETE', kwargs['method'])
-            self.assertEqual(json.dumps({"force": True}), kwargs['data'])
-            self.assertEqual('http://gerrit.test.dom/r/a/groups/142/members/1',
-                             args[0])
-        with patch('managesf.controllers.gerrit.admin_auth_cookie'):
-            with patch('managesf.controllers.gerrit.send_request',
-                       new_callable=lambda: fake_send_request):
-                gerrit.delete_group_member('142', '1')
-
-    def test_add_user_to_group(self):
-        def fake_send_request(*args, **kwargs):
-            self.assertEqual(
-                'http://gerrit.test.dom/r/a/groups/devgroup/members/john',
-                args[0])
-        with patch('managesf.controllers.gerrit.admin_auth_cookie'):
-            with patch('managesf.controllers.gerrit.send_request',
-                       new_callable=lambda: fake_send_request):
-                gerrit.add_user_to_group('devgroup', 'john')
-
     def test_create_group(self):
-        def fake_send_request(*args, **kwargs):
-            data = json.dumps({"visible_to_all": True,
-                               "description": "a desc", "name": "devgroup"})
-            self.assertEqual(data, kwargs['data'])
-            self.assertEqual('http://gerrit.test.dom/r/a/groups/devgroup',
-                             args[0])
-        ctx = [patch('managesf.controllers.gerrit.request'),
-               patch('managesf.controllers.gerrit.admin_auth_cookie'),
-               patch('managesf.controllers.gerrit.add_user_to_group'),
-               patch('managesf.controllers.gerrit.send_request',
-                     new_callable=lambda: fake_send_request)]
-        with nested(*ctx) as (r, aac, autg, fsr):
-            gerrit.create_group('devgroup', 'a desc', 'p1')
-            self.assertEqual(True, autg.called)
+        ctx = [patch('managesf.controllers.gerrit.get_cookie'),
+               patch('managesf.controllers.gerrit.GerritUtils.create_group'),
+               patch(
+                   'managesf.controllers.gerrit.GerritUtils.add_group_member')]
+        with nested(*ctx) as (gc, cg, agm):
+            m = Mock()
+            m.remote_user = 'user1'
+            gerrit.request = m
+            gerrit.create_group('p1-ptl', 'desc')
+            self.assertTupleEqual(('p1-ptl', 'desc'), cg.mock_calls[0][1])
+            self.assertTupleEqual(('user1', 'p1-ptl'), agm.mock_calls[0][1])
 
-    def test_create_project(self):
-        def fake_send_request(*args, **kwargs):
-            data = json.dumps({"create_empty_commit": True,
-                               "owners": ["p1-ptl"],
-                               "description": "a desc", "name": "p1"})
-            self.assertEqual(data, kwargs['data'])
-            self.assertEqual('http://gerrit.test.dom/r/a/projects/p1', args[0])
-        with patch('managesf.controllers.gerrit.admin_auth_cookie'):
-            with patch('managesf.controllers.gerrit.send_request',
-                       new_callable=lambda: fake_send_request):
-                gerrit.create_project('p1', 'a desc')
-
-    def test__delete_project(self):
-        def fake_send_request(*args, **kwargs):
-            self.assertEqual('DELETE', kwargs['method'])
-            self.assertEqual(json.dumps({"force": True}), kwargs['data'])
-            self.assertEqual('http://gerrit.test.dom/r/a/projects/p1', args[0])
-        with patch('managesf.controllers.gerrit.admin_auth_cookie'):
-            with patch('managesf.controllers.gerrit.send_request',
-                       new_callable=lambda: fake_send_request):
-                gerrit._delete_project('p1')
-
-    def test_get_projects(self):
-        projects = ['p1', 'p2']
-        with patch('managesf.controllers.gerrit.send_request') as sr:
-            sr.return_value = FakeResponse(
-                200, text=")]}'" + json.dumps(projects))
-            self.assertListEqual(projects, gerrit.get_projects())
-
-    def test_get_groups(self):
-        groups = [{'id': 1}, {'id': 2}]
-        with patch('managesf.controllers.gerrit.send_request') as sr:
-            sr.return_value = FakeResponse(
-                200, text=")]}'" + json.dumps(groups))
-            self.assertListEqual([1, 2], gerrit.get_groups())
-
-    def test_get_project_owner(self):
-        data = {'p1': {'local': {'refs/*': {'permissions':
-                {'owner': {'rules': {'john': None}}}}}}}
-        with patch('managesf.controllers.gerrit.send_request') as sr:
-            with patch('managesf.controllers.gerrit.admin_auth_cookie'):
-                sr.return_value = FakeResponse(
-                    200, text=")]}'" + json.dumps(data))
-                self.assertEqual('john', gerrit.get_project_owner('p1'))
+    def test_get_my_groups(self):
+        ctx = [patch('managesf.controllers.gerrit.get_cookie'),
+               patch(
+                   'managesf.controllers.gerrit.GerritUtils.get_my_groups_id')]
+        with nested(*ctx) as (gc, gmgi):
+            m = Mock()
+            m.cookies = {'auth_pubtkt': '1234'}
+            gerrit.request = m
+            gerrit.get_my_groups()
+            self.assertTrue(gmgi.called)
 
     def test_user_owns_project(self):
-        with patch('managesf.controllers.gerrit.get_groups') as gg:
-            with patch('managesf.controllers.gerrit.get_project_owner') \
-                    as ggpo:
-                gg.return_value = ['p1', 'p2']
-                ggpo.return_value = 'p1'
-                self.assertTrue(gerrit.user_owns_project('p1'))
+        ctx = [patch('managesf.controllers.gerrit.get_cookie'),
+               patch('managesf.controllers.gerrit.get_my_groups'),
+               patch(
+                   'managesf.controllers.gerrit.GerritUtils.'
+                   'get_project_owner')]
+        with nested(*ctx) as (gc, gmg, gpo):
+            gmg.return_value = ['p1-ptl']
+            gpo.return_value = 'p1-ptl'
+            self.assertTrue(gerrit.user_owns_project('p1'))
 
     def test_user_is_administrator(self):
-        with patch('managesf.controllers.gerrit.get_groups') as gg:
-            with patch('managesf.controllers.gerrit.get_group_id') as ggid:
-                gg.return_value = ['p1', 'p2']
-                ggid.return_value = 'p1'
-                self.assertTrue(gerrit.user_is_administrator())
+        ctx = [patch('managesf.controllers.gerrit.get_cookie'),
+               patch('managesf.controllers.gerrit.get_my_groups'),
+               patch('managesf.controllers.gerrit.GerritUtils.get_group_id',
+                     new_callable=lambda: fake_get_group_id)]
+        with nested(*ctx) as (gc, gmg, ggi):
+            gmg.return_value = [0, 1]
+            self.assertTrue(gerrit.user_is_administrator())
 
     def test_get_group_name(self):
         self.assertEqual('p1-core', gerrit.get_core_group_name('p1'))
@@ -221,44 +143,48 @@ class TestGerritController(TestCase):
         self.assertEqual('p1-dev', gerrit.get_dev_group_name('p1'))
 
     def test_init_project(self):
-        ctx = [patch('managesf.controllers.gerrit.init_git_repo'),
+        ctx = [patch('managesf.controllers.gerrit.get_cookie'),
+               patch('managesf.controllers.gerrit.init_git_repo'),
                patch('managesf.controllers.gerrit.create_group'),
-               patch('managesf.controllers.gerrit.add_user_to_group'),
-               patch('managesf.controllers.gerrit.create_project'),
+               patch(
+                   'managesf.controllers.gerrit.GerritUtils.add_group_member'),
+               patch('managesf.controllers.gerrit.GerritUtils.create_project'),
                patch('managesf.controllers.gerrit.request'),
                ]
-        with nested(*ctx) as (igr, cg, autg, cp, r):
+        with nested(*ctx) as (gc, igr, cg, autg, cp, r):
             data = {'description': 'the desc'}
             gerrit.init_project('p1', data)
             self.assertEqual(2, len(cg.mock_calls))
             call1, call2 = cg.mock_calls
             self.assertTupleEqual(('p1-core',
-                                   'Core developers for project p1',
-                                   'p1'), call1[1])
+                                   'Core developers for project p1'),
+                                  call1[1])
             self.assertTupleEqual(('p1-ptl',
-                                   'Project team lead for project p1',
-                                   'p1'), call2[1])
+                                   'Project team lead for project p1'),
+                                  call2[1])
             self.assertEqual(1, len(cp.mock_calls))
-            self.assertTupleEqual(('p1', 'the desc'), cp.mock_calls[0][1])
+            self.assertTupleEqual(('p1', 'the desc', ['p1-ptl']),
+                                  cp.mock_calls[0][1])
             self.assertFalse(autg.called)
-        with nested(*ctx) as (igr, cg, autg, cp, r):
+        with nested(*ctx) as (gc, igr, cg, autg, cp, r):
             data = {'description': 'the desc', 'private': True}
             gerrit.init_project('p1', data)
             self.assertEqual(3, len(cg.mock_calls))
             call1, call2, call3 = cg.mock_calls
             self.assertTupleEqual(('p1-core',
-                                   'Core developers for project p1', 'p1'),
+                                   'Core developers for project p1'),
                                   call1[1])
             self.assertTupleEqual(('p1-ptl',
-                                   'Project team lead for project p1', 'p1'),
+                                   'Project team lead for project p1'),
                                   call2[1])
             self.assertTupleEqual(('p1-dev',
-                                   'Developers for project p1', 'p1'),
+                                   'Developers for project p1'),
                                   call3[1])
             self.assertEqual(1, len(cp.mock_calls))
-            self.assertTupleEqual(('p1', 'the desc'), cp.mock_calls[0][1])
+            self.assertTupleEqual(('p1', 'the desc', ['p1-ptl']),
+                                  cp.mock_calls[0][1])
             self.assertFalse(autg.called)
-        with nested(*ctx) as (igr, cg, autg, cp, r):
+        with nested(*ctx) as (gc, igr, cg, autg, cp, r):
             data = {'description': 'the desc', 'private': True,
                     'upstream': 'git://tests.net/git/blah.git',
                     'core-group-members': ['u1', 'u2'],
@@ -270,28 +196,31 @@ class TestGerritController(TestCase):
             self.assertEqual(6, len(autg.mock_calls))
             self.assertEqual(1, len(cp.mock_calls))
             self.assertEqual(1, len(igr.mock_calls))
-            self.assertTupleEqual(('p1', 'the desc'), cp.mock_calls[0][1])
+            self.assertTupleEqual(('p1', 'the desc', ['p1-ptl']),
+                                  cp.mock_calls[0][1])
             self.assertTupleEqual(('p1', 'the desc',
                                    'git://tests.net/git/blah.git', True),
                                   igr.mock_calls[0][1])
 
     def test_add_user_to_projectgroups(self):
-        ctx = [patch('managesf.controllers.gerrit.get_groups'),
-               patch('managesf.controllers.gerrit.add_user_to_group'),
-               patch('managesf.controllers.gerrit.check_if_group_exists'),
-               patch('managesf.controllers.gerrit.get_group_id',
+        ctx = [patch('managesf.controllers.gerrit.get_cookie'),
+               patch('managesf.controllers.gerrit.get_my_groups'),
+               patch(
+                   'managesf.controllers.gerrit.GerritUtils.add_group_member'),
+               patch('managesf.controllers.gerrit.GerritUtils.group_exists'),
+               patch('managesf.controllers.gerrit.GerritUtils.get_group_id',
                      new_callable=lambda: fake_get_group_id)]
-        with nested(*ctx) as (gg, autg, cige, ggi):
+        with nested(*ctx) as (gc, gg, autg, cige, ggi):
             gg.return_value = [1]
             cige.return_value = True
             gerrit.add_user_to_projectgroups(
                 'p1', 'john', ['ptl-group', 'core-group', 'dev-group'])
             self.assertEqual(3, len(autg.mock_calls))
             call1, call2, call3 = autg.mock_calls
-            self.assertTupleEqual(('p1-ptl', 'john'), call1[1])
-            self.assertTupleEqual(('p1-core', 'john'), call2[1])
-            self.assertTupleEqual(('p1-dev', 'john'), call3[1])
-        with nested(*ctx) as (gg, autg, cige, ggi):
+            self.assertTupleEqual(('john', 'p1-ptl'), call1[1])
+            self.assertTupleEqual(('john', 'p1-core'), call2[1])
+            self.assertTupleEqual(('john', 'p1-dev'), call3[1])
+        with nested(*ctx) as (gc, gg, autg, cige, ggi):
             gg.return_value = [2]
             cige.return_value = True
             self.assertRaises(
@@ -300,16 +229,16 @@ class TestGerritController(TestCase):
                         'p1', 'john',
                         ['ptl-group', 'core-group', 'dev-group']))
             self.assertEqual(0, len(autg.mock_calls))
-        with nested(*ctx) as (gg, autg, cige, ggi):
+        with nested(*ctx) as (gc, gg, autg, cige, ggi):
             gg.return_value = [2]
             cige.return_value = True
             gerrit.add_user_to_projectgroups(
                 'p1', 'john', ['core-group', 'dev-group'])
             self.assertEqual(2, len(autg.mock_calls))
             call1, call2 = autg.mock_calls
-            self.assertTupleEqual(('p1-core', 'john'), call1[1])
-            self.assertTupleEqual(('p1-dev', 'john'), call2[1])
-        with nested(*ctx) as (gg, autg, cige, ggi):
+            self.assertTupleEqual(('john', 'p1-core'), call1[1])
+            self.assertTupleEqual(('john', 'p1-dev'), call2[1])
+        with nested(*ctx) as (gc, gg, autg, cige, ggi):
             gg.return_value = [3]
             cige.return_value = True
             self.assertRaises(
@@ -318,22 +247,29 @@ class TestGerritController(TestCase):
                         'p1', 'john',
                         ['core-group', 'dev-group']))
             self.assertEqual(0, len(autg.mock_calls))
-        with nested(*ctx) as (gg, autg, cige, ggi):
+        with nested(*ctx) as (gc, gg, autg, cige, ggi):
             gg.return_value = [3]
             cige.return_value = True
             gerrit.add_user_to_projectgroups('p1', 'john', ['dev-group'])
             self.assertEqual(1, len(autg.mock_calls))
             call1 = autg.mock_calls[0]
-            self.assertTupleEqual(('p1-dev', 'john'), call1[1])
+            self.assertTupleEqual(('john', 'p1-dev'), call1[1])
 
     def test_delete_user_from_projectgroups(self):
-        ctx = [patch('managesf.controllers.gerrit.get_groups'),
-               patch('managesf.controllers.gerrit.delete_group_member'),
-               patch('managesf.controllers.gerrit.get_group_member_id'),
-               patch('managesf.controllers.gerrit.check_if_group_exists'),
-               patch('managesf.controllers.gerrit.get_group_id',
-                     new_callable=lambda: fake_get_group_id)]
-        with nested(*ctx) as (gg, dgm, ggmid, cige, ggi):
+        ctx = [patch('managesf.controllers.gerrit.get_cookie'),
+               patch('managesf.controllers.gerrit.get_my_groups'),
+               patch(
+                   'managesf.controllers.gerrit.GerritUtils.'
+                   'delete_group_member'),
+               patch(
+                   'managesf.controllers.gerrit.GerritUtils.'
+                   'get_group_member_id'),
+               patch(
+                   'managesf.controllers.gerrit.GerritUtils.group_exists'),
+               patch(
+                   'managesf.controllers.gerrit.GerritUtils.get_group_id',
+                   new_callable=lambda: fake_get_group_id)]
+        with nested(*ctx) as (gc, gg, dgm, ggmid, cige, ggi):
             gg.return_value = [1]
             ggmid.return_value = 42
             cige.return_value = True
@@ -343,7 +279,7 @@ class TestGerritController(TestCase):
             self.assertTupleEqual((3, 42), call1[1])
             self.assertTupleEqual((1, 42), call2[1])
             self.assertTupleEqual((2, 42), call3[1])
-        with nested(*ctx) as (gg, dgm, ggmid, cige, ggi):
+        with nested(*ctx) as (gc, gg, dgm, ggmid, cige, ggi):
             gg.return_value = [1]
             ggmid.return_value = 42
             cige.return_value = True
@@ -351,7 +287,7 @@ class TestGerritController(TestCase):
             self.assertEqual(1, len(dgm.mock_calls))
             call1 = dgm.mock_calls[0]
             self.assertTupleEqual((3, 42), call1[1])
-        with nested(*ctx) as (gg, dgm, ggmid, cige, ggi):
+        with nested(*ctx) as (gc, gg, dgm, ggmid, cige, ggi):
             gg.return_value = [3]
             ggmid.return_value = 42
             cige.return_value = True
@@ -362,27 +298,28 @@ class TestGerritController(TestCase):
             self.assertEqual(0, len(dgm.mock_calls))
 
     def test_delete_project(self):
-        ctx = [patch('managesf.controllers.gerrit.user_owns_project'),
+        ctx = [patch('managesf.controllers.gerrit.get_cookie'),
+               patch('managesf.controllers.gerrit.user_owns_project'),
                patch('managesf.controllers.gerrit.user_is_administrator'),
-               patch('managesf.controllers.gerrit._delete_project'),
+               patch('managesf.controllers.gerrit.GerritUtils.delete_project'),
                patch(
                'managesf.controllers.gerrit.CustomGerritClient.deleteGroup'),
                patch('managesf.controllers.gerrit.gerrit.Gerrit._ssh')]
-        with nested(*ctx) as (uop, uia, dp, dg, ssh):
+        with nested(*ctx) as (gc, uop, uia, dp, dg, ssh):
             ssh.return_value = ("", "")
             uop.return_value = False
             uia.return_value = False
             self.assertRaises(
                 exc.HTTPUnauthorized, lambda:
                 gerrit.delete_project("p1"))
-        with nested(*ctx) as (uop, uia, dp, dg, ssh):
+        with nested(*ctx) as (gc, uop, uia, dp, dg, ssh):
             ssh.return_value = ("", "")
             uop.return_value = True
             uia.return_value = False
             gerrit.delete_project("p1")
             self.assertEqual(3, len(dg.mock_calls))
             self.assertTrue(dp.called)
-        with nested(*ctx) as (uop, uia, dp, dg, ssh):
+        with nested(*ctx) as (gc, uop, uia, dp, dg, ssh):
             ssh.return_value = ("", "")
             uop.return_value = False
             uia.return_value = True
@@ -391,14 +328,15 @@ class TestGerritController(TestCase):
             self.assertTrue(dp.called)
 
     def test_init_git_repo(self):
-        ctx = [patch('managesf.controllers.gerrit.GerritRepo.clone'),
+        ctx = [patch('managesf.controllers.gerrit.get_cookie'),
+               patch('managesf.controllers.gerrit.GerritRepo.clone'),
                patch('managesf.controllers.gerrit.GerritRepo.push_config'),
                patch(
                'managesf.controllers.gerrit.GerritRepo.push_master_from_git_remote'),  # noqa
                patch('managesf.controllers.gerrit.GerritRepo.push_master'),
-               patch('managesf.controllers.gerrit.get_group_id',
+               patch('managesf.controllers.gerrit.GerritUtils.get_group_id',
                      new_callable=lambda: fake_get_group_id)]
-        with nested(*ctx) as (c, pc, pmfgr, pm, ggi):
+        with nested(*ctx) as (gc, c, pc, pmfgr, pm, ggi):
             gerrit.init_git_repo("p1", "the desc",
                                  "git://tests.dom/git/oldp1.git", True)
             arg_paths = pc.mock_calls[0][1][0]

@@ -17,9 +17,12 @@
 # We rely on https://github.com/sonyxperiadev/pygerrit
 
 import json
+import logging
 from requests.exceptions import HTTPError
 from pygerrit.rest import GerritRestAPI
 from pygerrit.rest import _decode_response
+
+logger = logging.getLogger(__name__)
 
 
 class SFGerritRestAPI(GerritRestAPI):
@@ -37,6 +40,54 @@ class SFGerritRestAPI(GerritRestAPI):
                     auth_pubtkt=auth_cookie)})
         else:
             super(SFGerritRestAPI, self).__init__(*args, **kwargs)
+
+    def get(self, endpoint, **kwargs):
+        kwargs.update(self.kwargs.copy())
+        url = self.make_url(endpoint)
+        logger.debug("Send HTTP GET request %s with kwargs %s" %
+                     (url, str(kwargs)))
+        response = self.session.get(url, **kwargs)
+        return _decode_response(response)
+
+    def put(self, endpoint, **kwargs):
+        kwargs.update(self.kwargs.copy())
+        url = self.make_url(endpoint)
+        kwargs["headers"].update(
+            {"Content-Type": "application/json;charset=UTF-8"})
+        logger.debug("Send HTTP PUT request %s with kwargs %s" %
+                     (url, str(kwargs)))
+        response = self.session.put(url, **kwargs)
+        return _decode_response(response)
+
+    def post(self, endpoint, **kwargs):
+        headers = None
+        if 'headers' in kwargs:
+            headers = kwargs['headers']
+            del kwargs['headers']
+        kwargs.update(self.kwargs.copy())
+        kwargs["headers"].update(
+            {"Content-Type": "application/json;charset=UTF-8"})
+        if headers is not None:
+            kwargs["headers"] = headers
+        url = self.make_url(endpoint)
+        logger.debug("Send HTTP POST request %s with kwargs %s" %
+                     (url, str(kwargs)))
+        response = self.session.post(url, **kwargs)
+        return _decode_response(response)
+
+    def delete(self, endpoint, **kwargs):
+        headers = None
+        if 'headers' in kwargs:
+            headers = kwargs['headers']
+            del kwargs['headers']
+        kwargs.update(self.kwargs.copy())
+        if headers is not None:
+            kwargs["headers"] = headers
+        url = self.make_url(endpoint)
+        logger.debug("Send HTTP DELETE request %s with kwargs %s" %
+                     (url, str(kwargs)))
+        response = self.session.delete(url, **kwargs)
+        return _decode_response(response)
 
 
 class GerritUtils:
@@ -64,6 +115,30 @@ class GerritUtils:
         except HTTPError as e:
             return self._manage_errors(e)
 
+    def create_project(self, name, desc, owners):
+        data = json.dumps({
+            "description": desc,
+            "name": name,
+            "create_empty_commit": True,
+            "owners": owners,
+        })
+        try:
+            self.g.put('projects/%s' % name,
+                       data=data)
+        except HTTPError as e:
+            return self._manage_errors(e)
+
+    def delete_project(self, name, force=False):
+        try:
+            if force:
+                data = json.dumps({"force": True})
+                self.g.delete('projects/%s' % name,
+                              data=data)
+            else:
+                self.g.delete('projects/%s' % name)
+        except HTTPError as e:
+            return self._manage_errors(e)
+
     def get_project(self, name):
         try:
             return self.g.get('projects/%s' % name)
@@ -73,6 +148,14 @@ class GerritUtils:
     def get_projects(self):
         return self.g.get('projects/?').keys()
 
+    def get_project_owner(self, name):
+        try:
+            ret = self.g.get('access/?project=%s' % name)
+            perms = ret[name]['local']['refs/*']['permissions']
+            return perms['owner']['rules'].keys()[0]
+        except HTTPError as e:
+            return self._manage_errors(e)
+
     # Account related API calls #
     def get_account(self, username):
         try:
@@ -80,9 +163,46 @@ class GerritUtils:
         except HTTPError as e:
             return self._manage_errors(e)
 
+    def get_my_groups_id(self):
+        try:
+            grps = self.g.get('accounts/self/groups')
+            return [g['id'] for g in grps]
+        except HTTPError as e:
+            return self._manage_errors(e)
+
     # Groups related API calls #
     def group_exists(self, name):
         return name in self.g.get('groups/')
+
+    def create_group(self, name, desc):
+        data = json.dumps({
+            "description": desc,
+            "name": name,
+            "visible_to_all": True
+        })
+        try:
+            self.g.put('groups/%s' % name,
+                       data=data)
+        except HTTPError as e:
+            return self._manage_errors(e)
+
+    def get_group_id(self, name):
+        try:
+            return self.g.get('groups/%s/detail' % name)['id']
+        except HTTPError as e:
+            return self._manage_errors(e)
+
+    def get_group_member_id(self, group_id, username):
+        try:
+            resp = self.g.get('groups/%s/members/' % group_id)
+            uid = [m['_account_id'] for m in resp if
+                   m['username'] == username]
+            if uid:
+                return uid[0]
+            else:
+                return None
+        except HTTPError as e:
+            return self._manage_errors(e)
 
     def get_group_owner(self, name):
         try:
@@ -100,15 +220,13 @@ class GerritUtils:
 
     def add_group_member(self, username, groupname):
         try:
-            self.g.session.post(
-                self.g.make_url('groups/%s/members/%s' % (groupname,
-                                                          username)),
-                headers={},
-                cookies=self.g.kwargs['cookies'])
+            self.g.post('groups/%s/members/%s' % (groupname,
+                                                  username),
+                        headers={})
         except HTTPError as e:
             return self._manage_errors(e)
 
-    def delete_group_member(self, username, groupname):
+    def delete_group_member(self, groupname, username):
         try:
             self.g.delete('groups/%s/members/%s' % (groupname,
                                                     username))
@@ -118,19 +236,15 @@ class GerritUtils:
     # Keys related API calls #
     def add_pubkey(self, pubkey):
         headers = {'content-type': 'plain/text'}
-        response = self.g.session.post(
-            self.g.make_url('accounts/self/sshkeys'),
-            headers=headers,
-            cookies=self.g.kwargs['cookies'],
-            data=pubkey)
-        return _decode_response(response)['seq']
+        response = self.g.post('accounts/self/sshkeys',
+                               headers=headers,
+                               data=pubkey)
+        return response['seq']
 
     def del_pubkey(self, index):
         try:
-            self.g.session.delete(
-                self.g.make_url('accounts/self/sshkeys/' + str(index)),
-                headers={},
-                cookies=self.g.kwargs['cookies'])
+            self.g.delete('accounts/self/sshkeys/' + str(index),
+                          headers={})
         except HTTPError as e:
             return self._manage_errors(e)
 
@@ -208,11 +322,9 @@ class GerritUtils:
     def e_d_plugin(self, plugin, mode):
         # mode can be 'enable' or 'disable'
         try:
-            response = self.g.session.post(
-                self.g.make_url('plugins/%s/gerrit~%s' % (plugin, mode)),
-                headers={},
-                cookies=self.g.kwargs['cookies'])
-            return _decode_response(response)
+            response = self.g.post('plugins/%s/gerrit~%s' % (plugin, mode),
+                                   headers={})
+            return response
         except HTTPError as e:
             return self._manage_errors(e)
 

@@ -27,6 +27,8 @@ logging = {
     'loggers': {
         'managesf': {'level': 'DEBUG',
                      'handlers': ['file_handler']},
+        'pysflib': {'level': 'DEBUG',
+                     'handlers': ['file_handler']},
         '__force_dict__': True
     },
     'handlers': {
@@ -70,7 +72,6 @@ admin = {
     'name': '<%= @gerrit['gerrit_admin_username'] %>',
     'email': '<%= @gerrit['gerrit_admin_mail'] %>',
     'http_password': '<%= @gerrit['gerrit_admin_password'] %>',
-    'cookiejar': None
 }
 
 gerrit = {

@@ -17,200 +17,81 @@ from pecan import conf
 from pecan import abort
 from pecan import request
 from gerritlib import gerrit
-from managesf.controllers.utils import send_request, \
-    template, admin_auth_cookie
+from managesf.controllers.utils import template
 from subprocess import Popen, PIPE
 
-import json
 import os
 import stat
 import re
 import shlex
 import shutil
+import time
 import subprocess
 import logging
 import tempfile
 
+from pysflib.sfgerrit import GerritUtils
+from pysflib.sfauth import get_cookie
+
 logger = logging.getLogger(__name__)
 
+ADMIN_COOKIE = None
+ADMIN_COOKIE_DATE = 0
+COOKIE_VALIDITY = 60
 
-def gerrit_json_resp(resp):
-    if not resp.text.startswith(")]}'"):
-        abort(500)
 
-    return json.loads(resp.text[4:])
+def get_client(cookie=None):
+    if not cookie:
+        # Use an admin cookie
+        if int(time.time()) - globals()['ADMIN_COOKIE_DATE'] > \
+                globals()['COOKIE_VALIDITY']:
+            cookie = get_cookie(conf.auth['host'],
+                                conf.admin['name'],
+                                conf.admin['http_password'])
+            globals()['ADMIN_COOKIE'] = cookie
+            globals()['ADMIN_COOKIE_DATE'] = int(time.time())
+        else:
+            cookie = globals()['ADMIN_COOKIE']
+    return GerritUtils('http://%s' % conf.gerrit['host'],
+                       auth_cookie=cookie)
 
 
 def get_projects_by_user():
-    projects = get_projects()
+    ge = get_client()
+    projects = ge.get_projects()
     if user_is_administrator():
-        logger.debug(" Projects owned by user - " + " , ".join(projects))
         return projects
     names = []
     for project in projects:
         if user_owns_project(project):
             names.append(project)
-    logger.debug("projects owned by user - " + " , ".join(names))
     return names
 
 
-def check_if_group_exists(grp_name):
-    logger.debug(' [gerrit] check if group exists ' + grp_name)
-    url = "http://%(gerrit_host)s/r/a/groups/%(group_name)s/detail" % \
-          {'gerrit_host': conf.gerrit['host'],
-           'group_name': grp_name}
-
-    resp = send_request(url, [200, 404],
-                        method='GET',
-                        cookies=admin_auth_cookie())
-    if resp.status_code == 200:
-        return True
-    else:
-        return False
+def create_group(grp_name, grp_desc):
+    logger.info('[gerrit] creating group %s' % grp_name)
+    ge = get_client()
+    ge.create_group(grp_name, grp_desc)
+    ge.add_group_member(request.remote_user, grp_name)
 
 
-def get_group_id(grp_name):
-    logger.debug(' [gerrit] fetching group id of ' + grp_name)
-    url = "http://%(gerrit_host)s/r/a/groups/%(group_name)s/detail" % \
-          {'gerrit_host': conf.gerrit['host'],
-           'group_name': grp_name}
-
-    resp = send_request(url, [200],
-                        method='GET',
-                        cookies=admin_auth_cookie())
-    return gerrit_json_resp(resp)['id']
-
-
-def get_group_member_id(gid, user):
-    logger.debug(' [gerrit] fetching group member id of user' + user)
-    url = "http://%(gerrit_host)s/r/a/groups/%(group_id)s/members/" % \
-          {'gerrit_host': conf.gerrit['host'],
-           'group_id': gid}
-
-    resp = send_request(url, [200],
-                        method='GET',
-                        cookies=admin_auth_cookie())
-    j = gerrit_json_resp(resp)
-    uid = None
-    for m in j:
-        if m['username'] == user:
-            uid = m['_account_id']
-            break
-    return uid
-
-
-def delete_group_member(gid, mem_id):
-    logger.debug(' [gerrit] deleting member from group ')
-    url = "http://%(gerrit_host)s/r/a/groups/%(group_id)s/members/%(account-id)s" % \
-          {'gerrit_host': conf.gerrit['host'],
-           'group_id': gid,
-           'account-id': mem_id}
-    data = json.dumps({"force": True})
-    send_request(url, [204],
-                 method='DELETE',
-                 data=data,
-                 headers={'Content-type': 'application/json'},
-                 cookies=admin_auth_cookie())
-
-
-def add_user_to_group(grp_name, user):
-    logger.debug(' [gerrit] adding ' + user + ' to group ' + grp_name)
-    url = "http://%(gerrit_host)s/r/a/groups/%(group_name)s/members/" \
-          "%(user_name)s" % {'gerrit_host': conf.gerrit['host'],
-                             'group_name': grp_name,
-                             'user_name': user}
-    send_request(url, [200, 201],
-                 cookies=admin_auth_cookie())
-
-
-def create_group(grp_name, grp_desc, prj_name):
-    logger.debug(' [gerrit] creating a group ' + grp_name)
-    url = "http://%(gerrit_host)s/r/a/groups/%(group_name)s" % \
-          {'gerrit_host': conf.gerrit['host'],
-           'group_name': grp_name}
-    group_info = {
-        "description": grp_desc,
-        "name": grp_name,
-        "visible_to_all": True
-    }
-    send_request(url, [201], data=json.dumps(group_info),
-                 headers={'Content-type': 'application/json'},
-                 cookies=admin_auth_cookie())
-    add_user_to_group(grp_name, request.remote_user)
-
-
-def create_project(prj_name, prj_desc):
-    logger.debug(' [gerrit] creating a project ' + prj_name)
-    url = "http://%(gerrit_host)s/r/a/projects/%(project_name)s" % \
-          {'gerrit_host': conf.gerrit['host'],
-           'project_name': prj_name}
-    proj_info = {
-        "description": prj_desc,
-        "name": prj_name,
-        "create_empty_commit": True,
-        "owners": [get_ptl_group_name(prj_name)]
-    }
-    send_request(url, [201],
-                 data=json.dumps(proj_info),
-                 headers={'Content-type': 'application/json'},
-                 cookies=admin_auth_cookie())
-
-
-def _delete_project(prj_name):
-    logger.debug(' [gerrit] deleting project ' + prj_name)
-    url = "http://%(gerrit_host)s/r/a/projects/%(project_name)s" % \
-          {'gerrit_host': conf.gerrit['host'],
-           'project_name': prj_name}
-    data = json.dumps({"force": True})
-    send_request(url, [204],
-                 method='DELETE',
-                 data=data,
-                 headers={'Content-type': 'application/json'},
-                 cookies=admin_auth_cookie())
-
-
-def get_projects():
-    logger.debug(' [gerrit] fetching projects list')
-    url = "http://%(gerrit_host)s/r/a/projects/?" % \
-          {'gerrit_host': conf.gerrit['host']}
-
-    resp = send_request(url, [200], method='GET')
-    return gerrit_json_resp(resp)
-
-
-def get_groups():
-    logger.debug(' [gerrit] fetching groups list')
-    url = "http://%(gerrit_host)s/r/a/accounts/self/groups" % \
-          {'gerrit_host': conf.gerrit['host']}
-
-    resp = send_request(url, [200], method='GET')
-    return [g['id'] for g in gerrit_json_resp(resp)]
-
-
-def get_project_owner(pn):
-    logger.debug(' [gerrit] fetching the owner group of the project ' + pn)
-    url = "http://%(gerrit_host)s/r/a/access/?project=%(project)s" % \
-          {'gerrit_host': conf.gerrit['host'],
-           'project': pn}
-
-    resp = send_request(url, [200],
-                        method='GET',
-                        cookies=admin_auth_cookie())
-    js = gerrit_json_resp(resp)
-    return js[pn]['local']['refs/*']['permissions']['owner']['rules'].keys()[0]
+def get_my_groups():
+    user_cookie = request.cookies['auth_pubtkt']
+    ge = get_client(cookie=user_cookie)
+    return ge.get_my_groups_id()
 
 
 def user_owns_project(prj_name):
-    grps = get_groups()
-    owner = get_project_owner(prj_name)
-
+    grps = get_my_groups()
+    ge = get_client()
+    owner = ge.get_project_owner(prj_name)
     return owner in grps
 
 
 def user_is_administrator():
-    logger.debug(' [gerrit] Checking if the user is Administrator')
-    grps = get_groups()
-    admin_id = get_group_id('Administrators')
+    ge = get_client()
+    grps = get_my_groups()
+    admin_id = ge.get_group_id('Administrators')
     if admin_id in grps:
         return True
     return False
@@ -265,12 +146,12 @@ class GerritRepo(object):
         std_out, std_err = p.communicate()
         # logging std_out also logs std_error as both use same pipe
         if std_out:
-            logger.debug(" [gerrit] cmd %s output" % cmd)
-            logger.debug(std_out)
+            logger.info("[gerrit] cmd %s output" % cmd)
+            logger.info(std_out)
         os.chdir(ocwd)
 
     def clone(self):
-        logger.debug(" [gerrit] Clone repository %s" % self.prj_name)
+        logger.info("[gerrit] Clone repository %s" % self.prj_name)
         cmd = "git clone ssh://%(admin)s@%(gerrit-host)s" \
               ":%(gerrit-host-port)s/%(name)s %(localcopy_path)s" % \
               {'admin': conf.admin['name'],
@@ -282,7 +163,7 @@ class GerritRepo(object):
         self._exec(cmd)
 
     def add_file(self, path, content):
-        logger.debug(" [gerrit] Add file %s to index" % path)
+        logger.info("[gerrit] Add file %s to index" % path)
         if path.split('/') > 1:
             d = re.sub(os.path.basename(path), '', path)
             try:
@@ -295,8 +176,8 @@ class GerritRepo(object):
         self._exec(cmd, cwd=self.infos['localcopy_path'])
 
     def push_config(self, paths):
-        logger.debug(" [gerrit] Prepare push on config for repository %s" %
-                     self.prj_name)
+        logger.info("[gerrit] Prepare push on config for repository %s" %
+                    self.prj_name)
         cmd = "git fetch origin " + \
               "refs/meta/config:refs/remotes/origin/meta/config"
         self._exec(cmd, cwd=self.infos['localcopy_path'])
@@ -309,12 +190,12 @@ class GerritRepo(object):
         self._exec(cmd, cwd=self.infos['localcopy_path'])
         cmd = "git push origin meta/config:meta/config"
         self._exec(cmd, cwd=self.infos['localcopy_path'])
-        logger.debug(" [gerrit] Push on config for repository %s" %
-                     self.prj_name)
+        logger.info("[gerrit] Push on config for repository %s" %
+                    self.prj_name)
 
     def push_master(self, paths):
-        logger.debug(" [gerrit] Prepare push on master for repository %s" %
-                     self.prj_name)
+        logger.info("[gerrit] Prepare push on master for repository %s" %
+                    self.prj_name)
         cmd = "git checkout master"
         self._exec(cmd, cwd=self.infos['localcopy_path'])
         for path, content in paths.items():
@@ -323,20 +204,20 @@ class GerritRepo(object):
         self._exec(cmd, cwd=self.infos['localcopy_path'])
         cmd = "git push origin master"
         self._exec(cmd, cwd=self.infos['localcopy_path'])
-        logger.debug(" [gerrit] Push on master for repository %s" %
-                     self.prj_name)
+        logger.info("[gerrit] Push on master for repository %s" %
+                    self.prj_name)
 
     def push_master_from_git_remote(self, remote):
-        logger.debug(" [gerrit] Fetch git objects from a remote and push "
-                     "to master for repository %s" % self.prj_name)
+        logger.info("[gerrit] Fetch git objects from a remote and push "
+                    "to master for repository %s" % self.prj_name)
         cmd = "git checkout master"
         self._exec(cmd, cwd=self.infos['localcopy_path'])
         cmd = "git remote add upstream %s" % remote
         self._exec(cmd, cwd=self.infos['localcopy_path'])
         cmd = "git fetch upstream"
         self._exec(cmd, cwd=self.infos['localcopy_path'])
-        logger.debug(" [gerrit] Push remote (master branch) of %s to the "
-                     "Gerrit repository" % remote)
+        logger.info("[gerrit] Push remote (master branch) of %s to the "
+                    "Gerrit repository" % remote)
         cmd = "git push -f origin upstream/master:master"
         self._exec(cmd, cwd=self.infos['localcopy_path'])
         cmd = "git reset --hard origin/master"
@@ -345,7 +226,7 @@ class GerritRepo(object):
 
 class CustomGerritClient(gerrit.Gerrit):
     def deleteGroup(self, name):
-        logger.debug(" [gerrit] deleting group " + name)
+        logger.info("[gerrit] Deleting group " + name)
         grp_id = "select group_id from account_group_names " \
                  "where name=\"%s\"" % name
         tables = ['account_group_members',
@@ -369,17 +250,19 @@ class CustomGerritClient(gerrit.Gerrit):
         logger.info("[gerrit] Triggering Replication")
         out, err = self._ssh(cmd)
         if err:
-            logger.debug("Replication Trigger error - %s" % err)
+            logger.info("[gerrit] Replication Trigger error - %s" % err)
 
 
 def init_git_repo(prj_name, prj_desc, upstream, private):
+    logger.info("[gerrit] Init gerrit project repo: %s" % prj_name)
+    ge = get_client()
     grps = {}
     grps['project-description'] = prj_desc
-    grps['core-group-uuid'] = get_group_id(get_core_group_name(prj_name))
-    grps['ptl-group-uuid'] = get_group_id(get_ptl_group_name(prj_name))
+    grps['core-group-uuid'] = ge.get_group_id(get_core_group_name(prj_name))
+    grps['ptl-group-uuid'] = ge.get_group_id(get_ptl_group_name(prj_name))
     if private:
-        grps['dev-group-uuid'] = get_group_id(get_dev_group_name(prj_name))
-    grps['non-interactive-users'] = get_group_id('Non-Interactive%20Users')
+        grps['dev-group-uuid'] = ge.get_group_id(get_dev_group_name(prj_name))
+    grps['non-interactive-users'] = ge.get_group_id('Non-Interactive%20Users')
     grps['core-group'] = get_core_group_name(prj_name)
     grps['ptl-group'] = get_ptl_group_name(prj_name)
     if private:
@@ -407,68 +290,74 @@ def init_git_repo(prj_name, prj_desc, upstream, private):
 
 
 def init_project(name, json):
+    logger.info("[gerrit] Init gerrit project: %s" % name)
     upstream = None if 'upstream' not in json else json['upstream']
     description = "" if 'description' not in json else json['description']
     private = False if 'private' not in json else json['private']
 
+    ge = get_client()
     core = get_core_group_name(name)
     core_desc = "Core developers for project " + name
-    create_group(core, core_desc, name)
+    create_group(core, core_desc)
     if 'core-group-members' in json:
         for m in json['core-group-members']:
-            add_user_to_group(core, m)
+            ge.add_group_member(m, core)
 
     ptl = get_ptl_group_name(name)
     ptl_desc = "Project team lead for project " + name
-    create_group(ptl, ptl_desc, name)
+    create_group(ptl, ptl_desc)
     if 'ptl-group-members' in json:
         for m in json['ptl-group-members']:
-            add_user_to_group(ptl, m)
+            ge.add_group_member(m, ptl)
 
     if private:
         dev = get_dev_group_name(name)
         dev_desc = "Developers for project " + name
-        create_group(dev, dev_desc, name)
+        create_group(dev, dev_desc)
         if 'dev-group-members' in json:
             for m in json['dev-group-members']:
                 if m != request.remote_user:
-                    add_user_to_group(dev, m)
+                    ge.add_group_member(m, dev)
 
-    create_project(name, description)
+    owner = [get_ptl_group_name(name)]
+    ge.create_project(name, description, owner)
     init_git_repo(name, description, upstream, private)
 
 
 def add_user_to_projectgroups(project, user, groups):
+    logger.info("[gerrit] Add user %s in groups %s for project %s" %
+                (user, str(groups), project))
+    ge = get_client()
     for g in groups:
         if g not in ['ptl-group', 'core-group', 'dev-group']:
             abort(400)
-    grps = get_groups()
-    ptl_gid = get_group_id(get_ptl_group_name(project))
-    core_gid = get_group_id(get_core_group_name(project))
+    grps = get_my_groups()
+    ptl_gid = ge.get_group_id(get_ptl_group_name(project))
+    core_gid = ge.get_group_id(get_core_group_name(project))
     # only PTL can add user to ptl group
     if 'ptl-group' in groups:
         if (ptl_gid not in grps) and (not user_is_administrator()):
-            logger.debug(" [gerrit] Current user is not ptl or admin")
+            logger.info("[gerrit] Current user is not ptl or admin")
             abort(401)
         ptl = get_ptl_group_name(project)
-        add_user_to_group(ptl, user)
+        ge.add_group_member(user, ptl)
     if 'core-group' in groups:
         if (core_gid not in grps) and (ptl_gid not in grps) and \
            (not user_is_administrator()):
-            logger.debug(" [gerrit] Current user is not core,ptl, or admin")
+            logger.info("[gerrit] Current user is not core,ptl, or admin")
             abort(401)
         core = get_core_group_name(project)
-        add_user_to_group(core, user)
+        ge.add_group_member(user, core)
     if 'dev-group' in groups:
         dev = get_dev_group_name(project)
-        if check_if_group_exists(dev):
-            dev_gid = get_group_id(dev)
+        if ge.group_exists(dev):
+            dev_gid = ge.get_group_id(dev)
             if (core_gid not in grps) and (ptl_gid not in grps) and \
                (dev_gid not in grps) and (not user_is_administrator()):
-                logger.debug(" [gerrit] Current user is "
-                             " not ptl,core,dev,admin")
+                logger.info("[gerrit] Current user is "
+                            "not ptl,core,dev,admin")
                 abort(401)
-            add_user_to_group(dev, user)
+            ge.add_group_member(user, dev)
 
 
 def delete_user_from_projectgroups(project, user, group):
@@ -479,45 +368,50 @@ def delete_user_from_projectgroups(project, user, group):
     else:
         groups = ['ptl-group', 'core-group', 'dev-group']
 
-    core_gid = get_group_id(get_core_group_name(project))
-    ptl_gid = get_group_id(get_ptl_group_name(project))
+    logger.info("[gerrit] Remove user %s from groups %s for project %s" %
+                (user, groups, project))
+
+    ge = get_client()
+    core_gid = ge.get_group_id(get_core_group_name(project))
+    ptl_gid = ge.get_group_id(get_ptl_group_name(project))
     # get the groups of the current user
-    grps = get_groups()
+    grps = get_my_groups()
     dev = get_dev_group_name(project)
     # delete dev group if requested
-    if ('dev-group' in groups) and check_if_group_exists(dev):
-        dev_gid = get_group_id(dev)
+    if ('dev-group' in groups) and ge.group_exists(dev):
+        dev_gid = ge.get_group_id(dev)
         if (dev_gid not in grps) and (core_gid not in grps) and \
            (ptl_gid not in grps) and (not user_is_administrator()):
-            logger.debug(" [gerrit] User is not dev, core, ptl, admin")
+            logger.info("[gerrit] User is not dev, core, ptl, admin")
             abort(401)
-        dev_mid = get_group_member_id(dev_gid, user)
+        dev_mid = ge.get_group_member_id(dev_gid, user)
         if dev_mid:
-            delete_group_member(dev_gid, dev_mid)
+            ge.delete_group_member(dev_gid, dev_mid)
 
     # delete ptl group if requested
     if 'ptl-group' in groups:
         if (ptl_gid not in grps) and (not user_is_administrator()):
-            logger.debug(" [gerrit] User is not ptl, admin")
+            logger.info("[gerrit] User is not ptl, admin")
             abort(401)
-        ptl_mid = get_group_member_id(ptl_gid, user)
+        ptl_mid = ge.get_group_member_id(ptl_gid, user)
         if ptl_mid:
-            delete_group_member(ptl_gid, ptl_mid)
+            ge.delete_group_member(ptl_gid, ptl_mid)
 
     # delete core group if requested
     if 'core-group' in groups:
         if (ptl_gid not in grps) and (core_gid not in grps) and \
            (not user_is_administrator()):
-            logger.debug(" [gerrit] User is not core, ptl, admin")
+            logger.info("[gerrit] User is not core, ptl, admin")
             abort(401)
-        core_mid = get_group_member_id(core_gid, user)
+        core_mid = ge.get_group_member_id(core_gid, user)
         if core_mid:
-            delete_group_member(core_gid, core_mid)
+            ge.delete_group_member(core_gid, core_mid)
 
 
 def delete_project(name):
+    logger.info("[gerrit] Delete project %s" % name)
     if not user_owns_project(name) and not user_is_administrator():
-        logger.debug(" [gerrit] User is neither an Administrator"
+        logger.debug("[gerrit] User is neither an Administrator"
                      " nor does own project")
         abort(401)
 
@@ -532,7 +426,8 @@ def delete_project(name):
         gerrit_client.deleteGroup(get_dev_group_name(name))
     except Exception:
         pass
-    _delete_project(name)
+    ge = get_client()
+    ge.delete_project(name)
 
 
 def replication_ssh_run_cmd(subcmd):
@@ -552,10 +447,11 @@ def replication_read_config():
     cmd = ['git', 'config', '-f', conf.gerrit['replication_config_path'], '-l']
     out, err, code = replication_ssh_run_cmd(cmd)
     if code:
-        logger.debug(" reading config file err %s " % err)
+        logger.info("[gerrit] Reading config file err %s " % err)
         abort(500)
     elif out:
-        logger.debug(" Contents of replication config file ... \n%s " % out)
+        logger.info("[gerrit] Contents of replication config file ... \n%s " %
+                    out)
         out = out.strip()
         lines = out.split("\n")
     config = {}
@@ -565,15 +461,15 @@ def replication_read_config():
         setting = setting.split(".")[1]
         if setting == 'projects':
             if (len(value.split()) != 1):
-                logger.debug("Invalid Replication config file.")
+                logger.info("[gerrit] Invalid Replication config file.")
                 abort(500)
             elif section in config and 'projects' in config[section]:
-                logger.debug("Invalid Replication config file.")
+                logger.info("[gerrit] Invalid Replication config file.")
                 abort(500)
         if section not in config.keys():
             config[section] = {}
         config[section].setdefault(setting, []).append(value)
-    logger.debug("Contents of the config file - " + str(config))
+    logger.info("(gerrit] Contents of the config file - " + str(config))
     return config
 
 
@@ -581,16 +477,17 @@ def replication_validate(projects, config, section=None, setting=None):
     settings = ['push', 'projects', 'url', 'receivepack', 'uploadpack',
                 'timeout', 'replicationDelay', 'threads']
     if setting and (setting not in settings):
-        logger.debug("Setting %s is not supported." % setting)
-        logger.debug("Supported settings - " + " , ".join(settings))
+        logger.info("[gerrit] Setting %s is not supported." % setting)
+        logger.info("[gerrit] Supported settings - " + " , ".join(settings))
         abort(400)
     if len(projects) == 0:
-        logger.debug("User doesn't own any project.")
+        logger.info("[gerrit] User doesn't own any project.")
         abort(403)
     if section and (section in config):
         for project in config[section]['projects']:
             if project not in projects:
-                logger.debug("User unauthorized for this section %s" % section)
+                logger.info("[gerrit] User unauthorized for this section %s" %
+                            section)
                 abort(403)
 
 
@@ -606,7 +503,7 @@ def replication_apply_config(section, setting=None, value=None):
                 # To allow $ in url
                 value = "\$".join(value.rsplit("$", 1))
             if setting == 'projects' and (section in config):
-                logger.debug("Project already exist.")
+                logger.info("[gerrit] Project already exist.")
                 abort(400)
             cmd = ['--add', '%s.%s' % (_section, setting), value]
         else:
@@ -616,15 +513,15 @@ def replication_apply_config(section, setting=None, value=None):
     else:
         cmd = ['--remove-section', _section]
     str_cmd = " ".join(cmd)
-    logger.debug(" Requested command is ... \n%s " % str_cmd)
+    logger.info("[gerrit] Requested command is ... \n%s " % str_cmd)
     cmd = gitcmd + cmd
     out, err, code = replication_ssh_run_cmd(cmd)
     if code:
-        logger.debug(" apply_config err %s " % err)
+        logger.info("[gerrit] apply_config err %s " % err)
         return err
     else:
-        logger.debug(" Reload the replication plugin to pick up"
-                     " the new configuration")
+        logger.info("[gerrit] Reload the replication plugin to pick up"
+                    " the new configuration")
         gerrit_client = CustomGerritClient(
             conf.gerrit['host'],
             conf.admin['name'],
@@ -639,23 +536,23 @@ def replication_get_config(section=None, setting=None):
     userConfig = {}
     # Return setting
     if setting:
-        logger.debug("User GET request: %s %s" % (section, setting))
+        logger.info("[gerrit] User GET request: %s %s" % (section, setting))
         if (section in config) and (setting in config[section]):
             userConfig[setting] = config[section][setting]
     else:
         # Return the authorized sections for the user
-        logger.debug("User GET request for all sections")
+        logger.info("[gerrit] User GET request for all sections")
         for _section in config:
             for project in config[_section]['projects']:
                 if project in projects:
                     userConfig[_section] = config[_section]
                     break
-    logger.debug("Config for user: %s" % str(userConfig))
+    logger.info("[gerrit] Config for user: %s" % str(userConfig))
     return userConfig
 
 
 def replication_trigger(json):
-    logger.debug("replication_trigger %s" % str(json))
+    logger.info("[gerrit] Replication_trigger %s" % str(json))
     wait = True if 'wait' not in json else json['wait'] in ['True', 'true', 1]
     url = None if 'url' not in json else json['url']
     project = None if 'project' not in json else json['project']
@@ -681,13 +578,14 @@ def replication_trigger(json):
     elif user_is_administrator():
         cmd = cmd + " --all"
     else:
-        logger.debug("Trigger replication for all projects owned by user")
+        logger.info("[gerrit] Trigger replication for"
+                    " all projects owned by user")
         if len(projects) == 0:
-            logger.debug("User doesn't own any projects, "
-                         "so unauthorized to trigger repilication")
+            logger.info("[gerrit] User doesn't own any projects, "
+                        "so unauthorized to trigger repilication")
             abort(403)
         cmd = cmd + "  " + "  ".join(projects)
-    logger.debug("Replication cmd - %s " % cmd)
+    logger.info("[gerrit] Replication cmd - %s " % cmd)
     gerrit_client = CustomGerritClient(conf.gerrit['host'],
                                        conf.admin['name'],
                                        keyfile=conf.gerrit['sshkey_priv_path'])
