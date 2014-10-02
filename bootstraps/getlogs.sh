@@ -56,7 +56,9 @@ scp root@`getip_from_yaml gerrit`:/tmp/config.diff $dlogs/gerrit/ &> /dev/null
 
 scp root@`getip_from_yaml redmine`:/var/log/redmine/default/production.log $dlogs/redmine/ &> /dev/null
 scp root@`getip_from_yaml managesf`:/var/log/managesf/managesf.log $dlogs/managesf/ &> /dev/null
+scp root@`getip_from_yaml managesf`:/var/log/cauth/cauth.log $dlogs/managesf/ &> /dev/null
 scp -r root@`getip_from_yaml managesf`:/var/log/apache2/ $dlogs/managesf/ &> /dev/null
+scp -r root@`getip_from_yaml managesf`:/var/log/httpd/ $dlogs/managesf/ &> /dev/null
 scp -r root@`getip_from_yaml jenkins`:/var/log/zuul $dlogs/zuul/ &> /dev/null
 scp -r root@`getip_from_yaml jenkins`:/var/lib/jenkins/jobs/ $dlogs/jenkins/ &> /dev/null
 scp root@`getip_from_yaml puppetmaster`:/tmp/debug $dlogs/puppetmaster/ &> /dev/null
