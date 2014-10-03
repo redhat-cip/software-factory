@@ -26,10 +26,14 @@
 
 set -e
 
+BUILDDIR=/tmp/_build
+[ -d $BUILDDIR ] && rm -Rf $BUILDDIR
+
 echo "Build docs ..."
 cd docs
-make html &> /dev/null
-cd _build/html
+
+make BUILDDIR=$BUILDDIR html &> /dev/null
+cd $BUILDDIR
 
 echo "Export docs ..."
 for OBJECT in `find $1 -type f`; do
@@ -38,9 +42,10 @@ for OBJECT in `find $1 -type f`; do
     TEMPURL=`swift tempurl PUT 3600 ${SWIFT_PATH} ${SECRET}`
     curl -f -i -X PUT --upload-file "$OBJECT" "http://${HOST}${TEMPURL}" &> /dev/null && echo -n '.' || { echo 'Fail !'; exit 1; }
 done
+cd - &> /dev/null
 echo
 echo "Done"
-rm -rf _build/html
+rm -rf $BUILDDIR
 
 echo "Docs are accessible here :"
 echo "http://${HOST}/v1/${ACCOUNT}/${CONTAINER}/index.html"
