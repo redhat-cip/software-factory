@@ -33,7 +33,7 @@ echo "Build docs ..."
 cd docs
 
 make BUILDDIR=$BUILDDIR html &> /dev/null
-cd $BUILDDIR
+cd $BUILDDIR/html
 
 echo "Export docs ..."
 for OBJECT in `find $1 -type f`; do
