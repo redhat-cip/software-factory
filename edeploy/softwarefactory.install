@@ -207,10 +207,11 @@ do_chroot $dir bash -c "cd /var/www/managesf; pip install -r requirements.txt"
 do_chroot $dir bash -c "pip install -U pbr==0.8.2"
 
 # Documentation
+DOCBUILDDIR=/tmp/_build
 [ ! -d "${dir}/var/www/docs" ] && mkdir $dir/var/www/docs
-[ ! -d "${DOCDIR}/_build/html" ] && cd ${DOCDIR} && make html ; cd -
-cp -r ${DOCDIR}/_build/html/* ${dir}/var/www/docs/
-rm -rf ${DOCDIR}/_build/html/
+cd ${DOCDIR} && make BUILDDIR=$DOCBUILDDIR html ; cd -
+cp -r $DOCBUILDDIR/html/* ${dir}/var/www/docs/
+rm -rf $DOCBUILDDIR
 
 clear_packages_cache $dir
 
