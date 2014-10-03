@@ -8,6 +8,7 @@ VERS=D7-H.0.9.0
 BUILT_ROLES=/var/lib/sf
 SFCONFIGFILE=../sfconfig.yaml
 DOMAIN=$(cat $SFCONFIGFILE | grep domain | cut -d' ' -f2)
+suffix=$DOMAIN
 
 ### Modify here according to your configuration ###
 # The default public key to use
@@ -17,7 +18,6 @@ flavor="m1.small"
 # alt_flavor is used for puppetmaster, mysql, redmine, jenkins, gerrit (prefer flavor with at least 2 vCPUs and 2GB RAM)
 #alt_flavor="standard.small"
 alt_flavor=$flavor
-suffix="tests.dom"
 ext_net_uuid="1013481d-c86b-4a9d-8d3d-e5d9448749fc"
 # Network from TCP/22 is accessible
 sg_admin_cidr="0.0.0.0/0"

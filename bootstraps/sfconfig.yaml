@@ -1,19 +1,34 @@
+# The top domain of your SF deployment. This is an important
+# configuration for SSO. Please be care of setting it correctly. If
+# you envisage to access the SF web UI by sf.dev.tests.dom or sf.test.dom
+# using tests.com as domain is fine.
 domain: tests.dom
 
+# This is the identity of the Administrator user of SF. This user
+# will heritate of the Admin right on Redmine, Gerrit, Jenkins.
 admin_name: user1
 admin_mail: user1@example.com
 admin_password: userpass
 
+# If you envisage to authenticate users using an LDAP directory
+# please provide the following details or leave it blank.
 ldap_account_base: ou=Users,dc=example,dc=com
 ldap_account_username_attribute: cn
 ldap_account_mail_attribute: mail
 ldap_account_surname_attribute: sn
 
-smtp_relay: mail.example.com
-
+# The timeout after a SSO user cookie expire
 sso_cookie_timeout: 3600
 
+# If you envisage to authenticate users wia their Github
+# account please set your APP id and secret. Or leave it blank.
 github_app_id: b1576649a671b82aaee8
 github_app_secret: 87c8f11b7aef93dcf4e1a06bf35c93e6c61871f4
 
+# If you prefer to use a SMTP relay
+# for the ougoing mails sent by SF please set it
+# or leave it blank.
+smtp_relay: mail.example.com
+
+# From email adresse used by Jenkins.
 jenkins_user_email: jenkins@example.com

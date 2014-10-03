@@ -12,9 +12,10 @@ Contents:
    :maxdepth: 2
 
    intro
-   admin
-   user
+   deploy
+   submitpatches
    managesf
+   testing
    graphs
 
 Indices and tables

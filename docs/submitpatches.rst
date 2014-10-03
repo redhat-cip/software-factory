@@ -1,84 +1,71 @@
-Contents:
-
 .. toctree::
 
-Using the Software factory
-==========================
+Using Software factory for project development
+==============================================
 
-Create a project
-----------------
+Create a project on SF
+----------------------
 Any user can create a project. (See :ref:`managesf_create_project`)
 
+Contribute to a project on SF
+-----------------------------
 
-How to contribute
------------------
+Clone a project
+...............
 
-Central Source code repository
-------------------------------
-Softwarefactory uses `GIT <http://en.wikipedia.org/wiki/Git_%28software%29>`_
+Softwarefactory uses `the GIT protocol <http://en.wikipedia.org/wiki/Git_%28software%29>`_
 as its revision control system. As and when a project is created, Gerrit
 initializes the projects' repository.
-The repositories can be `cloned <http://git-scm.com/docs/git-clone>`_ from
-the gerrit server to a local directory. Gerrit allows multiple ways to clone
+
+Repositories can be `cloned <http://git-scm.com/docs/git-clone>`_ from
+the Gerrit server to a local directory. Gerrit allows multiple ways to clone
 any projects' repositories.
 
-- http
-    ::
-
-      http://{gerrit-host}/r/{project-name}
-
-- SSH
-    Before accessing SSH url, one needs to register the SSH public key of
-    the computer where the project wants to be cloned. (See :ref:`setup_ssh_keys`)
-
-    ::
-
-      ssh://{user-name}@{gerrit-host}:29418/{project-name}
-
-
-Preparing the local repository
-------------------------------
-
-In order to work with gerrit, you need to add a "change id" to your commit summary
-(you can see these if you browse changes on gerrit, they look like
-
-  ::
-
-    Change-Id: Ibd3be19ed1a23c8638144b4a1d32f544ca1b5f97
-
-Each time you amend a commit in response to gerrit feedback git gives it a new
-commit ID, but because this change ID stays the same gerrit will keep track of
-it as a new "patch set" addressing the same change
-
-Installing git-review
-.....................
-
-git-review is a git add-on that manages the reviewing and other aspects of gerrit
-
-Generally, the easiest way to get last version is to install it using the python
-package installer pip
+Using HTTP:
 
 .. code-block:: bash
 
-    $ sudo pip install git-review
+ $ git clone http://{sf-gateway}/r/{project-name}
 
+Using SSH:
 
-Setting up git-review
-......................
+Before accessing SSH uri, one needs to register the SSH public key of
+its user. (See :ref:`setup_ssh_keys`)
 
-You have to setup the local repo for git-review before commiting any
-changes to it.
-Make sure you have installed your ssh keys to gerrit (See :ref:`setup_ssh_keys`)
+.. code-block:: bash
 
-  ::
+ $ git clone ssh://{user-name}@sf.dom/{project-name}
 
-    git review -s
+Initialise the GIT remote with git-review
+.........................................
 
-It will prompt you to enter a user name. This user name will be list as the
-author of the commit.
+git-review is a git add-on that manages the reviewing and other aspects of Gerrit.
+Indeed the way you commit on Gerrit can differ the way you used to commit on
+a traditional GIT repository.
 
-Submitting a patch
-------------------
+First retrieve git-review. Generally, the easiest way to get last version is
+to install it using the Python package installer pip.
+
+.. code-block:: bash
+
+ $ sudo pip install git-review
+
+Then initialize the GIT remote for the project you have cloned. You should
+use the SSH way to clone. Please start 'git review -s' as follow, the command
+will prompt you to enter your Gerrit user name.
+
+.. code-block:: bash
+
+ $ cd <project-name>
+ $ git review -s
+ Could not connect to gerrit.
+ Enter your gerrit username: user1
+ Trying again with ssh://user1@tests.dom:29418/p1
+ Creating a git remote called "gerrit" that maps to:
+         ssh://user1@tests.dom:29418/p1
+
+Submit a patch
+--------------
 
 Before starting to work its a good practise to setup a branch and work on it.
 The branch name will be displayed as the topic for the patch(es) you are going
@@ -89,11 +76,11 @@ To create a branch
 
 .. code-block:: bash
 
-      $ git checkout -b branch-name
-      # Switched to a new branch 'branch-name'
-      $ git branch
-      * branch-name
-        master
+ $ git checkout -b branch-name
+ # Switched to a new branch 'branch-name'
+ $ git branch
+ * branch-name
+   master
 
 Make and commit your change
 ...........................
@@ -103,102 +90,104 @@ you made by
 
 .. code-block:: bash
 
-    $ git status
-    # On branch branch-name
-    # Changes not staged for commit:
-    #   (use "git add <file>..." to update what will be committed)
-    #   (use "git checkout -- <file>..." to discard changes in working directory)
-    #
-    #     modified:   modified-file
-    #
-    # Untracked files:
-    #   (use "git add <file>..." to include in what will be committed)
-    #
-    #     new-file
-    no changes added to commit (use "git add" and/or "git commit -a")
+ $ git status
+ # On branch branch-name
+ # Changes not staged for commit:
+ #   (use "git add <file>..." to update what will be committed)
+ #   (use "git checkout -- <file>..." to discard changes in working directory)
+ #
+ #     modified:   modified-file
+ #
+ # Untracked files:
+ #   (use "git add <file>..." to include in what will be committed)
+ #
+ #     new-file
+ no changes added to commit (use "git add" and/or "git commit -a")
 
 You can review the changes you made so far by
 
 .. code-block:: bash
 
-    $ git diff
+ $ git diff
 
 When you finalize your changes, you need to add the changes by executing
 
-
 .. code-block:: bash
 
-    $ git add list/of/files/to/add
+ $ git add list/of/files/to/add
 
 After adding the files, you need to commit the changes in your local repo
 
 .. code-block:: bash
 
-    $ git commit -m "Detailed description about the change"
+ $ git commit -m "Detailed description about the change"
 
 Publishing the change
 .....................
 
-Before your changes can be merged into master, they must undergo review in Gerrit
+Before your changes can be merged into master, they must undergo review in Gerrit.
 
-But first, it's a good idea to synchronize your change set with any changes that
-may have occurred in master while you've been working. From within the branch
-you've been working on, execute the following command:
-
-  ::
-
-    git pull --rebase origin master
-
-This command will fetch new commits from the remote and then rebase your local
-commits on top of them. It will temporarily set aside the changes you've made
-in your branch, apply all of the changes that have happend in master to your
-working branch, then merge (recommit) all of the changes you've made back into
-the branch. Doing this will help avoid future merge conflicts. Plus, it gives
-you an opportunity to test your changes against the latest code in master
-
-Once you are satisfied with your change set and you've rebased against master,
-you are ready to push your code to Gerrit for review.
-
-Make sure you had setup git-review before submitting the code for review.
-
-To push the chage to gerrit, execute the following command
+But first, it's a good idea, but not mandatory, to synchronize your change set
+with any changes that may have occurred in master while you've been working.
+From within the branch you've been working on, execute the following command:
 
 .. code-block:: bash
 
-    $ git review
-    # remote: Processing changes: new: 1, refs: 1, done
-    # remote:
-    # remote: New Changes:
-    # remote:   http://{gerrit-host}/{change-number}
-    # remote:
-    # To ssh://{user-name}@{gerrit-host}:29418/{project-name}
-    #  * [new branch]      HEAD -> refs/publish/master/branch-name
+ $ git pull --rebase origin master
+
+This command will fetch new commits from the remote master branch and then
+rebase your local commit on top of them. It will temporarily set aside the
+changes you've made in your branch, apply all of the changes that have happend
+in master to your working branch, then merge (recommit) all of the changes you've made
+back into the branch. Doing this will help avoid future merge conflicts. Plus, it gives
+you an opportunity to test your changes against the latest code in master
+
+Once you are satisfied with your change set,
+you are ready to push your code to Gerrit for code review.
+
+Make sure you had setup git-review before submitting the code for review.
+
+To push the chage to gerrit, execute the following command:
+
+.. code-block:: bash
+
+ $ git review
+ # remote: Processing changes: new: 1, refs: 1, done
+ # remote:
+ # remote: New Changes:
+ # remote:   http://{gerrit-host}/{change-number}
+ # remote:
+ # To ssh://{user-name}@{gerrit-host}:29418/{project-name}
+ #  * [new branch]      HEAD -> refs/publish/master/branch-name
 
 Amending a change
 .................
 
-Sometimes, you might need to amend a submitted change. You can amend your own
+Sometimes, you might need to amend a submitted change, for instance
+when someone else does not approve your change by advising you to do it
+differently or even when automatic tests run by Jenkins reports a negative note
+on your change. Then you need to amend your change. You can amend your own
 changes as well as changes submitted by someone else, as long as the change
 hasn't been merged yet.
 
-Checkout the change like this
+You can heckout the change like this:
 
-  ::
+.. code-block:: bash
 
-    git review -d {change number}
+ git review -d {change number}
 
 Note, if you already have the change in a branch on your local repository,
 you can just check it out instead
 
-  ::
+.. code-block:: bash
 
-    git checkout {branch-name}
+ git checkout {branch-name}
 
 After adding the necessary changes, amend the existing commit like this
 
-  ::
+.. code-block:: bash
 
-    git commit --amend
+ git commit --amend
 
 NOTE: DO NOT use the -m flag to specify a commit summary: that will
 override the previous summary and regenerate the Change-Id. Instead, use
@@ -207,26 +196,23 @@ the Change-Id line intact.
 
 Now, push the change using ``git review``
 
-
 Reviewing workflow
 ------------------
 
-Softwarefactory mandates every patch to be reviewed before getting merged.
-
+Software Factory mandates every patch to be reviewed before getting merged.
 
 Who can review
 ..............
 
-Anybody who are logged in to softwarefactory are eligible to review a patch
-of any project except the private projects. The private projects can be
+Anybody who are logged in to Software Factory are eligible to review a patch
+of any project except for private projects. Private projects can be
 reviewed only by the team leads, developers, and core-developers of that
 project.
-
 
 How to review
 .............
 
-Ensure you are logged in to softwarefactory. Select the patch you want to
+Ensure you are logged in to SF UI and select the patch you want to
 review from the list of open patches. Following are some important files,
 links and buttons that you need to be aware of.
 
@@ -240,7 +226,9 @@ links and buttons that you need to be aware of.
 
   - Verified
       Any rating in this means that the patch has been verified by compiling
-      and running the test cases.
+      and running the test cases. This rate is given by a specific user
+      called **Jenkins**. This rate is done automatically if automatic
+      tests are configured for the related project.
 
   - Code-Review
       As the name implies, it contains the approvals for code review. Only
@@ -311,7 +299,8 @@ links and buttons that you need to be aware of.
 Approval Scoring
 ................
 
-For any patch, following scores are need
+For any patch, following scores are need before a patch can be merged on the master
+branche.
 
 *Verfied*
   At leat one '+1' and no '-1'
@@ -333,7 +322,7 @@ directory
 
 .. code-block:: bash
 
-  $ ls ~/.ssh/id_rsa.pub
+ $ ls ~/.ssh/id_rsa.pub
 
 In case you have the public key, you can skip to `Adding public key`_
 
@@ -342,36 +331,18 @@ executing the following commands
 
 .. code-block:: bash
 
-   $ ssh-keygen -t rsa -C "your_email@your.domain"
-   Generating public/private rsa key pair.
-   Enter file in which to save the key (/home/you/.ssh/id_rsa):
+ $ ssh-keygen -t rsa -C "your_email@your.domain"
+ Generating public/private rsa key pair.
+ Enter file in which to save the key (/home/you/.ssh/id_rsa):
 
 Then you will be asked enter an optional passphrase. After this
 you have a public key generated at the patch you chose.
-
-Then add your new key to the ssh-agent
-
-.. code-block:: bash
-
-  # start the ssh-agent in the background
-  $ eval `ssh-agent -s`
-  # Agent pid 59566
-  $ ssh-add ~/.ssh/id_rsa
 
 .. _`Adding public key`:
 
 Adding public key
 .................
 
-Run the following code to copy the key to your clipboard.
-
-.. code-block:: bash
-
-  $ sudo apt-get install xclip
-  # Downloads and installs xclip. If you don't have `apt-get`, you might need to use another installer (like `yum`)
-  $ xclip -sel clip < ~/.ssh/id_rsa.pub
-  # Copies the contents of the id_rsa.pub file to your clipboard
-
-Click on your username in the top right corner, then choose "Settings".
-On the left you will see SSH PUBLIC KEYS. Paste your SSH Public Key
-into the corresponding field.
+Click on your username in the top right corner of the Gerrit UI,
+then choose "Settings". On the left you will see SSH PUBLIC KEYS. Paste your
+SSH Public Key into the corresponding field.
