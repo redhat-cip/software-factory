@@ -102,6 +102,8 @@ project tests can be run when changes are purposed to a project.
 Tests results are published on Gerrit as a note and can
 prevent a change to be merged on the master branch.
 
+.. image:: imgs/gerrit.jpg
+
 Jenkins/Zuul
 ............
 
@@ -111,12 +113,16 @@ perform jobs. The SF deployment configure a first Jenkins VM
 as master and one Jenkins VM as slave. Additional other Jenkins slaves
 can be easily added after.
 
+.. image:: imgs/jenkins.jpg
+
 On SF Zuul is by default configured to provided four pipeline:
 
 * A check pipeline
 * A gate pipeline
 * A post pipeline
 * A periodic pipeline
+
+.. image:: imgs/zuul.jpg
 
 Redmine
 .......
@@ -126,15 +132,22 @@ configuration done by the SF is quite standard. Additionaly
 we embed the "Redmine Backlogs" plugins that eases Agile
 methodologies to be used with Redmine.
 
+.. image:: imgs/redmine.jpg
+
 Etherpad and Lodgeit
 ....................
 
 The Software Factory deploys along with Redmine, Gerrit and Jenkins two
 other collaboration tools. The first one Etherpad where team can
 live edit text documents to collaborate. This is really handy for instance to
-brainstorm of design documents. The second, lodgeit, is simply a
-pastebin like tool that facilitates rapid sharing of code snippets,
-error stack traces, ...
+brainstorm of design documents.
+
+.. image:: imgs/etherpad.jpg
+
+The second, lodgeit, is simply a pastebin like tool that facilitates rapid
+sharing of code snippets, error stack traces, ...
+
+.. image:: imgs/paste.jpg
 
 Unified project creation
 ........................
@@ -173,6 +186,8 @@ Now SF provide two kind of backend to authenticate:
 
 * LDAP backend
 * Github OAuth
+
+.. image:: imgs/login.jpg
 
 Below is the sequence diagram of the SSO mechanism.
 
