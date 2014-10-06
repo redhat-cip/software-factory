@@ -48,7 +48,19 @@ usual, by using **git review**. That change is automatically verified
 and, once merged in the master branch of the **config** repository, SF
 trigger Jenkins and Zuul to take care of that new change.
 
+.. graphviz:: test_workflow.dot
+
 How to configure
 ----------------
 
 To be filled ...
+
+
+Parallel testing
+----------------
+Running tests in parallel is somewhat challenging. Let's assume two patches are
+verified successfully independently and get merged, but will fail once they are
+merged together.
+zuul-merger avoids this by merging several patches during testing.
+
+.. graphviz:: zuul.dot

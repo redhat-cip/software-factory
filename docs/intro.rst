@@ -66,6 +66,12 @@ by Puppet. At the end of the process the SF environment deployment
 is ready to be used. The whole process from the images uploading
 to the system up and ready can take a couple minutes.
 
+Below is an overview of all nodes (shows as dashed boxes) and services
+and their connections to each other. Not shown is the puppetmaster server.
+Each node runs a puppet agent that connects to the puppetmaster server.
+
+.. graphviz:: components.dot
+
 Gerrit
 ......
 
@@ -167,6 +173,10 @@ Now SF provide two kind of backend to authenticate:
 
 * LDAP backend
 * Github OAuth
+
+Below is the sequence diagram of the SSO mechanism.
+
+.. graphviz:: authentication.dot
 
 The future of the Software Factory
 ----------------------------------
