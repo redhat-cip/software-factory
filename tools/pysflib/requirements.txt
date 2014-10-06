@@ -2,4 +2,4 @@ nose
 mock
 requests>=2.4.1
 python-redmine
--e git+https://github.com/sonyxperiadev/pygerrit.git#egg=pygerrit
+-e git+https://github.com/morucci/pygerrit.git#egg=pygerrit
