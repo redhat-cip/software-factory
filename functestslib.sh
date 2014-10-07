@@ -160,8 +160,6 @@ function pre_fail {
     checkpoint "host_debug"
     get_logs
     checkpoint "get-logs"
-    lxc_stop
-    checkpoint "lxc-stop"
     echo -e "\n\n\n====== $1 OUTPUT ======\n"
     case $1 in
         "Roles building FAILED")
@@ -218,9 +216,11 @@ function wait_for_bootstrap_done {
     retries=0
     max_retries=$1
     while true; do
-        # We wait for the bootstrap script that run on puppetmaster node finish its work
-        ssh -o StrictHostKeyChecking=no root@`get_ip puppetmaster` "echo 'Last lines are: --['; tail -n 3 /var/log/sf-bootstrap.log; echo ']--';"
-        RET=$(ssh -o StrictHostKeyChecking=no root@`get_ip puppetmaster` cat puppet-bootstrapper/build/bootstrap.done 2> /dev/null)
+        # We wait for the bootstrap script that run on puppetmaster node finish its work.
+        # We avoid password auth here as we can fall in a case that the node responds but the pub key has
+        # not been placed by cloudinit and then we stay stuck here.
+        ssh -o StrictHostKeyChecking=no -o PreferredAuthentications=publickey root@`get_ip puppetmaster` "echo 'Last lines are: --['; tail -n 3 /var/log/sf-bootstrap.log; echo ']--';"
+        RET=$(ssh -o StrictHostKeyChecking=no -o PreferredAuthentications=publickey root@`get_ip puppetmaster` cat puppet-bootstrapper/build/bootstrap.done 2> /dev/null)
         [ ! -z "${RET}" ] && return ${RET}
         let retries=retries+1
         [ "$retries" == "$max_retries" ] && return 1

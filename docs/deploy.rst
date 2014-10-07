@@ -50,9 +50,40 @@ script will then trigger puppet agent on each node in order to configure all VMs
 Build or retrieve SF VM images
 ------------------------------
 
-Pre-built VM images are not available yet.
+Software Factory role images can be created in two differents formats.
+The tree format that is a directory that contains a full working filesystem or
+a bootable qcow2 image. The former is used to bootstrap a test environment
+using LXC and the later to deploy a production environment on an
+Openstack cloud. We use a tool call eDeploy to create role images.
+All role images are based on CentOS 7.
 
-Images are based on CentOS 7.
+Fetch pre-built SF images
+.........................
+Each patches merged on the GIT SF master branch triggers a build of role
+images of SF. That means if you clone the master branch of SF you will
+be able to directly start the boostrap script whatever you want to
+deploy a test platform on LXC or a production platform on an Openstack
+CLoud. Pre-built SF trees and images are available on public
+Swift container and the script called **fetch_roles.sh** will ease
+you the retrieval. So first please clone the Software Factory
+GIT repository :
+
+.. code-block:: bash
+
+ $ git clone https://github.com/enovance/SoftwareFactory.git
+
+Then call the **fetch_roles.sh** script, a call of the script **build_roles.sh**
+is also needed in order to prepare the local FS directory where the bootstrap
+scripts will look for the images to used.
+
+.. code-block:: bash
+
+ $ SF_DIST=CentOS ./fetch_roles.sh
+ $ SF_DIST=CentOS ./build_roles.sh
+ $ ls -al /var/lib/sf/roles/install/C7.0-0.9.2/
+
+Build SF images
+...............
 
 To build the images by your own (it is not adviced to do so), follow the process
 below. The build has been only tested on Ubuntu 14.04.1 LTS. So the
@@ -84,8 +115,13 @@ the environment variable VIRT=true. The build may take a while :
 
 The above command should have produced four directories (install-server-vm, mysql, slave, softwarefactory)
 that contains the filesystem tree of the images you will need
-to deploy the Software Factory. If you added VIRT=true qcow2 images have been created too. Those
+to deploy the Software Factory. If you added **VIRT=true** qcow2 images have been created too. Those
 will be used to deploy on OpenStack.
+
+Note that the **build_roles.sh** script will try to fetch the pre-built images for
+you from internet. Indeed, the default behavior of rebuilding is only useful if you have done
+local changes on the SF edeploy roles. However if you really want to fully rebuild
+please prefix the **build_roles.sh** script call with **SKIP_UPSTREAM=true**.
 
 How to deploy SF on OpenStack
 -----------------------------

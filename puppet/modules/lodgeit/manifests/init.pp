@@ -1,5 +1,7 @@
 class lodgeit ($lodgeit = hiera_hash('lodgeit', '')) {
 
+  require hosts
+
   case $operatingsystem {
     centos: {
       file {'init':

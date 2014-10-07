@@ -143,6 +143,11 @@ cp -Rf $GERRITHOOKS ${dir}/root/gerrit_data_source/
 # Install Redmine backlog plugin
 do_chroot $dir mkdir -p /usr/share/redmine/plugins
 do_chroot $dir git clone git://github.com/backlogs/redmine_backlogs.git /usr/share/redmine/plugins/redmine_backlogs --depth 1
+# An update of holidays gem 10/12/2014 to 1.0.7 leads to unable to deploy the backlog plugin
+# Check later if we can safely remove that :
+cd $dir/usr/share/redmine/plugins/redmine_backlogs
+sed -i 's/gem \"holidays\", \"~>1.0.3\"/gem \"holidays\", \"=1.0.6\"/' Gemfile
+cd -
 HOME=/root do_chroot $dir bash -c 'cd /usr/share/redmine/plugins/redmine_backlogs && bundle install'
 if [ "$(package_tool)" == "yum" ]; then
   HOME=/root do_chroot $dir bash -c 'cd /usr/share/redmine && bundle update'

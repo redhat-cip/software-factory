@@ -35,7 +35,7 @@ case "$(package_tool)" in
     "yum")
         PACKAGES="git python-pip java-1.6.0-openjdk"
         add_epel_repository $DIST
-        install_packages $dir "$PACKAGES" 
+        install_packages $dir "$PACKAGES"
         ;;
     *)
         fatal_error "Unsupported package_tool: $(package_tool)"

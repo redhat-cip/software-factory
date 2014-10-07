@@ -1,8 +1,29 @@
 #!/bin/bash
 
-# This script will build the roles for SoftwareFactory
-# Then will start the SF in LXC containers
+# Copyright (C) 2014 eNovance SAS <licensing@enovance.com>
+#
+# Licensed under the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License. You may obtain
+# a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations
+# under the License.
+
+# This script will build if needed the roles for SoftwareFactory
+# Then will start the SF using the HEAT deployment way
 # Then will run the serverspecs and functional tests
+
+source functestslib.sh
+
+echo "Running functional-tests with this HEAD"
+display_head
+
+set -x
 
 function get_ip {
     while true; do
@@ -13,11 +34,7 @@ function get_ip {
     echo $p
 }
 
-source functestslib.sh
-
-set -x
-
-function stop {
+function heat_stop {
     if [ ! ${SF_SKIP_BOOTSTRAP} ]; then
         if [ ! ${DEBUG} ]; then
             cd bootstraps/heat
@@ -27,26 +44,37 @@ function stop {
     fi
 }
 
-prepare_artifacts
+function build_imgs {
+    if [ ! ${SF_SKIP_BUILDROLES} ]; then
+        VIRT=1 ./build_roles.sh &> ${ARTIFACTS_DIR}/build_roles.sh.output || pre_fail "Roles building FAILED"
+    fi
+}
 
-if [ ! ${SF_SKIP_BUILDROLES} ]; then
-    VIRT=1 ./build_roles.sh &> ${ARTIFACTS_DIR}/build_roles.sh.output || pre_fail "Roles building FAILED!"
-fi
-
-if [ ! ${SF_SKIP_BOOTSTRAP} ]; then
-    cd bootstraps/heat
-    ./start.sh full_restart_stack
-    cd -
-fi
-
-waiting_stack_created
-run_tests 60
-get_logs
-
-set +x
-stop
-
-publish_artifacts
+function heat_start {
+    if [ ! ${SF_SKIP_BOOTSTRAP} ]; then
+        cd bootstraps/heat
+        ./start.sh full_restart_stack
+        cd -
+    fi
+}
 
 set -x
-exit $[ ${ERROR_FATAL} + ${ERROR_RSPEC} + ${ERROR_TESTS} ]
+prepare_artifacts
+checkpoint "$(date) - $(hostname)"
+build_imgs
+checkpoint "build_roles"
+heat_start
+checkpoint "heat_start"
+waiting_stack_created
+checkpoint "wait_heat_stack"
+run_tests 60
+checkpoint "run_tests"
+DISABLE_SETX=1
+checkpoint "end_tests"
+get_logs
+checkpoint "get-logs"
+heat_stop
+checkpoint "heat_stop"
+publish_artifacts
+checkpoint "publish-artifacts"
+exit 0;

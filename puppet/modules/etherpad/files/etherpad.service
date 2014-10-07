@@ -4,7 +4,7 @@ After=syslog.target network.target
 
 [Service]
 Type=simple
-ExecStart=/var/www/etherpad-lite-1.4.0/run.sh 2>$1 < /dev/null &
+ExecStart=/var/www/etherpad-lite-1.4.0/run.sh
 
 [Install]
 WantedBy=multi-user.target

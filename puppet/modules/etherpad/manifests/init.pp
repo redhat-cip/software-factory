@@ -15,6 +15,8 @@
 
 class etherpad ($etherpad = hiera_hash('etherpad', '')) {
 
+  require hosts
+
   case $operatingsystem {
       centos: {
          $etherpad_init = 'etherpad'

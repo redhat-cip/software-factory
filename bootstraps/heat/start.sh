@@ -4,10 +4,10 @@ set -x
 
 source ../functions.sh
 
-VERS=D7-H.0.9.0
+VERS=C7.0-0.9.2
 BUILT_ROLES=/var/lib/sf
 SFCONFIGFILE=../sfconfig.yaml
-DOMAIN=$(cat $SFCONFIGFILE | grep domain | cut -d' ' -f2)
+DOMAIN=$(cat $SFCONFIGFILE | grep "^domain:" | cut -d' ' -f2)
 suffix=$DOMAIN
 
 ### Modify here according to your configuration ###
@@ -18,7 +18,7 @@ flavor="m1.small"
 # alt_flavor is used for puppetmaster, mysql, redmine, jenkins, gerrit (prefer flavor with at least 2 vCPUs and 2GB RAM)
 #alt_flavor="standard.small"
 alt_flavor=$flavor
-ext_net_uuid="1013481d-c86b-4a9d-8d3d-e5d9448749fc"
+ext_net_uuid="6c83db7b-480e-4198-bc69-88df6fd17e55"
 # Network from TCP/22 is accessible
 sg_admin_cidr="0.0.0.0/0"
 # Network from ALL SF services are accessible
@@ -52,7 +52,7 @@ function register_images {
         checksum=`glance image-show $img | grep checksum | awk '{print $4}'`
         if [ -z "$checksum" ]; then
             glance image-create --name $img --disk-format qcow2 --container-format bare \
-                --progress --file $BUILT_ROLES/roles/install/${VERS}/$img-*.img
+                --progress --file $BUILT_ROLES/roles/install/${VERS}/$img-*.img.qcow2
         fi
     done
 }
@@ -60,8 +60,8 @@ function register_images {
 function unregister_images {
     for img in install-server-vm mysql slave softwarefactory; do
         checksum=`glance image-show $img | grep checksum | awk '{print $4}'`
-        newchecksum=`cat $BUILT_ROLES/roles/install/${VERS}/$img-*.img.md5 | cut -d" " -f1`
-        [ "$newchecksum" != "$checksum" ] && glance image-delete $img
+        newchecksum=`cat $BUILT_ROLES/roles/install/${VERS}/$img-*.img.qcow2.md5 | cut -d" " -f1`
+        [ "$newchecksum" != "$checksum" ] && glance image-delete $img || true
     done
 }
 
@@ -75,12 +75,14 @@ function delete_stack {
 }
 
 function restart_stack {
-    delete_stack || true
+    set +e
+    delete_stack
     while true; do
         heat stack-list | grep "SoftwareFactory"
         [ "$?" != "0" ] && break
         sleep 2
     done
+    set -e
     start_stack
 }
 

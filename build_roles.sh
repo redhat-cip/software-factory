@@ -1,5 +1,19 @@
 #!/bin/bash
 
+# Copyright (C) 2014 eNovance SAS <licensing@enovance.com>
+#
+# Licensed under the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License. You may obtain
+# a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations
+# under the License.
+
 LOCK="/var/run/sf-build_roles.lock"
 if [ -f ${LOCK} ]; then
     echo "Lock file present: ${LOCK}"
@@ -9,26 +23,27 @@ sudo touch ${LOCK}
 trap "sudo rm -f ${LOCK}" 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
 
 set -e
-set -x
+[ -n "$DEBUG" ] && set -x
 
 . ./role_configrc
 
-#This is updated by an external builder
-EDEPLOY_ROLES_SRC_ARCHIVES=root@46.231.128.203:/var/lib/sf/roles/install/edeploy-roles_master
-
-SKIP_CLEAN_ROLES=${SKIP_CLEAN_ROLES:-y}
-VIRTUALIZED=""
-[ -n "$VIRT" ] && {
-    VIRTUALIZED="VIRTUALIZED=params.virt"
-}
-
-EDEPLOY_PROJECT=https://github.com/enovance/edeploy.git
-EDEPLOY_ROLES_PROJECT=https://github.com/enovance/edeploy-roles.git
-
 CURRENT=`pwd`
 SF_ROLES=$CURRENT/edeploy/
-
 BOOTSTRAPPER=$SF_ROLES/puppet_bootstrapper.sh
+
+function build_img {
+    ROLE_FILE="${1}.img"
+    ROLE_TREE_PATH="$2"
+    CFG="$3"
+    [ -f "$ROLE_FILE" ] && sudo rm -Rf $ROLE_FILE
+    [ -f "${ROLE_FILE}.qcow2" ] && sudo rm -Rf "${ROLE_FILE}.qcow2"
+    sudo $CREATE_IMG $ROLE_TREE_PATH $ROLE_FILE $CFG
+    # Remove the raw image, only keep the qcow2 image
+    sudo rm -f ${ROLE_FILE}
+    sudo rm -f ${ROLE_FILE}.md5
+    qcow2_md5=$(cat ${ROLE_FILE}.qcow2 | md5sum - | cut -d ' ' -f1)
+    echo $qcow2_md5 | sudo tee ${ROLE_FILE}.qcow2.md5
+}
 
 function build_role {
     ROLE_NAME="$1"
@@ -43,119 +58,60 @@ function build_role {
         done
     }
     if [ ! -f "${ROLE_FILE}.md5" ] || [ "$(cat ${ROLE_FILE}.md5)" != "${ROLE_MD5}" ]; then
-        echo "${ROLE_NAME} have been updated"
+        echo "Local role desc ${ROLE_NAME} have been updated regarding the last build."
         # check if upstream is similar
-        if [ -f "${UPSTREAM_FILE}.md5" ] && [ "$(cat ${UPSTREAM_FILE}.md5)" == "${ROLE_MD5}" ]; then
-            echo "${ROLE_NAME} have already been built upstream, updating local repository"
+        if [ -f "${UPSTREAM_FILE}.md5" ] && [ "$(cat ${UPSTREAM_FILE}.md5)" == "${ROLE_MD5}" ] && [ -z "$SKIP_UPSTREAM" ]; then
+            echo "Upstream ${ROLE_NAME} is similar and have already been built upstream, I use it."
             sudo rm -Rf ${INST}/${ROLE_NAME}
             sudo mkdir ${INST}/${ROLE_NAME}
+            echo "Unarchive ..."
             sudo tar -xzf ${UPSTREAM_FILE}.edeploy -C "${INST}/${ROLE_NAME}"
             sudo touch ${INST}/${ROLE_NAME}.done
+            echo ${ROLE_MD5} | sudo tee ${ROLE_FILE}.md5
+            if [ -n "$VIRT" ]; then
+                echo "Copy qcow2 image ..."
+                sudo cp ${UPSTREAM_FILE}.img.qcow2 ${INST}/ || true
+            fi
         else
+            echo "Upstream ${ROLE_NAME} is NOT similar. I rebuild."
             sudo rm -f ${INST}/${ROLE_NAME}.done
-            sudo ${MAKE} ${VIRTUALIZED} EDEPLOY_ROLES_PATH=${EDEPLOY_ROLES} PREBUILD_EDR_TARGET=${EDEPLOY_ROLES_REL} ${ROLE_NAME}
+            sudo ${MAKE} EDEPLOY_ROLES_PATH=${EDEPLOY_ROLES} PREBUILD_EDR_TARGET=${EDEPLOY_ROLES_REL} ${ROLE_NAME}
+            echo ${ROLE_MD5} | sudo tee ${ROLE_FILE}.md5
+            if [ -n "$VIRT" ]; then
+                echo "Upstream ${ROLE_NAME} is NOT similar ! I rebuild the qcow2 image."
+                build_img ${ROLE_FILE} ${INST}/${ROLE_NAME} $IMG_CFG
+            fi
         fi
-        echo ${ROLE_MD5} | sudo tee ${ROLE_FILE}.md5
     else
         echo "${ROLE_NAME} is up-to-date"
     fi
 }
 
-if [ ! -d $WORKSPACE ]; then
-    sudo mkdir -m 0770 $WORKSPACE
-    sudo chown ${USER}:root $WORKSPACE
-fi
+function build_roles {
+    cd $SF_ROLES
+    [ ! -d "$BUILD_DIR/install/${DVER}-${SF_REL}" ] && sudo mkdir -p $BUILD_DIR/install/${DVER}-${SF_REL}
 
-[ ! -d "$BUILD_DIR" ] && sudo mkdir -p $BUILD_DIR
-[ ! -d "$UPSTREAM" ] && sudo mkdir -p $UPSTREAM
-
-if [ "$SKIP_CLEAN_ROLES" != "y" ]; then
-    [ -d "$BUILD_DIR/install" ] && sudo rm -Rf $BUILD_DIR/install
-fi
-[ ! -d "$CLONES_DIR" ] && sudo mkdir -p $CLONES_DIR
-sudo chown -R ${USER} ${CLONES_DIR}
-
-if [ ! -d "${EDEPLOY}" ]; then
-    git clone $EDEPLOY_PROJECT ${EDEPLOY}
-fi
-
-if [ ! -d "${EDEPLOY_ROLES}" ]; then
-    git clone $EDEPLOY_ROLES_PROJECT ${EDEPLOY_ROLES}
-fi
-
-(cd ${EDEPLOY};       git checkout $ED_TAG; git pull)
-(cd ${EDEPLOY_ROLES}; git checkout $ED_TAG; git pull)
-EDEPLOY_ROLES_REL=$(cd ${EDEPLOY_ROLES}; ${MAKE} version)
-
-# Prepare prebuild roles
-PREBUILD_TARGET=$WORKSPACE/roles/install/$EDEPLOY_ROLES_REL
-[ ! -d $PREBUILD_TARGET ] && {
-    sudo mkdir -p $PREBUILD_TARGET
-    sudo chown ${USER}:root $PREBUILD_TARGET
+    build_role "mysql" $(cat mysql.install functions | md5sum | awk '{ print $1}')
+    ME=$?
+    build_role "slave" $(cat slave.install functions | md5sum | awk '{ print $1}')
+    SE=$?
+    build_role "softwarefactory"   $(cd ..; find ${SF_DEPS} -type f | sort | grep -v '\.tox' | xargs cat | md5sum | awk '{ print $1}')
+    SFE=$?
+    build_role "install-server-vm" $(cd ..; find ${IS_DEPS} -type f | sort | grep -v '\.tox' | xargs cat | md5sum | awk '{ print $1}')
+    IE=$?
 }
-cloud_img="cloud-$EDEPLOY_ROLES_REL.edeploy"
-install_server_img="install-server-$EDEPLOY_ROLES_REL.edeploy"
 
-# Check if edeploy roles are up-to-date
-[ ! -f $PREBUILD_TARGET/$install_server_img.md5 ] && sudo touch $PREBUILD_TARGET/$install_server_img.md5
-[ ! -f $PREBUILD_TARGET/$cloud_img.md5 ] &&          sudo touch $PREBUILD_TARGET/$cloud_img.md5
-TEMP_DIR=$(mktemp -d /tmp/edeploy-check-XXXXX)
-curl -s -o ${TEMP_DIR}/$install_server_img.md5 ${BASE_URL}/$install_server_img.md5
-curl -s -o ${TEMP_DIR}/$cloud_img.md5          ${BASE_URL}/$cloud_img.md5
-diff $PREBUILD_TARGET/$install_server_img.md5 ${TEMP_DIR}/$install_server_img.md5 || {
-    curl -s -o ${TEMP_DIR}/$install_server_img ${BASE_URL}/$install_server_img
-    sudo mv -f ${TEMP_DIR}/$install_server_img* $PREBUILD_TARGET
-    # Remove the previously unziped archive
-    [ -d $PREBUILD_TARGET/install-server ] && sudo rm -Rf $PREBUILD_TARGET/install-server
+prepare_buildenv
+./fetch_roles.sh bases
+echo
+./fetch_roles.sh trees
+echo
+[ -n "$VIRT" ] && {
+    ./fetch_roles.sh imgs
+    echo
 }
-diff $PREBUILD_TARGET/$cloud_img.md5 ${TEMP_DIR}/$cloud_img.md5 || {
-    curl -s -o ${TEMP_DIR}/$cloud_img ${BASE_URL}/$cloud_img
-    sudo mv -f ${TEMP_DIR}/$cloud_img* $PREBUILD_TARGET
-    # Remove the previously unziped archive
-    [ -d $PREBUILD_TARGET/cloud ] && sudo rm -Rf $PREBUILD_TARGET/cloud
-}
-for role in mysql slave install-server-vm softwarefactory; do
-    role=${role}-${SF_VER}
-    curl -s -o ${TEMP_DIR}/${role}.md5 ${BASE_URL}/${role}.md5 || continue
-    # Swift does not return 404 but 'Not Found'
-    grep -q 'Not Found' ${TEMP_DIR}/${role}.md5 && continue
-    diff ${TEMP_DIR}/${role}.md5 ${UPSTREAM}/${role}.md5 || {
-        sudo curl -s -o ${UPSTREAM}/${role}.edeploy ${BASE_URL}/${role}.edeploy
-        sudo curl -s -o ${UPSTREAM}/${role}.edeploy.md5 ${BASE_URL}/${role}.edeploy.md5
-        sudo mv -f ${TEMP_DIR}/${role}.md5 ${UPSTREAM}/${role}.md5
-        role_md5=$(cat ${UPSTREAM}/${role}.edeploy | md5sum - | cut -d ' ' -f1)
-        [ "${role_md5}" != "$(cat ${UPSTREAM}/${role}.edeploy.md5 | cut -d ' ' -f1)" ] && {
-            echo "${role} archive md5 mismatch ! exit."
-            exit 1
-        }
-    }
-done
-rm -Rf ${TEMP_DIR}
-
-# Uncompress prebuild images if needed
-cd $PREBUILD_TARGET
-[ ! -d cloud ] && {
-    sudo mkdir cloud
-    sudo tar -xzf $cloud_img -C cloud
-    sudo touch cloud.done
-}
-[ ! -d install-server ] && {
-    sudo mkdir install-server
-    sudo tar -xzf $install_server_img -C install-server
-    sudo touch install-server.done
-}
-cd -
-
-cd $SF_ROLES
-[ ! -d "$BUILD_DIR/install/${DVER}-${SF_REL}" ] && sudo mkdir -p $BUILD_DIR/install/${DVER}-${SF_REL}
-
-build_role "mysql" $(cat mysql.install functions | md5sum | awk '{ print $1}')
-ME=$?
-build_role "slave" $(cat slave.install functions | md5sum | awk '{ print $1}')
-SE=$?
-build_role "softwarefactory"   $(cd ..; find ${SF_DEPS} -type f | sort | grep -v '\.tox' | xargs cat | md5sum | awk '{ print $1}')
-SFE=$?
-build_role "install-server-vm" $(cd ..; find ${IS_DEPS} -type f | sort | grep -v '\.tox' | xargs cat | md5sum | awk '{ print $1}')
-IE=$?
+fetch_edeploy
+echo
+build_roles
 
 exit $[ $ME + $SE + $SFE + $IE ];

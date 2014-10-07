@@ -16,21 +16,29 @@ case "${SF_DIST}" in
     ;;
 esac
 
-
+# Version string
 SF_VER=${DVER}-${SF_REL}
 
+# Base roles cloud and install-server
 BASE_URL="http://***REMOVED***/v1/AUTH_70aab03f69b549cead3cb5f463174a51/edeploy-roles"
 
-# Edeploy source version:
+# Edeploy and Edeploy-roles project
+EDEPLOY_PROJECT=https://github.com/enovance/edeploy.git
+EDEPLOY_ROLES_PROJECT=https://github.com/enovance/edeploy-roles.git
+
+# Edeploy source version
 ED_TAG=master
+
+# Qcow2 params
+IMG_CFG=params.virt
 
 # Paths
 WORKSPACE=/var/lib/sf
 CLONES_DIR=$WORKSPACE/git
 BUILD_DIR=$WORKSPACE/roles
-
 EDEPLOY=$WORKSPACE/git/edeploy-master/
 EDEPLOY_ROLES=$WORKSPACE/git/edeploy-roles-master/
+CREATE_IMG=${EDEPLOY}/build/create-image.sh
 
 UPSTREAM=${BUILD_DIR}/upstream
 INST=${BUILD_DIR}/install/${SF_VER}
@@ -41,4 +49,27 @@ IS_DEPS="./edeploy/functions ./edeploy/install-server-vm.install ./tools/pysflib
 
 MAKE="make DVER=${DVER} DIST=${DIST} SF_REL=${SF_REL} EDEPLOY_PATH=${EDEPLOY} TOP=${BUILD_DIR}"
 
+function prepare_buildenv {
+    if [ ! -d $WORKSPACE ]; then
+        sudo mkdir -m 0770 $WORKSPACE
+        sudo chown ${USER}:root $WORKSPACE
+    fi
 
+    [ ! -d "$BUILD_DIR" ] && sudo mkdir -p $BUILD_DIR
+    [ ! -d "$UPSTREAM" ] && sudo mkdir -p $UPSTREAM
+    [ ! -d "$CLONES_DIR" ] && sudo mkdir -p $CLONES_DIR
+    sudo chown -R ${USER} ${CLONES_DIR}
+}
+
+function fetch_edeploy {
+    if [ ! -d "${EDEPLOY}" ]; then
+        git clone $EDEPLOY_PROJECT ${EDEPLOY}
+    fi
+    if [ ! -d "${EDEPLOY_ROLES}" ]; then
+        git clone $EDEPLOY_ROLES_PROJECT ${EDEPLOY_ROLES}
+    fi
+    (cd ${EDEPLOY}; git checkout $ED_TAG; git pull)
+    (cd ${EDEPLOY_ROLES}; git checkout $ED_TAG; git pull)
+    EDEPLOY_ROLES_REL=$(cd ${EDEPLOY_ROLES}; ${MAKE} version)
+    echo
+}
