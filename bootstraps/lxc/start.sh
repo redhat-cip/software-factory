@@ -21,7 +21,7 @@ source ../functions.sh
 . ./../../role_configrc
 
 SFCONFIGFILE=../sfconfig.yaml
-DOMAIN=$(cat $SFCONFIGFILE | grep domain | cut -d' ' -f2)
+DOMAIN=$(cat $SFCONFIGFILE | grep "^domain:" | cut -d' ' -f2)
 SF_SUFFIX=${SF_SUFFIX:-$DOMAIN}
 EDEPLOY_ROLES=${EDEPLOY_ROLES:-/var/lib/sf/roles/}
 SSH_PUBKEY=${SSH_PUBKEY:-${HOME}/.ssh/id_rsa.pub}
