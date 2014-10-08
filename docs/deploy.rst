@@ -201,7 +201,7 @@ you prefer. Following the dependencies installation instructions below:
 
 .. code-block:: bash
 
- $ sudo apt-get install install linux-image-extra-$(uname -r) git python-augeas bridge-utils curl lxc libmysqlclient-dev \
+ $ sudo apt-get install linux-image-extra-$(uname -r) git python-augeas bridge-utils curl lxc libmysqlclient-dev \
  libssl-dev swig libldap2-dev libsasl2-dev python-dev graphviz
  $ sudo pip install flake8 bash8
  $ sudo pip install -U tox==1.6.1 virtualenv==1.10.1 Sphinx oslosphinx
@@ -227,7 +227,7 @@ the commands below:
 .. code-block:: bash
 
  $ cd bootstrap/lxc
- $ ./start.sh
+ $ SF_DIST=CentOS ./start.sh
  $ sudo lxc-ls -f
 
 The lxc-ls command should report the folowing :
