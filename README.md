@@ -43,4 +43,4 @@ SF in details
 -------------
 
 For more details please have a look to the SF documentation here:
-http://***REMOVED***/v1/***REMOVED***/sfdocs/index.html
+http://os.enocloud.com:8080/v1/AUTH_a2f85d41132e4f9089fbbe19f90d3728/sfdocs/index.html

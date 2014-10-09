@@ -53,8 +53,80 @@ triggers Jenkins and Zuul to take care of that new change.
 How to configure
 ----------------
 
-To be filled ...
+New projects and their associated jobs could be configured in config.git/jobs/projects
 
+There are two way to execute jobs:
+* either through Gerrit with a change, then jobs need this configuration:
+** Use zuul defaults
+** No need to checkout code, zuul-git scm will take care of it
+* either through a periodic/non related to gerrit, then jobs need thise configuration:
+** Use global configuration
+** Use gerrit-git-prep builder to checkout either master or a branch
+
+The default configuration provided by SoftwareFactory contain some reusable template and
+a complete project configured: the config project itself!
+
+Default architecture
+--------------------
+
+The default test architecture is based on standard script at the root of your project that
+will take care of the actual testing:
+
+* run_tests.sh              run the unit tests
+* run_functional-tests.sh   run the functional tests
+* publish_docs.sh           publish documentation after a change is merged
+
+Then these scripts are executed by their associated job:
+* '{name}-unit-tests'
+* '{name}-functional-tests'
+* '{name}-publish-docs'
+
+
+How to add a new project
+------------------------
+In order to have tests running on a new patch change, you need to:
+
+* Checkout the config repository
+* Edit jobs/projects.yaml to define your project and the related job, e.g., to get the project "sfstack" created with 2 jobs:
+<pre>
+- project:
+    name: sfstack
+    jobs:
+      - 'sfstack-unit-tests'
+      - 'periodic-sfstack-unit-tests'
+</pre>
+* Edit zuul/projects.yaml to configure when jobs get executed, e.g., to get the unit tests run on check pipelines and also periodically:
+<pre>
+projects:
+  - name: sfstack
+    check:
+      - sfstack-unit-tests
+    periodic:
+      - periodic-sfstack-unit-tests
+</pre>
+
+How to add a new job
+--------------------
+In order to have a custom job, you need to:
+
+* Checkout the config repository
+* Edit jobs/projects.yaml to define your job:
+<pre>
+- job:
+    name: 'demo-job'
+    defaults: zuul
+    builders:
+      - shell: |
+          set -e
+          sloccount .
+          echo do a custom check/test
+    node: master
+</pre>
+* Attach this jobs to a project and zuul pipelines as shown in previous chapter
+
+* defaults is the way job are executed, it is either "zuul" (for gerrit change) or "global" (e.g., for periodic or post job)
+* builders is the actual job code
+* node is the slave label that will execute the job
 
 Parallel testing
 ----------------
@@ -62,5 +134,9 @@ Running tests in parallel is somewhat challenging. Let's assume two patches are
 verified successfully independently and get merged, but will fail once they are
 merged together.
 zuul-merger avoids this by merging several patches during testing.
+
+Some useful command:
+* Trigger the periodic pipeline at will:
+** zuul enqueue --trigger timer --pipeline periodic --project all --change 0,0
 
 .. graphviz:: zuul.dot

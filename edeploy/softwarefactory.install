@@ -24,7 +24,7 @@ ORIG=$(cd $(dirname $0); pwd)
 . ${ORIG}/functions
 
 NPM_INSTALL=1.4.21
-LASTWAR="http://***REMOVED***/v1/AUTH_0e436aacf0854b9abe70aa90f9e0864d/gerrit/gerrit285.war"
+LASTWAR="http://os.enocloud.com:8080/v1/AUTH_0e436aacf0854b9abe70aa90f9e0864d/gerrit/gerrit285.war"
 MYSQLJAVA="http://repo2.maven.org/maven2/mysql/mysql-connector-java/5.1.21/mysql-connector-java-5.1.21.jar"
 BCPROVJAVA="http://www.bouncycastle.org/download/bcprov-jdk15on-149.jar"
 BCPKIXJAVA="http://www.bouncycastle.org/download/bcpkix-jdk15on-149.jar"

@@ -20,7 +20,7 @@ esac
 SF_VER=${DVER}-${SF_REL}
 
 # Base roles cloud and install-server
-BASE_URL="http://***REMOVED***/v1/AUTH_70aab03f69b549cead3cb5f463174a51/edeploy-roles"
+BASE_URL="http://os.enocloud.com:8080/v1/AUTH_70aab03f69b549cead3cb5f463174a51/edeploy-roles"
 
 # Edeploy and Edeploy-roles project
 EDEPLOY_PROJECT=https://github.com/enovance/edeploy.git
