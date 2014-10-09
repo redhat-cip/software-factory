@@ -61,6 +61,7 @@ scp -r root@`getip_from_yaml managesf`:/var/log/apache2/ $dlogs/managesf/ &> /de
 scp -r root@`getip_from_yaml managesf`:/var/log/httpd/ $dlogs/managesf/ &> /dev/null
 scp -r root@`getip_from_yaml jenkins`:/var/log/zuul $dlogs/zuul/ &> /dev/null
 scp -r root@`getip_from_yaml jenkins`:/var/lib/jenkins/jobs/ $dlogs/jenkins/ &> /dev/null
+scp -r root@`getip_from_yaml jenkins`:/root/config/ $dlogs/config-project &> /dev/null
 scp root@`getip_from_yaml puppetmaster`:/tmp/debug $dlogs/puppetmaster/ &> /dev/null
 
 echo "Done."

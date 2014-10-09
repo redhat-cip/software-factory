@@ -1,13 +1,15 @@
-- project:
-    name: config
-    node: master
-    jobs:
-      - '{name}-update'
-      - '{name}-check'
+# This file won't be updated and must be updated manually
 
+# Jobs
+# ====
+
+
+
+# Projects
+# ========
 - project:
     name: zuul-demo
-    node: <%= @settings['jenkins_default_slave'] %> 
+    node: <%= @settings['jenkins_default_slave'] %>
     periodic_cmd: |
       echo "Running periodic tests"
       ./run_functional-tests.sh
@@ -15,3 +17,5 @@
       - '{name}-unit-tests'
       - '{name}-functional-tests'
       - 'periodic-{name}'
+
+

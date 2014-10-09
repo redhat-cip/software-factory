@@ -1,0 +1,109 @@
+# Default configurations
+- defaults:
+    name: global
+    description: |
+      <p>Job is managed by Jenkins Job Builder</a>.</p>
+
+    project-type: freestyle
+    concurrent: true
+
+- defaults:
+    name: zuul
+    description: |
+      <p>Job triggered by zuul</p>
+
+    project-type: freestyle
+    concurrent: true
+
+    scm:
+     - zuul-git
+
+# Different builder
+- scm:
+    name: zuul-git
+    scm:
+     - git:
+        url: '$ZUUL_URL/$ZUUL_PROJECT'
+        branches:
+         - '$ZUUL_COMMIT'
+        refspec: '$ZUUL_REF'
+
+- builder:
+    name: gerrit-git-prep
+    builders:
+      - shell: "/usr/local/jenkins/slave_scripts/gerrit-git-prep.sh http://<%= scope.function_hiera(["http_gateway_host"]) %>"
+
+- builder:
+    name: branch-git-prep
+    builders:
+      - shell: |
+          #!/bin/bash
+          export BRANCH={branch}
+          /usr/local/jenkins/slave_scripts/gerrit-git-prep.sh http://<%= scope.function_hiera(["http_gateway_host"]) %>
+
+# Useful job template
+- job-template:
+    name: '{name}-unit-tests'
+    defaults: zuul
+    builders:
+      - shell: ./run_tests.sh
+    triggers:
+      - zuul
+    node: '{node}'
+
+- job-template:
+    name: '{name}-functional-tests'
+    defaults: zuul
+    builders:
+      - shell: ./run_functional-tests.sh
+    triggers:
+      - zuul
+    node: '{node}'
+
+- job-template:
+    name: '{name}-publish-docs'
+    defaults: zuul
+    builders:
+      - shell: ./publish_docs.sh
+    triggers:
+      - zuul
+    node: '{node}'
+
+- job-template:
+    name: 'periodic-{name}'
+    defaults: global
+    builders:
+      - branch-git-prep:
+          branch: master
+      - shell: '{periodic_cmd}'
+    triggers:
+      - zuul
+    node: '{node}'
+
+# Config repository associated jobs
+- job:
+    name: 'config-check'
+    defaults: zuul
+    builders:
+      - shell: |
+          set -e
+          mkdir build
+          jenkins-jobs test jobs/ -o build/
+          sudo zuul-server -t -l zuul/layout.yaml
+    triggers:
+      - zuul
+    node: master
+
+- job:
+    name: 'config-update'
+    defaults: global
+    builders:
+      - gerrit-git-prep
+      - shell: |
+          rm -Rf /var/lib/jenkins/.cache/jenkins_jobs
+          jenkins-jobs -l debug --ignore-cache update --delete-old jobs/
+          sudo cp zuul/layout.yaml /etc/zuul/
+          sudo service zuul reload
+    triggers:
+      - zuul
+    node: master

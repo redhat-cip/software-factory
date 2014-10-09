@@ -49,6 +49,6 @@ class TestConfigRepo(Base):
         clone_dir = ggu.clone(url, pname)
         # Test that the clone is a success
         self.assertTrue(os.path.isdir(clone_dir))
-        # Check if the clone dir has jobs file
+        # Check if the clone dir has projects file
         self.assertTrue(os.path.isfile(os.path.join(clone_dir,
-                                                    "jobs/jobs.yaml")))
+                                                    "jobs/projects.yaml")))

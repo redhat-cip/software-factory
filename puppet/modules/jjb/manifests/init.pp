@@ -64,33 +64,6 @@ class jjb ($settings = hiera_hash('jenkins', ''),
     group   => 'root',
   }
 
-  file {'/usr/share/sf-jjb/default.yaml':
-    ensure => file,
-    mode   => '0640',
-    owner  => "root",
-    group  => "root",
-    require => File['/usr/share/sf-jjb'],
-    source => 'puppet:///modules/jjb/default.yaml',
-  }
-
-  file {'/usr/share/sf-jjb/jobs.yaml':
-    ensure => file,
-    mode   => '0640',
-    owner  => "root",
-    group  => "root",
-    require => File['/usr/share/sf-jjb'],
-    source => 'puppet:///modules/jjb/jobs.yaml',
-  }
-
-  file {'/usr/share/sf-jjb/macros.yaml':
-    ensure => file,
-    mode   => '0640',
-    owner  => "root",
-    group  => "root",
-    require => File['/usr/share/sf-jjb'],
-    content => template('jjb/macros.yaml.erb'),
-  }
-
   file {'/usr/share/sf-jjb/projects.yaml':
     ensure => file,
     mode   => '0640',
@@ -98,6 +71,15 @@ class jjb ($settings = hiera_hash('jenkins', ''),
     group  => "root",
     require => File['/usr/share/sf-jjb'],
     content => template('jjb/projects.yaml.erb'),
+  }
+
+  file {'/usr/share/sf-jjb/sf_jjb_conf.yaml':
+    ensure => file,
+    mode   => '0640',
+    owner  => "root",
+    group  => "root",
+    require => File['/usr/share/sf-jjb'],
+    content => template('jjb/sf_jjb_conf.yaml.erb'),
   }
 
   file {'/usr/local/jenkins':
@@ -139,10 +121,8 @@ class jjb ($settings = hiera_hash('jenkins', ''),
     logoutput => true,
     provider => shell,
     require => [File['/root/init-config-repo.sh'],
-                File['/usr/share/sf-jjb/jobs.yaml'],
-                File['/usr/share/sf-jjb/macros.yaml'],
-                File['/usr/share/sf-jjb/default.yaml'],
                 File['/usr/share/sf-jjb/projects.yaml'],
+                File['/usr/share/sf-jjb/sf_jjb_conf.yaml'],
                 File['/usr/share/sf-zuul/layout.yaml'],
                 File['/usr/bin/sf-manage'],
                 File['/root/gerrit_admin_rsa']],
