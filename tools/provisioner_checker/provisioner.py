@@ -25,7 +25,7 @@ import config
 
 from utils import ManageSfUtils
 from utils import GerritGitUtils
-from utils import RedmineUtil
+from pysflib.sfredmine import RedmineUtils
 from utils import JenkinsUtils
 from utils import get_cookie
 
@@ -50,14 +50,10 @@ class SFProvisioner(object):
         self.ggu = GerritGitUtils(config.ADMIN_USER,
                                   config.ADMIN_PRIV_KEY_PATH,
                                   config.USERS[config.ADMIN_USER]['email'])
-        self.ju = JenkinsUtils(config.ADMIN_USER,
-                               config.USERS[config.ADMIN_USER]['password'])
-        # TODO(fbo): Sould be fetch from the config
-        with open(os.environ['SF_ROOT'] + "/build/hiera/redmine.yaml") as f:
-            ry = yaml.load(f)
-        redmine_api_key = ry['redmine']['issues_tracker_api_key']
-        self.ru = RedmineUtil('', username=config.ADMIN_USER,
-                              apiKey=redmine_api_key)
+        self.ju = JenkinsUtils()
+        self.rm = RedmineUtils(
+            'http://%s' % config.REDMINE_HOST,
+            auth_cookie=config.USERS[config.ADMIN_USER]['auth_cookie'])
 
     def create_project(self, name):
         print " Creating project %s ..." % name
@@ -66,8 +62,8 @@ class SFProvisioner(object):
     def push_files_in_project(self, name, files):
         print " Add files(%s) in a commit ..." % ",".join(files)
         # TODO(fbo); use gateway host instead of gerrit host
-        url = "ssh://%s@%s/%s" % (config.ADMIN_USER,
-                                  config.GERRIT_HOST, name)
+        url = "ssh://%s@%s:29418/%s" % (config.ADMIN_USER,
+                                        config.GERRIT_HOST, name)
         clone_dir = self.ggu.clone(url, name, config_review=False)
         for f in files:
             file(os.path.join(clone_dir, f), 'w').write('data')
@@ -78,7 +74,7 @@ class SFProvisioner(object):
     def create_issues_on_project(self, name, amount):
         print " Create %s issue(s) for that project ..." % amount
         while(amount > 0):
-            self.ru.createIssue(name, 'Issue %s' % amount)
+            self.rm.create_issue(name, 'Issue %s' % amount)
             amount -= 1
 
     def create_jenkins_jobs(self, name, jobnames):

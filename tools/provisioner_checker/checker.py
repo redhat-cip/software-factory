@@ -23,8 +23,8 @@ import yaml
 import config
 
 from utils import get_cookie
-from utils import RedmineUtil
-from utils import GerritUtil
+from pysflib.sfredmine import RedmineUtils
+from pysflib.sfgerrit import GerritUtils
 from utils import GerritGitUtils
 from utils import JenkinsUtils
 
@@ -41,29 +41,27 @@ class SFchecker:
             self.resources = yaml.load(rsc)
         config.USERS[config.ADMIN_USER]['auth_cookie'] = get_cookie(
             config.ADMIN_USER, config.USERS[config.ADMIN_USER]['password'])
-        self.gu = GerritUtil(config.GERRIT_SERVER, config.ADMIN_USER)
+        self.gu = GerritUtils(
+            'http://%s/' % config.GERRIT_HOST,
+            auth_cookie=config.USERS[config.ADMIN_USER]['auth_cookie'])
         self.ggu = GerritGitUtils(config.ADMIN_USER,
                                   config.ADMIN_PRIV_KEY_PATH,
                                   config.USERS[config.ADMIN_USER]['email'])
-        self.ju = JenkinsUtils(config.ADMIN_USER,
-                               config.USERS[config.ADMIN_USER]['password'])
-        # TODO(fbo): Sould be fetch from the config
-        with open(os.environ['SF_ROOT'] + "/build/hiera/redmine.yaml") as f:
-            ry = yaml.load(f)
-        redmine_api_key = ry['redmine']['issues_tracker_api_key']
-        self.ru = RedmineUtil('', username=config.ADMIN_USER,
-                              apiKey=redmine_api_key)
+        self.ju = JenkinsUtils()
+        self.rm = RedmineUtils(
+            'http://%s' % config.REDMINE_HOST,
+            auth_cookie=config.USERS[config.ADMIN_USER]['auth_cookie'])
 
     def check_project(self, name):
         print " Check project %s exists ..."
-        assert self.gu.isPrjExist(name)
-        assert self.ru.isProjectExist(name)
+        assert self.gu.project_exists(name)
+        assert self.rm.project_exists(name)
 
     def check_files_in_project(self, name, files):
         print " Check files(%s) exists in project ..." % ",".join(files)
         # TODO(fbo); use gateway host instead of gerrit host
-        url = "ssh://%s@%s/%s" % (config.ADMIN_USER,
-                                  config.GERRIT_HOST, name)
+        url = "ssh://%s@%s:29418/%s" % (config.ADMIN_USER,
+                                        config.GERRIT_HOST, name)
         clone_dir = self.ggu.clone(url, name, config_review=False)
         for f in files:
             assert os.path.isfile(os.path.join(clone_dir, f))
@@ -71,7 +69,7 @@ class SFchecker:
     def check_issues_on_project(self, name, amount):
         print " Check that at least %s issues exists for that project ..." %\
             amount
-        assert len(self.ru.listIssues(name)) >= 2
+        assert len(self.rm.get_issues_by_project(name)) >= 2
 
     def check_jenkins_jobs(self, name, jobnames):
         print " Check that jenkins jobs(%s) exists ..." % ",".join(jobnames)
