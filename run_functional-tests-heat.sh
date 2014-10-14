@@ -18,6 +18,17 @@
 # Then will start the SF using the HEAT deployment way
 # Then will run the serverspecs and functional tests
 
+[ -f /etc/tenant_openrc ] && {
+    echo "Found a pre-configured tenant. Use it"
+    source /etc/tenant_openrc
+}
+
+[ -z "$OS_TENANT_ID" ] && {
+    echo "OS_TENANT_ID is empty ... have you sourced an openrc ?"
+    exit 1
+}
+echo "Use $OS_TENANT_NAME on $OS_AUTH_URL"
+
 source functestslib.sh
 
 echo "Running functional-tests with this HEAD"
