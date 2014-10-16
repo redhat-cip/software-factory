@@ -45,6 +45,23 @@ class managesf ($gerrit = hiera_hash('gerrit', ''),
         provider   => $provider,
       }
 
+# managesf can't access keys in /root/.ssh and can only
+# access keys from /var/www/.ssh, so creating keys here
+      file { '/usr/share/httpd/.ssh':
+        ensure  => directory,
+        owner   => $httpd_user,
+        group   => $httpd_user,
+        mode    => '0755',
+      }
+
+      file { '/usr/share/httpd/.ssh/id_rsa':
+        ensure  => present,
+        owner   => $httpd_user,
+        group   => $httpd_user,
+        mode    => '0600',
+        source  => 'puppet:///modules/managesf/service_rsa',
+        require => File['/usr/share/httpd/.ssh'],
+      }
     }
     debian: {
       $http = "apache2"
@@ -85,26 +102,27 @@ class managesf ($gerrit = hiera_hash('gerrit', ''),
         require    => Package[$http],
       }
 
-    }
-  }
-
-
 # managesf can't access keys in /root/.ssh and can only
 # access keys from /var/www/.ssh, so creating keys here
-  file { '/var/www/.ssh':
-    ensure  => directory,
-    owner   => $httpd_user,
-    group   => $httpd_user,
-    mode    => '0755',
-  }
-  file { '/var/www/.ssh/id_rsa':
-    ensure  => present,
-    owner   => $httpd_user,
-    group   => $httpd_user,
-    mode    => '0600',
-    source  => 'puppet:///modules/managesf/service_rsa',
-    require => File['/var/www/.ssh'],
-  }
+      file { '/var/www/.ssh':
+        ensure  => directory,
+        owner   => $httpd_user,
+        group   => $httpd_user,
+        mode    => '0755',
+      }
+
+      file { '/var/www/.ssh/id_rsa':
+        ensure  => present,
+        owner   => $httpd_user,
+        group   => $httpd_user,
+        mode    => '0600',
+        source  => 'puppet:///modules/managesf/service_rsa',
+        require => File['/var/www/.ssh'],
+      }
+    }
+
+    }
+
   file { '/var/log/managesf/':
     ensure  => directory,
     owner   => $httpd_user,

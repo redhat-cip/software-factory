@@ -6,7 +6,7 @@ export SF_SUFFIX=${SF_SUFFIX:-tests.dom}
 export SKIP_CLEAN_ROLES="y"
 export EDEPLOY_ROLES=/var/lib/sf/roles/
 
-
+MANAGESF_HOST=managesf.${SF_SUFFIX}
 case "$(hostname)" in
     "bigger-jenkins")
         JENKINS_URL=46.231.128.203
@@ -272,10 +272,11 @@ function run_backup_restore_tests {
         # Start the provisioner
         ./tests/backup_restore/run_provisioner.sh
         # Create a backup
-        ./tools/managesf/cli/sf-manage.py --host ${SF_SUFFIX} --auth-server ${SF_SUFFIX} --auth user1:userpass backup_start
+        ssh -o StrictHostKeyChecking=no root@`get_ip puppetmaster` "cd puppet-bootstrapper/tools/managesf/cli; python sf-manage.py --host ${MANAGESF_HOST} --auth-server ${MANAGESF_HOST} --port 80 --auth user1:userpass backup_start"
+        sleep 10
         # Fetch the backup
-        ./tools/managesf/cli/sf-manage.py --host ${SF_SUFFIX} --auth-server ${SF_SUFFIX} --auth user1:userpass backup_get
-        mv sf_backup.tar.gz /tmp
+        ssh -o StrictHostKeyChecking=no root@`get_ip puppetmaster` "cd puppet-bootstrapper/tools/managesf/cli; python sf-manage.py --host ${MANAGESF_HOST} --auth-server ${MANAGESF_HOST} --port 80 --auth user1:userpass backup_get"
+        scp -o  StrictHostKeyChecking=no root@`get_ip puppetmaster`:/root/puppet-bootstrapper/tools/managesf/cli/sf_backup.tar.gz /tmp
         # We assume if we cannot move the backup file
         # we need to stop right now
         return $?
@@ -286,7 +287,8 @@ function run_backup_restore_tests {
         # Run server spec to be more confident
         run_serverspec || pre_fail "Serverspec failed"
         # Restore backup
-        ./tools/managesf/cli/sf-manage.py --host ${SF_SUFFIX} --auth-server ${SF_SUFFIX} --auth user1:userpass restore --filename /tmp/sf_backup.tar.gz
+        scp -o  StrictHostKeyChecking=no /tmp/sf_backup.tar.gz root@`get_ip puppetmaster`:/root/puppet-bootstrapper/tools/managesf/cli/
+        ssh -o StrictHostKeyChecking=no root@`get_ip puppetmaster` "cd puppet-bootstrapper/tools/managesf/cli; python sf-manage.py --host ${MANAGESF_HOST} --auth-server ${MANAGESF_HOST} --port 80 --auth user1:userpass restore --filename sf_backup.tar.gz"
         # Start the checker
         sleep 60
         ./tests/backup_restore/run_checker.sh

@@ -41,7 +41,8 @@ function get_ip {
 }
 
 if [ -z "$1" ] || [ "$1" == "start" ]; then
-    [ ! -d ${CONFTEMPDIR} ] && mkdir -p ${CONFTEMPDIR}
+    sudo rm -rf ${CONFTEMPDIR}
+    mkdir -p ${CONFTEMPDIR}
     cp sf-lxc.yaml $CONFTEMPDIR
     cp ../cloudinit/* $CONFTEMPDIR
     jenkins_ip=`get_ip jenkins`

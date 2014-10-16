@@ -61,7 +61,7 @@ jenkins = {
 
 managesf = {
     'host': '<%= scope.function_hiera(["managesf_url"]) %>',
-    'sshkey_priv_path': '/var/www/.ssh/id_rsa',
+    'sshkey_priv_path': '/usr/share/httpd/.ssh/id_rsa',
 }
 
 puppetmaster = {

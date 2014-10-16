@@ -251,6 +251,6 @@ function run_puppet_agent_start {
     local ssh_port=22
     MROLES=$(echo $ROLES | sed s/puppetmaster//)
     for role in ${MROLES}; do
-        ssh -p$ssh_port root@${role}.${SF_SUFFIX} "sleep 2700; service puppet start" &
+        ssh -p$ssh_port root@${role}.${SF_SUFFIX} "sleep 3600; service puppet start" &
     done
 }
