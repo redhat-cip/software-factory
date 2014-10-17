@@ -153,6 +153,14 @@ class zuul ($settings = hiera_hash('jenkins', ''), $gh = hiera('gerrit_url'), $h
     require => File['/usr/share/sf-zuul'],
     content => template('zuul/layout.yaml.erb'),
   }
+  file {'/usr/share/sf-zuul/projects.yaml':
+    ensure => file,
+    mode   => '0640',
+    owner  => "root",
+    group  => "root",
+    require => File['/usr/share/sf-zuul'],
+    content => template('zuul/projects.yaml.erb'),
+  }
   file {'/var/log/zuul/':
     ensure  => directory,
     mode    => '0755',

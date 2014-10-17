@@ -89,7 +89,9 @@
           set -e
           mkdir build
           jenkins-jobs test jobs/ -o build/
-          sudo zuul-server -t -l zuul/layout.yaml
+          # concat of layout.yaml and projects.yaml to build/layout.yaml
+          cat zuul/layout.yaml zuul/projects.yaml | tee build/layout.yaml
+          sudo zuul-server -t -l build/layout.yaml
     triggers:
       - zuul
     node: master
@@ -102,7 +104,8 @@
       - shell: |
           rm -Rf /var/lib/jenkins/.cache/jenkins_jobs
           jenkins-jobs -l debug --ignore-cache update --delete-old jobs/
-          sudo cp zuul/layout.yaml /etc/zuul/
+          # concat of layout.yaml and projects.yaml to /etc/zuul/layout.yaml
+          cat zuul/layout.yaml zuul/projects.yaml | sudo tee /etc/zuul/layout.yaml
           sudo service zuul reload
     triggers:
       - zuul

@@ -314,7 +314,7 @@ class JenkinsUtils:
         return None
 
     def get_last_build_number(self, job_name, type):
-        url = "%(server)s/job/%(job_name)s/%(type)s/buildNumber" \
+        url = "%(server)sjob/%(job_name)s/%(type)s/buildNumber" \
               % {'server': self.server, 'job_name': job_name, 'type': type}
         try:
             resp = self.get(url)
