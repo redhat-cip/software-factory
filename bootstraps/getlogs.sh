@@ -37,6 +37,7 @@ cp /var/log/sf-bootstrap.log $dlogs/
 for role in gerrit redmine jenkins mysql managesf; do
     mkdir $dlogs/${role}
     scp root@`getip_from_yaml ${role}`:/var/log/syslog $dlogs/${role} &> /dev/null
+    scp root@`getip_from_yaml ${role}`:/var/log/messages $dlogs/${role} &> /dev/null
     ssh root@`getip_from_yaml ${role}` "journalctl -la --no-pager > /tmp/syslog"
     [ "$?" == "0" ]  && scp root@`getip_from_yaml ${role}`:/tmp/syslog $dlogs/${role} &> /dev/null
 done
@@ -59,6 +60,8 @@ scp root@`getip_from_yaml managesf`:/var/log/managesf/managesf.log $dlogs/manage
 scp root@`getip_from_yaml managesf`:/var/log/cauth/cauth.log $dlogs/managesf/ &> /dev/null
 scp -r root@`getip_from_yaml managesf`:/var/log/apache2/ $dlogs/managesf/ &> /dev/null
 scp -r root@`getip_from_yaml managesf`:/var/log/httpd/ $dlogs/managesf/ &> /dev/null
+scp -r root@`getip_from_yaml gerrit`:/var/log/httpd/ $dlogs/gerrit/ &> /dev/null
+scp -r root@`getip_from_yaml jenkins`:/var/log/httpd/ $dlogs/jenkins/ &> /dev/null
 scp -r root@`getip_from_yaml jenkins`:/var/log/zuul $dlogs/zuul/ &> /dev/null
 scp -r root@`getip_from_yaml jenkins`:/var/lib/jenkins/jobs/ $dlogs/jenkins/ &> /dev/null
 scp -r root@`getip_from_yaml jenkins`:/root/config/ $dlogs/config-project &> /dev/null

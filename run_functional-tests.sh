@@ -65,11 +65,8 @@ fi
 if [ "$1" == "backup_restore_tests" ]; then
     run_backup_restore_tests 45 "provision" || pre_fail "Backup test: provision"
     lxc_stop
-    if [ "$ERROR_PC" == "0" ] && [ "$ERROR_FATAL" == "0" ] && [ "$ERROR_RSPEC" == "0" ]; then
-        # No error occured at provision so continue
-        lxc_start
-        run_backup_restore_tests 45 "check" || pre_fail "Backup test: check"
-    fi
+    lxc_start
+    run_backup_restore_tests 45 "check" || pre_fail "Backup test: check"
 fi
 
 DISABLE_SETX=1

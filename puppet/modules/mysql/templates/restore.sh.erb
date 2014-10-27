@@ -1,4 +1,7 @@
 #!/bin/bash
 tar -xzPf /root/sf_backup.tar.gz
+sleep 2
 gunzip < /root/alldb.sql.gz | mysql -u root -p<%= @settings['mysql_root_pwd'] %>
-service mysql restart
+sleep 2
+service mariadb restart
+sleep 5

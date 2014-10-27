@@ -1,0 +1,10 @@
+SET @pubkey="<%= @settings['gerrit_admin_sshkey'] %>";
+SET @pubkey2="<%= @settings['gerrit_local_sshkey'] %>";
+SET @jenkinskey="<%= @settings['gerrit_jenkins_sshkey'] %>";
+
+DELETE FROM account_ssh_keys WHERE  account_id=1 AND seq=1;
+DELETE FROM account_ssh_keys WHERE  account_id=1 AND seq=2;
+DELETE FROM account_ssh_keys WHERE  account_id=2;
+INSERT INTO account_ssh_keys SELECT @pubkey,'Y',1,1;
+INSERT INTO account_ssh_keys SELECT @pubkey2,'Y',1,2;
+INSERT INTO account_ssh_keys SELECT @jenkinskey,'Y',2,1;

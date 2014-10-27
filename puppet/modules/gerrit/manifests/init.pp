@@ -365,6 +365,12 @@ class gerrit ($settings = hiera_hash('gerrit', ''),
     mode    => '0740',
     source  => 'puppet:///modules/gerrit/ssh_wrapper.sh',
   }
+  file { '/root/gerrit-restore-user-keys.sql':
+    ensure  => present,
+    mode    => '0644',
+    content => template('gerrit/gerrit-restore-user-keys.sql.erb'),
+    replace => true,
+  }
   file { '/root/gerrit-firstuser-init.sql':
     ensure  => present,
     mode    => '0644',

@@ -11,11 +11,6 @@ node base {
 node default inherits base {
 }
 
-node /.*puppetmaster.*/ inherits base {
-  include install_server_bup
-  include bup
-}
-
 node /.*jenkins.*/ inherits base {
   include ssh_keys_jenkins
   include jenkins

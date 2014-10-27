@@ -45,7 +45,7 @@ class RemoteUser(object):
         logger.debug(cmd)
         p = Popen(cmd, stdout=PIPE)
         p.wait()
-        return p.communicate()
+        return p
 
     def _ssh(self, cmd):
         cmd = ['ssh'] + self.opt + [self.host] + cmd.split()

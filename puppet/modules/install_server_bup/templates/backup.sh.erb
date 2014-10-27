@@ -1,6 +1,0 @@
-#!/bin/bash
-
-set -e
-set -x
-
-tar --absolute-names -cf - /etc/puppet/hiera/sf /root/puppet-bootstrapper/build | bup split -r root@<%= scope.function_hiera(["mysql_url"]) %>: -n puppetmaster

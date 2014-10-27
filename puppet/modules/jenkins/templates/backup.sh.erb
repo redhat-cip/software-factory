@@ -1,4 +1,2 @@
 #!/bin/sh
-service jenkins stop
 tar --absolute-names -cf - /var/lib/jenkins/jobs | bup split -r root@<%= scope.function_hiera(["mysql_url"]) %>: -n jenkins
-service jenkins start

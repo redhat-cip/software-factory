@@ -1,4 +1,5 @@
 #!/bin/sh
 service gerrit stop
 bup join -r root@<%= @settings['gerrit_mysql_address'] %>: gerrit | tar -xPf -
+mysql -u<%= @settings['gerrit_mysql_username'] %> -p<%= @settings['gerrit_mysql_secret'] %> -h<%= @settings['gerrit_mysql_address'] %> -P <%= @settings['gerrit_mysql_port'] %> <%= @settings['gerrit_mysql_db'] %> < /root/gerrit-restore-user-keys.sql
 service gerrit start

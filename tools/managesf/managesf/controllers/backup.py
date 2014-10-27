@@ -18,7 +18,7 @@ from pecan import abort
 import logging
 from utils import RemoteUser
 from gerrit import user_is_administrator
-
+import time
 
 logger = logging.getLogger(__name__)
 
@@ -31,15 +31,28 @@ class Backup(object):
         self.gru = RemoteUser('root', conf.gerrit['host'], path)
         self.jru = RemoteUser('root', conf.jenkins['host'], path)
         self.msqlru = RemoteUser('root', conf.mysql['host'], path)
-        self.pmru = RemoteUser('root', conf.puppetmaster['host'], path)
+
+    def check_for_service(self, ru, service):
+        attempt = 0
+        while attempt <= 350:
+            p = ru._ssh(service)
+            logger.debug(" Return status is %s" % p.returncode)
+            if p.returncode != 0:
+                time.sleep(2)
+                attempt += 1
+            else:
+                break
 
     def start(self):
         cmd = '/root/backup.sh'
         logger.debug(" start backup of Gerrit, jenkins and mysql")
         self.gru._ssh(cmd)
         self.jru._ssh(cmd)
-        self.pmru._ssh(cmd)
         self.msqlru._ssh(cmd)
+        gerrit_service = 'wget --spider http://localhost:8080/r/'
+        self.check_for_service(self.gru, gerrit_service)
+        jenkins_service = 'wget --spider http://localhost:8082/jenkins/'
+        self.check_for_service(self.jru, jenkins_service)
 
     def get(self):
         self.msqlru._scpFromRemote('/root/sf_backup.tar.gz',
@@ -52,7 +65,10 @@ class Backup(object):
         self.msqlru._ssh(cmd)
         self.gru._ssh(cmd)
         self.jru._ssh(cmd)
-        self.pmru._ssh(cmd)
+        gerrit_service = 'wget --spider http://localhost:8080/r/'
+        self.check_for_service(self.gru, gerrit_service)
+        jenkins_service = 'wget --spider http://localhost:8082/jenkins/'
+        self.check_for_service(self.jru, jenkins_service)
 
 
 def backup_start():

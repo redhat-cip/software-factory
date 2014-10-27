@@ -64,7 +64,6 @@ class TestRemoteUser(TestCase):
             self.ru._exe('pwd')
             Popen_mock.assert_called_once_with('pwd', stdout=-1)
             p.wait.assert_any_call()
-            p.communicate.assert_any_call()
 
     def test_ssh(self):
         with patch('managesf.controllers.utils.RemoteUser._exe') as exe_mock:

@@ -1,4 +1,2 @@
 #!/bin/sh
-service gerrit stop
 tar --absolute-names -cf - /home/gerrit/site_path/git | bup split -r root@<%= @settings['gerrit_mysql_address'] %>: -n gerrit
-service gerrit start

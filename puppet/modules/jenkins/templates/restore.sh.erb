@@ -3,16 +3,3 @@
 service jenkins stop
 bup join -r root@<%= scope.function_hiera(["mysql_url"]) %>: jenkins | tar -xPf -
 service jenkins start
-# Jenkins take some time to restart ... be sure
-# it is up and ready.
-RETRIES=0
-while true; do
-    wget --spider http://localhost:8082/jenkins/
-    [ $? -eq 0 ] && break
-    let RETRIES=RETRIES+1
-    [ "$RETRIES" == "120" ] && {
-        echo "Jenkins took too long to be up !"
-        exit 1
-    }
-    sleep 1
-done

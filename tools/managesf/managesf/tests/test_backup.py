@@ -37,7 +37,7 @@ class TestBackup(TestCase):
             self.assertRaises(exc.HTTPUnauthorized, lambda: backup.Backup())
             uia.return_value = True
             backup.Backup()
-            self.assertEqual(4, len(ru.mock_calls))
+            self.assertEqual(3, len(ru.mock_calls))
 
     def test_start(self):
         ctx = [patch('managesf.controllers.backup.user_is_administrator'),
@@ -45,7 +45,7 @@ class TestBackup(TestCase):
         with nested(*ctx) as (uia, ssh):
             uia.return_value = True
             backup.Backup().start()
-            self.assertEqual(4, len(ssh.mock_calls))
+            self.assertTrue(ssh.called)
 
     def test_get(self):
         ctx = [patch('managesf.controllers.backup.user_is_administrator'),
@@ -62,8 +62,8 @@ class TestBackup(TestCase):
         with nested(*ctx) as (uia, ssh, scp):
             uia.return_value = True
             backup.Backup().restore()
-            self.assertEqual(4, len(ssh.mock_calls))
             self.assertTrue(scp.called)
+            self.assertTrue(ssh.called)
 
     def test_backup_ops(self):
         ctx = [patch('managesf.controllers.backup.user_is_administrator'),
