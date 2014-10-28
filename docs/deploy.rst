@@ -11,25 +11,25 @@ Heat and Neutron. The installation is performed using Heat.
 Basically you should just source your .openrc and setup a configuration file
 before starting the start script.
 
-Howerver, to ease improving SF we have developed a way to deploy
+However, to ease improving SF we have developed a way to deploy
 the SF into LXC containers. Please have a look to the section `How to deploy SF within LXC`_
 
-All the VM images need by SF must be available locally or remotely.
-The deployment process will take care of uploading those images in Glance.
+All the VM images needed by SF must be available locally or remotely.
+The deployment process will take care of uploading those images to Glance.
 
 Openstack tenant requirements
 .............................
 
-The whole deployment of SF will uses 7 VMs and 2 floating IPs. Be
-sure to have enough resourses before starting the Heat deployment.
+The whole deployment of SF will use 7 VMs and 2 floating IPs. Be
+sure to have enough resources before starting the Heat deployment.
 
 Technical details regarding SF deployment on OpenStack
 ......................................................
 
 The SF Heat deployment will spawn 7 virtual machines:
- - The puppet master node : This node embeds the puppet master
+ - The puppet master node: This node embeds the puppet master
    service, the eDeploy server, and the SF bootstraper controler.
- - The SQL database node : Gerrit, Redmine, Etherpad, Logdeit services
+ - The SQL database node: Gerrit, Redmine, Etherpad, Logdeit services
    use this VM as SQL backend.
  - The Gerrit node: Hosts only the Gerrit service.
  - The Redmine node: Hosts only the Redmine service.
@@ -44,29 +44,29 @@ Cloudinit will setup each VM but most of the configuration occurs
 thanks to puppet. The puppet master node owns all the puppet manifests and
 hiera configuration. The cloudinit script of the puppet master node
 will first create all site specific keys and fill the hiera configuration
-store, thanks to a little boostrapper shell script. The bootstrapper
+store, thanks to a little bootstrapper shell script. The bootstrapper
 script will then trigger puppet agent on each node in order to configure all VMs.
 
 Build or retrieve SF VM images
 ------------------------------
 
 Software Factory role images can be created in two differents formats.
-The tree format that is a directory that contains a full working filesystem or
+Either the tree format (a directory that contains a full working filesystem) or
 a bootable qcow2 image. The former is used to bootstrap a test environment
 using LXC and the later to deploy a production environment on an
-Openstack cloud. We use a tool call eDeploy to create role images.
+Openstack cloud. We use a tool called eDeploy to create role images.
 All role images are based on CentOS 7.
 
 Fetch pre-built SF images
 .........................
-Each patches merged on the GIT SF master branch triggers a build of role
+Each patch merged on the Git SF master branch triggers a build of role
 images of SF. That means if you clone the master branch of SF you will
-be able to directly start the boostrap script whatever you want to
+be able to directly start the bootstrap script whatever you want to
 deploy a test platform on LXC or a production platform on an Openstack
-CLoud. Pre-built SF trees and images are available on public
-Swift container and the script called **fetch_roles.sh** will ease
-you the retrieval. So first please clone the Software Factory
-GIT repository :
+CLoud. Pre-built SF trees and images are available on a public
+Swift container and the script called **fetch_roles.sh** will help
+to retrieve these. So first please clone the Software Factory
+Git repository :
 
 .. code-block:: bash
 
@@ -74,7 +74,7 @@ GIT repository :
 
 Then call the **fetch_roles.sh** script, a call of the script **build_roles.sh**
 is also needed in order to prepare the local FS directory where the bootstrap
-scripts will look for the images to used.
+scripts will look for the required images.
 
 .. code-block:: bash
 
@@ -85,7 +85,7 @@ scripts will look for the images to used.
 Build SF images
 ...............
 
-To build the images by your own (it is not adviced to do so), follow the process
+To build the images on your own (it is not adviced to do so), follow the process
 below. The build has been only tested on Ubuntu 14.04.1 LTS. So the
 best is to install a VM with that Ubuntu version before trying
 to build the SF images. Ensure that the current user can act as root
@@ -105,15 +105,15 @@ Some dependencies needs to be installed on your local system to build the images
  $ sudo pip install Sphinx oslosphinx
 
 Start the build of the VM images (this script will use sudo). If you want to
-deploy on Openstack you need to add before the build_roles.sh script
-the environment variable VIRT=true. The build may take a while :
+deploy on Openstack you need to set the environment variable VIRT=true before
+the build_roles.sh script.  The build may take a while :
 
 .. code-block:: bash
 
  $ SF_DIST=CentOS ./build_roles.sh
  $ ls -al /var/lib/sf/roles/install/C7.0-0.9.2/
 
-The above command should have produced four directories (install-server-vm, mysql, slave, softwarefactory)
+The above command should have created four directories (install-server-vm, mysql, slave, softwarefactory)
 that contains the filesystem tree of the images you will need
 to deploy the Software Factory. If you added **VIRT=true** qcow2 images have been created too. Those
 will be used to deploy on OpenStack.
@@ -129,7 +129,7 @@ How to deploy SF on OpenStack
 Spawn your Software Factory
 ...........................
 
-This step require that VM images has been built `Build or retrieve SF VM images`_.
+This step requires that VM images have been built: `Build or retrieve SF VM images`_.
 
 Before spawning the SF on your tenant, be sure the quotas on your tenant will
 allow to allocate :
@@ -161,7 +161,7 @@ You will also need to configure some deployment details on top of the start.sh s
   - sg_user_cidr : The source network from where users can access SF services.
 
 Assuming you have already built the SF role images, you will be able to deploy the SF. You just
-need to source in your shell environment yours OpenStack credentials:
+need to source your OpenStack credentials into your shell environment:
 
 .. code-block:: bash
 
@@ -174,33 +174,33 @@ need to source in your shell environment yours OpenStack credentials:
 
 The start.sh script will take care of uploading role images to Glance and then
 call heat stack-create. You have to wait a couple of minutes for the stack to
-created. You can check the progress using the following command.
+created. You can check the progress using the following command:
 
 .. code-block:: bash
 
  $ heat stack-show SoftwareFactory
 
-Once stack-show reports stack-created status, you can use output-show option to
-display the puppetmaster node floating IP.
+Once stack-show reports stack-created status, you can use the option output-show to
+display the floating IP of the puppetmaster node.
 
 For now, once stack-created is reported does not mean that the SF deployment
-is completly done. Indeed stack-created reports that all resourse defined
+is completly done. Indeed stack-created reports that all resources defined
 in the HEAT template are up but a couple of script and puppet agents need
 to finish their work before you can use your SF deployment.
 
 So once the stack is create you can connect using SSH on
 the puppetmaster node using the root user (your SSH public key has been added to
 the root's authorized_keys file) and wait for the file
-/root/puppet-bootstrapper/build/bootstrap.done to be create.
+/root/puppet-bootstrapper/build/bootstrap.done to be created.
 
-This file is created once all scripts and puppet agents has finished to play their
+This file is created once all scripts and puppet agents has finished to apply the
 manifests to configure all SF services.
 
-On the pupetmaster node the file /var/log/sf-bootstrap.log contained the
+On the pupetmaster node the file /var/log/sf-bootstrap.log contains the
 log of the bootstrap process.
 
 The Software Factory HTTP gateway is accessible on the managesf
-IP address via HTTP. You can retrieve the managesf floating IP via :
+IP address via HTTP. You can retrieve the managesf floating IP using :
 
 .. code-block:: bash
 
@@ -209,9 +209,9 @@ IP address via HTTP. You can retrieve the managesf floating IP via :
 Troubleshooting deployment problems
 ...................................
 
-In case of a heat deployment the stack creation can fail due to resources
-allocations problems on the OpenStack cloud you use for instance if resources
-allocation are restricted by quotas.
+In case of a heat deployment the stack creation can fail due to resource
+allocation problems on the OpenStack cloud, for instance if resources are
+restricted by quotas.
 
 To look at the error messages you can perform the following command:
 
@@ -219,7 +219,7 @@ To look at the error messages you can perform the following command:
 
  $ heat stack-show SoftwareFactory
 
-Failures can aslo occur during puppet agents runs. You can have a look to all
+Failures can also occur during puppet agents runs. You can have a look to all
 puppet logs on the puppetmaster node in /var/log/sf-bootstrap.log.
 
 How to deploy SF within LXC
@@ -229,11 +229,11 @@ The LXC deployment is a deployment method that should only be used
 for test deployments. Only the SF deployment method for OpenStack is targeted
 for production.
 
-This step require that VM images has been built `Build or retrieve SF VM images`_.
+This step requires that VM images have been built `Build or retrieve SF VM images`_.
 
 The LXC deployment has been only tested on Ubuntu 14.04 LTS. We advice to
-setup an Ubuntu 14.04 VM somewhere either on Openstack or VirtualBox or where
-you prefer. Following the dependencies installation instructions below:
+setup an Ubuntu 14.04 VM somewhere either on Openstack or VirtualBox or wherever
+you prefer. Install the following dependencies first:
 
 .. code-block:: bash
 
@@ -242,7 +242,7 @@ you prefer. Following the dependencies installation instructions below:
  $ sudo pip install flake8 bash8
  $ sudo pip install -U tox==1.6.1 virtualenv==1.10.1 Sphinx oslosphinx
 
-The commands above also install the requirements to run the unit tests of some
+The commands above also installs the requirements to run the unit tests of some
 of the tools included in SF.
 
 Edeploy-lxc must be installed to ease container provision based on
@@ -253,8 +253,8 @@ images created by Edeploy. So please execute the following command:
  $ sudo git clone https://github.com/enovance/edeploy-lxc.git /srv/edeploy-lxc
 
 The default SF configuration file bootstrap/sfconfig.yaml is ready to use
-for the LXC deployement. However if you can still configure it if default
-is not convenient for you.
+for the LXC deployement. However you can still configure it if the defaults
+are not convenient for you.
 
 Ensure that the current user can act as root via sudo without password.
 If not you must login as root. In order to start the SF deployment perform
@@ -287,14 +287,14 @@ puppetmaster node and tail -f /var/log/sf-bootstrap.log:
 
  $ ssh root@192.168.134.49 tailf /var/log/sf-bootstrap.log
 
-Once the bootstrap in done. Your demo SF deployment is ready to be used.
-Assuming you have let the default domain in sfconfig.yaml "tests.dom" configure
+Once the bootstrap is done your demo SF deployment is ready to be used.
+Assuming you have not modified the default domain in sfconfig.yaml "tests.dom" add an entry to 
 your /etc/hosts to resolve tests.dom to 192.156.134.54.
 
 Then open your browser on http://tests.dom. Always assuming the used
 domain is tests.dom, you can use the default pre-provisioned users
 that are user1, user2, user3 with 'userpass' as password. User
-user1 is the default administrator the SF deployment.
+user1 is the default administrator in the SF deployment.
 
 NOTE: Be careful that runinng again the start.sh command will
 wipe the previous deployment.

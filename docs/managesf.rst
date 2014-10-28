@@ -3,7 +3,7 @@
 Managing Software factory
 =========================
 
-This page describes about the ways to manage Software Factory
+This page describes the ways to manage Software Factory
 
 .. _managesf_create_project:
 
@@ -150,7 +150,7 @@ Remove user from project groups
 SF exposes ways to remove user from specified or all groups associated to a project in redmine and
 gerrit simutaneously.
 
-If the caller user is in the ptl group of the project then the user can remove user in
+If the caller user is in the PTL group of the project then the user can remove user in
 any groups.
 
 If the caller user is in the core user groups of the project then the user can:
@@ -228,7 +228,7 @@ Request
 Response
 
 If successfully created, HTTP status code 200 is returned and
-the body will be filled with a gzip tar archive.
+the body contains a gzip tar archive.
 
 CLI
 '''
@@ -271,7 +271,7 @@ Request
 
 Response
 
-If successfully restore, HTTP status code 200 is returned. It may
+If successfully restored, HTTP status code 200 is returned. It may
 take sometime for SF REST API to return an HTTP reponse.
 
 CLI
