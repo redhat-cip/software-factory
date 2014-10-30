@@ -65,6 +65,8 @@ class TestProjectTestsWorkflow(Base):
         self.config_clone_dir = self.clone_as_admin("config")
         self.original_layout = file(os.path.join(
             self.config_clone_dir, "zuul/layout.yaml")).read()
+        self.original_zuul_projects = file(os.path.join(
+            self.config_clone_dir, "zuul/projects.yaml")).read()
         self.original_project = file(os.path.join(
             self.config_clone_dir, "jobs/projects.yaml")).read()
         # Put USER_2 as core for config project
@@ -72,7 +74,8 @@ class TestProjectTestsWorkflow(Base):
 
     def tearDown(self):
         self.restore_config_repo(self.original_layout,
-                                 self.original_project)
+                                 self.original_project,
+                                 self.original_zuul_projects)
         for name in self.projects:
             self.msu.deleteProject(name,
                                    config.ADMIN_USER)
@@ -87,13 +90,16 @@ class TestProjectTestsWorkflow(Base):
             self.dirs_to_delete.append(os.path.dirname(clone_dir))
         return clone_dir
 
-    def restore_config_repo(self, layout_content, project_content):
+    def restore_config_repo(self, layout, project, zuul):
         file(os.path.join(
             self.config_clone_dir, "zuul/layout.yaml"), 'w').write(
-            layout_content)
+            layout)
+        file(os.path.join(
+            self.config_clone_dir, "zuul/projects.yaml"), 'w').write(
+            zuul)
         file(os.path.join(
             self.config_clone_dir, "jobs/projects.yaml"), 'w').write(
-            project_content)
+            project)
         self.commit_direct_push_as_admin(
             self.config_clone_dir,
             "Restore layout.yaml and projects.yaml")
@@ -137,17 +143,12 @@ class TestProjectTestsWorkflow(Base):
 
         # Change to config/zuul/layout.yaml and jobs/projects.yaml
         # in order to test the new sample_project
-        ycontent = load(file(os.path.join(
-            self.config_clone_dir, "zuul/layout.yaml")).read())
-        sp = copy.deepcopy(
-            [p for p in ycontent['projects'] if p['name'] == 'zuul-demo'][0])
-        sp['name'] = "sample_project"
-        sp['check'][0] = sp['check'][0].replace('zuul-demo', 'sample_project')
-        sp['check'][1] = sp['check'][1].replace('zuul-demo', 'sample_project')
-        ycontent['projects'].append(sp)
+        ycontent = file(os.path.join(
+            self.config_clone_dir, "zuul/projects.yaml")).read()
         file(os.path.join(
-            self.config_clone_dir, "zuul/layout.yaml"), 'w').write(
-            dump(ycontent))
+            self.config_clone_dir, "zuul/projects.yaml"), 'w').write(
+            ycontent.replace("zuul-demo", "sample_project")
+        )
         ycontent2 = load(file(os.path.join(
             self.config_clone_dir, "jobs/projects.yaml")).read())
         sp2 = copy.deepcopy(

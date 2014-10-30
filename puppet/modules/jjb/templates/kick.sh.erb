@@ -46,7 +46,9 @@ done
 service jenkins restart
 
 # Zuul
-cp /root/config/zuul/layout.yaml /etc/zuul/
+# concat of layout.yaml and projects.yaml to /etc/zuul/layout.yaml
+cat /root/config/zuul/layout.yaml /root/config/zuul/projects.yaml | tee /etc/zuul/layout.yaml
+zuul-server -t -l /etc/zuul/layout.yaml || exit -1
 pkill -9 -f "zuul*"
 service zuul restart
 service zuul-merger restart

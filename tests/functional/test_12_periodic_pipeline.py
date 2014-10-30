@@ -60,11 +60,13 @@ class TestZuulPeriodicPipeline(Base):
         self.config_clone_dir = self.clone_as_admin("config")
         self.original_layout = file(os.path.join(
             self.config_clone_dir, "zuul/layout.yaml")).read()
+        self.original_projects = file(os.path.join(
+            self.config_clone_dir, "zuul/projects.yaml")).read()
         # Put USER_2 as core for config project
         self.gu.add_group_member(config.USER_2, "config-core")
 
     def tearDown(self):
-        self.restore_config_repo(self.original_layout)
+        self.restore_config_repo(self.original_layout, self.original_projects)
         for name in self.projects:
             self.msu.deleteProject(name,
                                    config.ADMIN_USER)
@@ -79,10 +81,13 @@ class TestZuulPeriodicPipeline(Base):
             self.dirs_to_delete.append(os.path.dirname(clone_dir))
         return clone_dir
 
-    def restore_config_repo(self, layout_content):
+    def restore_config_repo(self, layout_content, projects_content):
         file(os.path.join(
             self.config_clone_dir, "zuul/layout.yaml"), 'w').write(
             layout_content)
+        file(os.path.join(
+            self.config_clone_dir, "zuul/projects.yaml"), 'w').write(
+            projects_content)
         self.commit_direct_push_as_admin(
             self.config_clone_dir,
             "Restore layout.yaml")
@@ -140,6 +145,13 @@ class TestZuulPeriodicPipeline(Base):
         file(os.path.join(
             self.config_clone_dir, "zuul/layout.yaml"), 'w').write(
             dump(ycontent))
+
+        # Rewrite zuul/projects.yaml as well to keep the same indent
+        ycontent2 = load(file(os.path.join(
+            self.config_clone_dir, "zuul/projects.yaml")).read())
+        file(os.path.join(
+            self.config_clone_dir, "zuul/projects.yaml"), 'w').write(
+            dump(ycontent2))
 
         # Retrieve the previous build number for config-check
         last_success_build_num_ch = \

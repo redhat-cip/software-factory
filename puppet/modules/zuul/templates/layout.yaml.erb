@@ -86,12 +86,3 @@ projects:
       - config-check
     post:
       - config-update
-  - name: zuul-demo
-    check:
-      - zuul-demo-functional-tests
-      - zuul-demo-unit-tests
-    gate:
-      - zuul-demo-functional-tests
-      - zuul-demo-unit-tests
-    periodic:
-      - periodic-zuul-demo
