@@ -14,12 +14,12 @@ Clone a project
 ...............
 
 Softwarefactory uses `the GIT protocol <http://en.wikipedia.org/wiki/Git_%28software%29>`_
-as its revision control system. As and when a project is created, Gerrit
+as its revision control system. When a project is created, Gerrit
 initializes the projects' repository.
 
 Repositories can be `cloned <http://git-scm.com/docs/git-clone>`_ from
 the Gerrit server to a local directory. Gerrit allows multiple ways to clone
-any projects' repositories.
+a project repository.
 
 Using HTTP:
 
@@ -29,7 +29,7 @@ Using HTTP:
 
 Using SSH:
 
-Before accessing SSH uri, one needs to register the SSH public key of
+Before accessing the SSH URI, one needs to register the SSH public key of
 its user. (See :ref:`setup_ssh_keys`)
 
 .. code-block:: bash
@@ -40,10 +40,10 @@ Initialise the GIT remote with git-review
 .........................................
 
 git-review is a git add-on that manages the reviewing and other aspects of Gerrit.
-Indeed the way you commit on Gerrit can differ the way you used to commit on
-a traditional GIT repository.
+The way you commit using Gerrit is different compared to using a traditional GIT
+repository.
 
-First retrieve git-review. Generally, the easiest way to get last version is
+First install git-review. Generally, the easiest way to get last version is
 to install it using the Python package installer pip.
 
 .. code-block:: bash
@@ -51,7 +51,7 @@ to install it using the Python package installer pip.
  $ sudo pip install git-review
 
 Then initialize the GIT remote for the project you have cloned. You should
-use the SSH way to clone. Please start 'git review -s' as follow, the command
+use the SSH way to clone. Please start 'git review -s' as following, the command
 will prompt you to enter your Gerrit user name.
 
 .. code-block:: bash
@@ -67,12 +67,12 @@ will prompt you to enter your Gerrit user name.
 Submit a patch
 --------------
 
-Before starting to work its a good practise to setup a branch and work on it.
+Before starting to work it is a good practise to setup a branch and work on it.
 The branch name will be displayed as the topic for the patch(es) you are going
 to create from it, so give it a meaningful name like bug/{bug-id},
 title-bug-fix, ...
 
-To create a branch
+To create a branch:
 
 .. code-block:: bash
 
@@ -140,14 +140,14 @@ rebase your local commit on top of them. It will temporarily set aside the
 changes you've made in your branch, apply all of the changes that have happend
 in master to your working branch, then merge (recommit) all of the changes you've made
 back into the branch. Doing this will help avoid future merge conflicts. Plus, it gives
-you an opportunity to test your changes against the latest code in master
+you an opportunity to test your changes against the latest code in master.
 
 Once you are satisfied with your change set,
 you are ready to push your code to Gerrit for code review.
 
 Make sure you had setup git-review before submitting the code for review.
 
-To push the chage to gerrit, execute the following command:
+To push the change to gerrit, execute the following command:
 
 .. code-block:: bash
 
@@ -165,12 +165,12 @@ Amending a change
 
 Sometimes, you might need to amend a submitted change, for instance
 when someone else does not approve your change by advising you to do it
-differently or even when automatic tests run by Jenkins reports a negative note
+differently or even when automatic tests run by Jenkins reports a negative vote
 on your change. Then you need to amend your change. You can amend your own
 changes as well as changes submitted by someone else, as long as the change
 hasn't been merged yet.
 
-You can heckout the change like this:
+You can checkout the change like this:
 
 .. code-block:: bash
 
@@ -204,7 +204,7 @@ Software Factory mandates every patch to be reviewed before getting merged.
 Who can review
 ..............
 
-Anybody who are logged in to Software Factory are eligible to review a patch
+Anybody who is logged into Software Factory is eligible to review a patch
 of any project except for private projects. Private projects can be
 reviewed only by the team leads, developers, and core-developers of that
 project.

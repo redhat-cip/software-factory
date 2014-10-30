@@ -29,9 +29,9 @@ The default Zuul layout.yaml provided four test pipelines:
 * The gate pipeline: In this pipeline Jenkins job can be configured
   to run after a change has received all the required approvals,
   2 approvals on the **Core-Review** label and an approval on
-  the **Workflow** label. This pipeline take care of rebasing the
+  the **Workflow** label. This pipeline takes care of rebasing the
   change on the master branch and run the related Jenkins jobs
-  (mainly tests) and automatically submit the change on the
+  (mainly tests) and automatically submits the change on the
   master branch in case of success.
 
 * The periodic pipeline: Is used to run periodic (a bit like a
@@ -46,7 +46,7 @@ the special **config** repository. So adding/changing a Jenkins Job
 is simply making a change in that **config** repository as
 usual, by using **git review**. That change is automatically verified
 and, once merged in the master branch of the **config** repository, SF
-trigger Jenkins and Zuul to take care of that new change.
+triggers Jenkins and Zuul to take care of that new change.
 
 .. graphviz:: test_workflow.dot
 
