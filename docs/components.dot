@@ -1,17 +1,13 @@
 digraph {
-    # General settings
     nodesep = 0.75
     node [shape=doublecircle,color=orange,fontsize=10,width=1.0]
     edge [fontsize=10];
 
-    # Node definitions
     "User" [shape=box];
     "LDAP" [color=gray];
     "Github" [color=gray label="Github\n(OAuth)"];
 
     subgraph cluster_agenda {
-        # We fake an agenda here by making the nodes invisible,
-        # showing only the edges with a label
         style=invis;
 
         node [fontsize=0 width=0 style=invis]
@@ -76,8 +72,6 @@ digraph {
         "cauth";
     }
 
-    # Now all the connections (edges) between the nodes
-
     edge [color=blue];
     "User" -> "Apache";
     "Apache" -> "Etherpad";
@@ -115,6 +109,5 @@ digraph {
     edge [color=green];
     "cauth" -> "LDAP";
 
-    # This is a hack to push the agenda below the other nodes
     MySQL -> m1 [style=invis];
 }

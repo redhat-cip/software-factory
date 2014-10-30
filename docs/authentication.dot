@@ -8,25 +8,20 @@ digraph {
     "cauth";
     "Github" [color=gray];
 
-    # hack - push cauth to the right of Apache and make distances equal
     "User" -> "Apache" [style=invis];
     "Apache" -> "cauth" [style=invis];
     "cauth" -> "Github" [style=invis];
 
     {rank=same; User; Apache; cauth; Github; }
 
-    # now some invisible nodes for each timepoint
     node [fontsize=10,width=0.0,shape=point];
 
-    # vertical edges. Important: only link nodes that are endpoints for
-    # vertical edges (see below)
     edge [dir=none, color=gray, style=dashed]
     "User" -> u1 -> u2 -> u3 -> u4 -> u5 -> u6 -> u7 -> u8 -> u9 -> u10;
     "Github" -> g5 -> g6;
     "Apache" -> a1 -> a2 -> a9 -> a10;
     "cauth" -> c3 -> c4 -> c7 -> c8;
 
-    # Horizontal edges
     edge [dir=forward, color=black, style=solid];
 
     u1 -> a1 [label="1. Request"]; {rank=same; u1; a1;}
