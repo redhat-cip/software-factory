@@ -1,0 +1,5 @@
+[gerrit]
+host=softwarefactory.enovance.com
+port=29418
+project=software-factory
+defaultbranch=master
