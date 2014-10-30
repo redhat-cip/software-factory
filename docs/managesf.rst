@@ -40,7 +40,7 @@ Request
   "core-group-members": ["user1", "user2"],
   "ptl-group-members": ["user3"],
   "dev-group-members": ["user1", "user2", "user3"],
-  "upstream": "http://github.com/enovance/SoftwareFactory",
+  "upstream": "http://github.com/enovance/software-factory",
   "private": true
  }
 

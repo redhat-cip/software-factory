@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# SoftwareFactory documentation build configuration file, created by
+# software-factory documentation build configuration file, created by
 # sphinx-quickstart on Mon May  5 13:05:13 2014.
 #
 # This file is execfile()d with the current directory set to its
@@ -40,7 +40,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'SoftwareFactory'
+project = u'software-factory'
 copyright = u'2014, eNovance'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -173,7 +173,7 @@ html_static_path = ['_static']
 # html_file_suffix = None
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'SoftwareFactorydoc'
+htmlhelp_basename = 'software-factorydoc'
 
 
 # -- Options for LaTeX output ---------------------------------------------
@@ -193,7 +193,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    ('index', 'SoftwareFactory.tex', u'SoftwareFactory Documentation',
+    ('index', 'software-factory.tex', u'software-factory Documentation',
      u'eNovance', 'manual'),
 ]
 
@@ -223,7 +223,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'softwarefactory', u'SoftwareFactory Documentation',
+    ('index', 'softwarefactory', u'software-factory Documentation',
      [u'eNovance'], 1)
 ]
 
@@ -237,8 +237,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    ('index', 'SoftwareFactory', u'SoftwareFactory Documentation',
-     u'eNovance', 'SoftwareFactory', 'One line description of project.',
+    ('index', 'software-factory', u'software-factory Documentation',
+     u'eNovance', 'software-factory', 'One line description of project.',
      'Miscellaneous'),
 ]
 

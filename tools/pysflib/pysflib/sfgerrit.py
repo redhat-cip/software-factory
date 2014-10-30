@@ -92,7 +92,7 @@ class SFGerritRestAPI(GerritRestAPI):
 
 class GerritUtils:
     """ Utility class that eases calls on the Gerrit API
-    for SoftwareFactory. Provide the args you used to pass
+    for software-factory. Provide the args you used to pass
     to pygerrit.rest.GerritRestAPI and add auth_cookie
     to authenticate through SSO.
     """

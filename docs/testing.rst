@@ -63,7 +63,7 @@ There are two way to execute jobs:
 ** Use global configuration
 ** Use gerrit-git-prep builder to checkout either master or a branch
 
-The default configuration provided by SoftwareFactory contain some reusable template and
+The default configuration provided by software-factory contain some reusable template and
 a complete project configured: the config project itself!
 
 Default architecture

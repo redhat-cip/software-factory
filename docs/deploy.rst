@@ -70,7 +70,7 @@ Git repository :
 
 .. code-block:: bash
 
- $ git clone https://github.com/enovance/SoftwareFactory.git
+ $ git clone https://github.com/enovance/software-factory.git
 
 Then call the **fetch_roles.sh** script, a call of the script **build_roles.sh**
 is also needed in order to prepare the local FS directory where the bootstrap
@@ -95,7 +95,7 @@ You need to clone the Software Factory Git repository :
 
 .. code-block:: bash
 
- $ git clone https://github.com/enovance/SoftwareFactory.git
+ $ git clone https://github.com/enovance/software-factory.git
 
 Some dependencies needs to be installed on your local system to build the images:
 
@@ -178,7 +178,7 @@ created. You can check the progress using the following command:
 
 .. code-block:: bash
 
- $ heat stack-show SoftwareFactory
+ $ heat stack-show software-factory
 
 Once stack-show reports stack-created status, you can use the option output-show to
 display the floating IP of the puppetmaster node.
@@ -217,7 +217,7 @@ To look at the error messages you can perform the following command:
 
 .. code-block:: bash
 
- $ heat stack-show SoftwareFactory
+ $ heat stack-show software-factory
 
 Failures can also occur during puppet agents runs. You can have a look to all
 puppet logs on the puppetmaster node in /var/log/sf-bootstrap.log.

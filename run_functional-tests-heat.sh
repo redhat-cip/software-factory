@@ -14,7 +14,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-# This script will build if needed the roles for SoftwareFactory
+# This script will build if needed the roles for software-factory
 # Then will start the SF using the HEAT deployment way
 # Then will run the serverspecs and functional tests
 
