@@ -46,6 +46,10 @@ case "$(package_tool)" in
 esac
 
 HOME=/root do_chroot $dir gem uninstall -aIx rspec rspec-core rspec-expectations rspec-extra-formatters rspec-mocks serverspec specinfra
+HOME=/root do_chroot $dir gem install rspec-core -v 2.99.0
+HOME=/root do_chroot $dir gem install rspec-expectations -v 2.99.0
+HOME=/root do_chroot $dir gem install rspec-its -v 1.0.0
+HOME=/root do_chroot $dir gem install specinfra -v 1.27.0
 HOME=/root do_chroot $dir gem install serverspec -v 1.16.0
 # Install the most recent version of PIP at early stage
 do_chroot $dir bash -c "pip install -U pip>=1.5.6"
