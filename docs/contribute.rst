@@ -1,7 +1,11 @@
 .. toctree::
 
+Contributing to Software Factory
+================================
+
 How can I help?
-===============
+---------------
+
 Thanks for asking. Let's find a place for you! 
 First you should join our communication forums: 
 
@@ -19,7 +23,7 @@ Then you should deploy your own softwarefactory:
 Feel free to hack the code and update your deployment!
 
 How to contribute
-=================
+-----------------
 
 * Connect to softwarefactory.enovance.com using your Github account
 * Check the bugtracker and the pending reviews
