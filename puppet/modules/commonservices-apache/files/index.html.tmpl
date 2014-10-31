@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <title>Software Factory</title>
-    <link href="/bootstrap.min.css" rel="stylesheet">
+    <link href="/static/bootstrap/css/bootstrap.min.css" rel="stylesheet">
     <style>
 	body, html {margin, padding:0;height:100%;}
 	body {padding-top: 50px;}
@@ -19,7 +19,7 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-          <a class="navbar-brand" href="#">Software Factory</a>
+          <a class="navbar-brand" href="/">Software Factory</a>
         </div>
         <div class="collapse navbar-collapse">
             <ul class="nav navbar-nav">
@@ -31,14 +31,14 @@
                 <li><a href="/paste/" target="content">Paste</a></li>
             </ul>
             <ul class="nav navbar-nav pull-right">
-                <li><a href="/docs/" target="content">Docs</a></li>
+                <li><a href="/docs/" target="content">Get Started</a></li>
                 <li><a href="/auth/logout/" target="content">Logout</a></li>
             </ul>
         </div>
     </div>
     <iframe src="$target_url" width="100%" id="content" name="content"></iframe>
-    <script src="/jquery.min.js"></script>
-    <script src="/bootstrap.min.js"></script>
+    <script src="/static/js/jquery.min.js"></script>
+    <script src="/static/bootstrap/js/bootstrap.min.js"></script>
     <script type="text/javascript">
         // Prevent nested topmenu
         if (self != top) {

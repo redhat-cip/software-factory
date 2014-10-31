@@ -66,39 +66,15 @@ class commonservices-apache {
     notify => Service['webserver'],
   }
 
-  file {'/var/www/bootstrap.min.css':
-    ensure => file,
-    mode   => '0640',
-    owner  => $httpd_user,
-    group  => $httpd_user,
-    source  => 'puppet:///modules/commonservices-apache/bootstrap.min.css',
-    notify => Service['webserver'],
-  }
-
-  file {'/var/www/bootstrap.min.js':
-    ensure => file,
-    mode   => '0640',
-    owner  => $httpd_user,
-    group  => $httpd_user,
-    source  => 'puppet:///modules/commonservices-apache/bootstrap.min.js',
-    notify => Service['webserver'],
-  }
-
-  file {'/var/www/jquery.min.js':
-    ensure => file,
-    mode   => '0640',
-    owner  => $httpd_user,
-    group  => $httpd_user,
-    source  => 'puppet:///modules/commonservices-apache/jquery.min.js',
-    notify => Service['webserver'],
-  }
-
-  file { '/var/www/static':
-    ensure  => link,
-    target  => '/srv/lodgeit/lodgeit/lodgeit/static/',
-  }
-
   file {'/var/www/docs':
+    ensure => directory,
+    recurse => true,
+    mode   => '0644',
+    owner  => $httpd_user,
+    group  => $httpd_user,
+  }
+
+  file {'/var/www':
     ensure => directory,
     recurse => true,
     mode   => '0644',

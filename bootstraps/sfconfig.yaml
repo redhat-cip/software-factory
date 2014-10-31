@@ -32,3 +32,10 @@ smtp_relay: mail.example.com
 
 # From email adresse used by Jenkins.
 jenkins_user_email: jenkins@example.com
+
+# Links on the login page
+loginpage_link_documentation: /_docs/
+loginpage_link_contribute: "/_docs/contribute.html"
+loginpage_github_address: "https://github.com/enovance/software-factory"
+loginpage_contact_email: "softwarefactory@enovance.com"
+loginpage_custom_footer: ""
