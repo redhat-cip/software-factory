@@ -14,7 +14,7 @@ Then you should deploy your own softwarefactory:
 * Configure your new vm with the sfstack project:
     * git clone http://softwarefactory.enovance.com/r/sfstack.git
     * cd sfstack
-* ./sfstack
+    * ./sfstack
 
 Feel free to hack the code and update your deployment!
 

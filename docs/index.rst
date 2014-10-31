@@ -16,6 +16,7 @@ Contents:
    submitpatches
    managesf
    testing
+   contribute
 
 Indices and tables
 ==================
