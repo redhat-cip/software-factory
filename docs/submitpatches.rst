@@ -10,6 +10,8 @@ Any user can create a project. (See :ref:`managesf_create_project`)
 Contribute to a project on SF
 -----------------------------
 
+.. _contribute:
+
 Clone a project
 ...............
 
