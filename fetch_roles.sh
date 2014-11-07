@@ -101,7 +101,7 @@ function fetch_sf_qcow2_roles_prebuilt {
     # Fetch last available SF roles
     local temp=$(mktemp -d /tmp/edeploy-check-XXXXX)
     for role in mysql slave install-server-vm softwarefactory; do
-        role=${role}-${SF_VER}.qcow2
+        role=${role}-${SF_VER}.img.qcow2
         curl -s -o ${temp}/${role}.md5 ${BASE_URL}/${role}.md5 || continue
         # Swift does not return 404 but 'Not Found'
         grep -q 'Not Found' ${temp}/${role}.md5 && { echo "${role} does not exist upstream"; continue; }
