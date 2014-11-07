@@ -41,8 +41,9 @@ class TestBackup(TestCase):
 
     def test_start(self):
         ctx = [patch('managesf.controllers.backup.user_is_administrator'),
+               patch('managesf.controllers.backup.Backup.check_for_service'),
                patch('managesf.controllers.backup.RemoteUser._ssh')]
-        with nested(*ctx) as (uia, ssh):
+        with nested(*ctx) as (uia, cfs, ssh):
             uia.return_value = True
             backup.Backup().start()
             self.assertTrue(ssh.called)
@@ -58,8 +59,10 @@ class TestBackup(TestCase):
     def test_restore(self):
         ctx = [patch('managesf.controllers.backup.user_is_administrator'),
                patch('managesf.controllers.backup.RemoteUser._ssh'),
+               patch('managesf.controllers.backup.Backup.check_for_service'),
                patch('managesf.controllers.backup.RemoteUser._scpToRemote')]
-        with nested(*ctx) as (uia, ssh, scp):
+
+        with nested(*ctx) as (uia, ssh, cfs, scp):
             uia.return_value = True
             backup.Backup().restore()
             self.assertTrue(scp.called)

@@ -307,7 +307,6 @@ class TestManageSFAppReplicationController(FunctionalTest):
                 {},
                 status="*")
             self.assertEqual(response.status_int, 204)
-            print response.body
         with patch('managesf.controllers.gerrit.replication_trigger',
                    side_effect=raiseexc):
             response = self.app.post_json(
