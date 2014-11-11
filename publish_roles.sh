@@ -10,7 +10,7 @@ set -x
 
 cd ${INST}
 TEMP_DIR=$(mktemp -d /tmp/edeploy-check-XXXXX)
-for role_name in install-server-vm mysql slave softwarefactory; do
+for role_name in install-server-vm slave softwarefactory; do
     role=${role_name}-${SF_VER}
     echo "[+] Check if ${role} have changed"
     curl -s -o ${TEMP_DIR}/${role}.md5 ${BASE_URL}/${role}.md5 || true

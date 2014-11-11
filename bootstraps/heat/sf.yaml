@@ -30,9 +30,6 @@ parameters:
   puppetmaster_image_id:
     type: string
     description: Glance image ID for the puppet master node
-  mysql_image_id:
-    type: string
-    description: Glance image ID for the mysql node
   slave_image_id:
     type: string
     description: Glance image ID for the slave node
@@ -383,7 +380,7 @@ resources:
   mysql_instance:
     type: OS::Nova::Server
     properties:
-      image: { get_param: mysql_image_id }
+      image: { get_param: sf_image_id }
       flavor: { get_param: alt_instance_type }
       key_name: { get_param: key_name }
       networks:

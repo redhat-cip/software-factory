@@ -76,7 +76,7 @@ function fetch_sf_roles_prebuilt {
     echo "Fetch prebuilt SF roles ..."
     # Fetch last available SF roles
     local temp=$(mktemp -d /tmp/edeploy-check-XXXXX)
-    for role in mysql slave install-server-vm softwarefactory; do
+    for role in slave install-server-vm softwarefactory; do
         role=${role}-${SF_VER}
         curl -s -o ${temp}/${role}.md5 ${BASE_URL}/${role}.md5 &> /dev/null || continue
         # Swift does not return 404 but 'Not Found'
@@ -101,7 +101,7 @@ function fetch_sf_qcow2_roles_prebuilt {
     echo "Fetch prebuilt SF roles images (qcow2) ..."
     # Fetch last available SF roles
     local temp=$(mktemp -d /tmp/edeploy-check-XXXXX)
-    for role in mysql slave install-server-vm softwarefactory; do
+    for role in slave install-server-vm softwarefactory; do
         role=${role}-${SF_VER}.img.qcow2
         curl -s -o ${temp}/${role}.md5 ${BASE_URL}/${role}.md5 || continue
         # Swift does not return 404 but 'Not Found'

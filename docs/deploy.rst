@@ -134,7 +134,7 @@ the build_roles.sh script.  The build may take a while :
  $ ./build_roles.sh
  $ ls -al /var/lib/sf/roles/install/C7.0-0.9.2/
 
-The above command should have created four directories (install-server-vm, mysql, slave, softwarefactory)
+The above command should have created three directories (install-server-vm, slave, softwarefactory)
 that contains the filesystem tree of the images you will need
 to deploy the Software Factory. If you added **VIRT=true** qcow2 images have been created too. Those
 will be used to deploy on OpenStack.

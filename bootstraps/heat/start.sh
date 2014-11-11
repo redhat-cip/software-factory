@@ -39,8 +39,6 @@ function get_params {
     params="$params;puppetmaster_image_id=$puppetmaster_image_id"
     sf_image_id=`glance image-show softwarefactory | grep "^| id" | awk '{print $4}'`
     params="$params;sf_image_id=$sf_image_id"
-    mysql_image_id=`glance image-show mysql | grep "^| id" | awk '{print $4}'`
-    params="$params;mysql_image_id=$mysql_image_id"
     slave_image_id=`glance image-show slave | grep "^| id" | awk '{print $4}'`
     params="$params;slave_image_id=$slave_image_id"
     sfconfigcontent=`cat $SFCONFIGFILE | base64 -w 0`
@@ -48,7 +46,7 @@ function get_params {
 }
 
 function register_images {
-    for img in install-server-vm mysql slave softwarefactory; do
+    for img in install-server-vm slave softwarefactory; do
         checksum=`glance image-show $img | grep checksum | awk '{print $4}'`
         if [ -z "$checksum" ]; then
             glance image-create --name $img --disk-format qcow2 --container-format bare \
@@ -58,7 +56,7 @@ function register_images {
 }
 
 function unregister_images {
-    for img in install-server-vm mysql slave softwarefactory; do
+    for img in install-server-vm slave softwarefactory; do
         checksum=`glance image-show $img | grep checksum | awk '{print $4}'`
         newchecksum=`cat $BUILT_ROLES/roles/install/${VERS}/$img-*.img.qcow2.md5 | cut -d" " -f1`
         [ "$newchecksum" != "$checksum" ] && glance image-delete $img || true

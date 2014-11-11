@@ -15,7 +15,7 @@ hosts:
   -
     address: 192.168.134.50
     name: mysql
-    role: mysql
+    role: softwarefactory
     cloudinit: CIPATH/mysql.cloudinit
   -
     address: 192.168.134.51

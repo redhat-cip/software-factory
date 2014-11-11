@@ -12,6 +12,7 @@
 - /var/cache/
 - /var/lib/puppet
 - /var/lib/cloud
+- /var/lib/mysql
 /boot/grub/
 /lost+found
 /etc/hostname

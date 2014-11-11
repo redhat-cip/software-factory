@@ -44,7 +44,7 @@ EDEPLOY_VERSION=$(EDEPLOY_REL)
 INST=$(TOP)/install/$(SF_VERSION)
 EDR_INST=$(TOP)/install/$(PREBUILD_EDR_TARGET)
 
-ROLES = install-server-vm mysql slave softwarefactory
+ROLES = install-server-vm slave softwarefactory
 
 all: $(ROLES)
 
@@ -54,13 +54,6 @@ $(INST)/softwarefactory.done: softwarefactory.install $(EDR_INST)/cloud.done
 	@(echo "----| Building softwarefactory role |----")
 	./softwarefactory.install $(EDR_INST)/cloud $(INST)/softwarefactory $(SF_VERSION)
 	touch $(INST)/softwarefactory.done
-
-mysql: $(INST)/mysql.done
-$(INST)/mysql.done: mysql.install $(EDR_INST)/cloud.done
-	rm -f $(INST)/mysql-*.img*
-	@(echo "----| Building mysql role |----")
-	./mysql.install $(EDR_INST)/cloud $(INST)/mysql $(SF_VERSION)
-	touch $(INST)/mysql.done
 
 slave: $(INST)/slave.done
 $(INST)/slave.done: slave.install $(EDR_INST)/cloud.done
@@ -88,4 +81,4 @@ distclean: clean
 version:
 	@echo "$(SF_VERSION)"
 
-.PHONY: bootstrapper install-server-vm mysql slave softwarefactory dist clean distclean version
+.PHONY: bootstrapper install-server-vm slave softwarefactory dist clean distclean version

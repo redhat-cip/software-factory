@@ -97,6 +97,14 @@ EOF
 
      do_chroot $dir sed -i -e 's/START=.*/START=yes/g' /etc/default/puppet
      do_chroot $dir update-rc.d puppet defaults
+
+     # MySQL
+     # Set a temporary password for the root account, Puppet will change it to a random one later on
+     do_chroot ${dir} debconf-set-selections <<< 'mysql-server-5.1 mysql-server/root_password password temporarypw'
+     do_chroot ${dir} debconf-set-selections <<< 'mysql-server-5.1 mysql-server/root_password_again password temporarypw'
+     install_packages $dir "mysql-server puppet monit postfix git bup"
+     do_chroot ${dir} sed -i -e"s/^bind-address.*/bind-address = 0.0.0.0/" /etc/mysql/my.cnf
+     sed -i -e 's/START=.*/START=yes/g' $dir/etc/default/puppet
      ;;
   "yum")
      CODENAME_MAJOR=7
@@ -104,7 +112,7 @@ EOF
      # The puppetlas-release package install repo desc for puppet in yum
      install_packages ${dir} http://yum.puppetlabs.com/el/$CODENAME_MAJOR/products/x86_64/puppetlabs-release-$PUPPET_RELEASE.noarch.rpm
      add_epel_repository $DIST
-     install_packages $dir "puppet monit postfix git python-pip vim-enhanced gcc cpp python-devel libxml2-devel libxslt-devel nodejs openldap-devel httpd java-1.6.0-openjdk zlib-devel libcurl-devel openssl-devel httpd-devel apr-devel apr-util-devel mariadb-devel gcc-c++ ruby-devel ImageMagick-devel python-werkzeug python-babel python-jinja2 MySQL-python socat mod_wsgi m2crypto mariadb gitweb debootstrap unzip pigz"
+     install_packages $dir "puppet monit postfix git python-pip vim-enhanced gcc cpp python-devel libxml2-devel libxslt-devel nodejs openldap-devel httpd java-1.6.0-openjdk zlib-devel libcurl-devel openssl-devel httpd-devel apr-devel apr-util-devel mariadb-server mariadb-devel gcc-c++ ruby-devel ImageMagick-devel python-werkzeug python-babel python-jinja2 MySQL-python socat mod_wsgi m2crypto mariadb gitweb debootstrap unzip pigz"
      # Install SQLAlchemy for paste lodegit (not available in yum)
      do_chroot $dir pip install SQLAlchemy
      install_bup $dir
