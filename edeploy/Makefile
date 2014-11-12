@@ -44,7 +44,7 @@ EDEPLOY_VERSION=$(EDEPLOY_REL)
 INST=$(TOP)/install/$(SF_VERSION)
 EDR_INST=$(TOP)/install/$(PREBUILD_EDR_TARGET)
 
-ROLES = install-server-vm slave softwarefactory
+ROLES = install-server-vm softwarefactory
 
 all: $(ROLES)
 
@@ -54,13 +54,6 @@ $(INST)/softwarefactory.done: softwarefactory.install $(EDR_INST)/cloud.done
 	@(echo "----| Building softwarefactory role |----")
 	./softwarefactory.install $(EDR_INST)/cloud $(INST)/softwarefactory $(SF_VERSION)
 	touch $(INST)/softwarefactory.done
-
-slave: $(INST)/slave.done
-$(INST)/slave.done: slave.install $(EDR_INST)/cloud.done
-	rm -f $(INST)/slave-*.img*
-	@(echo "----| Building slave role |----")
-	./slave.install $(EDR_INST)/cloud $(INST)/slave $(SF_VERSION)
-	touch $(INST)/slave.done
 
 install-server-vm: $(INST)/install-server-vm.done
 $(INST)/install-server-vm.done: install-server-vm.install $(EDR_INST)/install-server.done
@@ -81,4 +74,4 @@ distclean: clean
 version:
 	@echo "$(SF_VERSION)"
 
-.PHONY: bootstrapper install-server-vm slave softwarefactory dist clean distclean version
+.PHONY: bootstrapper install-server-vm softwarefactory dist clean distclean version

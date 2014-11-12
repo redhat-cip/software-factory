@@ -13,6 +13,7 @@
 - /var/lib/puppet
 - /var/lib/cloud
 - /var/lib/mysql
+- /var/lib/jenkins
 /boot/grub/
 /lost+found
 /etc/hostname
