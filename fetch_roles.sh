@@ -16,6 +16,7 @@
 
 set -e
 [ -n "$DEBUG" ] && set -x
+[ -n "$PB" ] && PB="--progress-bar" || PB="-s"
 
 . ./role_configrc
 
@@ -41,14 +42,14 @@ function fetch_base_roles_prebuilt {
     curl -s -o ${temp}/$cloud_img.md5 ${BASE_URL}/$cloud_img.md5
     diff $PREBUILD_TARGET/$install_server_img.md5 ${temp}/$install_server_img.md5 || {
         echo "Fetching $install_server_img ..."
-        curl --progress-bar -o ${temp}/$install_server_img ${BASE_URL}/$install_server_img
+        curl $PB -o ${temp}/$install_server_img ${BASE_URL}/$install_server_img
         sudo mv -f ${temp}/$install_server_img* $PREBUILD_TARGET
         # Remove the previously unziped archive
         [ -d $PREBUILD_TARGET/install-server ] && sudo rm -Rf $PREBUILD_TARGET/install-server
     } && echo "$install_server_img is already synced"
     diff $PREBUILD_TARGET/$cloud_img.md5 ${temp}/$cloud_img.md5 || {
         echo "Fetching $cloud_img ..."
-        curl --progress-bar -o ${temp}/$cloud_img ${BASE_URL}/$cloud_img
+        curl $PB -o ${temp}/$cloud_img ${BASE_URL}/$cloud_img
         sudo mv -f ${temp}/$cloud_img* $PREBUILD_TARGET
         # Remove the previously unziped archive
         [ -d $PREBUILD_TARGET/cloud ] && sudo rm -Rf $PREBUILD_TARGET/cloud
@@ -82,7 +83,7 @@ function fetch_sf_roles_prebuilt {
         grep -q 'Not Found' ${temp}/${role}.md5 && { echo "${role} does not exist upstream"; continue; }
         diff ${temp}/${role}.md5 ${UPSTREAM}/${role}.md5 &> /dev/null || {
             echo "Fetching ${role} ..."
-            sudo curl --progress-bar -o ${UPSTREAM}/${role}.edeploy ${BASE_URL}/${role}.edeploy
+            sudo curl $PB -o ${UPSTREAM}/${role}.edeploy ${BASE_URL}/${role}.edeploy
             sudo curl -s -o ${UPSTREAM}/${role}.edeploy.md5 ${BASE_URL}/${role}.edeploy.md5
             sudo mv -f ${temp}/${role}.md5 ${UPSTREAM}/${role}.md5
             role_md5=$(cat ${UPSTREAM}/${role}.edeploy | md5sum - | cut -d ' ' -f1)
@@ -107,7 +108,7 @@ function fetch_sf_qcow2_roles_prebuilt {
         grep -q 'Not Found' ${temp}/${role}.md5 && { echo "${role} does not exist upstream"; continue; }
         diff ${temp}/${role}.md5 ${UPSTREAM}/${role}.md5 &> /dev/null || {
             echo "Fetching ${role} image ..."
-            sudo curl --progress-bar -o ${UPSTREAM}/${role} ${BASE_URL}/${role}
+            sudo curl $PB -o ${UPSTREAM}/${role} ${BASE_URL}/${role}
             sudo curl -s -o ${UPSTREAM}/${role}.md5 ${BASE_URL}/${role}.md5
             sudo mv -f ${temp}/${role}.md5 ${UPSTREAM}/${role}.md5
             qcow2_md5=$(cat ${UPSTREAM}/${role} | md5sum - | cut -d ' ' -f1)
