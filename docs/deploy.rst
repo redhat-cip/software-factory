@@ -199,33 +199,46 @@ created. You can check the progress using the following command:
 
 .. code-block:: bash
 
- $ heat stack-show software-factory
+ $ heat stack-list
 
-Once stack-show reports stack-created status, you can use the option output-show to
+Once stack-list reports stack-created status, you can use the option output-show to
 display the floating IP of the puppetmaster node.
 
 For now, once stack-created is reported does not mean that the SF deployment
-is completely done. Indeed stack-created reports that all resources defined
-in the HEAT template are up but a couple of script and puppet agents need
+is completly done. Indeed stack-created reports that all resources defined
+in the HEAT template are up but a couple of scripts and puppet agents need
 to finish their work before you can use your SF deployment.
 
-So once the stack is create you can connect using SSH on
+So once the stack is created you can connect using SSH on
 the puppetmaster node using the root user (your SSH public key has been added to
 the root's authorized_keys file) and wait for the file
 /root/puppet-bootstrapper/build/bootstrap.done to be created.
 
+.. code-block:: bash
+
+ $ heat output-show SoftwareFactory puppetmaster_public_address
+ $ ssh root@puppetmaster_public_address ls /root/puppet-bootstrapper/build/bootstrap.done
+
 This file is created once all scripts and puppet agents has finished to apply the
 manifests to configure all SF services.
 
-On the puppetmaster node the file /var/log/sf-bootstrap.log contains the
-log of the bootstrap process.
+On the pupetmaster node the file /var/log/sf-bootstrap.log contains the
+log of the bootstrap process. You can follow the process using :
+
+.. code-block:: bash
+
+ $ ssh root@puppetmaster_public_address tailf /var/log/sf-bootstrap.log
 
 The Software Factory HTTP gateway is accessible on the managesf
 IP address via HTTP. You can retrieve the managesf floating IP using :
 
 .. code-block:: bash
 
- $ heat output-show
+ $ heat output-show SoftwareFactory managesf_public_address
+
+You need to use the domain you have configured in sfconfig.yaml (by default: tests.dom)
+to access the Software Factory HTTP gateway. So be sure that your DNS resolves the domain to
+the right IP or configure your /etc/hosts locally.
 
 Troubleshooting deployment problems
 ...................................
@@ -238,7 +251,7 @@ To look at the error messages you can perform the following command:
 
 .. code-block:: bash
 
- $ heat stack-show software-factory
+ $ heat stack-show SoftwareFactory
 
 Failures can also occur during puppet agents runs. You can have a look to all
 puppet logs on the puppetmaster node in /var/log/sf-bootstrap.log.
