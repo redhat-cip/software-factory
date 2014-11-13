@@ -57,6 +57,8 @@ using LXC and the later to deploy a production environment on an
 Openstack cloud. We use a tool called eDeploy to create role images.
 All role images are based on CentOS 7.
 
+.. _fetchprebuilt:
+
 Fetch pre-built SF images
 .........................
 Each patch merged on the Git SF master branch triggers a build of role
@@ -72,15 +74,32 @@ Git repository :
 
  $ git clone https://github.com/enovance/software-factory.git
 
-Then call the **fetch_roles.sh** script, a call of the script **build_roles.sh**
-is also needed in order to prepare the local FS directory where the bootstrap
-scripts will look for the required images.
+To fetch the pre-built SF trees in order to bootstrap a SF on LXC follow
+the process below:
 
 .. code-block:: bash
 
- $ SF_DIST=CentOS ./fetch_roles.sh
- $ SF_DIST=CentOS ./build_roles.sh
+ $ SF_DIST=CentOS ./fetch_roles.sh trees
+ $ SF_DIST=CentOS SF_SKIP_FETCHBASES=1 ./build_roles.sh
  $ ls -al /var/lib/sf/roles/install/C7.0-0.9.2/
+
+A call of the script **build_roles.sh** is also needed in order to prepare the
+local FS directory where the bootstrap scripts will look for the required trees
+images.
+
+To fetch the pre-built qcow2 images in order to bootstrap a SF on Openstack
+follow the process below:
+
+.. code-block:: bash
+
+ $ # A current limitation forces to download trees too.
+ $ SF_DIST=CentOS ./fetch_roles.sh trees
+ $ SF_DIST=CentOS ./fetch_roles.sh imgs
+ $ SF_DIST=CentOS SF_SKIP_FETCHBASES=1 VIRT=1 ./build_roles.sh
+ $ ls -al /var/lib/sf/roles/install/C7.0-0.9.2/*.qcow2
+
+You should find four qcow2 images: (mysql, slave, install-server-vm,
+and softwarefactory).
 
 Build SF images
 ...............
@@ -136,7 +155,7 @@ allow to allocate :
 
  - 7 VMs
  - 2 Floating IPs
- - 5 Security groups
+ - 4 Security groups
  - 1 Network
 
 Register your public SSH key to your tenant. And retrieve the UUID of the external network by
@@ -150,13 +169,13 @@ Now you will need to adapt the sfconfig.yaml according to your needs "bootstrap/
 Please read the explantions in the config file.
 
 You will also need to configure some deployment details on top of the start.sh script
-"bootstrap/heat/start.sh".
+"bootstraps/heat/start.sh".
 
   - key_name : The name of public SSH key you just have registered
   - flavor : This is the defaut flavor to use. Be careful of your quotas.
   - alt_flavor : This flavor is used to host node that need more resourses like Gerrit
     and Redmine.
-  - ext_net_uuid : The UUID you have retrieved by the previous command.
+  - ext_net_uuid : The UUID you have retrieved with the previous command.
   - sg_admin_cidr : The source network from where you can SSH to all SF nodes.
   - sg_user_cidr : The source network from where users can access SF services.
 
@@ -222,6 +241,8 @@ To look at the error messages you can perform the following command:
 Failures can also occur during puppet agents runs. You can have a look to all
 puppet logs on the puppetmaster node in /var/log/sf-bootstrap.log.
 
+.. _lxcdeploy:
+
 How to deploy SF within LXC
 ---------------------------
 
@@ -257,12 +278,15 @@ for the LXC deployement. However you can still configure it if the defaults
 are not convenient for you.
 
 Ensure that the current user can act as root via sudo without password.
-If not you must login as root. In order to start the SF deployment perform
-the commands below:
+If not you must login as root. The current user must have a RSA public
+key available in $HOME/.ssh, if not please create it before with ssh-keygen
+without a passphrase.
+
+In order to start the SF deployment perform the commands below:
 
 .. code-block:: bash
 
- $ cd bootstrap/lxc
+ $ cd bootstraps/lxc
  $ SF_DIST=CentOS ./start.sh
  $ sudo lxc-ls -f
 
@@ -288,13 +312,27 @@ puppetmaster node and tail -f /var/log/sf-bootstrap.log:
  $ ssh root@192.168.134.49 tailf /var/log/sf-bootstrap.log
 
 Once the bootstrap is done your demo SF deployment is ready to be used.
-Assuming you have not modified the default domain in sfconfig.yaml "tests.dom" add an entry to 
-your /etc/hosts to resolve tests.dom to 192.156.134.54.
+Assuming you have not modified the default domain in sfconfig.yaml "tests.dom",
+add an entry to your workstation's /etc/hosts to resolve tests.dom
+to "the public IP of the VM where LXC containers are running" and setup a TCP
+tunnel from localhost:80 to 192.168.134.54:80 using the socat tool on the VM.
 
-Then open your browser on http://tests.dom. Always assuming the used
-domain is tests.dom, you can use the default pre-provisioned users
-that are user1, user2, user3 with 'userpass' as password. User
-user1 is the default administrator in the SF deployment.
+.. code-block:: bash
+
+ $ sudo socat TCP-LISTEN:www,fork TCP4:192.168.134.54:www
+
+Then open your browser on http://tests.dom (TCP/80 must be allowed
+from your workstation to the VM). Assuming the used domain is tests.dom,
+you can use the default pre-provisioned users that are user1, user2,
+user3 with 'userpass' as password. User *user1* is the default administrator
+in this LXC SF deployment.
 
 NOTE: Be careful that runinng again the start.sh command will
 wipe the previous deployment.
+
+You can stop all the SF LXC containers using:
+
+.. code-block:: bash
+
+ $ cd bootstraps/lxc
+ $ SF_DIST=CentOS ./start.sh stop
