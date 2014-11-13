@@ -4,15 +4,15 @@
 # 0.9.2: roles are now published
 SF_REL=0.9.2
 case "${SF_DIST}" in
-  "CentOS")
+  "Debian")
+    # Debian based
+    DVER=D7
+    DIST=wheezy
+    ;;
+  *)
     # Centos based
     DVER=C7.0
     DIST=centos
-    ;;
-  *)
-    # Debian based (soon deprecated)
-    DVER=D7
-    DIST=wheezy
     ;;
 esac
 

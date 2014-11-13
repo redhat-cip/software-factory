@@ -79,8 +79,8 @@ the process below:
 
 .. code-block:: bash
 
- $ SF_DIST=CentOS ./fetch_roles.sh trees
- $ SF_DIST=CentOS SF_SKIP_FETCHBASES=1 ./build_roles.sh
+ $ ./fetch_roles.sh trees
+ $ SF_SKIP_FETCHBASES=1 ./build_roles.sh
  $ ls -al /var/lib/sf/roles/install/C7.0-0.9.2/
 
 A call of the script **build_roles.sh** is also needed in order to prepare the
@@ -131,7 +131,7 @@ the build_roles.sh script.  The build may take a while :
 .. code-block:: bash
 
  $ cd software-factory
- $ SF_DIST=CentOS ./build_roles.sh
+ $ ./build_roles.sh
  $ ls -al /var/lib/sf/roles/install/C7.0-0.9.2/
 
 The above command should have created four directories (install-server-vm, mysql, slave, softwarefactory)
@@ -289,7 +289,7 @@ In order to start the SF deployment perform the commands below:
 .. code-block:: bash
 
  $ cd bootstraps/lxc
- $ SF_DIST=CentOS ./start.sh
+ $ ./start.sh
  $ sudo lxc-ls -f
 
 The lxc-ls command should report the folowing :
