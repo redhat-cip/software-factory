@@ -107,7 +107,7 @@ function build_roles {
 }
 
 prepare_buildenv
-[ -n "$SF_SKIP_FETCHBASES" ] && {
+[ -z "$SF_SKIP_FETCHBASES" ] && {
     ./fetch_roles.sh bases
     echo
 }
