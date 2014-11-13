@@ -110,18 +110,19 @@ best is to install a VM with that Ubuntu version before trying
 to build the SF images. Ensure that the current user can act as root
 via sudo without password. If not you must login as root.
 
+Some dependencies needs to be installed on your local system to build the images:
+
+.. code-block:: bash
+
+ $ sudo apt-get update
+ $ sudo apt-get install build-essential debootstrap pigz python-dev python-pip unzip graphviz curl git
+ $ sudo pip install Sphinx oslosphinx
+
 You need to clone the Software Factory Git repository :
 
 .. code-block:: bash
 
  $ git clone https://github.com/enovance/software-factory.git
-
-Some dependencies needs to be installed on your local system to build the images:
-
-.. code-block:: bash
-
- $ sudo apt-get install build-essential debootstrap pigz python-dev python-pip unzip graphviz curl git
- $ sudo pip install Sphinx oslosphinx
 
 Start the build of the VM images (this script will use sudo). If you want to
 deploy on Openstack you need to set the environment variable VIRT=true before
@@ -129,6 +130,7 @@ the build_roles.sh script.  The build may take a while :
 
 .. code-block:: bash
 
+ $ cd software-factory
  $ SF_DIST=CentOS ./build_roles.sh
  $ ls -al /var/lib/sf/roles/install/C7.0-0.9.2/
 
