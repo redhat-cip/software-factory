@@ -6,8 +6,6 @@
 Welcome to software-factory's documentation!
 ===========================================
 
-Contents:
-
 .. toctree::
    :maxdepth: 2
 
@@ -17,11 +15,4 @@ Contents:
    managesf
    testing
    contribute
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
 
