@@ -22,3 +22,4 @@ gerrit:
   gerrit_token_pk: GERRIT_TOKEN_PK
   gerrit_mysql_secret: GERRIT_MYSQL_SECRET
   gerrit_heap_limit: 256m
+  jenkins_user_email: "%{hiera('jenkins_user_email')}"
