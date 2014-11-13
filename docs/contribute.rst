@@ -38,8 +38,8 @@ a development environment.
  $ sudo ./sfinstall.sh
 
 The *sfinstall.sh* script will install all the dependencies needed and fetch the
-sofwarefactory source code. Note that we also use this project to build our
-jenkins slaves to run softwarefactory functional tests.
+softwarefactory source code. Note that we also use this project to build our
+Jenkins slaves to run softwarefactory functional tests.
 
 After a successful run of *sfinstall.sh* you will find the
 cloned directory of software-factory in /srv. Please jump into it.
@@ -55,7 +55,7 @@ We have three kinds of tests that are: ::
 
  * Unit tests
  * Functional tests against a LXC deployment
- * Functional tests against an Openstack HEAT deployment
+ * Functional tests against an OpenStack HEAT deployment
 
 Before sending a patch to the upstream softwarefactory code, we advise
 you to run the LXC tests and unittests.

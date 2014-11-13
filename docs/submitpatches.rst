@@ -38,7 +38,7 @@ its user. (See :ref:`setup_ssh_keys`)
 
  $ git clone ssh://{user-name}@sf.dom/{project-name}
 
-Initialise the GIT remote with git-review
+Initialize the GIT remote with git-review
 .........................................
 
 git-review is a git add-on that manages the reviewing and other aspects of Gerrit.
@@ -69,7 +69,7 @@ will prompt you to enter your Gerrit user name.
 Submit a patch
 --------------
 
-Before starting to work it is a good practise to setup a branch and work on it.
+Before starting to work it is a good practice to setup a branch and work on it.
 The branch name will be displayed as the topic for the patch(es) you are going
 to create from it, so give it a meaningful name like bug/{bug-id},
 title-bug-fix, ...
@@ -139,7 +139,7 @@ From within the branch you've been working on, execute the following command:
 
 This command will fetch new commits from the remote master branch and then
 rebase your local commit on top of them. It will temporarily set aside the
-changes you've made in your branch, apply all of the changes that have happend
+changes you've made in your branch, apply all of the changes that have happened
 in master to your working branch, then merge (recommit) all of the changes you've made
 back into the branch. Doing this will help avoid future merge conflicts. Plus, it gives
 you an opportunity to test your changes against the latest code in master.
@@ -149,7 +149,7 @@ you are ready to push your code to Gerrit for code review.
 
 Make sure you had setup git-review before submitting the code for review.
 
-To push the change to gerrit, execute the following command:
+To push the change to Gerrit, execute the following command:
 
 .. code-block:: bash
 
@@ -198,8 +198,8 @@ the Change-Id line intact.
 
 Now, push the change using ``git review``
 
-Reviewing workflow
-------------------
+Review workflow
+---------------
 
 Software Factory mandates every patch to be reviewed before getting merged.
 
@@ -252,7 +252,7 @@ links and buttons that you need to be aware of.
   depends on.
 
 **Patch Sets**
-  When a patch is commited for the first time, a 'Change-Id' is created. For
+  When a patch is committed for the first time, a 'Change-Id' is created. For
   further amendments to the patch, the 'Commit-Id' changes but the 'Change-Id'
   will not. Gerrit groups the patches and it's revisions based on this. This
   field lists all the revisions of the current change set and numbers them
@@ -271,7 +271,7 @@ links and buttons that you need to be aware of.
 
 **Changed items**
   When a patch set is expanded, it will list down the changed files. By clicking
-  any file in this list will open a comparision page which will compare the
+  any file in this list will open a comparison page which will compare the
   changes of the selected patch set with the same file in the reference version.
 
   Upon clicking any line, a text box would be displayed with a 'Save' and 'Discard'
@@ -288,27 +288,27 @@ links and buttons that you need to be aware of.
   and 'Restore Change' buttons are mutually exclusive.
 
 **Review**
-  This is the actual button with which reviwers signal that the patch has been
+  This is the actual button with which reviewers signal that the patch has been
   reviewed. Through this, you can also publish the list of your comments
   on the changes, give your score and, a cover message for the review.
 
   'Publish' button just publishes your review information. In addition to
   publishing, 'Publish and Submit' button also submits the change for merging.
   If there are enough scores to approve and if there are no conflicts seen
-  while merging, gerrit will rebase and merge the change on the master.
+  while merging, Gerrit will rebase and merge the change on the master.
 
 
 Approval Scoring
 ................
 
 For any patch, following scores are need before a patch can be merged on the master
-branche.
+branch.
 
-*Verfied*
-  At leat one '+1' and no '-1'
+*Verified*
+  At least one '+1' and no '-1'
 
 *Code-Review*
-  At least two '+2' (not cummulative) and no negative scoring.
+  At least two '+2' (not cumulative) and no negative scoring.
 
 *Workflow*
   At least one '+1'
@@ -319,7 +319,7 @@ branche.
 Setting up SSH keys
 -------------------
 
-If the public key alreadys exists, it will be listed in your .ssh
+If the public key already exists, it will be listed in your .ssh
 directory
 
 .. code-block:: bash
@@ -328,7 +328,7 @@ directory
 
 In case you have the public key, you can skip to `Adding public key`_
 
-You can generate a public key if you dont' have it already by
+You can generate a public key if you don't' have it already by
 executing the following commands
 
 .. code-block:: bash

@@ -9,7 +9,7 @@ Software Factory is a collection of existing tools that aims to
 provide a powerful platform to collaborate on software development.
 Software Factory eases the deployment of this platform and adds an
 additional management layer. The deployment target is an
-Openstack compatible cloud.
+OpenStack compatible cloud.
 
 What is Software Factory
 ------------------------
@@ -17,7 +17,7 @@ What is Software Factory
 The platform deployed by Software Factory is based on two main
 tools that you may already know: Gerrit and Jenkins. This couple
 has proven its robustness in some huge projects and especially
-Openstack were hundrends of commit are pushed and automatically
+OpenStack were hundreds of commit are pushed and automatically
 tested every day.
 
 Software Factory will highly facilitate the deployment and
@@ -26,7 +26,7 @@ try to understand deployment details of each component,
 Software Factory will bootstrap a working platform
 within a couple of minutes.
 
-An Openstack or Openstack compatible cloud account is needed
+An OpenStack or OpenStack compatible cloud account is needed
 to deploy the Software Factory stack. The bootstrap process
 will boot all the VMs needed by the platform. Basically
 the bootstrap process will take care of all deployment details
@@ -43,7 +43,7 @@ Which components SF provides
 The stack is composed of three main components:
 
 * A code review component : `Gerrit <http://en.wikipedia.org/wiki/Gerrit_%28software%29>`_
-* A continious integration system : `Jenkins <http://en.wikipedia.org/wiki/Jenkins_%28software%29>`_
+* A continuous integration system : `Jenkins <http://en.wikipedia.org/wiki/Jenkins_%28software%29>`_
 * A Smart project gating system: `Zuul <http://ci.openstack.org/zuul/>`_
 * A project management and bug tracking system : `Redmine <http://en.wikipedia.org/wiki/Redmine>`_
 * A collaborative real time editor : `Etherpad <http://en.wikipedia.org/wiki/Etherpad>`_
@@ -58,7 +58,7 @@ Ready to use development platform
 Setting up a development environment manually can really be
 time consuming and sometimes leads to a lot of configuration
 trouble. SF provides a way to easily deploy such environment
-on a running Openstack cloud. The deployment mainly uses Openstack
+on a running OpenStack cloud. The deployment mainly uses OpenStack
 Heat to deploy cloud resources like virtual machines, block
 volumes, network security groups, and floating IPs. Internal
 configuration of services like Gerrit, Jenkins, and others is done
@@ -128,7 +128,7 @@ Redmine
 .......
 
 Redmine is the issue tracker inside Software Factory. Redmine
-configuration done by in SF is quite standard. Additionaly
+configuration done by in SF is quite standard. Additionally
 we embed the "Redmine Backlogs" plugin that eases Agile
 methodologies to be used with Redmine.
 
