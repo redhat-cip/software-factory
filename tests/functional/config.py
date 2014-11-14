@@ -1,4 +1,13 @@
-from os import environ
+from os import environ, path
+
+import yaml
+
+sfconfig_filenames = ["../sfconfig.yaml", "/root/sfconfig.yaml"]
+for sfconfig_filename in sfconfig_filenames:
+    if path.exists(sfconfig_filename):
+        with open(sfconfig_filename) as infile:
+            sfconfig = yaml.load(infile)
+
 
 GERRIT_HOST = 'gerrit.%s' % environ['SF_SUFFIX']
 JENKINS_HOST = 'jenkins.%s:8080' % environ['SF_SUFFIX']
@@ -13,7 +22,7 @@ GERRIT_USER = 'gerrit'
 GERRIT_SERVICE_PRIV_KEY_PATH = '%s/build/data/gerrit_service_rsa' \
                                % environ['SF_ROOT']
 
-USER_1 = 'user1'
+USER_1 = sfconfig.get('admin_name')
 ADMIN_USER = USER_1
 ADMIN_PRIV_KEY_PATH = '%s/build/data/gerrit_admin_rsa' % environ['SF_ROOT']
 ADMIN_PUB_KEY_PATH = '%s/build/data/gerrit_admin_rsa.pub' % environ['SF_ROOT']
@@ -145,8 +154,8 @@ USER_6_PRIV_KEY = USER_4_PRIV_KEY
 # to this dictionary please start with USER_7
 
 USERS = {
-    USER_1: {"password": "userpass",
-             "email": "user1@example.com",
+    USER_1: {"password": sfconfig.get('admin_password'),
+             "email": sfconfig.get('admin_mail'),
              "pubkey": file(ADMIN_PUB_KEY_PATH).read(),
              "privkey": file(ADMIN_PRIV_KEY_PATH).read(),
              "auth_cookie": "",
