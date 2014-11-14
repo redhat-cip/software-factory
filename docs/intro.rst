@@ -5,7 +5,7 @@ Contents:
 Introduction to Software Factory
 ================================
 
-Software Factory is a collection of existing tools that aims to
+Software Factory is a collection of existing tools that aim to
 provide a powerful platform to collaborate on software development.
 Software Factory eases the deployment of this platform and adds an
 additional management layer. The deployment target is an
