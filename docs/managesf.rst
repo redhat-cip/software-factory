@@ -10,8 +10,8 @@ This page describes the ways to manage Software Factory
 Create Project
 --------------
 
-SF exposes ways to create and initialize projects in redmine
-and gerrit simultaneously. Initializing a project involves setting up the
+SF exposes ways to create and initialize projects in Redmine
+and Gerrit simultaneously. Initializing a project involves setting up the
 ACL and initializing the source repository.
 
 Any user that can authenticate against SF will be able to create a project.
@@ -61,7 +61,7 @@ Delete Project
 --------------
 
 SF exposes ways to delete projects and the groups associated with the project
-in redmine and gerrit simultaneously.
+in Redmine and Gerrit simultaneously.
 
 For any project, only the PTLs shall have the permission to delete it.
 
@@ -95,10 +95,10 @@ CLI
 Add user to project groups
 --------------------------
 
-SF exposes ways to add user to specified groups associated to a project in redmine and
-gerrit simutaneously.
+SF exposes ways to add user to specified groups associated to a project in Redmine and
+Gerrit simultaneously.
 
-If the caller user is in the ptl group of the project then the user can add user in
+If the caller user is in the PTL group of the project then the user can add user in
 any groups.
 
 If the caller user is in the core user groups of the project then the user can:
@@ -109,7 +109,7 @@ If the caller user is in the core user groups of the project then the user can:
 If the caller user is in the dev user groups or even not in any groups related to that project
 then the user cannot add users in any groups.
 
-SF allows you to add user in groups in one of the folowing way.
+SF allows you to add user in groups in one of the following way.
 
 REST API Call
 '''''''''''''
@@ -147,8 +147,8 @@ You can use the argument '-h' to the create action to display create options.
 Remove user from project groups
 -------------------------------
 
-SF exposes ways to remove user from specified or all groups associated to a project in redmine and
-gerrit simutaneously.
+SF exposes ways to remove user from specified or all groups associated to a project in Redmine and
+Gerrit simultaneously.
 
 If the caller user is in the PTL group of the project then the user can remove user in
 any groups.
@@ -164,7 +164,7 @@ then the user cannot remove users in any groups.
 If the request does not provide a specific group to delete the user from, SF will
 remove the user from all group associated to a project.
 
-SF allows you to remove a user from groups in one of the folowing way.
+SF allows you to remove a user from groups in one of the following way.
 
 REST API Call
 '''''''''''''
@@ -205,12 +205,12 @@ Create SF backup
 ----------------
 
 SF exposes ways to perform and retrieve a backup of all the user data store in your
-SF installation. This backup can be used in case of disaster to quicly
+SF installation. This backup can be used in case of disaster to quickly
 recover user data on the same or other SF installation (in the same version).
 
 Only the SF administrator can perform and retrieve a backup.
 
-SF allows you to perform a backup in one of the folowing way.
+SF allows you to perform a backup in one of the following way.
 
 REST API Call
 '''''''''''''
@@ -244,12 +244,12 @@ Restore a backup
 ----------------
 
 SF exposes ways to restore a backup of all the user data store in your
-SF installation. This backup can be used in case of disaster to quicly
+SF installation. This backup can be used in case of disaster to quickly
 recover user data on the same or other SF installation (in the same version).
 
 Only the SF administrator can restore a backup.
 
-SF allows you to restore a backup in one of the folowing way.
+SF allows you to restore a backup in one of the following way.
 
 REST API Call
 '''''''''''''
@@ -272,7 +272,7 @@ Request
 Response
 
 If successfully restored, HTTP status code 200 is returned. It may
-take sometime for SF REST API to return an HTTP reponse.
+take sometime for SF REST API to return an HTTP response.
 
 CLI
 '''

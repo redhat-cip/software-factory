@@ -3,10 +3,10 @@
 Deploy Software Factory
 =======================
 
-Sofware Factory installation introduction
+Software Factory installation introduction
 -----------------------------------------
 
-SF is designed to be installed on an Openstack Cloud platform that embed
+SF is designed to be installed on an OpenStack Cloud platform that embed
 Heat and Neutron. The installation is performed using Heat.
 Basically you should just source your .openrc and setup a configuration file
 before starting the start script.
@@ -17,7 +17,7 @@ the SF into LXC containers. Please have a look to the section `How to deploy SF 
 All the VM images needed by SF must be available locally or remotely.
 The deployment process will take care of uploading those images to Glance.
 
-Openstack tenant requirements
+OpenStack tenant requirements
 .............................
 
 The whole deployment of SF will use 7 VMs and 2 floating IPs. Be
@@ -28,7 +28,7 @@ Technical details regarding SF deployment on OpenStack
 
 The SF Heat deployment will spawn 7 virtual machines:
  - The puppet master node: This node embeds the puppet master
-   service, the eDeploy server, and the SF bootstraper controler.
+   service, the eDeploy server, and the SF bootstrapper controller.
  - The SQL database node: Gerrit, Redmine, Etherpad, Logdeit services
    use this VM as SQL backend.
  - The Gerrit node: Hosts only the Gerrit service.
@@ -39,7 +39,7 @@ The SF Heat deployment will spawn 7 virtual machines:
    central authentication service as well as the Etherpad, Lodgeit, Apache
    reverse proxy for all services, and the SSO server.
 
-Security groups and nedeed floating IPs will be set by Heat.
+Security groups and needed floating IPs will be set by Heat.
 Cloudinit will setup each VM but most of the configuration occurs
 thanks to puppet. The puppet master node owns all the puppet manifests and
 hiera configuration. The cloudinit script of the puppet master node
@@ -50,11 +50,11 @@ script will then trigger puppet agent on each node in order to configure all VMs
 Build or retrieve SF VM images
 ------------------------------
 
-Software Factory role images can be created in two differents formats.
+Software Factory role images can be created in two different formats.
 Either the tree format (a directory that contains a full working filesystem) or
 a bootable qcow2 image. The former is used to bootstrap a test environment
 using LXC and the later to deploy a production environment on an
-Openstack cloud. We use a tool called eDeploy to create role images.
+OpenStack cloud. We use a tool called eDeploy to create role images.
 All role images are based on CentOS 7.
 
 .. _fetchprebuilt:
@@ -64,8 +64,8 @@ Fetch pre-built SF images
 Each patch merged on the Git SF master branch triggers a build of role
 images of SF. That means if you clone the master branch of SF you will
 be able to directly start the bootstrap script whatever you want to
-deploy a test platform on LXC or a production platform on an Openstack
-CLoud. Pre-built SF trees and images are available on a public
+deploy a test platform on LXC or a production platform on an OpenStack
+Cloud. Pre-built SF trees and images are available on a public
 Swift container and the script called **fetch_roles.sh** will help
 to retrieve these. So first please clone the Software Factory
 Git repository :
@@ -87,7 +87,7 @@ A call of the script **build_roles.sh** is also needed in order to prepare the
 local FS directory where the bootstrap scripts will look for the required trees
 images.
 
-To fetch the pre-built qcow2 images in order to bootstrap a SF on Openstack
+To fetch the pre-built qcow2 images in order to bootstrap a SF on OpenStack
 follow the process below:
 
 .. code-block:: bash
@@ -104,7 +104,7 @@ and softwarefactory).
 Build SF images
 ...............
 
-To build the images on your own (it is not adviced to do so), follow the process
+To build the images on your own (it is not advised to do so), follow the process
 below. The build has been only tested on Ubuntu 14.04.1 LTS. So the
 best is to install a VM with that Ubuntu version before trying
 to build the SF images. Ensure that the current user can act as root
@@ -125,7 +125,7 @@ You need to clone the Software Factory Git repository :
  $ git clone https://github.com/enovance/software-factory.git
 
 Start the build of the VM images (this script will use sudo). If you want to
-deploy on Openstack you need to set the environment variable VIRT=true before
+deploy on OpenStack you need to set the environment variable VIRT=true before
 the build_roles.sh script.  The build may take a while :
 
 .. code-block:: bash
@@ -168,14 +168,14 @@ using the following command :
  $ LC_ALL=C neutron net-list
 
 Now you will need to adapt the sfconfig.yaml according to your needs "bootstrap/sfconfig.yaml".
-Please read the explantions in the config file.
+Please read the explanations in the config file.
 
 You will also need to configure some deployment details on top of the start.sh script
 "bootstraps/heat/start.sh".
 
   - key_name : The name of public SSH key you just have registered
-  - flavor : This is the defaut flavor to use. Be careful of your quotas.
-  - alt_flavor : This flavor is used to host node that need more resourses like Gerrit
+  - flavor : This is the default flavor to use. Be careful of your quotas.
+  - alt_flavor : This flavor is used to host node that need more resources like Gerrit
     and Redmine.
   - ext_net_uuid : The UUID you have retrieved with the previous command.
   - sg_admin_cidr : The source network from where you can SSH to all SF nodes.
@@ -205,7 +205,7 @@ Once stack-show reports stack-created status, you can use the option output-show
 display the floating IP of the puppetmaster node.
 
 For now, once stack-created is reported does not mean that the SF deployment
-is completly done. Indeed stack-created reports that all resources defined
+is completely done. Indeed stack-created reports that all resources defined
 in the HEAT template are up but a couple of script and puppet agents need
 to finish their work before you can use your SF deployment.
 
@@ -217,7 +217,7 @@ the root's authorized_keys file) and wait for the file
 This file is created once all scripts and puppet agents has finished to apply the
 manifests to configure all SF services.
 
-On the pupetmaster node the file /var/log/sf-bootstrap.log contains the
+On the puppetmaster node the file /var/log/sf-bootstrap.log contains the
 log of the bootstrap process.
 
 The Software Factory HTTP gateway is accessible on the managesf
@@ -255,7 +255,7 @@ for production.
 This step requires that VM images have been built `Build or retrieve SF VM images`_.
 
 The LXC deployment has been only tested on Ubuntu 14.04 LTS. We advice to
-setup an Ubuntu 14.04 VM somewhere either on Openstack or VirtualBox or wherever
+setup an Ubuntu 14.04 VM somewhere either on OpenStack or VirtualBox or wherever
 you prefer. Install the following dependencies first:
 
 .. code-block:: bash
@@ -276,7 +276,7 @@ images created by Edeploy. So please execute the following command:
  $ sudo git clone https://github.com/enovance/edeploy-lxc.git /srv/edeploy-lxc
 
 The default SF configuration file bootstrap/sfconfig.yaml is ready to use
-for the LXC deployement. However you can still configure it if the defaults
+for the LXC deployment. However you can still configure it if the defaults
 are not convenient for you.
 
 Ensure that the current user can act as root via sudo without password.
@@ -292,7 +292,7 @@ In order to start the SF deployment perform the commands below:
  $ ./start.sh
  $ sudo lxc-ls -f
 
-The lxc-ls command should report the folowing :
+The lxc-ls command should report the following :
 
 .. code-block:: none
 
@@ -311,7 +311,7 @@ puppetmaster node and tail -f /var/log/sf-bootstrap.log:
 
 .. code-block:: bash
 
- $ ssh root@192.168.134.49 tailf /var/log/sf-bootstrap.log
+ $ ssh root@192.168.134.49 tail -f /var/log/sf-bootstrap.log
 
 Once the bootstrap is done your demo SF deployment is ready to be used.
 Assuming you have not modified the default domain in sfconfig.yaml "tests.dom",
@@ -329,7 +329,7 @@ you can use the default pre-provisioned users that are user1, user2,
 user3 with 'userpass' as password. User *user1* is the default administrator
 in this LXC SF deployment.
 
-NOTE: Be careful that runinng again the start.sh command will
+NOTE: Be careful that running again the start.sh command will
 wipe the previous deployment.
 
 You can stop all the SF LXC containers using:

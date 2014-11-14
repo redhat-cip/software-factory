@@ -18,7 +18,7 @@ The default Zuul layout.yaml provided four test pipelines:
 
 * The check pipeline: The intend of that pipeline is to run
   Jenkins jobs (mainly tests) related to a Gerrit
-  change (a submited patch) and to report a note (-1, or +1) in
+  change (a submitted patch) and to report a note (-1, or +1) in
   the **Verified** label.
 
 * The post pipeline: This pipeline can be use to run Jenkins jobs
@@ -41,7 +41,7 @@ Software Factory eases Jenkins jobs definition by using Jenkins
 Job Builder (JJB). Basically JJB is a definition format in yaml
 that allow you to easily configure and define Jenkins Jobs.
 
-As said before Software Factory stores this configaration in
+As said before Software Factory stores this configuration in
 the special **config** repository. So adding/changing a Jenkins Job
 is simply making a change in that **config** repository as
 usual, by using **git review**. That change is automatically verified
@@ -59,7 +59,7 @@ There are two way to execute jobs:
 * either through Gerrit with a change, then jobs need this configuration:
 ** Use zuul defaults
 ** No need to checkout code, zuul-git scm will take care of it
-* either through a periodic/non related to gerrit, then jobs need thise configuration:
+* either through a periodic/non related to Gerrit, then jobs need this configuration:
 ** Use global configuration
 ** Use gerrit-git-prep builder to checkout either master or a branch
 
