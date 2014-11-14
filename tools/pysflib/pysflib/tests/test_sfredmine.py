@@ -47,9 +47,9 @@ class TestSFRedmine(TestCase):
         cls.rm = sfredmine.RedmineUtils('http://fake.fake', key='1234')
 
     def test_project_exists(self):
-        with patch('pysflib.sfredmine.SFRedmine.request'):
+        with patch('redmine.managers.ResourceManager.get'):
             self.assertTrue(self.rm.project_exists('p1'))
-        with patch('pysflib.sfredmine.SFRedmine.request',
+        with patch('redmine.managers.ResourceManager.get',
                    side_effect=raisenotfound):
             self.assertFalse(self.rm.project_exists('p1'))
 
