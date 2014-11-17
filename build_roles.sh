@@ -51,6 +51,8 @@ function build_role {
     ROLE_FILE="${INST}/${ROLE_NAME}-${SF_VER}"
     UPSTREAM_FILE="${UPSTREAM}/${ROLE_NAME}-${SF_VER}"
 
+    echo "${ROLE_NAME} local hash is ${ROLE_MD5}"
+
     # Make sure role tree is not mounted
     grep -q "${SF_VER}\/${ROLE_NAME}\/proc" /proc/mounts && {
         while true; do
@@ -58,7 +60,7 @@ function build_role {
         done
     }
     if [ ! -f "${ROLE_FILE}.md5" ] || [ "$(cat ${ROLE_FILE}.md5)" != "${ROLE_MD5}" ]; then
-        echo "Local role desc ${ROLE_NAME} have been updated regarding the last build."
+        echo "Local role desc ${ROLE_NAME} have been updated regarding the last build (was $(cat ${ROLE_FILE}.md5))."
         # check if upstream is similar
         if [ -f "${UPSTREAM_FILE}.md5" ] && [ "$(cat ${UPSTREAM_FILE}.md5)" == "${ROLE_MD5}" ] && [ -z "$SKIP_UPSTREAM" ]; then
             echo "Upstream ${ROLE_NAME} is similar and have already been built upstream, I use it."
@@ -78,7 +80,7 @@ function build_role {
                 fi
             fi
         else
-            echo "Upstream ${ROLE_NAME} is NOT similar. I rebuild."
+            echo "Upstream ${ROLE_NAME} is NOT similar ($(cat ${UPSTREAM_FILE}.md5)). I rebuild."
             sudo rm -f ${INST}/${ROLE_NAME}.done
             sudo ${MAKE} EDEPLOY_ROLES_PATH=${EDEPLOY_ROLES} PREBUILD_EDR_TARGET=${EDEPLOY_ROLES_REL} ${ROLE_NAME}
             echo ${ROLE_MD5} | sudo tee ${ROLE_FILE}.md5
