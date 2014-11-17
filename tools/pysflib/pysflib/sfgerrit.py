@@ -132,8 +132,11 @@ class GerritUtils:
         try:
             if force:
                 data = json.dumps({"force": True})
-                self.g.delete('projects/%s' % name,
-                              data=data)
+                self.g.delete(
+                    'projects/%s' % name,
+                    data=data,
+                    headers={"Content-Type":
+                             "application/json;charset=UTF-8"})
             else:
                 self.g.delete('projects/%s' % name)
         except HTTPError as e:

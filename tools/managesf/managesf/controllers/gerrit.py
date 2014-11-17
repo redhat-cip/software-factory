@@ -427,7 +427,7 @@ def delete_project(name):
     except Exception:
         pass
     ge = get_client()
-    ge.delete_project(name)
+    ge.delete_project(name, force=True)
 
 
 def replication_ssh_run_cmd(subcmd):
