@@ -4,6 +4,8 @@ class lodgeit ($lodgeit = hiera_hash('lodgeit', '')) {
 
   case $operatingsystem {
     centos: {
+      $httpd_user = "apache"
+
       file {'init':
         path   => '/lib/systemd/system/lodgeit.service',
         ensure => file,
@@ -13,6 +15,8 @@ class lodgeit ($lodgeit = hiera_hash('lodgeit', '')) {
       }
     }
     debian: {
+      $httpd_user = "www-data"
+
       # TODO: seems to be already done in the role def
       exec { 'a2enmode_proxy':
         command   => "/usr/sbin/a2enmod proxy",
@@ -46,9 +50,12 @@ class lodgeit ($lodgeit = hiera_hash('lodgeit', '')) {
     }
   }
 
-
   file { '/srv/lodgeit':
     ensure => directory,
+    recurse => true,
+    mode   => '0644',
+    owner  => $httpd_user,
+    group  => $httpd_user,
   }
 
   file { "/srv/lodgeit/lodgeit/manage.py":
@@ -75,4 +82,10 @@ class lodgeit ($lodgeit = hiera_hash('lodgeit', '')) {
                    File['/srv/lodgeit/lodgeit/manage.py'],
                    File['/srv/lodgeit/lodgeit/lodgeit/urls.py']],
   }
+
+  file { '/var/www/static/lodgeit':
+    ensure  => link,
+    target  => '/srv/lodgeit/lodgeit/lodgeit/static/',
+  }
+
 }

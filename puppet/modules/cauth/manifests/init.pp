@@ -95,4 +95,20 @@ class cauth ($cauth = hiera_hash('cauth', ''),
     replace => true,
   }
 
+  file { '/var/www/cauth/cauth/templates':
+    ensure  => directory,
+    owner   => $httpd_user,
+    group   => $httpd_user,
+    mode    => '0750',
+  }
+
+  file {'/var/www/cauth/cauth/templates/login.html':
+    ensure => file,
+    mode   => '0640',
+    owner  => $httpd_user,
+    group  => $httpd_user,
+    content => template('cauth/login.html'),
+    require => File['/var/www/cauth/cauth/templates'],
+  }
+
 }

@@ -91,18 +91,26 @@ class TestGateway(unittest.TestCase):
     def test_css_js_for_topmenu_accessible(self):
         """ Test if css/js for topmenu are accessible on gateway host
         """
-        paths = ('jquery.min.js', 'bootstrap.min.js', 'bootstrap.min.css')
+        url = "http://%s/static/js/jquery.min.js" % config.GATEWAY_HOST
+        resp = requests.get(url)
+        self.assertEqual(resp.status_code, 200)
+        self.assertTrue("jQuery v2.1.1" in resp.content)
+
+        paths = ('js/bootstrap.min.js', 'css/bootstrap.min.css')
         for p in paths:
-            url = "http://%s/%s" % (config.GATEWAY_HOST, p)
+            url = "http://%s/static/bootstrap/%s" % (config.GATEWAY_HOST, p)
             resp = requests.get(url)
             self.assertEqual(resp.status_code, 200)
+            self.assertTrue("Bootstrap v3.2.0" in resp.content)
 
     def test_static_dir_for_paste_accessible(self):
         """ Test if static dir for paste is accessible on gateway host
         """
-        url = "http://%s/static/jquery.js" % config.GATEWAY_HOST
+        url = "http://%s/static/lodgeit/jquery.js" % config.GATEWAY_HOST
         resp = requests.get(url)
+        print url, resp.content  # for debugging gate only
         self.assertEqual(resp.status_code, 200)
+        self.assertTrue("jQuery 1.2.6" in resp.content)
 
     def test_docs_accessible(self):
         """ Test if Sphinx docs are accessible on gateway host
