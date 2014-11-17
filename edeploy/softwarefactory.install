@@ -164,6 +164,7 @@ do_chroot $dir bash -c "cd /srv/zuul && python /srv/zuul/setup.py install"
 do_chroot $dir bash -c "cd /srv/zuul && pip install -U setuptools"
 do_chroot $dir bash -c "cd /srv/zuul && pip install -U -r requirements.txt"
 do_chroot $dir bash -c "cd /srv/zuul && pip install APScheduler==2.1.0"
+do_chroot $dir bash -c "cd /srv/zuul && pip install GitPython==0.3.2.RC1"
 curl -L --silent https://github.com/twbs/bootstrap/releases/download/v3.2.0/bootstrap-3.2.0-dist.zip > $dir/srv/zuul/bootstrap.zip
 unzip -q -o $dir/srv/zuul/bootstrap.zip -d $dir/srv/zuul/etc/status/public_html/
 mv $dir/srv/zuul/etc/status/public_html/bootstrap-3.2.0-dist $dir/srv/zuul/etc/status/public_html/bootstrap
