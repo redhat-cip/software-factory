@@ -256,7 +256,16 @@ This step requires that VM images have been built `Build or retrieve SF VM image
 
 The LXC deployment has been only tested on Ubuntu 14.04 LTS. We advice to
 setup an Ubuntu 14.04 VM somewhere either on OpenStack or VirtualBox or wherever
-you prefer. Install the following dependencies first:
+you prefer. Please make sure your instance is up-to-date:
+
+.. code-block:: bash
+
+ $ sudo apt-get update
+ $ sudo apt-get upgrade
+
+If there were any kernel updates applied you also need to reboot.
+
+Now install the following dependencies:
 
 .. code-block:: bash
 
