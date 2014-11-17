@@ -9,3 +9,6 @@ IMAGE_FORMAT=qcow2
 # Network Configuration
 # Only auto is supported now
 NETWORK_CONFIG=auto
+
+# Request compressed qcow2
+COMPRESSED=yes
