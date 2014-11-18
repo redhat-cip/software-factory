@@ -16,6 +16,8 @@ case "${SF_DIST}" in
     ;;
 esac
 
+export LC_ALL=C
+
 # Version string
 SF_VER=${DVER}-${SF_REL}
 
