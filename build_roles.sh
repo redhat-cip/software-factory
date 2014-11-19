@@ -111,8 +111,6 @@ function build_roles {
     fi
 
     cd $SF_ROLES
-    build_role "slave" $(cat slave.install functions | md5sum | awk '{ print $1}')
-    SE=$?
     build_role "softwarefactory"   $(cd ..; find ${SF_DEPS} -type f | sort | xargs cat | md5sum | awk '{ print $1}')
     SFE=$?
     build_role "install-server-vm" $(cd ..; find ${IS_DEPS} -type f | sort | xargs cat | md5sum | awk '{ print $1}')
@@ -134,4 +132,4 @@ fetch_edeploy
 echo
 build_roles
 
-exit $[ $SE + $SFE + $IE ];
+exit $[ $SFE + $IE ];

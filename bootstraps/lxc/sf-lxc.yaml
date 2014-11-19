@@ -40,5 +40,5 @@ hosts:
   -
     address: 192.168.134.55
     name: slave
-    role: slave
+    role: softwarefactory
     cloudinit: CIPATH/slave.cloudinit

@@ -43,6 +43,7 @@ $EDEPLOY_ROLES_PATH/jenkins.install $dir $dir $version
 # The role Jenkins does not deactivate the jenkins service at startup
 # https://github.com/enovance/edeploy-roles/issues/80
 do_chroot $dir bash -c "for x in {0..6}; do ls /etc/rc\${x}.d/*jenkins | xargs rm -f ; done"
+do_chroot $dir bash -c "curl -o /var/lib/jenkins/plugins/gearman-plugin.hpi http://ftp.nluug.nl/programming/jenkins/plugins/gearman-plugin/0.1.1/gearman-plugin.hpi"
 
 # Install the most recent version of PIP at early stage (python-pip has been
 # installed by the jenkins role.
@@ -244,6 +245,16 @@ cd ${DOCDIR} && make BUILDDIR=$DOCBUILDDIR html ; cd -
 cp -r $DOCBUILDDIR/html/* ${dir}/var/www/docs/
 rm -rf $DOCBUILDDIR
 
+# Jenkins Swarm client
+do_chroot ${dir} pip install nose flake8
+mkdir -p ${dir}/var/lib/jenkins/plugins
+curl -o ${dir}/var/lib/jenkins/swarm-client-1.15-jar-with-dependencies.jar http://maven.jenkins-ci.org/content/repositories/releases/org/jenkins-ci/plugins/swarm-client/1.15/swarm-client-1.15-jar-with-dependencies.jar
+
+mkdir -p ${dir}/usr/local/jenkins/slave_scripts/
+cp ../puppet/modules/jjb/files/gerrit-git-prep.sh ${dir}/usr/local/jenkins/slave_scripts/
+chmod +x ${dir}/usr/local/jenkins/slave_scripts/gerrit-git-prep.sh
+
+# Cleanup
 clear_packages_cache $dir
 
 # Disable root passwd

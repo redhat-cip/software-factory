@@ -41,10 +41,6 @@ while true; do
     sleep 1
 done
 
-# Jenkins jobs are not updated by gearman plugin
-# TODO: Find a way to just restart the gearman plugin
-service jenkins restart
-
 # Zuul
 # concat of layout.yaml and projects.yaml to /etc/zuul/layout.yaml
 cat /root/config/zuul/layout.yaml /root/config/zuul/projects.yaml | tee /etc/zuul/layout.yaml
