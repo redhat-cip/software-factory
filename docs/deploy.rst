@@ -6,7 +6,7 @@ Deploy Software Factory
 Software Factory installation introduction
 -----------------------------------------
 
-SF is designed to be installed on an OpenStack Cloud platform that embed
+SF is designed to be installed on an OpenStack Cloud platform that embeds
 Heat and Neutron. The installation is performed using Heat.
 Basically you should just source your .openrc and setup a configuration file
 before starting the start script.
@@ -34,8 +34,8 @@ The SF Heat deployment will spawn 7 virtual machines:
  - The Gerrit node: Hosts only the Gerrit service.
  - The Redmine node: Hosts only the Redmine service.
  - The Jenkins master node: Hosts Jenkins master and ZUUL services
- - The Jenkins slave node: Where Jenkins master will triggers the tests.
- - The gateway node: Host the REST based service to manage projects and the
+ - The Jenkins slave node: Where Jenkins master will trigger the tests.
+ - The gateway node: Hosts the REST based service to manage projects and the
    central authentication service as well as the Etherpad, Lodgeit, Apache
    reverse proxy for all services, and the SSO server.
 
@@ -53,7 +53,7 @@ Build or retrieve SF VM images
 Software Factory role images can be created in two different formats.
 Either the tree format (a directory that contains a full working filesystem) or
 a bootable qcow2 image. The former is used to bootstrap a test environment
-using LXC and the later to deploy a production environment on an
+using LXC and the latter to deploy a production environment on an
 OpenStack cloud. We use a tool called eDeploy to create role images.
 All role images are based on CentOS 7.
 
@@ -63,11 +63,11 @@ Fetch pre-built SF images
 .........................
 Each patch merged on the Git SF master branch triggers a build of role
 images of SF. That means if you clone the master branch of SF you will
-be able to directly start the bootstrap script whatever you want to
+be able to directly start the bootstrap script whether you want to
 deploy a test platform on LXC or a production platform on an OpenStack
 Cloud. Pre-built SF trees and images are available on a public
 Swift container and the script called **fetch_roles.sh** will help
-to retrieve these. So first please clone the Software Factory
+retrieve these. So first please clone the Software Factory
 Git repository :
 
 .. code-block:: bash
@@ -195,7 +195,7 @@ need to source your OpenStack credentials into your shell environment:
 
 The start.sh script will take care of uploading role images to Glance and then
 call heat stack-create. You have to wait a couple of minutes for the stack to
-created. You can check the progress using the following command:
+be created. You can check the progress using the following command:
 
 .. code-block:: bash
 
@@ -204,8 +204,8 @@ created. You can check the progress using the following command:
 Once stack-list reports stack-created status, you can use the option output-show to
 display the floating IP of the puppetmaster node.
 
-For now, once stack-created is reported does not mean that the SF deployment
-is completly done. Indeed stack-created reports that all resources defined
+For now, once stack-created is reported it does not mean that the SF deployment
+is completely done. Indeed stack-created reports that all resources defined
 in the HEAT template are up but a couple of scripts and puppet agents need
 to finish their work before you can use your SF deployment.
 
@@ -219,10 +219,10 @@ the root's authorized_keys file) and wait for the file
  $ heat output-show SoftwareFactory puppetmaster_public_address
  $ ssh root@puppetmaster_public_address ls /root/puppet-bootstrapper/build/bootstrap.done
 
-This file is created once all scripts and puppet agents has finished to apply the
+This file is created once all scripts and puppet agents have finished to apply the
 manifests to configure all SF services.
 
-On the pupetmaster node the file /var/log/sf-bootstrap.log contains the
+On the puppetmaster node the file /var/log/sf-bootstrap.log contains the
 log of the bootstrap process. You can follow the process using :
 
 .. code-block:: bash

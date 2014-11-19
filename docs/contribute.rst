@@ -67,7 +67,7 @@ you to run the LXC tests and unittests.
   $ DEBUG=1 SF_DIST=CentOS ./run_functional-tests.sh # functional tests
 
 The functional tests will start LXC containers on the local VM to simulate
-as closed as possible a real deployment. Setting the DEBUG environment variable
+as close as possible a real deployment. Setting the DEBUG environment variable
 to something tells the script to let the deployment up. If not set the deployment
 will be destroyed (LXC containers will be stopped).
 

@@ -248,7 +248,7 @@ links and buttons that you need to be aware of.
 
 **Dependencies**
   Often you would find a need to work on a patch based on a patch that is not
-  merged yet. This field will let you know the list of patch that this patch
+  merged yet. This field will let you know the list of patches that this patch
   depends on.
 
 **Patch Sets**
@@ -342,8 +342,8 @@ you have a public key generated at the patch you chose.
 
 .. _`Adding public key`:
 
-Adding public key
-.................
+Adding a public key
+...................
 
 Click on your username in the top right corner of the Gerrit UI,
 then choose "Settings". On the left you will see SSH PUBLIC KEYS. Paste your
