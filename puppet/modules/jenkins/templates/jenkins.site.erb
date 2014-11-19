@@ -3,7 +3,7 @@
     ProxyVia On
     ProxyRequests Off
 
-    ProxyPass /jenkins/ http://127.0.0.1:8082/jenkins/ nocanon retry=0
+    ProxyPass /jenkins/ http://127.0.0.1:8082/jenkins/ nocanon retry=1 acquire=3000 timeout=600 Keepalive=On
     ProxyPassReverse /jenkins/ http://127.0.0.1:8082/jenkins/
 
     ProxyPreserveHost On
@@ -32,7 +32,7 @@
     ProxyVia On
     ProxyRequests Off
 
-    ProxyPass /jenkins/ http://127.0.0.1:8082/jenkins/ nocanon retry=0
+    ProxyPass /jenkins/ http://127.0.0.1:8082/jenkins/ nocanon retry=1 acquire=3000 timeout=600 Keepalive=On
     ProxyPassReverse /jenkins/ http://127.0.0.1:8082/jenkins/
 
     ProxyPreserveHost On
