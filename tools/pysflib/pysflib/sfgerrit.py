@@ -40,12 +40,20 @@ class SFGerritRestAPI(GerritRestAPI):
                     auth_pubtkt=auth_cookie)})
         else:
             super(SFGerritRestAPI, self).__init__(*args, **kwargs)
+        self.debug_logs = set()
+
+    def debug(self, msg):
+        if msg in self.debug_logs:
+            # ignore already logged message
+            return
+        self.debug_logs.add(msg)
+        logger.debug(msg)
 
     def get(self, endpoint, **kwargs):
         kwargs.update(self.kwargs.copy())
         url = self.make_url(endpoint)
-        logger.debug("Send HTTP GET request %s with kwargs %s" %
-                     (url, str(kwargs)))
+        self.debug("Send HTTP GET request %s with kwargs %s" %
+                   (url, str(kwargs)))
         response = self.session.get(url, **kwargs)
         return _decode_response(response)
 
@@ -54,8 +62,8 @@ class SFGerritRestAPI(GerritRestAPI):
         url = self.make_url(endpoint)
         kwargs["headers"].update(
             {"Content-Type": "application/json;charset=UTF-8"})
-        logger.debug("Send HTTP PUT request %s with kwargs %s" %
-                     (url, str(kwargs)))
+        self.debug("Send HTTP PUT request %s with kwargs %s" %
+                   (url, str(kwargs)))
         response = self.session.put(url, **kwargs)
         return _decode_response(response)
 
@@ -70,8 +78,8 @@ class SFGerritRestAPI(GerritRestAPI):
         if headers is not None:
             kwargs["headers"] = headers
         url = self.make_url(endpoint)
-        logger.debug("Send HTTP POST request %s with kwargs %s" %
-                     (url, str(kwargs)))
+        self.debug("Send HTTP POST request %s with kwargs %s" %
+                   (url, str(kwargs)))
         response = self.session.post(url, **kwargs)
         return _decode_response(response)
 
@@ -84,8 +92,8 @@ class SFGerritRestAPI(GerritRestAPI):
         if headers is not None:
             kwargs["headers"] = headers
         url = self.make_url(endpoint)
-        logger.debug("Send HTTP DELETE request %s with kwargs %s" %
-                     (url, str(kwargs)))
+        self.debug("Send HTTP DELETE request %s with kwargs %s" %
+                   (url, str(kwargs)))
         response = self.session.delete(url, **kwargs)
         return _decode_response(response)
 
