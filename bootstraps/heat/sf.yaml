@@ -434,14 +434,39 @@ resources:
                 jenkins    ALL = NOPASSWD:ALL
               permissions: '0440'
               path: /etc/sudoers.d/jenkins
+            - content: |
+                [Unit]
+                Description=Jenkins Slave Swarm client
+                After=network.target
+
+                [Install]
+                Alias=swarm
+
+                [Service]
+                Type=simple
+                User=jenkins
+                SyslogIdentifier=swarm
+                EnvironmentFile=/etc/sysconfig/swarm
+                ExecStart=/usr/bin/java $JVMARGS -jar /var/lib/jenkins/swarm-client-1.15-jar-with-dependencies.jar -fsroot /var/lib/jenkins -master $MASTER -username $USERNAME -password $PASSWORD -name $NAME
+              permissions: '0640'
+              path: /lib/systemd/system/swarm.service
+            - content: |
+                MASTER=http://JENKINS_MASTER_URL:8080/jenkins/
+                USERNAME=jenkins
+                PASSWORD=JENKINS_USER_PASSWORD
+                NAME=slave.SF_SUFFIX
+                JVMARGS=-Xmx256m
+              permissions: '0640'
+              path: /etc/sysconfig/swarm
             runcmd:
              - echo "127.0.1.1 slave.SF_SUFFIX slave" >> /etc/hosts
              - echo "JENKINS_IP jenkins.SF_SUFFIX jenkins" >> /etc/hosts
              - echo "MANAGESF_IP managesf.SF_SUFFIX SF_SUFFIX" >> /etc/hosts
              - chown -R jenkins /var/lib/jenkins
-             - nohup sudo -u jenkins -i java -Xmx256m -jar /var/lib/jenkins/swarm-client-1.15-jar-with-dependencies.jar -master http://JENKINS_MASTER_URL:8080/jenkins/ -username jenkins -password JENKINS_USER_PASSWORD -name slave.SF_SUFFIX >> /var/lib/jenkins/swarm.log 2>&1 & echo $!
              - echo UseDNS no >> /etc/ssh/sshd_config
              - service ssh reload || service sshd reload
+             - systemctl enable swarm.service
+             - systemctl start swarm.service
           params:
             SF_SUFFIX: { get_param: suffix }
             JENKINS_MASTER_URL: { get_param: jenkins_master_url }
