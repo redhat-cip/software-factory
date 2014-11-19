@@ -28,6 +28,10 @@ import requests
 import time
 import yaml
 
+import logging
+
+logging.getLogger("requests").setLevel(logging.WARNING)
+
 # Empty job for jenkins
 EMPTY_JOB_XML = """<?xml version='1.0' encoding='UTF-8'?>
 <project>
