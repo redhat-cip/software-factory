@@ -182,7 +182,7 @@ do_chroot $dir curl -L --silent -o /var/www/static/js/jquery.min.js http://code.
 
 # zuul
 do_chroot $dir git clone https://github.com/openstack-infra/zuul /srv/zuul
-do_chroot $dir bash -c "cd /srv/zuul && git checkout -b working 49850b0d81e1d876d27ad49ab4ef478a8c3551ac" # latest commit as of 08. Aug 2014
+do_chroot $dir bash -c "cd /srv/zuul && git checkout -b working 8c81dc3fa9c2dfaf93539641c099b15064357011" # a commit known to work 11/12/2014
 do_chroot $dir bash -c "cd /srv/zuul && python /srv/zuul/setup.py install"
 # 06/19/2014 - The two line below manage to quick fix some dependencies problem with Zuul (Need to be removed later)
 do_chroot $dir bash -c "cd /srv/zuul && pip install -U setuptools"
