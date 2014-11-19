@@ -228,7 +228,7 @@ class redmine ($settings = hiera_hash('redmine', ''),
     }
 
     exec {'redmine_backlog_install':
-      environment =>  ["story_trackers=Bug", "task_tracker=Task", 'HOME=/root'],
+      environment =>  ["labels=false", "story_trackers=Bug", "task_tracker=Task", 'HOME=/root'],
       command     =>  $redmine_backlog_install_cmd,
       cwd         =>  '/usr/share/redmine/',
       path        =>  ['/bin', '/usr/bin', '/usr/local/bin'],
