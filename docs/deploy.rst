@@ -92,11 +92,8 @@ follow the process below:
 
 .. code-block:: bash
 
- $ # A current limitation forces to download trees too.
- $ SF_DIST=CentOS ./fetch_roles.sh trees
- $ SF_DIST=CentOS ./fetch_roles.sh imgs
- $ SF_DIST=CentOS SF_SKIP_FETCHBASES=1 VIRT=1 ./build_roles.sh
- $ ls -al /var/lib/sf/roles/install/C7.0-0.9.2/*.qcow2
+ $ ./fetch_roles.sh imgs
+ $ ls -al /var/lib/sf/roles/upstream/*.qcow2
 
 You should find four qcow2 images: (mysql, slave, install-server-vm,
 and softwarefactory).
@@ -191,11 +188,13 @@ need to source your OpenStack credentials into your shell environment:
 .. code-block:: bash
 
  $ cd bootstraps/heat/
- $ ./start.sh full_restart_stack
+ $ FROMUPSTREAM=1 ./start.sh full_restart_stack
 
 The start.sh script will take care of uploading role images to Glance and then
 call heat stack-create. You have to wait a couple of minutes for the stack to
-be created. You can check the progress using the following command:
+be created. Note the **FROMUPSTREAM** variable set to something to use upstream
+images. If you want to use your modified images call **start.sh** without this
+environment variable. You can check the progress using the following command:
 
 .. code-block:: bash
 
