@@ -20,6 +20,12 @@ import requests as http
 import json
 import argparse
 import sys
+import getpass
+
+
+def die(msg):
+    print "Error: %s" % msg
+    sys.exit(1)
 
 
 def split_and_strip(s):
@@ -158,16 +164,27 @@ if args.command == 'delete_user':
     else:
         url = base_url + "/project/membership/%s/%s" % (args.name, args.user)
 
+if ":" not in args.auth:
+    password = getpass.getpass("%s's password: " % args.auth)
+    args.auth = "%s:%s" % (args.auth, password)
+
 
 def get_cookie():
     if args.cookie is not None:
         return args.cookie
     (username, password) = args.auth.split(':')
-    r = http.post('http://%s/auth/login' % args.auth_server,
+    url = 'http://%s/auth/login' % args.auth_server
+    r = http.post(url,
                   params={'username': username,
                           'password': password,
                           'back': '/'},
                   allow_redirects=False)
+    if r.status_code == 401:
+        die("Access denied, wrong login or password")
+    elif r.status_code != 303:
+        die("Could not access url %s" % url)
+    elif len(r.cookies) < 1:
+        die("Unknown error, server didn't set any cookie")
     return r.cookies['auth_pubtkt']
 
 headers = {'Authorization': 'Basic ' + base64.b64encode(args.auth)}
