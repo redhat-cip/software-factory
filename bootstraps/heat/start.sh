@@ -3,9 +3,13 @@
 set -x
 
 source ../functions.sh
+. ./../../role_configrc
 
-VERS=C7.0-0.9.2
-BUILT_ROLES=/var/lib/sf
+if [ -n "$FROMUPSTREAM" ]; then
+    BUILT_ROLES=$UPSTREAM
+else
+    BUILT_ROLES=$INST
+fi
 SFCONFIGFILE=../sfconfig.yaml
 DOMAIN=$(cat $SFCONFIGFILE | grep "^domain:" | cut -d' ' -f2)
 suffix=$DOMAIN
@@ -48,7 +52,7 @@ function register_images {
         checksum=`glance image-show $img | grep checksum | awk '{print $4}'`
         if [ -z "$checksum" ]; then
             glance image-create --name $img --disk-format qcow2 --container-format bare \
-                --progress --file $BUILT_ROLES/roles/install/${VERS}/$img-*.img.qcow2
+                --progress --file $BUILT_ROLES/$img-${SF_VER}.img.qcow2
         fi
     done
 }
@@ -56,7 +60,7 @@ function register_images {
 function unregister_images {
     for img in install-server-vm softwarefactory; do
         checksum=`glance image-show $img | grep checksum | awk '{print $4}'`
-        newchecksum=`cat $BUILT_ROLES/roles/install/${VERS}/$img-*.img.qcow2.md5 | cut -d" " -f1`
+        newchecksum=`cat $BUILT_ROLES/$img-${SF_VER}.img.qcow2.md5 | cut -d" " -f1`
         [ "$newchecksum" != "$checksum" ] && glance image-delete $img || true
     done
 }
