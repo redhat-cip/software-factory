@@ -48,8 +48,6 @@ parameters:
 resources:
   sf_net:
     type: OS::Neutron::Net
-    properties:
-      name: SF_Net
 
   sf_subnet:
     type: OS::Neutron::Subnet

@@ -36,13 +36,29 @@ display_head
 
 set -x
 
+uuid=$(date +%s | sha256sum | base64 | head -c 5)
+export STACKNAME=sf_${uuid}
+
 function get_ip {
     while true; do
-        p=`nova list | grep puppetmaster | cut -d'|' -f7  | awk '{print $NF}' | sed "s/ //g"`
+        p=`nova list | grep ${STACKNAME}-puppetmaster | cut -d'|' -f7  | awk '{print $NF}' | sed "s/ //g"`
         [ -n "$p" ] && break
         sleep 10
     done
     echo $p
+}
+
+function waiting_stack_deleted {
+    while true; do
+        heat stack-list | grep -i $STACKNAME | grep -i failed
+        [ "$?" -eq "0" ] && {
+            echo "Stack deletion has failed ..."
+            return 255
+        }
+        heat stack-list | grep -i $STACKNAME
+        [ "$?" != "0" ] && break
+        sleep 60
+    done
 }
 
 function heat_stop {
@@ -50,6 +66,12 @@ function heat_stop {
         if [ ! ${DEBUG} ]; then
             cd bootstraps/heat
             ./start.sh delete_stack
+            waiting_stack_deleted
+            if [ "$?" = "255" ]; then
+                # Retry a deletion call
+                ./start.sh delete_stack
+                waiting_stack_deleted
+            fi
             cd -
         fi
     fi
@@ -69,6 +91,12 @@ function heat_start {
     fi
 }
 
+function glance_delete_images {
+    cd bootstraps/heat
+    ./start.sh delete_images
+    cd -
+}
+
 set -x
 prepare_artifacts
 checkpoint "$(date) - $(hostname)"
@@ -76,9 +104,9 @@ build_imgs
 checkpoint "build_roles"
 heat_start
 checkpoint "heat_start"
-waiting_stack_created
+waiting_stack_created $STACKNAME
 checkpoint "wait_heat_stack"
-run_tests 60
+run_tests 15
 checkpoint "run_tests"
 DISABLE_SETX=1
 checkpoint "end_tests"
@@ -86,6 +114,8 @@ get_logs
 checkpoint "get-logs"
 heat_stop
 checkpoint "heat_stop"
+glance_delete_images
+checkpoint "glance_delete_images"
 publish_artifacts
 checkpoint "publish-artifacts"
 exit 0;
