@@ -1,0 +1,4 @@
+#!/bin/sh
+
+echo "Post script - Nothing to do"
+exit 0
