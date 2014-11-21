@@ -10,13 +10,14 @@ if [ -n "$FROMUPSTREAM" ]; then
 else
     BUILT_ROLES=$INST
 fi
+STACKNAME=${STACKNAME:-SoftwareFactory}
 SFCONFIGFILE=../sfconfig.yaml
 DOMAIN=$(cat $SFCONFIGFILE | grep "^domain:" | cut -d' ' -f2)
 suffix=$DOMAIN
 
 ### Modify here according to your configuration ###
 # The default public key to use
-key_name="thekey"
+key_name="ftsfkey"
 # flavor is used for managesf
 flavor="m1.small"
 # alt_flavor is used for puppetmaster, mysql, redmine, jenkins, gerrit (prefer flavor with at least 2 vCPUs and 2GB RAM)
@@ -39,9 +40,9 @@ params="$params;sg_admin_cidr=$sg_admin_cidr;sg_user_cidr=$sg_user_cidr"
 params="$params;ext_net_uuid=$ext_net_uuid"
 
 function get_params {
-    puppetmaster_image_id=`glance image-show install-server-vm | grep "^| id" | awk '{print $4}'`
+    puppetmaster_image_id=`glance image-show ${STACKNAME}_install-server-vm | grep "^| id" | awk '{print $4}'`
     params="$params;puppetmaster_image_id=$puppetmaster_image_id"
-    sf_image_id=`glance image-show softwarefactory | grep "^| id" | awk '{print $4}'`
+    sf_image_id=`glance image-show ${STACKNAME}_softwarefactory | grep "^| id" | awk '{print $4}'`
     params="$params;sf_image_id=$sf_image_id"
     sfconfigcontent=`cat $SFCONFIGFILE | base64 -w 0`
     params="$params;sf_config_content=$sfconfigcontent"
@@ -49,9 +50,9 @@ function get_params {
 
 function register_images {
     for img in install-server-vm softwarefactory; do
-        checksum=`glance image-show $img | grep checksum | awk '{print $4}'`
+        checksum=`glance image-show ${STACKNAME}_$img | grep checksum | awk '{print $4}'`
         if [ -z "$checksum" ]; then
-            glance image-create --name $img --disk-format qcow2 --container-format bare \
+            glance image-create --name ${STACKNAME}_$img --disk-format qcow2 --container-format bare \
                 --progress --file $BUILT_ROLES/$img-${SF_VER}.img.qcow2
         fi
     done
@@ -59,26 +60,32 @@ function register_images {
 
 function unregister_images {
     for img in install-server-vm softwarefactory; do
-        checksum=`glance image-show $img | grep checksum | awk '{print $4}'`
+        checksum=`glance image-show ${STACKNAME}_$img | grep checksum | awk '{print $4}'`
         newchecksum=`cat $BUILT_ROLES/$img-${SF_VER}.img.qcow2.md5 | cut -d" " -f1`
-        [ "$newchecksum" != "$checksum" ] && glance image-delete $img || true
+        [ "$newchecksum" != "$checksum" ] && glance image-delete ${STACKNAME}_$img || true
+    done
+}
+
+function delete_images {
+    for img in install-server-vm softwarefactory; do
+        glance image-delete ${STACKNAME}_$img || true
     done
 }
 
 function start_stack {
     get_params
-    heat stack-create --template-file sf.yaml -P "$params" SoftwareFactory
+    heat stack-create --template-file sf.yaml -P "$params" $STACKNAME
 }
 
 function delete_stack {
-    heat stack-delete SoftwareFactory
+    heat stack-delete $STACKNAME
 }
 
 function restart_stack {
     set +e
     delete_stack
     while true; do
-        heat stack-list | grep "SoftwareFactory"
+        heat stack-list | grep "$STACKNAME"
         [ "$?" != "0" ] && break
         sleep 2
     done
@@ -106,6 +113,8 @@ function full_restart_stack {
             start_stack ;;
         delete_stack )
             delete_stack ;;
+        delete_images )
+            delete_images ;;
         restart_stack )
             restart_stack ;;
         full_restart_stack )

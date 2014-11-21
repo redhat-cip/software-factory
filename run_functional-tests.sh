@@ -59,7 +59,7 @@ lxc_start
 checkpoint "lxc-start"
 if [ -z "$1" ]; then
     # This test is run by default when no argument provided
-    run_tests 45
+    run_tests 15
     checkpoint "run_tests"
 fi
 if [ "$1" == "backup_restore_tests" ]; then

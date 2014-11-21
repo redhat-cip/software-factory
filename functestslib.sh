@@ -195,18 +195,21 @@ function pre_fail {
     exec 1>&6 6>&-      # Restore stdout and close file descriptor #6.
     echo -e "\n---------------------------------------------------------------------------\n"
     cat ${ARTIFACTS_DIR}/failure-reason.txt
+    [ "${0##*/}" = "run_functional-tests-heat.sh" ] &&  { heat_stop; exit 1; }
     exit 1
 }
 
 function waiting_stack_created {
+    local stackname=$1
     while true; do
-        heat stack-list | grep -i softwarefactory | grep -i fail
+        heat stack-list | grep -i $stackname | grep -i fail
         [ "$?" -eq "0" ] && {
             echo "Stack creation has failed ..."
             # TODO: get the logs (heat stack-show)
+            heat_stop
             exit 1
         }
-        heat stack-list | grep -i softwarefactory | grep -i create_complete
+        heat stack-list | grep -i $stackname | grep -i create_complete
         [ "$?" -eq "0" ] && break
         sleep 60
     done
@@ -219,7 +222,17 @@ function wait_for_bootstrap_done {
         # We wait for the bootstrap script that run on puppetmaster node finish its work.
         # We avoid password auth here as we can fall in a case that the node responds but the pub key has
         # not been placed by cloudinit and then we stay stuck here.
-        ssh -o StrictHostKeyChecking=no -o PreferredAuthentications=publickey root@`get_ip puppetmaster` "echo 'Last lines are: --['; tail -n 3 /var/log/sf-bootstrap.log; echo ']--';"
+        lastlines=$(ssh -o StrictHostKeyChecking=no -o PreferredAuthentications=publickey root@`get_ip puppetmaster` "tail -n 3 /var/log/sf-bootstrap.log")
+        lret=$?
+        if [ $retries -gt 2 ] && [ $lret != 0 ]; then
+            # The ssh connection failed more than enough ... so exit !
+            return 1
+        fi
+        echo "---- Last lines are: ----";
+        echo $lastlines
+        echo "-------------------------";
+        # The fail below is more targeted for the HEAT deployment (When the bootstrap script ssh fails to connect to the nodes)
+        [ -n "$(echo -n $lastlines | grep 'Permission denied')" ] && return 1
         RET=$(ssh -o StrictHostKeyChecking=no -o PreferredAuthentications=publickey root@`get_ip puppetmaster` cat puppet-bootstrapper/build/bootstrap.done 2> /dev/null)
         [ ! -z "${RET}" ] && return ${RET}
         let retries=retries+1
