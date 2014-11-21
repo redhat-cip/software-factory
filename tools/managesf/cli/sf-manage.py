@@ -38,10 +38,10 @@ parser.add_argument('--host', metavar='ip-address',
                     help='Softwarefactory public IP address', required=True)
 parser.add_argument('--port', metavar='port-number',
                     help="Softwarefactory HTTP port number", default=80)
-parser.add_argument('--auth', metavar='username:password',
+parser.add_argument('--auth', metavar='username[:password]',
                     help='Authentication information', required=True)
 parser.add_argument('--auth-server', metavar='central-auth-server',
-                    default='auth.sf.dom',
+                    default=None,
                     help='Hostname of the central auth server')
 parser.add_argument('--cookie', metavar='Authentication cookie',
                     help='cookie of the user if known')
@@ -163,6 +163,9 @@ if args.command == 'delete_user':
                                                            args.group)
     else:
         url = base_url + "/project/membership/%s/%s" % (args.name, args.user)
+
+if args.auth_server is None:
+    args.auth_server = args.host
 
 if ":" not in args.auth:
     password = getpass.getpass("%s's password: " % args.auth)
