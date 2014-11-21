@@ -1,3 +1,10 @@
+puppetmaster:
+  :roles:
+    - base
+    - edeploy
+  :username: root
+  :hostname: puppetmaster.SF_SUFFIX
+
 redmine:
   :roles:
     - base

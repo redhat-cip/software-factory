@@ -1,7 +1,15 @@
+puppetmaster:
+  :roles:
+    - base
+    - edeploy
+  :username: root
+  :hostname: puppetmaster.tests.dom
+
 redmine:
   :roles:
     - base
     - redmine
+    - postfix
   :username: root
   :hostname: redmine.tests.dom
 
@@ -9,6 +17,7 @@ mysql:
   :roles:
     - base
     - mysql
+    - postfix
   :username: root
   :hostname: mysql.tests.dom
 
@@ -16,6 +25,7 @@ gerrit:
   :roles:
     - base
     - gerrit
+    - postfix
   :username: root
   :hostname: gerrit.tests.dom
 
@@ -23,6 +33,7 @@ jenkins:
   :roles:
     - base
     - jenkins
+    - postfix
   :username: root
   :hostname: jenkins.tests.dom
 
