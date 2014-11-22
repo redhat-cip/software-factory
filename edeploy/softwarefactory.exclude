@@ -4,16 +4,36 @@
 /mnt/
 /run/
 /tmp/
-/home/
 /root/
 + /var
-- /var/lib/edeploy/*
+- /var/lib/edeploy/
 - /var/log/
 - /var/cache/
 - /var/lib/puppet
 - /var/lib/cloud
 - /var/lib/mysql
 - /var/lib/jenkins
+- /var/spool/
+- /var/lib/postfix/master.lock
+- /var/lib/zuul/
+- /var/www/zuul
+- /var/www/static/lodgeit
+- /var/www/managesf/gerrit_admin_rsa
+- /var/www/managesf/config.py
+- /var/www/index.py
+- /var/www/index.html.tmpl
+- /var/www/cauth/keys/
+- /var/www/cauth/state_mapping.db
+- /var/www/cauth/config.py
+- /var/www/etherpad-lite-1.4.0/run.sh
+- /var/www/etherpad-lite-1.4.0/APIKEY.txt
++ /home/
+- /home/gerrit/
+- /home/zuul/
++ /usr/share/redmine
+- /usr/share/redmine/config
+- /usr/share/redmine/log
+- /usr/share/redmine/public/plugin_assets
 /boot/grub/
 /lost+found
 /etc/hostname
@@ -21,17 +41,41 @@
 /etc/network/
 /etc/fstab
 /etc/mtab
-/etc/shadow
+/etc/shadow*
+/etc/gshadow*
 /etc/ld.so.cache
-/etc/passwd
+/etc/passwd*
 /etc/group*
 /etc/hosts
 /etc/resolv.conf
 /etc/ssh/*key
 /etc/ssh/ssh_host*
+/etc/ssh/sshd_config
+/etc/sudoers.d/
+/etc/sysconfig/network
 /etc/udev/rules.d/*persistent*
 /etc/puppet/
-/usr/bin/apt-get
-/usr/bin/apt-get.moved
-/usr/sbin/policy-rc.d
-/usr/sbin/policy-rc.d.moved
+/etc/monit/
+/etc/postfix/main.cf
+/etc/mailname
+/etc/systemd/system/multi-user.target.wants
+/etc/sysconfig/network-scripts/ifcfg-eth0
+/etc/httpd/conf.d/
+/etc/httpd/conf.modules.d/
+/etc/httpd/htpasswd
+/etc/zuul/
+/etc/jenkins_jobs/
+/etc/systemd/system/multi-user.target.wants
+/usr/lib/systemd/system/gerrit.service
+/usr/lib/systemd/system/zuul.service
+/usr/lib/systemd/system/zuul-merger.service
+/usr/lib/systemd/system/jenkins.service
+/usr/lib/systemd/system/socat.service
+/usr/lib/systemd/system/lodgeit.service
+/usr/lib/systemd/system/etherpad.service
+/usr/local/jenkins/slave_scripts/kick.sh
+/usr/bin/sf-manage
+/usr/share/sf-zuul/
+/usr/share/sf-jjb/
+/usr/share/httpd/
+/srv/cauth_keys/

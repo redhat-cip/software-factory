@@ -107,6 +107,15 @@ class jenkins ($settings = hiera_hash('jenkins', '')) {
         command   => "/usr/sbin/a2enmod proxy_http",
       }
 
+      file {'/etc/default/jenkins':
+        ensure  => file,
+        mode    => '0644',
+        owner   => 'root',
+        group   => 'root',
+        content => template('jenkins/etc_default_jenkins.erb'),
+        replace => true
+      }
+
       exec {'enable_jenkins_site':
         command => 'a2ensite jenkins',
         path    => '/usr/sbin/:/usr/bin/:/bin/',
@@ -142,15 +151,6 @@ class jenkins ($settings = hiera_hash('jenkins', '')) {
 
   group { 'jenkins':
     ensure => present,
-  }
-
-  file {'/etc/default/jenkins':
-    ensure  => file,
-    mode    => '0644',
-    owner   => 'root',
-    group   => 'root',
-    content => template('jenkins/etc_default_jenkins.erb'),
-    replace => true
   }
 
   file { "/var/lib/jenkins/.ssh":
