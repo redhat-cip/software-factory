@@ -25,7 +25,6 @@ import httmock
 import logging
 import requests as http
 
-from mockldap import LDAPObject
 from M2Crypto import RSA
 
 from pecan import expose, response, conf, abort, render
@@ -33,7 +32,6 @@ from pecan.rest import RestController
 
 from cauth.model import db
 from cauth.controllers import userdetails
-from cauth import adminsettings
 
 LOGOUT_MSG = "You have been successfully logged " \
              "out of all the Software factory services."
@@ -95,39 +93,6 @@ def setup_response(username, back, email=None, lastname=None, keys=None):
     response.location = clean_back(back)
 
 
-def dummy_ldap():
-    com = ('dc=com', {'dc': 'com'})
-    example = ('dc=example,dc=com', {'dc': 'example'})
-    users = ('ou=Users,dc=example,dc=com', {'ou': 'Users'})
-    user1 = ('cn=user1,ou=Users,dc=example,dc=com', {
-        'cn': 'user1',
-        'mail': ['user1@example.com'],
-        'sn': ['Demo user1'],
-        'userPassword': ['userpass']})
-    user2 = ('cn=user2,ou=Users,dc=example,dc=com', {
-        'cn': 'user2',
-        'mail': ['user2@example.com'],
-        'sn': ['Demo user2'],
-        'userPassword': ['userpass']})
-    user3 = ('cn=user3,ou=Users,dc=example,dc=com', {
-        'cn': 'user3',
-        'mail': ['user3@example.com'],
-        'sn': ['Demo user3'],
-        'userPassword': ['userpass']})
-    user4 = ('cn=user4,ou=Users,dc=example,dc=com', {
-        'cn': 'user4',
-        'mail': ['user4@example.com'],
-        'sn': ['Demo user4'],
-        'userPassword': ['userpass']})
-    user5 = ('cn=user5,ou=Users,dc=example,dc=com', {
-        'cn': 'user5',
-        'mail': ['user5@example.com'],
-        'sn': ['Demo user5'],
-        'userPassword': ['userpass']})
-
-    directory = dict([com, example, users, user1, user2, user3, user4, user5])
-    return LDAPObject(directory)
-
 mockoauth_users = {
     "user6": {"login": "user6",
               "password": "userpass",
@@ -139,7 +104,6 @@ mockoauth_users = {
 }
 
 
-# @urlmatch(netloc=r'(.*\.)?oauth\.com$')
 @httmock.urlmatch(netloc=r'(.*\.)?github\.com$')
 def oauthmock_request(url, request):
     users = mockoauth_users
@@ -279,23 +243,19 @@ class GithubController(object):
 
 class LoginController(RestController):
     def check_valid_user(self, username, password):
-        if username == adminsettings.username:
-            parts = adminsettings.password.split('$')
-            prefixed_salt = "$" + parts[1] + "$" + parts[2]
-            salted_pw = parts[3]
-            if salted_pw == crypt.crypt(password, prefixed_salt):
-                return adminsettings.mail, adminsettings.lastname
+        user = conf.auth.get('users', {}).get(username)
+        if user:
+            salted_password = user.get('password')
+            if salted_password == crypt.crypt(password, salted_password):
+                return user.get('mail'), user.get('lastname')
 
         l = conf.auth['ldap']
-        if l['host'] == 'ldap://ldap.tests.dom':
-            conn = dummy_ldap()
-        else:
-            conn = ldap.initialize(l['host'])
+        conn = ldap.initialize(l['host'])
         conn.set_option(ldap.OPT_REFERRALS, 0)
         who = l['dn'] % {'username': username}
         try:
             conn.simple_bind_s(who, password)
-        except ldap.INVALID_CREDENTIALS:
+        except (ldap.INVALID_CREDENTIALS, ldap.SERVER_DOWN):
             logger.error('Client unable to bind on LDAP invalid credentials.')
             return None
         result = conn.search_s(

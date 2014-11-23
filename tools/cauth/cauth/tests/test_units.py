@@ -26,6 +26,7 @@ from cauth.controllers import root
 from webtest import TestApp
 from pecan import load_app
 
+import crypt
 import tempfile
 import json
 import os
@@ -69,6 +70,15 @@ class dummy_conf():
                       'http://tests.dom/auth/login/github/callback"',
                       'client_id': 'XXX',
                       'client_secret': 'YYY', },
+                     'users':
+                         {
+                             "user1": {
+                                 "lastname": "Demo user1",
+                                 "mail": "user1@example.com",
+                                 "password": crypt.crypt(
+                                     "userpass", "$6$EFeaxATWohJ")
+                             }
+                         },
                      }
         self.sqlalchemy = {'url': 'sqlite:///%s' % tempfile.mkstemp()[1],
                            'echo': False,
