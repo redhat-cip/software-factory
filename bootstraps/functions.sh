@@ -24,6 +24,29 @@ ROLES="$ROLES gerrit"
 ROLES="$ROLES managesf"
 ROLES="$ROLES jenkins"
 
+SFTMP=/tmp/sf-conf/
+SFCONFIGFILE=$SFTMP/sfconfig.yaml
+
+function hash_password {
+    python -c "import crypt, random, string; salt = '\$6\$' + ''.join(random.choice(string.letters + string.digits) for _ in range(16)) + '\$'; print crypt.crypt('$1', salt)"
+}
+
+function generate_sfconfig {
+    [ -d $SFTMP ] && rm -Rf $SFTMP
+    mkdir $SFTMP
+    cp ../sfconfig.yaml $SFCONFIGFILE
+
+    # Set and generated admin password
+    DEFAULT_ADMIN_USER=$(cat ../sfconfig.yaml | grep '^admin_name:' | awk '{ print $2 }')
+    DEFAULT_ADMIN_PASSWORD=$(cat ../sfconfig.yaml | grep '^admin_password:' | awk '{ print $2 }')
+    ADMIN_USER=${ADMIN_USER:-${DEFAULT_ADMIN_USER}}
+    ADMIN_PASSWORD=${ADMIN_PASSWORD:-${DEFAULT_ADMIN_PASSWORD}}
+    ADMIN_PASSWORD_HASHED=$(hash_password "${ADMIN_PASSWORD}")
+    sed -i "s/^admin_name:.*/admin_name: ${ADMIN_USER}/" /tmp/sf-conf/sfconfig.yaml
+    sed -i "s/^admin_password:.*/admin_password: ${ADMIN_PASSWORD}/" /tmp/sf-conf/sfconfig.yaml
+    echo "admin_password_hashed: \"${ADMIN_PASSWORD_HASHED}\"" >> /tmp/sf-conf/sfconfig.yaml
+}
+
 function getip_from_yaml {
     cat ../hosts.yaml  | grep -A 1 "^  $1" | grep 'ip:' | cut -d: -f2 | sed 's/ *//g'
 }

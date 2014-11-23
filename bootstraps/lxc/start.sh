@@ -20,7 +20,7 @@ set -e
 source ../functions.sh
 . ./../../role_configrc
 
-SFCONFIGFILE=../sfconfig.yaml
+generate_sfconfig
 DOMAIN=$(cat $SFCONFIGFILE | grep "^domain:" | cut -d' ' -f2)
 SF_SUFFIX=${SF_SUFFIX:-$DOMAIN}
 EDEPLOY_ROLES=${EDEPLOY_ROLES:-/var/lib/sf/roles/}

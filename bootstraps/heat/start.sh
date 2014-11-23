@@ -5,13 +5,13 @@ set -x
 source ../functions.sh
 . ./../../role_configrc
 
+generate_sfconfig
 if [ -n "$FROMUPSTREAM" ]; then
     BUILT_ROLES=$UPSTREAM
 else
     BUILT_ROLES=$INST
 fi
 STACKNAME=${STACKNAME:-SoftwareFactory}
-SFCONFIGFILE=../sfconfig.yaml
 DOMAIN=$(cat $SFCONFIGFILE | grep "^domain:" | cut -d' ' -f2)
 suffix=$DOMAIN
 
