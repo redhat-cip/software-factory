@@ -78,6 +78,17 @@ pipelines:
         to: dev-robot@<%= scope.function_hiera(["top_domain"]) %>
         subject: 'Stable check of {change.project} failed'
 
+  - name: tag
+    description: This pipeline runs jobs in response to any tag event.
+    manager: IndependentPipelineManager
+    source: gerrit
+    precedence: high
+    trigger:
+      gerrit:
+        - event: ref-updated
+          ref: ^refs/tags/.*$
+
+
 projects:
   - name: config
     check:
