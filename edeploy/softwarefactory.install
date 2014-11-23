@@ -191,6 +191,7 @@ do_chroot $dir bash -c "cd /srv/zuul && pip install GitPython==0.3.2.RC1"
 do_chroot $dir ln -s /var/www/static/bootstrap /srv/zuul/etc/status/public_html/bootstrap
 curl http://status.openstack.org/jquery-visibility.min.js -o $dir/srv/zuul/etc/status/public_html/jquery-visibility.min.js
 curl http://status.openstack.org/jquery-graphite.js -o $dir/srv/zuul/etc/status/public_html/jquery.graphite.js
+do_chroot $dir cp /var/www/static/js/jquery.min.js /srv/zuul/etc/status/public_html/jquery.min.js
 
 # Etherpad_lite
 do_chroot $dir curl $ETHERPAD_LITE -o /tmp/etherpad_lite.tar.gz

@@ -97,15 +97,6 @@ class jjb ($settings = hiera_hash('jenkins', ''),
     require  => File['/usr/local/jenkins']
   }
 
-  file {'/usr/local/jenkins/slave_scripts/gerrit-git-prep.sh':
-    ensure   => file,
-    mode     => '0555',
-    owner    => 'root',
-    group    => 'root',
-    source   => 'puppet:///modules/jjb/gerrit-git-prep.sh',
-    require  => File['/usr/local/jenkins'],
-  }
-
   file {'/usr/local/jenkins/slave_scripts/kick.sh':
     ensure   => file,
     mode     => '0540',

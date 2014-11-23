@@ -38,7 +38,6 @@ class zuul ($settings = hiera_hash('jenkins', ''), $gh = hiera('gerrit_url'), $h
         owner  => $httpd_user,
         group  => $httpd_user,
         content => template('zuul/zuul.site.erb'),
-        require => File['/srv/zuul/etc/status/public_html/jquery.min.js'],
         notify => Service['webserver'],
       }
 
@@ -80,8 +79,7 @@ class zuul ($settings = hiera_hash('jenkins', ''), $gh = hiera('gerrit_url'), $h
       exec {'enable_zuul_site':
         command => 'a2ensite zuul',
         path    => '/usr/sbin/:/usr/bin/:/bin/',
-        require => [File['/etc/apache2/sites-available/zuul'],
-                    File['/srv/zuul/etc/status/public_html/jquery.min.js'],],
+        require => [File['/etc/apache2/sites-available/zuul'],],
         notify => Service['webserver'],
       }
 
@@ -245,14 +243,6 @@ class zuul ($settings = hiera_hash('jenkins', ''), $gh = hiera('gerrit_url'), $h
     owner   => 'zuul',
     group   => 'zuul',
     require => [File['/etc/zuul']],
-  }
-
-  file {'/srv/zuul/etc/status/public_html/jquery.min.js':
-    ensure => file,
-    mode    => '0644',
-    owner   => 'zuul',
-    group   => 'zuul',
-    source  => 'puppet:///modules/zuul/jquery.min.js',
   }
 
   service {'zuul':

@@ -1,0 +1,45 @@
+/dev/
+/proc/
+/sys/
+/mnt/
+/run/
+/tmp/
+/root/
++ /var
+- /var/lib/edeploy/
+- /var/log/
+- /var/cache/
+- /var/lib/puppet
+- /var/lib/cloud
+- /var/spool/
+- /var/lib/postfix/master.lock
++ /home/
+- /root/puppet-bootstrapper/build
+/boot/grub/
+/lost+found
+/etc/hostname
+/etc/rc.local*
+/etc/network/
+/etc/fstab
+/etc/mtab
+/etc/shadow*
+/etc/gshadow*
+/etc/ld.so.cache
+/etc/passwd*
+/etc/group*
+/etc/hosts
+/etc/resolv.conf
+/etc/ssh/*key
+/etc/ssh/ssh_host*
+/etc/ssh/sshd_config
+/etc/sudoers.d/
+/etc/sysconfig/network
+/etc/udev/rules.d/*persistent*
+/etc/postfix/main.cf
+/etc/mailname
+/etc/monit/
+/etc/httpd/conf.d/puppetmaster.conf
+/var/lib/debootstrap
+/etc/systemd/system/multi-user.target.wants
+/etc/sysconfig/network-scripts/ifcfg-eth0
+/etc/puppet/puppet.conf
