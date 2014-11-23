@@ -1,0 +1,14 @@
+---
+# file: site.yml
+
+- hosts: puppetmaster
+  user: root
+  vars:
+    sf_rel: C7.0-0.9.3
+  roles:
+    - install-server
+
+- hosts: services
+  user: root
+  roles:
+    - software-factory

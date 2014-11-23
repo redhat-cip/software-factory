@@ -1,0 +1,12 @@
+# file: hosts
+
+[puppetmaster]
+puppetmaster
+
+[services]
+mysql
+redmine
+gerrit
+jenkins
+managesf
+slave

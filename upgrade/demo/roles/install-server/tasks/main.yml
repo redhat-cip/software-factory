@@ -1,0 +1,15 @@
+---
+# file: roles/all/tasks/main.yml
+
+- name: Backup
+  command: echo managesf-cli --host {{ sf_gateway }} --auth {{ sf_username }}:{{ sf_password }} backup
+
+- name: Get install server role
+  command: echo wget http://mirror/{{ version }}-install-server.edeploy
+
+- name: Get software-factory role
+  command: echo wget http://mirror/{{ version }}-software-factory.edeploy
+
+- name: Upgrade install server
+  command: echo "edeploy upgrade ..."
+
