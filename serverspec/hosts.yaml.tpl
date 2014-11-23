@@ -44,3 +44,9 @@ managesf:
     - commonservices
   :username: root
   :hostname: managesf.SF_SUFFIX
+
+slave:
+  :roles:
+    - base
+  :username: root
+  :hostname: slave.SF_SUFFIX
