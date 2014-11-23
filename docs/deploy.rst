@@ -359,3 +359,25 @@ You can stop all the SF LXC containers using:
 
  $ cd bootstraps/lxc
  $ SF_DIST=CentOS ./start.sh stop
+
+The default admin user
+----------------------
+
+You need a default admin user to create new repositories, modify ACLs and
+assign users to projects.  By default this is *user1*, defined in
+"bootstrap/sfconfig.yaml". You can change this user before deploying SF, and
+even use an existing Github username.  If an user logins using the login form (with
+username and password) it will be authenticated locally, even if there is no
+LDAP backend defined.
+The password of this user is hashed and salted and stored on the managesf node.
+By default this is *userpass*.  Use the following command to compute a new
+password:
+
+.. code-block:: bash
+
+ $ mkpasswd -m sha-512 "secret_password"
+
+The password is also stored in plaintext in bootstrap/sfconfig.yaml, because it
+is needed by Puppet to create default accounts. You can set the plaintext
+password to "" after the initial deployment is done (both in
+bootstrap/sfconfig.yaml and in  /etc/puppet/hiera/sf/sfconfig.yaml).

@@ -263,12 +263,12 @@ class TestLoginController(TestCase):
     def tearDownClass(cls):
         pass
 
-    def test_check_valid_user_ldap(self):
+    def test_check_valid_user(self):
         lc = root.LoginController()
-        ret = lc.check_valid_user_ldap('user1', 'userpass')
+        ret = lc.check_valid_user('user1', 'userpass')
         self.assertIn('user1@example.com', ret)
         self.assertIn('Demo user1', ret)
-        ret = lc.check_valid_user_ldap('user1', 'badpass')
+        ret = lc.check_valid_user('user1', 'badpass')
         self.assertEqual(None, ret)
 
 

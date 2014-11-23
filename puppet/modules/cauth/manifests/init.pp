@@ -111,4 +111,14 @@ class cauth ($cauth = hiera_hash('cauth', ''),
     require => File['/var/www/cauth/cauth/templates'],
   }
 
+  file { '/var/www/cauth/cauth/adminsettings.py':
+    ensure  => present,
+    owner  => $httpd_user,
+    group  => $httpd_user,
+    mode    => '0640',
+    content => template('cauth/adminsettings.py.erb'),
+    require => File['/var/www/cauth/'],
+    replace => true,
+  }
+
 }
