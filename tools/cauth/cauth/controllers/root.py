@@ -20,8 +20,6 @@ import hashlib
 import base64
 import urllib
 import ldap
-import urlparse
-import httmock
 import logging
 import requests as http
 
@@ -93,64 +91,15 @@ def setup_response(username, back, email=None, lastname=None, keys=None):
     response.location = clean_back(back)
 
 
-mockoauth_users = {
-    "user6": {"login": "user6",
-              "password": "userpass",
-              "email": "user6@example.com",
-              "name": "Demo user6",
-              "ssh_keys": "",
-              "code": "user6_code",
-              "token": "user6_token"}
-}
-
-
-@httmock.urlmatch(netloc=r'(.*\.)?github\.com$')
-def oauthmock_request(url, request):
-    users = mockoauth_users
-    headers = {'content-type': 'application/json'}
-
-    # Handle a token request
-    if request.method == 'POST':
-        code = urlparse.parse_qs(url.query)['code'][0]
-        for user in users:
-            if users[user]['code'] == code:
-                token = users[user]['token']
-                break
-        content = {"access_token": token}
-    # Handle informations request
-    else:
-        for user in users:
-            if users[user]['token'] in request.headers['Authorization']:
-                u = user
-                break
-        if 'keys' in url.path:
-            content = {'key': users[u]['ssh_keys']}
-        else:
-            content = {'login': u,
-                       'email': users[u]['email'],
-                       'name': users[u]['name']}
-    return httmock.response(200, content, headers, None, 5, request)
-
-
-def oauth_request(method, url=None, headers=None, params=None, mockoauth=None):
-    if mockoauth:
-        with httmock.HTTMock(oauthmock_request):
-            return method(url, headers=headers, params=params)
-    else:
-        return method(url, headers=headers, params=params)
-
-
 class GithubController(object):
-    def get_access_token(self, code, mockoauth):
+    def get_access_token(self, code):
         github = conf.auth['github']
-        resp = oauth_request(http.post,
-                             "https://github.com/login/oauth/access_token",
-                             params={"client_id": github['client_id'],
-                                     "client_secret": github['client_secret'],
-                                     "code": code,
-                                     "redirect_uri": github['redirect_uri']},
-                             headers={'Accept': 'application/json'},
-                             mockoauth=mockoauth)
+        resp = http.post("https://github.com/login/oauth/access_token",
+                         params={"client_id": github['client_id'],
+                                 "client_secret": github['client_secret'],
+                                 "code": code,
+                                 "redirect_uri": github['redirect_uri']},
+                         headers={'Accept': 'application/json'})
         jresp = resp.json()
         if 'access_token' in jresp:
             return jresp['access_token']
@@ -168,7 +117,6 @@ class GithubController(object):
                 kwargs.get('error_description', None)))
         state = kwargs.get('state', None)
         code = kwargs.get('code', None)
-        mockoauth = kwargs.get('mockoauth', None)
         if not state or not code:
             logger.error(
                 'GITHUB callback called without state or code as params.')
@@ -180,36 +128,22 @@ class GithubController(object):
             logger.error('GITHUB callback called with an unknown state.')
             abort(401)
 
-        token = self.get_access_token(code, mockoauth)
+        token = self.get_access_token(code)
         if not token:
             logger.error('Unable to request a token on GITHUB.')
             abort(401)
 
-        resp = oauth_request(http.get, "https://api.github.com/user",
-                             headers={'Authorization': 'token ' + token},
-                             mockoauth=mockoauth)
+        resp = http.get("https://api.github.com/user",
+                        headers={'Authorization': 'token ' + token})
         data = resp.json()
         login = data.get('login')
         email = data.get('email')
         name = data.get('name')
-        resp = oauth_request(http.get,
-                             "https://api.github.com/users/%s/keys" % login,
-                             headers={'Authorization': 'token ' + token},
-                             mockoauth=mockoauth)
+        resp = http.get("https://api.github.com/users/%s/keys" % login,
+                        headers={'Authorization': 'token ' + token})
         ssh_keys = resp.json()
         logger.info('Client authentication on GITHUB sucsess.')
         setup_response(login, back, email, name, ssh_keys)
-
-    def mockoauth_authorize(self, username, password, state, scope):
-        users = mockoauth_users
-        if username not in users or users[username]['password'] != password:
-            logger.info(
-                'Client requests authentication via mocked' +
-                'GITHUB with wrong credentials.')
-            abort(401)
-        code = users[username]['code']
-        kwargs = {'state': state, 'code': code, 'mockoauth': True}
-        self.callback(**kwargs)
 
     @expose()
     def index(self, **kwargs):
@@ -221,24 +155,16 @@ class GithubController(object):
         back = kwargs['back']
         state = db.put_url(back)
         scope = 'user:email, read:public_key, read:org'
-        # mock oauth for functional tests
-        if (conf.auth['github']['top_domain'] == 'tests.dom') and \
-           ('username' in kwargs):
-                username = kwargs['username']
-                password = kwargs['password']
-                logger.info('Client requests authentication via mocked GITHUB')
-                self.mockoauth_authorize(username, password, state, scope)
-        else:
-            github = conf.auth['github']
-            logger.info(
-                'Client requests authentication via GITHUB -' +
-                'redirect to %s.' % github['redirect_uri'])
-            response.status_code = 302
-            response.location = github['auth_url'] + "?" + \
-                urllib.urlencode({'client_id': github['client_id'],
-                                  'redirect_uri': github['redirect_uri'],
-                                  'state': state,
-                                  'scope': scope})
+        github = conf.auth['github']
+        logger.info(
+            'Client requests authentication via GITHUB -' +
+            'redirect to %s.' % github['redirect_uri'])
+        response.status_code = 302
+        response.location = github['auth_url'] + "?" + \
+            urllib.urlencode({'client_id': github['client_id'],
+                              'redirect_uri': github['redirect_uri'],
+                              'state': state,
+                              'scope': scope})
 
 
 class LoginController(RestController):

@@ -18,10 +18,10 @@ from unittest import TestCase
 from mock import patch
 from mock import Mock
 from M2Crypto import RSA, BIO
-from pecan.core import exc
 
 from cauth.controllers.userdetails import Gerrit
 from cauth.controllers import root
+from cauth.model import db
 
 from webtest import TestApp
 from pecan import load_app
@@ -30,6 +30,9 @@ import crypt
 import tempfile
 import json
 import os
+
+import httmock
+import urlparse
 
 
 def raise_(ex):
@@ -282,6 +285,43 @@ class TestLoginController(TestCase):
         self.assertEqual(None, ret)
 
 
+@httmock.urlmatch(netloc=r'(.*\.)?github\.com$')
+def oauthmock_request(url, request):
+    users = {
+        "user6": {"login": "user6",
+                  "password": "userpass",
+                  "email": "user6@example.com",
+                  "name": "Demo user6",
+                  "ssh_keys": "",
+                  "code": "user6_code",
+                  "token": "user6_token"}
+    }
+
+    headers = {'content-type': 'application/json'}
+
+    # Handle a token request
+    if request.method == 'POST':
+        code = urlparse.parse_qs(url.query)['code'][0]
+        for user in users:
+            if users[user]['code'] == code:
+                token = users[user]['token']
+                break
+        content = {"access_token": token}
+    # Handle informations request
+    else:
+        for user in users:
+            if users[user]['token'] in request.headers['Authorization']:
+                u = user
+                break
+        if 'keys' in url.path:
+            content = {'key': users[u]['ssh_keys']}
+        else:
+            content = {'login': u,
+                       'email': users[u]['email'],
+                       'name': users[u]['name']}
+    return httmock.response(200, content, headers, None, 5, request)
+
+
 class TestGithubController(TestCase):
     @classmethod
     def setupClass(cls):
@@ -294,28 +334,19 @@ class TestGithubController(TestCase):
         pass
 
     def test_get_access_token(self):
-        gc = root.GithubController()
-        self.assertEqual('user6_token',
-                         gc.get_access_token('user6_code', True))
+        with httmock.HTTMock(oauthmock_request):
+            gc = root.GithubController()
+            self.assertEqual('user6_token',
+                             gc.get_access_token('user6_code'))
 
-    def test_mockoauth_authorize(self):
-        gc = root.GithubController()
-        gc.callback = Mock()
-        gc.mockoauth_authorize('user6', 'userpass',
-                               'stateXYZ', 'user, user:email')
-        gc.callback.assert_called_once_with(state='stateXYZ',
-                                            code='user6_code',
-                                            mockoauth=True)
-        gc.callback = Mock()
-        self.assertRaises(exc.HTTPUnauthorized,
-                          lambda: gc.mockoauth_authorize(
-                              'user6', 'badpass',
-                              'stateXYZ', 'user, user:email'))
-        gc.callback = Mock()
-        self.assertRaises(exc.HTTPUnauthorized,
-                          lambda: gc.mockoauth_authorize(
-                              'baduser', 'badpass',
-                              'stateXYZ', 'user, user:email'))
+    def test_callback(self):
+        with httmock.HTTMock(oauthmock_request):
+            db.get_url = Mock(return_value='/r/')
+            root.setup_response = Mock()
+            gc = root.GithubController()
+            gc.callback(state='stateXYZ', code='user6_code')
+            root.setup_response.assert_called_once_with(
+                'user6', '/r/', 'user6@example.com', 'Demo user6', {'key': ''})
 
 
 class TestCauthApp(FunctionalTest):
@@ -351,14 +382,24 @@ class TestCauthApp(FunctionalTest):
         self.assertEqual(response.status_int, 401)
 
     def test_github_login(self):
-        with patch('cauth.controllers.root.userdetails'):
-            response = self.app.get('/login/github/index',
-                                    params={'username': 'user6',
-                                            'back': 'r/',
-                                            'password': 'userpass'})
-        self.assertEqual(response.status_int, 303)
-        self.assertEqual('http://localhost/r/', response.headers['Location'])
-        self.assertIn('Set-Cookie', response.headers)
+        with httmock.HTTMock(oauthmock_request):
+            with patch('cauth.controllers.root.userdetails'):
+                response = self.app.get('/login/github/index',
+                                        params={'username': 'user6',
+                                                'back': 'r/',
+                                                'password': 'userpass'})
+                self.assertEqual(response.status_int, 302)
+                parsed = urlparse.urlparse(response.headers['Location'])
+                parsed_qs = urlparse.parse_qs(parsed.query)
+                self.assertEqual('https', parsed.scheme)
+                self.assertEqual('github.com', parsed.netloc)
+                self.assertEqual('/login/oauth/authorize', parsed.path)
+                self.assertEqual(
+                    ['user:email, read:public_key, read:org'],
+                    parsed_qs.get('scope'))
+                self.assertEqual(
+                    ['http://tests.dom/auth/login/github/callback"'],
+                    parsed_qs.get('redirect_uri'))
 
     def test_get_logout(self):
         response = self.app.get('/logout?service=gerrit')

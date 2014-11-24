@@ -15,7 +15,6 @@
 # under the License.
 import config
 import requests
-import urllib
 
 from utils import Base
 from utils import ManageSfUtils
@@ -65,39 +64,14 @@ class TestUserdata(Base):
         self.assertEqual(config.USERS[login]['lastname'], user.lastname)
         self.assertEqual(config.USERS[login]['email'], user.mail)
 
-    def test_userdata_ldap(self):
-        """ Functional tests to verify the ldap user
+    def test_userdata(self):
+        """ Functional tests to verify the user creation
         """
         data = {'username': 'user5', 'password': 'userpass', 'back': '/'}
-        # Trigger a login as user5, this should fetch the userdata from LDAP
+        # Trigger a login as user5, this should fetch the userdata
         url = "http://%s/auth/login/" % config.GATEWAY_HOST
         requests.post(url, data=data, allow_redirects=False)
 
-        # verify if ldap user is created in gerrit and redmine
+        # verify if user is created in gerrit and redmine
         self.verify_userdata_gerrit('user5')
         self.verify_userdata_redmine('user5')
-
-    def test_userdata_github(self):
-        """ Functional tests to verify the github user
-        """
-        # Trigger a oauth login as user6,
-        # this should fetch the userdata from oauth mock
-        # allow_redirects=False is not working for GET
-        github_url = "http://%s/auth/login/github" % config.GATEWAY_HOST
-        url = github_url + "?" + \
-            urllib.urlencode({'username': 'user6',
-                              'password': 'userpass',
-                              'back': '/'})
-        resp = requests.get(url)
-        for r in resp.history:
-            if r.cookies:
-                for cookie in r.cookies:
-                    if 'auth_pubtkt' == cookie.name:
-                        config.USERS['user6']['auth_cookie'] = cookie.value
-                        break
-            if config.USERS['user6']['auth_cookie'] != "":
-                break
-
-        # verify if github user is created in gerrit and redmine
-        self.verify_userdata_gerrit('user6')
-        self.verify_userdata_redmine('user6')
