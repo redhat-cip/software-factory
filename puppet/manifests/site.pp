@@ -10,6 +10,9 @@ node base {
   include edeploy_client
   include postfix
   include monit
+  if $virtual != 'lxc' {
+    include ntpserver
+  }
 }
 
 node default inherits base {

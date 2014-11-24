@@ -173,6 +173,10 @@ resources:
          port_range_min: 1,
          port_range_max: 65535},
         {remote_ip_prefix: 192.168.0.0/24,
+         protocol: udp,
+         port_range_min: 123,
+         port_range_max: 123},
+        {remote_ip_prefix: 192.168.0.0/24,
          protocol: icmp,}
         ]
 

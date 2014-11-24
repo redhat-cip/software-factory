@@ -3,6 +3,7 @@ puppetmaster:
     - base
     - edeploy
     - roleversion
+    - ntp
   :username: root
   :hostname: puppetmaster
   :roleversion: C7.0-0.9.5
@@ -13,6 +14,7 @@ redmine:
     - redmine
     - postfix
     - roleversion
+    - ntp
   :username: root
   :hostname: redmine
   :roleversion: C7.0-0.9.5
@@ -23,6 +25,7 @@ mysql:
     - mysql
     - postfix
     - roleversion
+    - ntp
   :username: root
   :hostname: mysql
   :roleversion: C7.0-0.9.5
@@ -33,6 +36,7 @@ gerrit:
     - gerrit
     - postfix
     - roleversion
+    - ntp
   :username: root
   :hostname: gerrit
   :roleversion: C7.0-0.9.5
@@ -43,6 +47,7 @@ jenkins:
     - jenkins
     - postfix
     - roleversion
+    - ntp
   :username: root
   :hostname: jenkins
   :roleversion: C7.0-0.9.5
@@ -53,6 +58,7 @@ managesf:
     - managesf
     - commonservices
     - roleversion
+    - ntp
   :username: root
   :hostname: managesf
   :roleversion: C7.0-0.9.5
