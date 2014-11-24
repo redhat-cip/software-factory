@@ -1,6 +1,6 @@
 etherpad:
-  session_key: SESSION_KEY
+  session_key: "%{hiera('creds_etherpad_sesion_key')}"
   mysql_db_address: "%{hiera('mysql_url')}"
-  mysql_db_secret: ETHERPAD_MYSQL_SECRET
+  mysql_db_secret: "%{hiera('creds_etherpad_sql_pwd')}"
   mysql_db_username: etherpad
   mysql_db: etherpad

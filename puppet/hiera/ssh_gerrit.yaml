@@ -2,4 +2,4 @@ ssh_keys_gerrit:
   ssh_gerrit_jenkins:
     user: gerrit
     type: rsa
-    key: JENKINS_PUB_KEY
+    key: "%{hiera('creds_jenkins_pub_key')}"

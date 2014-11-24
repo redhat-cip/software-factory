@@ -44,10 +44,9 @@ CREATE_IMG=${EDEPLOY}/build/create-image.sh
 
 UPSTREAM=${BUILD_DIR}/upstream
 INST=${BUILD_DIR}/install/${SF_VER}
-PUPPET_BOOTSTRAPPER="./puppet/ ./tests/ ./serverspec/ ./tools/ ./bootstraps/*.sh"
 
 SF_DEPS="./edeploy/functions ./edeploy/softwarefactory.install ./data/database.yml ./tools/pysflib/ ./tools/cauth/ ./tools/managesf/ ./docs/"
-IS_DEPS="./edeploy/functions ./edeploy/install-server-vm.install ./tools/pysflib/ ./upgrade/ ./fetch_roles.sh ./role_configrc ${PUPPET_BOOTSTRAPPER}"
+IS_DEPS="./edeploy/functions ./edeploy/install-server-vm.install ./tools/pysflib/ ./upgrade/ ./fetch_roles.sh ./role_configrc ./puppet/ ./tests/ ./serverspec/ ./tools/ ./bootstraps/*.sh ./bootstraps/sfcreds.yaml"
 
 MAKE="make DVER=${DVER} DIST=${DIST} SF_REL=${SF_REL} EDEPLOY_PATH=${EDEPLOY} TOP=${BUILD_DIR}"
 

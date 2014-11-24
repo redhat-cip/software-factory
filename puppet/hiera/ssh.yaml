@@ -2,4 +2,4 @@ ssh_keys:
   ssh_root_service:
     user: root
     type: rsa
-    key: SERVICE_PUB_KEY
+    key: "%{hiera('creds_service_pub_key')}"

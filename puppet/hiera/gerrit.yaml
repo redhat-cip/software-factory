@@ -4,7 +4,7 @@ gerrit:
   gerrit_sshd_port: 29418
   sshd_listen_address: "*:29418"  # use the same port as above
   issues_tracker_api: "%{hiera('api_redmine_url')}"
-  issues_tracker_api_key: REDMINE_API_KEY
+  issues_tracker_api_key: "%{hiera('creds_issues_tracker_api_key')}"
   gerrit_mysql_address: "%{hiera('mysql_url')}"
   gerrit_mysql_db: gerrit
   gerrit_mysql_username: gerrit
@@ -13,13 +13,13 @@ gerrit:
   gerrit_admin_username: "%{hiera('admin_name')}"
   gerrit_admin_password: "%{hiera('admin_password')}"
   gerrit_admin_mail: "%{hiera('admin_mail')}"
-  gerrit_admin_sshkey: GERRIT_ADMIN_PUB_KEY
-  gerrit_admin_key: GERRIT_ADMIN_KEY
-  gerrit_jenkins_sshkey: JENKINS_PUB_KEY
-  gerrit_local_sshkey: GERRIT_SERV_PUB_KEY
-  gerrit_local_key: GERRIT_SERV_KEY
-  gerrit_email_pk: GERRIT_EMAIL_PK
-  gerrit_token_pk: GERRIT_TOKEN_PK
-  gerrit_mysql_secret: GERRIT_MYSQL_SECRET
+  gerrit_admin_sshkey: "ssh-rsa %{hiera('creds_gerrit_admin_sshkey')}"
+  gerrit_admin_key: "%{hiera('creds_gerrit_admin_sshkey')}"
+  gerrit_jenkins_sshkey: "ssh-rsa %{hiera('creds_jenkins_pub_key')}"
+  gerrit_local_sshkey: "ssh-rsa %{hiera('creds_gerrit_local_sshkey')}"
+  gerrit_local_key: "%{hiera('creds_gerrit_local_sshkey')}"
+  gerrit_email_pk: "%{hiera('creds_gerrit_email_pk')}"
+  gerrit_token_pk: "%{hiera('creds_gerrit_token_pk')}"
+  gerrit_mysql_secret: "%{hiera('creds_gerrit_sql_pwd')}"
   gerrit_heap_limit: 256m
   jenkins_user_email: "%{hiera('jenkins_user_email')}"

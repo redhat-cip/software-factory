@@ -69,69 +69,47 @@ function generate_api_key {
     echo $out | awk '{print tolower($0)}'
 }
 
-function generate_hieras {
+function generate_creds_yaml {
     OUTPUT=${BUILD}/hiera
     mkdir -p ${OUTPUT}
-
-    cp puppet/hiera/* ${OUTPUT}/
-
-    sed -i -e "s/SF_SUFFIX/${SF_SUFFIX}/g" ${OUTPUT}/common.yaml
-
+    cp sfcreds.yaml ${OUTPUT}/
     # MySQL password for services
     MYSQL_ROOT_SECRET=$(generate_random_pswd 8)
     REDMINE_MYSQL_SECRET=$(generate_random_pswd 8)
     GERRIT_MYSQL_SECRET=$(generate_random_pswd 8)
     ETHERPAD_MYSQL_SECRET=$(generate_random_pswd 8)
     LODGEIT_MYSQL_SECRET=$(generate_random_pswd 8)
-    sed -i "s#MYSQL_ROOT_PWD#${MYSQL_ROOT_SECRET}#" ${OUTPUT}/mysql.yaml
-    sed -i "s#REDMINE_SQL_PWD#${REDMINE_MYSQL_SECRET}#" ${OUTPUT}/mysql.yaml
-    sed -i "s#GERRIT_SQL_PWD#${GERRIT_MYSQL_SECRET}#" ${OUTPUT}/mysql.yaml
-    sed -i "s#ETHERPAD_SQL_PWD#${ETHERPAD_MYSQL_SECRET}#" ${OUTPUT}/mysql.yaml
-    sed -i "s#LODGEIT_SQL_PWD#${LODGEIT_MYSQL_SECRET}#" ${OUTPUT}/mysql.yaml
-
+    sed -i "s#MYSQL_ROOT_PWD#${MYSQL_ROOT_SECRET}#" ${OUTPUT}/sfcreds.yaml
+    sed -i "s#REDMINE_SQL_PWD#${REDMINE_MYSQL_SECRET}#" ${OUTPUT}/sfcreds.yaml
+    sed -i "s#GERRIT_SQL_PWD#${GERRIT_MYSQL_SECRET}#" ${OUTPUT}/sfcreds.yaml
+    sed -i "s#ETHERPAD_SQL_PWD#${ETHERPAD_MYSQL_SECRET}#" ${OUTPUT}/sfcreds.yaml
+    sed -i "s#LODGEIT_SQL_PWD#${LODGEIT_MYSQL_SECRET}#" ${OUTPUT}/sfcreds.yaml
     # Default authorized ssh keys on each node
     JENKINS_PUB="$(cat ${OUTPUT}/../data/jenkins_rsa.pub | cut -d' ' -f2)"
-    sed -i "s#JENKINS_PUB_KEY#${JENKINS_PUB}#" ${OUTPUT}/ssh_*.yaml
     SERVICE_PUB="$(cat ${OUTPUT}/../data/service_rsa.pub | cut -d' ' -f2)"
-    sed -i "s#SERVICE_PUB_KEY#${SERVICE_PUB}#" ${OUTPUT}/ssh.yaml
-
-    # Jenkins part
-    JENKINS_DEFAULT_SLAVE="slave.${SF_SUFFIX}"
-    JENKINS_USER_PASSWORD="${JUP}"
-    sed -i "s#JENKINS_DEFAULT_SLAVE#${JENKINS_DEFAULT_SLAVE}#" ${OUTPUT}/jenkins.yaml
-    sed -i "s#JENKINS_USER_PASSWORD#${JENKINS_USER_PASSWORD}#" ${OUTPUT}/jenkins.yaml
-
+    sed -i "s#JENKINS_PUB_KEY#${JENKINS_PUB}#" ${OUTPUT}/sfcreds.yaml
+    sed -i "s#SERVICE_PUB_KEY#${SERVICE_PUB}#" ${OUTPUT}/sfcreds.yaml
     # Redmine part
     REDMINE_API_KEY=$(generate_api_key)
-    sed -i "s#REDMINE_API_KEY#${REDMINE_API_KEY}#" ${OUTPUT}/redmine.yaml
-    sed -i "s#REDMINE_MYSQL_SECRET#${REDMINE_MYSQL_SECRET}#" ${OUTPUT}/redmine.yaml
-
+    sed -i "s#REDMINE_API_KEY#${REDMINE_API_KEY}#" ${OUTPUT}/sfcreds.yaml
     # Gerrit part
-    GERRIT_SERV_PUB="$(cat ${OUTPUT}/../data/gerrit_service_rsa.pub | cut -d' ' -f2)"
-    GERRIT_ADMIN_PUB_KEY="$(cat ${OUTPUT}/../data/gerrit_admin_rsa.pub | cut -d' ' -f2)"
     GERRIT_EMAIL_PK=$(generate_random_pswd 32)
     GERRIT_TOKEN_PK=$(generate_random_pswd 32)
-    sed -i "s#GERRIT_SERV_PUB_KEY#ssh-rsa ${GERRIT_SERV_PUB}#" ${OUTPUT}/gerrit.yaml
-    sed -i "s#GERRIT_SERV_KEY#${GERRIT_SERV_PUB}#" ${OUTPUT}/gerrit.yaml
-    # Gerrit Jenkins pub key
-    sed -i "s#JENKINS_PUB_KEY#ssh-rsa ${JENKINS_PUB}#" ${OUTPUT}/gerrit.yaml
-    # Gerrit Admin pubkey
-    sed -i "s#GERRIT_ADMIN_PUB_KEY#ssh-rsa ${GERRIT_ADMIN_PUB_KEY}#" ${OUTPUT}/gerrit.yaml
-    sed -i "s#GERRIT_ADMIN_KEY#${GERRIT_ADMIN_PUB_KEY}#" ${OUTPUT}/gerrit.yaml
-    sed -i "s#GERRIT_MYSQL_SECRET#${GERRIT_MYSQL_SECRET}#" ${OUTPUT}/gerrit.yaml
-    sed -i "s#GERRIT_EMAIL_PK#${GERRIT_EMAIL_PK}#" ${OUTPUT}/gerrit.yaml
-    sed -i "s#GERRIT_TOKEN_PK#${GERRIT_TOKEN_PK}#" ${OUTPUT}/gerrit.yaml
-    sed -i "s#REDMINE_API_KEY#${REDMINE_API_KEY}#" ${OUTPUT}/gerrit.yaml
-
+    GERRIT_SERV_PUB="$(cat ${OUTPUT}/../data/gerrit_service_rsa.pub | cut -d' ' -f2)"
+    GERRIT_ADMIN_PUB_KEY="$(cat ${OUTPUT}/../data/gerrit_admin_rsa.pub | cut -d' ' -f2)"
+    sed -i "s#GERRIT_EMAIL_PK#${GERRIT_EMAIL_PK}#" ${OUTPUT}/sfcreds.yaml
+    sed -i "s#GERRIT_TOKEN_PK#${GERRIT_TOKEN_PK}#" ${OUTPUT}/sfcreds.yaml
+    sed -i "s#GERRIT_SERV_PUB_KEY#${GERRIT_SERV_PUB}#" ${OUTPUT}/sfcreds.yaml
+    sed -i "s#GERRIT_ADMIN_PUB_KEY#${GERRIT_ADMIN_PUB_KEY}#" ${OUTPUT}/sfcreds.yaml
+    # Jenkins part
+    JENKINS_USER_PASSWORD="${JUP}"
+    sed -i "s#JENKINS_USER_PASSWORD#${JENKINS_USER_PASSWORD}#" ${OUTPUT}/sfcreds.yaml
     # Etherpad part
     ETHERPAD_SESSION_KEY=$(generate_random_pswd 10)
-    sed -i "s#SESSION_KEY#${ETHERPAD_SESSION_KEY}#" ${OUTPUT}/etherpad.yaml
-    sed -i "s#ETHERPAD_MYSQL_SECRET#${ETHERPAD_MYSQL_SECRET}#" ${OUTPUT}/etherpad.yaml
-
+    sed -i "s#ETHERPAD_SESSION_KEY#${ETHERPAD_SESSION_KEY}#" ${OUTPUT}/sfcreds.yaml
     # Lodgeit/Paste part
     LODGEIT_SESSION_KEY=$(generate_random_pswd 10)
-    sed -i "s#SESSION_KEY#${LODGEIT_SESSION_KEY}#" ${OUTPUT}/lodgeit.yaml
-    sed -i "s#LODGEIT_MYSQL_SECRET#${LODGEIT_MYSQL_SECRET}#" ${OUTPUT}/lodgeit.yaml
+    sed -i "s#LODGEIT_SESSION_KEY#${LODGEIT_SESSION_KEY}#" ${OUTPUT}/sfcreds.yaml
 }
 
 function wait_all_nodes {
@@ -194,20 +172,19 @@ function generate_keys {
     ssh-keygen -N '' -f ${OUTPUT}/jenkins_rsa
     ssh-keygen -N '' -f ${OUTPUT}/gerrit_service_rsa
     ssh-keygen -N '' -f ${OUTPUT}/gerrit_admin_rsa
+    # generating keys for cauth
+    openssl genrsa -out ${OUTPUT}/privkey.pem 1024
+    openssl rsa -in ${OUTPUT}/privkey.pem -out ${OUTPUT}/pubkey.pem -pubout
 }
 
 function prepare_etc_puppet {
     DATA=${BUILD}/data
-    mkdir -p /etc/puppet/environments/sf
-    mkdir -p /etc/puppet/hiera/sf
-    cp -Rf puppet/manifests /etc/puppet/environments/sf
-    cp -Rf puppet/modules /etc/puppet/environments/sf
-    cp puppet/hiera.yaml /etc/puppet/
-    cp build/hiera/* /etc/puppet/hiera/sf
-    cp ../hosts.yaml /etc/puppet/hiera/sf
+    HIERA=${BUILD}/hiera
+    cp /root/hosts.yaml /etc/puppet/hiera/sf
     cp /root/sfconfig.yaml /etc/puppet/hiera/sf
-    mkdir -p /etc/puppet/environments/sf/modules/ssh_keys/files/
+    cp $HIERA/sfcreds.yaml /etc/puppet/hiera/sf
     cp $DATA/service_rsa /etc/puppet/environments/sf/modules/ssh_keys/files/
+    cp $DATA/service_rsa /root/.ssh/id_rsa
     cp $DATA/jenkins_rsa /etc/puppet/environments/sf/modules/jenkins/files/
     cp $DATA/jenkins_rsa /etc/puppet/environments/sf/modules/zuul/files/
     cp $DATA/gerrit_admin_rsa /etc/puppet/environments/sf/modules/jenkins/files/
@@ -216,15 +193,11 @@ function prepare_etc_puppet {
     cp $DATA/gerrit_admin_rsa /etc/puppet/environments/sf/modules/managesf/files/
     cp $DATA/service_rsa /etc/puppet/environments/sf/modules/managesf/files/
     cp $DATA/gerrit_admin_rsa /etc/puppet/environments/sf/modules/jjb/files/
+    cp $DATA/privkey.pem /etc/puppet/environments/sf/modules/cauth/files/
+    cp $DATA/pubkey.pem /etc/puppet/environments/sf/modules/cauth/files/
     chown -R puppet:puppet /etc/puppet/environments/sf
     chown -R puppet:puppet /etc/puppet/hiera/sf
     chown -R puppet:puppet /var/lib/puppet
-
-    # generating keys for cauth
-    keys_dir='/etc/puppet/environments/sf/modules/cauth/files/'
-    mkdir -p $keys_dir
-    openssl genrsa -out $keys_dir/privkey.pem 1024
-    openssl rsa -in $keys_dir/privkey.pem -out $keys_dir/pubkey.pem -pubout
 }
 
 function run_puppet_agent {

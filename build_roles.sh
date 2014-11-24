@@ -30,7 +30,6 @@ set -e
 
 CURRENT=`pwd`
 SF_ROLES=$CURRENT/edeploy/
-BOOTSTRAPPER=$SF_ROLES/puppet_bootstrapper.sh
 
 function build_img {
     ROLE_FILE="${1}.img"

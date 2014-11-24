@@ -28,17 +28,16 @@ if [  -f "${BUILD}/bootstrap.done" ]; then
     rm ${BUILD}/bootstrap.done
 fi
 
-# Only create config if not yet done
-if [ ! -e "/etc/puppet/environments/sf" ]; then
-    echo "Preparing Puppet master"
+# Only create site specific if not done yet
+if [ ! -e "${BUILD}/hiera/sfcreds.yaml" ]; then
+    echo "Generate site specifics creds"
     generate_keys
-    generate_hieras
-    prepare_etc_puppet
-else
-    echo "Preparing Puppet master is skipped"
-    cp ${BUILD}/data/service_rsa /root/.ssh/id_rsa
+    generate_creds_yaml
 fi
 
+# Move site specific file to puppet/modules/*/files/
+prepare_etc_puppet
+# Wait for all node SSH service to be up
 wait_all_nodes
 # Start a run locally and start the puppet agent service
 run_puppet_agent
