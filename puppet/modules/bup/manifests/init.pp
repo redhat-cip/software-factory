@@ -25,6 +25,7 @@ class bup ($settings = hiera_hash('bup', '')){
         command => 'bup init',
         cwd => '/root',
         user => 'root',
+        creates => '/root/.bup/HEAD',
     }
 
     cron { "backup":

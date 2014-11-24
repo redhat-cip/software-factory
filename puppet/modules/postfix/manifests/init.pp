@@ -31,6 +31,7 @@ class postfix ($settings = hiera_hash('postfix', '')) {
 
   exec { '/etc/mailname':
     command => 'hostname --fqdn > /etc/mailname',
+    unless   => "/usr/bin/grep `hostname --fqdn` /etc/mailname",
     path    => '/usr/sbin/:/usr/bin/:/bin/',
   }
 

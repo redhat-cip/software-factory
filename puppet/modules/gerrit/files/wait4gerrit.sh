@@ -9,4 +9,5 @@ while [ -z "`netstat -lptn | grep 8080`" ]; do
     sleep 1
     echo -n '.'
 done
+touch /tmp/wait4gerrit.done
 echo

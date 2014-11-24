@@ -128,14 +128,16 @@ class zuul ($settings = hiera_hash('jenkins', ''), $gh = hiera('gerrit_url'), $h
     command => "/usr/bin/ssh-keyscan -p 29418 $gip >> /home/zuul/.ssh/known_hosts",
     logoutput => true,
     user => 'zuul',
-    require => File['/home/zuul/.ssh']
+    require => File['/home/zuul/.ssh'],
+    unless => '/usr/bin/grep "$gip" /home/zuul/.ssh/known_hosts',
   }
 
   exec {'update_gerrithost_knownhost':
     command => "/usr/bin/ssh-keyscan -p 29418 $gh >> /home/zuul/.ssh/known_hosts",
     logoutput => true,
     user => 'zuul',
-    require => File['/home/zuul/.ssh']
+    require => File['/home/zuul/.ssh'],
+    unless => '/usr/bin/grep "$gh" /home/zuul/.ssh/known_hosts',
   }
   file {'/usr/share/sf-zuul':
     ensure  => directory,
