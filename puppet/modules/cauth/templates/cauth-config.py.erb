@@ -63,6 +63,35 @@ auth = {
         'redirect_uri': '<%= @cauth['github_redirect_url'] %>',
         'client_id': '<%= @cauth['github_app_id'] %>',
         'client_secret': '<%= @cauth['github_app_secret'] %>'
+    },
+    'users': {
+        "<%= scope.function_hiera(['admin_name']) %>": {
+            "lastname": "<%= scope.function_hiera(['admin_lastname']) %>",
+            "mail": "<%= scope.function_hiera(['admin_mail']) %>",
+            "password": "<%= scope.function_hiera(['admin_password_hashed']) %>",
+        },
+	<% if scope.function_hiera(["top_domain"]) == "tests.dom" %>
+            "user2": {
+                "lastname": "Demo user2",
+                "mail": "user2@example.com",
+                "password": "<%= scope.function_hiera(['admin_password_hashed']) %>",
+            },
+            "user3": {
+                "lastname": "Demo user3",
+                "mail": "user3@example.com",
+                "password": "<%= scope.function_hiera(['admin_password_hashed']) %>",
+            },
+             "user4": {
+                "lastname": "Demo user4",
+                "mail": "user4@example.com",
+                "password": "<%= scope.function_hiera(['admin_password_hashed']) %>",
+            },
+            "user5": {
+                "lastname": "Demo user5",
+                "mail": "user5@example.com",
+                "password": "<%= scope.function_hiera(['admin_password_hashed']) %>",
+            }
+        <% end %>
     }
 }
 
