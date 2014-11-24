@@ -4,7 +4,8 @@
 /mnt/
 /run/
 /tmp/
-/root/
++ /root/
+- /root/puppet-boostrapper/build
 + /var
 - /var/lib/edeploy/
 - /var/log/
@@ -15,6 +16,9 @@
 - /var/lib/postfix/master.lock
 + /home/
 - /root/puppet-bootstrapper/build
+- /root/sfconfig.yaml
+- /root/.ssh
+- /root/hosts.yaml
 /boot/grub/
 /lost+found
 /etc/hostname
