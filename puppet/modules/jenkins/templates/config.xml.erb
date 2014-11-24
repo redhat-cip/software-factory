@@ -16,10 +16,6 @@
     <permission>com.cloudbees.plugins.credentials.CredentialsProvider.Update:<%= @settings['jenkins_admin_username'] %></permission>
     <permission>com.cloudbees.plugins.credentials.CredentialsProvider.View:<%= @settings['jenkins_username'] %></permission>
     <permission>com.cloudbees.plugins.credentials.CredentialsProvider.View:<%= @settings['jenkins_admin_username'] %></permission>
-    <permission>com.sonyericsson.hudson.plugins.gerrit.trigger.PluginImpl.ManualTrigger:<%= @settings['jenkins_username'] %></permission>
-    <permission>com.sonyericsson.hudson.plugins.gerrit.trigger.PluginImpl.ManualTrigger:<%= @settings['jenkins_admin_username'] %></permission>
-    <permission>com.sonyericsson.hudson.plugins.gerrit.trigger.PluginImpl.Retrigger:<%= @settings['jenkins_username'] %></permission>
-    <permission>com.sonyericsson.hudson.plugins.gerrit.trigger.PluginImpl.Retrigger:<%= @settings['jenkins_admin_username'] %></permission>
     <permission>hudson.model.Computer.Build:<%= @settings['jenkins_username'] %></permission>
     <permission>hudson.model.Computer.Build:<%= @settings['jenkins_admin_username'] %></permission>
     <permission>hudson.model.Computer.Configure:<%= @settings['jenkins_username'] %></permission>
@@ -32,8 +28,8 @@
     <permission>hudson.model.Computer.Delete:<%= @settings['jenkins_admin_username'] %></permission>
     <permission>hudson.model.Computer.Disconnect:<%= @settings['jenkins_username'] %></permission>
     <permission>hudson.model.Computer.Disconnect:<%= @settings['jenkins_admin_username'] %></permission>
-    <permission>hudson.model.Hudson.Administer:<%= @settings['jenkins_admin_username'] %></permission>
     <permission>hudson.model.Hudson.Administer:<%= @settings['jenkins_username'] %></permission>
+    <permission>hudson.model.Hudson.Administer:<%= @settings['jenkins_admin_username'] %></permission>
     <permission>hudson.model.Hudson.ConfigureUpdateCenter:<%= @settings['jenkins_username'] %></permission>
     <permission>hudson.model.Hudson.ConfigureUpdateCenter:<%= @settings['jenkins_admin_username'] %></permission>
     <permission>hudson.model.Hudson.Read:anonymous</permission>
@@ -77,13 +73,31 @@
   </authorizationStrategy>
   <securityRealm class="org.jenkinsci.plugins.reverse_proxy_auth.ReverseProxySecurityRealm" plugin="reverse-proxy-auth-plugin@1.4.0">
     <proxyTemplate/>
-    <authContext/>
+    <authContext>
+      <entry>
+        <string>jenkins</string>
+        <org.acegisecurity.GrantedAuthority-array>
+          <org.acegisecurity.GrantedAuthorityImpl>
+            <role>authenticated</role>
+          </org.acegisecurity.GrantedAuthorityImpl>
+        </org.acegisecurity.GrantedAuthority-array>
+      </entry>
+      <entry>
+        <string>user1</string>
+        <org.acegisecurity.GrantedAuthority-array>
+          <org.acegisecurity.GrantedAuthorityImpl>
+            <role>authenticated</role>
+          </org.acegisecurity.GrantedAuthorityImpl>
+        </org.acegisecurity.GrantedAuthority-array>
+      </entry>
+    </authContext>
     <authorityUpdateCache/>
     <inhibitInferRootDN>false</inhibitInferRootDN>
     <userSearchBase></userSearchBase>
     <userSearch>uid={0}</userSearch>
     <updateInterval>15</updateInterval>
     <forwardedUser>X-Forwarded-User</forwardedUser>
+    <retrievedUser>jenkins</retrievedUser>
     <headerGroups>X-Forwarded-Groups</headerGroups>
     <headerGroupsDelimiter>|</headerGroupsDelimiter>
   </securityRealm>
@@ -91,13 +105,14 @@
   <projectNamingStrategy class="jenkins.model.ProjectNamingStrategy$DefaultProjectNamingStrategy"/>
   <workspaceDir>${ITEM_ROOTDIR}/workspace</workspaceDir>
   <buildsDir>${ITEM_ROOTDIR}/builds</buildsDir>
-  <markupFormatter class="hudson.markup.RawHtmlMarkupFormatter">
+  <markupFormatter class="hudson.markup.RawHtmlMarkupFormatter" plugin="antisamy-markup-formatter@1.1">
     <disableSyntaxHighlighting>false</disableSyntaxHighlighting>
   </markupFormatter>
   <jdks/>
   <viewsTabBar class="hudson.views.DefaultViewsTabBar"/>
   <myViewsTabBar class="hudson.views.DefaultMyViewsTabBar"/>
   <clouds/>
+  <slaves/>
   <scmCheckoutRetryCount>0</scmCheckoutRetryCount>
   <views>
     <hudson.model.AllView>

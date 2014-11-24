@@ -55,6 +55,7 @@ class etherpad ($etherpad = hiera_hash('etherpad', '')) {
     group   => 'etherpad',
     require => [User['etherpad'],
                 Group['etherpad']],
+    notify  => Exec["change_owner"],
   }
 
   file { '/var/log/etherpad':
@@ -72,6 +73,7 @@ class etherpad ($etherpad = hiera_hash('etherpad', '')) {
     mode    => '0740',
     source  => 'puppet:///modules/etherpad/run.sh',
     require => File['/var/www/etherpad-lite-1.4.0'],
+    notify  => Exec["change_owner"],
   }
 
 
@@ -82,7 +84,7 @@ class etherpad ($etherpad = hiera_hash('etherpad', '')) {
     mode     => '0640',
     content  => template('etherpad/settings.json.erb'),
     require  => File['/var/www/etherpad-lite-1.4.0'],
-    notify   => Service[$etherpad_init],
+    notify   => [Service[$etherpad_init], Exec["change_owner"]],
   }
 
   exec {'change_owner':
@@ -90,7 +92,8 @@ class etherpad ($etherpad = hiera_hash('etherpad', '')) {
     path    => '/usr/sbin/:/usr/bin/:/bin/',
     require => [File['/var/www/etherpad-lite-1.4.0/run.sh'],
                 File['init_script'],
-                File['/var/www/etherpad-lite-1.4.0/settings.json']]
+                File['/var/www/etherpad-lite-1.4.0/settings.json']],
+    refreshonly => true,
   }
 
   service { $etherpad_init:

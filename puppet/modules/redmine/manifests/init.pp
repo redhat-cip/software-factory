@@ -26,16 +26,12 @@ class redmine ($settings = hiera_hash('redmine', ''),
         $http = "httpd"
         $provider = "systemd"
         $httpd_user = "apache"
-        $generate_session_store_cmd = 'bundle exec rake generate_session_store'
+        $generate_secret_token_cmd = 'bundle exec rake generate_secret_token'
         $create_db_cmd = 'bundle exec rake db:migrate --trace'
+        $create_db_check_cmd = 'bundle exec rake db:migrate:status'
         $default_data_cmd = 'bundle exec rake redmine:load_default_data --trace'
         $plugin_install_cmd = 'bundle exec rake redmine:plugins:migrate'
         $redmine_backlog_install_cmd = 'bundle exec rake redmine:backlogs:install RAILS_ENV=production'
-
-        exec { 'chown_redmine':
-          path    => '/usr/bin/:/bin/',
-          command => "chown -R $httpd_user:$httpd_user /usr/share/redmine",
-        }
 
         file { 'conf_yml':
           path   => '/usr/share/redmine/config/configuration.yml',
@@ -90,8 +86,9 @@ class redmine ($settings = hiera_hash('redmine', ''),
         $http = "apache2"
         $provider = "debian"
         $httpd_user = "www-data"
-        $generate_session_store_cmd = 'rake generate_session_store'
+        $generate_secret_token_cmd = 'rake generate_secret_token'
         $create_db_cmd = 'rake db:migrate --trace'
+        $create_db_check_cmd = 'rake db:migrate:status'
         $default_data_cmd = 'rake redmine:load_default_data --trace'
         $plugin_install_cmd = 'rake redmine:plugins:migrate'
         $redmine_backlog_install_cmd = 'rake redmine:backlogs:install RAILS_ENV=production'
@@ -167,6 +164,12 @@ class redmine ($settings = hiera_hash('redmine', ''),
       }
     }
 
+    exec { 'chown_redmine':
+      path    => '/usr/bin/:/bin/',
+      command => "chown -R $httpd_user:$httpd_user /usr/share/redmine",
+      unless  => 'stat -c %U /usr/share/redmine | grep apache'
+    }
+
     package { $http:
         ensure => 'installed',
     }
@@ -178,13 +181,15 @@ class redmine ($settings = hiera_hash('redmine', ''),
         replace => true,
     }
 
-    exec {'create_session_store':
+    exec {'create_secret_token':
         environment => ["HOME=/root"],
-        command => $generate_session_store_cmd,
+        command => $generate_secret_token_cmd,
         path    => '/usr/bin/:/bin/:/usr/local/bin',
         cwd     => '/usr/share/redmine',
         require => [File['dbconf_yml'],
                     File['conf_yml']],
+        creates => "/usr/share/redmine/config/initializers/secret_token.rb",
+        notify      => Exec['chown_redmine'],
     }
 
     exec {'create_db':
@@ -192,15 +197,19 @@ class redmine ($settings = hiera_hash('redmine', ''),
         command     => $create_db_cmd,
         path        => '/usr/bin/:/bin/:/usr/local/bin',
         cwd         => '/usr/share/redmine',
-        require     => [Exec['create_session_store']],
+        require     => [Exec['create_secret_token']],
+        unless      => "$create_db_check_cmd | grep up",
+        notify      => Exec['chown_redmine'],
     }
 
     exec {'default_data':
         environment => ['RAILS_ENV=production', 'REDMINE_LANG=en', 'HOME=/root'],
-        command     => $default_data_cmd,
+        command     => "$default_data_cmd > /usr/share/redmine/defautl_data.log",
         path        => '/usr/bin/:/bin/:/usr/local/bin',
         cwd         => '/usr/share/redmine',
         require     => [Exec['create_db']],
+        creates     => "/usr/share/redmine/defautl_data.log",
+        notify      => Exec['chown_redmine'],
     }
 
     exec {'post-conf-in-mysql':
@@ -210,6 +219,7 @@ class redmine ($settings = hiera_hash('redmine', ''),
         refreshonly => true,
         subscribe   => File['/root/post-conf-in-mysql.sql'],
         require     => [Exec['default_data']],
+        notify      => Exec['chown_redmine'],
     }
 
     file { '/etc/monit/conf.d/redmine':
@@ -221,10 +231,12 @@ class redmine ($settings = hiera_hash('redmine', ''),
 
     exec {'plugin_install':
       environment => ['RAILS_ENV=production', 'REDMINE_LANG=en', 'HOME=/root'],
-      command     => $plugin_install_cmd,
+      command     => "$plugin_install_cmd > /usr/share/redmine/redmine_plugin_install.log",
       cwd         => '/usr/share/redmine',
       path        => ['/bin', '/usr/bin', '/usr/local/bin'],
       require     => Exec['post-conf-in-mysql'],
+      creates     => '/usr/share/redmine/redmine_plugin_install.log',
+      notify      => Exec['chown_redmine'],
     }
 
     exec {'redmine_backlog_install':
@@ -233,11 +245,15 @@ class redmine ($settings = hiera_hash('redmine', ''),
       cwd         =>  '/usr/share/redmine/',
       path        =>  ['/bin', '/usr/bin', '/usr/local/bin'],
       require     =>  Exec['create_db'],
+      creates     => '/usr/share/redmine/redmine_backlogs_install.log',
+      notify      => Exec['chown_redmine'],
     }
 
     exec {'set_url_root':
       command => "sed -i '/^.*::relative_url_root =.*/d' /usr/share/redmine/config/environment.rb && echo 'Redmine::Utils::relative_url_root = \"/redmine\"' >> /usr/share/redmine/config/environment.rb",
       path    => '/usr/sbin/:/usr/bin/:/bin/',
       require => Exec['default_data'],
+      unless  => '/usr/bin/grep "relative_url_root = \"/redmine\"" /usr/share/redmine/config/environment.rb',
+      notify      => Exec['chown_redmine'],
     }
 }

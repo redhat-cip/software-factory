@@ -408,6 +408,7 @@ class gerrit ($settings = hiera_hash('gerrit', ''),
     require => [File['/home/gerrit/site_path/etc/gerrit.config'],
                 File['/home/gerrit/site_path/etc/secure.config']],
     logoutput => on_failure,
+    creates => '/tmp/gerrit.config'
   }
 
 
@@ -446,6 +447,7 @@ class gerrit ($settings = hiera_hash('gerrit', ''),
     command => '/root/wait4gerrit.sh',
     timeout => 900,
     require => [File['wait4gerrit'],  Service['gerrit']],
+    creates => '/tmp/wait4gerrit.done',
   }
 
   # Init default in Gerrit. Require a running gerrit but

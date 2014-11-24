@@ -1,3 +1,7 @@
+Package {
+  allow_virtual => false,
+}
+
 node base {
   # these are imported from modules/base
   include disable_root_pw_login

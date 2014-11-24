@@ -117,6 +117,7 @@ class jjb ($settings = hiera_hash('jenkins', ''),
                 File['/usr/share/sf-zuul/layout.yaml'],
                 File['/usr/bin/sf-manage'],
                 File['/root/gerrit_admin_rsa']],
+    creates => '/usr/share/config.init.done',
   }
 
   exec {'kick_jjb':
@@ -128,5 +129,6 @@ class jjb ($settings = hiera_hash('jenkins', ''),
     require => [Exec['init_config_repo'],
                 File['/etc/jenkins_jobs/jenkins_jobs.ini'],
                 File['/usr/local/jenkins/slave_scripts/kick.sh']],
+    creates => '/root/config.kicked',
   }
 }
