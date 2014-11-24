@@ -23,6 +23,9 @@ ROLES="$ROLES redmine"
 ROLES="$ROLES gerrit"
 ROLES="$ROLES managesf"
 ROLES="$ROLES jenkins"
+ROLES="$ROLES slave"
+
+PUPPETIZED_ROLES=$(echo $ROLES | sed -e s/puppetmaster// -e s/slave//)
 
 SFTMP=/tmp/sf-conf/
 SFCONFIGFILE=$SFTMP/sfconfig.yaml
@@ -240,8 +243,7 @@ function run_puppet_agent {
 function run_puppet_agent_stop {
     # Be sure puppet agent is stopped
     local ssh_port=22
-    MROLES=$(echo $ROLES | sed s/puppetmaster//)
-    for role in ${MROLES}; do
+    for role in ${PUPPETIZED_ROLES}; do
         sshpass -p $TEMP_SSH_PWD ssh -p$ssh_port root@${role}.${SF_SUFFIX} "service puppet stop"
     done
 }
@@ -249,8 +251,7 @@ function run_puppet_agent_stop {
 function trigger_puppet_apply {
     local puppetmaster_ip=$(getip_from_yaml puppetmaster)
     local ssh_port=22
-    MROLES=$(echo $ROLES | sed s/puppetmaster//)
-    for role in ${MROLES}; do
+    for role in ${PUPPETIZED_ROLES}; do
         echo " [+] ${role}"
         sshpass -p $TEMP_SSH_PWD ssh -p$ssh_port root@${role}.${SF_SUFFIX} sed -i "s/puppetmaster-ip-template/$puppetmaster_ip/" /etc/hosts
         sshpass -p $TEMP_SSH_PWD scp $HOME/.ssh/known_hosts root@${role}.${SF_SUFFIX}:/root/.ssh/
@@ -272,8 +273,7 @@ function trigger_puppet_apply {
 function run_puppet_agent_start {
     # Start puppet agent at the end of the bootstrap
     local ssh_port=22
-    MROLES=$(echo $ROLES | sed s/puppetmaster//)
-    for role in ${MROLES}; do
+    for role in ${PUPPETIZED_ROLES}; do
         ssh -p$ssh_port root@${role}.${SF_SUFFIX} "sleep 2700; service puppet start" &
     done
 }

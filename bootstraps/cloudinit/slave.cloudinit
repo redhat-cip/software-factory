@@ -46,6 +46,7 @@ runcmd:
   - echo "JENKINS_IP jenkins.SF_SUFFIX jenkins" >> /etc/hosts
   - echo "MANAGESF_IP managesf.SF_SUFFIX SF_SUFFIX" >> /etc/hosts
   - chown -R jenkins /var/lib/jenkins
+  - echo "root:SSHPASS" | chpasswd
   - echo NAMESERVER > /etc/resolv.conf
   - echo UseDNS no >> /etc/ssh/sshd_config
   - service ssh reload || service sshd reload

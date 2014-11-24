@@ -216,6 +216,9 @@ resources:
                   jenkins.SF_SUFFIX:
                     ip: jenkins_host
                     host_aliases: [jenkins]
+                  slave.SF_SUFFIX:
+                    ip: slave_host
+                    host_aliases: [slave]
                   redmine.SF_SUFFIX:
                     ip: redmine_host
                     host_aliases: [redmine]
@@ -237,6 +240,7 @@ resources:
               - echo "127.0.0.1 puppetmaster.SF_SUFFIX puppetmaster" > /etc/hosts
               - echo "mysql_host mysql.SF_SUFFIX mysql" >> /etc/hosts
               - echo "jenkins_host jenkins.SF_SUFFIX jenkins" >> /etc/hosts
+              - echo "slave_host slave.SF_SUFFIX slave" >> /etc/hosts
               - echo "redmine_host redmine.SF_SUFFIX redmine" >> /etc/hosts
               - echo "gerrit_host gerrit.SF_SUFFIX gerrit" >> /etc/hosts
               - echo "managesf_host managesf.SF_SUFFIX auth.SF_SUFFIX managesf SF_SUFFIX" >> /etc/hosts
@@ -251,6 +255,7 @@ resources:
             gerrit_host: { get_attr: [gerrit_instance, first_address] }
             managesf_host: { get_attr: [managesf_instance, first_address] }
             mysql_host: { get_attr: [mysql_instance, first_address] }
+            slave_host: { get_attr: [slave_instance, first_address] }
             SF_SUFFIX: { get_param: suffix }
             SFCONFIGCONTENT: { get_param: sf_config_content }
             JENKINS_USER_PASSWORD: { get_param: jenkins_user_pwd }
@@ -460,6 +465,7 @@ resources:
              - echo "127.0.1.1 slave.SF_SUFFIX slave" >> /etc/hosts
              - echo "JENKINS_IP jenkins.SF_SUFFIX jenkins" >> /etc/hosts
              - echo "MANAGESF_IP managesf.SF_SUFFIX SF_SUFFIX" >> /etc/hosts
+             - echo "root:SSHPASS" | chpasswd
              - chown -R jenkins /var/lib/jenkins
              - echo UseDNS no >> /etc/ssh/sshd_config
              - service ssh reload || service sshd reload
