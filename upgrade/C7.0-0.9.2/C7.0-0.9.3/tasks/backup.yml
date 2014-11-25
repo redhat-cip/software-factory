@@ -1,0 +1,3 @@
+---
+- name: Backup
+  command: managesf-cli --host {{ sf_gateway }} --auth {{ sf_username }}:{{ sf_password }} backup

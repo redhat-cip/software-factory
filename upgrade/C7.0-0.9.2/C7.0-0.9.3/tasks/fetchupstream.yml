@@ -1,0 +1,11 @@
+---
+# The target version is already tagged and roles available upstream
+- name: Get software-factory source code
+  git: repo=http://softwarefactory.enovance.com/r/p/software-factory.git
+  args:
+    dest: /srv/software-factory
+    version: {{ version }}
+- name: Get new roles
+  command: /srv/software-factory/fetch_roles.sh trees
+  args:
+    chdir: /srv/software-factory/

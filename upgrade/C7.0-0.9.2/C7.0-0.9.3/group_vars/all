@@ -1,0 +1,9 @@
+from_version: C7.0-0.9.2
+version: C7.0-0.9.3
+domain: tests.dom
+upstream_path: /var/lib/sf/roles/upstream
+install_base: /var/lib/debootstrap/install
+metadata_base: /var/lib/debootstrap/metadata
+install_path: "{{ install_base }}/{{ version }}"
+metadata_path: "{{ metadata_base }}/{{ from_version }}"
+clone_path: /srv/software-factory

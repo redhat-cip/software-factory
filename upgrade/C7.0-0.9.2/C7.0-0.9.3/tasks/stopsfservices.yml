@@ -1,0 +1,20 @@
+---
+# Stop all service mysql, gerrit, ...
+- name: Stop Jenkins
+  service: name=jenkins state=stopped
+  ignore_errors: yes
+- name: Stop Zuul
+  service: name=zuul state=stopped
+  ignore_errors: yes
+- name: Stop Zuul merger
+  service: name=zuul-merger state=stopped
+  ignore_errors: yes
+- name: Stop Redmine
+  service: name=redmine state=stopped
+  ignore_errors: yes
+- name: Stop Gerrit
+  service: name=gerrit state=stopped
+  ignore_errors: yes
+- name: Stop mariadb
+  service: name=mariadb state=stopped
+  ignore_errors: yes

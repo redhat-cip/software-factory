@@ -1,0 +1,8 @@
+---
+# Synchronize the FS with eDeploy
+- name: Check role version with eDeploy
+  command: edeploy version
+  register: result
+- name: Synchronize FS with eDeploy
+  command: edeploy upgrade {{ version }}
+  when: result.stdout == '{{ from_version }}'

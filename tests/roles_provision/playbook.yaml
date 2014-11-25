@@ -1,0 +1,17 @@
+---
+- hosts: puppetmaster
+  vars:
+    version: C7.0-0.9.3
+  tasks:
+  - name: Create target directory for role trees
+    command: mkdir -p /var/lib/sf/roles/upstream/
+  - name: Create target directory for software factory clone
+    command: mkdir -p /srv/software-factory
+  - name: Copy the current GIT local copy archive of Software Factory to the puppet master node
+    copy: src=/tmp/software-factory-lc.tgz dest=/tmp
+  - name: Deflate the current copy archive of Software Factory to the puppet master node
+    command: tar -xzf /tmp/software-factory-lc.tgz -C /srv/software-factory
+  - name: Copy install-server-vm dev role trees to the puppet master node
+    copy: src=/var/lib/sf/roles/install/{{ version }}/install-server-vm-{{ version }}.edeploy dest=/var/lib/sf/roles/upstream/
+  - name: Copy softwarefactory dev role trees to the puppet master node
+    copy: src=/var/lib/sf/roles/install/{{ version }}/softwarefactory-{{ version }}.edeploy dest=/var/lib/sf/roles/upstream/

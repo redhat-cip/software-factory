@@ -1,0 +1,27 @@
+---
+- hosts: services
+  gather_facts: no
+  tasks:
+  - include: tasks/puppetagentstop.yml
+  - include: tasks/stopsfservices.yml
+- hosts: puppetmaster
+  gather_facts: no
+  tasks:
+  - include: tasks/puppetagentstop.yml
+  - name: Stop puppet server
+    service: name=httpd state=stopped
+  - include: tasks/edeployserver.yml
+  - include: tasks/edeploysync.yml
+- hosts: services
+  gather_facts: no
+  tasks:
+  - include: tasks/edeploysync.yml
+- hosts: puppetmaster
+  gather_facts: no
+  tasks:
+  - name: Start the puppet master
+    service: name=httpd state=started
+  - name: Restart the bootstrap script
+    shell: INITIAL=no HOME=/root/ SFSUFFIX={{ domain }} ./bootstrap.sh
+    args:
+      chdir: /root/puppet-bootstrapper

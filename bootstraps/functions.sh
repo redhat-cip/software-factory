@@ -29,6 +29,14 @@ PUPPETIZED_ROLES=$(echo $ROLES | sed -e s/puppetmaster// -e s/slave//)
 
 SFTMP=/tmp/sf-conf/
 SFCONFIGFILE=$SFTMP/sfconfig.yaml
+INITIAL=${INITIAL:-yes}
+
+if [ "$INITIAL" = "no" ]; then
+    # Keys has been setup on the nodes
+    SSHPASS=""
+else
+    SSHPASS="sshpass -p $TEMP_SSH_PWD"
+fi
 
 function hash_password {
     python -c "import crypt, random, string; salt = '\$6\$' + ''.join(random.choice(string.letters + string.digits) for _ in range(16)) + '\$'; print crypt.crypt('$1', salt)"
@@ -217,7 +225,7 @@ function run_puppet_agent_stop {
     # Be sure puppet agent is stopped
     local ssh_port=22
     for role in ${PUPPETIZED_ROLES}; do
-        sshpass -p $TEMP_SSH_PWD ssh -p$ssh_port root@${role}.${SF_SUFFIX} "service puppet stop"
+        $SSHPASS ssh -p$ssh_port root@${role}.${SF_SUFFIX} "service puppet stop"
     done
 }
 
@@ -226,12 +234,12 @@ function trigger_puppet_apply {
     local ssh_port=22
     for role in ${PUPPETIZED_ROLES}; do
         echo " [+] ${role}"
-        sshpass -p $TEMP_SSH_PWD ssh -p$ssh_port root@${role}.${SF_SUFFIX} sed -i "s/puppetmaster-ip-template/$puppetmaster_ip/" /etc/hosts
-        sshpass -p $TEMP_SSH_PWD scp $HOME/.ssh/known_hosts root@${role}.${SF_SUFFIX}:/root/.ssh/
+        $SSHPASS ssh -p$ssh_port root@${role}.${SF_SUFFIX} sed -i "s/puppetmaster-ip-template/$puppetmaster_ip/" /etc/hosts
+        $SSHPASS scp $HOME/.ssh/known_hosts root@${role}.${SF_SUFFIX}:/root/.ssh/
         # The Puppet run will deactivate the temporary root password
         # Puppet agent will return code 2 on success...
         # We create a sub-process () and convert the error
-        sshpass -p $TEMP_SSH_PWD ssh -p$ssh_port root@${role}.${SF_SUFFIX} "puppet agent --test --environment sf" || (
+        $SSHPASS ssh -p$ssh_port root@${role}.${SF_SUFFIX} "puppet agent --test --environment sf" || (
             [ "$?" == 2 ] && exit 0
             echo "======================================"
             echo "FAIL: Puppet agent failed for ${role}"
