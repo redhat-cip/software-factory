@@ -1,4 +1,0 @@
-#!/bin/sh
-
-echo "Post upgrade script executed"
-exit 0

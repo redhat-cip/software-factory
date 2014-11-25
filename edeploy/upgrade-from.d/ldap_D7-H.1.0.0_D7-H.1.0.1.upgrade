@@ -1,5 +1,0 @@
-. $ORIG/common
-
-# $dir is the root fs of the target
-# install_packages $dir apache2
-# chroot $dir command
