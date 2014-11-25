@@ -119,13 +119,13 @@ function build_roles {
 prepare_buildenv
 [ -z "$SKIP_UPSTREAM" ] && {
     [ -z "$SF_SKIP_FETCHBASES" ] && {
-        ./fetch_roles.sh bases
+        ./fetch_roles.sh bases || echo "pass..."
         echo
     }
-    ./fetch_roles.sh trees
+    ./fetch_roles.sh trees || echo "pass..."
     echo
     [ -n "$VIRT" ] && {
-        ./fetch_roles.sh imgs
+        ./fetch_roles.sh imgs || echo "pass..."
         echo
     }
 }
