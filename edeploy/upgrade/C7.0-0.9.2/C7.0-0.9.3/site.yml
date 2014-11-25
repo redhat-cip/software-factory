@@ -2,13 +2,13 @@
 # file: site.yml
 
 - hosts: puppetmaster
+  gather_facts: no
   user: root
-  vars:
-    sf_rel: C7.0-0.9.3
   roles:
     - install-server
 
 - hosts: services
+  gather_facts: no
   user: root
   roles:
     - software-factory

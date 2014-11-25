@@ -1,0 +1,8 @@
+---
+# file: roles/all/tasks/main.yml
+
+- name: Stop puppet agent
+  service: name=puppet state=stopped
+
+- name: Upgrade install server
+  command:  /usr/sbin/edeploy upgrade 0.9.3
