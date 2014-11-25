@@ -124,6 +124,8 @@ After adding the files, you need to commit the changes in your local repo
 
  $ git commit -m "Detailed description about the change"
 
+.. _publishchange:
+
 Publishing the change
 .....................
 
