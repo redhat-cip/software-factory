@@ -67,7 +67,7 @@ function build_role {
     # Check upstream role MD5 to know if upstream role can be re-used
     # Provide SKIP_UPSTREAM=1 to avoid checking the upstream pre-built role
     if [ -f "${UPSTREAM_FILE}.md5" ] && [ "$(cat ${UPSTREAM_FILE}.md5)" == "${ROLE_MD5}" ] && [ -z "$SKIP_UPSTREAM" ]; then
-        echo "Upstream ${ROLE_NAME} md5 is similar to what we computed from your git branch state, I will used the upstream role."
+        echo "Upstream ${ROLE_NAME} md5 is similar to what we computed from your git branch state, I will use the upstream role."
         sudo rm -Rf ${INST}/${ROLE_NAME}
         sudo mkdir ${INST}/${ROLE_NAME}
         echo "Unarchive ..."
@@ -117,15 +117,17 @@ function build_roles {
 }
 
 prepare_buildenv
-[ -z "$SF_SKIP_FETCHBASES" ] && {
-    ./fetch_roles.sh bases
+[ -z "$SKIP_UPSTREAM" ] && {
+    [ -z "$SF_SKIP_FETCHBASES" ] && {
+        ./fetch_roles.sh bases
+        echo
+    }
+    ./fetch_roles.sh trees
     echo
-}
-./fetch_roles.sh trees
-echo
-[ -n "$VIRT" ] && {
-    ./fetch_roles.sh imgs
-    echo
+    [ -n "$VIRT" ] && {
+        ./fetch_roles.sh imgs
+        echo
+    }
 }
 fetch_edeploy
 echo
