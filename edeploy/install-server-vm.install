@@ -30,10 +30,8 @@ update_repositories $dir
 
 case "$(package_tool)" in
     "yum")
-        sshpass="http://downloads.sourceforge.net/project/sshpass/sshpass/1.05/sshpass-1.05.tar.gz"
         add_epel_repository $DIST
-        install_packages $dir vim-enhanced openldap-devel python-devel postfix gcc bc monit ansible
-        do_chroot $dir bash -c "cd /tmp/ && wget $sshpass && tar -xvzf sshpass-1.05.tar.gz && cd sshpass-1.05 && ./configure && make install"
+        install_packages $dir vim-enhanced openldap-devel python-devel postfix gcc bc monit ansible sshpass
         install_bup $dir
         remove_epel_repository $DIST
         ;;
