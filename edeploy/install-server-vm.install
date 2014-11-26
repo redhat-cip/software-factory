@@ -83,6 +83,12 @@ do_chroot $dir bash -c "for x in {0..6}; do ls /etc/rc\${x}.d/*jenkins | xargs r
 # install requirements for functional tests
 do_chroot $dir bash -c "cd /root/puppet-bootstrapper/tests; pip install -r requirements.txt"
 
+# Cleanup
+clear_packages_cache $dir
+# somehow yum left some packages behind...
+rm -f $dir/var/cache/yum/*/packages/*.rpm
+rm -f $dir/var/cache/yum/*/*.sqlite
+
 # Disable root passwd
 do_chroot $dir passwd -l root
 
