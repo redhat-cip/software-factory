@@ -35,7 +35,7 @@ function hash_password {
 }
 
 function generate_sfconfig {
-    [ -d $SFTMP ] && rm -Rf $SFTMP
+    [ -d $SFTMP ] && sudo rm -Rf $SFTMP
     mkdir $SFTMP
     cp ../sfconfig.yaml $SFCONFIGFILE
 
