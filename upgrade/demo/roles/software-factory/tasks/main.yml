@@ -1,5 +1,0 @@
----
-# file: roles/all/tasks/main.yml
-
-- name: Upgrading software factory services
-  command: echo "edeploy upgrade to version {{ version }}..."
