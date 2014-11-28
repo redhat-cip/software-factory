@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # TODO: puppetize enocloud access
-eval $(sudo cat /etc/sf-dom-enocloud.openrc)
+source /etc/sf-dom-enocloud.openrc
 
 set -e
 set -x

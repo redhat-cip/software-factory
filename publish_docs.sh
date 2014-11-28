@@ -27,7 +27,8 @@
 # CONTAINER='sfdocs'
 # HOST='http://swiftproxy'  # no trailing slash!
 
-source /etc/sfdocs.key
+# TODO: puppetize enocloud access
+source /etc/sf-dom-enocloud.openrc
 
 set -e
 
