@@ -1,5 +1,6 @@
 ---
 - hosts: puppetmaster
+  gather_facts: no
   vars:
     version: C7.0-0.9.3
   tasks:

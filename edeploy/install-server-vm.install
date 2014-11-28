@@ -68,8 +68,6 @@ cp -Rv ../tools $dir/root/puppet-bootstrapper/
 cp -Rv ../serverspec $dir/root/puppet-bootstrapper/
 cp -Rv ../bootstraps/*.sh $dir/root/puppet-bootstrapper/
 cp -Rv ../bootstraps/sfcreds.yaml $dir/root/puppet-bootstrapper/
-cp -Rv ../role_configrc $dir/root/puppet-bootstrapper/
-cp -Rv ../fetch_roles.sh $dir/root/puppet-bootstrapper/
 
 # install pysflib
 do_chroot $dir bash -c "cd /root/puppet-bootstrapper/tools/pysflib; pip install -r requirements.txt"

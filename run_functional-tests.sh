@@ -55,18 +55,44 @@ checkpoint "$(date) - $(hostname)"
 checkpoint "lxc-first-clean"
 build
 checkpoint "build_roles"
-lxc_start
-checkpoint "lxc-start"
 if [ -z "$1" ]; then
     # This test is run by default when no argument provided
+    lxc_start
+    checkpoint "lxc-start"
     run_tests 15
     checkpoint "run_tests"
 fi
 if [ "$1" == "backup_restore_tests" ]; then
+    lxc_start
+    checkpoint "lxc-start"
     run_backup_restore_tests 45 "provision" || pre_fail "Backup test: provision"
     lxc_stop
     lxc_start
     run_backup_restore_tests 45 "check" || pre_fail "Backup test: check"
+fi
+if [ "$1" == "upgrade" ]; then
+    cloned=/tmp/software-factory
+    [ -d $cloned ] && rm -Rf $cloned
+    git clone http://softwarefactory.enovance.com/r/software-factory $cloned
+    (
+        cd $cloned
+        git checkout 0.9.2
+        ./fetch_roles.sh trees
+        cd bootstraps/lxc
+        ./start.sh
+        cd ../..
+        source functestslib.sh
+        wait_for_bootstrap_done
+        run_serverspec
+        ./tools/provisioner_checker/run.sh provisioner
+    )
+    cd tests/roles_provision/
+    sudo ./prepare.sh
+    ansible-playbook -i inventory playbook.yaml
+    cd -
+    ssh -o StrictHostKeyChecking=no root@`get_ip puppetmaster` "cd /srv/software-factory/upgrade/C7.0-0.9.2/C7.0-0.9.3/; ansible-playbook -i hosts site.yml"
+    run_serverspec
+    ./tools/provisioner_checker/run.sh checker
 fi
 
 DISABLE_SETX=1

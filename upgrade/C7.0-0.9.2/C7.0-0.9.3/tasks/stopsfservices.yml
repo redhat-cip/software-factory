@@ -1,5 +1,11 @@
 ---
-# Stop all service mysql, gerrit, ...
+# Stop all service mariadb, gerrit, ...
+- name: Stop Monit
+  service: name=monit state=stopped
+  ignore_errors: yes
+- name: Stop httpd
+  service: name=httpd state=stopped
+  ignore_errors: yes
 - name: Stop Jenkins
   service: name=jenkins state=stopped
   ignore_errors: yes
@@ -9,12 +15,18 @@
 - name: Stop Zuul merger
   service: name=zuul-merger state=stopped
   ignore_errors: yes
-- name: Stop Redmine
-  service: name=redmine state=stopped
-  ignore_errors: yes
 - name: Stop Gerrit
   service: name=gerrit state=stopped
   ignore_errors: yes
-- name: Stop mariadb
+- name: Stop Etherpad
+  service: name=etherpad state=stopped
+  ignore_errors: yes
+- name: Stop Lodgeit
+  service: name=lodgeit state=stopped
+  ignore_errors: yes
+- name: Stop Mariadb
+  service: name=mariadb state=stopped
+  ignore_errors: yes
+- name: Stop Postfix
   service: name=mariadb state=stopped
   ignore_errors: yes
