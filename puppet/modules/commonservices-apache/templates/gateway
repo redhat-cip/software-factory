@@ -34,6 +34,7 @@
 
     Alias /static/ /var/www/static/
     Alias /docs/ /var/www/docs/
+    Alias /dashboard/ /var/www/dashboard/
 
     ScriptAliasMatch ^/[^(auth)|(managesf)].*$ /var/www/index.py
 
@@ -43,6 +44,16 @@
         AllowOverride None
         Order allow,deny
         allow from all
+    </Directory>
+
+    <Directory /var/www/dashboard>
+        Order deny,allow
+        Allow from all
+        AuthType mod_auth_pubtkt
+        TKTAuthLoginURL <%= @cauth['signin_url'] %>
+        TKTAuthFakeBasicAuth on
+        TKTAuthDebug 1
+        require valid-user
     </Directory>
 
 </VirtualHost>

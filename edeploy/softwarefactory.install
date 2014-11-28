@@ -183,6 +183,9 @@ do_chroot $dir rm /tmp/font-awesome.zip
 do_chroot $dir mkdir /var/www/static/js
 do_chroot $dir curl -L --silent -o /var/www/static/js/jquery.min.js http://code.jquery.com/jquery-2.1.1.min.js
 
+# AngularJS
+do_chroot $dir curl -L --silent -o /var/www/static/js/angular.min.js https://ajax.googleapis.com/ajax/libs/angularjs/1.2.27/angular.min.js
+
 # zuul
 do_chroot $dir git clone https://github.com/openstack-infra/zuul /srv/zuul
 do_chroot $dir bash -c "cd /srv/zuul && git checkout -b working 8c81dc3fa9c2dfaf93539641c099b15064357011" # a commit known to work 11/12/2014

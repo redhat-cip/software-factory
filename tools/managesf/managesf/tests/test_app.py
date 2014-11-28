@@ -14,7 +14,6 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-
 import os
 
 from unittest import TestCase
@@ -34,8 +33,10 @@ class FunctionalTest(TestCase):
     def setUp(self):
         c = dummy_conf()
         config = {'gerrit': c.gerrit,
+                  'redmine': c.redmine,
                   'app': c.app,
-                  'admin': c.admin}
+                  'admin': c.admin,
+                  'auth': c.auth}
         # deactivate loggin that polute test output
         # even nologcapture option of nose effetcs
         # 'logging': c.logging}
@@ -47,9 +48,22 @@ class FunctionalTest(TestCase):
 
 class TestManageSFAppProjectController(FunctionalTest):
     def test_project_get(self):
-        # Project GET is not supported right now
-        response = self.app.get('/project', status="*")
-        self.assertEqual(response.status_int, 501)
+        ctx = [patch('managesf.controllers.gerrit.get_cookie'),
+               patch('managesf.controllers.gerrit.get_projects'),
+               patch('managesf.controllers.gerrit.get_projects_by_user'),
+               patch('managesf.controllers.gerrit.get_open_changes'),
+               patch('managesf.controllers.redminec.get_open_issues')]
+        with nested(*ctx) as (gc, gp, gpu, goc, goi):
+            gp.return_value = ['p0', 'p1', ]
+            gpu.return_value = ['p1', ]
+            goc.return_value = [{'project': 'p1'}]
+            goi.return_value = {'issues': [{'project': {'name': 'p1'}}]}
+            response = self.app.get('/project/')
+            self.assertEqual(200, response.status_int)
+            self.assertTrue(
+                '{"p0": {"open_issues": 0, "open_reviews": 0, "admin": 0}, ' +
+                '"p1": {"open_issues": 1, "open_reviews": 1, "admin": 1}}',
+                response.body)
 
     def test_project_put(self):
         # Create a project with no name

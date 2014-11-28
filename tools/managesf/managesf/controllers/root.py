@@ -13,6 +13,9 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import json
+import time
+
 from pecan import expose
 from pecan import abort
 from pecan.rest import RestController
@@ -163,10 +166,35 @@ class ProjectController(RestController):
 
     membership = MembershipController()
 
-    # Get method is mandatory for routing
+    def __init__(self):
+        self.projects = {}
+        self.last_get = 0
+        self.cache_timeout = 15
+
     @expose()
     def get(self):
-        abort(501)
+        if self.last_get + self.cache_timeout > time.time():
+            return json.dumps(self.projects)
+        projects = {}
+
+        for p in gerrit.get_projects():
+            projects[p] = {'open_reviews': 0, 'open_issues': 0, 'admin': 0}
+
+        for p in gerrit.get_projects_by_user():
+            projects[p]['admin'] = 1
+
+        for issue in redminec.get_open_issues().get('issues'):
+            prj = issue.get('project').get('name')
+            if prj in projects:
+                projects[prj]['open_issues'] += 1
+
+        for review in gerrit.get_open_changes():
+            prj = review.get('project')
+            if prj in projects:
+                projects[prj]['open_reviews'] += 1
+        self.projects = projects
+        self.last_get = time.time()
+        return json.dumps(projects)
 
     @expose()
     def put(self, name=None):

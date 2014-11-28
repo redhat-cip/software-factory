@@ -68,6 +68,11 @@ def get_projects_by_user():
     return names
 
 
+def get_projects():
+    ge = get_client()
+    return ge.get_projects()
+
+
 def create_group(grp_name, grp_desc):
     logger.info('[gerrit] creating group %s' % grp_name)
     ge = get_client()
@@ -107,6 +112,11 @@ def get_ptl_group_name(prj_name):
 
 def get_dev_group_name(prj_name):
     return "%s-dev" % prj_name
+
+
+def get_open_changes():
+    ge = get_client()
+    return ge.get_open_changes()
 
 
 class GerritRepo(object):

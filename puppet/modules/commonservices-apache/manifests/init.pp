@@ -13,7 +13,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-class commonservices-apache {
+class commonservices-apache ($cauth = hiera_hash('cauth', '')) {
 
   case $operatingsystem {
     centos: {
@@ -80,6 +80,32 @@ class commonservices-apache {
     mode   => '0644',
     owner  => $httpd_user,
     group  => $httpd_user,
+  }
+
+  file {'/var/www/dashboard':
+    ensure => directory,
+    recurse => true,
+    mode   => '0644',
+    owner  => $httpd_user,
+    group  => $httpd_user,
+  }
+
+  file {'/var/www/dashboard/index.html':
+    ensure => file,
+    mode   => '0640',
+    owner  => $httpd_user,
+    group  => $httpd_user,
+    source => 'puppet:///modules/commonservices-apache/dashboard.html',
+    require => File['/var/www/dashboard'],
+  }
+
+   file {'/var/www/dashboard/dashboard.js':
+    ensure => file,
+    mode   => '0640',
+    owner  => $httpd_user,
+    group  => $httpd_user,
+    source => 'puppet:///modules/commonservices-apache/dashboard.js',
+    require => File['/var/www/dashboard'],
   }
 
 }

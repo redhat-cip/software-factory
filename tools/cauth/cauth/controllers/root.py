@@ -43,6 +43,8 @@ def clean_back(value):
         return "/_jenkins/"
     if "redmine" in value:
         return "/_redmine/"
+    if "dashboard" in value:
+        return "/_dashboard/"
     return "/r/"
 
 

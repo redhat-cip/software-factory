@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html ng-app="sfDashboard">
+<head>
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css">
+    <link href="/static/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+        <script src="/static/js/jquery.min.js"></script>
+        <script src="/static/bootstrap/js/bootstrap.min.js"></script>
+        <script src="/static/js/angular.min.js"></script>
+    <script src="dashboard.js"></script>
+        <style>
+        body {padding-top: 10px;}
+        </style>
+</head>
+
+<body ng-controller="mainController">
+    <div class="container">
+        <div ng-if="errors" class="alert alert-danger" role="alert">
+             <button type="button" class="close" data-dismiss="alert">
+                <span aria-hidden="true">&times;</span>
+                <span class="sr-only">Close</span>
+            </button>
+            <strong>Error!</strong>
+            {{ errors }}
+        </div>
+
+        <div ng-if="loading" class="alert alert-info" role="alert">
+             <button type="button" class="close" data-dismiss="alert">
+                <span aria-hidden="true">&times;</span>
+                <span class="sr-only">Close</span>
+            </button>
+            <strong>Loading...</strong> please wait.
+        </div>
+
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Project</th>
+                    <th class="text-center">Open Reviews</th>
+                    <th class="text-center">Open Bugs</th>
+                    <th class="text-right">
+                        <button type="button" class="btn btn-danger btn-xs" data-toggle="modal" data-target="#modal_create_project">
+                            <span class="glyphicon glyphicon-plus">
+                        </button>
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr ng-repeat="(project, entry) in projects">
+                    <td><a href="/r/gitweb?p={{ project }}.git;a=summary">{{ project }}</a></td>
+                    <td class="text-center"><a href="/r/#/q/status:open+project:{{ project }},n,z">{{ entry.open_reviews }}</a></td>
+                    <td class="text-center"><a href="/_redmine/projects/{{ project }}/issues">{{ entry.open_issues }}</a></td>
+                    <td class="text-right">
+                        <button class="btn btn-danger btn-xs" ng-click="deleteProject(project)" ng-if="entry.admin == 1">
+                            <span class="glyphicon glyphicon-trash"></span>
+                        </button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="modal fade" id="modal_create_project" tabindex="-1" role="dialog" aria-labelledby="modal_create_projectLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <form class="form-horizontal" role="form">
+
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal">
+                                <span aria-hidden="true">&times;</span><span class="sr-only">Close</span>
+                            </button>
+                            <h4 class="modal-title" id="modal_create_projectLabel">Create new project</h4>
+                        </div>
+
+                        <div class="modal-body">
+                            <div class="form-group">
+                                <label for="projectname" class="col-sm-2 control-label">Projectname</label>
+                                <div class="col-sm-10">
+                                    <input type="text" class="form-control" id="projectname" placeholder="Project name" ng-model="data.name">
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="description" class="col-sm-2 control-label">Description</label>
+                                <div class="col-sm-10">
+                                    <input type="text" class="form-control" id="description" placeholder="A short description for this project" ng-model="data.description">
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="upstream" class="col-sm-2 control-label">Upstream</label>
+                                <div class="col-sm-10">
+                                    <input type="text" class="form-control" id="upstream" placeholder="For example: git://tests.net/git/sample.git" ng-model="data.upstream">
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <div class="col-sm-offset-2 col-sm-10">
+                                    <div class="checkbox">
+                                        <label><input type="checkbox" id="private" ng-model="data.private">Private</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                            <button type="submit" class="btn btn-primary" ng-click="createProject()" data-dismiss="modal">Create project</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>

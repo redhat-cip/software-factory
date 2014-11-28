@@ -15,6 +15,6 @@ if target.startswith('/_'):
     target = unquote(target)
     target = target.replace('|', '#', 1)
 else:
-    target = '/r/'
+    target = '/dashboard/'
 content = tmpl.substitute(target_url=target)
 print content

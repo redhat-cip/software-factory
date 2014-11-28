@@ -339,6 +339,12 @@ class GerritUtils:
         except HTTPError as e:
             return self._manage_errors(e)
 
+    def get_open_changes(self):
+        try:
+            return self.g.get('changes/?q=status:open')
+        except HTTPError as e:
+            return self._manage_errors(e)
+
 
 # Examples
 if __name__ == "__main__":
