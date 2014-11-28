@@ -13,7 +13,14 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-set -x
+
+if [ ! -z "${1}" ]; then
+    ARTIFACTS_DIR=${1}/edeploy
+    mkdir -p ${ARTIFACTS_DIR}
+    ERROR_LOG=${ARTIFACTS_DIR}/error_log
+else
+    ERROR_LOG=/dev/stderr
+fi
 
 LOCK="/var/run/sf-build_roles.lock"
 if [ -f ${LOCK} ]; then
@@ -86,9 +93,15 @@ function build_role {
         fi
     else
         if [ ! -f "${ROLE_FILE}.md5" ] || [ "$(cat ${ROLE_FILE}.md5)" != "${ROLE_MD5}" ]; then
-            echo "The locally built ${ROLE_NAME} md5 is different to what we computed from your git branch state. I need to rebuild the role."
+            echo "The locally built ${ROLE_NAME} md5 is different to what we computed from your git branch state."
+            echo "Building role now..."
             sudo rm -f ${INST}/${ROLE_NAME}.done
-            sudo ${MAKE} EDEPLOY_ROLES_PATH=${EDEPLOY_ROLES} PREBUILD_EDR_TARGET=${EDEPLOY_ROLES_REL} ${ROLE_NAME}
+            if [ ! -z "${ARTIFACTS_DIR}" ]; then
+                ROLE_OUTPUT=${ARTIFACTS_DIR}/${ROLE_NAME}_build.log
+            else
+                ROLE_OUTPUT=/dev/stdout
+            fi
+            sudo ${MAKE} EDEPLOY_ROLES_PATH=${EDEPLOY_ROLES} PREBUILD_EDR_TARGET=${EDEPLOY_ROLES_REL} ${ROLE_NAME} &> ${ROLE_OUTPUT}
             echo ${ROLE_MD5} | sudo tee ${ROLE_FILE}.md5
             if [ -n "$VIRT" ]; then
                 echo "Upstream ${ROLE_NAME} is NOT similar ! I rebuild the qcow2 image."
@@ -105,8 +118,12 @@ function build_roles {
     if [ -z "$(git ls-files -o -m --exclude-standard)" ]; then
         git clean -ffdx
     else
-        echo "You have unstaged file in your local copy. Please stage them !"
-        exit
+        (
+            echo "---------------------------------------------------------------------"
+            echo "Error: You have unstaged file in your local copy. Please stage them !"
+            echo "---------------------------------------------------------------------"
+        ) > ${ERROR_LOG}
+        exit 1
     fi
 
     cd $SF_ROLES
@@ -126,11 +143,8 @@ prepare_buildenv
     echo
     [ -n "$VIRT" ] && {
         ./fetch_roles.sh imgs || echo "pass..."
-        echo
     }
-}
-fetch_edeploy
-echo
+} || fetch_edeploy
 build_roles
 
 exit $[ $SFE + $IE ];
