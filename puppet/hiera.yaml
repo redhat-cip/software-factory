@@ -1,6 +1,7 @@
 :yaml:
   :datadir: /etc/puppet/hiera/%{::environment}/
 :hierarchy:
+  - sf_version
   - monit
   - hosts
   - ssh
