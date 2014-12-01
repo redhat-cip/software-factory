@@ -24,6 +24,7 @@ ORIG=$(cd $(dirname $0); pwd)
 . ${ORIG}/functions
 
 NPM_INSTALL=1.4.21
+export JENKINS_VERSION=1.580-1.1 # LTS
 LASTWAR="http://os.enocloud.com:8080/v1/AUTH_0e436aacf0854b9abe70aa90f9e0864d/gerrit/gerrit285.war"
 MYSQLJAVA="http://repo2.maven.org/maven2/mysql/mysql-connector-java/5.1.21/mysql-connector-java-5.1.21.jar"
 BCPROVJAVA="http://www.bouncycastle.org/download/bcprov-jdk15on-149.jar"
@@ -106,10 +107,6 @@ EOF
      sed -i -e 's/START=.*/START=yes/g' $dir/etc/default/puppet
      ;;
   "yum")
-     # Downgrade the Jenkins version installed by jenkins.install from edeploy-roles (we want to use the last LTS version)
-     JENKINS_LTS=1.580-1.1
-     do_chroot ${dir} yum -y downgrade jenkins-$JENKINS_LTS
-     do_chroot $dir bash -c "for x in {0..6}; do ls /etc/rc\${x}.d/*jenkins | xargs rm -f ; done"
      CODENAME_MAJOR=7
      PUPPET_RELEASE=$CODENAME_MAJOR-10
      # The puppetlas-release package install repo desc for puppet in yum
