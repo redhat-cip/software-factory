@@ -106,6 +106,10 @@ EOF
      sed -i -e 's/START=.*/START=yes/g' $dir/etc/default/puppet
      ;;
   "yum")
+     # Downgrade the Jenkins version installed by jenkins.install from edeploy-roles (we want to use the last LTS version)
+     JENKINS_LTS=1.580-1.1
+     do_chroot ${dir} yum -y downgrade jenkins-$JENKINS_LTS
+     do_chroot $dir bash -c "for x in {0..6}; do ls /etc/rc\${x}.d/*jenkins | xargs rm -f ; done"
      CODENAME_MAJOR=7
      PUPPET_RELEASE=$CODENAME_MAJOR-10
      # The puppetlas-release package install repo desc for puppet in yum
