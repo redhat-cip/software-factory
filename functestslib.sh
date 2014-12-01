@@ -283,7 +283,7 @@ function run_backup_restore_tests {
         # Run server spec to be more confident
         run_serverspec || pre_fail "Serverspec failed"
         # Start the provisioner
-        ./tests/backup_restore/run_provisioner.sh
+        ./tools/provisioner_checker/run.sh provisioner
         # Create a backup
         ssh -o StrictHostKeyChecking=no root@`get_ip puppetmaster` "cd puppet-bootstrapper/tools/managesf/cli; python sf-manage.py --host ${MANAGESF_HOST} --auth-server ${MANAGESF_HOST} --port 80 --auth user1:userpass backup_start"
         sleep 10
@@ -304,7 +304,7 @@ function run_backup_restore_tests {
         ssh -o StrictHostKeyChecking=no root@`get_ip puppetmaster` "cd puppet-bootstrapper/tools/managesf/cli; python sf-manage.py --host ${MANAGESF_HOST} --auth-server ${MANAGESF_HOST} --port 80 --auth user1:userpass restore --filename sf_backup.tar.gz"
         # Start the checker
         sleep 60
-        ./tests/backup_restore/run_checker.sh
+        ./tools/provisioner_checker/run.sh checker
         return $?
     fi
 }
