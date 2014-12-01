@@ -57,10 +57,29 @@ using LXC and the latter to deploy a production environment on an
 OpenStack cloud. We use a tool called eDeploy to create role images.
 All role images are based on CentOS 7.
 
+To build or fetch the **latest stable version of Software Factory**
+please set your local GIT copy of Software Factory to latest tag.
+For instance, now the last tagged version is 0.9.2, so after having
+cloned the repository :
+
+.. code-block:: bash
+
+ $ git tag -l # to list the available tags
+ $ git checkout 0.9.2
+ $ git checkout -b "0.9.2"
+
+Indead, by using a tag, you will set the fetch_roles.sh script to use
+pre-built images (trees or qcow2) that are freezed and known as stable.
+Bootstrap scripts will use the tagged version too.
+
+Use the master branch only if you want to help us to improve
+Software Factory and if you like adventures :).
+
 .. _fetchprebuilt:
 
 Fetch pre-built SF images
 .........................
+
 Each patch merged on the Git SF master branch triggers a build of role
 images of SF. That means if you clone the master branch of SF you will
 be able to directly start the bootstrap script whether you want to
@@ -95,8 +114,7 @@ follow the process below:
  $ ./fetch_roles.sh imgs
  $ ls -al /var/lib/sf/roles/upstream/*.qcow2
 
-You should find four qcow2 images: (mysql, slave, install-server-vm,
-and softwarefactory).
+You should find two qcow2 images: (install-server-vm, and softwarefactory).
 
 Build SF images
 ...............
@@ -131,7 +149,7 @@ the build_roles.sh script.  The build may take a while :
  $ ./build_roles.sh
  $ ls -al /var/lib/sf/roles/install/C7.0-0.9.2/
 
-The above command should have created three directories (install-server-vm, slave, softwarefactory)
+The above command should have created two directories (install-server-vm, softwarefactory)
 that contains the filesystem tree of the images you will need
 to deploy the Software Factory. If you added **VIRT=true** qcow2 images have been created too. Those
 will be used to deploy on OpenStack.
