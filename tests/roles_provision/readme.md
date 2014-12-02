@@ -7,3 +7,9 @@ playbook.yaml
 -------------
 
 Ansible playbook to push role archives on the puppetmaster (edeploy server) and also the archive of the working copie of software factory
+
+usage
+-----
+
+sudo ./prepare.sh
+ansible-playbook -i inventory playbook.yaml
