@@ -4,7 +4,7 @@ Deploy Software Factory
 =======================
 
 Software Factory installation introduction
------------------------------------------
+------------------------------------------
 
 SF is designed to be installed on an OpenStack Cloud platform that embeds
 Heat and Neutron. The installation is performed using Heat.
@@ -399,3 +399,16 @@ The password is also stored in plaintext in bootstrap/sfconfig.yaml, because it
 is needed by Puppet to create default accounts. You can set the plaintext
 password to "" after the initial deployment is done (both in
 bootstrap/sfconfig.yaml and in  /etc/puppet/hiera/sf/sfconfig.yaml).
+
+Github authentication
+---------------------
+
+You have to register your SF deployment in Github to enable Github
+authentication.
+
+#. Login to your Github account, go to Settings -> Applications -> "Register new application"
+#. Fill in the details and be careful when setting the authorization URL. It will look like this: http://yourdomain/auth/login/github/callback
+#. Set the corresponding values in bootstrap/sfconfig.yaml:
+    - github_app_id: "Client ID"
+    - github_app_secret: "Client Secret"
+    - github_allowed_organization: comma-separated list of organizations that are allowed to access this SF deployment. A user has to be member of at least one of this organizations to use this SF deployment. Leave empty if not required.

@@ -21,7 +21,7 @@ import base64
 import urllib
 import ldap
 import logging
-import requests as http
+import requests
 
 from M2Crypto import RSA
 
@@ -94,12 +94,14 @@ def setup_response(username, back, email=None, lastname=None, keys=None):
 class GithubController(object):
     def get_access_token(self, code):
         github = conf.auth['github']
-        resp = http.post("https://github.com/login/oauth/access_token",
-                         params={"client_id": github['client_id'],
-                                 "client_secret": github['client_secret'],
-                                 "code": code,
-                                 "redirect_uri": github['redirect_uri']},
-                         headers={'Accept': 'application/json'})
+        resp = requests.post(
+            "https://github.com/login/oauth/access_token",
+            params={
+                "client_id": github['client_id'],
+                "client_secret": github['client_secret'],
+                "code": code,
+                "redirect_uri": github['redirect_uri']},
+            headers={'Accept': 'application/json'})
         jresp = resp.json()
         if 'access_token' in jresp:
             return jresp['access_token']
@@ -108,6 +110,19 @@ class GithubController(object):
                 jresp.get('error', None),
                 jresp.get('error_description', None))
         return None
+
+    def organization_allowed(self, login):
+        allowed_orgs = conf.auth['github'].get('allowed_organizations')
+        if allowed_orgs:
+            resp = requests.get("https://api.github.com/users/%s/orgs" % login)
+            user_orgs = resp.json()
+            user_orgs = [org['login'] for org in user_orgs]
+            allowed_orgs = allowed_orgs.split(',')
+            allowed_orgs = filter(None, allowed_orgs)
+            allowed = set(user_orgs) & set(allowed_orgs)
+            if not allowed:
+                return False
+        return True
 
     @expose()
     def callback(self, **kwargs):
@@ -133,15 +148,20 @@ class GithubController(object):
             logger.error('Unable to request a token on GITHUB.')
             abort(401)
 
-        resp = http.get("https://api.github.com/user",
-                        headers={'Authorization': 'token ' + token})
+        resp = requests.get("https://api.github.com/user",
+                            headers={'Authorization': 'token ' + token})
         data = resp.json()
         login = data.get('login')
         email = data.get('email')
         name = data.get('name')
-        resp = http.get("https://api.github.com/users/%s/keys" % login,
-                        headers={'Authorization': 'token ' + token})
+
+        resp = requests.get("https://api.github.com/users/%s/keys" % login,
+                            headers={'Authorization': 'token ' + token})
         ssh_keys = resp.json()
+
+        if not self.organization_allowed(login):
+            abort(401)
+
         logger.info('Client authentication on GITHUB sucsess.')
         setup_response(login, back, email, name, ssh_keys)
 

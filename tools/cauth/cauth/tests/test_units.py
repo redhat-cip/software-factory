@@ -15,8 +15,7 @@
 # under the License.
 
 from unittest import TestCase
-from mock import patch
-from mock import Mock
+from mock import patch, Mock
 from M2Crypto import RSA, BIO
 
 from cauth.controllers.userdetails import Gerrit
@@ -25,6 +24,7 @@ from cauth.model import db
 
 from webtest import TestApp
 from pecan import load_app
+from webob.exc import HTTPUnauthorized
 
 import crypt
 import tempfile
@@ -344,9 +344,37 @@ class TestGithubController(TestCase):
             db.get_url = Mock(return_value='/r/')
             root.setup_response = Mock()
             gc = root.GithubController()
+            gc.organization_allowed = lambda login: True
             gc.callback(state='stateXYZ', code='user6_code')
             root.setup_response.assert_called_once_with(
                 'user6', '/r/', 'user6@example.com', 'Demo user6', {'key': ''})
+
+        with httmock.HTTMock(oauthmock_request):
+            db.get_url = Mock(return_value='/r/')
+            gc = root.GithubController()
+            gc.organization_allowed = lambda login: False
+            self.assertRaises(HTTPUnauthorized,
+                              gc.callback, state='stateXYZ', code='user6_code')
+
+    @patch('requests.get')
+    def test_organization_allowed(self, mocked_get):
+        gc = root.GithubController()
+        mocked_get.return_value.json.return_value = [{'login': 'acme'}]
+
+        # allowed_organizations not set -> allowed
+        self.assertEqual(True, gc.organization_allowed('user'))
+
+        # allowed_organizations set empty -> allowed
+        self.conf.auth['github']['allowed_organizations'] = ''
+        self.assertEqual(True, gc.organization_allowed('user'))
+
+        # allowed_organizations set, doesn't match user orgs -> not allowed
+        self.conf.auth['github']['allowed_organizations'] = 'some,other'
+        self.assertEqual(False, gc.organization_allowed('user'))
+
+        # allowed_organizations set, doesn't match user orgs -> not allowed
+        self.conf.auth['github']['allowed_organizations'] = 'some,other,acme'
+        self.assertEqual(True, gc.organization_allowed('user'))
 
 
 class TestCauthApp(FunctionalTest):

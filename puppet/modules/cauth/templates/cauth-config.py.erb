@@ -62,7 +62,8 @@ auth = {
         'auth_url':  'https://github.com/login/oauth/authorize',
         'redirect_uri': '<%= @cauth['github_redirect_url'] %>',
         'client_id': '<%= @cauth['github_app_id'] %>',
-        'client_secret': '<%= @cauth['github_app_secret'] %>'
+        'client_secret': '<%= @cauth['github_app_secret'] %>',
+        'allowed_organizations': '<%= @cauth['allowed_organizations'] %>'
     },
     'users': {
         "<%= scope.function_hiera(['admin_name']) %>": {

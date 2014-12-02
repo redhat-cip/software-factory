@@ -25,6 +25,7 @@ sso_cookie_timeout: 3600
 # account please set your APP id and secret. Or leave it blank.
 github_app_id: b1576649a671b82aaee8
 github_app_secret: 87c8f11b7aef93dcf4e1a06bf35c93e6c61871f4
+github_allowed_organizations:
 
 # If you prefer to use a SMTP relay
 # for the ougoing mails sent by SF please set it
