@@ -282,8 +282,7 @@ class TestManageSFAppReplicationController(FunctionalTest):
 
     def test_get(self):
         response = self.app.get('/replication/', status="*")
-        return
-        self.assertEqual(response.status_int, 400)
+        self.assertEqual(response.status_int, 404)
         with patch('managesf.controllers.gerrit.replication_get_config') \
                 as rgc:
             rgc.return_value = 'ret val'
