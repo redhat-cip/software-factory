@@ -42,7 +42,6 @@ node /.*gerrit.*/ inherits base {
 
 node /.*mysql.*/ inherits base {
   include mysql
-  include replication
   include bup
 }
 
@@ -54,4 +53,5 @@ node /.*managesf.*/ inherits base {
   include commonservices-socat
   include etherpad
   include lodgeit
+  include replication
 }

@@ -19,7 +19,6 @@ set -e
 gerrit_host=<%= scope.function_hiera(["gerrit_url"]) %>
 gerrit_ssh_port=<%= @gerrit['gerrit_sshd_port'] %>
 gateway="<%= scope.function_hiera(["http_gateway_host"]) %>"
-mysqlh="<%= scope.function_hiera(["mysql_url"]) %>"
 gh="$gerrit_host:$gerrit_ssh_port"
 jh="<%= scope.function_hiera(["jenkins_url"]) %>"
 admin="<%= @gerrit['gerrit_admin_username'] %>"
@@ -33,7 +32,7 @@ auth=$admin:$admin_http_password
 if [ ! -f '/usr/share/config.init.done' ]; then
     sf-manage --host $gateway --auth-server $gateway --auth $auth create --name config --description "Config repository"
     sf-manage --host $gateway --auth-server $gateway --auth $auth replication_config add --section mysql_config projects config
-    sf-manage --host $gateway --auth-server $gateway --auth $auth replication_config add --section mysql_config url gerrit@$mysqlh:/home/gerrit/site_path/git/\${name}.git
+    sf-manage --host $gateway --auth-server $gateway --auth $auth replication_config add --section mysql_config url gerrit@$gateway:/home/gerrit/site_path/git/\${name}.git
     sf-manage --host $gateway --auth-server $gateway --auth $auth replication_config add --section mysql_config push +refs/heads/*:refs/heads/*
     sf-manage --host $gateway --auth-server $gateway --auth $auth replication_config add --section mysql_config push +refs/tags/*:refs/tags/*
 # wait for 10 seconds so that replication plugin reloading will be finished

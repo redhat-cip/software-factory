@@ -64,7 +64,7 @@ class TestGerrit(Base):
         self.create_project(pname)
         un = config.ADMIN_USER
         gu = GerritUtils(
-            'http://%s/' % config.GERRIT_HOST,
+            'http://%s/' % config.GATEWAY_HOST,
             auth_cookie=config.USERS[un]['auth_cookie'])
         k_index = gu.add_pubkey(config.USERS[un]["pubkey"])
         self.assertTrue(gu.project_exists(pname))
@@ -72,7 +72,7 @@ class TestGerrit(Base):
         gitu = GerritGitUtils(un,
                               priv_key_path,
                               config.USERS[un]['email'])
-        url = "ssh://%s@%s:29418/%s" % (un, config.GERRIT_HOST,
+        url = "ssh://%s@%s:29418/%s" % (un, config.GATEWAY_HOST,
                                         pname)
         clone_dir = gitu.clone(url, pname)
         self.dirs_to_delete.append(os.path.dirname(clone_dir))
@@ -100,7 +100,7 @@ class TestGerrit(Base):
         self.create_project(pname, options)
         un = config.ADMIN_USER
         gu = GerritUtils(
-            'http://%s/' % config.GERRIT_HOST,
+            'http://%s/' % config.GATEWAY_HOST,
             auth_cookie=config.USERS[un]['auth_cookie'])
         k_index = gu.add_pubkey(config.USERS[un]["pubkey"])
         self.assertTrue(gu.project_exists(pname))
@@ -108,7 +108,7 @@ class TestGerrit(Base):
         gitu = GerritGitUtils(un,
                               priv_key_path,
                               config.USERS[un]['email'])
-        url = "ssh://%s@%s:29418/%s" % (un, config.GERRIT_HOST,
+        url = "ssh://%s@%s:29418/%s" % (un, config.GATEWAY_HOST,
                                         pname)
         clone_dir = gitu.clone(url, pname)
         self.dirs_to_delete.append(os.path.dirname(clone_dir))
@@ -132,7 +132,7 @@ class TestGerrit(Base):
         self.assertFalse(gu.submit_patch(change_id, "current"))
 
         gu_user2 = GerritUtils(
-            'http://%s/' % config.GERRIT_HOST,
+            'http://%s/' % config.GATEWAY_HOST,
             auth_cookie=config.USERS[config.USER_2]['auth_cookie'])
         gu_user2.submit_change_note(change_id, "current", "Code-Review", "2")
         self.assertTrue(gu.submit_patch(change_id, "current"))
@@ -142,7 +142,7 @@ class TestGerrit(Base):
         """ Test if plugins are present
         """
         gu = GerritUtils(
-            'http://%s/' % config.GERRIT_HOST,
+            'http://%s/' % config.GATEWAY_HOST,
             auth_cookie=config.USERS[config.ADMIN_USER]['auth_cookie'])
         plugins = gu.list_plugins()
         self.assertIn('download-commands', plugins)
@@ -156,7 +156,7 @@ class TestGerrit(Base):
         self.create_project(pname)
         un = config.ADMIN_USER
         gu = GerritUtils(
-            'http://%s/' % config.GERRIT_HOST,
+            'http://%s/' % config.GATEWAY_HOST,
             auth_cookie=config.USERS[un]['auth_cookie'])
         self.assertTrue(gu.project_exists(pname))
         k_index = gu.add_pubkey(config.USERS[un]["pubkey"])
@@ -164,7 +164,7 @@ class TestGerrit(Base):
         gitu = GerritGitUtils(un,
                               priv_key_path,
                               config.USERS[un]['email'])
-        url = "ssh://%s@%s:29418/%s" % (un, config.GERRIT_HOST,
+        url = "ssh://%s@%s:29418/%s" % (un, config.GATEWAY_HOST,
                                         pname)
         clone_dir = gitu.clone(url, pname)
         self.dirs_to_delete.append(os.path.dirname(clone_dir))
@@ -203,7 +203,7 @@ class TestGerrit(Base):
         self.create_project(pname, options)
         first_u = config.ADMIN_USER
         gu_first_u = GerritUtils(
-            'http://%s/' % config.GERRIT_HOST,
+            'http://%s/' % config.GATEWAY_HOST,
             auth_cookie=config.USERS[first_u]['auth_cookie'])
         self.assertTrue(gu_first_u.project_exists(pname))
         # Push data in the create project as Admin user
@@ -212,7 +212,7 @@ class TestGerrit(Base):
         gitu = GerritGitUtils(first_u,
                               priv_key_path,
                               config.USERS[first_u]['email'])
-        url = "ssh://%s@%s:29418/%s" % (first_u, config.GERRIT_HOST,
+        url = "ssh://%s@%s:29418/%s" % (first_u, config.GATEWAY_HOST,
                                         pname)
         clone_dir = gitu.clone(url, pname)
         self.dirs_to_delete.append(os.path.dirname(clone_dir))
@@ -231,7 +231,7 @@ class TestGerrit(Base):
         gu_first_u.submit_change_note(change_id, "current", "Workflow", "1")
         second_u = config.USER_2
         gu_second_u = GerritUtils(
-            'http://%s/' % config.GERRIT_HOST,
+            'http://%s/' % config.GATEWAY_HOST,
             auth_cookie=config.USERS[second_u]['auth_cookie'])
         gu_second_u.submit_change_note(
             change_id, "current", "Code-Review", "2")
@@ -242,7 +242,7 @@ class TestGerrit(Base):
         gitu = GerritGitUtils(second_u,
                               priv_key_path,
                               config.USERS[second_u]['email'])
-        url = "ssh://%s@%s:29418/%s" % (second_u, config.GERRIT_HOST,
+        url = "ssh://%s@%s:29418/%s" % (second_u, config.GATEWAY_HOST,
                                         pname)
         clone_dir = gitu.clone(url, pname)
         self.dirs_to_delete.append(os.path.dirname(clone_dir))

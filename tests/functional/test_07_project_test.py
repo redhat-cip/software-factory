@@ -49,10 +49,10 @@ class TestProjectTestsWorkflow(Base):
         self.dirs_to_delete = []
         self.un = config.ADMIN_USER
         self.gu = GerritUtils(
-            'http://%s/' % config.GERRIT_HOST,
+            'http://%s/' % config.GATEWAY_HOST,
             auth_cookie=config.USERS[self.un]['auth_cookie'])
         self.gu2 = GerritUtils(
-            'http://%s/' % config.GERRIT_HOST,
+            'http://%s/' % config.GATEWAY_HOST,
             auth_cookie=config.USERS[config.USER_2]['auth_cookie'])
         self.ju = JenkinsUtils()
         self.gu.add_pubkey(config.USERS[self.un]["pubkey"])
@@ -83,7 +83,7 @@ class TestProjectTestsWorkflow(Base):
             shutil.rmtree(dirs)
 
     def clone_as_admin(self, pname):
-        url = "ssh://%s@%s:29418/%s" % (self.un, config.GERRIT_HOST,
+        url = "ssh://%s@%s:29418/%s" % (self.un, config.GATEWAY_HOST,
                                         pname)
         clone_dir = self.gitu_admin.clone(url, pname)
         if os.path.dirname(clone_dir) not in self.dirs_to_delete:

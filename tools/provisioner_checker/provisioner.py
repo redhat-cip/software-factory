@@ -52,7 +52,7 @@ class SFProvisioner(object):
                                   config.USERS[config.ADMIN_USER]['email'])
         self.ju = JenkinsUtils()
         self.rm = RedmineUtils(
-            'http://%s' % config.REDMINE_HOST,
+            config.REDMINE_URL,
             auth_cookie=config.USERS[config.ADMIN_USER]['auth_cookie'])
 
     def create_project(self, name):
@@ -63,7 +63,7 @@ class SFProvisioner(object):
         print " Add files(%s) in a commit ..." % ",".join(files)
         # TODO(fbo); use gateway host instead of gerrit host
         url = "ssh://%s@%s:29418/%s" % (config.ADMIN_USER,
-                                        config.GERRIT_HOST, name)
+                                        config.GATEWAY_HOST, name)
         clone_dir = self.ggu.clone(url, name, config_review=False)
         for f in files:
             file(os.path.join(clone_dir, f), 'w').write('data')

@@ -42,14 +42,14 @@ class SFchecker:
         config.USERS[config.ADMIN_USER]['auth_cookie'] = get_cookie(
             config.ADMIN_USER, config.USERS[config.ADMIN_USER]['password'])
         self.gu = GerritUtils(
-            'http://%s/' % config.GERRIT_HOST,
+            'http://%s/' % config.GATEWAY_HOST,
             auth_cookie=config.USERS[config.ADMIN_USER]['auth_cookie'])
         self.ggu = GerritGitUtils(config.ADMIN_USER,
                                   config.ADMIN_PRIV_KEY_PATH,
                                   config.USERS[config.ADMIN_USER]['email'])
         self.ju = JenkinsUtils()
         self.rm = RedmineUtils(
-            'http://%s' % config.REDMINE_HOST,
+            config.REDMINE_URL,
             auth_cookie=config.USERS[config.ADMIN_USER]['auth_cookie'])
 
     def check_project(self, name):
@@ -61,7 +61,7 @@ class SFchecker:
         print " Check files(%s) exists in project ..." % ",".join(files)
         # TODO(fbo); use gateway host instead of gerrit host
         url = "ssh://%s@%s:29418/%s" % (config.ADMIN_USER,
-                                        config.GERRIT_HOST, name)
+                                        config.GATEWAY_HOST, name)
         clone_dir = self.ggu.clone(url, name, config_review=False)
         for f in files:
             assert os.path.isfile(os.path.join(clone_dir, f))

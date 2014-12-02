@@ -8,15 +8,9 @@ for sfconfig_filename in sfconfig_filenames:
         with open(sfconfig_filename) as infile:
             sfconfig = yaml.load(infile)
 
-
-GERRIT_HOST = 'gerrit.%s' % environ['SF_SUFFIX']
-JENKINS_HOST = 'jenkins.%s:8080' % environ['SF_SUFFIX']
-REDMINE_HOST = 'redmine.%s' % environ['SF_SUFFIX']
-GERRIT_SERVER = 'http://gerrit.%s/r/' % environ['SF_SUFFIX']
-REDMINE_SERVER = 'http://redmine.%s/redmine/' % environ['SF_SUFFIX']
-JENKINS_SERVER = 'http://jenkins.%s:8080/jenkins/' % environ['SF_SUFFIX']
-MYSQL_HOST = 'mysql.%s' % environ['SF_SUFFIX']
-GATEWAY_HOST = 'managesf.%s' % environ['SF_SUFFIX']
+GATEWAY_HOST = environ['SF_SUFFIX']
+JENKINS_URL = 'http://%s/jenkins/' % environ['SF_SUFFIX']
+REDMINE_URL = 'http://%s/redmine/' % environ['SF_SUFFIX']
 
 GERRIT_USER = 'gerrit'
 GERRIT_SERVICE_PRIV_KEY_PATH = '%s/build/data/gerrit_service_rsa' \

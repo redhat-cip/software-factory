@@ -35,10 +35,10 @@ class TestUserdata(Base):
     def setUp(self):
         self.projects = []
         self.rm = RedmineUtils(
-            'http://%s' % config.REDMINE_HOST,
+            config.REDMINE_URL,
             auth_cookie=config.USERS[config.ADMIN_USER]['auth_cookie'])
         self.gu = GerritUtils(
-            'http://%s' % config.GERRIT_HOST,
+            'http://%s/' % config.GATEWAY_HOST,
             auth_cookie=config.USERS[config.ADMIN_USER]['auth_cookie'])
 
     def tearDown(self):

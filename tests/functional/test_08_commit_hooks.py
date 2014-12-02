@@ -46,13 +46,13 @@ class TestGerritHooks(Base):
         self.u = config.ADMIN_USER
         self.u2 = config.USER_2
         self.rm = RedmineUtils(
-            'http://%s' % config.REDMINE_HOST,
+            config.REDMINE_URL,
             auth_cookie=config.USERS[config.ADMIN_USER]['auth_cookie'])
         self.gu = GerritUtils(
-            'http://%s/' % config.GERRIT_HOST,
+            'http://%s/' % config.GATEWAY_HOST,
             auth_cookie=config.USERS[self.u]['auth_cookie'])
         self.gu2 = GerritUtils(
-            'http://%s/' % config.GERRIT_HOST,
+            'http://%s/' % config.GATEWAY_HOST,
             auth_cookie=config.USERS[self.u2]['auth_cookie'])
         self.gu.add_pubkey(config.USERS[self.u]["pubkey"])
         priv_key_path = set_private_key(config.USERS[self.u]["privkey"])
@@ -91,7 +91,7 @@ class TestGerritHooks(Base):
         issue_id = self.rm.create_issue(pname, "There is a problem")
 
         # Clone and commit something
-        url = "ssh://%s@%s:29418/%s" % (self.u, config.GERRIT_HOST,
+        url = "ssh://%s@%s:29418/%s" % (self.u, config.GATEWAY_HOST,
                                         pname)
         clone_dir = self.gitu.clone(url, pname)
         cmt_msg = "Fix bug: %s" % issue_id

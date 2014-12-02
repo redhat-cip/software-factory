@@ -45,10 +45,10 @@ class TestProjectReplication(Base):
     def setUp(self):
         self.un = config.ADMIN_USER
         self.gu = GerritUtils(
-            'http://%s/' % config.GERRIT_HOST,
+            'http://%s/' % config.GATEWAY_HOST,
             auth_cookie=config.USERS[self.un]['auth_cookie'])
         self.gu2 = GerritUtils(
-            'http://%s/' % config.GERRIT_HOST,
+            'http://%s/' % config.GATEWAY_HOST,
             auth_cookie=config.USERS[config.USER_2]['auth_cookie'])
         self.k_idx = self.gu2.add_pubkey(config.USERS[config.USER_2]["pubkey"])
         priv_key_path = set_private_key(config.USERS[self.un]["privkey"])
@@ -58,7 +58,7 @@ class TestProjectReplication(Base):
         # Configuration to access mirror repo present in mysql
         un = config.GERRIT_USER
         self.msql_repo_path = "ssh://%s@%s/%s" \
-                              % (un, config.MYSQL_HOST,
+                              % (un, config.GATEWAY_HOST,
                                  '/home/gerrit/site_path/git/')
         # prepare environment for git clone on mirror repo
         self.mt = Tool()
@@ -107,7 +107,7 @@ class TestProjectReplication(Base):
     def deleteMirrorRepo(self, name):
         sshkey_priv_path = config.GERRIT_SERVICE_PRIV_KEY_PATH
         user = 'gerrit'
-        host = config.MYSQL_HOST
+        host = config.GATEWAY_HOST
         mirror_path = '/home/gerrit/site_path/git/%s.git' % name
         cmd = ['rm', '-rf', mirror_path]
         self.ssh_run_cmd(sshkey_priv_path, user, host, cmd)
@@ -115,7 +115,7 @@ class TestProjectReplication(Base):
     def createConfigSection(self, user, project):
         # Section name will be node name and the project
         section = 'mysql_%s' % project
-        host = '%s@%s' % (config.GERRIT_USER, config.MYSQL_HOST)
+        host = '%s@%s' % (config.GERRIT_USER, config.GATEWAY_HOST)
         mirror_repo_path = '/home/gerrit/site_path/git/\${name}.git'
         url = '%s:%s' % (host, mirror_repo_path)
         self.msu.replicationModifyConfig(user, 'add', section,
@@ -183,7 +183,7 @@ class TestProjectReplication(Base):
         gitu = GerritGitUtils(un,
                               priv_key_path,
                               config.USERS[un]['email'])
-        url = "ssh://%s@%s:29418/%s" % (un, config.GERRIT_HOST,
+        url = "ssh://%s@%s:29418/%s" % (un, config.GATEWAY_HOST,
                                         pname)
         clone_dir = gitu.clone(url, pname)
 

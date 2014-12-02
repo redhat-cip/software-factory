@@ -66,7 +66,7 @@ class TestZuulOps(Base):
         self.create_project(pname, config.ADMIN_USER)
         un = config.ADMIN_USER
         gu = GerritUtils(
-            'http://%s/' % config.GERRIT_HOST,
+            'http://%s/' % config.GATEWAY_HOST,
             auth_cookie=config.USERS[un]['auth_cookie'])
         ju = JenkinsUtils()
         k_index = gu.add_pubkey(config.USERS[un]["pubkey"])
@@ -76,7 +76,7 @@ class TestZuulOps(Base):
         gitu = GerritGitUtils(un,
                               priv_key_path,
                               config.USERS[un]['email'])
-        url = "ssh://%s@%s:29418/%s" % (un, config.GERRIT_HOST,
+        url = "ssh://%s@%s:29418/%s" % (un, config.GATEWAY_HOST,
                                         pname)
         clone_dir = gitu.clone(url, pname)
         self.dirs_to_delete.append(os.path.dirname(clone_dir))

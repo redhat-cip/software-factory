@@ -45,17 +45,17 @@ class TestManageSF(Base):
         self.projects = []
         self.dirs_to_delete = []
         self.rm = RedmineUtils(
-            'http://%s' % config.REDMINE_HOST,
+            config.REDMINE_URL,
             auth_cookie=config.USERS[config.ADMIN_USER]['auth_cookie'])
         self.gu = GerritUtils(
-            'http://%s' % config.GERRIT_HOST,
+            'http://%s/' % config.GATEWAY_HOST,
             auth_cookie=config.USERS[config.ADMIN_USER]['auth_cookie'])
 
     def project_exists_ex(self, name, user):
         # Test here the project is "public"
         # ( Redmine API project detail does not return the private/public flag)
         rm = RedmineUtils(
-            'http://%s' % config.REDMINE_HOST,
+            config.REDMINE_URL,
             auth_cookie=config.USERS[user]['auth_cookie'])
         try:
             return rm.project_exists(name)
@@ -250,7 +250,7 @@ class TestManageSF(Base):
                              config.ADMIN_PRIV_KEY_PATH,
                              config.USERS[config.ADMIN_USER]['email'])
         url = "ssh://%s@%s:29418/%s" % (config.ADMIN_USER,
-                                        config.GERRIT_HOST, pname)
+                                        config.GATEWAY_HOST, pname)
         clone_dir = ggu.clone(url, pname)
         self.dirs_to_delete.append(os.path.dirname(clone_dir))
         # Test that the clone is a success
@@ -280,7 +280,7 @@ class TestManageSF(Base):
                              config.ADMIN_PRIV_KEY_PATH,
                              config.USERS[config.ADMIN_USER]['email'])
         url = "ssh://%s@%s:29418/%s" % (config.ADMIN_USER,
-                                        config.GERRIT_HOST, pname)
+                                        config.GATEWAY_HOST, pname)
         clone_dir = ggu.clone(url, pname)
         self.dirs_to_delete.append(os.path.dirname(clone_dir))
         # Test that the clone is a success
@@ -308,7 +308,7 @@ class TestManageSF(Base):
         self.create_project(pname, config.ADMIN_USER)
         # add user2 ssh pubkey to user2
         gu = GerritUtils(
-            'http://' + config.GERRIT_HOST,
+            'http://%s/' % config.GATEWAY_HOST,
             auth_cookie=config.USERS[config.USER_2]['auth_cookie'])
         gu.add_pubkey(config.USER_2_PUB_KEY)
         # prepare to clone
@@ -318,7 +318,7 @@ class TestManageSF(Base):
                              priv_key_path,
                              config.USERS[config.USER_2]['email'])
         url = "ssh://%s@%s:29418/%s" % (config.USER_2,
-                                        config.GERRIT_HOST, pname)
+                                        config.GATEWAY_HOST, pname)
         # clone
         clone_dir = ggu.clone(url, pname)
         self.dirs_to_delete.append(os.path.dirname(clone_dir))
@@ -336,7 +336,7 @@ class TestManageSF(Base):
         self.create_project(pname, config.USER_2)
         # add user2 ssh pubkey to user2
         gu = GerritUtils(
-            'http://' + config.GERRIT_HOST,
+            'http://%s/' % config.GATEWAY_HOST,
             auth_cookie=config.USERS[config.USER_2]['auth_cookie'])
         gu.add_pubkey(config.USER_2_PUB_KEY)
         # prepare to clone
@@ -346,7 +346,7 @@ class TestManageSF(Base):
                              priv_key_path,
                              config.USERS[config.USER_2]['email'])
         url = "ssh://%s@%s:29418/%s" % (config.USER_2,
-                                        config.GERRIT_HOST, pname)
+                                        config.GATEWAY_HOST, pname)
         # clone
         clone_dir = ggu.clone(url, pname)
         self.dirs_to_delete.append(os.path.dirname(clone_dir))
@@ -360,14 +360,14 @@ class TestManageSF(Base):
         """ Validate upstream feature of managesf
         """
         # Create a test upstream project
-        pname_us = 'p_%s' % 'upstream'
+        pname_us = 'p_upstream'
         self.create_project(pname_us, config.ADMIN_USER)
 
         ggu_us = GerritGitUtils(config.ADMIN_USER,
                                 config.ADMIN_PRIV_KEY_PATH,
                                 config.USERS[config.ADMIN_USER]['email'])
         url = "ssh://%s@%s:29418/%s" % (config.ADMIN_USER,
-                                        config.GERRIT_HOST, pname_us)
+                                        config.GATEWAY_HOST, pname_us)
         # clone
         us_clone_dir = ggu_us.clone(url, pname_us)
         self.dirs_to_delete.append(os.path.dirname(us_clone_dir))
@@ -385,7 +385,7 @@ class TestManageSF(Base):
         ggu_us.direct_push_branch(us_clone_dir, "master")
 
         # No create a test project with upstream pointing to the above
-        upstream_url = config.GERRIT_SERVER + pname_us
+        upstream_url = "http://%s/r/%s" % (config.GATEWAY_HOST, pname_us)
         pname = 'p_%s' % create_random_str()
         # create the project as admin
         options = {"upstream": upstream_url}
@@ -395,7 +395,7 @@ class TestManageSF(Base):
                              config.ADMIN_PRIV_KEY_PATH,
                              config.USERS[config.ADMIN_USER]['email'])
         url = "ssh://%s@%s:29418/%s" % (config.ADMIN_USER,
-                                        config.GERRIT_HOST, pname)
+                                        config.GATEWAY_HOST, pname)
         # clone
         clone_dir = ggu.clone(url, pname)
         self.dirs_to_delete.append(os.path.dirname(clone_dir))

@@ -282,11 +282,13 @@ class JenkinsUtils:
             self.jenkins_user = 'jenkins'
             self.jenkins_password = \
                 yconfig.get('creds_jenkins_user_password')
-        self.server = config.JENKINS_SERVER
+        self.jenkins_url = config.JENKINS_URL
+        self.cookies = {'auth_pubtkt': get_cookie('user1', 'userpass')}
 
     def get(self, url):
-        return requests.get(url, auth=(self.jenkins_user,
-                                       self.jenkins_password))
+        return requests.get(url,
+                            auth=(self.jenkins_user, self.jenkins_password),
+                            cookies=self.cookies)
 
     def post(self, url, params, data, headers):
         return requests.post(url,
@@ -294,10 +296,11 @@ class JenkinsUtils:
                              data=data,
                              headers=headers,
                              auth=(self.jenkins_user,
-                                   self.jenkins_password))
+                                   self.jenkins_password),
+                             cookies=self.cookies)
 
     def create_job(self, name):
-        url = "%s/createItem" % self.server
+        url = "%s/createItem" % self.jenkins_url
         headers = {'content-type': 'text/xml'}
         resp = self.post(url,
                          params={'name': name},
@@ -307,7 +310,7 @@ class JenkinsUtils:
 
     def list_jobs(self):
         from xml.dom import minidom
-        url = "%s/api/xml" % self.server
+        url = "%s/api/xml" % self.jenkins_url
         resp = self.get(url)
         if resp.status_code == 200:
             jobs = []
@@ -318,8 +321,8 @@ class JenkinsUtils:
         return None
 
     def get_last_build_number(self, job_name, type):
-        url = "%(server)sjob/%(job_name)s/%(type)s/buildNumber" \
-              % {'server': self.server, 'job_name': job_name, 'type': type}
+        url = "%(server)sjob/%(job_name)s/%(type)s/buildNumber" % {
+            'server': self.jenkins_url, 'job_name': job_name, 'type': type}
         try:
             resp = self.get(url)
             return int(resp.text)

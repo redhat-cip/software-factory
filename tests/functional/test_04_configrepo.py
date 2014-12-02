@@ -37,7 +37,7 @@ class TestConfigRepo(Base):
     def test_check_config_repo_exists(self):
         pname = 'config'
         gu = GerritUtils(
-            'http://%s/' % config.GERRIT_HOST,
+            'http://%s/' % config.GATEWAY_HOST,
             auth_cookie=config.USERS[config.ADMIN_USER]['auth_cookie'])
         self.assertTrue(gu.project_exists(pname))
 
@@ -45,7 +45,7 @@ class TestConfigRepo(Base):
                              config.ADMIN_PRIV_KEY_PATH,
                              config.USERS[config.ADMIN_USER]['email'])
         url = "ssh://%s@%s:29418/%s" % (config.ADMIN_USER,
-                                        config.GERRIT_HOST, pname)
+                                        config.GATEWAY_HOST, pname)
         clone_dir = ggu.clone(url, pname)
         # Test that the clone is a success
         self.assertTrue(os.path.isdir(clone_dir))
