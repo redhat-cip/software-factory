@@ -71,27 +71,38 @@ if [ "$1" == "backup_restore_tests" ]; then
     run_backup_restore_tests 45 "check" || pre_fail "Backup test: check"
 fi
 if [ "$1" == "upgrade" ]; then
-    cloned=/tmp/software-factory
-    [ -d $cloned ] && rm -Rf $cloned
-    git clone http://softwarefactory.enovance.com/r/software-factory $cloned
+    cloned=/tmp/software-factory # The place to clone the previous SF version to deploy
     (
+        [ -d $cloned ] && rm -Rf $cloned
+        git clone http://softwarefactory.enovance.com/r/software-factory $cloned
         cd $cloned
+        # Be sure to checkout the right previous version
         git checkout 0.9.2
+        # Fetch the pre-built images
         ./fetch_roles.sh trees
         cd bootstraps/lxc
+        # Deploy
         ./start.sh
         cd ../..
         source functestslib.sh
         wait_for_bootstrap_done
+        # Run basic tests
         run_serverspec
-        ./tools/provisioner_checker/run.sh provisioner
     )
+    # Run the provisioner to put some data on the deployed instance
+    ./tools/provisioner_checker/run.sh provisioner
+    # Put needed data to perform the upgrade on the deployed instance
+    # In a real upgrade process this won't be done because next version
+    # (The one we want to upgrade is already published)
     cd tests/roles_provision/
     sudo ./prepare.sh
     ansible-playbook -i inventory playbook.yaml
     cd -
+    # Start the upgrade
     ssh -o StrictHostKeyChecking=no root@`get_ip puppetmaster` "cd /srv/software-factory/upgrade/C7.0-0.9.2/C7.0-0.9.3/; ansible-playbook -i hosts site.yml"
+    # Run basic tests
     run_serverspec
+    # Run the checker to validate provisionned data has not been lost
     ./tools/provisioner_checker/run.sh checker
 fi
 
