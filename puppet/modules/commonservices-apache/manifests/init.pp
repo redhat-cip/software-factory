@@ -62,7 +62,7 @@ class commonservices-apache {
     mode   => '0640',
     owner  => $httpd_user,
     group  => $httpd_user,
-    source  => 'puppet:///modules/commonservices-apache/index.html.tmpl',
+    content => template('commonservices-apache/index.html.tmpl'),
     notify => Service['webserver'],
   }
 

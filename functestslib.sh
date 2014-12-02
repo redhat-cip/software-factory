@@ -7,22 +7,8 @@ export SKIP_CLEAN_ROLES="y"
 export EDEPLOY_ROLES=/var/lib/sf/roles/
 
 MANAGESF_HOST=managesf.${SF_SUFFIX}
-case "$(hostname)" in
-    "bigger-jenkins")
-        JENKINS_URL=46.231.128.203
-        ;;
-    "faster-jenkins")
-        JENKINS_URL=94.143.114.171
-        ;;
-    "stronger-jenkins")
-        JENKINS_URL=46.231.128.54
-        ;;
-    *)
-        JENKINS_URL=$(hostname | sed -e 's/sfstack-//' -e 's/-/./g')
-        ;;
-esac
-
-[ -z "${JENKINS_URL}" ] && JENKINS_URL="localhost"
+hostname | grep -q sfstack && JENKINS_IP=$(hostname | sed -e 's/sfstack-[^-]*-//' -e 's/-/./g') || JENKINS_IP=localhost
+JENKINS_URL="http://${JENKINS_IP}:8081/"
 
 GERRIT_PROJECT=${GERRIT_PROJECT-sf}
 CURRENT_BRANCH=`git branch | sed -n -e 's/^\* \(.*\)/\1/p'`
@@ -46,7 +32,7 @@ function prepare_artifacts {
     sudo chmod -R +w ${ARTIFACTS_ROOT}
     set +x
     if [ ${GROUP} = 'www-data' ]; then
-        echo "Logs will be available here: http://${JENKINS_URL}:8081/${ARTIFACTS_RELPATH}"
+        echo "Logs will be available here: ${JENKINS_URL}/${ARTIFACTS_RELPATH}"
     else
         echo "Logs will be available here: ${ARTIFACTS_DIR}"
     fi
@@ -90,7 +76,7 @@ function publish_artifacts {
     sudo find ${ARTIFACTS_DIR} -type f -exec chmod 440 {} \;
     sudo chown -R $USER:$GROUP ${ARTIFACTS_DIR}
     if [ ${GROUP} = 'www-data' ]; then
-        echo "Logs are available here: http://${JENKINS_URL}:8081/${ARTIFACTS_RELPATH}"
+        echo "Logs are available here: ${JENKINS_URL}/${ARTIFACTS_RELPATH}"
     else
         echo "Logs will be available here: ${ARTIFACTS_DIR}"
     fi
@@ -117,10 +103,11 @@ function scan_and_configure_knownhosts {
 }
 
 function get_logs {
+    [ "$(get_ip puppetmaster)" == "" ] && return
     #This delay is used to wait a bit before fetching log file from hosts
     #in order to not avoid so important logs that can appears some seconds
     #after a failure.
-    sleep 30
+    sleep 5
     O=${ARTIFACTS_DIR}
     ssh -o StrictHostKeyChecking=no root@`get_ip puppetmaster` "cd puppet-bootstrapper; ./getlogs.sh"
     scp -r -o StrictHostKeyChecking=no root@`get_ip puppetmaster`:/tmp/logs/* $O/
@@ -163,7 +150,16 @@ function pre_fail {
     echo -e "\n\n\n====== $1 OUTPUT ======\n"
     case $1 in
         "Roles building FAILED")
-            tail -n 120 ${ARTIFACTS_DIR}/build_roles.sh.output
+            if [ -f "${ARTIFACTS_DIR}/edeploy/softwarefactory_build.log" ]; then
+                F="${ARTIFACTS_DIR}/edeploy/softwarefactory_build.log"
+            elif [ -f "${ARTIFACTS_DIR}/edeploy/install-server-vm_build.log" ]; then
+                F="${ARTIFACTS_DIR}/edeploy/install-server-vm_build.log"
+            fi
+            if [ -f "${F}" ]; then
+                echo ${F}
+                tail -n 120 ${F}
+            fi
+            [ -f "${ARTIFACTS_DIR}/edeploy/error_log" ] && cat ${ARTIFACTS_DIR}/edeploy/error_log
             ;;
         "LXC bootstrap FAILED")
             tail -n 120 ${ARTIFACTS_DIR}/lxc-start.output
