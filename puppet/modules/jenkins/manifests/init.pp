@@ -199,6 +199,14 @@ class jenkins ($settings = hiera_hash('jenkins', '')) {
     content => template('jenkins/hudson.tasks.Mailer.xml'),
     require => User['jenkins'],
   }
+  file {'/var/lib/jenkins/org.jenkinsci.main.modules.sshd.SSHD.xml':
+    ensure  => file,
+    mode    => '0644',
+    owner   => 'jenkins',
+    group   => 'jenkins',
+    source  => 'puppet:///modules/jenkins/org.jenkinsci.main.modules.sshd.SSHD.xml',
+    require => User['jenkins'],
+  }
   file {'/var/lib/jenkins/plugins/swarm-1.15.hpi':
     ensure  => file,
     mode    => '0644',
@@ -218,6 +226,7 @@ class jenkins ($settings = hiera_hash('jenkins', '')) {
                 File['/var/lib/jenkins/hudson.plugins.gearman.GearmanPluginConfig.xml'],
                 File['/var/lib/jenkins/hudson.tasks.Mailer.xml'],
                 File['/var/lib/jenkins/plugins/swarm-1.15.hpi'],
+                File['/var/lib/jenkins/org.jenkinsci.main.modules.sshd.SSHD.xml'],
                 File['/etc/sudoers.d/jenkins']],
   }
 
