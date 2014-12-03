@@ -102,7 +102,7 @@ if [ "$1" == "upgrade" ]; then
     ansible-playbook --private-key=${HOME}/.ssh/id_rsa -i inventory playbook.yaml
     cd -
     # Start the upgrade
-    ssh -o StrictHostKeyChecking=no root@`get_ip puppetmaster` "cd /srv/software-factory/ && ./upgrade.sh"
+    ssh -o StrictHostKeyChecking=no root@`get_ip puppetmaster` "cd /srv/software-factory/ && ./upgrade.sh ${SF_REL}"
     # Run basic tests
     run_serverspec
     # Run the checker to validate provisionned data has not been lost

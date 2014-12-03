@@ -1,11 +1,9 @@
 ---
-# The target version is already tagged and roles available upstream
-- name: Get software-factory source code
-  git: repo=http://softwarefactory.enovance.com/r/p/software-factory.git
-  args:
-    dest: /srv/software-factory
-    version: {{ version }}
-- name: Get new roles
+- name: Check pre-built image trees are already there
+  stat: path={{ upstream_path }}/install-server-vm-{{ version }}.edeploy
+  register: check_path
+- name: Fetch new pre-built image trees
   command: /srv/software-factory/fetch_roles.sh trees
   args:
     chdir: /srv/software-factory/
+  when: check_path.stat.exists == false
