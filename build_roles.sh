@@ -144,7 +144,9 @@ prepare_buildenv
     [ -n "$VIRT" ] && {
         ./fetch_roles.sh imgs || echo "pass..."
     }
-} || fetch_edeploy
+}
+
+fetch_edeploy
 build_roles
 
 exit $[ $SFE + $IE ];
