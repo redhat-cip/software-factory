@@ -39,7 +39,8 @@ EDEPLOY_PROJECT=https://github.com/enovance/edeploy.git
 EDEPLOY_ROLES_PROJECT=https://github.com/enovance/edeploy-roles.git
 
 # Edeploy source version
-ED_TAG=master
+ED_TAG=1.6.1
+ED_ROLES_TAG=master
 
 # Qcow2 params
 IMG_CFG=params.virt
@@ -48,8 +49,9 @@ IMG_CFG=params.virt
 WORKSPACE=/var/lib/sf
 CLONES_DIR=$WORKSPACE/git
 BUILD_DIR=$WORKSPACE/roles
-EDEPLOY=$WORKSPACE/git/edeploy-master/
-EDEPLOY_ROLES=$WORKSPACE/git/edeploy-roles-master/
+EDEPLOY=$WORKSPACE/git/edeploy/
+EDEPLOY_ROLES=$WORKSPACE/git/edeploy-roles/
+
 CREATE_IMG=${EDEPLOY}/build/create-image.sh
 
 UPSTREAM=${BUILD_DIR}/upstream
@@ -79,8 +81,9 @@ function fetch_edeploy {
     if [ ! -d "${EDEPLOY_ROLES}" ]; then
         git clone $EDEPLOY_ROLES_PROJECT ${EDEPLOY_ROLES}
     fi
-    (cd ${EDEPLOY}; git checkout $ED_TAG; git pull)
-    (cd ${EDEPLOY_ROLES}; git checkout $ED_TAG; git pull)
+    # Make sure the correct tag is checked out
+    (cd ${EDEPLOY};       git status | head -n 1 | sed 's/.* //' | grep -q $ED_TAG || git checkout -b $ED_TAG $ED_TAG || git checkout $ED_TAG)
+    (cd ${EDEPLOY_ROLES}; git status | head -n 1 | sed 's/.* //' | grep -q $ED_ROLES_TAG || git checkout -b $ED_ROLES_TAG $ED_ROLES_TAG || git checkout $ED_ROLES_TAG)
     EDEPLOY_ROLES_REL=$(cd ${EDEPLOY_ROLES}; ${MAKE} version)
     echo
 }
