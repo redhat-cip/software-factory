@@ -3,6 +3,7 @@
 ## Versions stuff
 # 0.9.2: roles are now published
 # 0.9.3: roles upgrade tests
+PREVIOUS_SF_REL=0.9.2
 SF_REL=${SF_REL:-0.9.3}
 case "${SF_DIST}" in
   "Debian")
@@ -21,6 +22,7 @@ export LC_ALL=C
 
 # Version string
 SF_VER=${DVER}-${SF_REL}
+PREVIOUS_SF_VER=${DVER}-${PREVIOUS_SF_REL}
 
 # Base roles cloud and install-server
 BASE_URL="http://os.enocloud.com:8080/v1/AUTH_70aab03f69b549cead3cb5f463174a51/edeploy-roles"
