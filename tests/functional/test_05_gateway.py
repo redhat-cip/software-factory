@@ -72,6 +72,16 @@ class TestGateway(unittest.TestCase):
         self.assertEqual(resp.status_code, 200)
         self.assertTrue('<title>Redmine</title>' in resp.text)
 
+        # Check one of the CSS files to ensure static files are accessible
+        css_file = "plugin_assets/redmine_backlogs/stylesheets/global.css"
+        url = "http://%s/redmine/%s" % (config.GATEWAY_HOST, css_file)
+        resp = requests.get(
+            url,
+            cookies=dict(
+                auth_pubtkt=config.USERS[config.USER_1]['auth_cookie']))
+        self.assertEqual(resp.status_code, 200)
+        self.assertTrue('GLOBAL' in resp.text)
+
     def test_etherpad_accessible(self):
         """ Test if Etherpad is accessible on gateway host
         """

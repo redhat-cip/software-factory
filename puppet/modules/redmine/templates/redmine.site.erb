@@ -5,7 +5,7 @@ NameVirtualHost *:80
 
   LogLevel warn
   RailsBaseURI /redmine
-  Alias /redmine/plugin_assets/ /var/cache/redmine/default/plugin_assets/
+  Alias /redmine/plugin_assets/ /usr/share/redmine/plugins/redmine_backlogs/assets/
   PassengerAppRoot /usr/share/redmine
 
   DocumentRoot /usr/share/redmine/public
@@ -37,7 +37,7 @@ NameVirtualHost *:80
 
   LogLevel warn
   RailsBaseURI /redmine
-  Alias /redmine/plugin_assets/ /var/cache/redmine/default/plugin_assets/
+  Alias /redmine/plugin_assets/ /usr/share/redmine/plugins/redmine_backlogs/assets/
   PassengerAppRoot /usr/share/redmine
 
   DocumentRoot /usr/share/redmine/public
@@ -62,4 +62,10 @@ NameVirtualHost *:80
     TKTAuthDebug 1
     require valid-user
   </Directory>
+
+   <Directory /usr/share/redmine/plugins/redmine_backlogs/assets/>
+     AllowOverride all
+     Options -MultiViews
+     require all granted
+   </Directory>
 </VirtualHost>
