@@ -115,7 +115,12 @@ EOF
      # The puppetlas-release package install repo desc for puppet in yum
      install_packages ${dir} http://yum.puppetlabs.com/el/$CODENAME_MAJOR/products/x86_64/puppetlabs-release-$PUPPET_RELEASE.noarch.rpm
      add_epel_repository $DIST
-     install_packages $dir "puppet monit postfix git python-pip vim-enhanced gcc cpp python-devel libxml2-devel libxslt-devel nodejs openldap-devel httpd java-1.6.0-openjdk zlib-devel libcurl-devel openssl-devel httpd-devel apr-devel apr-util-devel mariadb-server mariadb-devel gcc-c++ ruby-devel ImageMagick-devel python-werkzeug python-babel python-jinja2 MySQL-python socat mod_wsgi m2crypto mariadb gitweb debootstrap unzip pigz"
+
+     install_packages $dir "puppet monit postfix git python-pip vim-enhanced nodejs httpd java-1.6.0-openjdk mariadb-server python-werkzeug python-babel python-jinja2 MySQL-python socat mod_wsgi m2crypto mariadb gitweb debootstrap unzip pigz"
+     DEVEL_PKGS="openldap-devel zlib-devel libcurl-devel openssl-devel httpd-devel apr-devel apr-util-devel mariadb-devel gcc-c++ ruby-devel ImageMagick-devel gcc cpp python-devel libxml2-devel libxslt-devel"
+
+     install_packages $dir ${DEVEL_PKGS}
+
      # Install SQLAlchemy for paste lodegit (not available in yum)
      do_chroot $dir pip install SQLAlchemy
      install_bup $dir
@@ -270,6 +275,9 @@ clear_packages_cache $dir
 # somehow yum left some packages behind...
 rm -f $dir/var/cache/yum/*/packages/*.rpm
 rm -f $dir/var/cache/yum/*/*.sqlite
+
+# Remove development packages, they are no longer needed
+remove_packages $dir ${DEVEL_PKGS}
 
 # Disable root passwd
 do_chroot $dir passwd -l root
