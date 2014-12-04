@@ -14,23 +14,24 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-# Environment variables HOST, ACCOUNT, CONTAINER and SECRET must be set!
+# Environment variables SWIFT_SECRET needs to be set
 
 # python-swiftclient and python-keystoneclient must be installed
 # Create a container with : swift post sfdocs
 # Add unauthenticated read permission : swift post sfdocs -r '.r:*'
 # Create a tempurl Key used to upload doc files : swift post -m Temp-URL-Key:1234
 
-# Credentials need to be set in /etc/sfdocs.key like this:
-# SECRET='1234'
-# ACCOUNT='AUTH_1234567890
-# CONTAINER='sfdocs'
-# HOST='http://swiftproxy'  # no trailing slash!
+# Credentials need to be set in /etc/sf-dom-enocloud.openrc like this:
+# SWIFT_SECRET='1234'
 
 # TODO: puppetize enocloud access
 source /etc/sf-dom-enocloud.openrc
 
 set -e
+
+. ./role_configrc
+
+CONTAINER="sfdocs"
 
 BUILDDIR=/tmp/_build
 [ -d $BUILDDIR ] && rm -Rf $BUILDDIR
@@ -44,9 +45,9 @@ cd $BUILDDIR/html
 echo "Export docs ..."
 for OBJECT in `find $1 -type f`; do
     OBJECT=`echo $OBJECT | sed 's|^\./||'`
-    SWIFT_PATH="/v1/${ACCOUNT}/${CONTAINER}/${OBJECT}"
-    TEMPURL=`swift tempurl PUT 3600 ${SWIFT_PATH} ${SECRET}`
-    curl -f -i -X PUT --upload-file "$OBJECT" "${HOST}${TEMPURL}" &> /dev/null && echo -n '.' || { echo 'Fail !'; exit 1; }
+    SWIFT_PATH="/v1/AUTH_${SWIFT_ACCOUNT}/${CONTAINER}/${OBJECT}"
+    TEMPURL=`swift tempurl PUT 3600 ${SWIFT_PATH} ${SWIFT_SECRET}`
+    curl -f -i -X PUT --upload-file "$OBJECT" "${SWIFT_BASE_URL}/${TEMPURL}" &> /dev/null && echo -n '.' || { echo 'Fail !'; exit 1; }
 done
 cd - &> /dev/null
 echo

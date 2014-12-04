@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# publish code borrowed from publish_docs script
+
 # TODO: puppetize enocloud access
 source /etc/sf-dom-enocloud.openrc
 
@@ -8,16 +10,22 @@ set -x
 
 . ./role_configrc
 
+CONTAINER="edeploy-roles"
+
 cd ${INST}
 TEMP_DIR=$(mktemp -d /tmp/edeploy-check-XXXXX)
 for role_name in install-server-vm softwarefactory; do
     role=${role_name}-${SF_VER}
     echo "[+] Check if ${role} have changed"
-    curl -s -o ${TEMP_DIR}/${role}.md5 ${BASE_URL}/${role}.md5 || true
+    curl -s -o ${TEMP_DIR}/${role}.md5 ${SWIFT_SF_URL}/${role}.md5 || true
     [ "$(cat ${TEMP_DIR}/${role}.md5)" == "$(cat ${role}.md5)" ] && continue
     echo "[+] Upstream is out dated, creating edeploy tarball"
     (cd ${role_name}; sudo tar czf ../${role}.edeploy *)
     md5sum ${role}.edeploy | sudo tee ${role}.edeploy.md5
+    for OBJECT in ${role}.edeploy ${role}.edeploy.md5 ${role}.md5; do
+        SWIFT_PATH="/v1/AUTH_${SWIFT_ACCOUNT}/${CONTAINER}/${OBJECT}"
+        TEMPURL=`swift tempurl PUT 3600 ${SWIFT_PATH} ${SWIFT_SECRET}`
+        curl -f -i -X PUT --upload-file "$OBJECT" "${SWIFT_BASE_URL}/${TEMPURL}" &> /dev/null && echo -n '.' || { echo 'Fail !'; exit 1; }
+    done
 done
 rm -Rf ${TEMP_DIR}
-swift upload --changed --verbose edeploy-roles *-${SF_VER}.*

@@ -44,18 +44,18 @@ function fetch_base_roles_prebuilt {
     # Check if edeploy roles are up-to-date
     [ ! -f $PREBUILD_TARGET/$install_server_img.md5 ] && sudo touch $PREBUILD_TARGET/$install_server_img.md5
     [ ! -f $PREBUILD_TARGET/$cloud_img.md5 ] && sudo touch $PREBUILD_TARGET/$cloud_img.md5
-    curl -s -o ${temp}/$install_server_img.md5 ${BASE_URL}/$install_server_img.md5
-    curl -s -o ${temp}/$cloud_img.md5 ${BASE_URL}/$cloud_img.md5
+    curl -s -o ${temp}/$install_server_img.md5 ${SWIFT_EDEPLOY_URL}/$install_server_img.md5
+    curl -s -o ${temp}/$cloud_img.md5 ${SWIFT_EDEPLOY_URL}/$cloud_img.md5
     diff $PREBUILD_TARGET/$install_server_img.md5 ${temp}/$install_server_img.md5 || {
         echo "Fetching $install_server_img ..."
-        curl $PB -o ${temp}/$install_server_img ${BASE_URL}/$install_server_img
+        curl $PB -o ${temp}/$install_server_img ${SWIFT_EDEPLOY_URL}/$install_server_img
         sudo mv -f ${temp}/$install_server_img* $PREBUILD_TARGET
         # Remove the previously unziped archive
         [ -d $PREBUILD_TARGET/install-server ] && sudo rm -Rf $PREBUILD_TARGET/install-server
     } && echo "$install_server_img is already synced"
     diff $PREBUILD_TARGET/$cloud_img.md5 ${temp}/$cloud_img.md5 || {
         echo "Fetching $cloud_img ..."
-        curl $PB -o ${temp}/$cloud_img ${BASE_URL}/$cloud_img
+        curl $PB -o ${temp}/$cloud_img ${SWIFT_EDEPLOY_URL}/$cloud_img
         sudo mv -f ${temp}/$cloud_img* $PREBUILD_TARGET
         # Remove the previously unziped archive
         [ -d $PREBUILD_TARGET/cloud ] && sudo rm -Rf $PREBUILD_TARGET/cloud
@@ -84,13 +84,13 @@ function fetch_sf_roles_prebuilt {
     local temp=$(mktemp -d /tmp/edeploy-check-XXXXX)
     for role in install-server-vm softwarefactory; do
         role=${role}-${SF_VER}
-        curl -s -o ${temp}/${role}.md5 ${BASE_URL}/${role}.md5 &> /dev/null || die "Could not fetch ${BASE_URL}/${role}.md5"
+        curl -s -o ${temp}/${role}.md5 ${SWIFT_SF_URL}/${role}.md5 &> /dev/null || die "Could not fetch ${SWIFT_SF_URL}/${role}.md5"
         # Swift does not return 404 but 'Not Found'
         grep -q 'Not Found' ${temp}/${role}.md5 && die "${role} does not exist upstream"
         diff ${temp}/${role}.md5 ${UPSTREAM}/${role}.md5 &> /dev/null || {
             echo "Fetching ${role} ..."
-            sudo curl $PB -o ${UPSTREAM}/${role}.edeploy ${BASE_URL}/${role}.edeploy
-            sudo curl -s -o ${UPSTREAM}/${role}.edeploy.md5 ${BASE_URL}/${role}.edeploy.md5
+            sudo curl $PB -o ${UPSTREAM}/${role}.edeploy ${SWIFT_SF_URL}/${role}.edeploy
+            sudo curl -s -o ${UPSTREAM}/${role}.edeploy.md5 ${SWIFT_SF_URL}/${role}.edeploy.md5
             sudo mv -f ${temp}/${role}.md5 ${UPSTREAM}/${role}.md5
             role_md5=$(cat ${UPSTREAM}/${role}.edeploy | md5sum - | cut -d ' ' -f1)
             [ "${role_md5}" != "$(cat ${UPSTREAM}/${role}.edeploy.md5 | cut -d ' ' -f1)" ] && {
@@ -109,13 +109,13 @@ function fetch_sf_qcow2_roles_prebuilt {
     local temp=$(mktemp -d /tmp/edeploy-check-XXXXX)
     for role in install-server-vm softwarefactory; do
         role=${role}-${SF_VER}.img.qcow2
-        curl -s -o ${temp}/${role}.md5 ${BASE_URL}/${role}.md5 || die "Could not fetch ${BASE_URL}/${role}.md5"
+        curl -s -o ${temp}/${role}.md5 ${SWIFT_SF_URL}/${role}.md5 || die "Could not fetch ${SWIFT_SF_URL}/${role}.md5"
         # Swift does not return 404 but 'Not Found'
         grep -q 'Not Found' ${temp}/${role}.md5 && die "${role} does not exist upstream"
         diff ${temp}/${role}.md5 ${UPSTREAM}/${role}.md5 &> /dev/null || {
             echo "Fetching ${role} image ..."
-            sudo curl $PB -o ${UPSTREAM}/${role} ${BASE_URL}/${role}
-            sudo curl -s -o ${UPSTREAM}/${role}.md5 ${BASE_URL}/${role}.md5
+            sudo curl $PB -o ${UPSTREAM}/${role} ${SWIFT_SF_URL}/${role}
+            sudo curl -s -o ${UPSTREAM}/${role}.md5 ${SWIFT_SF_URL}/${role}.md5
             sudo mv -f ${temp}/${role}.md5 ${UPSTREAM}/${role}.md5
             qcow2_md5=$(cat ${UPSTREAM}/${role} | md5sum - | cut -d ' ' -f1)
             [ "${qcow2_md5}" != "$(cat ${UPSTREAM}/${role}.md5 | cut -d ' ' -f1)" ] && {
