@@ -395,7 +395,7 @@ class gerrit ($settings = hiera_hash('gerrit', ''),
     content => template('gerrit/gerrit-set-jenkins-user.sh.erb'),
     replace => true,
   }
-  
+
   file { 'wait4gerrit':
     path    => '/root/wait4gerrit.sh',
     mode    => '0740',
@@ -438,7 +438,7 @@ class gerrit ($settings = hiera_hash('gerrit', ''),
     refreshonly => true,
     logoutput => on_failure,
   }
-  
+
   # This ressource wait for gerrit TCP ports are up
   # Be really tolenrant with the timeout Gerrit can take long
   # to start in, it seems, low mem env ...

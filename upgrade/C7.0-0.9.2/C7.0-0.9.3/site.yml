@@ -26,3 +26,7 @@
     shell: INITIAL=no HOME=/root/ SFSUFFIX={{ domain }} ./bootstrap.sh
     args:
       chdir: /root/puppet-bootstrapper
+- hosts: jenkins
+  gather_facts: no
+  tasks:
+  - include: tasks/submitconfigreview.yml

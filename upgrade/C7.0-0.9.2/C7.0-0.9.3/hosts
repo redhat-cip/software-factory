@@ -5,3 +5,6 @@
 
 [services]
 192.168.134.[50:54] ansible_ssh_user=root
+
+[jenkins]
+192.168.134.53 ansible_ssh_user=root

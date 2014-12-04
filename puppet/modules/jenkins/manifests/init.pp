@@ -246,6 +246,20 @@ class jenkins ($settings = hiera_hash('jenkins', '')) {
     notify  => Service['monit'],
   }
 
+  file { 'wait4jenkins':
+    path    => '/root/wait4jenkins.sh',
+    mode    => '0740',
+    source  => 'puppet:///modules/jenkins/wait4jenkins.sh',
+  }
+
+  # This ressource wait for Jenkins to bee fully UP
+  exec { 'wait4jenkins':
+    path    => '/usr/bin:/usr/sbin:/bin',
+    command => '/root/wait4jenkins.sh',
+    timeout => 900,
+    require => [File['wait4jenkins'],  Service['jenkins']],
+  }
+
   exec {'jenkins_user':
     command   => "/usr/bin/htpasswd -bc $htpasswd jenkins $jenkins_password",
     require   => Package[$http],

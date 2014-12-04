@@ -13,32 +13,40 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+
 set -x
 set -e
 
+[ "$1" = "upgrade" ] && upgrade=true || upgrade=false
+
 gerrit_host=<%= scope.function_hiera(["gerrit_url"]) %>
 gerrit_ssh_port=<%= @gerrit['gerrit_sshd_port'] %>
-gateway="<%= scope.function_hiera(["http_gateway_host"]) %>"
 gh="$gerrit_host:$gerrit_ssh_port"
-jh="<%= scope.function_hiera(["jenkins_url"]) %>"
+
+gateway="<%= scope.function_hiera(["http_gateway_host"]) %>"
+
 admin="<%= @gerrit['gerrit_admin_username'] %>"
 admin_http_password="<%= @gerrit['gerrit_admin_password'] %>"
-admin_email="<%= @gerrit['gerrit_admin_mail'] %>"
-gerrit_ssh_key="/root/gerrit_admin_rsa"
-jenkins_kick_script="/usr/local/jenkins/slave_scripts/kick.sh"
 auth=$admin:$admin_http_password
 
-# Create config project (managesf must be up)
-if [ ! -f '/usr/share/config.init.done' ]; then
-    sf-manage --host $gateway --auth-server $gateway --auth $auth create --name config --description "Config repository"
-    sf-manage --host $gateway --auth-server $gateway --auth $auth replication_config add --section mysql_config projects config
-    sf-manage --host $gateway --auth-server $gateway --auth $auth replication_config add --section mysql_config url gerrit@$gateway:/home/gerrit/site_path/git/\${name}.git
-    sf-manage --host $gateway --auth-server $gateway --auth $auth replication_config add --section mysql_config push +refs/heads/*:refs/heads/*
-    sf-manage --host $gateway --auth-server $gateway --auth $auth replication_config add --section mysql_config push +refs/tags/*:refs/tags/*
-# wait for 10 seconds so that replication plugin reloading will be finished
-    sleep 10
-    sf-manage --host $gateway --auth-server $gateway --auth $auth trigger_replication --project config
-    touch /usr/share/config.init.done
+admin_email="<%= @gerrit['gerrit_admin_mail'] %>"
+
+gerrit_ssh_key="/root/gerrit_admin_rsa"
+jenkins_kick_script="/usr/local/jenkins/slave_scripts/kick.sh"
+
+if [ "$upgrade" = "false" ]; then
+    # Create config project (managesf must be up)
+    if [ ! -f '/usr/share/config.init.done' ]; then
+        sf-manage --host $gateway --auth $auth create --name config --description "Config repository (Do not delete it)"
+        sf-manage --host $gateway --auth $auth replication_config add --section mysql_config projects config
+        sf-manage --host $gateway --auth $auth replication_config add --section mysql_config url gerrit@$gateway:/home/gerrit/site_path/git/\${name}.git
+        sf-manage --host $gateway --auth $auth replication_config add --section mysql_config push +refs/heads/*:refs/heads/*
+        sf-manage --host $gateway --auth $auth replication_config add --section mysql_config push +refs/tags/*:refs/tags/*
+        # wait for 10 seconds so that replication plugin reloading will be finished
+        sleep 10
+        sf-manage --host $gateway --auth $auth trigger_replication --project config
+        touch /usr/share/config.init.done
+    fi
 fi
 
 # Clone the config project
@@ -50,24 +58,40 @@ export GIT_COMMITTER_EMAIL=$admin_email
 CONF_TMP=$(mktemp -d)
 git clone ssh://$admin@$gh/config ${CONF_TMP}
 
-if [ -d "${CONF_TMP}/jobs" ]; then
-    echo "Config repository already initialised"
-    rm -rf ${CONF_TMP}
-    exit 0
+if [ "$upgrade" = "false" ]; then
+    if [ -d "${CONF_TMP}/jobs" ]; then
+        echo "Config repository already initialised"
+        rm -rf ${CONF_TMP}
+        exit 0
+    fi
+
+    # Add JJB files to the config repo
+    mkdir ${CONF_TMP}/jobs
+    cp -Rv /usr/share/sf-jjb/* ${CONF_TMP}/jobs
+
+    # Add Zuul files to the config repo
+    mkdir ${CONF_TMP}/zuul
+    cp -Rv /usr/share/sf-zuul/* ${CONF_TMP}/zuul
+
+    # Commit the changes
+    cd ${CONF_TMP}
+    git add .
+    git commit -a --author "$admin <$admin_email>" -m "JJB/Zuul files"
+    git push origin master
 fi
 
-# Add JJB files to the config repo
-mkdir ${CONF_TMP}/jobs
-cp -Rv /usr/share/sf-jjb/* ${CONF_TMP}/jobs
+if [ "$upgrade" = "true" ]; then
+    cp -v /usr/share/sf-jjb/sf_jjb_conf.yaml ${CONF_TMP}/jobs
+    cp -v /usr/share/sf-zuul/layout.yaml ${CONF_TMP}/zuul
+    cd ${CONF_TMP}
+    git config --add gitreview.username "$admin"
+    # Only perform the commit/review if the upgrade bring new modifications
+    if [ -n "$(git ls-files -o -m --exclude-standard)" ]; then
+        git commit -a --author "$admin <$admin_email>" -m "Upgrade of base JJB/Zuul files"
+        (eval $(ssh-agent) && ssh-add $gerrit_ssh_key && git review -s)
+        git review -i
+    fi
+    cd -
 
-# Add Zuul files to the config repo
-mkdir ${CONF_TMP}/zuul
-cp -Rv /usr/share/sf-zuul/* ${CONF_TMP}/zuul
-
-# Commit the changes
-cd ${CONF_TMP}
-git add .
-git commit -a --author "$admin <$admin_email>" -m "JJB/Zuul files"
-git push origin master
-
+fi
 rm -rf ${CONF_TMP}

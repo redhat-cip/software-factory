@@ -71,17 +71,18 @@ if [ "$1" == "backup_restore_tests" ]; then
     run_backup_restore_tests 45 "check" || pre_fail "Backup test: check"
 fi
 if [ "$1" == "upgrade" ]; then
+    # Try to load role_configrc here to SF_REL and SF_PREVIOUS_REL
     cloned=/tmp/software-factory # The place to clone the previous SF version to deploy
     (
         [ -d $cloned ] && rm -Rf $cloned
         git clone http://softwarefactory.enovance.com/r/software-factory $cloned
         cd $cloned
         # Be sure to checkout the right previous version
-        git checkout $PREVIOUS_SF_REL
+        git checkout 0.9.2
         # Fetch the pre-built images
         ./fetch_roles.sh trees
         # Trigger a build role in order to deflate roles in the right directory if not done yet
-        ./build_roles.sh
+        SF_SKIP_FETCHBASES=1 ./build_roles.sh
         cd bootstraps/lxc
         # Deploy
         ./start.sh
@@ -103,7 +104,7 @@ if [ "$1" == "upgrade" ]; then
         ansible-playbook --private-key=${HOME}/.ssh/id_rsa -i inventory playbook.yaml
     ) || pre_fail "Ansible provision playbook FAILED"
     # Start the upgrade
-    ssh -o StrictHostKeyChecking=no root@`get_ip puppetmaster` "cd /srv/software-factory/ && ./upgrade.sh ${SF_REL}" || pre_fail "Upgrade FAILED"
+    ssh -o StrictHostKeyChecking=no root@`get_ip puppetmaster` "cd /srv/software-factory/ && ./upgrade.sh 0.9.3 true" || pre_fail "Upgrade FAILED"
     # Run basic tests
     run_serverspec || pre_fail "Serverspec failed"
     # Run the checker to validate provisionned data has not been lost

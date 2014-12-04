@@ -258,6 +258,9 @@ for i in $(seq 4); do
     curl -o ${dir}/var/lib/jenkins/swarm-client-1.15-jar-with-dependencies.jar http://maven.jenkins-ci.org/content/repositories/releases/org/jenkins-ci/plugins/swarm-client/1.15/swarm-client-1.15-jar-with-dependencies.jar && break
 done
 
+# install git-review for internal use
+do_chroot $dir bash -c "pip install git-review"
+
 mkdir -p ${dir}/usr/local/jenkins/slave_scripts/
 cp ../puppet/modules/jjb/files/gerrit-git-prep.sh ${dir}/usr/local/jenkins/slave_scripts/
 chmod +x ${dir}/usr/local/jenkins/slave_scripts/gerrit-git-prep.sh
