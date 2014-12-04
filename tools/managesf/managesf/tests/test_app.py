@@ -48,17 +48,32 @@ class FunctionalTest(TestCase):
 
 class TestManageSFAppProjectController(FunctionalTest):
     def test_project_get(self):
-        ctx = [patch('managesf.controllers.gerrit.get_cookie'),
-               patch('managesf.controllers.gerrit.get_projects'),
+        ctx = [patch('managesf.controllers.gerrit.get_projects'),
                patch('managesf.controllers.gerrit.get_projects_by_user'),
                patch('managesf.controllers.gerrit.get_open_changes'),
                patch('managesf.controllers.redminec.get_open_issues')]
-        with nested(*ctx) as (gc, gp, gpu, goc, goi):
+        with nested(*ctx) as (gp, gpu, goc, goi):
             gp.return_value = ['p0', 'p1', ]
             gpu.return_value = ['p1', ]
             goc.return_value = [{'project': 'p1'}]
             goi.return_value = {'issues': [{'project': {'name': 'p1'}}]}
+            # Cookie is only required for the internal cache
+            response = self.app.set_cookie('auth_pubtkt', 'something')
             response = self.app.get('/project/')
+            self.assertEqual(200, response.status_int)
+            self.assertTrue(
+                '{"p0": {"open_issues": 0, "open_reviews": 0, "admin": 0}, ' +
+                '"p1": {"open_issues": 1, "open_reviews": 1, "admin": 1}}',
+                response.body)
+            for _mock in (gp, gpu, goc, goi):
+                self.assertTrue(_mock.called)
+
+            # Second request, will be cached - no internal calls
+            for _mock in (gp, gpu, goc, goi):
+                _mock.reset_mock()
+            response = self.app.get('/project/')
+            for _mock in (gp, gpu, goc, goi):
+                self.assertFalse(_mock.called)
             self.assertEqual(200, response.status_int)
             self.assertTrue(
                 '{"p0": {"open_issues": 0, "open_reviews": 0, "admin": 0}, ' +

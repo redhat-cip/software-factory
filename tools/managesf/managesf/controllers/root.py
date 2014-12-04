@@ -167,14 +167,26 @@ class ProjectController(RestController):
     membership = MembershipController()
 
     def __init__(self):
-        self.projects = {}
-        self.last_get = 0
+        self.cache = {}
         self.cache_timeout = 15
+
+    def set_cache(self, values):
+        token = request.cookies.get('auth_pubtkt')
+        if token:
+            self.cache[token] = (time.time(), values)
+
+    def get_cache(self):
+        token = request.cookies.get('auth_pubtkt')
+        if token:
+            last, values = self.cache.get(token, (None, None))
+            if last and last + self.cache_timeout > time.time():
+                return values
 
     @expose()
     def get(self):
-        if self.last_get + self.cache_timeout > time.time():
-            return json.dumps(self.projects)
+        projects = self.get_cache()
+        if projects:
+            return json.dumps(projects)
         projects = {}
 
         for p in gerrit.get_projects():
@@ -192,8 +204,7 @@ class ProjectController(RestController):
             prj = review.get('project')
             if prj in projects:
                 projects[prj]['open_reviews'] += 1
-        self.projects = projects
-        self.last_get = time.time()
+        self.set_cache(projects)
         return json.dumps(projects)
 
     @expose()
@@ -206,6 +217,7 @@ class ProjectController(RestController):
             gerrit.init_project(name, inp)
             redminec.init_project(name, inp)
             response.status = 201
+            self.set_cache(None)
             return "Project %s has been created." % name
         except Exception, e:
             return report_unhandled_error(e)
@@ -219,6 +231,7 @@ class ProjectController(RestController):
             gerrit.delete_project(name)
             redminec.delete_project(name)
             response.status = 200
+            self.set_cache(None)
             return "Project %s has been deleted." % name
         except Exception, e:
             return report_unhandled_error(e)
