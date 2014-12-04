@@ -18,42 +18,16 @@ class cauth ($cauth = hiera_hash('cauth', ''),
              $gerrit = hiera_hash('gerrit', ''),
              $mysql = hiera_hash('mysql', '')) {
 
-  case $operatingsystem {
-    centos: {
-      $http = "httpd"
-      $httpd_user = "apache"
+  $http = "httpd"
+  $httpd_user = "apache"
 
-      file {'/etc/httpd/conf.d/cauth.conf':
-        ensure => file,
-        mode   => '0640',
-        owner  => $httpd_user,
-        group  => $httpd_user,
-        content=> template('cauth/cauth.site.erb'),
-        notify => Service['webserver'],
-      }
-
-    }
-    debian: {
-      $http = "apache2"
-      $httpd_user = "www-data"
-
-      file {'/etc/apache2/sites-available/cauth':
-        ensure => file,
-        mode   => '0640',
-        owner  => $httpd_user,
-        group  => $httpd_user,
-        content=> template('cauth/cauth.site.erb'),
-      }
-
-      exec {'enable_cauth_site':
-        command => 'a2ensite cauth',
-        path    => '/usr/sbin/:/usr/bin/:/bin/',
-        require => [File['/etc/apache2/sites-available/cauth'],
-                    File['/var/www/cauth/config.py']],
-        notify => Service['webserver'],
-      }
-
-    }
+  file {'/etc/httpd/conf.d/cauth.conf':
+    ensure => file,
+    mode   => '0640',
+    owner  => $httpd_user,
+    group  => $httpd_user,
+    content=> template('cauth/cauth.site.erb'),
+    notify => Service['webserver'],
   }
 
   file { '/var/www/cauth/':

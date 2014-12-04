@@ -14,42 +14,17 @@
 # under the License.
 
 class cauth_client () {
-  case $operatingsystem {
-    centos: {
-      $http = "httpd"
-      $provider = "systemd"
-      $auth_pubtkt_path = "/etc/httpd/conf.d/auth_pubtkt.conf"
+  $http = "httpd"
+  $provider = "systemd"
+  $auth_pubtkt_path = "/etc/httpd/conf.d/auth_pubtkt.conf"
 
-      file { '/etc/httpd/conf.modules.d/00-tkt.conf':
-       ensure => present,
-       content => "LoadModule auth_pubtkt_module modules/mod_auth_pubtkt.so",
-       mode   => '0544',
-       owner  => 'root',
-       group  => 'root',
-       notify => Service[webserver],
-      }
-
-    }
-    debian: {
-      $http = "apache2"
-      $provider = "debian"
-      $auth_pubtkt_path = "/etc/apache2/mods-available/auth_pubtkt.conf"
-
-      file { '/etc/apache2/mods-available/auth_pubtkt.load':
-       ensure => present,
-       mode   => '0544',
-       owner  => 'root',
-       group  => 'root',
-      }
-
-      exec { 'enable_mod_auth_pubtkt':
-       command => 'a2enmod auth_pubtkt',
-       path    => '/usr/sbin/:/usr/bin/:/bin/',
-       require => [File[$auth_pubtkt_path],
-                   File['/etc/apache2/mods-available/auth_pubtkt.load']],
-       notify => Service[webserver],
-      }
-    }
+  file { '/etc/httpd/conf.modules.d/00-tkt.conf':
+    ensure => present,
+    content => "LoadModule auth_pubtkt_module modules/mod_auth_pubtkt.so",
+    mode   => '0544',
+    owner  => 'root',
+    group  => 'root',
+    notify => Service[webserver],
   }
 
   file { 'auth_pubtkt_conf':

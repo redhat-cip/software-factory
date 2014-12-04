@@ -376,7 +376,7 @@ You can stop all the SF LXC containers using:
 .. code-block:: bash
 
  $ cd bootstraps/lxc
- $ SF_DIST=CentOS ./start.sh stop
+ $ ./start.sh stop
 
 Troubleshooting lxc deployment
 ..............................

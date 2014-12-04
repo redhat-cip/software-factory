@@ -64,7 +64,7 @@ you to run the LXC tests and unittests.
 
   $ cd /srv/software-factory
   $ ./run_tests.sh # unittests
-  $ DEBUG=1 SF_DIST=CentOS ./run_functional-tests.sh # functional tests
+  $ DEBUG=1 ./run_functional-tests.sh # functional tests
 
 The functional tests will start LXC containers on the local VM to simulate
 as close as possible a real deployment. Setting the DEBUG environment variable

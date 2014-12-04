@@ -4,29 +4,9 @@ ORIG=${SDIR}/build
 SRC=$(cd $(dirname $0); pwd)
 
 function install_pip {
-    if [ -d "${dir}/etc/apt/" ]; then
-        # no need to install pip on debian
-        return
-    fi
     do_chroot $dir wget http://codybonney.com/files/packages/python/ez_setup.py
     do_chroot $dir python ez_setup.py
     do_chroot $dir easy_install pip
-}
-
-function restore_apt_repo {
-    if [ ! -d "${dir}/etc/apt/" ]; then
-        # no need to disable apt_repo on yum based system
-        return
-    fi
-    local dir=$1
-    echo "" > $dir/etc/apt/sources.list
-    rm $dir/etc/apt/sources.list.d/wheezy-backport.list
-    rm $dir/etc/apt/sources.list.d/nonfree.list
-    repository="http://cdn.debian.net/debian"
-    echo "deb http://security.debian.org/ wheezy/updates main" > $dir/etc/apt/sources.list.d/updates.list
-    echo "deb $repository wheezy-updates main" >> $dir/etc/apt/sources.list.d/updates.list  
-    echo "deb $repository wheezy main" > $dir/etc/apt/sources.list
-    echo "deb $repository wheezy-backports main" > $dir/etc/apt/sources.list.d/wheezy-backport.list
 }
 
 function pin_local {
@@ -35,19 +15,6 @@ function pin_local {
     local priority=$3
 
     check_usage $# 3 "pin_repository <dist> <chroot> <priority>"
-
-    if [ ! -z "${priority}" ];then
-        case "$dist" in
-            $supported_debian_dists|$supported_ubuntu_dists)
-                cat >> $dir/etc/apt/preferences <<EOF
-
-Package: *
-Pin: origin ""
-Pin-Priority: $priority
-
-EOF
-        esac
-    fi
 }
 
 function put_git_mark {

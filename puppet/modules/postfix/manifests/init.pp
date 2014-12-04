@@ -16,14 +16,7 @@ class postfix ($settings = hiera_hash('postfix', '')) {
 
   require hosts
 
-  case $operatingsystem {
-        centos: {
-            $provider = "systemd"
-        }
-        debian: {
-            $provider = "debian"
-        }
-    }
+  $provider = "systemd"
 
   package { 'postfix':
     ensure => 'installed',

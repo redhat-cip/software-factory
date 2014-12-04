@@ -17,91 +17,42 @@ class zuul ($settings = hiera_hash('jenkins', ''), $gh = hiera('gerrit_url'), $h
   $gfqdn = "$gh"
   $gip = $hosts[$gfqdn]['ip']
 
-  case $operatingsystem {
-    centos: {
-      $http = "httpd"
-      $provider = "systemd"
-      $httpd_user = "apache"
-      $zuul_init_path = "/lib/systemd/system/zuul.service"
-      $zuul_merger_init_path = "/lib/systemd/system/zuul-merger.service"
-      $pub_html_path = "/var/www/zuul"
-      $gitweb_path = "/usr/libexec/git-core"
+  $http = "httpd"
+  $provider = "systemd"
+  $httpd_user = "apache"
+  $pub_html_path = "/var/www/zuul"
+  $gitweb_path = "/usr/libexec/git-core"
 
-      file { '/var/www/zuul':
-        ensure  => link,
-        target  => '/srv/zuul/etc/status/public_html',
-      }
+  file { '/var/www/zuul':
+    ensure  => link,
+    target  => '/srv/zuul/etc/status/public_html',
+  }
 
-      file {'/etc/httpd/conf.d/zuul.conf':
-        ensure => file,
-        mode   => '0640',
-        owner  => $httpd_user,
-        group  => $httpd_user,
-        content => template('zuul/zuul.site.erb'),
-        notify => Service['webserver'],
-      }
+  file {'/etc/httpd/conf.d/zuul.conf':
+    ensure => file,
+    mode   => '0640',
+    owner  => $httpd_user,
+    group  => $httpd_user,
+    content => template('zuul/zuul.site.erb'),
+    notify => Service['webserver'],
+  }
 
-      file {'zuul_init':
-        path   => $zuul_init_path,
-        ensure => present,
-        mode   => '0555',
-        owner  => 'root',
-        group  => 'root',
-        source => 'puppet:///modules/zuul/zuul.systemd.service'
-      }
+  file {'zuul_init':
+    path   => '/lib/systemd/system/zuul.service',
+    ensure => present,
+    mode   => '0555',
+    owner  => 'root',
+    group  => 'root',
+    source => 'puppet:///modules/zuul/zuul.systemd.service'
+  }
 
-      file {'zuul_merger_init':
-        path   => $zuul_merger_init_path,
-        ensure => present,
-        mode   => '0555',
-        group  => 'root',
-        owner  => 'root',
-        source => 'puppet:///modules/zuul/zuul-merger.systemd.service'
-      }
-    }
-    debian: {
-      $http = "apache2"
-      $provider = "debian"
-      $httpd_user = "www-data"
-      $zuul_init_path = "/etc/init.d/zuul"
-      $zuul_merger_init_path = "/etc/init.d/zuul-merger"
-      $pub_html_path = "/srv/zuul/etc/status/public_html"
-      $gitweb_path = "/usr/lib/git-core"
-
-      file {'/etc/apache2/sites-available/zuul':
-        ensure => file,
-        mode   => '0640',
-        owner  => $httpd_user,
-        group  => $httpd_user,
-        content => template('zuul/zuul.site.erb'),
-      }
-
-      exec {'enable_zuul_site':
-        command => 'a2ensite zuul',
-        path    => '/usr/sbin/:/usr/bin/:/bin/',
-        require => [File['/etc/apache2/sites-available/zuul'],],
-        notify => Service['webserver'],
-      }
-
-      file {'zuul_init':
-        path   => $zuul_init_path,
-        ensure => present,
-        mode   => '0555',
-        owner  => 'root',
-        group  => 'root',
-        source => 'puppet:///modules/zuul/zuul.service'
-      }
-
-      file {'zuul_merger_init':
-        path   => $zuul_merger_init_path,
-        ensure => present,
-        mode   => '0555',
-        group  => 'root',
-        owner  => 'root',
-        source => 'puppet:///modules/zuul/zuul-merger.service'
-      }
-
-    }
+  file {'zuul_merger_init':
+    path   => '/lib/systemd/system/zuul-merger.service',
+    ensure => present,
+    mode   => '0555',
+    group  => 'root',
+    owner  => 'root',
+    source => 'puppet:///modules/zuul/zuul-merger.systemd.service'
   }
 
   group { 'zuul':
@@ -124,6 +75,7 @@ class zuul ($settings = hiera_hash('jenkins', ''), $gh = hiera('gerrit_url'), $h
     group   => 'zuul',
     require => [User['zuul'], Group['zuul']],
   }
+
   exec {'update_gerritip_knownhost':
     command => "/usr/bin/ssh-keyscan -p 29418 $gip >> /home/zuul/.ssh/known_hosts",
     logoutput => true,
@@ -139,12 +91,14 @@ class zuul ($settings = hiera_hash('jenkins', ''), $gh = hiera('gerrit_url'), $h
     require => File['/home/zuul/.ssh'],
     unless => '/usr/bin/grep "$gh" /home/zuul/.ssh/known_hosts',
   }
+
   file {'/usr/share/sf-zuul':
     ensure  => directory,
     mode    => '0640',
     owner   => 'root',
     group   => 'root',
   }
+
   file {'/usr/share/sf-zuul/layout.yaml':
     ensure => file,
     mode   => '0640',
@@ -153,6 +107,7 @@ class zuul ($settings = hiera_hash('jenkins', ''), $gh = hiera('gerrit_url'), $h
     require => File['/usr/share/sf-zuul'],
     content => template('zuul/layout.yaml.erb'),
   }
+
   file {'/usr/share/sf-zuul/projects.yaml':
     ensure => file,
     mode   => '0640',
@@ -161,6 +116,7 @@ class zuul ($settings = hiera_hash('jenkins', ''), $gh = hiera('gerrit_url'), $h
     require => File['/usr/share/sf-zuul'],
     content => template('zuul/projects.yaml.erb'),
   }
+
   file {'/var/log/zuul/':
     ensure  => directory,
     mode    => '0755',
@@ -168,6 +124,7 @@ class zuul ($settings = hiera_hash('jenkins', ''), $gh = hiera('gerrit_url'), $h
     group   => 'zuul',
     require => [User['zuul'], Group['zuul']],
   }
+
   file {'/etc/zuul':
     ensure  => directory,
     mode    => '0750',
@@ -175,6 +132,7 @@ class zuul ($settings = hiera_hash('jenkins', ''), $gh = hiera('gerrit_url'), $h
     group   => 'zuul',
     require => [User['zuul'], Group['zuul']],
   }
+
   file {'/var/lib/zuul/':
     ensure  => directory,
     mode    => '0755',
@@ -182,6 +140,7 @@ class zuul ($settings = hiera_hash('jenkins', ''), $gh = hiera('gerrit_url'), $h
     group   => 'zuul',
     require => [User['zuul'], Group['zuul']],
   }
+
   file {'/var/lib/zuul/.ssh':
     ensure  => directory,
     mode    => '0755',
@@ -189,6 +148,7 @@ class zuul ($settings = hiera_hash('jenkins', ''), $gh = hiera('gerrit_url'), $h
     group   => 'zuul',
     require => File['/var/lib/zuul/'],
   }
+
   file {'/var/lib/zuul/.ssh/id_rsa':
     ensure  => present,
     mode    => '0400',
@@ -197,6 +157,7 @@ class zuul ($settings = hiera_hash('jenkins', ''), $gh = hiera('gerrit_url'), $h
     source  => 'puppet:///modules/zuul/jenkins_rsa',
     require => File['/var/lib/zuul/.ssh'],
   }
+
   file {'/var/run/zuul/':
     ensure  => directory,
     mode    => '0755',
@@ -204,6 +165,7 @@ class zuul ($settings = hiera_hash('jenkins', ''), $gh = hiera('gerrit_url'), $h
     group   => 'zuul',
     require => [User['zuul'], Group['zuul']],
   }
+
   file {'/etc/zuul/logging.conf':
     ensure  => file,
     mode    => '0644',
@@ -212,6 +174,7 @@ class zuul ($settings = hiera_hash('jenkins', ''), $gh = hiera('gerrit_url'), $h
     source  => 'puppet:///modules/zuul/logging.conf',
     require => File['/etc/zuul'],
   }
+
   file {'/etc/zuul/gearman-logging.conf':
     ensure  => file,
     mode    => '0644',
@@ -220,6 +183,7 @@ class zuul ($settings = hiera_hash('jenkins', ''), $gh = hiera('gerrit_url'), $h
     source  => 'puppet:///modules/zuul/gearman-logging.conf',
     require => File['/etc/zuul'],
   }
+
   file {'/etc/zuul/merger-logging.conf':
     ensure  => file,
     mode    => '0644',
@@ -228,6 +192,7 @@ class zuul ($settings = hiera_hash('jenkins', ''), $gh = hiera('gerrit_url'), $h
     source  => 'puppet:///modules/zuul/merger-logging.conf',
     require => File['/etc/zuul'],
   }
+
   file {'/etc/zuul/zuul.conf':
     ensure  => file,
     mode    => '0644',
@@ -250,7 +215,7 @@ class zuul ($settings = hiera_hash('jenkins', ''), $gh = hiera('gerrit_url'), $h
   service {'zuul':
     ensure  => running,
     enable  => 'true',
-    require => [File[$zuul_init_path],
+    require => [File['/lib/systemd/system/zuul.service'],
                 File['/etc/zuul/zuul.conf'],
                 File['/etc/zuul/layout.yaml'],
                 File['/var/log/zuul/'],
@@ -260,7 +225,7 @@ class zuul ($settings = hiera_hash('jenkins', ''), $gh = hiera('gerrit_url'), $h
   service {'zuul-merger':
     ensure  => running,
     enable  => 'true',
-    require => [File[$zuul_merger_init_path],
+    require => [File['/lib/systemd/system/zuul-merger.service'],
                 File['/var/lib/zuul'],
                 Service['zuul'],
                 Exec['update_gerritip_knownhost'],

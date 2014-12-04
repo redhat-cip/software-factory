@@ -25,7 +25,6 @@ ORIG=$(cd $(dirname $0); pwd)
 
 . ${ORIG}/functions
 
-restore_apt_repo $dir
 update_repositories $dir
 
 case "$(package_tool)" in
@@ -34,9 +33,6 @@ case "$(package_tool)" in
         install_packages $dir vim-enhanced openldap-devel python-devel postfix gcc bc monit ansible sshpass
         install_bup $dir
         remove_epel_repository $DIST
-        ;;
-    "apt")
-        install_packages $dir cpp rake make python-pip sshpass bc gcc python-dev libldap2-dev libsasl2-dev monit postfix bup
         ;;
     *)
         fatal_error "Unsupported package_tool: $(package_tool)"

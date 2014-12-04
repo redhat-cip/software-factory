@@ -15,31 +15,11 @@
 
 class commonservices-apache ($cauth = hiera_hash('cauth', '')) {
 
-  case $operatingsystem {
-    centos: {
-      $http = "httpd"
-      $provider = "systemd"
-      $gateway_conf = "/etc/httpd/conf.d/gateway.conf"
-      $httpd_user = "apache"
-    }
-
-    debian: {
-      $http = "apache2"
-      $provider = "debian"
-      $gateway_conf = "/etc/apache2/sites-available/gateway"
-      $httpd_user = "www-data"
-
-      exec {'enable_gateway':
-        command => 'a2ensite gateway',
-        path    => '/usr/sbin/:/usr/bin/:/bin/',
-        require => File['gateway_conf'],
-        before  => Class['monit'],
-      }
-    }
-  }
+  $http = "httpd"
+  $httpd_user = "apache"
 
   file {'gateway_conf':
-    path   => $gateway_conf,
+    path   => '/etc/httpd/conf.d/gateway.conf',
     ensure => file,
     mode   => '0640',
     owner  => $httpd_user,

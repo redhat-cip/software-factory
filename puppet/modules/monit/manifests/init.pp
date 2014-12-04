@@ -14,14 +14,7 @@
 
 class monit ($settings = hiera_hash('monit', '')) {
 
-  case $operatingsystem {
-        centos: {
-            $provider = "systemd"
-        }
-        debian: {
-            $provider = "debian"
-        }
-    }
+  $provider = "systemd"
 
   package { 'monit':
     ensure => present,

@@ -16,23 +16,13 @@
 class mysql ($settings = hiera_hash('mysql', '')) {
     $mysql_root_pwd = $settings['mysql_root_pwd']
 
-    case $operatingsystem {
-        centos: {
-            $mysql = "mariadb"
-            $resetpass_cmd = "mysqladmin -uroot password $mysql_root_pwd"
-            $provider = "systemd"
-        }
-        debian: {
-            $mysql = "mysql"
-            $resetpass_cmd = "mysqladmin -uroot -ptemporarypw password $mysql_root_pwd"
-            $provider = "debian"
-        }
-    }
+    $mysql = "mariadb"
+    $provider = "systemd"
 
     exec { "set_mysql_root_password":
         unless  => "mysqladmin -uroot -p$mysql_root_pwd status",
         path    => "/bin:/usr/bin",
-        command => $resetpass_cmd,
+        command => "mysqladmin -uroot password $mysql_root_pwd",
         require => Service['mysql'],
     }
 

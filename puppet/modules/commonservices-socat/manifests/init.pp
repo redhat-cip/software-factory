@@ -19,39 +19,19 @@ class commonservices-socat {
     ensure => present,
   }
 
-  case $operatingsystem {
-     centos: {
-       file {'/lib/systemd/system/socat.service':
-         ensure => file,
-         mode   => '0640',
-         owner  => 'root',
-         group  => 'root',
-         source  => 'puppet:///modules/commonservices-socat/socat.service',
-         notify => Service[socat],
-       }
-       service {'socat':
-         ensure     => running,
-         enable     => true,
-         hasrestart => true,
-         hasstatus  => true,
-       }
-     }
-     debian: {
-       file {'/etc/default/socat.conf':
-         ensure => file,
-         mode   => '0640',
-         owner  => 'root',
-         group  => 'root',
-         source  => 'puppet:///modules/commonservices-socat/socat.conf',
-         notify => Service[socat],
-       }
-       service {'socat':
-         ensure     => running,
-         enable     => true,
-         hasrestart => true,
-         hasstatus  => true,
-         require    => File['/etc/default/socat.conf'],
-       }
-     }
+  file {'/lib/systemd/system/socat.service':
+    ensure => file,
+    mode   => '0640',
+    owner  => 'root',
+    group  => 'root',
+    source  => 'puppet:///modules/commonservices-socat/socat.service',
+    notify => Service[socat],
+  }
+
+  service {'socat':
+    ensure     => running,
+    enable     => true,
+    hasrestart => true,
+    hasstatus  => true,
   }
 }

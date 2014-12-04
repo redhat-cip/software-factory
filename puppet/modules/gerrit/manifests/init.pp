@@ -16,111 +16,33 @@
 class gerrit ($settings = hiera_hash('gerrit', ''),
               $cauth = hiera_hash('cauth', '')) {
 
-  case $operatingsystem {
-    centos: {
-      $http = "httpd"
-      $provider = "systemd"
-      $httpd_user = "apache"
-      $java_home = "/usr/lib/jvm/java-1.6.0-openjdk-1.6.0.0.x86_64/jre"
-      $gitweb_cgi = "/var/www/git/gitweb.cgi"
+  $http = "httpd"
+  $provider = "systemd"
+  $httpd_user = "apache"
+  $gitweb_cgi = "/var/www/git/gitweb.cgi"
 
-      file { '/etc/httpd/conf.d/gerrit.conf':
-        ensure  => present,
-        mode    => '0640',
-        content => template('gerrit/apache_gerrit.erb'),
-      }
+  file { '/etc/httpd/conf.d/gerrit.conf':
+    ensure  => present,
+    mode    => '0640',
+    content => template('gerrit/apache_gerrit.erb'),
+  }
 
-      file { 'gerrit_init':
-        path  => '/lib/systemd/system/gerrit.service',
-        owner => 'gerrit',
-        content => template('gerrit/gerrit.service.erb'),
-        require => Exec['gerrit-initial-init'],
-      }
+  file { 'gerrit_init':
+    path  => '/lib/systemd/system/gerrit.service',
+    owner => 'gerrit',
+    content => template('gerrit/gerrit.service.erb'),
+    require => Exec['gerrit-initial-init'],
+  }
 
-      # Apache process restart only when one of the configuration files
-      # change
-      service { 'webserver':
-        name        => $http,
-        ensure      => running,
-        enable      => true,
-        hasrestart  => true,
-        provider    => $provider,
-        require     => Service['gerrit'],
-        subscribe   => File['/etc/httpd/conf.d/gerrit.conf'],
-      }
-    }
-    debian: {
-      $http = "apache2"
-      $provider = "debian"
-      $httpd_user = "www-data"
-      $java_home = "/usr/lib/jvm/java-7-openjdk-amd64/jre"
-      $gitweb_cgi = "/usr/share/gitweb/gitweb.cgi"
-
-      exec { 'enable_mod_headers':
-        command  => 'a2enmod headers',
-        path    => '/usr/sbin/:/usr/bin/:/bin/',
-      }
-
-      file { '/etc/apache2/sites-available/gerrit':
-        ensure  => present,
-        mode    => '0640',
-        content => template('gerrit/apache_gerrit.erb'),
-      }
-
-      file { '/etc/apache2/sites-enabled/gerrit':
-        ensure  => link,
-        target  => '/etc/apache2/sites-available/gerrit',
-        require => [File['/etc/apache2/sites-available/gerrit'],
-                    Exec['enable_mod_headers']]
-      }
-
-      file { '/etc/apache2/sites-enabled/default':
-        ensure  => absent,
-      }
-
-      file { '/etc/apache2/sites-enabled/000-default':
-        ensure  => absent,
-      }
-
-      file { '/etc/default/gerritcodereview':
-        ensure  => present,
-        content => 'GERRIT_SITE=/home/gerrit/site_path',
-        owner   => 'gerrit',
-        group   => 'gerrit',
-        mode    => '0444',
-        require => File['/home/gerrit/site_path'],
-      }
-
-      file { '/home/gerrit/site_path/bin/gerrit.sh':
-        ensure  => present,
-        owner => 'gerrit',
-        group   => 'gerrit',
-        mode    => '0755',
-        source  => 'puppet:///modules/gerrit/gerrit.sh',
-        require => File['/home/gerrit/site_path/bin'],
-      }
-
-      file { 'gerrit_init':
-        path  => '/etc/init.d/gerrit',
-        ensure  => link,
-        owner => 'gerrit',
-        target  => '/home/gerrit/site_path/bin/gerrit.sh',
-        require => Exec['gerrit-initial-init'],
-      }
-
-      # Apache process restart only when one of the configuration files
-      # change
-      service { 'webserver':
-        name        => $http,
-        ensure      => running,
-        enable      => true,
-        hasrestart  => true,
-        provider    => $provider,
-        require     => Service['gerrit'],
-        subscribe   => [File['/etc/apache2/sites-enabled/gerrit'],
-                        File['/etc/apache2/sites-available/gerrit']],
-      }
-    }
+  # Apache process restart only when one of the configuration files change
+  service { 'webserver':
+    name        => $http,
+    ensure      => running,
+    enable      => true,
+    hasrestart  => true,
+    provider    => $provider,
+    require     => Service['gerrit'],
+    subscribe   => File['/etc/httpd/conf.d/gerrit.conf'],
   }
 
   package { $http:

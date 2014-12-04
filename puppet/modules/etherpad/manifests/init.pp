@@ -17,25 +17,11 @@ class etherpad ($etherpad = hiera_hash('etherpad', '')) {
 
   require hosts
 
-  case $operatingsystem {
-      centos: {
-         $etherpad_init = 'etherpad'
-         file { 'init_script':
-           path    => '/lib/systemd/system/etherpad.service',
-           ensure  => present,
-           mode    => '0740',
-           source  => 'puppet:///modules/etherpad/etherpad.service',
-         }
-      }
-      debian: {
-         $etherpad_init = 'etherpad-lite'
-         file { 'init_script':
-           path    => '/etc/init.d/etherpad-lite',
-           ensure  => present,
-           mode    => '0740',
-           source  => 'puppet:///modules/etherpad/etherpad-lite',
-         }
-      }
+  file { 'init_script':
+    path    => '/lib/systemd/system/etherpad.service',
+    ensure  => present,
+    mode    => '0740',
+    source  => 'puppet:///modules/etherpad/etherpad.service',
   }
 
   user { 'etherpad':
@@ -84,7 +70,7 @@ class etherpad ($etherpad = hiera_hash('etherpad', '')) {
     mode     => '0640',
     content  => template('etherpad/settings.json.erb'),
     require  => File['/var/www/etherpad-lite-1.4.0'],
-    notify   => [Service[$etherpad_init], Exec["change_owner"]],
+    notify   => [Service["etherpad"], Exec["change_owner"]],
   }
 
   exec {'change_owner':
@@ -96,7 +82,7 @@ class etherpad ($etherpad = hiera_hash('etherpad', '')) {
     refreshonly => true,
   }
 
-  service { $etherpad_init:
+  service { "etherpad":
     ensure     => running,
     enable     => true,
     hasrestart => true,

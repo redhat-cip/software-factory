@@ -16,132 +16,55 @@
 class jenkins ($settings = hiera_hash('jenkins', '')) {
   $jenkins_password = $settings['jenkins_password']
 
-  case $operatingsystem {
-    centos: {
-      $http = "httpd"
-      $provider = "systemd"
-      $httpd_user = "apache"
-      $htpasswd = "/etc/httpd/htpasswd"
+  $http = "httpd"
+  $provider = "systemd"
+  $httpd_user = "apache"
+  $htpasswd = "/etc/httpd/htpasswd"
 
-      file {'/etc/httpd/conf.d/ports.conf':
-        ensure => file,
-        mode   => '0640',
-        owner  => $httpd_user,
-        group  => $httpd_user,
-        source =>'puppet:///modules/jenkins/ports.conf',
-      }
+  file {'/etc/httpd/conf.d/ports.conf':
+    ensure => file,
+    mode   => '0640',
+    owner  => $httpd_user,
+    group  => $httpd_user,
+    source =>'puppet:///modules/jenkins/ports.conf',
+  }
 
-      file {'/etc/httpd/conf.d/jenkins.conf':
-        ensure => file,
-        mode   => '0640',
-        owner  => $httpd_user,
-        group  => $httpd_user,
-        content => template('jenkins/jenkins.site.erb'),
-        require => File['/etc/httpd/conf.d/ports.conf'],
-        notify => Service['webserver'],
-      }
+  file {'/etc/httpd/conf.d/jenkins.conf':
+    ensure => file,
+    mode   => '0640',
+    owner  => $httpd_user,
+    group  => $httpd_user,
+    content => template('jenkins/jenkins.site.erb'),
+    require => File['/etc/httpd/conf.d/ports.conf'],
+    notify => Service['webserver'],
+  }
 
-      file {'/etc/init.d/jenkins':
-        ensure  => 'absent',
-      }
+  file {'/etc/init.d/jenkins':
+    ensure  => 'absent',
+  }
 
-      file {'/lib/systemd/system/jenkins.service':
-        ensure => file,
-        mode   => '0640',
-        owner  => $httpd_user,
-        group  => $httpd_user,
-        content => template('jenkins/jenkins.service.erb'),
-      }
+  file {'/lib/systemd/system/jenkins.service':
+    ensure => file,
+    mode   => '0640',
+    owner  => $httpd_user,
+    group  => $httpd_user,
+    content => template('jenkins/jenkins.service.erb'),
+  }
 
-      service { 'jenkins':
-        ensure  => 'running',
-        enable  => 'true',
-        require => [File['/lib/systemd/system/jenkins.service'],
-                    File['/etc/init.d/jenkins'],]
-       }
+  service { 'jenkins':
+    ensure  => 'running',
+    enable  => 'true',
+    require => [File['/lib/systemd/system/jenkins.service'],
+                File['/etc/init.d/jenkins'],]
+   }
 
-      service {'webserver':
-        name    => $http,
-        ensure  => running,
-        enable  => 'true',
-        require => [Package[$http],
-                    File['/etc/httpd/conf.d/jenkins.conf'],
-                    File['/etc/httpd/conf.d/ports.conf']]
-      }
-    }
-    debian: {
-      $http = "apache2"
-      $provider = "debian"
-      $httpd_user = "www-data"
-      $htpasswd = "/etc/apache2/htpasswd"
-
-      file {'/etc/apache2/sites-available/jenkins':
-        ensure => file,
-        mode   => '0640',
-        owner  => $httpd_user,
-        group  => $httpd_user,
-        content => template('jenkins/jenkins.site.erb'),
-      }
-
-      file { '/etc/apache2/sites-enabled/000-default':
-        ensure => absent,
-      }
-
-      file {'/etc/apache2/ports.conf':
-        ensure => file,
-        mode   => '0640',
-        owner  => $httpd_user,
-        group  => $httpd_user,
-        source =>'puppet:///modules/jenkins/apache-ports.conf',
-      }
-
-      exec { 'a2enmod_headers':
-        command   => "/usr/sbin/a2enmod headers",
-      }
-
-      exec { 'a2enmod_proxy':
-        command   => "/usr/sbin/a2enmod proxy",
-      }
-
-      exec { 'a2enmod_proxy_http':
-        command   => "/usr/sbin/a2enmod proxy_http",
-      }
-
-      file {'/etc/default/jenkins':
-        ensure  => file,
-        mode    => '0644',
-        owner   => 'root',
-        group   => 'root',
-        content => template('jenkins/etc_default_jenkins.erb'),
-        replace => true
-      }
-
-      exec {'enable_jenkins_site':
-        command => 'a2ensite jenkins',
-        path    => '/usr/sbin/:/usr/bin/:/bin/',
-        require => [File['/etc/apache2/sites-available/jenkins'],
-                    File['/etc/apache2/sites-enabled/000-default'],
-                    File['/etc/apache2/ports.conf'],
-                    Exec['a2enmod_headers'],
-                    Exec['a2enmod_proxy'],
-                    Exec['a2enmod_proxy_http'],
-                    Exec['jenkins_user']],
-      }
-
-      service { 'jenkins':
-        ensure  => 'running',
-        enable  => 'true',
-        require => [File['/etc/default/jenkins'],]
-      }
-
-      service {'webserver':
-        name    => $http,
-        ensure  => running,
-        enable  => 'true',
-        require => [Package[$http],
-                    Exec['enable_jenkins_site'],]
-      }
-    }
+  service {'webserver':
+    name    => $http,
+    ensure  => running,
+    enable  => 'true',
+    require => [Package[$http],
+                File['/etc/httpd/conf.d/jenkins.conf'],
+                File['/etc/httpd/conf.d/ports.conf']]
   }
 
   user { 'jenkins':

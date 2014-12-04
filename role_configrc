@@ -5,18 +5,8 @@
 # 0.9.3: roles upgrade tests
 PREVIOUS_SF_REL=0.9.2
 SF_REL=${SF_REL:-0.9.3}
-case "${SF_DIST}" in
-  "Debian")
-    # Debian based
-    DVER=D7
-    DIST=wheezy
-    ;;
-  *)
-    # Centos based
-    DVER=C7.0
-    DIST=centos
-    ;;
-esac
+DVER=C7.0
+DIST=centos
 
 export LC_ALL=C
 

@@ -37,9 +37,6 @@ MOD_AUTH_PUBTKT="https://neon1.net/mod_auth_pubtkt/mod_auth_pubtkt-0.8.tar.gz"
 DOCDIR="../docs"
 GERRITHOOKS="../gerrit-hooks"
 
-# This function will check the target OS kind and skip if needed
-restore_apt_repo $dir
-
 $EDEPLOY_ROLES_PATH/jenkins.install $dir $dir $version
 # The role Jenkins does not deactivate the jenkins service at startup
 # https://github.com/enovance/edeploy-roles/issues/80
@@ -49,63 +46,6 @@ do_chroot $dir bash -c "for x in {0..6}; do ls /etc/rc\${x}.d/*jenkins | xargs r
 do_chroot $dir bash -c "pip install -U pip"
 
 case "$(package_tool)" in
-  "apt")
-     GERRIT_PACKAGES="openjdk-7-jre apache2 file"
-     REDMINE_PACKAGES="apache2 libapache2-mod-passenger redmine-sqlite redmine-mysql redmine vim puppet git cron bundler libxml2-dev libxslt-dev build-essential ruby1.9.1-dev ruby1.9.1"
-     MANAGESF_PACKAGES="apache2 libapache2-mod-wsgi puppet python-dev libldap2-dev libsasl2-dev libssl-dev gcc"
-     ETHERPAD_PACKAGES="nodejs apache2"
-     OTHER_PACKAGES="git puppet vim mysql-client python-pip python-dateutil monit postfix apache2-prefork-dev libapache2-mod-auth-pubtkt socat bup unzip pigz debootstrap"
-     PASTE_PACKAGES="python-dev python-setuptools python-virtualenv build-essential python-imaging python-werkzeug python-babel python-jinja2 python-pygments python-sqlalchemy python-simplejson python-mysqldb"
-     CAUTH_PACKAGES="libsasl2-dev libldap2-dev"
-     PACKAGES="${GERRIT_PACKAGES} ${REDMINE_PACKAGES} ${MANAGESF_PACKAGES} ${ETHERPAD_PACKAGES} ${OTHER_PACKAGES} ${PASTE_PACKAGES} ${CAUTH_PACKAGES}"
-
-     update_repositories $dir
-
-     do_chroot $dir rm /etc/apt/sources.list.d/hwraid.list
-     # Add wheezy-backport for Redmine 2.4.2 and nodejs
-     repository=$(add_main_repository $DIST)
-     cat > ${dir}/etc/apt/sources.list.d/$RELEASE-backport.list <<EOF
-       deb $repository ${RELEASE}-backports main
-EOF
-     pin_repository $DIST $dir 'http.debian.net' 500 'wheezy-backports' 'wheezy-backports' main
-     update_repositories $dir
-
-     # Redmine
-     do_chroot $dir /usr/share/debconf/fix_db.pl
-     do_chroot $dir debconf-set-selections <<< "redmine redmine/instances/default/dbconfig-install boolean false"
-     do_chroot $dir debconf-set-selections <<< "redmine redmine/instances/default/internal/skip-preseed boolean true"
-
-     install_packages $dir "$PACKAGES"
-
-     # Socat as a service
-     do_chroot $dir git clone https://github.com/asaif/socat-init.git /root/socat --depth 1
-     do_chroot $dir cp /root/socat/socat /etc/init.d/
-
-     # Fix Redmine backport inconcistency
-     do_chroot $dir mkdir -p /usr/buildout
-     do_chroot $dir ln -s /usr/lib/passenger/agents/ /usr/buildout/agents
-     do_chroot $dir ln -s /usr/share/passenger/helper-scripts/ /usr/helper-scripts
-
-     # Activate apache mods for Gerrit
-     do_chroot $dir a2enmod proxy_http
-     do_chroot $dir a2enmod rewrite
-     do_chroot $dir a2enmod headers
-
-     # Be sure service are stopped
-     do_chroot $dir update-rc.d -f apache2 remove
-     do_chroot $dir update-rc.d -f jenkins remove
-
-     do_chroot $dir sed -i -e 's/START=.*/START=yes/g' /etc/default/puppet
-     do_chroot $dir update-rc.d puppet defaults
-
-     # MySQL
-     # Set a temporary password for the root account, Puppet will change it to a random one later on
-     do_chroot ${dir} debconf-set-selections <<< 'mysql-server-5.1 mysql-server/root_password password temporarypw'
-     do_chroot ${dir} debconf-set-selections <<< 'mysql-server-5.1 mysql-server/root_password_again password temporarypw'
-     install_packages $dir "mysql-server puppet monit postfix git bup"
-     do_chroot ${dir} sed -i -e"s/^bind-address.*/bind-address = 0.0.0.0/" /etc/mysql/my.cnf
-     sed -i -e 's/START=.*/START=yes/g' $dir/etc/default/puppet
-     ;;
   "yum")
      CODENAME_MAJOR=7
      PUPPET_RELEASE=$CODENAME_MAJOR-10
