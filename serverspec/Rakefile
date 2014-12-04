@@ -14,6 +14,7 @@ namespace :serverspec do
     RSpec::Core::RakeTask.new(role.split('.')[0].to_sym) do |t|
       ENV['SUDO_PASSWORD'] = hosts[role][:sudo_password]
       ENV['USER'] = hosts[role][:username]
+      ENV['ROLE'] = role
       t.pattern = 'spec/{' + hosts[role][:roles].join(',') + '}/*_spec.rb'
       t.rspec_opts = "-t ~host:#{hosts[role][:hostname]}"
     end

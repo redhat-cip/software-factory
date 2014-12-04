@@ -131,43 +131,39 @@ function wait_all_nodes {
 }
 
 function scan_and_configure_knownhosts {
-    local role=$1.${SF_SUFFIX}
+    local fqdn=$1.${SF_SUFFIX}
+    local hostname=$1
     local ip=$2
     local port=$3
     if [ "$port" != "22" ]; then
-        ssh-keygen -f "$HOME/.ssh/known_hosts" -R "[$role]:$port" > /dev/null 2>&1 || echo
+        ssh-keygen -f "$HOME/.ssh/known_hosts" -R "[$fqdn]:$port" > /dev/null 2>&1 || echo
         ssh-keygen -f "$HOME/.ssh/known_hosts" -R "[$ip]:$port" > /dev/null 2>&1 || echo
+        ssh-keygen -f "$HOME/.ssh/known_hosts" -R "[$hostname]:$port" > /dev/null 2>&1 || echo
     else
-        ssh-keygen -f "$HOME/.ssh/known_hosts" -R "$role" > /dev/null 2>&1 || echo
+        ssh-keygen -f "$HOME/.ssh/known_hosts" -R "$fqdn" > /dev/null 2>&1 || echo
         ssh-keygen -f "$HOME/.ssh/known_hosts" -R "$ip" > /dev/null 2>&1 || echo
+        ssh-keygen -f "$HOME/.ssh/known_hosts" -R "$hostname" > /dev/null 2>&1 || echo
     fi
     RETRIES=0
-    echo " [+] Starting ssh-keyscan on $role:$port"
+    echo " [+] Starting ssh-keyscan on $fqdn:$port"
     while true; do
-        KEY=`ssh-keyscan -p $port $role 2> /dev/null`
+        KEY=`ssh-keyscan -p $port $fqdn 2> /dev/null`
         if [ "$KEY" != ""  ]; then
                 # fix ssh-keyscan bug for 2 ssh server on different port
                 if [ "$port" != "22" ]; then
-                    ssh-keyscan -p $port $role 2> /dev/null | sed "s/$role/[$role]:$port,[$ip]:$port/" >> "$HOME/.ssh/known_hosts"
+                    ssh-keyscan -p $port $fqdn 2> /dev/null | sed "s/$fqdn/[$fqdn]:$port,[$ip]:$port,[$hostname]:$port/" >> "$HOME/.ssh/known_hosts"
                 else
-                    ssh-keyscan $role 2> /dev/null | sed "s/$role/$role,$ip/" >> "$HOME/.ssh/known_hosts"
+                    ssh-keyscan $fqdn 2> /dev/null | sed "s/$fqdn/$fqdn,$ip,$hostname/" >> "$HOME/.ssh/known_hosts"
                 fi
-                echo "  -> $role:$port is up!"
+                echo "  -> $fqdn:$port is up!"
                 break
         fi
 
         let RETRIES=RETRIES+1
         [ "$RETRIES" == "40" ] && break
-        echo "  [E] ssh-keyscan on $role:$port failed, will retry in 5 seconds (attempt $RETRIES/40)"
+        echo "  [E] ssh-keyscan on $fqdn:$port failed, will retry in 5 seconds (attempt $RETRIES/40)"
         sleep 10
     done
-}
-
-function generate_serverspec {
-    OUTPUT=${BUILD}/serverspec
-    mkdir -p ${OUTPUT}
-    cp serverspec/hosts.yaml.tpl ${OUTPUT}/hosts.yaml
-    sed -i -e "s/SF_SUFFIX/${SF_SUFFIX}/g" ${OUTPUT}/hosts.yaml
 }
 
 function generate_keys {

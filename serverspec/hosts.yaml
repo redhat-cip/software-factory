@@ -2,45 +2,58 @@ puppetmaster:
   :roles:
     - base
     - edeploy
+    - roleversion
   :username: root
-  :hostname: puppetmaster.tests.dom
+  :hostname: puppetmaster
+  :roleversion: C7.0-0.9.3
 
 redmine:
   :roles:
     - base
     - redmine
     - postfix
+    - roleversion
   :username: root
-  :hostname: redmine.tests.dom
+  :hostname: redmine
+  :roleversion: C7.0-0.9.3
 
 mysql:
   :roles:
     - base
     - mysql
     - postfix
+    - roleversion
   :username: root
-  :hostname: mysql.tests.dom
+  :hostname: mysql
+  :roleversion: C7.0-0.9.3
 
 gerrit:
   :roles:
     - base
     - gerrit
     - postfix
+    - roleversion
   :username: root
-  :hostname: gerrit.tests.dom
+  :hostname: gerrit
+  :roleversion: C7.0-0.9.3
 
 jenkins:
   :roles:
     - base
     - jenkins
     - postfix
+    - roleversion
   :username: root
-  :hostname: jenkins.tests.dom
+  :hostname: jenkins
+  :roleversion: C7.0-0.9.3
 
 managesf:
   :roles:
     - base
     - managesf
     - commonservices
+    - roleversion
   :username: root
-  :hostname: managesf.tests.dom
+  :hostname: managesf
+  :roleversion: C7.0-0.9.3
+  :sfversion: 0.9.3

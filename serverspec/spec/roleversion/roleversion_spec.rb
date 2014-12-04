@@ -15,24 +15,6 @@
 #
 require 'spec_helper'
 
-describe user('etherpad') do
-    it {
-        should exist 
-    }
-end
-
-describe port(9001) do
-  it { should be_listening }
-end
-
-describe port(80) do
-  it { should be_listening }
-end
-
-describe port(5000) do
-  it { should be_listening }
-end
-
-describe file('/var/www/index.html.tmpl') do
-  it { should contain "<title>Software Factory (#{property[:sfversion]})</title>" }
+describe command('edeploy version') do
+  it { should return_stdout "#{property[:roleversion]}" }
 end
