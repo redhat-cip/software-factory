@@ -230,6 +230,8 @@ Response
 If successfully created, HTTP status code 200 is returned and
 the body contains a gzip tar archive.
 
+.. _CreateBackupCli:
+
 CLI
 '''
 
@@ -273,6 +275,7 @@ Response
 
 If successfully restored, HTTP status code 200 is returned. It may
 take sometime for SF REST API to return an HTTP response.
+
 
 CLI
 '''

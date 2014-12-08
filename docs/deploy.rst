@@ -91,7 +91,7 @@ Git repository :
 
 .. code-block:: bash
 
- $ git clone https://github.com/enovance/software-factory.git
+ $ git clone http://softwarefactory.enovance.com/r/software-factory
 
 To fetch the pre-built SF trees in order to bootstrap a SF on LXC follow
 the process below:
