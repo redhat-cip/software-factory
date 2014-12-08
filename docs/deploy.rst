@@ -378,6 +378,18 @@ You can stop all the SF LXC containers using:
  $ cd bootstraps/lxc
  $ SF_DIST=CentOS ./start.sh stop
 
+Troubleshooting lxc deployment
+..............................
+
+The containers have no access to external resources. If you need to open outbound
+traffic on the containers, run the following command on the host:
+
+.. code-block:: bash
+
+ $ sudo iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
+
+where *eth0* is your main network interface.
+
 The default admin user
 ----------------------
 
