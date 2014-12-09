@@ -225,4 +225,6 @@ remove_packages $dir ${DEVEL_PKGS}
 # Disable root passwd
 do_chroot $dir passwd -l root
 
+disable_selinux
+
 put_git_mark $dir

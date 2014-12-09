@@ -17,6 +17,8 @@ class managesf ($gerrit = hiera_hash('gerrit', ''),
                 $redmine = hiera_hash('redmine', ''),
                 $cauth = hiera_hash("cauth", '')) {
 
+  require hosts
+
   $http = "httpd"
   $provider = "systemd"
   $httpd_user = "apache"

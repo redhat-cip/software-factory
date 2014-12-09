@@ -14,6 +14,8 @@
 
 class monit ($settings = hiera_hash('monit', '')) {
 
+  require hosts
+
   $provider = "systemd"
 
   package { 'monit':

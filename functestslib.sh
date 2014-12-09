@@ -25,6 +25,25 @@ function get_ip {
     grep -B 1 "name:[ \t]*$1" /tmp/lxc-conf/sf-lxc.yaml | head -1 | awk '{ print $2 }'
 }
 
+function wait_for_statement {
+    local STATEMENT=$1
+    local EXPECT_RETURN_CODE=${2-0}
+    local MAX_RETRY=${3-40}
+    local SLEEP_TIME=${4-5}
+    while true; do
+        eval "${STATEMENT}" &> /dev/null
+        if [ "$?" == "${EXPECT_RETURN_CODE}" ]; then
+            break
+        fi
+        sleep ${SLEEP_TIME}
+        let MAX_RETRY=MAX_RETRY-1
+        if [ "${MAX_RETRY}" == 0 ]; then
+            echo "Following statement didn't happen: [$STATEMENT]"
+            return 1
+        fi
+    done
+}
+
 function prepare_artifacts {
     [ -d ${ARTIFACTS_DIR} ] && sudo rm -Rf ${ARTIFACTS_DIR}
     sudo mkdir -p ${ARTIFACTS_DIR}
@@ -197,6 +216,7 @@ function pre_fail {
 
 function waiting_stack_created {
     local stackname=$1
+    RETRIES=0
     while true; do
         heat stack-list | grep -i $stackname | grep -i fail
         [ "$?" -eq "0" ] && {
@@ -207,6 +227,8 @@ function waiting_stack_created {
         }
         heat stack-list | grep -i $stackname | grep -i create_complete
         [ "$?" -eq "0" ] && break
+        let RETRIES=RETRIES+1
+        [ "$RETRIES" == "40" ] && exit 1
         sleep 60
     done
 }

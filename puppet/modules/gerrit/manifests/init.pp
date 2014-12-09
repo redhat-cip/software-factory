@@ -16,6 +16,8 @@
 class gerrit ($settings = hiera_hash('gerrit', ''),
               $cauth = hiera_hash('cauth', '')) {
 
+  require hosts
+
   $http = "httpd"
   $provider = "systemd"
   $httpd_user = "apache"

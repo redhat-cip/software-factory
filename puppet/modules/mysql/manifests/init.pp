@@ -14,6 +14,9 @@
 # under the License.
 
 class mysql ($settings = hiera_hash('mysql', '')) {
+
+    require hosts
+
     $mysql_root_pwd = $settings['mysql_root_pwd']
 
     $mysql = "mariadb"

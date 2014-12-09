@@ -15,6 +15,8 @@
 
 class commonservices-apache ($cauth = hiera_hash('cauth', '')) {
 
+  require hosts
+
   $http = "httpd"
   $httpd_user = "apache"
 

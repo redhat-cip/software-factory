@@ -43,4 +43,10 @@ function http_fetch {
     curl --silent --show-error --retry 12 --retry-delay 10 -L -o $local_location $remote_location
 }
 
+function disable_selinux {
+    if [ -f "${dir}/etc/selinux/config" ]; then
+        sed -i "s/^SELINUX=.*/SELINUX=disabled/" "${dir}/etc/selinux/config"
+    fi
+}
+
 . ${ORIG}/functions

@@ -14,6 +14,9 @@
 # under the License.
 
 class jenkins ($settings = hiera_hash('jenkins', '')) {
+
+  require hosts
+
   $jenkins_password = $settings['jenkins_password']
 
   $http = "httpd"

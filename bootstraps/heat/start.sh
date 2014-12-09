@@ -15,9 +15,9 @@ STACKNAME=${STACKNAME:-SoftwareFactory}
 DOMAIN=$(cat $SFCONFIGFILE | grep "^domain:" | cut -d' ' -f2)
 suffix=$DOMAIN
 
+[ -n "${NOVA_KEYNAME}" ] && key_name="${NOVA_KEYNAME}" || key_name="${HEAT_TENANT}"
+
 ### Modify here according to your configuration ###
-# The default public key to use
-key_name="ftsfkey"
 # flavor is used for managesf
 flavor="m1.small"
 # alt_flavor is used for puppetmaster, mysql, redmine, jenkins, gerrit (prefer flavor with at least 2 vCPUs and 2GB RAM)

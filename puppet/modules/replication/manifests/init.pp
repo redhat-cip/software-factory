@@ -15,6 +15,8 @@
 
 class replication ($gerrit = hiera_hash('gerrit', '')) {
 
+  require hosts
+
 #To host gerrit config project as a mirror repo
   user { 'gerrit':
     ensure => present,

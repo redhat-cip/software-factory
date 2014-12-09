@@ -14,6 +14,9 @@
 # under the License.
 
 class zuul ($settings = hiera_hash('jenkins', ''), $gh = hiera('gerrit_url'), $hosts = hiera('hosts')){
+
+  require hosts
+
   $gfqdn = "$gh"
   $gip = $hosts[$gfqdn]['ip']
 

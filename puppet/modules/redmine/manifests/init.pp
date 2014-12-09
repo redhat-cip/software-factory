@@ -20,6 +20,7 @@ class redmine ($settings = hiera_hash('redmine', ''),
     $mysql_password = $settings['redmine_mysql_db_secret']
 
     require cauth_client
+    require hosts
 
     $http = "httpd"
     $provider = "systemd"
