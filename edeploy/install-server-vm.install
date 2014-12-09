@@ -39,6 +39,10 @@ case "$(package_tool)" in
         ;;
 esac
 
+# The install-server image provided lot of tools not used right now in SF
+# and in order to reduce image footprint we clean some useless components
+do_chroot $dir rm -Rf /opt/*
+
 HOME=/root do_chroot $dir gem uninstall -aIx rspec rspec-core rspec-expectations rspec-extra-formatters rspec-mocks serverspec specinfra
 HOME=/root do_chroot $dir gem install rspec-core -v 2.99.0
 HOME=/root do_chroot $dir gem install rspec-expectations -v 2.99.0
