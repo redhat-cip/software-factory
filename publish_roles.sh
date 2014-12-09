@@ -25,7 +25,7 @@ for role_name in install-server-vm softwarefactory; do
     for OBJECT in ${role}.edeploy ${role}.edeploy.md5 ${role}.md5; do
         SWIFT_PATH="/v1/AUTH_${SWIFT_ACCOUNT}/${CONTAINER}/${OBJECT}"
         TEMPURL=`swift tempurl PUT 3600 ${SWIFT_PATH} ${SWIFT_SECRET}`
-        curl -f -i -X PUT --upload-file "$OBJECT" "${SWIFT_BASE_URL}/${TEMPURL}" &> /dev/null && echo -n '.' || { echo 'Fail !'; exit 1; }
+        curl -f -i -X PUT --upload-file "$OBJECT" "${SWIFT_BASE_URL}${TEMPURL}" &> /dev/null && echo -n '.' || { echo 'Fail !'; exit 1; }
     done
 done
 rm -Rf ${TEMP_DIR}

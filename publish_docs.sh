@@ -47,7 +47,7 @@ for OBJECT in `find $1 -type f`; do
     OBJECT=`echo $OBJECT | sed 's|^\./||'`
     SWIFT_PATH="/v1/AUTH_${SWIFT_ACCOUNT}/${CONTAINER}/${OBJECT}"
     TEMPURL=`swift tempurl PUT 3600 ${SWIFT_PATH} ${SWIFT_SECRET}`
-    curl -f -i -X PUT --upload-file "$OBJECT" "${SWIFT_BASE_URL}/${TEMPURL}" &> /dev/null && echo -n '.' || { echo 'Fail !'; exit 1; }
+    curl -f -i -X PUT --upload-file "$OBJECT" "${SWIFT_BASE_URL}${TEMPURL}" &> /dev/null && echo -n '.' || { echo 'Fail !'; exit 1; }
 done
 cd - &> /dev/null
 echo
