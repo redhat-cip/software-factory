@@ -64,14 +64,40 @@ class TestUserdata(Base):
         self.assertEqual(config.USERS[login]['lastname'], user.lastname)
         self.assertEqual(config.USERS[login]['email'], user.mail)
 
-    def test_userdata(self):
-        """ Functional tests to verify the user creation
-        """
-        data = {'username': 'user5', 'password': 'userpass', 'back': '/'}
-        # Trigger a login as user5, this should fetch the userdata
-        url = "http://%s/auth/login/" % config.GATEWAY_HOST
-        requests.post(url, data=data, allow_redirects=False)
+    def logout(self):
+        url = 'http://{}/auth/logout/'.format(config.GATEWAY_HOST)
+        requests.get(url)
 
+    def login(self, username, password, redirect='/'):
+        url = "http://{0}/auth/login?back={1}".format(config.GATEWAY_HOST,
+                                                      redirect)
+        data = {'username': username,
+                'password': password,
+                'back': redirect}
+        return requests.post(url, data=data)
+
+    def test_login_redirect_to_jenkins(self):
+        """ Functional test to verify the user creation and the login
+        """
+        self.logout()
+        response = self.login('user5', 'userpass',
+                              'http%3a%2f%2ftests.dom%2fjenkins%2f')
+        expected_url = "http://{}/_jenkins/".format(config.GATEWAY_HOST)
+
+        self.assertEqual(expected_url, response.url)
+        # verify if user is created in gerrit and redmine
+        self.verify_userdata_gerrit('user5')
+        self.verify_userdata_redmine('user5')
+
+    def test_login_redirect_to_redmine(self):
+        """ Functional test to verify the redirect to redmine project page
+        """
+        self.logout()
+        response = self.login('user5', 'userpass',
+                              'http%3a%2f%2ftests.dom%2fredmine%2fprojects')
+        expect_url = "http://{}/_redmine/projects".format(config.GATEWAY_HOST)
+
+        self.assertEqual(expect_url, response.url)
         # verify if user is created in gerrit and redmine
         self.verify_userdata_gerrit('user5')
         self.verify_userdata_redmine('user5')

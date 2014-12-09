@@ -22,6 +22,7 @@ import urllib
 import ldap
 import logging
 import requests
+from urlparse import urlparse
 
 from M2Crypto import RSA
 
@@ -38,14 +39,24 @@ logger = logging.getLogger(__name__)
 
 
 def clean_back(value):
-    # Enforce/limit redirect page
-    if "jenkins" in value:
-        return "/_jenkins/"
-    if "redmine" in value:
-        return "/_redmine/"
-    if "dashboard" in value:
-        return "/_dashboard/"
-    return "/r/"
+    """Returns an absolute url path that matches the valid path available.
+    """
+    valid_paths = ('/_jenkins/', '/_zuul/', '/_redmine/', '/_etherpad/',
+                   '/_paste/', '/_dashboard/')
+
+    uri = urllib.unquote_plus(value).decode("utf8")
+    parsed = urlparse(uri)
+    path = parsed.path
+    if not path.startswith('/_'):
+        if path[0] == '/':
+            path = '/_' + path[1:]
+        elif path[0] == '_':
+            path = '/' + path
+        else:
+            path = '/_' + path
+    if any(path.startswith(x) for x in valid_paths):
+        return path
+    return '/_r/'
 
 
 def signature(data):

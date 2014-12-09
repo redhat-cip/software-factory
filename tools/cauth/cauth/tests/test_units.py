@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-#
 # Copyright (C) 2014 eNovance SAS <licensing@enovance.com>
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -239,12 +237,16 @@ class TestControllerRoot(TestCase):
         pass
 
     def test_clean_back(self):
-        val1 = 'jenkins/build'
-        val2 = 'redmine/issues'
-        val3 = 'etherpad/p/hello'
-        self.assertEqual('/_jenkins/', root.clean_back(val1))
-        self.assertEqual('/_redmine/', root.clean_back(val2))
-        self.assertEqual('/r/', root.clean_back(val3))
+        val1 = u'jenkins/build'
+        val2 = u'/redmine/issues'
+        val3 = u'http://www.example.com/etherpad/p/hello'
+        val4 = u'http://test.dom/toto/the/clown/'
+        val5 = u'http%3a%2f%2ftests.dom%2fjenkins%2f'
+        self.assertEqual('/_jenkins/build', root.clean_back(val1))
+        self.assertEqual('/_redmine/issues', root.clean_back(val2))
+        self.assertEqual('/_etherpad/p/hello', root.clean_back(val3))
+        self.assertEqual('/_r/', root.clean_back(val4))
+        self.assertEqual('/_jenkins/', root.clean_back(val5))
 
     def test_signature(self):
         self.assertIsNot(None, root.signature('data'))
@@ -392,7 +394,7 @@ class TestCauthApp(FunctionalTest):
                                                        'password': 'userpass',
                                                        'back': 'r/'})
         self.assertEqual(response.status_int, 303)
-        self.assertEqual('http://localhost/r/', response.headers['Location'])
+        self.assertEqual('http://localhost/_r/', response.headers['Location'])
         self.assertIn('Set-Cookie', response.headers)
 
         # baduser is not known from the mocked backend
