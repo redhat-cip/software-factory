@@ -34,8 +34,7 @@ display_head
 
 set -x
 
-uuid=$(date +%s | sha256sum | base64 | head -c 5)
-export STACKNAME=sf_${uuid}
+export STACKNAME=SoftwareFactory
 
 function get_ip {
     while true; do
