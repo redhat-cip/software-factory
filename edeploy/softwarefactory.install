@@ -30,7 +30,7 @@ MYSQLJAVA="http://repo2.maven.org/maven2/mysql/mysql-connector-java/5.1.21/mysql
 BCPROVJAVA="http://www.bouncycastle.org/download/bcprov-jdk15on-149.jar"
 BCPKIXJAVA="http://www.bouncycastle.org/download/bcpkix-jdk15on-149.jar"
 ETHERPAD_LITE="https://codeload.github.com/ether/etherpad-lite/tar.gz/1.4.0"
-NODEJS_NPM="https://www.npmjs.org/install.sh"
+NODEJS_NPM="https://www.npmjs.com/install.sh"
 REDMINE_RHEL="http://www.redmine.org/releases/redmine-2.5.2.tar.gz"
 MOD_AUTH_PUBTKT="https://neon1.net/mod_auth_pubtkt/mod_auth_pubtkt-0.8.tar.gz"
 
