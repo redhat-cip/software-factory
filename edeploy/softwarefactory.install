@@ -17,7 +17,6 @@
 src="$1"
 dir="$2"
 version="$3"
-DATA=../data
 ROLE=softwarefactory
 ORIG=$(cd $(dirname $0); pwd)
 
@@ -85,7 +84,15 @@ case "$(package_tool)" in
      HOME=/root do_chroot $dir gem install mysql
      # We install this fake database file in order to force the bundle to activate the mysql lib
      # Redmine puppet manifest will overwrite it
-     cp $DATA/database.yml $dir/usr/share/redmine/config/
+     cat > $dir/usr/share/redmine/config/database.yml <<EOF
+production:
+  adapter: mysql
+  database: redmine
+  host: localhost
+  username: root
+  password: ""
+  encoding: utf8
+EOF
      HOME=/root do_chroot $dir bash -c 'cd /usr/share/redmine && bundle install'
      do_chroot $dir bash -c "pip install python-dateutil"
      ;;
