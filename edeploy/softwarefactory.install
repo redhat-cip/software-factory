@@ -22,6 +22,8 @@ ORIG=$(cd $(dirname $0); pwd)
 
 . ${ORIG}/functions
 
+BUNDLE_RETRIES=3
+
 NPM_INSTALL=1.4.21
 export JENKINS_VERSION=1.580-1.1 # LTS
 LASTWAR="http://os.enocloud.com:8080/v1/AUTH_0e436aacf0854b9abe70aa90f9e0864d/gerrit/gerrit285.war"
@@ -93,7 +95,7 @@ production:
   password: ""
   encoding: utf8
 EOF
-     HOME=/root do_chroot $dir bash -c 'cd /usr/share/redmine && bundle install'
+     HOME=/root do_chroot $dir bash -c "cd /usr/share/redmine && bundle install --retry $BUNDLE_RETRIES"
      do_chroot $dir bash -c "pip install python-dateutil"
      ;;
   *)
@@ -117,7 +119,7 @@ do_chroot $dir git clone git://github.com/backlogs/redmine_backlogs.git /usr/sha
 cd $dir/usr/share/redmine/plugins/redmine_backlogs
 sed -i 's/gem \"holidays\", \"~>1.0.3\"/gem \"holidays\", \"=1.0.6\"/' Gemfile
 cd -
-HOME=/root do_chroot $dir bash -c 'cd /usr/share/redmine/plugins/redmine_backlogs && bundle install'
+HOME=/root do_chroot $dir bash -c "cd /usr/share/redmine/plugins/redmine_backlogs && bundle install --retry $BUNDLE_RETRIES"
 if [ "$(package_tool)" == "yum" ]; then
   HOME=/root do_chroot $dir bash -c 'cd /usr/share/redmine && bundle update'
 fi
