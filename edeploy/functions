@@ -3,20 +3,6 @@
 ORIG=${SDIR}/build
 SRC=$(cd $(dirname $0); pwd)
 
-function install_pip {
-    do_chroot $dir wget http://codybonney.com/files/packages/python/ez_setup.py
-    do_chroot $dir python ez_setup.py
-    do_chroot $dir easy_install pip
-}
-
-function pin_local {
-    local dist=$1
-    local dir=$2
-    local priority=$3
-
-    check_usage $# 3 "pin_repository <dist> <chroot> <priority>"
-}
-
 function put_git_mark {
     local dir=$1
     sha=`git rev-parse HEAD`
