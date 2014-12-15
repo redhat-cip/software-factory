@@ -6,7 +6,7 @@ SRC=$(cd $(dirname $0); pwd)
 function put_git_mark {
     local dir=$1
     sha=`git rev-parse HEAD`
-    echo $sha >> $dir/etc/SF_GIT_COMMIT
+    echo $sha >> ${dir}/etc/SF_GIT_COMMIT
 }
 
 function install_bup {
@@ -15,11 +15,11 @@ function install_bup {
         # This is only usage on yum based dist
         return
     fi
-    install_packages $dir "cpp gcc python-devel pyxattr pylibacl perl-Time-HiRes"
-    do_chroot $dir mkdir -p /opt/bup
-    do_chroot $dir git clone https://github.com/bup/bup.git /opt/bup/
-    do_chroot $dir bash -c 'cd /opt/bup && git checkout 0.26'
-    do_chroot $dir bash -c 'cd /opt/bup && ./configure && make && make install'
+    install_packages ${dir} "cpp gcc python-devel pyxattr pylibacl perl-Time-HiRes"
+    do_chroot ${dir} mkdir -p /opt/bup
+    do_chroot ${dir} git clone https://github.com/bup/bup.git /opt/bup/
+    do_chroot ${dir} bash -c 'cd /opt/bup && git checkout 0.26'
+    do_chroot ${dir} bash -c 'cd /opt/bup && ./configure && make && make install'
 }
 
 function http_fetch {
@@ -33,6 +33,18 @@ function disable_selinux {
     if [ -f "${dir}/etc/selinux/config" ]; then
         sed -i "s/^SELINUX=.*/SELINUX=disabled/" "${dir}/etc/selinux/config"
     fi
+}
+
+function retry {
+    # This is a really dumb retry function
+    local max_retries=3
+    local delay=3
+    for i in $(seq $max_retries); do
+        "$@" && return 0
+        echo "The command return $? as error code. Retry (attempt $i) ..."
+        sleep $delay
+    done
+    return 1
 }
 
 . ${ORIG}/functions
