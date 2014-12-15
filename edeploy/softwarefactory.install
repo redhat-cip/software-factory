@@ -33,6 +33,13 @@ ETHERPAD_LITE="https://codeload.github.com/ether/etherpad-lite/tar.gz/1.4.0"
 NODEJS_NPM="https://www.npmjs.com/install.sh"
 REDMINE_RHEL="http://www.redmine.org/releases/redmine-2.5.2.tar.gz"
 MOD_AUTH_PUBTKT="https://neon1.net/mod_auth_pubtkt/mod_auth_pubtkt-0.8.tar.gz"
+BOOTSTRAP="https://github.com/twbs/bootstrap/releases/download/v3.2.0/bootstrap-3.2.0-dist.zip"
+FONTAWESOME="http://fortawesome.github.io/Font-Awesome/assets/font-awesome-4.2.0.zip"
+JQUERY="http://code.jquery.com/jquery-2.1.1.min.js"
+JQUERY_VISIBILITY="http://status.openstack.org/jquery-visibility.min.js"
+JQUERY_GRAPHITE="http://status.openstack.org/jquery-graphite.js"
+ANGULARJS="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.27/angular.min.js"
+JENKINS_SWARM="http://maven.jenkins-ci.org/content/repositories/releases/org/jenkins-ci/plugins/swarm-client/1.15/swarm-client-1.15-jar-with-dependencies.jar"
 
 DOCDIR="../docs"
 GERRITHOOKS="../gerrit-hooks"
@@ -62,7 +69,8 @@ case "$(package_tool)" in
      do_chroot $dir pip install SQLAlchemy
      install_bup $dir
      # Install mod authpub tkt for apache (SSO)
-     do_chroot $dir bash -c "cd /tmp && curl -O $MOD_AUTH_PUBTKT && tar -xvzf mod_auth_pubtkt-0.8.tar.gz"
+     http_fetch $MOD_AUTH_PUBTKT ${dir}/tmp/mod_auth_pubtkt-0.8.tar.gz
+     do_chroot $dir bash -c "cd /tmp && tar -xvzf mod_auth_pubtkt-0.8.tar.gz"
      do_chroot $dir bash -c "cd /tmp/mod_auth_pubtkt-0.8 && ./configure --apxs=/usr/bin/apxs && make && make install"
      do_chroot $dir rm -Rf /tmp/mod_auth_pubtkt-0.8
      # Install Passenger for Redmine
@@ -72,7 +80,8 @@ case "$(package_tool)" in
      HOME=/root do_chroot $dir passenger-install-apache2-module -a
      do_chroot $dir bash -c "ln -s \$(find /usr/local/share/gems/gems/passenger-4.0.* -maxdepth 0) /usr/lib/passenger"
      # Install Redmine
-     do_chroot $dir bash -c "curl $REDMINE_RHEL -o /usr/share/redmine.tar.gz && cd /usr/share && tar -xzpf redmine.tar.gz && mv redmine-2.5.2 redmine && chown -R root:root redmine"
+     http_fetch $REDMINE_RHEL ${dir}/usr/share/redmine.tar.gz
+     do_chroot $dir bash -c "cd /usr/share && tar -xzpf redmine.tar.gz && mv redmine-2.5.2 redmine && chown -R root:root redmine"
      HOME=/root do_chroot $dir gem install mysql
      # We install this fake database file in order to force the bundle to activate the mysql lib
      # Redmine puppet manifest will overwrite it
@@ -87,10 +96,10 @@ esac
 
 # Gerrit
 mkdir ${dir}/root/gerrit_data_source/
-wget -q $LASTWAR -O ${dir}/root/gerrit_data_source/gerrit.war
-wget -q $MYSQLJAVA -O ${dir}/root/gerrit_data_source/mysql-connector-java-5.1.21.jar
-wget -q $BCPROVJAVA -O ${dir}/root/gerrit_data_source/bcprov-jdk15on-149.jar
-wget -q $BCPKIXJAVA -O ${dir}/root/gerrit_data_source/bcpkix-jdk15on-149.jar
+http_fetch $LASTWAR ${dir}/root/gerrit_data_source/gerrit.war
+http_fetch $MYSQLJAVA ${dir}/root/gerrit_data_source/mysql-connector-java-5.1.21.jar
+http_fetch $BCPROVJAVA ${dir}/root/gerrit_data_source/bcprov-jdk15on-149.jar
+http_fetch $BCPKIXJAVA ${dir}/root/gerrit_data_source/bcpkix-jdk15on-149.jar
 cp -Rf $GERRITHOOKS ${dir}/root/gerrit_data_source/
 
 # Install Redmine backlog plugin
@@ -110,23 +119,22 @@ fi
 do_chroot $dir git clone git://github.com/kevinfoote/redmine_http_auth.git /usr/share/redmine/plugins/redmine_http_auth --depth 1
 
 # Twitter Bootstrap - http://getbootstrap.com/
-do_chroot $dir curl -L --silent -o /tmp/bootstrap.zip https://github.com/twbs/bootstrap/releases/download/v3.2.0/bootstrap-3.2.0-dist.zip
+http_fetch $BOOTSTRAP ${dir}/tmp/bootstrap.zip
 do_chroot $dir unzip -q -o /tmp/bootstrap.zip -d /var/www/static/
 do_chroot $dir mv /var/www/static/bootstrap-3.2.0-dist /var/www/static/bootstrap
 do_chroot $dir rm /tmp/bootstrap.zip
 
 # Font Awesome - http://fortawesome.github.io/Font-Awesome/
-do_chroot $dir curl -L --silent -o /tmp/font-awesome.zip "http://fortawesome.github.io/Font-Awesome/assets/font-awesome-4.2.0.zip"
+http_fetch $FONTAWESOME ${dir}/tmp/font-awesome.zip
 do_chroot $dir unzip -q -o /tmp/font-awesome.zip -d /var/www/static/
 do_chroot $dir mv /var/www/static/font-awesome-4.2.0 /var/www/static/font-awesome
 do_chroot $dir rm /tmp/font-awesome.zip
 
-# JQuery - http://jquery.com/
 do_chroot $dir mkdir /var/www/static/js
-do_chroot $dir curl -L --silent -o /var/www/static/js/jquery.min.js http://code.jquery.com/jquery-2.1.1.min.js
-
+# JQuery - http://jquery.com/
+http_fetch $JQUERY ${dir}/var/www/static/js/jquery.min.js
 # AngularJS
-do_chroot $dir curl -L --silent -o /var/www/static/js/angular.min.js https://ajax.googleapis.com/ajax/libs/angularjs/1.2.27/angular.min.js
+http_fetch $ANGULARJS ${dir}/var/www/static/js/angular.min.js
 
 # zuul
 do_chroot $dir git clone https://github.com/openstack-infra/zuul /srv/zuul
@@ -138,13 +146,13 @@ do_chroot $dir bash -c "cd /srv/zuul && pip install -U -r requirements.txt"
 do_chroot $dir bash -c "cd /srv/zuul && pip install APScheduler==2.1.0"
 do_chroot $dir bash -c "cd /srv/zuul && pip install GitPython==0.3.2.RC1"
 do_chroot $dir ln -s /var/www/static/bootstrap /srv/zuul/etc/status/public_html/bootstrap
-curl http://status.openstack.org/jquery-visibility.min.js -o $dir/srv/zuul/etc/status/public_html/jquery-visibility.min.js
-curl http://status.openstack.org/jquery-graphite.js -o $dir/srv/zuul/etc/status/public_html/jquery.graphite.js
+http_fetch $JQUERY_VISIBILITY ${dir}/srv/zuul/etc/status/public_html/jquery-visibility.min.js
+http_fetch $JQUERY_GRAPHITE ${dir}/srv/zuul/etc/status/public_html/jquery.graphite.js
 do_chroot $dir cp /var/www/static/js/jquery.min.js /srv/zuul/etc/status/public_html/jquery.min.js
 
 # Etherpad_lite
-do_chroot $dir curl $ETHERPAD_LITE -o /tmp/etherpad_lite.tar.gz
-do_chroot $dir curl $NODEJS_NPM -o /tmp/npm-install.sh
+http_fetch $ETHERPAD_LITE ${dir}/tmp/etherpad_lite.tar.gz
+http_fetch $NODEJS_NPM ${dir}/tmp/npm-install.sh
 ## Try to avoid the failure in jenkins
 do_chroot $dir sed -i "s#</dev/tty##" /tmp/npm-install.sh
 [ ! -d "$dir/var/www" ] && mkdir $dir/var/www
@@ -196,9 +204,7 @@ rm -rf $DOCBUILDDIR
 # Jenkins Swarm client
 do_chroot ${dir} pip install nose flake8
 mkdir -p ${dir}/var/lib/jenkins/plugins
-for i in $(seq 4); do
-    curl -o ${dir}/var/lib/jenkins/swarm-client-1.15-jar-with-dependencies.jar http://maven.jenkins-ci.org/content/repositories/releases/org/jenkins-ci/plugins/swarm-client/1.15/swarm-client-1.15-jar-with-dependencies.jar && break
-done
+http_fetch $JENKINS_SWARM ${dir}/var/lib/jenkins/swarm-client-1.15-jar-with-dependencies.jar
 
 # install git-review for internal use
 do_chroot $dir bash -c "pip install git-review"
