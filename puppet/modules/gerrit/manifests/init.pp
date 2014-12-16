@@ -184,28 +184,28 @@ class gerrit ($settings = hiera_hash('gerrit', ''),
     source  => 'puppet:///modules/gerrit/download-commands.jar',
     require => File['/home/gerrit/site_path/plugins'],
   }
-  file { '/home/gerrit/site_path/lib/mysql-connector-java-5.1.21.jar':
+  file { '/home/gerrit/site_path/lib/mysql-connector-java.jar':
     ensure  => present,
     owner   => 'gerrit',
     group   => 'gerrit',
     mode    => '0640',
-    source  => '/root/gerrit_data_source/mysql-connector-java-5.1.21.jar',
+    source  => '/root/gerrit_data_source/mysql-connector-java.jar',
     require => File['/home/gerrit/site_path/lib'],
   }
-  file { '/home/gerrit/site_path/lib/bcprov-jdk15on-149.jar':
+  file { '/home/gerrit/site_path/lib/bcprov.jar':
     ensure  => present,
     owner   => 'gerrit',
     group   => 'gerrit',
     mode    => '0640',
-    source  => '/root/gerrit_data_source/bcprov-jdk15on-149.jar',
+    source  => '/root/gerrit_data_source/bcprov.jar',
     require => File['/home/gerrit/site_path/lib'],
   }
-  file { '/home/gerrit/site_path/lib/bcpkix-jdk15on-149.jar':
+  file { '/home/gerrit/site_path/lib/bcpkix.jar':
     ensure  => present,
     owner   => 'gerrit',
     group   => 'gerrit',
     mode    => '0640',
-    source  => '/root/gerrit_data_source/bcpkix-jdk15on-149.jar',
+    source  => '/root/gerrit_data_source/bcpkix.jar',
     require => File['/home/gerrit/site_path/lib'],
   }
   file { '/home/gerrit/site_path/hooks/patchset-created':
@@ -345,9 +345,9 @@ class gerrit ($settings = hiera_hash('gerrit', ''),
                   File['/home/gerrit/site_path/plugins/gravatar.jar'],
                   File['/home/gerrit/site_path/plugins/delete-project.jar'],
                   File['/home/gerrit/site_path/plugins/reviewersbyblame-2.8.1.jar'],
-                  File['/home/gerrit/site_path/lib/mysql-connector-java-5.1.21.jar'],
-                  File['/home/gerrit/site_path/lib/bcprov-jdk15on-149.jar'],
-                  File['/home/gerrit/site_path/lib/bcpkix-jdk15on-149.jar'],
+                  File['/home/gerrit/site_path/lib/mysql-connector-java.jar'],
+                  File['/home/gerrit/site_path/lib/bcprov.jar'],
+                  File['/home/gerrit/site_path/lib/bcpkix.jar'],
                   File['/home/gerrit/site_path/plugins/download-commands.jar'],
                   File['/home/gerrit/site_path/plugins/delete-project.jar'],
                   File['/home/gerrit/site_path/hooks/hooks.config'],

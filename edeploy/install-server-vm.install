@@ -39,16 +39,23 @@ case "$(package_tool)" in
         ;;
 esac
 
+# serverspec and stuff
+RSPEC_CORE_VERSION=2.99.0
+RSPEC_EXPECTATIONS_VERSION=${RSPEC_CORE_VERSION}
+RSPEC_ITS_VERSION=1.0.0
+SPECINFRA_VERSION=1.27.0
+SERVERSPEC_VERSION=1.16.0
+
 # The install-server image provided lot of tools not used right now in SF
 # and in order to reduce image footprint we clean some useless components
 do_chroot ${dir} rm -Rf /opt/*
 
 HOME=/root do_chroot ${dir} gem uninstall -aIx rspec rspec-core rspec-expectations rspec-extra-formatters rspec-mocks serverspec specinfra
-HOME=/root retry do_chroot ${dir} gem install rspec-core -v 2.99.0
-HOME=/root retry do_chroot ${dir} gem install rspec-expectations -v 2.99.0
-HOME=/root retry do_chroot ${dir} gem install rspec-its -v 1.0.0
-HOME=/root retry do_chroot ${dir} gem install specinfra -v 1.27.0
-HOME=/root retry do_chroot ${dir} gem install serverspec -v 1.16.0
+HOME=/root retry do_chroot ${dir} gem install rspec-core -v ${RSPEC_CORE_VERSION}
+HOME=/root retry do_chroot ${dir} gem install rspec-expectations -v ${RSPEC_EXPECTATIONS_VERSION}
+HOME=/root retry do_chroot ${dir} gem install rspec-its -v ${RSPEC_ITS_VERSION}
+HOME=/root retry do_chroot ${dir} gem install specinfra -v ${SPECINFRA_VERSION}
+HOME=/root retry do_chroot ${dir} gem install serverspec -v ${SERVERSPEC_VERSION}
 
 # Install the most recent version of PIP at early stage
 retry do_chroot ${dir} pip install -U pip

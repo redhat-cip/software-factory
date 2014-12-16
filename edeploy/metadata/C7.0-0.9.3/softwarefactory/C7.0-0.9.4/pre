@@ -1,4 +1,5 @@
 #!/bin/sh
 
-echo "Pre script - Nothing to do"
+echo "Saving etherpad API key"
+cp /var/www/etherpad-lite-1.4.0/APIKEY.txt /tmp/APIKEY.txt
 exit 0

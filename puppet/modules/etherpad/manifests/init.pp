@@ -22,12 +22,13 @@ class etherpad ($etherpad = hiera_hash('etherpad', '')) {
     ensure  => present,
     mode    => '0740',
     source  => 'puppet:///modules/etherpad/etherpad.service',
+    notify  => Exec["reload_unit"],
   }
 
   user { 'etherpad':
     name => 'etherpad',
     ensure => 'present',
-    home => '/var/www/etherpad-lite-1.4.0',
+    home => '/var/www/etherpad-lite',
     require => Group['etherpad'],
   }
 
@@ -35,7 +36,7 @@ class etherpad ($etherpad = hiera_hash('etherpad', '')) {
     ensure => present,
   }
 
-  file { '/var/www/etherpad-lite-1.4.0':
+  file { '/var/www/etherpad-lite':
     ensure  => directory,
     owner   => 'etherpad',
     group   => 'etherpad',
@@ -52,33 +53,40 @@ class etherpad ($etherpad = hiera_hash('etherpad', '')) {
                 Group['etherpad']],
   }
 
-  file { '/var/www/etherpad-lite-1.4.0/run.sh':
+  file { '/var/www/etherpad-lite/run.sh':
     ensure  => present,
     owner   => 'etherpad',
     group   => 'etherpad',
     mode    => '0740',
     source  => 'puppet:///modules/etherpad/run.sh',
-    require => File['/var/www/etherpad-lite-1.4.0'],
+    require => File['/var/www/etherpad-lite'],
     notify  => Exec["change_owner"],
   }
 
 
-  file { '/var/www/etherpad-lite-1.4.0/settings.json':
+  file { '/var/www/etherpad-lite/settings.json':
     ensure   => present,
     owner    => 'etherpad',
     group    => 'etherpad',
     mode     => '0640',
     content  => template('etherpad/settings.json.erb'),
-    require  => File['/var/www/etherpad-lite-1.4.0'],
+    require  => File['/var/www/etherpad-lite'],
     notify   => [Service["etherpad"], Exec["change_owner"]],
   }
 
   exec {'change_owner':
-    command => 'chown -R etherpad:etherpad /var/www/etherpad-lite-1.4.0',
+    command => 'chown -R etherpad:etherpad /var/www/etherpad-lite',
     path    => '/usr/sbin/:/usr/bin/:/bin/',
-    require => [File['/var/www/etherpad-lite-1.4.0/run.sh'],
+    require => [File['/var/www/etherpad-lite/run.sh'],
                 File['init_script'],
-                File['/var/www/etherpad-lite-1.4.0/settings.json']],
+                File['/var/www/etherpad-lite/settings.json']],
+    refreshonly => true,
+  }
+
+  exec {'reload_unit':
+    command => 'systemctl daemon-reload',
+    path    => '/usr/sbin/:/usr/bin/:/bin/',
+    require => File['/lib/systemd/system/etherpad.service'],
     refreshonly => true,
   }
 

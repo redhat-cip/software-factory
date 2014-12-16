@@ -6,6 +6,7 @@
 /tmp/
 + /root/gerrit_data_source/
 + /root/gerrit_data_source/gerrit.war
++ /root/gerrit_data_source/*.jar
 - /root/gerrit_data_source/*
 - /root/*
 + /var
@@ -29,10 +30,11 @@
 - /var/www/cauth/keys/
 - /var/www/cauth/state_mapping.db
 - /var/www/cauth/config.py
-- /var/www/etherpad-lite-1.4.0/run.sh
-- /var/www/etherpad-lite-1.4.0/APIKEY.txt
-+ /home/
++ /var/www/etherpad-lite/.*
+- /home/
 - /home/gerrit/
++ /home/gerrit/site_path/lib/.*
++ /home/gerrit/site_path/plugins/.*
 - /home/zuul/
 + /usr/share/redmine
 - /usr/share/redmine/config

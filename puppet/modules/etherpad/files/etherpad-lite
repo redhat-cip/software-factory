@@ -11,7 +11,7 @@
 ### END INIT INFO
 
 PATH="/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:/opt/node/bin"
-EPLITE_DIR="/var/www/etherpad-lite-1.4.0"
+EPLITE_DIR="/var/www/etherpad-lite"
 EPLITE_BIN="$EPLITE_DIR/run.sh"
 USER="etherpad"
 GROUP="etherpad"

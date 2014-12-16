@@ -92,19 +92,19 @@ describe "gerrit" do
                 'mode'    => '0640',
             })
             
-            should contain_file('/home/gerrit/site_path/lib/mysql-connector-java-5.1.21.jar').with({
+            should contain_file('/home/gerrit/site_path/lib/mysql-connector-java.jar').with({
                 'ensure'  => 'present',
                 'owner'   => 'gerrit',
                 'group'   => 'gerrit',
             })
             
-            should contain_file('/home/gerrit/site_path/lib/bcprov-jdk15on-149.jar').with({
+            should contain_file('/home/gerrit/site_path/lib/bcprov.jar').with({
                 'ensure'  => 'present',
                 'owner'   => 'gerrit',
                 'group'   => 'gerrit',
             })
 
-            should contain_file('/home/gerrit/site_path/lib/bcpkix-jdk15on-149.jar').with({
+            should contain_file('/home/gerrit/site_path/lib/bcpkix.jar').with({
                 'ensure'  => 'present',
                 'owner'   => 'gerrit',
                 'group'   => 'gerrit',

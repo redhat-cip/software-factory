@@ -1,0 +1,149 @@
+# -*- shell-script -*-
+
+URL_LIST=""
+GIT_REPO_LIST=""
+
+
+# puppet
+PUPPET_CODENAME_MAJOR=7
+PUPPET_REPO_VERSION="${PUPPET_CODENAME_MAJOR}-10"
+PUPPET_REPO_URL="http://yum.puppetlabs.com/el/${PUPPET_CODENAME_MAJOR}/products/x86_64/puppetlabs-release-${PUPPET_REPO_VERSION}.noarch.rpm"
+
+URL_LIST="$URL_LIST $PUPPET_REPO_URL"
+
+# pip
+export PIP_USE_MIRRORS=True
+#PIP_MIRROR_URL=http://your/pip/mirror/here
+#export PIP_EXTRA_INDEX_URL=$PIP_MIRROR_URL
+
+#URL_LIST="$URL_LIST $PIP_MIRROR_URL"
+
+# rubygem
+#RUBY_MIRROR_URL=http://your/rubygems/mirror/here
+#gem source -a $RUBY_MIRROR_URL
+
+#URL_LIST="$URL_LIST $RUBY_MIRROR_URL"
+
+# mod_auth_pubtkt
+MOD_AUTH_PUBTKT_VERSION=0.8
+MOD_AUTH_PUBTKT_URL="https://neon1.net/mod_auth_pubtkt/mod_auth_pubtkt-${MOD_AUTH_PUBTKT_VERSION}.tar.gz"
+
+URL_LIST="$URL_LIST $MOD_AUTH_PUBTKT_URL"
+
+# passenger (rubygem)
+PASSENGER_VERSION=4.0
+
+# redmine
+REDMINE_VERSION=2.5.2
+REDMINE_RHEL_URL="http://www.redmine.org/releases/redmine-${REDMINE_VERSION}.tar.gz"
+REDMINE_BACKLOG_URL="git://github.com/backlogs/redmine_backlogs.git"
+REDMINE_HTTP_PLUGIN_URL="git://github.com/kevinfoote/redmine_http_auth.git"
+
+URL_LIST="$URL_LIST $REDMINE_RHEL_URL"
+GIT_REPO_LIST="$GIT_REPO_LIST $REDMINE_BACKLOG_URL $REDMINE_HTTP_PLUGIN_URL"
+
+# gerrit
+GERRIT_VERSION=2861
+GERRIT_URL="http://os.enocloud.com:8080/v1/AUTH_70aab03f69b549cead3cb5f463174a51/gerrit/gerrit${GERRIT_VERSION}.war"
+MYSQLJAVA_VERSION=5.1.21
+MYSQLJAVA_URL="http://repo2.maven.org/maven2/mysql/mysql-connector-java/${MYSQLJAVA_VERSION}/mysql-connector-java-${MYSQLJAVA_VERSION}.jar"
+BCPROV_VERSION="1.49"
+BCPROVJDK_VERSION="jdk15on"
+BCPROVJAVA_URL="http://central.maven.org/maven2/org/bouncycastle/bcprov-${BCPROVJDK_VERSION}/${BCPROV_VERSION}/bcprov-${BCPROVJDK_VERSION}-${BCPROV_VERSION}.jar"
+BCPKIX_VERSION=$BCPROV_VERSION
+BCPKIXJDK_VERSION=$BCPROVJDK_VERSION
+BCPKIXJAVA_URL="http://central.maven.org/maven2/org/bouncycastle/bcpkix-${BCPKIXJDK_VERSION}/${BCPKIX_VERSION}/bcpkix-${BCPKIXJDK_VERSION}-${BCPKIX_VERSION}.jar"
+
+URL_LIST="$URL_LIST $GERRIT_URL $MYSQLJAVA_URL $BCPROVJAVA_URL $BCPKIXJAVA_URL"
+
+# bootstrap
+BOOTSTRAP_VERSION=3.2.0
+BOOTSTRAP_URL="https://github.com/twbs/bootstrap/releases/download/v${BOOTSTRAP_VERSION}/bootstrap-${BOOTSTRAP_VERSION}-dist.zip"
+
+URL_LIST="$URL_LIST $BOOTSTRAP_URL"
+
+# jenkins
+export JENKINS_VERSION=1.580-1.1 # LTS
+JENKINS_SWARM_VERSION=1.22
+JENKINS_SWARM_CLIENT_URL="http://maven.jenkins-ci.org/content/repositories/releases/org/jenkins-ci/plugins/swarm-client/${JENKINS_SWARM_VERSION}/swarm-client-${JENKINS_SWARM_VERSION}-jar-with-dependencies.jar"
+JENKINS_SWARM_PLUGIN_URL="http://repo.jenkins-ci.org/releases/org/jenkins-ci/plugins/swarm/${JENKINS_SWARM_VERSION}/swarm-${JENKINS_SWARM_VERSION}.hpi"
+
+URL_LIST="$URL_LIST $JENKINS_SWARM_CLIENT_URL $JENKINS_SWARM_PLUGIN_URL"
+
+# etherpad
+ETHERPAD_LITE_VERSION=1.4.0
+ETHERPAD_LITE_URL="https://codeload.github.com/ether/etherpad-lite/tar.gz/${ETHERPAD_LITE_VERSION}"
+
+URL_LIST="$URL_LIST $ETHERPAD_LITE_URL"
+
+# font awesome
+FONTAWESOME_VERSION=4.2.0
+FONTAWESOME_URL="http://fortawesome.github.io/Font-Awesome/assets/font-awesome-${FONTAWESOME_VERSION}.zip"
+
+URL_LIST="$URL_LIST $FONTAWESOME_URL"
+
+# nodejs
+NODEJS_NPM="https://www.npmjs.com/install.sh"
+NPM_INSTALL=1.4.21
+NPM_MIRROR_URL=http://registry.npmjs.eu/
+
+URL_LIST="$URL_LIST $NPM_MIRROR_URL $NODEJS_NPM"
+
+# JQuery
+JQUERY_VERSION=2.1.1
+JQUERY_URL="http://code.jquery.com/jquery-${JQUERY_VERSION}.min.js"
+JQUERY_VISIBILITY_URL="http://status.openstack.org/jquery-visibility.min.js"
+JQUERY_GRAPHITE_URL="http://status.openstack.org/jquery-graphite.js"
+
+URL_LIST="$URL_LIST $JQUERY_URL $JQUERY_VISIBILITY_URL $JQUERY_GRAPHITE_URL"
+
+# AngularJS
+ANGULARJS_VERSION=1.2.27
+ANGULARJS_URL="https://ajax.googleapis.com/ajax/libs/angularjs/${ANGULARJS_VERSION}/angular.min.js"
+
+URL_LIST="$URL_LIST $ANGULARJS_URL"
+
+# zuul
+ZUUL_URL="https://github.com/openstack-infra/zuul"
+ZUUL_VERSION=8c81dc3fa9c2dfaf93539641c099b15064357011 # a commit known to work 11/12/2014
+APSCHEDULER_VERSION=2.1.0
+GITPYTHON_VERSION=0.3.2.RC1
+
+URL_LIST="$URL_LIST $ZUUL_URL"
+
+# paste (lodgeit)
+PASTE_URL="https://git.openstack.org/openstack-infra/lodgeit"
+PASTE_VERSION=c69f555032 # latest commit as of 05. May 2014
+
+GIT_REPO_LIST="$GIT_REPO_LIST $PASTE_URL"
+
+# pbr
+PBR_VERSION=0.8.2
+
+#---- URL health check -------
+
+function test_url {
+  local e=0
+  for url in $URL_LIST; do
+    HTTP_CODE=$(curl -o /dev/null --silent --head --write-out '%{http_code}' "$url")
+
+    if [ $HTTP_CODE -gt 399 ]
+    then
+      e=1
+      echo "$url - Error $HTTP_CODE"
+    else
+      echo "$url - $HTTP_CODE"
+    fi
+  done;
+  for repo in $GIT_REPO_LIST; do
+    git ls-remote --exit-code $repo > /dev/null 2>&1
+    if [ $? -gt 0 ]
+    then
+      echo "No matching refs for $repo"
+      e=1
+    else
+      echo "$repo - 200"
+    fi
+  done;
+  exit $e
+}

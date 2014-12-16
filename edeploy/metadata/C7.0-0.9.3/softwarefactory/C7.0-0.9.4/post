@@ -1,4 +1,6 @@
 #!/bin/sh
 
+# restore etherpad API key
+mv /tmp/APIKEY.txt /var/www/etherpad-lite/APIKEY.txt 
 # Unit files may changed - so ask for a reload after having updated the files system.
 systemctl daemon-reload

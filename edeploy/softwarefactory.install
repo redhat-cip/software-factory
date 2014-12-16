@@ -20,31 +20,10 @@ version="$3"
 ROLE=softwarefactory
 ORIG=$(cd $(dirname $0); pwd)
 
+. ${ORIG}/third_party_tools
 . ${ORIG}/functions
 
 BUNDLE_RETRIES=3
-
-PUPPET_EL_CODENAME_MAJOR=7
-PUPPET_RELEASE=$PUPPET_EL_CODENAME_MAJOR-10
-NPM_INSTALL=1.4.21
-export JENKINS_VERSION=1.580-1.1 # LTS
-PUPPET="http://yum.puppetlabs.com/el/$PUPPET_EL_CODENAME_MAJOR/products/x86_64/puppetlabs-release-$PUPPET_RELEASE.noarch.rpm"
-LASTWAR="http://os.enocloud.com:8080/v1/AUTH_70aab03f69b549cead3cb5f463174a51/gerrit/gerrit2861.war"
-MYSQLJAVA="http://repo2.maven.org/maven2/mysql/mysql-connector-java/5.1.21/mysql-connector-java-5.1.21.jar"
-BCPROVJAVA="http://central.maven.org/maven2/org/bouncycastle/bcprov-jdk15on/1.49/bcprov-jdk15on-1.49.jar"
-BCPKIXJAVA="http://central.maven.org/maven2/org/bouncycastle/bcpkix-jdk15on/1.49/bcpkix-jdk15on-1.49.jar"
-ETHERPAD_LITE="https://codeload.github.com/ether/etherpad-lite/tar.gz/1.4.0"
-NODEJS_NPM="https://www.npmjs.com/install.sh"
-REDMINE_RHEL="http://www.redmine.org/releases/redmine-2.5.2.tar.gz"
-MOD_AUTH_PUBTKT="https://neon1.net/mod_auth_pubtkt/mod_auth_pubtkt-0.8.tar.gz"
-BOOTSTRAP="https://github.com/twbs/bootstrap/releases/download/v3.2.0/bootstrap-3.2.0-dist.zip"
-FONTAWESOME="http://fortawesome.github.io/Font-Awesome/assets/font-awesome-4.2.0.zip"
-JQUERY="http://code.jquery.com/jquery-2.1.1.min.js"
-JQUERY_VISIBILITY="http://status.openstack.org/jquery-visibility.min.js"
-JQUERY_GRAPHITE="http://status.openstack.org/jquery-graphite.js"
-ANGULARJS="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.27/angular.min.js"
-JENKINS_SWARM_CLIENT="http://repo.jenkins-ci.org/releases/org/jenkins-ci/plugins/swarm-client/1.22/swarm-client-1.22-jar-with-dependencies.jar"
-JENKINS_SWARM_PLUGIN="http://repo.jenkins-ci.org/releases/org/jenkins-ci/plugins/swarm/1.22/swarm-1.22.hpi"
 
 DOCDIR="../docs"
 GERRITHOOKS="../gerrit-hooks"
@@ -59,7 +38,8 @@ retry do_chroot ${dir} pip install -U pip
 
 case "$(package_tool)" in
   "yum")
-     install_packages ${dir} $PUPPET
+     # The puppetlas-release package install repo desc for puppet in yum
+     install_packages ${dir} ${PUPPET_REPO_URL}
      add_epel_repository $DIST
 
      install_packages ${dir} "puppet monit postfix git python-pip vim-enhanced nodejs httpd java-1.6.0-openjdk mariadb-server python-werkzeug python-babel python-jinja2 MySQL-python socat mod_wsgi m2crypto mariadb gitweb debootstrap unzip pigz"
@@ -68,22 +48,23 @@ case "$(package_tool)" in
      install_packages ${dir} ${DEVEL_PKGS}
 
      # Install SQLAlchemy for paste lodegit (not available in yum)
+     # TODO(mhu) manage mirror choice with pip
      retry do_chroot ${dir} pip install SQLAlchemy
      install_bup ${dir}
      # Install mod authpub tkt for apache (SSO)
-     http_fetch $MOD_AUTH_PUBTKT ${dir}/tmp/mod_auth_pubtkt-0.8.tar.gz
-     do_chroot ${dir} bash -c "cd /tmp && tar -xvzf mod_auth_pubtkt-0.8.tar.gz"
-     do_chroot ${dir} bash -c "cd /tmp/mod_auth_pubtkt-0.8 && ./configure --apxs=/usr/bin/apxs && make && make install"
-     do_chroot ${dir} rm -Rf /tmp/mod_auth_pubtkt-0.8
+     http_fetch $MOD_AUTH_PUBTKT_URL ${dir}/tmp/mod_auth_pubtkt-${MOD_AUTH_PUBTKT_VERSION}.tar.gz
+     do_chroot ${dir} bash -c "cd /tmp && tar -xvzf mod_auth_pubtkt-${MOD_AUTH_PUBTKT_VERSION}.tar.gz"
+     do_chroot ${dir} bash -c "cd /tmp/mod_auth_pubtkt-${MOD_AUTH_PUBTKT_VERSION} && ./configure --apxs=/usr/bin/apxs && make && make install"
+     do_chroot ${dir} rm -Rf /tmp/mod_auth_pubtkt-${MOD_AUTH_PUBTKT_VERSION}
      # Install Passenger for Redmine
      mkdir -p ${dir}/var/www/html
      mkdir -p ${dir}/var/log/httpd
-     HOME=/root retry do_chroot ${dir} gem install passenger bundler
+     HOME=/root do_chroot ${dir} gem install passenger bundler
      HOME=/root do_chroot ${dir} passenger-install-apache2-module -a
-     do_chroot ${dir} bash -c "ln -s \$(find /usr/local/share/gems/gems/passenger-4.0.* -maxdepth 0) /usr/lib/passenger"
+     do_chroot ${dir} bash -c "ln -s \$(find /usr/local/share/gems/gems/passenger-${PASSENGER_VERSION}.* -maxdepth 0) /usr/lib/passenger"
      # Install Redmine
-     http_fetch $REDMINE_RHEL ${dir}/usr/share/redmine.tar.gz
-     do_chroot ${dir} bash -c "cd /usr/share && tar -xzpf redmine.tar.gz && mv redmine-2.5.2 redmine && chown -R root:root redmine"
+     http_fetch $REDMINE_RHEL_URL ${dir}/usr/share/redmine.tar.gz
+     do_chroot ${dir} bash -c "cd /usr/share && tar -xzpf redmine.tar.gz && mv redmine-${REDMINE_VERSION} redmine && chown -R root:root redmine"
      HOME=/root retry do_chroot ${dir} gem install mysql
      # We install this fake database file in order to force the bundle to activate the mysql lib
      # Redmine puppet manifest will overwrite it
@@ -106,15 +87,15 @@ esac
 
 # Gerrit
 mkdir ${dir}/root/gerrit_data_source/
-http_fetch $LASTWAR ${dir}/root/gerrit_data_source/gerrit.war
-http_fetch $MYSQLJAVA ${dir}/root/gerrit_data_source/mysql-connector-java-5.1.21.jar
-http_fetch $BCPROVJAVA ${dir}/root/gerrit_data_source/bcprov-jdk15on-149.jar
-http_fetch $BCPKIXJAVA ${dir}/root/gerrit_data_source/bcpkix-jdk15on-149.jar
+http_fetch $GERRIT_URL ${dir}/root/gerrit_data_source/gerrit.war
+http_fetch $MYSQLJAVA_URL ${dir}/root/gerrit_data_source/mysql-connector-java.jar
+http_fetch $BCPROVJAVA_URL ${dir}/root/gerrit_data_source/bcprov.jar
+http_fetch $BCPKIXJAVA_URL ${dir}/root/gerrit_data_source/bcpkix.jar
 cp -Rf $GERRITHOOKS ${dir}/root/gerrit_data_source/
 
 # Install Redmine backlog plugin
 do_chroot ${dir} mkdir -p /usr/share/redmine/plugins
-retry do_chroot ${dir} git clone git://github.com/backlogs/redmine_backlogs.git /usr/share/redmine/plugins/redmine_backlogs --depth 1
+retry do_chroot ${dir} git clone $REDMINE_BACKLOG_URL /usr/share/redmine/plugins/redmine_backlogs --depth 1
 # An update of holidays gem 10/12/2014 to 1.0.7 leads to unable to deploy the backlog plugin
 # Check later if we can safely remove that :
 cd ${dir}/usr/share/redmine/plugins/redmine_backlogs
@@ -124,61 +105,62 @@ HOME=/root do_chroot ${dir} bash -c "cd /usr/share/redmine/plugins/redmine_backl
 HOME=/root do_chroot ${dir} bash -c 'cd /usr/share/redmine && bundle update'
 
 # Install Redmine http plugin
-retry do_chroot ${dir} git clone git://github.com/kevinfoote/redmine_http_auth.git /usr/share/redmine/plugins/redmine_http_auth --depth 1
+retry do_chroot ${dir} git clone $REDMINE_HTTP_PLUGIN_URL /usr/share/redmine/plugins/redmine_http_auth --depth 1
 
 # Twitter Bootstrap - http://getbootstrap.com/
-http_fetch $BOOTSTRAP ${dir}/tmp/bootstrap.zip
+http_fetch $BOOTSTRAP_URL ${dir}/tmp/bootstrap.zip
 do_chroot ${dir} unzip -q -o /tmp/bootstrap.zip -d /var/www/static/
-do_chroot ${dir} mv /var/www/static/bootstrap-3.2.0-dist /var/www/static/bootstrap
+do_chroot ${dir} mv /var/www/static/bootstrap-${BOOTSTRAP_VERSION}-dist /var/www/static/bootstrap
 do_chroot ${dir} rm /tmp/bootstrap.zip
 
 # Font Awesome - http://fortawesome.github.io/Font-Awesome/
-http_fetch $FONTAWESOME ${dir}/tmp/font-awesome.zip
+http_fetch $FONTAWESOME_URL ${dir}/tmp/font-awesome.zip
 do_chroot ${dir} unzip -q -o /tmp/font-awesome.zip -d /var/www/static/
-do_chroot ${dir} mv /var/www/static/font-awesome-4.2.0 /var/www/static/font-awesome
+do_chroot ${dir} mv /var/www/static/font-awesome-${FONTAWESOME_VERSION} /var/www/static/font-awesome
 do_chroot ${dir} rm /tmp/font-awesome.zip
 
 do_chroot ${dir} mkdir /var/www/static/js
 # JQuery - http://jquery.com/
-http_fetch $JQUERY ${dir}/var/www/static/js/jquery.min.js
+http_fetch $JQUERY_URL ${dir}/var/www/static/js/jquery.min.js
 # AngularJS
-http_fetch $ANGULARJS ${dir}/var/www/static/js/angular.min.js
+http_fetch $ANGULARJS_URL ${dir}/var/www/static/js/angular.min.js
 
 # zuul
-retry do_chroot ${dir} git clone https://github.com/openstack-infra/zuul /srv/zuul
-do_chroot ${dir} bash -c "cd /srv/zuul && git checkout -b working 8c81dc3fa9c2dfaf93539641c099b15064357011" # a commit known to work 11/12/2014
+retry do_chroot ${dir} git clone ${ZUUL_URL} /srv/zuul
+do_chroot ${dir} bash -c "cd /srv/zuul && git checkout -b working ${ZUUL_VERSION}"
 # Install dependencies first
 retry do_chroot ${dir} pip install -U setuptools
 retry do_chroot ${dir} pip install docutils
 retry do_chroot ${dir} bash -c "cd /srv/zuul && pip install -U -r requirements.txt"
-retry do_chroot ${dir} pip install APScheduler==2.1.0
-retry do_chroot ${dir} pip install GitPython==0.3.2.RC1
+retry do_chroot ${dir} pip install APScheduler==${APSCHEDULER_VERSION}
+retry do_chroot ${dir} pip install GitPython==${GITPYTHON_VERSION}
 do_chroot ${dir} bash -c "cd /srv/zuul && python /srv/zuul/setup.py install"
 do_chroot ${dir} ln -s /var/www/static/bootstrap /srv/zuul/etc/status/public_html/bootstrap
-http_fetch $JQUERY_VISIBILITY ${dir}/srv/zuul/etc/status/public_html/jquery-visibility.min.js
-http_fetch $JQUERY_GRAPHITE ${dir}/srv/zuul/etc/status/public_html/jquery.graphite.js
+http_fetch $JQUERY_VISIBILITY_URL ${dir}/srv/zuul/etc/status/public_html/jquery-visibility.min.js
+http_fetch $JQUERY_GRAPHITE_URL ${dir}/srv/zuul/etc/status/public_html/jquery.graphite.js
 do_chroot ${dir} cp /var/www/static/js/jquery.min.js /srv/zuul/etc/status/public_html/jquery.min.js
 
 # Etherpad_lite
-http_fetch $ETHERPAD_LITE ${dir}/tmp/etherpad_lite.tar.gz
+http_fetch $ETHERPAD_LITE_URL ${dir}/tmp/etherpad_lite.tar.gz
 http_fetch $NODEJS_NPM ${dir}/tmp/npm-install.sh
 ## Try to avoid the failure in jenkins
 do_chroot ${dir} sed -i "s#</dev/tty##" /tmp/npm-install.sh
-[ ! -d "${dir}/var/www" ] && mkdir ${dir}/var/www
-do_chroot ${dir} tar -xzf /tmp/etherpad_lite.tar.gz -C /var/www/
+[ ! -d "${dir}/var/www/etherpad-lite" ] && mkdir -p ${dir}/var/www/etherpad-lite
+do_chroot ${dir} tar -xzf /tmp/etherpad_lite.tar.gz --strip-components=1 -C /var/www/etherpad-lite
 # /bin/installDeps.sh is looking for /usr/bin/node
 [ ! -e "${dir}/usr/bin/node" ] && do_chroot ${dir} ln -s /usr/bin/nodejs /usr/bin/node
 # Node or npm seems to deals with SUDO_UID and SUDO_GID that for results set new created
 # files as user id/gid referenced by sudo. So force id/gid to 0 (root)
 SUDO_UID=0 SUDO_GID=0 HOME=/root npm_install=$NPM_INSTALL do_chroot ${dir} sh /tmp/npm-install.sh
-## Use the European mirror
-do_chroot ${dir} sed -i "s|npm install|npm --registry http://registry.npmjs.eu/ install|" /var/www/etherpad-lite-1.4.0/bin/installDeps.sh
-SUDO_UID=0 SUDO_GID=0 HOME=/root retry do_chroot ${dir} sh /var/www/etherpad-lite-1.4.0/bin/installDeps.sh
+## Use a mirror
+do_chroot ${dir} sed -i "s|npm install|npm --registry ${NPM_MIRROR_URL} install|" /var/www/etherpad-lite/bin/installDeps.sh
+SUDO_UID=0 SUDO_GID=0 HOME=/root retry do_chroot ${dir} sh /var/www/etherpad-lite/bin/installDeps.sh
 
 # Paste (Lodgeit)
 do_chroot ${dir} mkdir -p /srv/lodgeit
-retry do_chroot ${dir} git clone https://git.openstack.org/openstack-infra/lodgeit /srv/lodgeit/lodgeit --depth 1
-do_chroot ${dir} bash -c 'cd /srv/lodgeit/lodgeit && git checkout c69f555032'  # latest commit as of 05. May 2014
+retry do_chroot ${dir} git clone ${PASTE_URL} /srv/lodgeit/lodgeit --depth 1
+do_chroot ${dir} bash -c "cd /srv/lodgeit/lodgeit && git checkout ${PASTE_VERSION}"
+
 # Replace absolute URLs beginning with /static/
 do_chroot ${dir} sed -i -e 's#/static/#/static/lodgeit/#g' /srv/lodgeit/lodgeit/lodgeit/views/layout.html
 do_chroot ${dir} sed -i -e 's#/static/#/static/lodgeit/#g' /srv/lodgeit/lodgeit/lodgeit/views/help/advanced.html
@@ -201,7 +183,7 @@ cp -r ../tools/managesf ${dir}/var/www/managesf
 retry do_chroot ${dir} bash -c "cd /var/www/managesf && pip install -r requirements.txt"
 
 # JJB need pbr > 0.8
-retry do_chroot ${dir} pip install -U pbr==0.8.2
+retry do_chroot ${dir} pip install -U pbr==${PBR_VERSION}
 
 # Documentation
 DOCBUILDDIR=/tmp/_build
@@ -212,13 +194,14 @@ rm -rf $DOCBUILDDIR
 
 # Jenkins Swarm client
 retry do_chroot ${dir} pip install nose flake8
-swarm_client=$(basename $JENKINS_SWARM_CLIENT)
-http_fetch $JENKINS_SWARM_CLIENT ${dir}/var/lib/jenkins/${swarm_client}
+swarm_client=$(basename $JENKINS_SWARM_CLIENT_URL)
+http_fetch $JENKINS_SWARM_CLIENT_URL ${dir}/var/lib/jenkins/${swarm_client}
 ln -sf ${swarm_client} ${dir}/var/lib/jenkins/swarm-client-latest.jar
 
 # Jenkins Swarm plugin
 mkdir -p ${dir}/var/lib/jenkins/plugins
-http_fetch $JENKINS_SWARM_PLUGIN ${dir}/var/lib/jenkins/plugins/$(basename $JENKINS_SWARM_PLUGIN)
+http_fetch $JENKINS_SWARM_PLUGIN_URL ${dir}/var/lib/jenkins/plugins/$(basename $JENKINS_SWARM_PLUGIN_URL)
+
 
 # install git-review for internal use
 retry do_chroot ${dir} pip install git-review

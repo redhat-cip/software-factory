@@ -9,6 +9,10 @@ function put_git_mark {
     echo $sha >> ${dir}/etc/SF_GIT_COMMIT
 }
 
+# bup
+BUP_URL="https://github.com/bup/bup.git"
+BUP_VERSION=0.26
+
 function install_bup {
     local dir=$1
     if [ -d "${dir}/etc/apt/" ]; then
@@ -17,8 +21,8 @@ function install_bup {
     fi
     install_packages ${dir} "cpp gcc python-devel pyxattr pylibacl perl-Time-HiRes"
     do_chroot ${dir} mkdir -p /opt/bup
-    do_chroot ${dir} git clone https://github.com/bup/bup.git /opt/bup/
-    do_chroot ${dir} bash -c 'cd /opt/bup && git checkout 0.26'
+    do_chroot ${dir} git clone ${BUP_URL} /opt/bup/
+    do_chroot ${dir} bash -c 'cd /opt/bup && git checkout ${BUP_VERSION}'
     do_chroot ${dir} bash -c 'cd /opt/bup && ./configure && make && make install'
 }
 
@@ -27,6 +31,11 @@ function http_fetch {
     local local_location=$2
     # We retry 12 times with 10 seconds delay between retries
     curl --silent --show-error --retry 12 --retry-delay 10 -L -o $local_location $remote_location
+    curl_result=$?
+    if [ "$curl_result" -ne "0" ]; then
+        echo "curl failed to fetch $remote_location with error $curl_result"
+        exit $curl_result
+    fi
 }
 
 function disable_selinux {
