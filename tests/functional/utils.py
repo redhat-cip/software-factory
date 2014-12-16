@@ -112,7 +112,7 @@ class ManageSfUtils(Tool):
         Tool.__init__(self)
         self.host = host
         self.port = port
-        self.install_dir = os.path.join(os.environ['SF_ROOT'],
+        self.install_dir = os.path.join(config.SF_ROOT,
                                         "tools/managesf/cli")
         self.base_cmd = "python sf-manage.py --host %s --auth-server " \
             "%s --port %s --auth %%s:%%s " % \

@@ -1,4 +1,4 @@
-from os import environ, path
+from os import path
 
 import yaml
 
@@ -8,18 +8,22 @@ for sfconfig_filename in sfconfig_filenames:
         with open(sfconfig_filename) as infile:
             sfconfig = yaml.load(infile)
 
-GATEWAY_HOST = environ['SF_SUFFIX']
-JENKINS_URL = 'http://%s/jenkins/' % environ['SF_SUFFIX']
-REDMINE_URL = 'http://%s/redmine/' % environ['SF_SUFFIX']
+# Software Factory source code root directory is the third directory
+# below this file
+SF_ROOT = path.dirname(path.dirname(path.dirname(path.abspath(__file__))))
+
+GATEWAY_HOST = sfconfig['domain']
+JENKINS_URL = 'http://%s/jenkins/' % GATEWAY_HOST
+REDMINE_URL = 'http://%s/redmine/' % GATEWAY_HOST
 
 GERRIT_USER = 'gerrit'
 GERRIT_SERVICE_PRIV_KEY_PATH = '%s/build/data/gerrit_service_rsa' \
-                               % environ['SF_ROOT']
+                               % SF_ROOT
 
 USER_1 = sfconfig.get('admin_name')
 ADMIN_USER = USER_1
-ADMIN_PRIV_KEY_PATH = '%s/build/data/gerrit_admin_rsa' % environ['SF_ROOT']
-ADMIN_PUB_KEY_PATH = '%s/build/data/gerrit_admin_rsa.pub' % environ['SF_ROOT']
+ADMIN_PRIV_KEY_PATH = '%s/build/data/gerrit_admin_rsa' % SF_ROOT
+ADMIN_PUB_KEY_PATH = '%s/build/data/gerrit_admin_rsa.pub' % SF_ROOT
 
 USER_2 = 'user2'
 USER_2_PUB_KEY = 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDV6R5m5a' + \

@@ -275,8 +275,7 @@ function run_serverspec {
 function run_functional_tests {
     echo "$(date) ======= Starting functional tests ========="
     ssh -o StrictHostKeyChecking=no root@`get_ip puppetmaster` \
-            "cd puppet-bootstrapper; SF_SUFFIX=${SF_SUFFIX} SF_ROOT=\$(pwd) nosetests --with-xunit -v" 2>&1 \
-            | tee ${ARTIFACTS_DIR}/functional-tests.output
+            "cd puppet-bootstrapper; nosetests --with-xunit -v" 2>&1 | tee ${ARTIFACTS_DIR}/functional-tests.output
     return ${PIPESTATUS[0]}
 }
 
