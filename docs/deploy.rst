@@ -328,7 +328,7 @@ In order to start the SF deployment perform the commands below:
 .. code-block:: bash
 
  $ cd bootstraps/lxc
- $ ./start.sh
+ $ ./start.sh init
  $ sudo lxc-ls -f
 
 The lxc-ls command should report the following :
@@ -355,12 +355,7 @@ puppetmaster node and tail -f /var/log/sf-bootstrap.log:
 Once the bootstrap is done your demo SF deployment is ready to be used.
 Assuming you have not modified the default domain in sfconfig.yaml "tests.dom",
 add an entry to your workstation's /etc/hosts to resolve tests.dom
-to "the public IP of the VM where LXC containers are running" and setup a TCP
-tunnel from localhost:80 to 192.168.134.54:80 using the socat tool on the VM.
-
-.. code-block:: bash
-
- $ sudo socat TCP-LISTEN:www,fork TCP4:192.168.134.54:www
+to "the public IP of the VM where LXC containers are running".
 
 Then open your browser on http://tests.dom (TCP/80 must be allowed
 from your workstation to the VM). Assuming the used domain is tests.dom,
@@ -368,27 +363,24 @@ you can use the default pre-provisioned users that are user1, user2,
 user3 with 'userpass' as password. User *user1* is the default administrator
 in this LXC SF deployment.
 
-NOTE: Be careful that running again the start.sh command will
-wipe the previous deployment.
 
-You can stop all the SF LXC containers using:
+LXC deployment lifecycle
+........................
 
-.. code-block:: bash
+Using *bootstrap/lxc/start.sh* with the *init* argument is only needed for the first
+bootstrap of the SF instance. Indeed some specific operations are needed during the
+first start of a SF instance.
 
- $ cd bootstraps/lxc
- $ ./start.sh stop
+If you need to stop your SF instance then use the *stop* argument. This will stop
+the LXC containers, umount the aufs mounts, delete the bridge and clean iptables.
 
-Troubleshooting lxc deployment
-..............................
+If you need to start a SF instance (previous bootstrapped with *init*) use the *start*
+argument. This will create the bridge, mount the aufs mount, start the
+containers and setup the iptables rules.
 
-The containers have no access to external resources. If you need to open outbound
-traffic on the containers, run the following command on the host:
-
-.. code-block:: bash
-
- $ sudo iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
-
-where *eth0* is your main network interface.
+The *destroy* argument should be only used if you don't care about the data
+you stored on your SF instance (projects, issues, ...). Indeed data on the
+aufs directories will be destroyed.
 
 The default admin user
 ----------------------

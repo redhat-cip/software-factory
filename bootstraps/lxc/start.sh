@@ -28,7 +28,8 @@ SSH_PUBKEY=${SSH_PUBKEY:-${HOME}/.ssh/id_rsa.pub}
 export SF_SUFFIX
 
 EDEPLOY_LXC=/srv/edeploy-lxc/edeploy-lxc
-CONFTEMPDIR=/tmp/lxc-conf
+CONFDIR=/var/lib/lxc-conf
+
 # Need to be select randomly
 SSHPASS=$(generate_random_pswd 8)
 JENKINS_MASTER_URL=jenkins.${SF_SUFFIX}
@@ -39,107 +40,144 @@ ROLES_DIR=${BUILD_DIR}/install/${SF_VER}/
 function get_ip {
     grep -B 1 "name:[ \t]*$1" sf-lxc.yaml | head -1 | awk '{ print $2 }'
 }
+function setup_iptables {
+    set +e
+    if [ "$1" = "down" ]; then
+        switch="-D"
+    fi
+    if [ "$1" = "up" ]; then
+        switch="-A"
+    fi
+    # Enable NAT on the container host
+    sudo iptables -t nat $switch POSTROUTING -o eth0 -j MASQUERADE
+    # Redirect host incoming TCP/80 to the sf gateway on 192.168.134.54/80
+    sudo iptables -t nat $switch PREROUTING -p tcp -i eth0 --dport 80 -j DNAT --to-destination 192.168.134.54:80
+    # Redirect host incoming TCP/29418 to the sf gateway on 192.168.134.54/29418 (a socat service listens 29418 to redirect internally to the Gerrit service)
+    sudo iptables -t nat $switch PREROUTING -p tcp -i eth0 --dport 29418 -j DNAT --to-destination 192.168.134.54:29418
+    # Redirect host incoming TCP/8080 to the sf gateway on 192.168.134.54/8080 (a socat service listens 8080 to redirect internally to the Jenkins service)
+    # TODO: this socat service need to be enabled
+    sudo iptables -t nat $switch PREROUTING -p tcp -i eth0 --dport 8080 -j DNAT --to-destination 192.168.134.54:8080
+    set -e
+}
 
-if [ -z "$1" ] || [ "$1" == "start" ]; then
-    sudo rm -rf ${CONFTEMPDIR}
-    mkdir -p ${CONFTEMPDIR}
-    cp sf-lxc.yaml $CONFTEMPDIR
-    cp ../cloudinit/* $CONFTEMPDIR
+function init {
+    sudo rm -rf ${CONFDIR}
+    sudo mkdir -p ${CONFDIR}
+    CONFDIR=$CONFDIR sudo -E bash -c 'chown $SUDO_USER:$SUDO_USER ${CONFDIR}'
+    cp sf-lxc.yaml $CONFDIR
+    cp ../cloudinit/* $CONFDIR
     jenkins_ip=`get_ip jenkins`
     managesf_ip=`get_ip managesf`
     # Complete the sf-lxc template used by edeploy-lxc tool
-    sed -i "s/SF_SUFFIX/${SF_SUFFIX}/g" ${CONFTEMPDIR}/sf-lxc.yaml
-    sed -i "s#CIPATH#${CONFTEMPDIR}#g" ${CONFTEMPDIR}/sf-lxc.yaml
-    sed -i "s#SSH_PUBKEY#${SSH_PUBKEY}#g" ${CONFTEMPDIR}/sf-lxc.yaml
-    sed -i "s#ROLES_DIR#${ROLES_DIR}#g" ${CONFTEMPDIR}/sf-lxc.yaml
+    sed -i "s/SF_SUFFIX/${SF_SUFFIX}/g" ${CONFDIR}/sf-lxc.yaml
+    sed -i "s#CIPATH#${CONFDIR}#g" ${CONFDIR}/sf-lxc.yaml
+    sed -i "s#SSH_PUBKEY#${SSH_PUBKEY}#g" ${CONFDIR}/sf-lxc.yaml
+    sed -i "s#ROLES_DIR#${ROLES_DIR}#g" ${CONFDIR}/sf-lxc.yaml
     # Complete jenkins slave cloudinit
-    sed -i "s/JENKINS_MASTER_URL/${JENKINS_MASTER_URL}/g" ${CONFTEMPDIR}/slave.cloudinit
-    sed -i "s/JENKINS_USER_PASSWORD/${JENKINS_USER_PASSWORD}/g" ${CONFTEMPDIR}/slave.cloudinit
-    sed -i "s/JENKINS_IP/${jenkins_ip}/g" ${CONFTEMPDIR}/slave.cloudinit
-    sed -i "s/MANAGESF_IP/${managesf_ip}/g" ${CONFTEMPDIR}/slave.cloudinit
+    sed -i "s/JENKINS_MASTER_URL/${JENKINS_MASTER_URL}/g" ${CONFDIR}/slave.cloudinit
+    sed -i "s/JENKINS_USER_PASSWORD/${JENKINS_USER_PASSWORD}/g" ${CONFDIR}/slave.cloudinit
+    sed -i "s/JENKINS_IP/${jenkins_ip}/g" ${CONFDIR}/slave.cloudinit
+    sed -i "s/MANAGESF_IP/${managesf_ip}/g" ${CONFDIR}/slave.cloudinit
     # Complete all the cloudinit templates
-    sed -i "s/SF_SUFFIX/${SF_SUFFIX}/g" ${CONFTEMPDIR}/*.cloudinit
-    sed -i "s/SSHPASS/${SSHPASS}/g" ${CONFTEMPDIR}/*.cloudinit
+    sed -i "s/SF_SUFFIX/${SF_SUFFIX}/g" ${CONFDIR}/*.cloudinit
+    sed -i "s/SSHPASS/${SSHPASS}/g" ${CONFDIR}/*.cloudinit
     sfconfigcontent=`cat $SFCONFIGFILE | base64 -w 0`
-    sed -i "s|SFCONFIGCONTENT|${sfconfigcontent}|" $CONFTEMPDIR/puppetmaster.cloudinit
+    sed -i "s|SFCONFIGCONTENT|${sfconfigcontent}|" $CONFDIR/puppetmaster.cloudinit
     for r in `echo $ROLES | sed s/puppetmaster//`; do
         ip=`get_ip $r`
-        sed -i "s/${r}_host/$ip/g" ${CONFTEMPDIR}/puppetmaster.cloudinit
+        sed -i "s/${r}_host/$ip/g" ${CONFDIR}/puppetmaster.cloudinit
     done
     ip=`get_ip puppetmaster`
-    sed -i "s/JENKINS_USER_PASSWORD/${JENKINS_USER_PASSWORD}/" ${CONFTEMPDIR}/puppetmaster.cloudinit
-    sed -i "s/MY_PRIV_IP=.*/MY_PRIV_IP=$ip/" ${CONFTEMPDIR}/puppetmaster.cloudinit
-    # Fix jenkins for lxc
-    # TODO: migrate this change
-    #sudo sed -i 's/^#*JAVA_ARGS.*/JAVA_ARGS="-Djava.awt.headless=true -Xmx256m"/g' \
-    #    ${ROLES_DIR}/softwarefactory/etc/default/jenkins
+    sed -i "s/JENKINS_USER_PASSWORD/${JENKINS_USER_PASSWORD}/" ${CONFDIR}/puppetmaster.cloudinit
+    sed -i "s/MY_PRIV_IP=.*/MY_PRIV_IP=$ip/" ${CONFDIR}/puppetmaster.cloudinit
+
     echo "Now running edeploy-lxc"
-    sudo ${EDEPLOY_LXC} --config ${CONFTEMPDIR}/sf-lxc.yaml stop || exit -1
-
-    if [ -e "/mnt/lxc/puppetmaster/etc/puppet/hiera/sf" ]; then
-        sudo sh -c "echo 'lxc.mount.entry =  /mnt/lxc/puppetmaster/etc/puppet/hiera/sf /var/lib/lxc/puppetmaster/rootfs/etc/puppet/hiera/sf none bind,create=dir 0 0' >  /var/lib/lxc/puppetmaster.config"
-    else
-        sudo rm -f /var/lib/lxc/puppetmaster.config
-    fi
-
-    if [ -e "/mnt/lxc/puppetmaster/root/puppet-bootstrapper" ]; then
-        sudo sh -c "echo 'lxc.mount.entry =  /mnt/lxc/puppetmaster/root/puppet-bootstrapper /var/lib/lxc/puppetmaster/rootfs/root/puppet-bootstrapper none bind,create=dir 0 0' >>  /var/lib/lxc/puppetmaster.config"
-    else
-        sudo rm -f /var/lib/lxc/puppetmaster.config
-    fi
-
-    if [ -e "/mnt/lxc/mysql/mysql/" ]; then
-        sudo sh -c "echo 'lxc.mount.entry = /mnt/lxc/mysql/mysql/ /var/lib/lxc/mysql/rootfs/var/lib/mysql none bind,create=dir 0 0' >  /var/lib/lxc/mysql.config"
-    else
-        sudo rm -f /var/lib/lxc/mysql.config
-    fi
-
-    if [ -e "/mnt/lxc/gerrit/home/gerrit/site_path/git/" ]; then
-        # Path must exist before mounting, otherwise LXC fails
-        sudo mkdir -p ${EDEPLOY_ROLES}/install/${VERS}/softwarefactory/home/gerrit/site_path/git
-        sudo sh -c "echo 'lxc.mount.entry = /mnt/lxc/gerrit/home/gerrit/site_path/git/ /var/lib/lxc/gerrit/rootfs/home/gerrit/site_path/git none bind,create=dir 0 0' >  /var/lib/lxc/gerrit.config"
-    else
-        sudo rm -f /var/lib/lxc/gerrit.config
-    fi
-
-    if [ -e "/mnt/lxc/jenkins/var/lib/jenkins/jobs/" ]; then
-        # Path must exist before mounting, otherwise LXC fails
-        sudo mkdir -p ${EDEPLOY_ROLES}/install/${VERS}/softwarefactory/var/lib/jenkins/jobs/
-        sudo sh -c "echo 'lxc.mount.entry = /mnt/lxc/jenkins/var/lib/jenkins/jobs/ /var/lib/lxc/jenkins/rootfs/var/lib/jenkins/jobs none bind,create=dir 0 0' >  /var/lib/lxc/jenkins.config"
-    else
-        sudo rm -f /var/lib/lxc/jenkins.config
-    fi
+    sudo ${EDEPLOY_LXC} --config ${CONFDIR}/sf-lxc.yaml stop || exit -1
 
     # Let's add a default nameserver
     nameserver=`grep nameserver /etc/resolv.conf | head -1`
-    sed -i -e "s/NAMESERVER/${nameserver}/g" ${CONFTEMPDIR}/*.cloudinit
+    sed -i -e "s/NAMESERVER/${nameserver}/g" ${CONFDIR}/*.cloudinit
 
-    sudo ${EDEPLOY_LXC} --config ${CONFTEMPDIR}/sf-lxc.yaml start > /dev/null || exit -1
-elif [ "$1" == "stop" ]; then
-    [ -f "${CONFTEMPDIR}/sf-lxc.yaml" ] && sudo ${EDEPLOY_LXC} --config ${CONFTEMPDIR}/sf-lxc.yaml stop
-elif [ "$1" == "clean" ]; then
-    [ -f "${CONFTEMPDIR}/sf-lxc.yaml" ] && sudo ${EDEPLOY_LXC} --config ${CONFTEMPDIR}/sf-lxc.yaml stop || echo
-    rm -Rf ${CONFTEMPDIR} || echo
+    sudo ${EDEPLOY_LXC} --config ${CONFDIR}/sf-lxc.yaml start > /dev/null || exit -1
+    setup_iptables 'up'
+}
+
+function destroy {
+    [ -f "${CONFDIR}/sf-lxc.yaml" ] && sudo ${EDEPLOY_LXC} --config ${CONFDIR}/sf-lxc.yaml stop || echo
+    sudo rm -Rf ${CONFDIR} || echo
     # make sure all lxc are shutdown
-    #for instance in $(sudo lxc-ls --active); do
     for instance in $(sudo lxc-ls); do
-        # We need to kill first, else it stop because "sf-mysql is running"
         sudo lxc-stop --kill --name ${instance} || echo
         sudo lxc-destroy --name ${instance} || echo
     done
-elif [ "$1" == "seed" ]; then
-        sudo mkdir -p /mnt/lxc/puppetmaster/etc/puppet/hiera/sf/
-        sudo rsync -av /var/lib/lxc/puppetmaster/rootfs/etc/puppet/hiera/sf/ /mnt/lxc/puppetmaster/etc/puppet/hiera/sf/
-        sudo mkdir -p /mnt/lxc/puppetmaster/root/puppet-bootstrapper/
-        sudo rsync -av /var/lib/lxc/puppetmaster/rootfs/root/puppet-bootstrapper/ /mnt/lxc/puppetmaster/root/puppet-bootstrapper/
-        sudo mkdir -p /mnt/lxc/mysql/mysql/
-        sudo rsync -av /var/lib/lxc/mysql/rootfs/var/lib/mysql/ /mnt/lxc/mysql/mysql/
-        sudo mkdir -p /mnt/lxc/gerrit/home/gerrit/site_path/git/
-        sudo rsync -av /var/lib/lxc/gerrit/rootfs/home/gerrit/site_path/git/ /mnt/lxc/gerrit/home/gerrit/site_path/git/
-        sudo mkdir -p /mnt/lxc/jenkins/var/lib/jenkins/jobs/
-        sudo rsync -av /var/lib/lxc/jenkins/rootfs/var/lib/jenkins/jobs/ /mnt/lxc/jenkins/var/lib/jenkins/jobs/
-else
-    echo "usage: $0 [start|stop|clean]"
-fi
+    setup_iptables 'down'
+}
+
+function stop {
+    set +e
+    for instance in $(sudo lxc-ls); do
+        # The kill is not safe - need to figure out why a soft shutdown hang
+        sudo lxc-stop --kill --name ${instance}
+    done
+    for instance in $(sudo lxc-ls); do
+        sudo umount /var/lib/lxc/${instance}/rootfs
+    done
+    # Remove bridge
+    bridge=$(grep bridge ${CONFDIR}/sf-lxc.yaml | awk 'FS=":" {print $2}')
+    sudo ifconfig $bridge down
+    sudo brctl delbr $bridge
+    # Remove iptables rules
+    setup_iptables 'down'
+    set -e
+}
+
+function start {
+    set +e
+    # Add the bridge
+    bridge=$(grep bridge ${CONFDIR}/sf-lxc.yaml | awk 'FS=":" {print $2}')
+    gateway=$(grep gateway ${CONFDIR}/sf-lxc.yaml | awk 'FS=":" {print $2}')
+    sudo brctl addbr $bridge
+    sudo ifconfig $bridge $gateway
+    # Mount rootfs
+    base_aufs=$(grep aufs_dir ${CONFDIR}/sf-lxc.yaml | awk 'FS=":" {print $2}')
+    roles_dir=$(grep " dir: " ${CONFDIR}/sf-lxc.yaml | awk 'FS=":" {print $2}')
+    sudo mount -t aufs -o "br=${base_aufs}/puppetmaster:${roles_dir}/install-server-vm" none /var/lib/lxc/puppetmaster/rootfs
+    for name in `echo $ROLES | sed s/puppetmaster//`; do
+        sudo mount -t aufs -o "br=${base_aufs}/${name}:${roles_dir}/softwarefactory" none /var/lib/lxc/${name}/rootfs
+    done
+    # Start LXC containers
+    for name in mysql puppetmaster; do
+        sudo lxc-start -d -L /var/log/lxc$name.log --name $name;
+    done
+    sleep 20
+    for name in gerrit jenkins managesf redmine slave; do
+        sudo lxc-start -d -L /var/log/lxc$name.log --name $name
+    done
+    # Start iptables rules
+    setup_iptables 'up'
+    set -e
+}
+
+function restart {
+    stop
+    start
+}
+
+case $1 in
+    init)
+        init;;
+    destroy)
+        destroy;;
+    start)
+        start;;
+    stop)
+        stop;;
+    restart)
+        stop
+        start
+        ;;
+    *)
+        echo "usage: $0 [init|destroy|start|stop|restart]";;
+esac
 
 exit 0

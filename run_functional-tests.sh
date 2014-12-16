@@ -26,7 +26,7 @@ display_head
 function lxc_stop {
     if [ ! ${SF_SKIP_BOOTSTRAP} ]; then
         if [ ! ${DEBUG} ]; then
-            (cd bootstraps/lxc; ./start.sh clean &> ${ARTIFACTS_DIR}/lxc-clean.output)
+            (cd bootstraps/lxc; ./start.sh destroy &> ${ARTIFACTS_DIR}/lxc-clean.output)
         fi
     fi
 }
@@ -42,8 +42,8 @@ function lxc_start {
     if [ ! ${SF_SKIP_BOOTSTRAP} ]; then
         clear_mountpoint
         cd bootstraps/lxc
-        ./start.sh stop &> ${ARTIFACTS_DIR}/lxc-stop.output
-        ./start.sh &> ${ARTIFACTS_DIR}/lxc-start.output || pre_fail "LXC bootstrap FAILED"
+        ./start.sh destroy &> ${ARTIFACTS_DIR}/lxc-stop.output
+        ./start.sh init &> ${ARTIFACTS_DIR}/lxc-start.output || pre_fail "LXC bootstrap FAILED"
         cd -
     fi
 }
@@ -51,7 +51,7 @@ function lxc_start {
 set -x
 prepare_artifacts
 checkpoint "$(date) - $(hostname)"
-(cd bootstraps/lxc; ./start.sh clean &> ${ARTIFACTS_DIR}/lxc-first-clean.output)
+(cd bootstraps/lxc; ./start.sh destroy &> ${ARTIFACTS_DIR}/lxc-first-clean.output)
 checkpoint "lxc-first-clean"
 build
 checkpoint "build_roles"

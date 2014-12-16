@@ -426,12 +426,12 @@ class gerrit ($settings = hiera_hash('gerrit', ''),
                     File['/home/gerrit/site_path/etc/secure.config']],
   }
 
-  # Create ext3 filesystem if the Cinder device is available
-  exec { 'create_git_fs':
-    path    => '/usr/bin:/usr/sbin:/bin',
-    command => 'file -s /dev/vdb | grep -v ext3 && mkfs.ext3 /dev/vdb',
-    onlyif => 'stat /dev/vdb',
-  }
+#  # Create ext3 filesystem if the Cinder device is available
+#  exec { 'create_git_fs':
+#    path    => '/usr/bin:/usr/sbin:/bin',
+#    command => 'file -s /dev/vdb | grep -v ext3 && mkfs.ext3 /dev/vdb',
+#    onlyif => 'stat /dev/vdb',
+#  }
 
   # Ensure mount point exists
   file { '/home/gerrit/site_path/git':
@@ -440,25 +440,25 @@ class gerrit ($settings = hiera_hash('gerrit', ''),
     require => File['/home/gerrit/site_path'],
   }
 
-  # To avoid failures we only create the mount entry in fstab
-  # Otherwise the command will fail if there is no Cinder volume
-  # which is ok if Cinder is missing
-  mount { 'git_volume':
-    name => '/home/gerrit/site_path/git/',
-    ensure => 'present',
-    atboot => 'false',
-    device => '/dev/vdb',
-    fstype => 'ext3',
-    require => File['/home/gerrit/site_path/git'],
-  }
-
-  # Only mount if there is an ext3 on the device
-  exec {'mount_git':
-    path    => '/usr/bin:/usr/sbin:/bin',
-    command => 'mount /home/gerrit/site_path/git/',
-    onlyif => 'file -s /dev/vdb  | grep ext3',
-    require => [Exec['create_git_fs'], Mount['git_volume']]
-  }
+#  # To avoid failures we only create the mount entry in fstab
+#  # Otherwise the command will fail if there is no Cinder volume
+#  # which is ok if Cinder is missing
+#  mount { 'git_volume':
+#    name => '/home/gerrit/site_path/git/',
+#    ensure => 'present',
+#    atboot => 'false',
+#    device => '/dev/vdb',
+#    fstype => 'ext3',
+#    require => File['/home/gerrit/site_path/git'],
+#  }
+#
+#  # Only mount if there is an ext3 on the device
+#  exec {'mount_git':
+#    path    => '/usr/bin:/usr/sbin:/bin',
+#    command => 'mount /home/gerrit/site_path/git/',
+#    onlyif => 'file -s /dev/vdb  | grep ext3',
+#    require => [Exec['create_git_fs'], Mount['git_volume']]
+#  }
 
   file { '/etc/monit/conf.d/gerrit':
     ensure  => present,
@@ -470,7 +470,7 @@ class gerrit ($settings = hiera_hash('gerrit', ''),
   file { '/etc/monit/conf.d/gerrit-fs':
     ensure  => present,
     source  => 'puppet:///modules/gerrit/monit-fs',
-    require => [Package['monit'], Exec['mount_git'], File['/etc/monit/conf.d']],
+    require => [Package['monit'], File['/etc/monit/conf.d']],
     notify  => Service['monit'],
   }
 
