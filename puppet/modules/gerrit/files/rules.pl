@@ -1,6 +1,7 @@
 check_code_review(Rem, Out):-
   findall(X, gerrit:commit_label(label('Code-Review', 2), Who), List),
-  length(List, 2),
+  length(List, Approvals),
+  Approvals > 1,
   !,
   Out = [label('Code-Review', ok(Who)) | Rem].
 
