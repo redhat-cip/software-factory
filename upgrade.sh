@@ -42,6 +42,9 @@ sed -i "s/FROM/${PREVIOUS_SF_VER}/" group_vars/all
 sed -i "s/TO/${SF_VER}/" group_vars/all
 sed -i "s/DOMAIN/${DOMAIN}/" group_vars/all
 sed -i "s|CLONE_PATH|${clone_path}|" group_vars/all
-ansible-playbook -i hosts site.yml
+ansible-playbook -i hosts site-step1.yml
+echo "Ansible return code is : $?"
+# Ansible package may change during the upgrade (FS rsync) so we do the update in two steps
+ansible-playbook -i hosts site-step2.yml
 echo "Ansible return code is : $?"
 cd -

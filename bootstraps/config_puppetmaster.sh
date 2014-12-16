@@ -3,15 +3,24 @@
 # This script configure the puppetmaster with passenger
 
 set -x
-
 set -e
 
+INITIAL=${INITIAL:-yes}
 FQDN=$(hostname -f)
 
 service puppetmaster stop
 service httpd stop
 
-cat > /etc/puppet/puppet.conf << EOF
+PM_A_CONF=/etc/httpd/conf.d/puppetmaster.conf
+cp /etc/httpd/conf.d/puppetmaster.conf.disabled $PM_A_CONF
+
+sed -i -e "s!SSLCertificateFile.*!SSLCertificateFile /var/lib/puppet/ssl/certs/${FQDN}.pem!" $PM_A_CONF
+sed -i -e "s!SSLCertificateKeyFile.*!SSLCertificateKeyFile /var/lib/puppet/ssl/private_keys/${FQDN}.pem!" $PM_A_CONF
+
+# We only need to setup puppet conf and certificates the first init of SF
+# This must not be done during an upgrade !
+if [ "$INITIAL" = "yes" ]; then
+    cat > /etc/puppet/puppet.conf << EOF
 [main]
 logdir=/var/log/puppet
 vardir=/var/lib/puppet
@@ -33,13 +42,8 @@ certname=${FQDN}
 server=${FQDN}
 EOF
 
-PM_A_CONF=/etc/httpd/conf.d/puppetmaster.conf
-cp /etc/httpd/conf.d/puppetmaster.conf.disabled $PM_A_CONF
-
-sed -i -e "s!SSLCertificateFile.*!SSLCertificateFile /var/lib/puppet/ssl/certs/${FQDN}.pem!" $PM_A_CONF
-sed -i -e "s!SSLCertificateKeyFile.*!SSLCertificateKeyFile /var/lib/puppet/ssl/private_keys/${FQDN}.pem!" $PM_A_CONF
-
-rm -rf /var/lib/puppet/ssl && puppet cert generate ${FQDN}
+    rm -rf /var/lib/puppet/ssl && puppet cert generate ${FQDN}
+fi
 
 puppet resource service puppetmaster ensure=stopped enable=false
 systemctl start httpd.service

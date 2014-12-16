@@ -1,0 +1,20 @@
+---
+- hosts: services
+  gather_facts: no
+  tasks:
+  - include: tasks/edeploysync.yml
+- hosts: puppetmaster
+  gather_facts: no
+  tasks:
+  - name: Reinit the puppetmaster configuration
+    shell: INITIAL=no ./config_puppetmaster.sh
+    args:
+      chdir: /root/puppet-bootstrapper
+  - name: Restart the bootstrap script
+    shell: INITIAL=no HOME=/root/ SFSUFFIX={{ domain }} ./bootstrap.sh
+    args:
+      chdir: /root/puppet-bootstrapper
+- hosts: jenkins
+  gather_facts: no
+  tasks:
+  - include: tasks/submitconfigreview.yml
