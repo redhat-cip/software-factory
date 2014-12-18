@@ -21,18 +21,58 @@ parameters:
   sf_config_content:
     type: string
     description: Base64 yaml configuration file for SoftwareFactory
-  instance_type:
+
+  puppetmaster_flavor:
     type: string
-    description: Instance type for sf roles (managesf)
-  alt_instance_type:
+    description: Flavor for puppetmaster node
+  mysql_flavor:
     type: string
-    description: Instance type for sf roles (mysql, gerrit, jenkins, redmine, puppetmaster)
+    description: Flavor for mysql node
+  managesf_flavor:
+    type: string
+    description: Flavor for managesf node
+  gerrit_flavor:
+    type: string
+    description: Flavor for gerrit node
+  redmine_flavor:
+    type: string
+    description: Flavor for redmine node
+  jenkins_flavor:
+    type: string
+    description: Flavor for jenkins node
+  slave_flavor:
+    type: string
+    description: Flavor for slave node
+
+  puppetmaster_root_size:
+    type: string
+    description: Root disk size for puppetmaster node
+  mysql_root_size:
+    type: string
+    description: Root disk size for mysql node
+  managesf_root_size:
+    type: string
+    description: Root disk size for managesf node
+  gerrit_root_size:
+    type: string
+    description: Root disk size for gerrit node
+  redmine_root_size:
+    type: string
+    description: Root disk size for redmine node
+  jenkins_root_size:
+    type: string
+    description: Root disk size for jenkins node
+  slave_root_size:
+    type: string
+    description: Root disk size for slave node
+
   puppetmaster_image_id:
     type: string
     description: Glance image ID for the puppet master node
   sf_image_id:
     type: string
     description: Glance image ID for all the other sf nodes
+
   ext_net_uuid:
     type: string
     description: The UUID of the external net
@@ -189,14 +229,14 @@ resources:
     properties:
       name  : "puppetmaster"
       image : { get_param: puppetmaster_image_id }
-      size  : 40
+      size  : { get_param: puppetmaster_root_size }
 
   puppetmaster_instance:
     type: OS::Nova::Server
     depends_on: [ managesf_instance, gerrit_instance, jenkins_instance, redmine_instance, mysql_instance, slave_instance ]
     properties:
       block_device_mapping: [{ device_name: "vda", volume_id : { get_resource : puppetmaster_volume } }]
-      flavor: { get_param: alt_instance_type }
+      flavor: { get_param: puppetmaster_flavor }
       key_name: { get_param: key_name }
       networks:
         - port: { get_resource: puppetmaster_neutron_port }
@@ -275,13 +315,13 @@ resources:
     properties:
       name  : "jenkins"
       image : { get_param: sf_image_id }
-      size  : 40
+      size  : { get_param: jenkins_root_size }
 
   jenkins_instance:
     type: OS::Nova::Server
     properties:
       block_device_mapping: [{ device_name: "vda", volume_id : { get_resource : jenkins_volume } }]
-      flavor: { get_param: alt_instance_type }
+      flavor: { get_param: jenkins_flavor }
       key_name: { get_param: key_name }
       networks:
         - port: { get_resource: jenkins_neutron_port }
@@ -313,13 +353,13 @@ resources:
     properties:
       name  : "redmine"
       image : { get_param: sf_image_id }
-      size  : 40
+      size  : { get_param: redmine_root_size }
 
   redmine_instance:
     type: OS::Nova::Server
     properties:
       block_device_mapping: [{ device_name: "vda", volume_id : { get_resource : redmine_volume } }]
-      flavor: { get_param: alt_instance_type }
+      flavor: { get_param: redmine_flavor }
       key_name: { get_param: key_name }
       networks:
         - port: { get_resource: redmine_neutron_port }
@@ -349,15 +389,15 @@ resources:
   gerrit_volume:
     type: OS::Cinder::Volume
     properties:
-      name  : "jenkins"
+      name  : "gerrit"
       image : { get_param: sf_image_id }
-      size  : 40
+      size  : { get_param: gerrit_root_size }
 
   gerrit_instance:
     type: OS::Nova::Server
     properties:
       block_device_mapping: [{ device_name: "vda", volume_id : { get_resource : gerrit_volume } }]
-      flavor: { get_param: alt_instance_type }
+      flavor: { get_param: gerrit_flavor }
       key_name: { get_param: key_name }
       networks:
         - port: { get_resource: gerrit_neutron_port }
@@ -389,13 +429,13 @@ resources:
     properties:
       name  : "managesf"
       image : { get_param: sf_image_id }
-      size  : 40
+      size  : { get_param: managesf_root_size }
 
   managesf_instance:
     type: OS::Nova::Server
     properties:
       block_device_mapping: [{ device_name: "vda", volume_id : { get_resource : managesf_volume } }]
-      flavor: { get_param: alt_instance_type }
+      flavor: { get_param: managesf_flavor }
       key_name: { get_param: key_name }
       networks:
         - port: { get_resource: managesf_neutron_port }
@@ -427,13 +467,13 @@ resources:
     properties:
       name  : "mysql"
       image : { get_param: sf_image_id }
-      size  : 40
+      size  : { get_param: mysql_root_size }
 
   mysql_instance:
     type: OS::Nova::Server
     properties:
       block_device_mapping: [{ device_name: "vda", volume_id : { get_resource : mysql_volume } }]
-      flavor: { get_param: alt_instance_type }
+      flavor: { get_param: mysql_flavor }
       key_name: { get_param: key_name }
       networks:
         - port: { get_resource: mysql_neutron_port }
@@ -465,13 +505,13 @@ resources:
     properties:
       name  : "slave"
       image : { get_param: sf_image_id }
-      size  : 40
+      size  : { get_param: slave_root_size }
 
   slave_instance:
     type: OS::Nova::Server
     properties:
       block_device_mapping: [{ device_name: "vda", volume_id : { get_resource : slave_volume } }]
-      flavor: { get_param: instance_type }
+      flavor: { get_param: slave_flavor }
       key_name: { get_param: key_name }
       networks:
         - port: { get_resource: slave_neutron_port }

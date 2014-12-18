@@ -7,6 +7,6 @@ script to call heat stack-create to deploy a SF stack.
 The script will take care to update roles into glance before
 starting the heat stack.
 
-Be sure to have correctly set the variable on top of the start.sh
-script and to have sourced the correct ENV variables to access
-your tenant/user (openrc).
+Be sure to have correctly set variables according to your needs in
+the "conf" file and to sourced the correct ENV variables to access
+your tenant/user (openrc) before starting the stack.

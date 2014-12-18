@@ -4,6 +4,7 @@ set -x
 
 source ../functions.sh
 . ./../../role_configrc
+. conf
 
 generate_sfconfig
 if [ -n "$FROMUPSTREAM" ]; then
@@ -15,26 +16,31 @@ STACKNAME=${STACKNAME:-SoftwareFactory}
 DOMAIN=$(cat $SFCONFIGFILE | grep "^domain:" | cut -d' ' -f2)
 suffix=$DOMAIN
 
-[ -n "${NOVA_KEYNAME}" ] && key_name="${NOVA_KEYNAME}" || key_name="${HEAT_TENANT}"
-
-### Modify here according to your configuration ###
-# flavor is used for managesf
-flavor="m1.small"
-# alt_flavor is used for puppetmaster, mysql, redmine, jenkins, gerrit (prefer flavor with at least 2 vCPUs and 2GB RAM)
-#alt_flavor="standard.small"
-alt_flavor=$flavor
-ext_net_uuid="6c83db7b-480e-4198-bc69-88df6fd17e55"
-# Network from TCP/22 is accessible
-sg_admin_cidr="0.0.0.0/0"
-# Network from ALL SF services are accessible
-sg_user_cidr="0.0.0.0/0"
-###################################################
+[ -n "${NOVA_KEYNAME}" ] && key_name="${NOVA_KEYNAME}" || {
+    [ -n "${HEAT_TENANT}" ] && key_name="${HEAT_TENANT}"
+}
 
 jenkins_user_pwd=$(generate_random_pswd 8)
 jenkins_master_url="jenkins.$suffix"
 
-params="key_name=$key_name;instance_type=$flavor"
-params="$params;alt_instance_type=$alt_flavor;suffix=$suffix"
+params="key_name=$key_name;suffix=$suffix"
+
+params="$params;puppetmaster_flavor=$puppetmaster_flavor"
+params="$params;mysql_flavor=$mysql_flavor"
+params="$params;managesf_flavor=$managesf_flavor"
+params="$params;gerrit_flavor=$gerrit_flavor"
+params="$params;redmine_flavor=$redmine_flavor"
+params="$params;jenkins_flavor=$jenkins_flavor"
+params="$params;slave_flavor=$slave_flavor"
+
+params="$params;puppetmaster_root_size=$puppetmaster_root_size"
+params="$params;mysql_root_size=$mysql_root_size"
+params="$params;managesf_root_size=$managesf_root_size"
+params="$params;gerrit_root_size=$gerrit_root_size"
+params="$params;redmine_root_size=$redmine_root_size"
+params="$params;jenkins_root_size=$jenkins_root_size"
+params="$params;slave_root_size=$slave_root_size"
+
 params="$params;jenkins_user_pwd=$jenkins_user_pwd;jenkins_master_url=$jenkins_master_url"
 params="$params;sg_admin_cidr=$sg_admin_cidr;sg_user_cidr=$sg_user_cidr"
 params="$params;ext_net_uuid=$ext_net_uuid"
