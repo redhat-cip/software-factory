@@ -13,6 +13,7 @@ admin_lastname: "Demo user1"
 
 # If you envisage to authenticate users using an LDAP directory
 # please provide the following details or leave it blank.
+ldap_url: ldap://ldap.example.com
 ldap_account_base: ou=Users,dc=example,dc=com
 ldap_account_username_attribute: cn
 ldap_account_mail_attribute: mail

@@ -52,7 +52,7 @@ logging = {
 # Authorization configurations
 auth = {
     'ldap': {
-        'host': 'ldap://%s' % '<%= scope.function_hiera(["ldap_url"]) %>',
+        'host': '<%= @cauth['ldap_url'] %>',
         'dn': '<%= @cauth['ldap_account_username_attribute'] %>=%(username)s,' + '<%= @cauth['ldap_account_base'] %>',
         'sn': '<%= @cauth['ldap_account_surname_attribute'] %>',
         'mail': '<%= @cauth['ldap_account_mail_attribute'] %>',
