@@ -385,7 +385,8 @@ class TestManageSF(Base):
         ggu_us.direct_push_branch(us_clone_dir, "master")
 
         # No create a test project with upstream pointing to the above
-        upstream_url = "http://%s/r/%s" % (config.GATEWAY_HOST, pname_us)
+        upstream_url = "ssh://%s@%s:29418/%s" % (
+            config.ADMIN_USER, config.GATEWAY_HOST, pname_us)
         pname = 'p_%s' % create_random_str()
         # create the project as admin
         options = {"upstream": upstream_url}

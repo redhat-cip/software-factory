@@ -432,21 +432,8 @@ class TestCauthApp(FunctionalTest):
                     parsed_qs.get('redirect_uri'))
 
     def test_get_logout(self):
-        response = self.app.get('/logout?service=gerrit')
-        self.assertEqual(response.status_int, 200)
-        self.assertIn('Set-Cookie', response.headers)
-        self.assertEqual(
-            '', response.headers['Set-Cookie'].split(';')[0].split('=')[-1])
-        self.assertGreater(response.body.find(root.LOGOUT_MSG), 0)
-
+        # Ensure client SSO cookie content is deleted
         response = self.app.get('/logout')
-        self.assertEqual(response.status_int, 302)
-        self.assertIn('Location', response.headers)
-        self.assertEqual('http://localhost/r/logout',
-                         response.headers['Location'])
-
-        response = self.app.get('/logout?service=redmine')
-        self.assertEqual(response.status_int, 302)
-        self.assertIn('Location', response.headers)
-        self.assertEqual('http://localhost/r/logout',
-                         response.headers['Location'])
+        self.assertEqual(response.status_int, 200)
+        self.assertTrue('auth_pubtkt=;' in response.headers['Set-Cookie'])
+        self.assertGreater(response.body.find(root.LOGOUT_MSG), 0)
