@@ -53,9 +53,9 @@ function generate_sfconfig {
     ADMIN_USER=${ADMIN_USER:-${DEFAULT_ADMIN_USER}}
     ADMIN_PASSWORD=${ADMIN_PASSWORD:-${DEFAULT_ADMIN_PASSWORD}}
     ADMIN_PASSWORD_HASHED=$(hash_password "${ADMIN_PASSWORD}")
-    sed -i "s/^admin_name:.*/admin_name: ${ADMIN_USER}/" /tmp/sf-conf/sfconfig.yaml
-    sed -i "s/^admin_password:.*/admin_password: ${ADMIN_PASSWORD}/" /tmp/sf-conf/sfconfig.yaml
-    echo "admin_password_hashed: \"${ADMIN_PASSWORD_HASHED}\"" >> /tmp/sf-conf/sfconfig.yaml
+    sed -i "s/^admin_name:.*/admin_name: ${ADMIN_USER}/" $SFCONFIGFILE
+    sed -i "s/^admin_password:.*/admin_password: ${ADMIN_PASSWORD}/" $SFCONFIGFILE
+    echo "admin_password_hashed: \"${ADMIN_PASSWORD_HASHED}\"" >> $SFCONFIGFILE
 }
 
 function getip_from_yaml {
