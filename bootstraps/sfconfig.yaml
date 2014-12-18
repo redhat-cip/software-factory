@@ -19,8 +19,8 @@ ldap_account_username_attribute: cn
 ldap_account_mail_attribute: mail
 ldap_account_surname_attribute: sn
 
-# The timeout after a SSO user cookie expire
-sso_cookie_timeout: 3600
+# The timeout after a SSO user cookie expire (default: 12 hours)
+sso_cookie_timeout: 43200
 
 # If you envisage to authenticate users wia their Github
 # account please set your APP id and secret. Or leave it blank.
