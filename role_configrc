@@ -4,7 +4,7 @@
 # 0.9.2: roles are now published
 # 0.9.3: roles upgrade tests
 PREVIOUS_SF_REL=0.9.2
-SF_REL=${SF_REL:-0.9.3}
+SF_REL=0.9.3
 DVER=C7.0
 DIST=centos
 
@@ -47,7 +47,7 @@ CREATE_IMG=${EDEPLOY}/build/create-image.sh
 UPSTREAM=${BUILD_DIR}/upstream
 INST=${BUILD_DIR}/install/${SF_VER}
 
-SF_DEPS="./edeploy/functions ./edeploy/softwarefactory.install ./tools/pysflib/ ./tools/cauth/ ./tools/managesf/ ./docs/"
+SF_DEPS="./role_configrc ./edeploy/functions ./edeploy/softwarefactory.install ./tools/pysflib/ ./tools/cauth/ ./tools/managesf/ ./docs/"
 IS_DEPS="./edeploy/functions ./edeploy/install-server-vm.install ./tools/pysflib/ ./upgrade/ ./puppet/ ./tests/ ./serverspec/ ./tools/ ./bootstraps/*.sh ./bootstraps/sfcreds.yaml"
 
 MAKE="make DVER=${DVER} DIST=${DIST} SF_REL=${SF_REL} EDEPLOY_PATH=${EDEPLOY} TOP=${BUILD_DIR}"
