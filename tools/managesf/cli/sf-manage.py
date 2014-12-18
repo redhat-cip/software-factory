@@ -47,6 +47,7 @@ parser.add_argument('--cookie', metavar='Authentication cookie',
 sp = parser.add_subparsers(dest="command")
 bkpg = sp.add_parser('backup_get')
 bkps = sp.add_parser('backup_start')
+sp.add_parser('list_active_users', help='Print a list of active users')
 rst = sp.add_parser('restore')
 rst.add_argument('--filename', '-n', nargs='?', metavar='tarball-name',
                  required=True,
@@ -202,6 +203,11 @@ elif args.command == 'backup_start':
     url = base_url + '/backup'
     resp = requests.post(url, headers=headers,
                          cookies=dict(auth_pubtkt=get_cookie()))
+elif args.command == 'list_active_users':
+    url = base_url + '/project/membership/'
+    resp = requests.get(url, headers=headers,
+                        cookies=dict(auth_pubtkt=get_cookie()))
+    print resp.content
 elif args.command == 'restore':
     url = base_url + '/restore'
     filename = args.filename

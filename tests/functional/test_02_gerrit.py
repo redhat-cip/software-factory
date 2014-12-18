@@ -96,7 +96,8 @@ class TestGerrit(Base):
 
     def _prepare_review_submit_testing(self, project_options=None):
         if project_options is None:
-            project_options = {'core-group': 'user2'}
+            u2mail = config.USERS[config.USER_2]['email']
+            project_options = {'core-group': u2mail}
         pname = 'p_%s' % create_random_str()
         self.create_project(pname, project_options)
         un = config.ADMIN_USER
@@ -149,7 +150,9 @@ class TestGerrit(Base):
     def test_review_submit_approval_with_extra_code_review(self):
         """ Test submit criteria - CR(3 +2s), V(+1), A(+1)
         """
-        options = {'core-group': 'user2,user3'}
+        u2mail = config.USERS[config.USER_2]['email']
+        u3mail = config.USERS[config.USER_3]['email']
+        options = {'core-group': '%s,%s' % (u2mail, u3mail)}
         change_id, gu, k_index = self._prepare_review_submit_testing(options)
 
         gu.submit_change_note(change_id, "current", "Code-Review", "1")
@@ -237,7 +240,8 @@ class TestGerrit(Base):
         """ Test if reviewers-by-blame plugin works
         """
         pname = 'p_%s' % create_random_str()
-        options = {'core-group': 'user2'}
+        u2mail = config.USERS[config.USER_2]['email']
+        options = {'core-group': u2mail}
         self.create_project(pname, options)
         first_u = config.ADMIN_USER
         gu_first_u = GerritUtils(

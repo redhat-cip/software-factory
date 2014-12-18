@@ -16,7 +16,6 @@
 
 from unittest import TestCase
 from mock import patch
-from mock import call
 from pecan.core import exc
 from managesf.controllers import redminec
 from managesf.tests import dummy_conf
@@ -40,43 +39,24 @@ class TestRedmine(TestCase):
         else:
             return None
 
-    @patch('managesf.controllers.redminec.request')
-    @patch(
-        'managesf.controllers.redminec.RedmineUtils.update_project_membership')
-    @patch('managesf.controllers.redminec.RedmineUtils.get_role_id')
-    @patch('managesf.controllers.redminec.RedmineUtils.get_user_id')
-    def test_redmine_update_project_roles(self, get_user_id_mock,
-                                          get_role_id_mock,
-                                          update_project_membership_mock,
-                                          request_mock):
-        request_mock.remote_user = 'john'
-        get_user_id_mock.return_value = 101
-        # to return different id based on role name
-        get_role_id_mock.side_effect = self.get_role_id_side_effect
-        ptl = ['john']
-        core = ['john']
-        redminec.update_project_roles('sf-demo', ptl, core, [])
-        # check redmine.get_user_id called
-        self.assertEqual(True, get_user_id_mock.called)
-        get_user_id_mock.called_with('john')
-        # check get_role_id with Manager and Developer as arguments in sequence
-        calls = [call('Manager'), call('Developer')]
-        get_role_id_mock.assert_has_calls(calls, any_order=True)
-        memberships = [{'user_id': 101, 'role_ids': [4, 5]}]
-        update_project_membership_mock.called_once_with('sf-demo', memberships)
-
-    @patch('managesf.controllers.redminec.update_project_roles')
+    @patch('managesf.controllers.redminec.add_user_to_projectgroups')
     @patch('managesf.controllers.redminec.RedmineUtils.create_project')
-    def test_redmine_init_project(self, create_project_mock,
-                                  update_project_roles_mock):
+    @patch(
+        'managesf.controllers.redminec.RedmineUtils.get_user_id_by_username')
+    @patch('managesf.controllers.redminec.request')
+    @patch('redmine.managers.ResourceManager.get')
+    def test_redmine_init_project(self, rget, request_mock,
+                                  get_user_id_by_username_mock,
+                                  create_project_mock, autg_mock):
         inp = {'description': 'demo project',
-               'ptl-group-members': ['john'],
-               'core-group-members': ['john']}
+               'ptl-group-members': ['john@tests.dom'],
+               'core-group-members': ['john@tests.dom']}
+        request_mock.remote_user = 'user1'
         redminec.init_project('sf-demo', inp)
         create_project_mock.assert_called_once_with('sf-demo', 'demo project',
                                                     False)
-        update_project_roles_mock.assert_called_once_with('sf-demo', ['john'],
-                                                          ['john'], [])
+        self.assertEqual(get_user_id_by_username_mock.call_count, 1)
+        self.assertEqual(autg_mock.call_count, 4)
 
     @patch(
         'managesf.controllers.redminec.RedmineUtils.'
@@ -90,9 +70,12 @@ class TestRedmine(TestCase):
     @patch('managesf.controllers.redminec.user_is_administrator')
     @patch('managesf.controllers.redminec.RedmineUtils.get_role_id')
     @patch('managesf.controllers.redminec.RedmineUtils.get_user_id')
+    @patch(
+        'managesf.controllers.redminec.RedmineUtils.get_user_id_by_username')
     @patch('managesf.controllers.redminec.request')
     def test_redmine_add_user_to_projectgroups(
-            self, request_mock, get_user_id_mock, get_role_id_mock,
+            self, request_mock, get_user_id_by_username_mock,
+            get_user_id_mock, get_role_id_mock,
             user_is_administrator_mock, update_project_membership_mock,
             update_membership_mock, get_project_roles_for_user_mock,
             get_project_membership_for_user_mock):
@@ -139,7 +122,7 @@ class TestRedmine(TestCase):
         get_project_membership_for_user_mock.return_value = user2_mem_id
         redminec.add_user_to_projectgroups('sf-demo', 'david', groups)
         update_membership_mock.assert_called_once_with(
-            user2_mem_id,  [dev_role_id])
+            user2_mem_id,  [dev_role_id, dev_role_id])
 
     @patch('managesf.controllers.redminec.RedmineUtils.delete_membership')
     @patch(
@@ -152,9 +135,12 @@ class TestRedmine(TestCase):
     @patch('managesf.controllers.redminec.user_is_administrator')
     @patch('managesf.controllers.redminec.RedmineUtils.get_role_id')
     @patch('managesf.controllers.redminec.RedmineUtils.get_user_id')
+    @patch(
+        'managesf.controllers.redminec.RedmineUtils.get_user_id_by_username')
     @patch('managesf.controllers.redminec.request')
     def test_redmine_delete_user_from_projectgroups(
-            self, request_mock, get_user_id_mock, get_role_id_mock,
+            self, request_mock, get_user_id_by_username,
+            get_user_id_mock, get_role_id_mock,
             user_is_administrator_mock, update_membership_mock,
             get_project_roles_for_user_mock,
             get_project_membership_for_user_mock, delete_membership_mock):
@@ -227,8 +213,11 @@ class TestRedmine(TestCase):
         'managesf.controllers.redminec.RedmineUtils.'
         'get_user_id')
     @patch('managesf.controllers.redminec.request')
+    @patch(
+        'managesf.controllers.redminec.RedmineUtils.get_user_id_by_username')
     def test_redmine_user_manages_project(
-            self, request_mock, get_user_id_mock,
+            self, get_user_id_by_username_mock,
+            request_mock, get_user_id_mock,
             get_project_roles_for_user_mock):
         get_project_roles_for_user_mock.return_value = []
         # This call should return False

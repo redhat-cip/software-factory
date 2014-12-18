@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-#
 # Copyright (C) 2014 eNovance SAS <licensing@enovance.com>
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -172,12 +170,22 @@ class RedmineUtils:
         return self.r.user.create(login=username, firstname=username,
                                   lastname=lastname, mail=email)
 
-    def get_user_id(self, name):
+    def get_user_id(self, mail):
         try:
-            users = self.r.user.filter(name=name)
-            for u in users:
-                if u.firstname == name:
-                    return u.id
+            users = self.r.user.filter(mail=mail)
+            for user in users:
+                if user.mail == mail:
+                    return user.id
+        except ResourceNotFoundError:
+            return None
+        return None
+
+    def get_user_id_by_username(self, username):
+        try:
+            users = self.r.user.filter(login=username)
+            for user in users:
+                if user.login == username:
+                    return user.id
         except ResourceNotFoundError:
             return None
         return None
@@ -233,6 +241,13 @@ class RedmineUtils:
     def delete_project(self, pname):
         try:
             return self.r.project.delete(pname)
+        except ResourceNotFoundError:
+            return None
+
+    def active_users(self):
+        try:
+            return [(x.login, x.mail, ' '.join([x.firstname, x.lastname]))
+                    for x in self.r.user.filter(status=1)]
         except ResourceNotFoundError:
             return None
 

@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-#
 # Copyright (C) 2014 eNovance SAS <licensing@enovance.com>
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -14,6 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import json
 import os
 
 from unittest import TestCase
@@ -47,24 +46,30 @@ class FunctionalTest(TestCase):
 
 
 class TestManageSFAppProjectController(FunctionalTest):
-    def test_project_get(self):
+
+    def test_project_get_all(self):
         ctx = [patch('managesf.controllers.gerrit.get_projects'),
                patch('managesf.controllers.gerrit.get_projects_by_user'),
                patch('managesf.controllers.gerrit.get_open_changes'),
-               patch('managesf.controllers.redminec.get_open_issues')]
-        with nested(*ctx) as (gp, gpu, goc, goi):
+               patch('managesf.controllers.redminec.get_open_issues'),
+               patch('managesf.controllers.gerrit.get_project_groups')]
+        with nested(*ctx) as (gp, gpu, goc, goi, gpg):
             gp.return_value = ['p0', 'p1', ]
             gpu.return_value = ['p1', ]
             goc.return_value = [{'project': 'p1'}]
             goi.return_value = {'issues': [{'project': {'name': 'p1'}}]}
+            gpg.return_value = [{'name': 'p0-ptl'}, {'name': 'p0-dev'}]
             # Cookie is only required for the internal cache
             response = self.app.set_cookie('auth_pubtkt', 'something')
             response = self.app.get('/project/')
             self.assertEqual(200, response.status_int)
-            self.assertTrue(
-                '{"p0": {"open_issues": 0, "open_reviews": 0, "admin": 0}, ' +
-                '"p1": {"open_issues": 1, "open_reviews": 1, "admin": 1}}',
-                response.body)
+            body = json.loads(response.body)
+            self.assertIn('p0', body)
+            self.assertTrue(body['p1']['open_reviews'] and
+                            body['p1']['open_issues'])
+            self.assertEqual({'ptl': {'name': 'p0-ptl'},
+                              'dev': {'name': 'p0-dev'}},
+                             body['p0']['groups'])
             for _mock in (gp, gpu, goc, goi):
                 self.assertTrue(_mock.called)
 
@@ -75,10 +80,21 @@ class TestManageSFAppProjectController(FunctionalTest):
             for _mock in (gp, gpu, goc, goi):
                 self.assertFalse(_mock.called)
             self.assertEqual(200, response.status_int)
-            self.assertTrue(
-                '{"p0": {"open_issues": 0, "open_reviews": 0, "admin": 0}, ' +
-                '"p1": {"open_issues": 1, "open_reviews": 1, "admin": 1}}',
-                response.body)
+
+    def test_project_get_one(self):
+        ctx = [patch('managesf.controllers.gerrit.get_projects'),
+               patch('managesf.controllers.gerrit.get_projects_by_user'),
+               patch('managesf.controllers.gerrit.get_open_changes'),
+               patch('managesf.controllers.redminec.get_open_issues')]
+        with nested(*ctx) as (gp, gpu, goc, goi):
+            goc.return_value = [{'project': 'p1'}]
+            goi.return_value = {'issues': [{'project': {'name': 'p1'}}]}
+            response = self.app.set_cookie('auth_pubtkt', 'something')
+            response = self.app.get('/project/p1')
+            self.assertEqual(200, response.status_int)
+            self.assertTrue('"open_issues": 1', response.body)
+            self.assertTrue('"admin": 1', response.body)
+            self.assertTrue('"open_reviews": 1', response.body)
 
     def test_project_put(self):
         # Create a project with no name
@@ -195,30 +211,35 @@ class TestManageSFAppBackupController(FunctionalTest):
 
 
 class TestManageSFAppMembershipController(FunctionalTest):
-    def test_get(self):
-        # Membership GET is not supported right now
-        response = self.app.get('/project/membership', status="*")
-        self.assertEqual(response.status_int, 501)
+    def test_get_all_users(self):
+        with patch('managesf.controllers.redminec.get_active_users') as au:
+            au.return_value = [[1, "a"], [2, "b"]]
+            response = self.app.get('/project/membership/', status="*")
+            self.assertEqual(200, response.status_int)
+            body = json.loads(response.body)
+            self.assertEqual([[1, "a"], [2, "b"]], body)
 
-    def test_put(self):
+    def test_put_empty_values(self):
         response = self.app.put_json('/project/membership/', {}, status="*")
         self.assertEqual(response.status_int, 400)
-        response = self.app.put_json('/project/membership/p1/', {}, status="*")
+        response = self.app.put_json('/project/p1/membership/', {}, status="*")
         self.assertEqual(response.status_int, 400)
-        response = self.app.put_json('/project/membership/p1/john', {},
+        response = self.app.put_json('/project/p1/membership/john', {},
                                      status="*")
         self.assertEqual(response.status_int, 400)
+
+    def test_put(self):
         ctx = [patch('managesf.controllers.gerrit.add_user_to_projectgroups'),
                patch(
                    'managesf.controllers.redminec.add_user_to_projectgroups')]
         with nested(*ctx) as (gaupg, raupg):
             response = self.app.put_json(
-                '/project/membership/p1/john',
+                '/project/p1/membership/john@tests.dom',
                 {'groups': ['ptl-group', 'core-group']},
                 status="*")
             self.assertEqual(response.status_int, 201)
             self.assertEqual(
-                "User john has been added in group(s): ptl-group, "
+                "User john@tests.dom has been added in group(s): ptl-group, "
                 "core-group for project p1",
                 response.body)
         ctx = [patch('managesf.controllers.gerrit.add_user_to_projectgroups'),
@@ -226,7 +247,7 @@ class TestManageSFAppMembershipController(FunctionalTest):
                side_effect=raiseexc)]
         with nested(*ctx) as (gaupg, raupg):
             response = self.app.put_json(
-                '/project/membership/p1/john',
+                '/project/p1/membership/john@tests.dom',
                 {'groups': ['ptl-group', 'core-group']},
                 status="*")
             self.assertEqual(response.status_int, 500)
@@ -235,9 +256,7 @@ class TestManageSFAppMembershipController(FunctionalTest):
                              'with unhandled error (server side): FakeExcMsg')
 
     def test_delete(self):
-        response = self.app.delete('/project/membership/', status="*")
-        self.assertEqual(response.status_int, 400)
-        response = self.app.delete('/project/membership/p1/', status="*")
+        response = self.app.delete('/project/p1/membership/john', status="*")
         self.assertEqual(response.status_int, 400)
         ctx = [
             patch(
@@ -247,18 +266,26 @@ class TestManageSFAppMembershipController(FunctionalTest):
                 'delete_user_from_projectgroups')]
         with nested(*ctx) as (gdupg, rdupg):
             response = self.app.delete(
-                '/project/membership/p1/john',
+                '/project/p1/membership/john',
                 status="*")
-            self.assertEqual(response.status_int, 200)
+            self.assertEqual(response.status_int, 400)
             self.assertEqual(
-                "User john has been deleted from all groups for project p1.",
+                "User must be identified by its email address",
                 response.body)
             response = self.app.delete(
-                '/project/membership/p1/john/core-group',
+                '/project/p1/membership/john@tests.dom',
                 status="*")
             self.assertEqual(response.status_int, 200)
             self.assertEqual(
-                "User john has been deleted from group core-group "
+                "User john@tests.dom has been deleted from all "
+                "groups for project p1.",
+                response.body)
+            response = self.app.delete(
+                '/project/p1/membership/john@tests.dom/core-group',
+                status="*")
+            self.assertEqual(response.status_int, 200)
+            self.assertEqual(
+                "User john@tests.dom has been deleted from group core-group "
                 "for project p1.",
                 response.body)
         ctx = [
@@ -269,7 +296,7 @@ class TestManageSFAppMembershipController(FunctionalTest):
                 side_effect=raiseexc)]
         with nested(*ctx) as (gdupg, rdupg):
             response = self.app.delete(
-                '/project/membership/p1/john',
+                '/project/p1/membership/john@tests.dom',
                 status="*")
             self.assertEqual(response.status_int, 500)
             self.assertEqual(response.body,

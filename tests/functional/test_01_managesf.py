@@ -193,8 +193,10 @@ class TestManageSF(Base):
         """ Create public project on redmine and gerrit with users in groups
         """
         pname = 'p_%s' % create_random_str()
+        u2mail = config.USERS[config.USER_2]['email']
+        u3mail = config.USERS[config.USER_3]['email']
         options = {"ptl-group": "",
-                   "core-group": "%s,%s" % (config.USER_2, config.USER_3),
+                   "core-group": "%s,%s" % (u2mail, u3mail),
                    }
         self.create_project(pname, config.ADMIN_USER,
                             options=options)
@@ -216,10 +218,13 @@ class TestManageSF(Base):
         """ Create private project on redmine and gerrit with users in groups
         """
         pname = 'p_%s' % create_random_str()
+        u2mail = config.USERS[config.USER_2]['email']
+        u3mail = config.USERS[config.USER_3]['email']
+        u4mail = config.USERS[config.USER_4]['email']
         options = {"private": "",
                    "ptl-group": "",
-                   "core-group": "%s,%s" % (config.USER_2, config.USER_3),
-                   "dev-group": "%s" % (config.USER_4),
+                   "core-group": "%s,%s" % (u2mail, u3mail),
+                   "dev-group": "%s" % u4mail,
                    }
         self.create_project(pname, config.ADMIN_USER,
                             options=options)
@@ -418,3 +423,8 @@ class TestManageSF(Base):
         self.assertFalse(self.rm.project_exists(pname))
         self.assertFalse(self.gu.group_exists('%s-core' % pname))
         self.projects.remove(pname)
+
+    def test_list_active_members(self):
+        """ Check the list of members as a list of tuples of emails and names
+        """
+        self.assertTrue(self.msu.list_active_members(config.USER_2))

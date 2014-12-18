@@ -155,19 +155,33 @@ class ManageSfUtils(Tool):
 
     def addUsertoProjectGroups(self, auth_user, project, new_user, groups):
         passwd = config.USERS[auth_user]['password']
+        umail = config.USERS[new_user]['email']
         cmd = self.base_cmd % (auth_user, passwd)
         cmd = cmd + " add_user --name %s " % project
-        cmd = cmd + " --user %s --groups %s" % (new_user, groups)
+        cmd = cmd + " --user %s --groups %s" % (umail, groups)
         self.exe(cmd, self.install_dir)
 
     def deleteUserFromProjectGroups(self, auth_user,
                                     project, user, group=None):
         passwd = config.USERS[auth_user]['password']
+        umail = config.USERS[user]['email']
         cmd = self.base_cmd % (auth_user, passwd) + " delete_user "
-        cmd = cmd + " --name %s --user %s " % (project, user)
+        cmd = cmd + " --name %s --user %s " % (project, umail)
         if group:
             cmd = cmd + " --group %s " % group
         self.exe(cmd, self.install_dir)
+
+    def list_active_members(self, user):
+        passwd = config.USERS[user]['password']
+        cmd = self.base_cmd % (user, passwd) + " list_active_users "
+        cmd = shlex.split(cmd)
+        ocwd = os.getcwd()
+        os.chdir(self.install_dir)
+        try:
+            output = subprocess.check_output(cmd)
+        finally:
+            os.chdir(ocwd)
+        return output
 
 
 class GerritGitUtils(Tool):

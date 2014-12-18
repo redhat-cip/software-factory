@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-#
 # Copyright (C) 2014 eNovance SAS <licensing@enovance.com>
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -169,12 +167,43 @@ class GerritUtils:
         except HTTPError as e:
             return self._manage_errors(e)
 
+    def get_project_groups(self, name):
+        try:
+            ret = self.g.get('access/?project=%s' % name)
+            perms = ret[name]['local']['refs/*']['permissions']
+            groups_ids = []
+            groups = []
+
+            for section, permission in perms.items():
+                groups_ids.extend([x for x in permission['rules']])
+            for group_id in groups_ids:
+                gname = self.g.get('groups/{}/detail'.format(group_id))
+                groups.append(gname)
+
+            return groups
+        except HTTPError as e:
+            return self._manage_errors(e)
+
     # Account related API calls #
     def get_account(self, username):
         try:
             return self.g.get('accounts/%s' % username)
         except HTTPError as e:
             return self._manage_errors(e)
+
+    def get_my_groups(self):
+        try:
+            return self.g.get('accounts/self/groups')
+        except HTTPError as exp:
+            self._manage_errors(exp)
+            return []
+
+    def get_all_users(self):
+        try:
+            return self.g.get('accounts')
+        except HTTPError as exp:
+            self._manage_errors(exp)
+            return []
 
     def get_my_groups_id(self):
         try:
@@ -205,11 +234,15 @@ class GerritUtils:
         except HTTPError as e:
             return self._manage_errors(e)
 
-    def get_group_member_id(self, group_id, username):
+    def get_group_member_id(self, group_id, username=None, mail=None):
         try:
             resp = self.g.get('groups/%s/members/' % group_id)
-            uid = [m['_account_id'] for m in resp if
-                   m['username'] == username]
+            if username:
+                uid = [m['_account_id'] for m in resp if
+                       m['username'] == username]
+            if mail:
+                uid = [m['_account_id'] for m in resp if
+                       m['email'] == mail]
             if uid:
                 return uid[0]
             else:
@@ -353,7 +386,7 @@ if __name__ == "__main__":
     # Call with the SSO cookie
     import sfauth
     c = sfauth.get_cookie('tests.dom', 'user1', 'userpass')
-    print c
+    # print c
     a = GerritUtils('http://gerrit.tests.dom', auth_cookie=c)
     # Call with a basic auth
     # from requests.auth import HTTPBasicAuth

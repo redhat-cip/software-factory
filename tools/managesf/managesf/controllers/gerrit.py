@@ -93,6 +93,11 @@ def user_owns_project(prj_name):
     return owner in grps
 
 
+def get_project_groups(project_name):
+    ge = get_client()
+    return ge.get_project_groups(project_name)
+
+
 def user_is_administrator():
     ge = get_client()
     grps = get_my_groups()
@@ -311,14 +316,14 @@ def init_project(name, json):
     create_group(core, core_desc)
     if 'core-group-members' in json:
         for m in json['core-group-members']:
-            ge.add_group_member(m, core)
+            add_user_to_projectgroups(name, m, ["core-group"])
 
     ptl = get_ptl_group_name(name)
     ptl_desc = "Project team lead for project " + name
     create_group(ptl, ptl_desc)
     if 'ptl-group-members' in json:
         for m in json['ptl-group-members']:
-            ge.add_group_member(m, ptl)
+            add_user_to_projectgroups(name, m, ["ptl-group"])
 
     if private:
         dev = get_dev_group_name(name)
@@ -327,7 +332,7 @@ def init_project(name, json):
         if 'dev-group-members' in json:
             for m in json['dev-group-members']:
                 if m != request.remote_user:
-                    ge.add_group_member(m, dev)
+                    add_user_to_projectgroups(name, m, ["dev-group"])
 
     owner = [get_ptl_group_name(name)]
     ge.create_project(name, description, owner)
@@ -394,7 +399,7 @@ def delete_user_from_projectgroups(project, user, group):
            (ptl_gid not in grps) and (not user_is_administrator()):
             logger.info("[gerrit] User is not dev, core, ptl, admin")
             abort(401)
-        dev_mid = ge.get_group_member_id(dev_gid, user)
+        dev_mid = ge.get_group_member_id(dev_gid, mail=user)
         if dev_mid:
             ge.delete_group_member(dev_gid, dev_mid)
 
@@ -403,7 +408,7 @@ def delete_user_from_projectgroups(project, user, group):
         if (ptl_gid not in grps) and (not user_is_administrator()):
             logger.info("[gerrit] User is not ptl, admin")
             abort(401)
-        ptl_mid = ge.get_group_member_id(ptl_gid, user)
+        ptl_mid = ge.get_group_member_id(ptl_gid, mail=user)
         if ptl_mid:
             ge.delete_group_member(ptl_gid, ptl_mid)
 
@@ -413,7 +418,7 @@ def delete_user_from_projectgroups(project, user, group):
            (not user_is_administrator()):
             logger.info("[gerrit] User is not core, ptl, admin")
             abort(401)
-        core_mid = ge.get_group_member_id(core_gid, user)
+        core_mid = ge.get_group_member_id(core_gid, mail=user)
         if core_mid:
             ge.delete_group_member(core_gid, core_mid)
 

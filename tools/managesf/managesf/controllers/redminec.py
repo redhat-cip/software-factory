@@ -29,38 +29,8 @@ def get_client():
                         key=conf.redmine['api_key'])
 
 
-def update_project_roles(name, ptl, core, dev):
-    rm = get_client()
-    memberships = []
-    mgr_role_id = rm.get_role_id('Manager')
-    dev_role_id = rm.get_role_id('Developer')
-
-    # core user and dev user will inherit
-    # of the Developer role
-    dev.extend(core)
-
-    cu = request.remote_user
-    if cu not in ptl:
-        ptl.append(cu)
-    if cu not in dev:
-        dev.append(cu)
-
-    append = lambda x, y: memberships.append({'user_id': x, 'role_ids': y})
-    for m in ptl:
-        uid = rm.get_user_id(m)
-        role_id = [mgr_role_id]
-        if m in dev:
-            role_id.append(dev_role_id)
-            del dev[dev.index(m)]
-        append(uid, role_id)
-
-    for m in dev:
-        append(rm.get_user_id(m), [dev_role_id])
-
-    rm.update_project_membership(name, memberships)
-
-
 def init_project(name, inp):
+    logger.info('[redmine] Create project %s' % name)
     rm = get_client()
     description = '' if 'description' not in inp else inp['description']
     ptl = [] if 'ptl-group-members' not in inp else inp['ptl-group-members']
@@ -70,7 +40,17 @@ def init_project(name, inp):
 
     # create the project
     rm.create_project(name, description, private)
-    update_project_roles(name, ptl, core, dev)
+    # Add current user to Manager and Developper
+    uid = rm.get_user_id_by_username(request.remote_user)
+    usermail = rm.r.user.get(uid).mail
+    add_user_to_projectgroups(name, usermail, ['ptl-group'], owner=True)
+    add_user_to_projectgroups(name, usermail, ['dev-group'])
+    for m in ptl:
+        add_user_to_projectgroups(name, m, ['ptl-group'])
+    for m in core:
+        add_user_to_projectgroups(name, m, ['core-group'])
+    for m in dev:
+        add_user_to_projectgroups(name, m, ['dev-group'])
 
 
 def delete_project(name):
@@ -80,36 +60,43 @@ def delete_project(name):
     rm.delete_project(name)
 
 
-def add_user_to_projectgroups(project, user, groups):
+def add_user_to_projectgroups(project, user, groups, owner=False):
     rm = get_client()
     for g in groups:
         if g not in ['ptl-group', 'core-group', 'dev-group']:
             abort(400)
-    roles = rm.get_project_roles_for_user(project,
-                                          rm.get_user_id(request.remote_user))
+    roles = rm.get_project_roles_for_user(
+        project,
+        rm.get_user_id_by_username(request.remote_user))
+    logger.info("[redmine] Add user %s in groups %s from project %s" %
+                (user, str(groups), project))
     uid = rm.get_user_id(user)
     role_id = []
     # only admin or manager can add manager
     if 'ptl-group' in groups:
-        if (not user_is_administrator()) and ('Manager' not in roles):
-            logger.debug("Aborded due to user is not admin,Manager")
+        if (not user_is_administrator()) and ('Manager' not in roles) and \
+                not owner:
+            logger.info("[redmine] Aborded due to user is not admin,Manager")
             abort(401)
         mgr_role_id = rm.get_role_id('Manager')
         role_id.append(mgr_role_id)
     if ('core-group' in groups) or ('dev-group' in groups):
         if (not user_is_administrator()) and ('Manager' not in roles) and \
-           ('Developer' not in roles):
-            logger.debug("Aborded due to user is not admin,Manager,Developer")
+           ('Developer' not in roles) and not owner:
+            logger.info("[redmine] Aborded due to user is not "
+                        "admin,Manager,Developer")
             abort(401)
         dev_role_id = rm.get_role_id('Developer')
         role_id.append(dev_role_id)
-    # if user already a project member, then update roles
     m = rm.get_project_membership_for_user(project, uid)
-    if not m:
-        memberships = [{'user_id': uid, 'role_ids': role_id}]
-        rm.update_project_membership(project, memberships)
+    if m:
+        roles = rm.get_project_roles_for_user(project, uid)
+        role_ids = [rm.get_role_id(u) for u in roles]
+        role_ids.extend(role_id)
+        rm.update_membership(m, role_ids)
     else:
-        rm.update_membership(m, role_id)
+        memberships = {'user_id': uid, 'role_ids': role_id}
+        rm.update_project_membership(project, [memberships])
 
 
 def delete_user_from_projectgroups(project, user, group):
@@ -121,15 +108,16 @@ def delete_user_from_projectgroups(project, user, group):
         return None
 
     # get current user roles
-    roles = rm.get_project_roles_for_user(project,
-                                          rm.get_user_id(request.remote_user))
+    roles = rm.get_project_roles_for_user(
+        project,
+        rm.get_user_id_by_username(request.remote_user))
 
     # if user not requested a single group, then delete all groups,
     # otherwise delete requested group
     if group is None:
         # delete all groups
         if (not user_is_administrator()) and ('Manager' not in roles):
-            logger.debug("Aborded due to user is not admin,Manager")
+            logger.debug("[redmine] Aborded due to user is not admin,Manager")
             abort(401)
         rm.delete_membership(m)
     else:
@@ -140,12 +128,14 @@ def delete_user_from_projectgroups(project, user, group):
             if (not user_is_administrator()) and ('Manager' not in roles) and \
                ('Developer' not in roles):
                 logger.debug(
-                    "Aborded due to user is not admin,Manager,developer")
+                    "[redmine] Aborded due to user is not "
+                    "admin,Manager,developer")
                 abort(401)
             role_id = rm.get_role_id('Developer')
         else:
             if (not user_is_administrator()) and ('Manager' not in roles):
-                logger.debug("Aborded due to user is not admin,Manager")
+                logger.debug("[redmine] Aborded due to user is not "
+                             "admin,Manager")
                 abort(401)
             role_id = rm.get_role_id('Manager')
         # Get list of current role_ids for this user
@@ -160,8 +150,9 @@ def delete_user_from_projectgroups(project, user, group):
 
 def user_manages_project(prj_name):
     rm = get_client()
-    roles = rm.get_project_roles_for_user(prj_name,
-                                          rm.get_user_id(request.remote_user))
+    roles = rm.get_project_roles_for_user(
+        prj_name,
+        rm.get_user_id_by_username(request.remote_user))
     if 'Manager' in roles:
         return True
     return False
@@ -174,3 +165,8 @@ def user_is_administrator():
 def get_open_issues():
     rm = get_client()
     return rm.get_open_issues()
+
+
+def get_active_users():
+    rm = get_client()
+    return rm.active_users()

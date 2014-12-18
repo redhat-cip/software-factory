@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-#
 # Copyright (C) 2014 eNovance SAS <licensing@enovance.com>
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -32,6 +30,9 @@ class FakeRes:
     id = 1
     name = 'Open'
     firstname = 'user1'
+    lastname = 'TotoMan'
+    login = 'user1'
+    mail = 'toto@example.com'
 
     def __getitem__(self, n):
         return getattr(self, n)
@@ -130,8 +131,8 @@ class TestSFRedmine(TestCase):
             return [FakeRes(), FakeRes()]
         with patch('redmine.managers.ResourceManager.filter',
                    new_callable=lambda: my_fake_resource):
-            self.assertEqual(1, self.rm.get_user_id('user1'))
-            self.assertEqual(None, self.rm.get_user_id('user2'))
+            self.assertEqual(1, self.rm.get_user_id('toto@example.com'))
+            self.assertEqual(None, self.rm.get_user_id('toto2@example.com'))
 
     def test_get_role_id(self):
         def my_fake_resource(*args, **kwargs):
@@ -206,3 +207,11 @@ class TestSFRedmine(TestCase):
         with patch('redmine.managers.ResourceManager.delete',
                    side_effect=raisenotfound):
             self.assertFalse(self.rm.delete_project('p1'))
+
+    def test_get_active_users(self):
+        def my_fake_resource(*args, **kwargs):
+            return [FakeRes()]
+        with patch('redmine.managers.ResourceManager.filter',
+                   new_callable=lambda: my_fake_resource):
+            self.assertEqual([('user1', 'toto@example.com', 'user1 TotoMan')],
+                             self.rm.active_users())

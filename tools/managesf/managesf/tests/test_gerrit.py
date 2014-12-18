@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-#
 # Copyright (C) 2014 eNovance SAS <licensing@enovance.com>
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -146,8 +144,7 @@ class TestGerritController(TestCase):
         ctx = [patch('managesf.controllers.gerrit.get_cookie'),
                patch('managesf.controllers.gerrit.init_git_repo'),
                patch('managesf.controllers.gerrit.create_group'),
-               patch(
-                   'managesf.controllers.gerrit.GerritUtils.add_group_member'),
+               patch('managesf.controllers.gerrit.add_user_to_projectgroups'),
                patch('managesf.controllers.gerrit.GerritUtils.create_project'),
                patch('managesf.controllers.gerrit.request'),
                ]

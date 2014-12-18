@@ -1,4 +1,3 @@
-#
 # Copyright (C) 2014 eNovance SAS <licensing@enovance.com>
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -75,6 +74,5 @@ class dummy_conf():
                     'simple': {
                         'format': (
                             '%(asctime)s %(levelname)-5.5s [%(name)s]'
-                            '[%(threadName)s] %(message)s')}
-                }
+                            '[%(threadName)s] %(message)s')}}
     }

@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-#
 # Copyright (C) 2014 eNovance SAS <licensing@enovance.com>
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -14,10 +12,11 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from unittest import TestCase
+import json
 from mock import patch
 from mock import Mock
 from requests.exceptions import HTTPError
+from unittest import TestCase
 
 from pysflib import sfgerrit
 
@@ -123,6 +122,20 @@ class TestGerritUtils(TestCase):
                                      {'permissions': {'owner': None}}}}}
             self.assertEqual(self.ge.get_project_owner('p1'), None)
 
+    def test_get_project_groups(self):
+        r1 = json.load(open('test_data/gerrit_access.json'))
+        r2 = 'p1-dev'
+        r3 = 'p1-ptl'
+        with patch('pysflib.sfgerrit.SFGerritRestAPI.get',
+                   side_effect=[r1, r2, r3]):
+            groups = self.ge.get_project_groups('project1')
+            self.assertIn(r2, groups)
+            self.assertIn(r3, groups)
+
+        with patch('pysflib.sfgerrit.SFGerritRestAPI.get',
+                   side_effect=raise_fake_exc):
+            self.assertFalse(self.ge.get_project_groups('p1'))
+
     def test_get_account(self):
         with patch('pysflib.sfgerrit.SFGerritRestAPI.get') as g:
             g.return_value = 'account'
@@ -130,6 +143,32 @@ class TestGerritUtils(TestCase):
         with patch('pysflib.sfgerrit.SFGerritRestAPI.get',
                    side_effect=raise_fake_exc):
             self.assertFalse(self.ge.get_account('user1'))
+
+    def test_get_my_groups(self):
+        with patch('pysflib.sfgerrit.SFGerritRestAPI.get') as g:
+            g.return_value = {
+                "Administrators": {
+                    "id": "6a1e70e1a88782771a91808c8af9bbb7a9871389",
+                    "url": "#/admin/groups/uuid-6a1e70e1a88782771a91808c",
+                    "options": {},
+                    "description": "Gerrit Site Administrators",
+                    "group_id": 1,
+                    "owner": "Administrators",
+                    "owner_id": "6a1e70e1a88782771a91808c8af9bbb7a9871389"
+                },
+                "Anonymous Users": {
+                    "id": "global%3AAnonymous-Users",
+                    "url": "#/admin/groups/uuid-global%3AAnonymous-Users",
+                    "options": {},
+                    "description": "Any user, signed-in or not",
+                    "group_id": 2,
+                    "owner": "Administrators",
+                    "owner_id": "6a1e70e1a88782771a91808c8af9bbb7a9871389"
+                }}
+            self.assertTrue(self.ge.get_my_groups())
+        with patch('pysflib.sfgerrit.SFGerritRestAPI.get',
+                   side_effect=raise_fake_exc):
+            self.assertFalse(self.ge.get_my_groups_id())
 
     def test_get_my_groups_id(self):
         with patch('pysflib.sfgerrit.SFGerritRestAPI.get') as g:
