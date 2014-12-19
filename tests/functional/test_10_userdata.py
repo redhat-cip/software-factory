@@ -69,8 +69,7 @@ class TestUserdata(Base):
         requests.get(url)
 
     def login(self, username, password, redirect='/'):
-        url = "http://{0}/auth/login?back={1}".format(config.GATEWAY_HOST,
-                                                      redirect)
+        url = "http://%s/auth/login" % config.GATEWAY_HOST
         data = {'username': username,
                 'password': password,
                 'back': redirect}
