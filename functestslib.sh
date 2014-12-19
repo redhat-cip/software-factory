@@ -21,8 +21,10 @@ ARTIFACTS_RELPATH="logs/${LOG_PATH}"
 ARTIFACTS_ROOT="/var/lib/sf/artifacts"
 ARTIFACTS_DIR="${ARTIFACTS_ROOT}/${ARTIFACTS_RELPATH}"
 
+CONFDIR=/var/lib/lxc-conf
+
 function get_ip {
-    grep -B 1 "name:[ \t]*$1" /tmp/lxc-conf/sf-lxc.yaml | head -1 | awk '{ print $2 }'
+    grep -B 1 "name:[ \t]*$1" ${CONFDIR}/sf-lxc.yaml | head -1 | awk '{ print $2 }'
 }
 
 function wait_for_statement {

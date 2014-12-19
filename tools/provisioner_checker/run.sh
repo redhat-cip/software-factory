@@ -7,9 +7,10 @@ set -x
 
 SF_ROOT=${SF_ROOT:-"/root/puppet-bootstrapper"}
 SF_SUFFIX=${SF_SUFFIX:-"tests.dom"}
+CONFDIR=/var/lib/lxc-conf
 
 function get_ip {
-    grep -B 1 "name:[ \t]*$1" /tmp/lxc-conf/sf-lxc.yaml | head -1 | awk '{ print $2 }'
+    grep -B 1 "name:[ \t]*$1" ${CONFDIR}/sf-lxc.yaml | head -1 | awk '{ print $2 }'
 }
 
 function run {
