@@ -24,7 +24,12 @@ ARTIFACTS_DIR="${ARTIFACTS_ROOT}/${ARTIFACTS_RELPATH}"
 CONFDIR=/var/lib/lxc-conf
 
 function get_ip {
-    grep -B 1 "name:[ \t]*$1" ${CONFDIR}/sf-lxc.yaml | head -1 | awk '{ print $2 }'
+    local p=${CONFDIR}/sf-lxc.yaml
+    # This is for compatibility with 0.9.2 version especially for
+    # the upgrade test from 0.9.2 to 0.9.3
+    # TODO(fbo) remove that when 0.9.3 is tagged
+    [ ! -f "$p" ] && p=/tmp/lxc-conf/sf-lxc.yaml
+    grep -B 1 "name:[ \t]*$1" $p | head -1 | awk '{ print $2 }'
 }
 
 function wait_for_statement {
