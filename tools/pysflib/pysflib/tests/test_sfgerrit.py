@@ -279,7 +279,7 @@ class TestGerritUtils(TestCase):
         with patch('pysflib.sfgerrit.SFGerritRestAPI.get') as g:
             g.return_value = {'delete-project': '', 'gravatar': ''}
             self.assertListEqual(
-                self.ge.list_plugins(), ['gravatar', 'delete-project'])
+                sorted(self.ge.list_plugins()), ['delete-project', 'gravatar'])
 
     def test_e_d_plugin(self):
         with patch('pysflib.sfgerrit.SFGerritRestAPI.post') as p:

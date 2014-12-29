@@ -373,7 +373,7 @@ class TestGerritController(TestCase):
             self.assertDictEqual(exp_ret, config)
             file(self.conf.gerrit['replication_config_path'], 'w').\
                 write(repl_content_buggy)
-            self.assertRaises(exc.HTTPInternalServerError,
+            self.assertRaises(exc.HTTPServerError,
                               lambda: gerrit.replication_read_config())
 
     def test_replication_validate(self):
