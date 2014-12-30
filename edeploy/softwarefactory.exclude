@@ -6,6 +6,7 @@
 /tmp/
 /root/
 + /var
+- /var/tmp/
 - /var/lib/edeploy/
 - /var/log/
 - /var/cache/

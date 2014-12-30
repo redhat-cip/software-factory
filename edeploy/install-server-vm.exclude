@@ -7,6 +7,7 @@
 + /root/
 - /root/puppet-boostrapper/build
 + /var
+- /var/tmp/
 - /var/lib/edeploy/
 - /var/log/
 - /var/cache/
