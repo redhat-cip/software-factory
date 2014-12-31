@@ -44,12 +44,14 @@ function setup_iptables {
     set +e
     if [ "$1" = "down" ]; then
         switch="-D"
+        # Disable NAT on the container hosts
+        sudo iptables -t nat $switch POSTROUTING -o eth0 -j MASQUERADE
     fi
     if [ "$1" = "up" ]; then
         switch="-A"
+        # Enable NAT on the container hosts (do not do that automatically)
+        # sudo iptables -t nat $switch POSTROUTING -o eth0 -j MASQUERADE
     fi
-    # Enable NAT on the container host
-    sudo iptables -t nat $switch POSTROUTING -o eth0 -j MASQUERADE
     # Redirect host incoming TCP/80 to the sf gateway on 192.168.134.54/80
     sudo iptables -t nat $switch PREROUTING -p tcp -i eth0 --dport 80 -j DNAT --to-destination 192.168.134.54:80
     # Redirect host incoming TCP/29418 to the sf gateway on 192.168.134.54/29418 (a socat service listens 29418 to redirect internally to the Gerrit service)

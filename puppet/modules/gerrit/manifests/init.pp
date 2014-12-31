@@ -184,7 +184,10 @@ class gerrit ($settings = hiera_hash('gerrit', ''),
     source  => 'puppet:///modules/gerrit/download-commands.jar',
     require => File['/home/gerrit/site_path/plugins'],
   }
-  file { '/home/gerrit/site_path/lib/mysql-connector-java.jar':
+  # Version numbers are required by Gerrit for the following three .jars,
+  # otherwise Gerrit downloads the file again
+  # https://gerrit.googlesource.com/gerrit/+/v2.8.6.1/gerrit-pgm/src/main/resources/com/google/gerrit/pgm/libraries.config
+  file { '/home/gerrit/site_path/lib/mysql-connector-java-5.1.21.jar':
     ensure  => present,
     owner   => 'gerrit',
     group   => 'gerrit',
@@ -192,7 +195,7 @@ class gerrit ($settings = hiera_hash('gerrit', ''),
     source  => '/root/gerrit_data_source/mysql-connector-java.jar',
     require => File['/home/gerrit/site_path/lib'],
   }
-  file { '/home/gerrit/site_path/lib/bcprov.jar':
+  file { '/home/gerrit/site_path/lib/bcprov-jdk15on-149.jar':
     ensure  => present,
     owner   => 'gerrit',
     group   => 'gerrit',
@@ -200,7 +203,7 @@ class gerrit ($settings = hiera_hash('gerrit', ''),
     source  => '/root/gerrit_data_source/bcprov.jar',
     require => File['/home/gerrit/site_path/lib'],
   }
-  file { '/home/gerrit/site_path/lib/bcpkix.jar':
+  file { '/home/gerrit/site_path/lib/bcpkix-jdk15on-149.jar':
     ensure  => present,
     owner   => 'gerrit',
     group   => 'gerrit',
@@ -345,9 +348,9 @@ class gerrit ($settings = hiera_hash('gerrit', ''),
                   File['/home/gerrit/site_path/plugins/gravatar.jar'],
                   File['/home/gerrit/site_path/plugins/delete-project.jar'],
                   File['/home/gerrit/site_path/plugins/reviewersbyblame-2.8.1.jar'],
-                  File['/home/gerrit/site_path/lib/mysql-connector-java.jar'],
-                  File['/home/gerrit/site_path/lib/bcprov.jar'],
-                  File['/home/gerrit/site_path/lib/bcpkix.jar'],
+                  File['/home/gerrit/site_path/lib/mysql-connector-java-5.1.21.jar'],
+                  File['/home/gerrit/site_path/lib/bcprov-jdk15on-149.jar'],
+                  File['/home/gerrit/site_path/lib/bcpkix-jdk15on-149.jar'],
                   File['/home/gerrit/site_path/plugins/download-commands.jar'],
                   File['/home/gerrit/site_path/plugins/delete-project.jar'],
                   File['/home/gerrit/site_path/hooks/hooks.config'],
