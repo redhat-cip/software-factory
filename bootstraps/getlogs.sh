@@ -23,7 +23,7 @@ source functions.sh
 set +x
 set +e
 
-echo -n "Fetching logs ... "
+echo "Fetching logs ... "
 
 dlogs=/tmp/logs
 
@@ -33,15 +33,22 @@ mkdir $dlogs
 # Boostrap process log
 cp /var/log/sf-bootstrap.log $dlogs/
 
+echo "Checking for edeploy logs ..."
+ls /var/lib/edeploy/
+[ -f /var/lib/edeploy/rsync_*.out ] && edeploy_logs=true || edeploy_logs=false
+
 # Retrieve Syslog
-for role in gerrit redmine jenkins mysql managesf; do
-    mkdir $dlogs/${role}
+for role in gerrit redmine jenkins mysql managesf puppetmaster; do
+    mkdir -p $dlogs/${role}
     scp root@`getip_from_yaml ${role}`:/var/log/syslog $dlogs/${role} &> /dev/null
     scp root@`getip_from_yaml ${role}`:/var/log/messages $dlogs/${role} &> /dev/null
+    if [ $edeploy_logs = true ]; then
+        mkdir $dlogs/${role}/edeploy
+        scp root@`getip_from_yaml ${role}`:/var/lib/edeploy/rsync_*.out $dlogs/${role}/edeploy &> /dev/null
+    fi
     ssh root@`getip_from_yaml ${role}` "journalctl -la --no-pager > /tmp/syslog"
     [ "$?" == "0" ]  && scp root@`getip_from_yaml ${role}`:/tmp/syslog $dlogs/${role} &> /dev/null
 done
-mkdir $dlogs/puppetmaster
 
 # The init option of gerrit.war will rewrite the gerrit config files
 # if the provided files does not follow exactly the expected format by gerrit.

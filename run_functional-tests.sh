@@ -19,6 +19,7 @@
 # Then will run the serverspecs and functional tests
 
 source functestslib.sh
+. role_configrc
 
 echo "Running functional-tests with this HEAD"
 display_head
@@ -71,44 +72,57 @@ if [ "$1" == "backup_restore_tests" ]; then
     run_backup_restore_tests 45 "check" || pre_fail "Backup test: check"
 fi
 if [ "$1" == "upgrade" ]; then
-    # Try to load role_configrc here to SF_REL and SF_PREVIOUS_REL
     cloned=/tmp/software-factory # The place to clone the previous SF version to deploy
     (
         [ -d $cloned ] && rm -Rf $cloned
         git clone http://softwarefactory.enovance.com/r/software-factory $cloned
         cd $cloned
         # Be sure to checkout the right previous version
-        git checkout 0.9.2
+        git checkout ${PREVIOUS_SF_REL}
+        checkpoint "clone previous version"
         # Fetch the pre-built images
         ./fetch_roles.sh trees
+        checkpoint "fetch previous trees"
         # Trigger a build role in order to deflate roles in the right directory if not done yet
         SF_SKIP_FETCHBASES=1 ./build_roles.sh
-        cd bootstraps/lxc
-        # Deploy
-        ./start.sh
-        cd ../..
+        checkpoint "extract previous roles"
+        (
+            cd bootstraps/lxc
+            # Deploy
+            ./start.sh destroy
+            ./start.sh init
+        )
+        checkpoint "lxc_start previous version"
         source functestslib.sh
         wait_for_bootstrap_done
+        checkpoint "bootstrap previous version"
         # Run basic tests
         run_serverspec
+        checkpoint "serverspec previous version"
     ) || pre_fail "Stable Bootstrap FAILED"
     # Run the provisioner to put some data on the deployed instance
     ./tools/provisioner_checker/run.sh provisioner
+    checkpoint "provisioner"
     # Put needed data to perform the upgrade on the deployed instance
     # In a real upgrade process this won't be done because next version
     # (The one we want to upgrade is already published)
     (
         cd tests/roles_provision/
         sudo ./prepare.sh
+        checkpoint "new roles are ready to be copied"
         export ANSIBLE_HOST_KEY_CHECKING=False
         ansible-playbook --private-key=${HOME}/.ssh/id_rsa -i inventory playbook.yaml
     ) || pre_fail "Ansible provision playbook FAILED"
+    checkpoint "sf is ready to be updated"
     # Start the upgrade
     ssh -o StrictHostKeyChecking=no root@`get_ip puppetmaster` "cd /srv/software-factory/ && ./upgrade.sh 0.9.4 true" || pre_fail "Upgrade FAILED"
+    checkpoint "upgrade"
     # Run basic tests
     run_serverspec || pre_fail "Serverspec failed"
+    checkpoint "serverspec new version"
     # Run the checker to validate provisionned data has not been lost
     ./tools/provisioner_checker/run.sh checker || pre_fail "Provisionned data check failed"
+    checkpoint "check provisioner"
 fi
 
 DISABLE_SETX=1
