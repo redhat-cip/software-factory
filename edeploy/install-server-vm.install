@@ -86,6 +86,9 @@ clear_packages_cache ${dir}
 # somehow yum left some packages behind...
 rm -f ${dir}/var/cache/yum/*/packages/*.rpm
 rm -f ${dir}/var/cache/yum/*/*.sqlite
+# When roles are built by jenkins user (the case in our gate)
+# some hidden directories are stored in /var/lib/jenkins (Jenkins home)
+rm -Rf ${dir}/var/lib/jenkins/.[!.]*
 
 # Disable root passwd
 do_chroot ${dir} passwd -l root
