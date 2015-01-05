@@ -1,88 +1,103 @@
+# System stuff
 /dev/
 /proc/
-/sys/
+/lost+found/
 /mnt/
-/run/
+/sys/
 /tmp/
-+ /root/gerrit_data_source/
-+ /root/gerrit_data_source/gerrit.war
-+ /root/gerrit_data_source/*.jar
-- /root/gerrit_data_source/*
-- /root/*
-+ /var
-- /var/tmp/
-- /var/lib/edeploy/
-- /var/log/
-- /var/cache/
-- /var/lib/puppet
-- /var/lib/cloud
-- /var/lib/mysql
-- /var/lib/jenkins
-- /var/spool/
-- /var/lib/postfix/master.lock
-- /var/lib/zuul/
-- /var/www/zuul
-- /var/www/static/lodgeit
-- /var/www/managesf/gerrit_admin_rsa
-- /var/www/managesf/config.py
-- /var/www/index.py
-- /var/www/index.html.tmpl
-- /var/www/cauth/keys/
-- /var/www/cauth/state_mapping.db
-- /var/www/cauth/config.py
-+ /var/www/etherpad-lite/.*
-- /home/
-- /home/gerrit/
-+ /home/gerrit/site_path/lib/.*
-+ /home/gerrit/site_path/plugins/.*
-- /home/zuul/
-+ /usr/share/redmine
-- /usr/share/redmine/config
-- /usr/share/redmine/log
-- /usr/share/redmine/public/plugin_assets
-- /usr/share/config.init.done
+/run/
+/home/
+
+# FIXME: this seems to prevent kernel updates
 /boot/grub/
-/lost+found
-/etc/hostname
-/etc/rc.local*
-/etc/network/
+
+# System Configuration
 /etc/fstab
-/etc/mtab
-/etc/shadow*
-/etc/gshadow*
-/etc/ld.so.cache
-/etc/passwd*
 /etc/group*
+/etc/gshadow*
+/etc/hostname
 /etc/hosts
+/etc/ld.so.cache
+/etc/mailname
+/etc/monit/
+/etc/mtab
+/etc/network/
+/etc/passwd*
+/etc/postfix/main.cf
+/etc/rc.local*
 /etc/resolv.conf
+/etc/shadow*
 /etc/ssh/*key
-/etc/ssh/ssh_host*
 /etc/ssh/sshd_config
+/etc/ssh/ssh_host*
 /etc/sudoers.d/
 /etc/sysconfig/network
-/etc/udev/rules.d/*persistent*
-/etc/puppet/
-/etc/monit/
-/etc/postfix/main.cf
-/etc/mailname
-/etc/systemd/system/multi-user.target.wants
 /etc/sysconfig/network-scripts/ifcfg-eth0
+/etc/systemd/system/multi-user.target.wants
+/etc/udev/rules.d/*persistent*
+/root/.ssh
+/usr/share/httpd/
+/usr/share/sf-jjb/
+/usr/share/sf-zuul/
+
+
+# systemd
+/usr/lib/systemd/system/etherpad.service
+/usr/lib/systemd/system/gerrit.service
+/usr/lib/systemd/system/jenkins.service
+/usr/lib/systemd/system/lodgeit.service
+/usr/lib/systemd/system/socat.service
+/usr/lib/systemd/system/zuul-merger.service
+/usr/lib/systemd/system/zuul.service
+
+# System var stuff
+/var/cache/
+/var/lib/cloud/
+/var/lib/debootstrap/
+/var/lib/edeploy/
+/var/lib/postfix/master.lock
+/var/lib/puppet/
+/var/lib/sf/
+/var/log/
+/var/spool/
+/var/tmp/
+
+# Sf state data
+/var/spool/
+/var/lib/postfix/master.lock
+/var/lib/zuul/
+/var/www/zuul/
+/var/www/static/lodgeit/
+/var/www/managesf/gerrit_admin_rsa
+/var/www/managesf/config.py
+/var/www/index.py
+/var/www/index.html.tmpl
+/var/www/cauth/keys/
+/var/www/cauth/state_mapping.db
+/var/www/cauth/config.py
+/usr/share/redmine/log
+/usr/share/redmine/public/plugin_assets
+/usr/share/config.init.done
+
+# Sf data
+/var/lib/mysql/
+/var/lib/jenkins/
++ /home/gerrit/site_path/lib/
++ /home/gerrit/site_path/plugins/
+- /home/gerrit/*
+/home/zuul/
+/usr/share/redmine/config
+/usr/share/redmine/log
+/usr/share/redmine/public/plugin_assets/
+/usr/share/config.init.done
+/srv/cauth_keys/
+
+# Sf configuration
+/etc/puppet/
 /etc/httpd/conf.d/
 /etc/httpd/conf.modules.d/
 /etc/httpd/htpasswd
 /etc/zuul/
 /etc/jenkins_jobs/
-/etc/systemd/system/multi-user.target.wants
-/usr/lib/systemd/system/gerrit.service
-/usr/lib/systemd/system/zuul.service
-/usr/lib/systemd/system/zuul-merger.service
-/usr/lib/systemd/system/jenkins.service
-/usr/lib/systemd/system/socat.service
-/usr/lib/systemd/system/lodgeit.service
-/usr/lib/systemd/system/etherpad.service
-/usr/local/jenkins/slave_scripts/kick.sh
-/usr/bin/sf-manage
-/usr/share/sf-zuul/
-/usr/share/sf-jjb/
-/usr/share/httpd/
-/srv/cauth_keys/
++ /root/gerrit_data_source/
+- /root/*
