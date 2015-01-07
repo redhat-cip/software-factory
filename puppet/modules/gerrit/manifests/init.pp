@@ -371,7 +371,6 @@ class gerrit ($settings = hiera_hash('gerrit', ''),
     command => '/root/wait4gerrit.sh',
     timeout => 900,
     require => [File['wait4gerrit'],  Service['gerrit']],
-    creates => '/tmp/wait4gerrit.done',
   }
 
   # Init default in Gerrit. Require a running gerrit but
@@ -390,7 +389,8 @@ class gerrit ($settings = hiera_hash('gerrit', ''),
     require     => [Service['gerrit'], Exec['wait4gerrit'],
                     File['/root/gerrit_data_source/rules.pl'],
                     File['/root/gerrit_data_source/project.config'],
-                    File['/root/gerrit_data_source/ssh_wrapper.sh']],
+                    File['/root/gerrit_data_source/ssh_wrapper.sh'],
+                    File['/home/gerrit/gerrit.war']],
     refreshonly => true,
   }
   exec {'gerrit-init-jenkins':

@@ -17,6 +17,8 @@ import os
 import shutil
 import time
 
+import requests
+
 import config
 from utils import Base
 from utils import set_private_key
@@ -303,3 +305,13 @@ class TestGerrit(Base):
 
         gu_first_u.del_pubkey(k1_index)
         gu_second_u.del_pubkey(k2_index)
+
+    def test_gerrit_version(self):
+        """ Test if correct Gerrit version is running
+        """
+        url = "http://%s/r/config/server/version" % config.GATEWAY_HOST
+        resp = requests.get(
+            url,
+            cookies=dict(
+                auth_pubtkt=config.USERS[config.USER_1]['auth_cookie']))
+        self.assertTrue('"2.8.6.1-dirty"' in resp.text)

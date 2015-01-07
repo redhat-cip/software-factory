@@ -6,4 +6,9 @@ set -e
 JENKINS_SSHKEY="<%= @settings['gerrit_jenkins_sshkey'] %>"
 ADMINUSER=<%= @settings['gerrit_admin_username'] %>
 
-echo "$JENKINS_SSHKEY" | ssh -i /home/gerrit/site_path/etc/ssh_host_rsa_key -p29418 $ADMINUSER@localhost gerrit create-account jenkins -g \"Non-Interactive Users\" --email <%= @settings['jenkins_user_email'] %> --full-name \"Jenkins CI\" --ssh-key -
+# Check if Jenkins user does not exist yet
+JENKINS_USER_EXISTS=`ssh -i /home/gerrit/site_path/etc/ssh_host_rsa_key -p29418 $ADMINUSER@localhost gerrit ls-members \"Non-Interactive Users\" | { grep Jenkins || true; }`
+
+if [ -z "$JENKINS_USER_EXISTS" ]; then
+    echo "$JENKINS_SSHKEY" | ssh -i /home/gerrit/site_path/etc/ssh_host_rsa_key -p29418 $ADMINUSER@localhost gerrit create-account jenkins -g \"Non-Interactive Users\" --email <%= @settings['jenkins_user_email'] %> --full-name \"Jenkins CI\" --ssh-key -
+fi

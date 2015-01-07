@@ -29,7 +29,7 @@ PUPPET_RELEASE=$PUPPET_EL_CODENAME_MAJOR-10
 NPM_INSTALL=1.4.21
 export JENKINS_VERSION=1.580-1.1 # LTS
 PUPPET="http://yum.puppetlabs.com/el/$PUPPET_EL_CODENAME_MAJOR/products/x86_64/puppetlabs-release-$PUPPET_RELEASE.noarch.rpm"
-LASTWAR="http://os.enocloud.com:8080/v1/AUTH_0e436aacf0854b9abe70aa90f9e0864d/gerrit/gerrit285.war"
+LASTWAR="http://os.enocloud.com:8080/v1/AUTH_70aab03f69b549cead3cb5f463174a51/gerrit/gerrit2861.war"
 MYSQLJAVA="http://repo2.maven.org/maven2/mysql/mysql-connector-java/5.1.21/mysql-connector-java-5.1.21.jar"
 BCPROVJAVA="http://central.maven.org/maven2/org/bouncycastle/bcprov-jdk15on/1.49/bcprov-jdk15on-1.49.jar"
 BCPKIXJAVA="http://central.maven.org/maven2/org/bouncycastle/bcpkix-jdk15on/1.49/bcpkix-jdk15on-1.49.jar"
@@ -241,3 +241,5 @@ disable_selinux
 http_fetch "https://raw.githubusercontent.com/enovance/edeploy/master/build/C7.0-ids.tables" ${dir}/root/ids.tables
 
 put_git_mark ${dir}
+
+# EOF

@@ -54,11 +54,20 @@ class jenkins ($settings = hiera_hash('jenkins', '')) {
     content => template('jenkins/jenkins.service.erb'),
   }
 
+  file { "/var/cache/jenkins":
+      ensure => directory,
+      owner => "jenkins",
+      group => "jenkins",
+      require => [User['jenkins'], Group['jenkins']],
+  }
+
   service { 'jenkins':
     ensure  => 'running',
     enable  => 'true',
     require => [File['/lib/systemd/system/jenkins.service'],
-                File['/etc/init.d/jenkins'],]
+                File['/etc/init.d/jenkins'],
+                File['/var/lib/jenkins'],
+                File['/var/cache/jenkins']]
    }
 
   service {'webserver':
@@ -77,6 +86,13 @@ class jenkins ($settings = hiera_hash('jenkins', '')) {
 
   group { 'jenkins':
     ensure => present,
+  }
+
+  file { "/var/lib/jenkins":
+      ensure => directory,
+      owner => "jenkins",
+      group => "jenkins",
+      require => [User['jenkins'], Group['jenkins']],
   }
 
   file { "/var/lib/jenkins/.ssh":

@@ -22,6 +22,8 @@ cp /root/gerrit_data_source/project.config .
 cp /root/gerrit_data_source/rules.pl .
 git diff
 git add project.config rules.pl
-git commit -a -m"Provide the default config"
+# git returns exit code 1 in case there is nothing to do
+# This fails during an upgrade, thus always return exit code 0
+git commit -a -m"Provide the default config" || true
 GIT_SSH=/root/gerrit_data_source/ssh_wrapper.sh git push origin meta/config:meta/config
 cd -

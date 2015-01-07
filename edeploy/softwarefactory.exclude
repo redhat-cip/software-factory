@@ -4,7 +4,10 @@
 /mnt/
 /run/
 /tmp/
-/root/
++ /root/gerrit_data_source/
++ /root/gerrit_data_source/gerrit.war
+- /root/gerrit_data_source/*
+- /root/*
 + /var
 - /var/tmp/
 - /var/lib/edeploy/
