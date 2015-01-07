@@ -122,6 +122,8 @@ if [ "$1" == "upgrade" ]; then
     checkpoint "serverspec new version"
     # Run the checker to validate provisionned data has not been lost
     ./tools/provisioner_checker/run.sh checker || pre_fail "Provisionned data check failed"
+    # run functional tests from the puppetmaster
+    ssh -o StrictHostKeyChecking=no root@`get_ip puppetmaster` "cd puppet-bootstrapper && nosetests -sv" || pre_fail "Functional tests FAILED after upgrade"
     checkpoint "check provisioner"
 fi
 
