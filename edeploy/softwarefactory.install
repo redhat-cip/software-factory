@@ -244,9 +244,6 @@ do_chroot ${dir} passwd -l root
 
 disable_selinux
 
-# Temporary fix
-http_fetch "https://raw.githubusercontent.com/enovance/edeploy/master/build/C7.0-ids.tables" ${dir}/root/ids.tables
-
 put_git_mark ${dir}
 
 # EOF
