@@ -163,7 +163,9 @@ class GerritUtils:
         try:
             ret = self.g.get('access/?project=%s' % name)
             perms = ret[name]['local']['refs/*']['permissions']
-            return sorted(perms['owner']['rules'].keys())[0]
+            owner = perms.get('owner')
+            if owner:
+                return sorted(owner['rules'].keys())[0]
         except HTTPError as e:
             return self._manage_errors(e)
 

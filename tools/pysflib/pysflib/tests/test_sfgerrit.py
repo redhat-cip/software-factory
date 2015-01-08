@@ -118,6 +118,10 @@ class TestGerritUtils(TestCase):
         with patch('pysflib.sfgerrit.SFGerritRestAPI.get',
                    side_effect=raise_fake_exc):
             self.assertFalse(self.ge.get_project_owner('p1'))
+        with patch('pysflib.sfgerrit.SFGerritRestAPI.get') as g:
+            g.return_value = {'p1': {'local': {'refs/*':
+                                     {'permissions': {'owner': None}}}}}
+            self.assertEqual(self.ge.get_project_owner('p1'), None)
 
     def test_get_account(self):
         with patch('pysflib.sfgerrit.SFGerritRestAPI.get') as g:
