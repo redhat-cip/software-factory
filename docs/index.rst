@@ -4,7 +4,7 @@
    contain the root `toctree` directive.
 
 Welcome to software-factory's documentation!
-===========================================
+============================================
 
 .. toctree::
    :maxdepth: 2

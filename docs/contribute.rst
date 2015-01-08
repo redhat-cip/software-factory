@@ -78,6 +78,7 @@ Functional tests are designed to be run from the puppetmaster.
 The recommended way to edit/add a new test is to work on it locally and then use this combination of rsync/ssh to actually run the test:
 
 .. code-block:: bash
+
   $ rsync -av tests/ puppetmaster:puppet-bootstrapper/tests/ && ssh -t puppetmaster nosetests --no-byte-compile -s -v puppet-bootstrapper/tests/functional/
 
 Tips: ::
@@ -88,6 +89,7 @@ Tips: ::
  * in order to have passwordless ssh and dns configuration, here is a convenient .ssh/config file:
 
 .. code-block:: none
+
   Host *
     StrictHostKeyChecking no
     User root
