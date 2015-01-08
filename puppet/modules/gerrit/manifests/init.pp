@@ -489,4 +489,27 @@ class gerrit ($settings = hiera_hash('gerrit', ''),
     backup_script => 'gerrit/backup.sh.erb',
     restore_script => 'gerrit/restore.sh.erb',
   }
+
+  # /home/gerrit/.ssh/known_hosts_gerrit should be updated by managesf
+  # this triggers a Gerrit restart, which is required to clear the internal
+  # cache
+  file { '/home/gerrit/.ssh/known_hosts':
+    ensure  => present,
+    source  => '/home/gerrit/.ssh/known_hosts_gerrit',
+    mode    => '0644',
+    owner   => 'gerrit',
+    group   => 'gerrit',
+    require => File['/home/gerrit/.ssh/known_hosts_gerrit'],
+    notify  => Service['gerrit'],
+  }
+
+  # Just ensure this file exists
+  file { '/home/gerrit/.ssh/known_hosts_gerrit':
+    ensure  => present,
+    mode    => '0644',
+    owner   => 'gerrit',
+    group   => 'gerrit',
+    require => File['/home/gerrit/.ssh'],
+  }
+
 }
