@@ -323,6 +323,10 @@ If not you must login as root. The current user must have a RSA public
 key available in $HOME/.ssh, if not please create it before with ssh-keygen
 without a passphrase.
 
+.. code-block:: bash
+
+ $ ssh-keygen -P ""
+
 In order to start the SF deployment perform the commands below:
 
 .. code-block:: bash
