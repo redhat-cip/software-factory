@@ -43,7 +43,8 @@ JQUERY="http://code.jquery.com/jquery-2.1.1.min.js"
 JQUERY_VISIBILITY="http://status.openstack.org/jquery-visibility.min.js"
 JQUERY_GRAPHITE="http://status.openstack.org/jquery-graphite.js"
 ANGULARJS="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.27/angular.min.js"
-JENKINS_SWARM="http://maven.jenkins-ci.org/content/repositories/releases/org/jenkins-ci/plugins/swarm-client/1.15/swarm-client-1.15-jar-with-dependencies.jar"
+JENKINS_SWARM_CLIENT="http://repo.jenkins-ci.org/releases/org/jenkins-ci/plugins/swarm-client/1.22/swarm-client-1.22-jar-with-dependencies.jar"
+JENKINS_SWARM_PLUGIN="http://repo.jenkins-ci.org/releases/org/jenkins-ci/plugins/swarm/1.22/swarm-1.22.hpi"
 
 DOCDIR="../docs"
 GERRITHOOKS="../gerrit-hooks"
@@ -210,8 +211,13 @@ rm -rf $DOCBUILDDIR
 
 # Jenkins Swarm client
 retry do_chroot ${dir} pip install nose flake8
+swarm_client=$(basename $JENKINS_SWARM_CLIENT)
+http_fetch $JENKINS_SWARM_CLIENT ${dir}/var/lib/jenkins/${swarm_client}
+ln -sf ${swarm_client} ${dir}/var/lib/jenkins/swarm-client-latest.jar
+
+# Jenkins Swarm plugin
 mkdir -p ${dir}/var/lib/jenkins/plugins
-http_fetch $JENKINS_SWARM ${dir}/var/lib/jenkins/swarm-client-1.15-jar-with-dependencies.jar
+http_fetch $JENKINS_SWARM_PLUGIN ${dir}/var/lib/jenkins/plugins/$(basename $JENKINS_SWARM_PLUGIN)
 
 # install git-review for internal use
 retry do_chroot ${dir} pip install git-review

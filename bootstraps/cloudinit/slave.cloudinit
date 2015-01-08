@@ -30,7 +30,7 @@ write_files:
     User=jenkins
     SyslogIdentifier=swarm
     EnvironmentFile=/etc/sysconfig/swarm
-    ExecStart=/usr/bin/java $JVMARGS -jar /var/lib/jenkins/swarm-client-1.15-jar-with-dependencies.jar -fsroot /var/lib/jenkins -master $MASTER -username $USERNAME -password $PASSWORD -name $NAME
+    ExecStart=/usr/bin/java $JVMARGS -jar /var/lib/jenkins/swarm-client-latest.jar -fsroot /var/lib/jenkins -master $MASTER -username $USERNAME -password $PASSWORD -name $NAME
   permissions: '0640'
   path: /lib/systemd/system/swarm.service
 - content: |
