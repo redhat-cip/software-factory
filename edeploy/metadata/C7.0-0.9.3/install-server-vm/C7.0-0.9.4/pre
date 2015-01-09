@@ -1,4 +1,33 @@
 #!/bin/sh
 
-echo "Pre script - Nothing to do"
+# This is only relevant for upgrade 0.9.3 to 0.9.4
+usermod -u 499 saslauth
+
+usermod -u 800 puppetdb
+groupmod -g 800 puppetdb
+
+usermod -u 124 jenkins
+groupmod -g 130 jenkins
+
+usermod -u 179 elasticsearch
+groupmod -g 179 elasticsearch
+
+usermod -u 178 td-agent
+groupmod -g 178 td-agent
+
+usermod -u 801 epmd
+groupmod -g 801 epmd
+
+usermod -u 127 redis
+groupmod -g 138 redis
+
+usermod -u 495 rabbitmq
+groupmod -g 494 rabbitmq
+
+usermod -u 803 nagios
+groupmod -g 803 nagios
+
+groupmod -g 499 cgred
+# End of only relevant for upgrade 0.9.3 to 0.9.4
+
 exit 0

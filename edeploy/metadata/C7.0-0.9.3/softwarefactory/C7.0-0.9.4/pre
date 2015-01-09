@@ -2,4 +2,30 @@
 
 echo "Saving etherpad API key"
 cp /var/www/etherpad-lite-1.4.0/APIKEY.txt /tmp/APIKEY.txt
+
+# This is only relevant for upgrade 0.9.3 to 0.9.4
+usermod -u 499 saslauth
+
+usermod -u 124 jenkins
+groupmod -g 130 jenkins
+
+usermod -u 987 gerrit
+groupmod -g 987 gerrit
+
+usermod -u 985 zuul
+groupmod -g 985 zuul
+
+usermod -u 986 etherpad
+groupmod -g 986 etherpad
+
+groupmod -g 499 cgred
+
+rm -Rf /var/lib/jenkins/.cache
+rm -Rf /var/lib/jenkins/.pip
+rm -Rf /var/lib/jenkins/.pki
+
+chown -R jenkins:jenkins /var/lib/jenkins
+rm -Rf /var/cache/jenkins
+# End of only relevant for upgrade 0.9.3 to 0.9.4
+
 exit 0
