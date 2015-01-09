@@ -101,7 +101,7 @@ function build_role {
             else
                 ROLE_OUTPUT=/dev/stdout
             fi
-            sudo ${MAKE} EDEPLOY_ROLES_PATH=${EDEPLOY_ROLES} PREBUILD_EDR_TARGET=${EDEPLOY_ROLES_REL} ${ROLE_NAME} &> ${ROLE_OUTPUT}
+            sudo -H ${MAKE} EDEPLOY_ROLES_PATH=${EDEPLOY_ROLES} PREBUILD_EDR_TARGET=${EDEPLOY_ROLES_REL} ${ROLE_NAME} &> ${ROLE_OUTPUT}
             echo ${ROLE_MD5} | sudo tee ${ROLE_FILE}.md5
             if [ -n "$VIRT" ]; then
                 echo "Upstream ${ROLE_NAME} is NOT similar ! I rebuild the qcow2 image."

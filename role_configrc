@@ -48,9 +48,9 @@ CREATE_IMG=${EDEPLOY}/build/create-image.sh
 UPSTREAM=${BUILD_DIR}/upstream
 INST=${BUILD_DIR}/install/${SF_VER}
 
-SF_DEPS="./role_configrc ./edeploy/functions ./edeploy/softwarefactory.*"
+SF_DEPS="./role_configrc ./build_roles.sh ./edeploy/functions ./edeploy/softwarefactory.*"
 SF_DEPS="${SF_DEPS} ./tools/pysflib/ ./tools/cauth/ ./tools/managesf/ ./docs/"
-IS_DEPS="./role_configrc ./edeploy/functions ./edeploy/install-server-vm.*"
+IS_DEPS="./role_configrc ./build_roles.sh ./edeploy/functions ./edeploy/install-server-vm.*"
 IS_DEPS="${IS_DEPS} ./upgrade/ ./puppet/ ./tests/ ./serverspec/ ./tools/ ./bootstraps/*.sh ./bootstraps/sfcreds.yaml"
 
 MAKE="make DVER=${DVER} DIST=${DIST} SF_REL=${SF_REL} EDEPLOY_PATH=${EDEPLOY} TOP=${BUILD_DIR}"
