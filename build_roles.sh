@@ -69,6 +69,10 @@ function build_role {
     # Check if we can find roles built locally and that md5 is similar
     if [ -f "${ROLE_FILE}.md5" ] && [ "$(cat ${ROLE_FILE}.md5)" = "${ROLE_MD5}" ]; then
         echo "The locally built ${ROLE_NAME} md5 is similar to what we computed from your git branch state. Nothing to do"
+        if [ -n "$VIRT" ] && [ ! -f "${ROLE_FILE}.img.qcow2" ]; then
+            echo "The locally built qcow2 (${ROLE_FILE}.img.qcow2) is not available ! so built it."
+            build_img ${ROLE_FILE} ${INST}/${ROLE_NAME} $IMG_CFG
+        fi
         return
     fi
     # Check upstream role MD5 to know if upstream role can be re-used
@@ -85,6 +89,7 @@ function build_role {
             echo "Copy prebuilt qcow2 image ..."
             if [ -f ${UPSTREAM_FILE}.img.qcow2 ]; then
                 sudo cp ${UPSTREAM_FILE}.img.qcow2 ${INST}/
+                sudo cp ${UPSTREAM_FILE}.img.qcow2.md5 ${INST}/
             else
                 # Should not be the case !
                 echo "Prebuilt qcow2 image ${UPSTREAM_FILE}.img.qcow2 is not available upstream ! so build it."

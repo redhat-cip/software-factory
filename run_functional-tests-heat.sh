@@ -18,6 +18,21 @@
 # Then will start the SF using the HEAT deployment way
 # Then will run the serverspecs and functional tests
 
+
+
+
+###########  WARNING ########################################
+# To run that test on your HEAT account please create a file
+# called sf-dom-enocloud.openrc with that content:
+#
+# export OS_AUTH_URL=auth_url_to_replace
+# export OS_TENANT_NAME="tenant_name_to_replace"
+# export OS_PASSWORD="your_password_to_replace"
+# export OS_USERNAME="username-to_replace"
+# export HEAT_TENANT=${OS_TENANT_NAME}
+# export NOVA_KEYNAME=name_of_the_keypair_to_use
+#############################################################
+
 source /etc/sf-dom-enocloud.openrc
 
 [ -z "$HEAT_TENANT" ] && {
@@ -28,6 +43,7 @@ echo "Use $HEAT_TENANT on $OS_AUTH_URL"
 export OS_TENANT_NAME=${HEAT_TENANT}
 unset OS_TENANT_ID
 export NOVA_KEYNAME=${NOVA_KEYNAME-$HEAT_TENANT}
+export FORMAT=raw
 source functestslib.sh
 
 echo "Running functional-tests with this HEAD"

@@ -12,6 +12,9 @@ if [ -n "$FROMUPSTREAM" ]; then
 else
     BUILT_ROLES=$INST
 fi
+
+FORMAT=${FORMAT:-qcow2}
+
 STACKNAME=${STACKNAME:-SoftwareFactory}
 DOMAIN=$(cat $SFCONFIGFILE | grep "^domain:" | cut -d' ' -f2)
 suffix=$DOMAIN
@@ -54,12 +57,30 @@ function get_params {
     params="$params;sf_config_content=$sfconfigcontent"
 }
 
+function convert_to_raw {
+    if [ "$FORMAT" == "raw" ]; then
+        for img in install-server-vm softwarefactory; do
+            checksum=`cat $BUILT_ROLES/$img-${SF_VER}.img.qcow2.md5 | cut -d" " -f1`
+            [ -f "$BUILT_ROLES/$img-${SF_VER}-$checksum.raw" ] && continue || {
+                sudo rm -f $BUILT_ROLES/$img-${SF_VER}-*.raw # remove previous images previously converted and no longer relevant
+                sudo qemu-img convert -f qcow2 -O raw $BUILT_ROLES/$img-${SF_VER}.img.qcow2 $BUILT_ROLES/$img-${SF_VER}-$checksum.raw
+                echo $(cat  $BUILT_ROLES/$img-${SF_VER}-$checksum.raw| md5sum - | cut -d " " -f1) | sudo tee $BUILT_ROLES/$img-${SF_VER}-$checksum.raw.md5
+            }
+        done
+    fi
+}
+
 function register_images {
     for img in install-server-vm softwarefactory; do
         checksum=`glance image-show ${STACKNAME}_$img | grep checksum | awk '{print $4}'`
         if [ -z "$checksum" ]; then
-            glance image-create --name ${STACKNAME}_$img --disk-format qcow2 --container-format bare \
-                --progress --file $BUILT_ROLES/$img-${SF_VER}.img.qcow2
+            if [ "$FORMAT" == "raw" ]; then
+                glance image-create --name ${STACKNAME}_$img --disk-format raw --container-format bare \
+                    --progress --file $BUILT_ROLES/$img-${SF_VER}-*.raw
+            else
+                glance image-create --name ${STACKNAME}_$img --disk-format qcow2 --container-format bare \
+                    --progress --file $BUILT_ROLES/$img-${SF_VER}.img.qcow2
+            fi
         fi
     done
 }
@@ -67,7 +88,12 @@ function register_images {
 function unregister_images {
     for img in install-server-vm softwarefactory; do
         checksum=`glance image-show ${STACKNAME}_$img | grep checksum | awk '{print $4}'`
-        newchecksum=`cat $BUILT_ROLES/$img-${SF_VER}.img.qcow2.md5 | cut -d" " -f1`
+        if [ "$FORMAT" == "raw" ]; then
+            checks=`cat $BUILT_ROLES/$img-${SF_VER}.img.qcow2.md5 | cut -d" " -f1`
+            newchecksum=`cat $BUILT_ROLES/$img-${SF_VER}-$checks.raw.md5`
+        else
+            newchecksum=`cat $BUILT_ROLES/$img-${SF_VER}.img.qcow2.md5 | cut -d" " -f1`
+        fi
         [ "$newchecksum" != "$checksum" ] && glance image-delete ${STACKNAME}_$img || true
     done
 }
@@ -112,19 +138,29 @@ function full_restart_stack {
 [ -n "$1" ] && {
     case "$1" in
         register_images )
-            register_images ;;
+            convert_to_raw
+            register_images
+            ;;
         unregister_images )
-            unregister_images ;;
+            convert_to_raw
+            unregister_images
+            ;;
         start_stack )
-            start_stack ;;
+            start_stack
+            ;;
         delete_stack )
-            delete_stack ;;
+            delete_stack
+            ;;
         delete_images )
-            delete_images ;;
+            delete_images
+            ;;
         restart_stack )
-            restart_stack ;;
+            restart_stack
+            ;;
         full_restart_stack )
-            full_restart_stack ;;
+            convert_to_raw
+            full_restart_stack
+            ;;
         * )
             echo "Not available option" ;;
     esac
