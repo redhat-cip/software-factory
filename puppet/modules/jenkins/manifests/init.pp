@@ -67,7 +67,8 @@ class jenkins ($settings = hiera_hash('jenkins', '')) {
     require => [File['/lib/systemd/system/jenkins.service'],
                 File['/etc/init.d/jenkins'],
                 File['/var/lib/jenkins'],
-                File['/var/cache/jenkins']]
+                File['/var/cache/jenkins'],
+                File['/var/lib/jenkins/config.xml']]
    }
 
   service {'webserver':
@@ -154,7 +155,6 @@ class jenkins ($settings = hiera_hash('jenkins', '')) {
     mode    => '0644',
     owner   => 'jenkins',
     group   => 'jenkins',
-    notify  => Service['jenkins'],
     content => template('jenkins/config.xml.erb'),
     require => [File['/var/lib/jenkins/jenkins.model.JenkinsLocationConfiguration.xml'],
                 File['/var/lib/jenkins/hudson.plugins.gearman.GearmanPluginConfig.xml'],
