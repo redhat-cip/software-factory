@@ -147,12 +147,13 @@ http_fetch $ANGULARJS ${dir}/var/www/static/js/angular.min.js
 # zuul
 retry do_chroot ${dir} git clone https://github.com/openstack-infra/zuul /srv/zuul
 do_chroot ${dir} bash -c "cd /srv/zuul && git checkout -b working 8c81dc3fa9c2dfaf93539641c099b15064357011" # a commit known to work 11/12/2014
-do_chroot ${dir} bash -c "cd /srv/zuul && python /srv/zuul/setup.py install"
-# 06/19/2014 - The two line below manage to quick fix some dependencies problem with Zuul (Need to be removed later)
+# Install dependencies first
 retry do_chroot ${dir} pip install -U setuptools
+retry do_chroot ${dir} pip install docutils
 retry do_chroot ${dir} bash -c "cd /srv/zuul && pip install -U -r requirements.txt"
 retry do_chroot ${dir} pip install APScheduler==2.1.0
 retry do_chroot ${dir} pip install GitPython==0.3.2.RC1
+do_chroot ${dir} bash -c "cd /srv/zuul && python /srv/zuul/setup.py install"
 do_chroot ${dir} ln -s /var/www/static/bootstrap /srv/zuul/etc/status/public_html/bootstrap
 http_fetch $JQUERY_VISIBILITY ${dir}/srv/zuul/etc/status/public_html/jquery-visibility.min.js
 http_fetch $JQUERY_GRAPHITE ${dir}/srv/zuul/etc/status/public_html/jquery.graphite.js
