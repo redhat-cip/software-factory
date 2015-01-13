@@ -118,7 +118,6 @@ class TestGateway(unittest.TestCase):
         """
         url = "http://%s/static/lodgeit/jquery.js" % config.GATEWAY_HOST
         resp = requests.get(url)
-        print url, resp.content  # for debugging gate only
         self.assertEqual(resp.status_code, 200)
         self.assertTrue("jQuery 1.2.6" in resp.content)
 
