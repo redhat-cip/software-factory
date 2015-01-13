@@ -19,19 +19,61 @@ class commonservices-socat {
     ensure => present,
   }
 
-  file {'/lib/systemd/system/socat.service':
+  file {'/lib/systemd/system/socat_gerrit.service':
     ensure => file,
     mode   => '0640',
     owner  => 'root',
     group  => 'root',
-    source  => 'puppet:///modules/commonservices-socat/socat.service',
-    notify => Service[socat],
+    source  => 'puppet:///modules/commonservices-socat/socat_gerrit.service',
+    notify  => [Exec["reload_units"], Service["socat_gerrit"]],
   }
 
-  service {'socat':
+  file {'/lib/systemd/system/socat_swarm_p1.service':
+    ensure => file,
+    mode   => '0640',
+    owner  => 'root',
+    group  => 'root',
+    source  => 'puppet:///modules/commonservices-socat/socat_swarm_p1.service',
+    notify  => [Exec["reload_units"], Service["socat_swarm_p1"]],
+  }
+
+  file {'/lib/systemd/system/socat_swarm_p2.service':
+    ensure => file,
+    mode   => '0640',
+    owner  => 'root',
+    group  => 'root',
+    source  => 'puppet:///modules/commonservices-socat/socat_swarm_p2.service',
+    notify  => [Exec["reload_units"], Service["socat_swarm_p2"]],
+  }
+
+  exec {'reload_units':
+    command => 'systemctl daemon-reload',
+    path    => '/usr/sbin/:/usr/bin/:/bin/',
+    refreshonly => true,
+    require => [File['/lib/systemd/system/socat_gerrit.service'],
+                File['/lib/systemd/system/socat_swarm_p1.service'],
+                File['/lib/systemd/system/socat_swarm_p2.service']],
+  }
+
+  service {'socat_gerrit':
     ensure     => running,
     enable     => true,
     hasrestart => true,
     hasstatus  => true,
+    require    => Exec['reload_units'],
+  }
+  service {'socat_swarm_p1':
+    ensure     => running,
+    enable     => true,
+    hasrestart => true,
+    hasstatus  => true,
+    require    => Exec['reload_units'],
+  }
+  service {'socat_swarm_p2':
+    ensure     => running,
+    enable     => true,
+    hasrestart => true,
+    hasstatus  => true,
+    require    => Exec['reload_units'],
   }
 }

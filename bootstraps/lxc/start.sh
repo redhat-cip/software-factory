@@ -32,7 +32,6 @@ CONFDIR=/var/lib/lxc-conf
 
 # Need to be select randomly
 SSHPASS=$(generate_random_pswd 8)
-JENKINS_MASTER_URL=jenkins.${SF_SUFFIX}
 JENKINS_USER_PASSWORD=$(generate_random_pswd 8)
 
 ROLES_DIR=${BUILD_DIR}/install/${SF_VER}/
@@ -56,9 +55,10 @@ function setup_iptables {
     sudo iptables -t nat $switch PREROUTING -p tcp -i eth0 --dport 80 -j DNAT --to-destination 192.168.134.54:80
     # Redirect host incoming TCP/29418 to the sf gateway on 192.168.134.54/29418 (a socat service listens 29418 to redirect internally to the Gerrit service)
     sudo iptables -t nat $switch PREROUTING -p tcp -i eth0 --dport 29418 -j DNAT --to-destination 192.168.134.54:29418
-    # Redirect host incoming TCP/8080 to the sf gateway on 192.168.134.54/8080 (a socat service listens 8080 to redirect internally to the Jenkins service)
-    # TODO: this socat service need to be enabled
+    # Redirect host incoming TCP/8080 and TCP/45452 to the sf gateway on 192.168.134.54 (a socat service listens 8080 and 45452 to redirect internally to the Jenkins service)
+    # This is to allow jenkins swarm (slave) to SF via the gateway
     sudo iptables -t nat $switch PREROUTING -p tcp -i eth0 --dport 8080 -j DNAT --to-destination 192.168.134.54:8080
+    sudo iptables -t nat $switch PREROUTING -p tcp -i eth0 --dport 45452 -j DNAT --to-destination 192.168.134.54:45452
     set -e
 }
 
@@ -76,7 +76,6 @@ function init {
     sed -i "s#SSH_PUBKEY#${SSH_PUBKEY}#g" ${CONFDIR}/sf-lxc.yaml
     sed -i "s#ROLES_DIR#${ROLES_DIR}#g" ${CONFDIR}/sf-lxc.yaml
     # Complete jenkins slave cloudinit
-    sed -i "s/JENKINS_MASTER_URL/${JENKINS_MASTER_URL}/g" ${CONFDIR}/slave.cloudinit
     sed -i "s/JENKINS_USER_PASSWORD/${JENKINS_USER_PASSWORD}/g" ${CONFDIR}/slave.cloudinit
     sed -i "s/JENKINS_IP/${jenkins_ip}/g" ${CONFDIR}/slave.cloudinit
     sed -i "s/MANAGESF_IP/${managesf_ip}/g" ${CONFDIR}/slave.cloudinit

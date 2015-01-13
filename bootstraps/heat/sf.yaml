@@ -15,9 +15,6 @@ parameters:
     type: string
     description: jenkins user password, jenkins slave has to provide this password to connect to master
     default: userpass
-  jenkins_master_url:
-    type: string
-    description: url/hostname(without http://) of jenkins master node to which slave connects
   sf_config_content:
     type: string
     description: Base64 yaml configuration file for SoftwareFactory
@@ -138,6 +135,20 @@ resources:
          port_range_max: 80},
         ]
 
+  sf_ext_secgroup_swarm_slave:
+    type: OS::Neutron::SecurityGroup
+    properties:
+      rules: [
+        {remote_ip_prefix: { get_param: sg_user_cidr },
+         protocol: tcp,
+         port_range_min: 8080,
+         port_range_max: 8080},
+        {remote_ip_prefix: { get_param: sg_user_cidr },
+         protocol: tcp,
+         port_range_min: 45452,
+         port_range_max: 45452},
+        ]
+
   sf_ext_secgroup_gerrit_ssh:
     type: OS::Neutron::SecurityGroup
     properties:
@@ -187,6 +198,7 @@ resources:
       network_id: { get_resource: sf_net }
       security_groups: [ { get_resource: sf_ext_secgroup_gerrit_ssh },
                          { get_resource: sf_ext_secgroup_http },
+                         { get_resource: sf_ext_secgroup_swarm_slave },
                          { get_resource: sf_int_secgroup_default },
                          ]
 
@@ -555,7 +567,7 @@ resources:
               permissions: '0640'
               path: /lib/systemd/system/swarm.service
             - content: |
-                MASTER=http://JENKINS_MASTER_URL:8080/jenkins/
+                MASTER=http://SF_SUFFIX:8080/jenkins/
                 USERNAME=jenkins
                 PASSWORD=JENKINS_USER_PASSWORD
                 NAME=slave.SF_SUFFIX
@@ -566,7 +578,6 @@ resources:
              - mkdir -p /var/log/edeploy
              - echo "PROFILE=none" >> /var/log/edeploy/vars
              - echo "127.0.1.1 slave.SF_SUFFIX slave" >> /etc/hosts
-             - echo "JENKINS_IP jenkins.SF_SUFFIX jenkins" >> /etc/hosts
              - echo "MANAGESF_IP managesf.SF_SUFFIX SF_SUFFIX" >> /etc/hosts
              - echo "root:SSHPASS" | chpasswd
              - chown -R jenkins /var/lib/jenkins
@@ -576,9 +587,7 @@ resources:
              - systemctl start swarm.service
           params:
             SF_SUFFIX: { get_param: suffix }
-            JENKINS_MASTER_URL: { get_param: jenkins_master_url }
             JENKINS_USER_PASSWORD: { get_param: jenkins_user_pwd }
-            JENKINS_IP: { get_attr: [jenkins_instance, first_address] }
             MANAGESF_IP: { get_attr: [managesf_instance, first_address] }
 
 

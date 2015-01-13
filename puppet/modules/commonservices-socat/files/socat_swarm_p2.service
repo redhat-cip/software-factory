@@ -1,0 +1,10 @@
+[Unit]
+Description=Socat for redirect 45452 to jenkins node.
+After=syslog.target network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/socat TCP4-LISTEN:45452,fork TCP4:jenkins:45452
+
+[Install]
+WantedBy=multi-user.target

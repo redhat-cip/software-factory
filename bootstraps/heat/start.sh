@@ -24,7 +24,6 @@ suffix=$DOMAIN
 }
 
 jenkins_user_pwd=$(generate_random_pswd 8)
-jenkins_master_url="jenkins.$suffix"
 
 params="key_name=$key_name;suffix=$suffix"
 
@@ -44,9 +43,32 @@ params="$params;redmine_root_size=$redmine_root_size"
 params="$params;jenkins_root_size=$jenkins_root_size"
 params="$params;slave_root_size=$slave_root_size"
 
-params="$params;jenkins_user_pwd=$jenkins_user_pwd;jenkins_master_url=$jenkins_master_url"
+params="$params;jenkins_user_pwd=$jenkins_user_pwd"
 params="$params;sg_admin_cidr=$sg_admin_cidr;sg_user_cidr=$sg_user_cidr"
 params="$params;ext_net_uuid=$ext_net_uuid"
+
+function waiting_stack_deleted {
+    wait_for_statement "heat stack-show ${STACKNAME} &> /dev/null" 1
+}
+
+function wait_for_statement {
+    local STATEMENT=$1
+    local EXPECT_RETURN_CODE=${2-0}
+    local MAX_RETRY=${3-40}
+    local SLEEP_TIME=${4-5}
+    while true; do
+        eval "${STATEMENT}" &> /dev/null
+        if [ "$?" == "${EXPECT_RETURN_CODE}" ]; then
+            break
+        fi
+        sleep ${SLEEP_TIME}
+        let MAX_RETRY=MAX_RETRY-1
+        if [ "${MAX_RETRY}" == 0 ]; then
+            echo "Following statement didn't happen: [$STATEMENT]"
+            return 1
+        fi
+    done
+}
 
 function get_params {
     puppetmaster_image_id=`glance image-show ${STACKNAME}_install-server-vm | grep "^| id" | awk '{print $4}'`
@@ -110,26 +132,28 @@ function start_stack {
 }
 
 function delete_stack {
-    heat stack-delete $STACKNAME
+    heat stack-delete ${STACKNAME} || true
+    waiting_stack_deleted || {
+        # Sometime delete failed and needs to be retriggered...
+        heat stack-delete ${STACKNAME} || true
+        waiting_stack_deleted || {
+            echo "After 2 attempts the stack has not been deleted ! so exit !"
+            exit 1
+        }
+    }
 }
 
 function restart_stack {
-    set +e
     delete_stack
-    while true; do
-        heat stack-list | grep "$STACKNAME"
-        [ "$?" != "0" ] && break
-        sleep 2
-    done
-    set -e
     start_stack
 }
 
 function full_restart_stack {
+    delete_stack
     unregister_images
     sleep 10
     register_images
-    restart_stack
+    start_stack
 }
 
 [ -z "$1" ] && {
