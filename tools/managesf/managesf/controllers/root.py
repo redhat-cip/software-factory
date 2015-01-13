@@ -224,6 +224,9 @@ class ProjectController(RestController):
 
     @expose()
     def delete(self, name=None):
+        if name == 'config':
+            response.status = 400
+            return "Deletion of config project denied"
         if not name:
             abort(400)
         try:

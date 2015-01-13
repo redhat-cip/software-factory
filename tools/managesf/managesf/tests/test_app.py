@@ -108,6 +108,9 @@ class TestManageSFAppProjectController(FunctionalTest):
         # Delete a project with no name
         response = self.app.delete('/project/', status="*")
         self.assertEqual(response.status_int, 400)
+        # Deletion of config project is not possible
+        response = self.app.delete('/project/config', status="*")
+        self.assertEqual(response.status_int, 400)
         # Delete a project with name
         ctx = [patch('managesf.controllers.gerrit.delete_project'),
                patch('managesf.controllers.redminec.delete_project')]

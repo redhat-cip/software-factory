@@ -78,17 +78,19 @@ function mainController($scope, $http) {
     };
 
     $scope.deleteProject = function(name) {
-        $scope.errors = false;
-        $scope.loading = true;
-        $http.delete('/manage/project/' + name)
-            .success(function(data) {
-                $scope.data = {};
-                get_projects();
-            })
-            .error(function(data) {
-            $scope.errors = data;
-            }).finally(function () {
-                $scope.loading = false;
-            });
-    };
+        if (window.confirm('Delete project ' + name + '?') ) {
+            $scope.errors = false;
+            $scope.loading = true;
+            $http.delete('/manage/project/' + name)
+                .success(function(data) {
+                    $scope.data = {};
+                    get_projects();
+                })
+                .error(function(data) {
+                $scope.errors = data;
+                }).finally(function () {
+                    $scope.loading = false;
+                });
+        };
+    }
 }
