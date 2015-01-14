@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2014 eNovance SAS <licensing@enovance.com>
+# Copyright (C) 2015 eNovance SAS <licensing@enovance.com>
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -12,31 +12,19 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-#
-require 'spec_helper'
 
-describe user('etherpad') do
-    it {
-        should exist 
-    }
-end
+class https_cert () {
+  file {'gateway_cert':
+    path  => '/etc/pki/ca-trust/source/anchors/gateway.crt',
+    ensure => file,
+    mode   => '0644',
+    source  => 'puppet:///modules/https_cert/gateway.crt',
+  }
 
-describe port(9001) do
-  it { should be_listening }
-end
+  exec {'update-ca-trust':
+    command => 'update-ca-trust',
+    path    => '/usr/bin/:/bin/:/usr/local/bin',
+    require => File['gateway_cert'],
+  }
 
-describe port(80) do
-  it { should be_listening }
-end
-
-describe port(443) do
-  it { should be_listening }
-end
-
-describe port(5000) do
-  it { should be_listening }
-end
-
-describe file('/var/www/index.html.tmpl') do
-  it { should contain "<title>Software Factory (#{property[:sfversion]})</title>" }
-end
+}

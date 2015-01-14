@@ -13,6 +13,7 @@ node base {
   if $virtual != 'lxc' {
     include ntpserver
   }
+  include https_cert
 }
 
 node default inherits base {

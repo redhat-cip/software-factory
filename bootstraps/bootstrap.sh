@@ -35,6 +35,10 @@ if [ ! -e "${BUILD}/hiera/sfcreds.yaml" ]; then
     generate_creds_yaml
 fi
 
+if [ ! -e "${BUILD}/data/gateway.key" ]; then
+    generate_apache_cert
+fi
+
 # Move site specific file to puppet/modules/*/files/
 prepare_etc_puppet
 # Wait for all node SSH service to be up

@@ -1,4 +1,3 @@
-<VirtualHost *:80>
     <IfModule mod_proxy.c>
         ProxyVia On
         ProxyRequests Off
@@ -66,5 +65,3 @@
         TKTAuthDebug 1
         require valid-user
     </LocationMatch>
-
-</VirtualHost>
