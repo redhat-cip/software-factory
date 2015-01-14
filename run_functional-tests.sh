@@ -115,7 +115,7 @@ if [ "$1" == "upgrade" ]; then
     ) || pre_fail "Ansible provision playbook FAILED"
     checkpoint "sf is ready to be updated"
     # Start the upgrade
-    ssh -o StrictHostKeyChecking=no root@`get_ip puppetmaster` "cd /srv/software-factory/ && ./upgrade.sh 0.9.4 true" || pre_fail "Upgrade FAILED"
+    ssh -o StrictHostKeyChecking=no root@`get_ip puppetmaster` "cd /srv/software-factory/ && ./upgrade.sh ${SF_REL} true" || pre_fail "Upgrade FAILED"
     checkpoint "upgrade"
     # Run basic tests
     run_serverspec || pre_fail "Serverspec failed"

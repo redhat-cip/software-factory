@@ -8,3 +8,6 @@
 
 [jenkins]
 192.168.134.53 ansible_ssh_user=root
+
+[managesf]
+192.168.134.54 ansible_ssh_user=root

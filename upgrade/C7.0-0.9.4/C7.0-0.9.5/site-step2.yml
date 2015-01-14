@@ -18,3 +18,8 @@
   gather_facts: no
   tasks:
   - include: tasks/submitconfigreview.yml
+- hosts: managesf
+  gather_facts: no
+  tasks:
+  - name: Restart socat
+    service: name=socat_swarm_p1 state=started
