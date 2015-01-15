@@ -1,0 +1,6 @@
+../pysflib
+nose
+mock
+requests>=2.4.1
+testfixtures
+python-redmine

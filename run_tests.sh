@@ -50,4 +50,10 @@ echo "~~~~~~~~~~~~~~"
 MANAGESF_ERRORS=$?
 echo
 
-exit $[${FLAKE8_ERRORS} + ${BASH8_ERRORS} + ${PYSFLIB_ERRORS} + ${CAUTH_ERRORS} + ${MANAGESF_ERRORS}];
+echo "sfmigration tests"
+echo "~~~~~~~~~~~~~~~~~"
+(cd tools/sfmigration; rm -Rf .tox; tox)
+SFMIGRATION_ERRORS=$?
+echo
+
+exit $[${FLAKE8_ERRORS} + ${BASH8_ERRORS} + ${PYSFLIB_ERRORS} + ${CAUTH_ERRORS} + ${MANAGESF_ERRORS} + ${SFMIGRATION_ERRORS}];
