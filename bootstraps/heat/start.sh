@@ -46,6 +46,7 @@ params="$params;slave_root_size=$slave_root_size"
 params="$params;jenkins_user_pwd=$jenkins_user_pwd"
 params="$params;sg_admin_cidr=$sg_admin_cidr;sg_user_cidr=$sg_user_cidr"
 params="$params;ext_net_uuid=$ext_net_uuid"
+params="$params;nameserver=$nameserver"
 
 function waiting_stack_deleted {
     wait_for_statement "heat stack-show ${STACKNAME} &> /dev/null" 1

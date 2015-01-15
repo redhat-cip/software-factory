@@ -27,3 +27,6 @@ sg_admin_cidr="0.0.0.0/0"
 
 # Network from ALL SF services are accessible
 sg_user_cidr="0.0.0.0/0"
+
+# Namserver used by all VMs
+nameserver="8.8.8.8"

@@ -70,6 +70,10 @@ parameters:
     type: string
     description: Glance image ID for all the other sf nodes
 
+  nameserver:
+    type: string
+    description: The nameserver IP used by VMs
+    default: 8.8.8.8
   ext_net_uuid:
     type: string
     description: The UUID of the external net
@@ -92,6 +96,7 @@ resources:
       network_id: { get_resource: sf_net }
       cidr: 192.168.0.0/24
       enable_dhcp: true
+      dns_nameservers: [ { get_param: nameserver }, ]
 
   ssh_password:
     type: OS::Heat::RandomString
