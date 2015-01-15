@@ -175,8 +175,20 @@ allow to allocate :
  - 4 Security groups
  - 1 Network
 
-Register your public SSH key to your tenant. And retrieve the UUID of the external network by
-using the following command :
+First you need to source your OpenStack credentials into your shell environment:
+
+.. code-block:: bash
+
+ $ source openrc
+
+Register a public SSH key to your tenant:
+
+.. code-block:: bash
+
+ $ ssh-keygen -t rsa -P "" -f keypair
+ $ nova keypair-add --pub-key keypair.pub keypair
+
+Retrieve the UUID of the external network by using the following command :
 
 .. code-block:: bash
 
@@ -185,33 +197,27 @@ using the following command :
 Now you will need to adapt the sfconfig.yaml according to your needs "bootstrap/sfconfig.yaml".
 Please read the explanations in the config file.
 
-You will also need to configure some deployment details on top of the start.sh script
-"bootstraps/heat/start.sh".
+You also need to change "bootstrap/heat/conf" file according the comments.
 
-  - key_name : The name of public SSH key you just have registered
-  - flavor : This is the default flavor to use. Be careful of your quotas.
-  - alt_flavor : This flavor is used to host node that need more resources like Gerrit
-    and Redmine.
-  - ext_net_uuid : The UUID you have retrieved with the previous command.
-  - sg_admin_cidr : The source network from where you can SSH to all SF nodes.
-  - sg_user_cidr : The source network from where users can access SF services.
-
-Assuming you have already built the SF role images, you will be able to deploy the SF. You just
-need to source your OpenStack credentials into your shell environment:
-
-.. code-block:: bash
-
- $ source openrc
+Assuming you have already built or fetch the SF role images, you will be now able
+to deploy your Software Factory.
 
 .. code-block:: bash
 
  $ cd bootstraps/heat/
- $ FROMUPSTREAM=1 ./start.sh full_restart_stack
+ $ FORMAT=raw FROMUPSTREAM=1 ./start.sh full_restart_stack
 
 The start.sh script will take care of uploading role images to Glance and then
 call heat stack-create. You have to wait a couple of minutes for the stack to
 be created. Note the **FROMUPSTREAM** variable set to something to use upstream
-images. If you want to use your modified images call **start.sh** without this
+images.
+
+**FORMAT=raw** can be used in order to force the **start.sh** script to
+convert the qcow2 images to raw format. This can be useful if the Cinder
+backend of the underlying cloud is based on Ceph. Indeed this make the convertion
+on your side and not rely on the cloud (compute nodes) to make it.
+
+If you want to use your modified images call **start.sh** without this
 environment variable. You can check the progress using the following command:
 
 .. code-block:: bash
@@ -415,8 +421,15 @@ You have to register your SF deployment in Github to enable Github
 authentication.
 
 #. Login to your Github account, go to Settings -> Applications -> "Register new application"
-#. Fill in the details and be careful when setting the authorization URL. It will look like this: http://yourdomain/auth/login/github/callback
+#. Fill in the details and be careful when setting the authorization URL. It will look
+   like this: http://yourdomain/auth/login/github/callback
 #. Set the corresponding values in bootstrap/sfconfig.yaml:
-    - github_app_id: "Client ID"
-    - github_app_secret: "Client Secret"
-    - github_allowed_organization: comma-separated list of organizations that are allowed to access this SF deployment. A user has to be member of at least one of this organizations to use this SF deployment. Leave empty if not required.
+
+.. code-block:: none
+
+ github_app_id: "Client ID"
+ github_app_secret: "Client Secret"
+ github_allowed_organization: comma-separated list of organizations that are allowed to access this SF deployment.
+
+Note that a user has to be member of at least one of this organizations to use this SF deployment.
+Leave empty if not required.
