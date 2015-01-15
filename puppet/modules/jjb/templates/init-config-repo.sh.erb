@@ -19,11 +19,11 @@ set -e
 
 [ "$1" = "upgrade" ] && upgrade=true || upgrade=false
 
-gerrit_host=<%= scope.function_hiera(["gerrit_url"]) %>
+gerrit_host=<%= scope.function_hiera(["gerrit_host"]) %>
 gerrit_ssh_port=<%= @gerrit['gerrit_sshd_port'] %>
 gh="$gerrit_host:$gerrit_ssh_port"
 
-gateway="<%= scope.function_hiera(["http_gateway_host"]) %>"
+gateway="<%= scope.function_hiera(["gateway_url"]) %>"
 
 admin="<%= @gerrit['gerrit_admin_username'] %>"
 admin_http_password="<%= @gerrit['gerrit_admin_password'] %>"
@@ -37,14 +37,14 @@ jenkins_kick_script="/usr/local/jenkins/slave_scripts/kick.sh"
 if [ "$upgrade" = "false" ]; then
     # Create config project (managesf must be up)
     if [ ! -f '/usr/share/config.init.done' ]; then
-        sf-manage --host $gateway --auth $auth create --name config --description "Config repository (Do not delete it)"
-        sf-manage --host $gateway --auth $auth replication_config add --section mysql_config projects config
-        sf-manage --host $gateway --auth $auth replication_config add --section mysql_config url gerrit@$gateway:/home/gerrit/site_path/git/\${name}.git
-        sf-manage --host $gateway --auth $auth replication_config add --section mysql_config push +refs/heads/*:refs/heads/*
-        sf-manage --host $gateway --auth $auth replication_config add --section mysql_config push +refs/tags/*:refs/tags/*
+        sf-manage --url $gateway --auth $auth create --name config --description "Config repository (Do not delete it)"
+        sf-manage --url $gateway --auth $auth replication_config add --section mysql_config projects config
+        sf-manage --url $gateway --auth $auth replication_config add --section mysql_config url gerrit@$gateway:/home/gerrit/site_path/git/\${name}.git
+        sf-manage --url $gateway --auth $auth replication_config add --section mysql_config push +refs/heads/*:refs/heads/*
+        sf-manage --url $gateway --auth $auth replication_config add --section mysql_config push +refs/tags/*:refs/tags/*
         # wait for 10 seconds so that replication plugin reloading will be finished
         sleep 10
-        sf-manage --host $gateway --auth $auth trigger_replication --project config
+        sf-manage --url $gateway --auth $auth trigger_replication --project config
         touch /usr/share/config.init.done
     fi
 fi

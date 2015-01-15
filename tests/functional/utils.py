@@ -73,7 +73,7 @@ def copytree(src, dst, symlinks=False, ignore=None):
 
 
 def get_cookie(username, password):
-    url = "http://%(auth_url)s/auth/login" % {'auth_url': config.GATEWAY_HOST}
+    url = "%(auth_url)s/auth/login" % {'auth_url': config.GATEWAY_URL}
     resp = requests.post(url, params={'username': username,
                                       'password': password,
                                       'back': '/'},
@@ -108,15 +108,12 @@ class Tool:
 
 
 class ManageSfUtils(Tool):
-    def __init__(self, host, port=80):
+    def __init__(self, url):
         Tool.__init__(self)
-        self.host = host
-        self.port = port
         self.install_dir = os.path.join(config.SF_ROOT,
                                         "tools/managesf/cli")
-        self.base_cmd = "python sf-manage.py --host %s --auth-server " \
-            "%s --port %s --auth %%s:%%s " % \
-            (self.host, config.GATEWAY_HOST, self.port)
+        self.base_cmd = "python sf-manage.py --url %s --auth-server-url " \
+            "%s --auth %%s:%%s " % (url, config.GATEWAY_URL)
 
     def createProject(self, name, user, options=None, cookie=None):
         passwd = config.USERS[user]['password']

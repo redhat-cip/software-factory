@@ -44,7 +44,7 @@ class TestGerrit(Base):
         self.projects = []
         self.clone_dirs = []
         self.dirs_to_delete = []
-        self.msu = ManageSfUtils(config.GATEWAY_HOST, 80)
+        self.msu = ManageSfUtils(config.GATEWAY_URL)
 
     def tearDown(self):
         for name in self.projects:

@@ -1,6 +1,6 @@
 jenkins:
-  gerrit_url: "http://%{hiera('gerrit_url')}"
-  gerrit_hostname: "%{hiera('gerrit_url')}"
+  gerrit_url: "%{hiera('gerrit_url')}"
+  gerrit_host: "%{hiera('gerrit_host')}"
   gerrit_username: jenkins
   jenkins_username: jenkins
   ldap_uri: "ldap://%{hiera('ldap_url')}"

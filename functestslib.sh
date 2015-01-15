@@ -6,7 +6,7 @@ export SF_SUFFIX=${SF_SUFFIX:-tests.dom}
 export SKIP_CLEAN_ROLES="y"
 export EDEPLOY_ROLES=/var/lib/sf/roles/
 
-MANAGESF_HOST=managesf.${SF_SUFFIX}
+MANAGESF_URL=http://managesf.${SF_SUFFIX}
 hostname | grep -q sfstack && JENKINS_IP=$(hostname | sed -e 's/sfstack-[^-]*-//' -e 's/-/./g') || JENKINS_IP=localhost
 JENKINS_URL="http://${JENKINS_IP}:8081/"
 
@@ -309,10 +309,10 @@ function run_backup_restore_tests {
         # Start the provisioner
         ./tools/provisioner_checker/run.sh provisioner
         # Create a backup
-        ssh -o StrictHostKeyChecking=no root@`get_ip puppetmaster` "cd puppet-bootstrapper/tools/managesf/cli; python sf-manage.py --host ${MANAGESF_HOST} --auth-server ${MANAGESF_HOST} --port 80 --auth user1:userpass backup_start"
+        ssh -o StrictHostKeyChecking=no root@`get_ip puppetmaster` "cd puppet-bootstrapper/tools/managesf/cli; python sf-manage.py --url ${MANAGESF_URL} --auth-server-url ${MANAGESF_URL} --auth user1:userpass backup_start"
         sleep 10
         # Fetch the backup
-        ssh -o StrictHostKeyChecking=no root@`get_ip puppetmaster` "cd puppet-bootstrapper/tools/managesf/cli; python sf-manage.py --host ${MANAGESF_HOST} --auth-server ${MANAGESF_HOST} --port 80 --auth user1:userpass backup_get"
+        ssh -o StrictHostKeyChecking=no root@`get_ip puppetmaster` "cd puppet-bootstrapper/tools/managesf/cli; python sf-manage.py --url ${MANAGESF_URL} --auth-server-url ${MANAGESF_URL} --auth user1:userpass backup_get"
         scp -o  StrictHostKeyChecking=no root@`get_ip puppetmaster`:/root/puppet-bootstrapper/tools/managesf/cli/sf_backup.tar.gz /tmp
         # We assume if we cannot move the backup file
         # we need to stop right now
@@ -325,7 +325,7 @@ function run_backup_restore_tests {
         run_serverspec || pre_fail "Serverspec failed"
         # Restore backup
         scp -o  StrictHostKeyChecking=no /tmp/sf_backup.tar.gz root@`get_ip puppetmaster`:/root/puppet-bootstrapper/tools/managesf/cli/
-        ssh -o StrictHostKeyChecking=no root@`get_ip puppetmaster` "cd puppet-bootstrapper/tools/managesf/cli; python sf-manage.py --host ${MANAGESF_HOST} --auth-server ${MANAGESF_HOST} --port 80 --auth user1:userpass restore --filename sf_backup.tar.gz"
+        ssh -o StrictHostKeyChecking=no root@`get_ip puppetmaster` "cd puppet-bootstrapper/tools/managesf/cli; python sf-manage.py --url ${MANAGESF_URL} --auth-server-url ${MANAGESF_URL} --auth user1:userpass restore --filename sf_backup.tar.gz"
         # Start the checker
         sleep 60
         ./tools/provisioner_checker/run.sh checker

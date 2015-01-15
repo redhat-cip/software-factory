@@ -25,7 +25,7 @@ logger = logging.getLogger(__name__)
 
 
 def get_client():
-    return RedmineUtils('http://%s' % conf.redmine['host'],
+    return RedmineUtils(conf.redmine['url'],
                         key=conf.redmine['api_key'])
 
 

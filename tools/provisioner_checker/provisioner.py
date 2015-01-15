@@ -46,7 +46,7 @@ class SFProvisioner(object):
             self.resources = yaml.load(rsc)
         config.USERS[config.ADMIN_USER]['auth_cookie'] = get_cookie(
             config.ADMIN_USER, config.USERS[config.ADMIN_USER]['password'])
-        self.msu = ManageSfUtils(config.GATEWAY_HOST, 80)
+        self.msu = ManageSfUtils(config.GATEWAY_URL)
         self.ggu = GerritGitUtils(config.ADMIN_USER,
                                   config.ADMIN_PRIV_KEY_PATH,
                                   config.USERS[config.ADMIN_USER]['email'])

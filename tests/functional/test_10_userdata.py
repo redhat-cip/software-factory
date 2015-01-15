@@ -26,7 +26,7 @@ from pysflib.sfgerrit import GerritUtils
 class TestUserdata(Base):
     @classmethod
     def setUpClass(cls):
-        cls.msu = ManageSfUtils(config.GATEWAY_HOST, 80)
+        cls.msu = ManageSfUtils(config.GATEWAY_URL)
 
     @classmethod
     def tearDownClass(cls):

@@ -52,7 +52,7 @@ def get_client(cookie=None):
             globals()['ADMIN_COOKIE_DATE'] = int(time.time())
         else:
             cookie = globals()['ADMIN_COOKIE']
-    return GerritUtils('http://%s' % conf.gerrit['host'],
+    return GerritUtils(conf.gerrit['url'],
                        auth_cookie=cookie)
 
 

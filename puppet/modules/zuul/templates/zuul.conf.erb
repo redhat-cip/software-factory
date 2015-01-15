@@ -6,7 +6,7 @@ start=true
 log_config=/etc/zuul/gearman-logging.conf
 
 [gerrit]
-server=<%= @settings['gerrit_hostname'] %>
+server=<%= @settings['gerrit_host'] %>
 # baseurl is only use to fetch git refs on diff url than server.
 # Using baseurl we cannot modify url zuul report to user
 baseurl=http://<%= scope.function_hiera(["top_domain"]) %>/r/

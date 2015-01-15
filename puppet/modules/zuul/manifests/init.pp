@@ -13,7 +13,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-class zuul ($settings = hiera_hash('jenkins', ''), $gh = hiera('gerrit_url'), $hosts = hiera('hosts')){
+class zuul ($settings = hiera_hash('jenkins', ''), $gh = hiera('gerrit_host'), $hosts = hiera('hosts')){
 
   require hosts
 

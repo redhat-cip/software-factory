@@ -76,7 +76,8 @@ admin = {
 
 gerrit = {
     'user': 'gerrit',
-    'host': '<%= scope.function_hiera(["gerrit_url"]) %>',
+    'host': '<%= scope.function_hiera(["gerrit_host"]) %>',
+    'url': '<%= scope.function_hiera(["gerrit_url"]) %>',
     'top_domain': '<%= scope.function_hiera(["top_domain"]) %>',
     'ssh_port': <%= @gerrit['gerrit_sshd_port'] %>,
     'sshkey_priv_path': '/var/www/managesf/gerrit_admin_rsa',
@@ -84,6 +85,7 @@ gerrit = {
 }
 
 redmine = {
-    'host': '<%= scope.function_hiera(["api_redmine_url"]) %>',
+    'host': '<%= scope.function_hiera(["api_redmine_host"]) %>',
+    'url': '<%= scope.function_hiera(["api_redmine_url"]) %>',
     'api_key': '<%= @redmine['issues_tracker_api_key'] %>'
 }

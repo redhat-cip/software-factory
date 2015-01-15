@@ -52,7 +52,7 @@ CLI
 '''
 .. code-block:: bash
 
- $ sf-manage --host <sfgateway.dom> --auth-server <sfgateway.dom> --auth user:password create --name <project-name>
+ $ sf-manage --url <http://sfgateway.dom> --auth-server-url <http://sfgateway.dom> --auth user:password create --name <project-name>
 
 You can use the argument '-h' to the create action to display create options.
 
@@ -89,7 +89,7 @@ CLI
 '''
 .. code-block:: bash
 
- $ sf-manage --host <sfgateway.dom> --auth-server <sfgateway.dom> --auth user:password delete --name <project-name>
+ $ sf-manage --url <http://sfgateway.dom> --auth-server-url <http://sfgateway.dom> --auth user:password delete --name <project-name>
 
 
 Add user to project groups
@@ -139,7 +139,7 @@ CLI
 '''
 .. code-block:: bash
 
- $ sf-manage --host <sfgateway.dom> --auth-server <sfgateway.dom> --auth user:password add_user --name user1 --groups p1-ptl,p1-core
+ $ sf-manage --url <http://sfgateway.dom> --auth-server-url <http://sfgateway.dom> --auth user:password add_user --name user1 --groups p1-ptl,p1-core
 
 You can use the argument '-h' to the create action to display create options.
 
@@ -190,8 +190,8 @@ CLI
 '''
 .. code-block:: bash
 
- $ sf-manage --host <sfgateway.dom> --auth-server <sfgateway.dom> --auth user:password delete_user --name user1 --group p1-ptl
- $ sf-manage --host <sfgateway.dom> --auth-server <sfgateway.dom> --auth user:password delete_user --name user1
+ $ sf-manage --url <http://sfgateway.dom> --auth-server-url <http://sfgateway.dom> --auth user:password delete_user --name user1 --group p1-ptl
+ $ sf-manage --url <http://sfgateway.dom> --auth-server-url <http://sfgateway.dom> --auth user:password delete_user --name user1
 
 You can use the argument '-h' to the create action to display create options.
 
@@ -237,7 +237,7 @@ CLI
 
 .. code-block:: bash
 
- $ sf-manage --host <sfgateway.dom> --auth-server <sfgateway.dom> --auth user:password backup_get
+ $ sf-manage --url <http://sfgateway.dom> --auth-server-url <http://sfgateway.dom> --auth user:password backup_get
 
 A file called "sf_backup.tar.gz" will be create in the local directory.
 
@@ -282,7 +282,7 @@ CLI
 
 .. code-block:: bash
 
- $ sf-manage --host <sfgateway.dom> --auth-server <sfgateway.dom> --auth user:password restore --filename sf_backup.tar.gz
+ $ sf-manage --url <http://sfgateway.dom> --auth-server-url <http://sfgateway.dom> --auth user:password restore --filename sf_backup.tar.gz
 
 .. _CreateProjectInput:
 

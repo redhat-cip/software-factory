@@ -76,7 +76,7 @@ if __name__ == "__main__":
 
     try:
         config = yaml.load(file(HOOKS_CONFIG))
-        redmine_host = 'http://' + config['redmine_host']
+        redmine_url = config['redmine_url']
         redmine_key = config['redmine_key']
     except Exception, err:
         print "Unable to read hooks config file (Missing key ? Bad format ?)"
@@ -101,7 +101,7 @@ if __name__ == "__main__":
                          'url': args.change_url}
 
     # Post message on the Redmine issue
-    redmine_client = RedmineUtils(redmine_host,
+    redmine_client = RedmineUtils(redmine_url,
                                   key=redmine_key)
     if redmine_client.set_issue_status(issue, 2,
                                        message=message):

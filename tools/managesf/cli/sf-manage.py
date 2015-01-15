@@ -34,15 +34,13 @@ def split_and_strip(s):
 
 parser = argparse.ArgumentParser(
     description="Tool to manage project creation and deletion")
-parser.add_argument('--host', metavar='ip-address',
-                    help='Softwarefactory public IP address', required=True)
-parser.add_argument('--port', metavar='port-number',
-                    help="Softwarefactory HTTP port number", default=80)
+parser.add_argument('--url',
+                    help='Softwarefactory public gateway URL', required=True)
 parser.add_argument('--auth', metavar='username[:password]',
                     help='Authentication information', required=True)
-parser.add_argument('--auth-server', metavar='central-auth-server',
+parser.add_argument('--auth-server-url', metavar='central-auth-server',
                     default=None,
-                    help='Hostname of the central auth server')
+                    help='URL of the central auth server')
 parser.add_argument('--cookie', metavar='Authentication cookie',
                     help='cookie of the user if known')
 
@@ -146,9 +144,7 @@ reprm.add_argument('--section',  nargs='?', required=True,
 
 args = parser.parse_args()
 
-base_url = "http://%(host)s:%(port)s/manage" % \
-           {'host': args.host,
-            'port': args.port}
+base_url = "%s/manage" % args.url.rstrip('/')
 
 if args.command in ['delete', 'create']:
     url = base_url + "/project/%s" % args.name
@@ -164,8 +160,8 @@ if args.command == 'delete_user':
     else:
         url = base_url + "/project/membership/%s/%s" % (args.name, args.user)
 
-if args.auth_server is None:
-    args.auth_server = args.host
+if args.auth_server_url is None:
+    args.auth_server_url = args.url
 
 if ":" not in args.auth:
     password = getpass.getpass("%s's password: " % args.auth)
@@ -176,7 +172,7 @@ def get_cookie():
     if args.cookie is not None:
         return args.cookie
     (username, password) = args.auth.split(':')
-    url = 'http://%s/auth/login' % args.auth_server
+    url = '%s/auth/login' % args.auth_server_url.rstrip('/')
     r = requests.post(url,
                       params={'username': username,
                               'password': password,

@@ -13,6 +13,7 @@ for sfconfig_filename in sfconfig_filenames:
 SF_ROOT = path.dirname(path.dirname(path.dirname(path.abspath(__file__))))
 
 GATEWAY_HOST = sfconfig['domain']
+GATEWAY_URL = 'http://%s/' % GATEWAY_HOST
 JENKINS_URL = 'http://%s/jenkins/' % GATEWAY_HOST
 REDMINE_URL = 'http://%s/redmine/' % GATEWAY_HOST
 

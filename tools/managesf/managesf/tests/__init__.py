@@ -24,6 +24,7 @@ class dummy_conf():
     gerrit = {
         'user': 'gerrit',
         'host': 'gerrit.test.dom',
+        'url': 'http://gerrit.tests.dom',
         'top_domain': 'tests.dom',
         'ssh_port': 2929,
         'sshkey_priv_path': tempfile.mkstemp()[1],
@@ -32,6 +33,7 @@ class dummy_conf():
     redmine = {
         'api_key': 'XXX',
         'host': 'redmine.tests.dom',
+        'url': 'http://redmine.tests.dom',
     }
     managesf = {
         'host': 'managesf.tests.dom',

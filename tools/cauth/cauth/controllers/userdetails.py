@@ -26,7 +26,7 @@ logger = logging.getLogger(__name__)
 
 class Gerrit:
     def __init__(self, conf):
-        self.gerrit_url = "http://%s/api/a/accounts" % conf.gerrit['url']
+        self.gerrit_url = "%s/api/a/accounts" % conf.gerrit['url']
         self.admin_user = conf.gerrit['admin_user']
         self.admin_password = conf.gerrit['admin_password']
 
