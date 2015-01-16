@@ -36,15 +36,20 @@ DOMAIN=$(egrep "^domain:" /etc/puppet/hiera/sf/sfconfig.yaml | sed 's/domain://'
 
 # Start the upgrade by jumping in the cloned version and running
 # the ansible playbook.
-cd ${clone_path}/upgrade/${PREVIOUS_SF_VER}/${SF_VER}/
+cd ${clone_path}/upgrade/${PREVIOUS_SF_VER}/${SF_VER}/ || exit -1
 cp group_vars/all.tmpl group_vars/all
 sed -i "s/FROM/${PREVIOUS_SF_VER}/" group_vars/all
 sed -i "s/TO/${SF_VER}/" group_vars/all
 sed -i "s/DOMAIN/${DOMAIN}/" group_vars/all
 sed -i "s|CLONE_PATH|${clone_path}|" group_vars/all
 ansible-playbook -i hosts site-step1.yml
-echo "Ansible return code is : $?"
+STEP1_RETURN_CODE=$?
+echo "Ansible return code is : ${STEP1_RETURN_CODE}"
+[ ${STEP1_RETURN_CODE} != "0" ] && exit -1
 # Ansible package may change during the upgrade (FS rsync) so we do the update in two steps
 ansible-playbook -i hosts site-step2.yml
-echo "Ansible return code is : $?"
-cd -
+STEP2_RETURN_CODE=$?
+echo "Ansible return code is : ${STEP2_RETURN_CODE}"
+[ ${STEP2_RETURN_CODE} != "0" ] && exit -1
+
+exit 0

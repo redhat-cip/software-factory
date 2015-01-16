@@ -34,20 +34,26 @@ mkdir $dlogs
 cp /var/log/sf-bootstrap.log $dlogs/
 
 echo "Checking for edeploy logs ..."
-ls /var/lib/edeploy/
 [ -f /var/lib/edeploy/rsync_*.out ] && edeploy_logs=true || edeploy_logs=false
 
 # Retrieve Syslog
-for role in gerrit redmine jenkins mysql managesf puppetmaster; do
+for role in gerrit redmine jenkins mysql managesf puppetmaster slave; do
     mkdir -p $dlogs/${role}
-    scp root@`getip_from_yaml ${role}`:/var/log/syslog $dlogs/${role} &> /dev/null
-    scp root@`getip_from_yaml ${role}`:/var/log/messages $dlogs/${role} &> /dev/null
+    ip=$(getip_from_yaml ${role})
+    scp root@${ip}:/var/log/syslog $dlogs/${role} &> /dev/null
+    scp root@${ip}:/var/log/messages $dlogs/${role} &> /dev/null
     if [ $edeploy_logs = true ]; then
         mkdir $dlogs/${role}/edeploy
-        scp root@`getip_from_yaml ${role}`:/var/lib/edeploy/rsync_*.out $dlogs/${role}/edeploy &> /dev/null
+        scp root@${ip}:/var/lib/edeploy/rsync_*.out $dlogs/${role}/edeploy &> /dev/null
     fi
-    ssh root@`getip_from_yaml ${role}` "journalctl -la --no-pager > /tmp/syslog"
-    [ "$?" == "0" ]  && scp root@`getip_from_yaml ${role}`:/tmp/syslog $dlogs/${role} &> /dev/null
+    ssh root@${ip} "journalctl -la --no-pager > /tmp/syslog"
+    [ "$?" == "0" ]  && scp root@${ip}:/tmp/syslog $dlogs/${role} &> /dev/null
+    # Check for failed units and retrieve their journal (except for units known to not work)
+    ssh root@${ip} "systemctl | grep failed | grep -v '\(audit\|avahi-daemon\|cloud-config\|kdump\)'" > ${dlogs}/${role}/systemd_failed
+    for unit in $(cat ${dlogs}/${role}/systemd_failed | awk '{ print $1 }'); do
+        echo -e "\n== ${unit} ==" >> ${dlogs}/${role}/systemd_failed
+        ssh root@${ip} "journalctl -u $unit" >> ${dlogs}/${role}/systemd_failed
+    done
 done
 
 # The init option of gerrit.war will rewrite the gerrit config files
@@ -71,6 +77,7 @@ scp -r root@`getip_from_yaml gerrit`:/var/log/httpd/ $dlogs/gerrit/ &> /dev/null
 scp -r root@`getip_from_yaml jenkins`:/var/log/httpd/ $dlogs/jenkins/ &> /dev/null
 scp -r root@`getip_from_yaml jenkins`:/var/log/zuul $dlogs/zuul/ &> /dev/null
 scp -r root@`getip_from_yaml jenkins`:/var/lib/jenkins/jobs/ $dlogs/jenkins/ &> /dev/null
+scp -r root@`getip_from_yaml jenkins`:/var/lib/jenkins/logs/ $dlogs/jenkins/ &> /dev/null
 scp -r root@`getip_from_yaml jenkins`:/root/config/ $dlogs/config-project &> /dev/null
 scp root@`getip_from_yaml puppetmaster`:/tmp/debug $dlogs/puppetmaster/ &> /dev/null
 

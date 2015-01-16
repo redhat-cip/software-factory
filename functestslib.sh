@@ -352,7 +352,7 @@ function checkpoint {
     NOW=$(date '+%s')
     ELAPSED=$(python -c "print('%03.2fmin' % (($NOW - $START) / 60.0))")
     echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
-    echo "$ELAPSED - $* " | sudo tee -a ${ARTIFACTS_DIR}/tests_profiling
+    echo "$ELAPSED - $* ($(date))" | sudo tee -a ${ARTIFACTS_DIR}/tests_profiling
     echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
     START=$(date '+%s')
     [ ${DISABLE_SETX} -eq 0 ] && set -x

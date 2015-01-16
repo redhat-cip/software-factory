@@ -4,7 +4,7 @@ After=syslog.target network.target
 
 [Service]
 Type=simple
-ExecStart=/usr/bin/socat TCP4-LISTEN:29418,fork TCP4:gerrit:29418
+ExecStart=/usr/bin/socat TCP4-LISTEN:29418,fork,reuseaddr TCP4:gerrit:29418
 
 [Install]
 WantedBy=multi-user.target

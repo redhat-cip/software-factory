@@ -121,13 +121,16 @@ function generate_creds_yaml {
 }
 
 function wait_all_nodes {
-
     local port=22
     for role in $ROLES; do
         ip=$(getip_from_yaml $role)
         echo $role $ip
         scan_and_configure_knownhosts "$role" $ip $port
     done
+    # Install ssh key on slave because it's not part of the puppet gang:
+    if [ "$INITIAL" = "yes" ]; then
+        $SSHPASS ssh-copy-id $(getip_from_yaml slave)
+    fi
 }
 
 function scan_and_configure_knownhosts {
@@ -195,6 +198,7 @@ function prepare_etc_puppet {
     echo "sf_version: $(echo ${TMP_VERSION} | cut -d'-' -f2)" > /etc/puppet/hiera/sf/sf_version.yaml
     cp $DATA/service_rsa /etc/puppet/environments/sf/modules/ssh_keys/files/
     cp $DATA/service_rsa /root/.ssh/id_rsa
+    cp $DATA/service_rsa.pub /root/.ssh/id_rsa.pub
     cp $DATA/jenkins_rsa /etc/puppet/environments/sf/modules/jenkins/files/
     cp $DATA/jenkins_rsa /etc/puppet/environments/sf/modules/zuul/files/
     cp $DATA/gerrit_admin_rsa /etc/puppet/environments/sf/modules/jenkins/files/

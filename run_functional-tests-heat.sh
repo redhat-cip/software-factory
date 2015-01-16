@@ -115,7 +115,7 @@ function check_clean_environment {
 
 set -x
 prepare_artifacts
-checkpoint "$(date) - $(hostname)"
+checkpoint "Running heat tests on $(hostname)"
 build_imgs
 checkpoint "build_roles"
 check_keypair

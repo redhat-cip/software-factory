@@ -51,7 +51,7 @@ function lxc_start {
 
 set -x
 prepare_artifacts
-checkpoint "$(date) - $(hostname)"
+checkpoint "Running tests on $(hostname)"
 (cd bootstraps/lxc; ./start.sh destroy &> ${ARTIFACTS_DIR}/lxc-first-clean.output)
 checkpoint "lxc-first-clean"
 build
@@ -122,9 +122,10 @@ if [ "$1" == "upgrade" ]; then
     checkpoint "serverspec new version"
     # Run the checker to validate provisionned data has not been lost
     ./tools/provisioner_checker/run.sh checker || pre_fail "Provisionned data check failed"
+    checkpoint "check provisioner"
     # run functional tests from the puppetmaster
     ssh -o StrictHostKeyChecking=no root@`get_ip puppetmaster` "cd puppet-bootstrapper && nosetests -sv" || pre_fail "Functional tests FAILED after upgrade"
-    checkpoint "check provisioner"
+    checkpoint "functional tests after upgrade"
 fi
 
 DISABLE_SETX=1

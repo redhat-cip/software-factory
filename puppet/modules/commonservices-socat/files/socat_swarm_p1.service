@@ -4,7 +4,7 @@ After=syslog.target network.target
 
 [Service]
 Type=simple
-ExecStart=/usr/bin/socat TCP4-LISTEN:8080,fork TCP4:jenkins:8080
+ExecStart=/usr/bin/socat TCP4-LISTEN:8080,fork,reuseaddr TCP4:jenkins:8080
 
 [Install]
 WantedBy=multi-user.target
