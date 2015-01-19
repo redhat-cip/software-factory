@@ -21,6 +21,7 @@ node default inherits base {
 
 node /.*puppetmaster.*/ inherits base {
   include edeploy_server
+  include auto_backup
 }
 
 node /.*jenkins.*/ inherits base {

@@ -48,3 +48,14 @@ loginpage_custom_footer: ""
 
 # NTP main reference server
 ntp_main_server: pool.ntp.org
+
+# Automatic managesf backup in Swift
+# If one of those values are empty then backup won't happen
+# Auto deletion of old backups older than
+# swift_backup_max_retention_secs seconds
+os_auth_url:
+os_tenant_name:
+os_username:
+os_password:
+swift_backup_container: sfbackups
+swift_backup_max_retention_secs: 864000

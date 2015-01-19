@@ -58,7 +58,7 @@ HOME=/root retry do_chroot ${dir} gem install specinfra -v ${SPECINFRA_VERSION}
 HOME=/root retry do_chroot ${dir} gem install serverspec -v ${SERVERSPEC_VERSION}
 
 # Install the most recent version of PIP at early stage
-retry do_chroot ${dir} pip install -U pip
+retry do_chroot ${dir} pip install -U pip python-swiftclient
 
 # Install puppet files for SF
 do_chroot ${dir} mkdir -p /etc/puppet/environments/sf

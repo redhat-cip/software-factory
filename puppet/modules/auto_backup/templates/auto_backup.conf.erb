@@ -1,0 +1,11 @@
+export HOST="<%= scope.function_hiera(['domain']) %>"
+export ADMIN="<%= scope.function_hiera(['admin_name']) %>"
+export ADMIN_PASSWORD="<%= scope.function_hiera(['admin_password']) %>"
+
+export OS_AUTH_URL="<%= @backup['os_auth_url'] %>"
+export OS_TENANT_NAME="<%= @backup['os_tenant_name'] %>"
+export OS_USERNAME="<%= @backup['os_username'] %>"
+export OS_PASSWORD="<%= @backup['os_password'] %>"
+
+export BACKUP_CONTAINER="<%= @backup['backup_container'] %>"
+export BACKUP_RET="<%= @backup['backup_max_retention_secs'] %>"
