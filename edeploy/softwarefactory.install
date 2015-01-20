@@ -65,12 +65,12 @@ case "$(package_tool)" in
      # Install Redmine
      http_fetch $REDMINE_RHEL_URL ${dir}/usr/share/redmine.tar.gz
      do_chroot ${dir} bash -c "cd /usr/share && tar -xzpf redmine.tar.gz && mv redmine-${REDMINE_VERSION} redmine && chown -R root:root redmine"
-     HOME=/root retry do_chroot ${dir} gem install mysql
-     # We install this fake database file in order to force the bundle to activate the mysql lib
+
+     # We install this fake database file in order to force the bundle to activate the mysql2 lib
      # Redmine puppet manifest will overwrite it
      cat > ${dir}/usr/share/redmine/config/database.yml <<EOF
 production:
-  adapter: mysql
+  adapter: mysql2
   database: redmine
   host: localhost
   username: root
