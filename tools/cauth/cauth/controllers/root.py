@@ -81,10 +81,11 @@ def create_ticket(**kwargs):
 def pre_register_user(username, email=None, lastname=None, keys=None):
     if lastname is None:
         lastname = 'User %s' % username
-    if email is None:
+    if not email:
         email = '%s@%s' % (username, conf.app['cookie_domain'])
 
-    logger.info('Register user details.')
+    logger.info('Register user details for %s (email: %s).'
+                % (username, email))
     udc = userdetails.UserDetailsCreator(conf)
     udc.create_user(username, email, lastname, keys)
 
@@ -119,9 +120,9 @@ class GithubController(object):
         if 'access_token' in jresp:
             return jresp['access_token']
         elif 'error' in jresp:
-            print "An error occured (%s): %s" % (
+            logger.error("An error occured (%s): %s" % (
                 jresp.get('error', None),
-                jresp.get('error_description', None))
+                jresp.get('error_description', None)))
         return None
 
     def organization_allowed(self, login):
@@ -175,7 +176,9 @@ class GithubController(object):
         if not self.organization_allowed(login):
             abort(401)
 
-        logger.info('Client authentication on GITHUB sucsess.')
+        logger.info(
+            'Client (username: %s, email: %s) auth on GITHUB success.'
+            % (login, email))
         setup_response(login, back, email, name, ssh_keys)
 
     @expose()
@@ -251,7 +254,7 @@ class LoginController(RestController):
                     'login.html',
                     dict(back=back, message='Authorization failed.'))
             email, lastname = valid_user
-            logger.error(
+            logger.info(
                 'Client requests authentication via LDAP success (%s).'
                 % username)
             setup_response(username, back, email, lastname)
