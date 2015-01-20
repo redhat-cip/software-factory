@@ -32,10 +32,13 @@ pipelines:
       approval:
         - verified: [1, 2]
           username: jenkins
-          newer-than: 24h
+        - code-review: 2
         - workflow: 1
     trigger:
       gerrit:
+        - event: comment-added
+          approval:
+            - code-review: 2
         - event: comment-added
           approval:
             - workflow: 1
