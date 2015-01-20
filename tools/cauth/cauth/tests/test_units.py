@@ -61,7 +61,7 @@ class dummy_conf():
                     }
         self.auth = {'ldap':
                      {'host': 'ldap://ldap.tests.dom',
-                         'dn': 'cn=%(username)s,ou=Users,dc=example,dc=com',
+                         'dn': 'cn=%(username)s,ou=Users,dc=tests,dc=dom',
                          'sn': 'sn',
                          'mail': 'mail', },
                      'github':
@@ -75,7 +75,7 @@ class dummy_conf():
                          {
                              "user1": {
                                  "lastname": "Demo user1",
-                                 "mail": "user1@example.com",
+                                 "mail": "user1@tests.dom",
                                  "password": crypt.crypt(
                                      "userpass", "$6$EFeaxATWohJ")
                              }
@@ -281,7 +281,7 @@ class TestLoginController(TestCase):
     def test_check_valid_user(self):
         lc = root.LoginController()
         ret = lc.check_valid_user('user1', 'userpass')
-        self.assertIn('user1@example.com', ret)
+        self.assertIn('user1@tests.dom', ret)
         self.assertIn('Demo user1', ret)
         ret = lc.check_valid_user('user1', 'badpass')
         self.assertEqual(None, ret)
@@ -292,7 +292,7 @@ def oauthmock_request(url, request):
     users = {
         "user6": {"login": "user6",
                   "password": "userpass",
-                  "email": "user6@example.com",
+                  "email": "user6@tests.dom",
                   "name": "Demo user6",
                   "ssh_keys": "",
                   "code": "user6_code",
@@ -349,7 +349,7 @@ class TestGithubController(TestCase):
             gc.organization_allowed = lambda login: True
             gc.callback(state='stateXYZ', code='user6_code')
             root.setup_response.assert_called_once_with(
-                'user6', '/r/', 'user6@example.com', 'Demo user6', {'key': ''})
+                'user6', '/r/', 'user6@tests.dom', 'Demo user6', {'key': ''})
 
         with httmock.HTTMock(oauthmock_request):
             db.get_url = Mock(return_value='/r/')

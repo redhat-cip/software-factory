@@ -74,22 +74,22 @@ auth = {
 	<% if scope.function_hiera(["top_domain"]) == "tests.dom" %>
             "user2": {
                 "lastname": "Demo user2",
-                "mail": "user2@example.com",
+                "mail": "user2@tests.dom",
                 "password": "<%= scope.function_hiera(['admin_password_hashed']) %>",
             },
             "user3": {
                 "lastname": "Demo user3",
-                "mail": "user3@example.com",
+                "mail": "user3@tests.dom",
                 "password": "<%= scope.function_hiera(['admin_password_hashed']) %>",
             },
              "user4": {
                 "lastname": "Demo user4",
-                "mail": "user4@example.com",
+                "mail": "user4@tests.dom",
                 "password": "<%= scope.function_hiera(['admin_password_hashed']) %>",
             },
             "user5": {
                 "lastname": "Demo user5",
-                "mail": "user5@example.com",
+                "mail": "user5@tests.dom",
                 "password": "<%= scope.function_hiera(['admin_password_hashed']) %>",
             }
         <% end %>
