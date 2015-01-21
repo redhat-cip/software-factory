@@ -185,6 +185,52 @@ merged together. zuul-merger avoids this by merging several patches during testi
 
 .. graphviz:: zuul.dot
 
+Setup a Jenkins slave
+---------------------
+
+If you need to setup one or more Jenkins slaves, you can follow the process below:
+
+To substitute:
+
+ - <gateway>: The same name you access the SF Web user interface.
+ - <password>: The password of the Jenkins user.
+
+.. code-block:: bash
+
+ $ # Add the jenkins user
+ $ sudo adduser --disabled-password --home /var/lib/jenkins jenkins
+ $ # You can setup sudo for the jenkins user in order to have the possibility
+ $ # to run command via sudo in your tests.
+ $ sudo -i
+ $ cat << EOF > /etc/sudoers.d/jenkins
+   Defaults   !requiretty
+   jenkins    ALL = NOPASSWD:ALL
+   EOF
+ $ chmod 0440 /etc/sudoers.d/jenkins
+ $ exit
+ $ # Download and start the swarm client
+ $ sudo -u jenkins curl -o /var/lib/jenkins/swarm-client-1.22-jar-with-dependencies.jar \
+    http://maven.jenkins-ci.org/content/repositories/releases/org/jenkins-ci/plugins/\
+    swarm-client/1.22/swarm-client-1.22-jar-with-dependencies.jar
+ $ sudo -u jenkins bash
+ $ /usr/bin/java -Xmx256m -jar /var/lib/jenkins/swarm-client-1.22-jar-with-dependencies.jar \
+   -fsroot /var/lib/jenkins -master http://<gateway>:8080/jenkins -username jenkins -password \
+   <password> -name slave1 &> /var/lib/jenkins/swarm.log &
+
+
+You should check the swarm.log file to verify the slave is well connected to the jenkins master. You can
+also check the Jenkins Web UI in order to verify the slave is listed in the slave list.
+
+Then you can customize the slave node according to your needs to install components
+required to run your tests.
+
+Note: The Jenkins user password can be fetched from the file sfcrefs.yaml on the
+puppetmaster node.
+
+.. code-block:: bash
+
+ $ grep creds_jenkins_user_password puppet-bootstrapper/build/hiera/sfcreds.yaml
+
 Useful commands
 ---------------
 
