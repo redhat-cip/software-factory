@@ -116,7 +116,7 @@ do_chroot ${dir} rm /tmp/bootstrap.zip
 # Font Awesome - http://fortawesome.github.io/Font-Awesome/
 http_fetch $FONTAWESOME_URL ${dir}/tmp/font-awesome.zip
 do_chroot ${dir} unzip -q -o /tmp/font-awesome.zip -d /var/www/static/
-do_chroot ${dir} mv /var/www/static/font-awesome-${FONTAWESOME_VERSION} /var/www/static/font-awesome
+do_chroot ${dir} mv /var/www/static/Font-Awesome-${FONTAWESOME_VERSION} /var/www/static/font-awesome
 do_chroot ${dir} rm /tmp/font-awesome.zip
 
 do_chroot ${dir} mkdir /var/www/static/js
