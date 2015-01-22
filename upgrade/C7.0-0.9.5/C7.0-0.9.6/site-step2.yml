@@ -7,19 +7,14 @@
   gather_facts: no
   tasks:
   - name: Reinit the puppetmaster configuration
-    shell: INITIAL=no ./config_puppetmaster.sh
+    shell: INITIAL=no ./config_puppetmaster.sh >> /var/log/sf-bootstrap.log
     args:
       chdir: /root/puppet-bootstrapper
   - name: Restart the bootstrap script
-    shell: INITIAL=no HOME=/root/ SFSUFFIX={{ domain }} ./bootstrap.sh
+    shell: INITIAL=no HOME=/root/ SFSUFFIX={{ domain }} ./bootstrap.sh >> /var/log/sf-bootstrap.log
     args:
       chdir: /root/puppet-bootstrapper
 - hosts: jenkins
   gather_facts: no
   tasks:
   - include: tasks/submitconfigreview.yml
-- hosts: managesf
-  gather_facts: no
-  tasks:
-  - name: Restart socat
-    service: name=socat_swarm_p1 state=started

@@ -1,6 +1,8 @@
 # Change Log
 
-## 0.9.5 [unreleased]
+## 0.9.6 [unreleased]
+
+## 0.9.5 2015-02-03
 
 ### Fixed
 
