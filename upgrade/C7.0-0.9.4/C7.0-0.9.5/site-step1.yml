@@ -1,4 +1,9 @@
 ---
+- hosts: puppetmaster
+  gather_facts: no
+  tasks:
+  - include: tasks/fetchupstream.yml
+  - include: tasks/edeployserver.yml
 - hosts: services
   gather_facts: no
   tasks:
@@ -10,6 +15,4 @@
   - include: tasks/puppetagentstop.yml
   - name: Stop puppet server
     service: name=httpd state=stopped
-  - include: tasks/fetchupstream.yml
-  - include: tasks/edeployserver.yml
   - include: tasks/edeploysync.yml
