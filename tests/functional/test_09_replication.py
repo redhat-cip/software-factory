@@ -26,7 +26,7 @@ from utils import set_private_key
 from utils import ManageSfUtils
 from utils import GerritGitUtils
 from utils import Tool
-from subprocess import Popen, PIPE
+from subprocess import Popen, PIPE, call
 
 from pysflib.sfgerrit import GerritUtils
 
@@ -34,15 +34,8 @@ from pysflib.sfgerrit import GerritUtils
 class TestProjectReplication(Base):
     """ Functional tests to verify the gerrit replication feature
     """
-    @classmethod
-    def setUpClass(cls):
-        cls.msu = ManageSfUtils(config.GATEWAY_URL)
-
-    @classmethod
-    def tearDownClass(cls):
-        pass
-
     def setUp(self):
+        self.msu = ManageSfUtils(config.GATEWAY_URL)
         self.un = config.ADMIN_USER
         self.gu = GerritUtils(
             'http://%s/' % config.GATEWAY_HOST,
@@ -56,9 +49,8 @@ class TestProjectReplication(Base):
                                          priv_key_path,
                                          config.USERS[self.un]['email'])
         # Configuration to access mirror repo present in mysql
-        un = config.GERRIT_USER
         self.msql_repo_path = "ssh://%s@%s/%s" \
-                              % (un, config.GATEWAY_HOST,
+                              % (config.GERRIT_USER, config.GATEWAY_HOST,
                                  '/home/gerrit/site_path/git/')
         # prepare environment for git clone on mirror repo
         self.mt = Tool()
@@ -73,6 +65,13 @@ class TestProjectReplication(Base):
         file(wrapper_path, 'w').write(ssh_wrapper)
         os.chmod(wrapper_path, stat.S_IRWXU)
         self.mt.env['GIT_SSH'] = wrapper_path
+        self.pname = 'test-replication'
+
+    def tearDown(self):
+        self.deleteConfigSection(self.un, self.pname)
+        self.deleteMirrorRepo(self.pname)
+        self.msu.deleteProject(self.pname, self.un)
+        self.gu2.del_pubkey(self.k_idx)
 
     # Can't use GerritGitUtils.clone as not sure when source uri repo in mysql
     # be ready.(i.e gerrit is taking time to create the mirror repo in mysql
@@ -84,9 +83,6 @@ class TestProjectReplication(Base):
         self.mt.exe(cmd, self.mt_tempdir)
         clone = os.path.join(self.mt_tempdir, target)
         return clone
-
-    def tearDown(self):
-        self.gu2.del_pubkey(self.k_idx)
 
     def create_project(self, name, user,
                        options=None):
@@ -159,33 +155,33 @@ class TestProjectReplication(Base):
     def test_replication(self):
         """ Test gerrit replication for review process
         """
-        pname = 'test-replication'
-        un = config.ADMIN_USER
         # Be sure the project, mirror repo, project in config don't exist
-        self.deleteMirrorRepo(pname)
-        self.deleteConfigSection(un, pname)
-        self.msu.deleteProject(pname,
-                               config.ADMIN_USER)
+        self.deleteMirrorRepo(self.pname)
+        self.deleteConfigSection(self.un, self.pname)
+        self.msu.deleteProject(self.pname, self.un)
 
         # Create the project
-        self.create_project(pname, config.ADMIN_USER)
+        self.create_project(self.pname, self.un)
 
         # Create new section for this project in replication.config
-        self.createConfigSection(un, pname)
-        time.sleep(5)
+        self.createConfigSection(self.un, self.pname)
 
-        # Trigger the replication
-        self.msu.replicationTrigger(un, pname)
-        time.sleep(5)
+        # Force gerrit to read its known_hosts file. The only
+        # way to do that is by restarting gerrit. The Puppet Gerrit
+        # manifest will restart gerrit if a new entry in known_hosts_gerrit
+        # is discovered.
+        # This may take some time (gerrit in some condition take long
+        # to be fully up)
+        call("ssh root@gerrit puppet agent -t > /dev/null", shell=True)
 
         # Clone the project and submit it for review
-        priv_key_path = set_private_key(config.USERS[un]["privkey"])
-        gitu = GerritGitUtils(un,
+        priv_key_path = set_private_key(config.USERS[self.un]["privkey"])
+        gitu = GerritGitUtils(self.un,
                               priv_key_path,
-                              config.USERS[un]['email'])
-        url = "ssh://%s@%s:29418/%s" % (un, config.GATEWAY_HOST,
-                                        pname)
-        clone_dir = gitu.clone(url, pname)
+                              config.USERS[self.un]['email'])
+        url = "ssh://%s@%s:29418/%s" % (self.un, config.GATEWAY_HOST,
+                                        self.pname)
+        clone_dir = gitu.clone(url, self.pname)
 
         gitu.add_commit_and_publish(clone_dir, "master", "Test commit")
 
@@ -200,27 +196,21 @@ class TestProjectReplication(Base):
         gitu.add_commit_and_publish(clone_dir, "master", None, fnames=us_files)
 
         # Review the patch and merge it
-        change_ids = self.gu.get_my_changes_for_project(pname)
+        change_ids = self.gu.get_my_changes_for_project(self.pname)
         self.assertGreater(len(change_ids), 0)
         change_id = change_ids[0]
         self.gu.submit_change_note(change_id, "current", "Code-Review", "2")
         self.gu.submit_change_note(change_id, "current", "Verified", "2")
         self.gu.submit_change_note(change_id, "current", "Workflow", "1")
         # Put USER_2 as core for config project
-        grp_name = '%s-core' % pname
+        grp_name = '%s-core' % self.pname
         self.gu.add_group_member(config.USER_2, grp_name)
         self.gu2.submit_change_note(change_id, "current", "Code-Review", "2")
         self.assertTrue(self.gu.submit_patch(change_id, "current"))
         shutil.rmtree(clone_dir)
 
-        time.sleep(5)
         # Verify if gerrit automatically triggered replication
         # Mirror repo(in mysql node) should have these latest changes
         # Clone the mirror repo(from mysql) and check for the 2 files
-        msql_repo_url = self.msql_repo_path + '%s.git' % pname
-        self.mirror_clone_and_check_files(msql_repo_url, pname, us_files)
-
-        # delete project and mirror repo
-        self.deleteConfigSection(un, pname)
-        self.deleteMirrorRepo(pname)
-        self.msu.deleteProject(pname, config.ADMIN_USER)
+        msql_repo_url = self.msql_repo_path + '%s.git' % self.pname
+        self.mirror_clone_and_check_files(msql_repo_url, self.pname, us_files)

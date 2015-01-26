@@ -440,16 +440,39 @@ def delete_project(name):
     ge.delete_project(name, force=True)
 
 
-def replication_ssh_run_cmd(subcmd):
+def replication_ssh_run_cmd(subcmd, shell=False):
     host = '%s@%s' % (conf.gerrit['user'], conf.gerrit['host'])
     sshcmd = ['ssh', '-o', 'LogLevel=ERROR', '-o', 'StrictHostKeyChecking=no',
               '-o', 'UserKnownHostsFile=/dev/null', '-i',
               conf.gerrit['sshkey_priv_path'], host]
     cmd = sshcmd + subcmd
 
-    p1 = Popen(cmd, stdout=PIPE)
+    if shell:
+        cmd = " ".join(cmd)
+    p1 = Popen(cmd, stdout=PIPE, stderr=subprocess.STDOUT, shell=shell)
     out, err = p1.communicate()
     return out, err, p1.returncode
+
+
+def replication_fill_knownhosts(url):
+    try:
+        host = url.split(':')[0]
+        host = host.split('@')[1]
+    except Exception, e:
+        logger.info("[gerrit] Unable to parse %s %s. Will not scan !" %
+                    (url, str(e)))
+        return
+    logger.info("[gerrit] ssh-keyscan on %s" % host)
+    cmd = \
+        [" \"ssh-keyscan -v -T5 %s >> /home/gerrit/.ssh/known_hosts_gerrit\"" %
+         host]
+    out, err, code = replication_ssh_run_cmd(cmd, shell=True)
+    logger.info(code)
+    if code:
+        logger.info("[gerrit] ssh-keyscan failed on %s" % host)
+        logger.debug("[gerrit] ssh-keyscan stdout: %s" % out)
+    else:
+        logger.info("[gerrit] ssh-keyscan succeed on %s" % host)
 
 
 def replication_read_config():
@@ -512,6 +535,9 @@ def replication_apply_config(section, setting=None, value=None):
             if setting == 'url' and ('$' in value):
                 # To allow $ in url
                 value = "\$".join(value.rsplit("$", 1))
+            if setting == 'url':
+                # Get the remote fingerprint
+                replication_fill_knownhosts(value)
             if setting == 'projects' and (section in config):
                 logger.info("[gerrit] Project already exist.")
                 abort(400)

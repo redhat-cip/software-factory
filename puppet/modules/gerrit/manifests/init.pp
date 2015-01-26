@@ -68,23 +68,15 @@ class gerrit ($settings = hiera_hash('gerrit', ''),
     owner   => 'gerrit',
     require => [User['gerrit'], Group['gerrit']],
   }
-  file { '/home/gerrit/.ssh/config':
-    ensure  => present,
-    content => template('gerrit/ssh_config.erb'),
-    mode    => '0644',
-    owner  => 'gerrit',
-    group  => 'gerrit',
-    require => File['/home/gerrit/.ssh'],
-  }
-#managesf uses gerrit_admin_key to ssh to gerrit
-# and update replication.config
+
+  # managesf uses gerrit_admin_key to ssh to gerrit
+  # and update replication.config
   ssh_authorized_key { 'gerrit_admin_user':
     user => 'gerrit',
     type => 'rsa',
     key  => $settings['gerrit_admin_key'],
     require => File['/home/gerrit/.ssh'],
   }
-
 
   # Here we build the basic directory tree for Gerrit
   file { '/home/gerrit/site_path':
@@ -135,6 +127,14 @@ class gerrit ($settings = hiera_hash('gerrit', ''),
     mode    => '0600',
     source  => 'puppet:///modules/gerrit/gerrit_service_rsa',
     require => File['/home/gerrit/site_path/etc'],
+  }
+  file { '/home/gerrit/.ssh/id_rsa':
+    ensure  => present,
+    owner   => 'gerrit',
+    group   => 'gerrit',
+    mode    => '0600',
+    source  => 'puppet:///modules/gerrit/gerrit_service_rsa',
+    require => File['/home/gerrit/.ssh'],
   }
   file { '/home/gerrit/site_path/etc/ssh_host_rsa_key.pub':
     ensure  => present,
