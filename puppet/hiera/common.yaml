@@ -1,6 +1,6 @@
 ---
 top_domain: "%{hiera('domain')}"
-http_gateway_host: "%{hiera('domain')}"
+gateway_host: "%{hiera('domain')}"
 gateway_url: "http://%{hiera('domain')}"
 redmine_url: "http://redmine.%{hiera('domain')}"
 redmine_host: "redmine.%{hiera('domain')}"

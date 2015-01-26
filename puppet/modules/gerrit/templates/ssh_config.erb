@@ -1,6 +1,6 @@
 #gerrit uses this configuration to ssh to managesf host
 #during project replication
-Host "<%= scope.function_hiera(["http_gateway_host"]) %>"
+Host "<%= scope.function_hiera(["gateway_host"]) %>"
 User gerrit
 PreferredAuthentications publickey
 IdentityFile /home/gerrit/site_path/etc/ssh_host_rsa_key

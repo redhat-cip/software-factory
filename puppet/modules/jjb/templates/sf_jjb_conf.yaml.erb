@@ -31,7 +31,7 @@
 - builder:
     name: gerrit-git-prep
     builders:
-      - shell: "/usr/local/jenkins/slave_scripts/gerrit-git-prep.sh http://<%= scope.function_hiera(["http_gateway_host"]) %>"
+      - shell: "/usr/local/jenkins/slave_scripts/gerrit-git-prep.sh http://<%= scope.function_hiera(["gateway_host"]) %>"
 
 - builder:
     name: branch-git-prep
@@ -39,7 +39,7 @@
       - shell: |
           #!/bin/bash
           export BRANCH={branch}
-          /usr/local/jenkins/slave_scripts/gerrit-git-prep.sh http://<%= scope.function_hiera(["http_gateway_host"]) %>
+          /usr/local/jenkins/slave_scripts/gerrit-git-prep.sh http://<%= scope.function_hiera(["gateway_host"]) %>
 
 # Useful job template
 - job-template:
