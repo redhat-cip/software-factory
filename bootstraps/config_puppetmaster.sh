@@ -47,3 +47,4 @@ fi
 
 puppet resource service puppetmaster ensure=stopped enable=false
 systemctl start httpd.service
+systemctl enable httpd
