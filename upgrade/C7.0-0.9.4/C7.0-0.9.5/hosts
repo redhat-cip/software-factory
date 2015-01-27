@@ -1,13 +1,17 @@
 # file: hosts
 
 [puppetmaster]
-192.168.134.49 ansible_ssh_user=root
+puppetmaster ansible_ssh_user=root
 
 [services]
-192.168.134.[50:54] ansible_ssh_user=root
+mysql       ansible_ssh_user=root
+redmine     ansible_ssh_user=root
+gerrit      ansible_ssh_user=root
+managesf    ansible_ssh_user=root
+jenkins     ansible_ssh_user=root
 
 [jenkins]
-192.168.134.53 ansible_ssh_user=root
+jenkins     ansible_ssh_user=root
 
 [managesf]
-192.168.134.54 ansible_ssh_user=root
+managesf    ansible_ssh_user=root
