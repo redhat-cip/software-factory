@@ -66,7 +66,7 @@ class TestZuulOps(Base):
         self.create_project(pname, config.ADMIN_USER)
         un = config.ADMIN_USER
         gu = GerritUtils(
-            'http://%s/' % config.GATEWAY_HOST,
+            'https://%s/' % config.GATEWAY_HOST,
             auth_cookie=config.USERS[un]['auth_cookie'])
         ju = JenkinsUtils()
         k_index = gu.add_pubkey(config.USERS[un]["pubkey"])

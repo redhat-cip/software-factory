@@ -13,9 +13,9 @@ for sfconfig_filename in sfconfig_filenames:
 SF_ROOT = path.dirname(path.dirname(path.dirname(path.abspath(__file__))))
 
 GATEWAY_HOST = sfconfig['domain']
-GATEWAY_URL = 'http://%s/' % GATEWAY_HOST
-JENKINS_URL = 'http://%s/jenkins/' % GATEWAY_HOST
-REDMINE_URL = 'http://%s/redmine/' % GATEWAY_HOST
+GATEWAY_URL = 'https://%s/' % GATEWAY_HOST
+JENKINS_URL = 'https://%s/jenkins/' % GATEWAY_HOST
+REDMINE_URL = 'https://%s/redmine/' % GATEWAY_HOST
 
 GERRIT_USER = 'gerrit'
 GERRIT_SERVICE_PRIV_KEY_PATH = '%s/build/data/gerrit_service_rsa' \

@@ -49,10 +49,10 @@ class TestGerritHooks(Base):
             config.REDMINE_URL,
             auth_cookie=config.USERS[config.ADMIN_USER]['auth_cookie'])
         self.gu = GerritUtils(
-            'http://%s/' % config.GATEWAY_HOST,
+            'https://%s/' % config.GATEWAY_HOST,
             auth_cookie=config.USERS[self.u]['auth_cookie'])
         self.gu2 = GerritUtils(
-            'http://%s/' % config.GATEWAY_HOST,
+            'https://%s/' % config.GATEWAY_HOST,
             auth_cookie=config.USERS[self.u2]['auth_cookie'])
         self.gu.add_pubkey(config.USERS[self.u]["pubkey"])
         priv_key_path = set_private_key(config.USERS[self.u]["privkey"])

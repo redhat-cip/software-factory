@@ -42,7 +42,7 @@ class TestProjectMembership(Base):
             config.REDMINE_URL,
             auth_cookie=config.USERS[config.ADMIN_USER]['auth_cookie'])
         self.gu = GerritUtils(
-            'http://%s/' % config.GATEWAY_HOST,
+            'https://%s/' % config.GATEWAY_HOST,
             auth_cookie=config.USERS[config.ADMIN_USER]['auth_cookie'])
 
     def tearDown(self):

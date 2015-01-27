@@ -188,7 +188,22 @@ function generate_apache_cert {
     OUTPUT=${BUILD}/data
     mkdir -p ${OUTPUT}
     # Generate self-signed Apache certificate
-    openssl req -x509 -nodes -days 365 -newkey rsa:2048 -subj "/C=FR/O=SoftwareFactory/CN=${SF_SUFFIX}" -keyout ${OUTPUT}/gateway.key -out ${OUTPUT}/gateway.crt
+    cat > openssl.cnf << EOF
+[req]
+req_extensions = v3_req
+distinguished_name = req_distinguished_name
+
+[ req_distinguished_name ]
+commonName_default = ${SF_SUFFIX}
+
+[ v3_req ]
+subjectAltName=@alt_names
+
+[alt_names]
+DNS.1 = ${SF_SUFFIX}
+DNS.2 = auth.${SF_SUFFIX}
+EOF
+    openssl req -x509 -nodes -days 365 -newkey rsa:2048 -subj "/C=FR/O=SoftwareFactory/CN=${SF_SUFFIX}" -keyout ${OUTPUT}/gateway.key -out ${OUTPUT}/gateway.crt -extensions v3_req -config openssl.cnf
 }
 
 function prepare_etc_puppet {

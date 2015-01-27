@@ -38,7 +38,7 @@ class TestUserdata(Base):
             config.REDMINE_URL,
             auth_cookie=config.USERS[config.ADMIN_USER]['auth_cookie'])
         self.gu = GerritUtils(
-            'http://%s/' % config.GATEWAY_HOST,
+            'https://%s/' % config.GATEWAY_HOST,
             auth_cookie=config.USERS[config.ADMIN_USER]['auth_cookie'])
 
     def tearDown(self):
@@ -65,11 +65,11 @@ class TestUserdata(Base):
         self.assertEqual(config.USERS[login]['email'], user.mail)
 
     def logout(self):
-        url = 'http://{}/auth/logout/'.format(config.GATEWAY_HOST)
+        url = 'https://{}/auth/logout/'.format(config.GATEWAY_HOST)
         requests.get(url)
 
     def login(self, username, password, redirect='/'):
-        url = "http://%s/auth/login" % config.GATEWAY_HOST
+        url = "https://%s/auth/login" % config.GATEWAY_HOST
         data = {'username': username,
                 'password': password,
                 'back': redirect}
@@ -81,7 +81,7 @@ class TestUserdata(Base):
         self.logout()
         response = self.login('user5', 'userpass',
                               'http%3a%2f%2ftests.dom%2fjenkins%2f')
-        expected_url = "http://{}/_jenkins/".format(config.GATEWAY_HOST)
+        expected_url = "https://{}/_jenkins/".format(config.GATEWAY_HOST)
 
         self.assertEqual(expected_url, response.url)
         # verify if user is created in gerrit and redmine
@@ -94,7 +94,7 @@ class TestUserdata(Base):
         self.logout()
         response = self.login('user5', 'userpass',
                               'http%3a%2f%2ftests.dom%2fredmine%2fprojects')
-        expect_url = "http://{}/_redmine/projects".format(config.GATEWAY_HOST)
+        expect_url = "https://{}/_redmine/projects".format(config.GATEWAY_HOST)
 
         self.assertEqual(expect_url, response.url)
         # verify if user is created in gerrit and redmine
