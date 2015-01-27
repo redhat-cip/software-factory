@@ -1,9 +1,29 @@
 # Change Log
 
 ## 0.9.5 [unreleased]
+
 ### Fixed
+
+- Fix httpd not started on the puppetmaster after a reboot
+- Fix default Zuul layout.yaml for improving the Gate pipeline
+  triggering.
+- Handle empty email from Github for the Github auth.
+
 ### Added
+
+- Support HTTPS and force a redirect if not used on the web UI.
+- All nodes are synchronized by NTP when deployed on VMs (HEAT).
+- Add section in the documentation to explain how to configure and
+  connect a Jenkins slave.
+
 ### Changed
+
+- Improve the Gerrit project replication configuration by avoiding
+  the need to change /home/gerrit/.ssh/known_hosts and restart manually
+  gerrit.
+- Reduce downtime during the upgrade.
+- Change Redmine MySQL connector to mysql2.
+
 ### Removed
 
 
