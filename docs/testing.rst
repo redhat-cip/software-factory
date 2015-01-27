@@ -176,6 +176,31 @@ Some quick explanation about this job configuration:
 As explained in the previous chapter you then need to submit and publish the change on Gerrit
 to execute your new job.
 
+Configure a job as "Non Voting"
+-------------------------------
+
+A test result for a patch determines if the patch is ready to be merged. Indeed Zuul
+reports an evaluation on Gerrit at the end of the test execution and if this result,
+is positive, then it allow the patch to be merged on the master branch of a project. But
+it can be long and difficult to develop a new test that work correctly (stable, not raises
+false-positive, ...) so a good practice is to first setup the test job as "Non Voting".
+
+For instance, for a project you have already one test job that is known as stable and
+reports a note on Gerrit and by the way condition the merge of the patch. Then you
+want to add another test job but you don't want this new on to block the merge of
+patches because your are not yet confident with that test. In that case you
+can configure Zuul (zuul/projects.yaml) as follow:
+
+.. code-block:: yaml
+
+ jobs:
+   - name: my-new-test
+     branch: master
+     voting: false
+
+Zuul will then reports the "my-new-test" result as a comment for the tested patch
+but wont set the global note negative.
+
 Parallel testing
 ----------------
 
