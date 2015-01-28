@@ -41,6 +41,7 @@ class dummy_conf():
     def __init__(self):
         self.redmine = {'apikey': 'XXX',
                         'apihost': 'api-redmine.test.dom',
+                        'apiurl': 'http://api-redmine.test.dom',
                         }
         self.gerrit = {'url': 'XXX',
                        'admin_user': 'admin',

@@ -114,6 +114,7 @@ sqlalchemy = {
 
 redmine = {
     'apihost': '<%= scope.function_hiera(["api_redmine_host"]) %>',
+    'apiurl': '<%= scope.function_hiera(["api_redmine_url"]) %>',
     'apikey': '<%= @redmine['issues_tracker_api_key'] %>',
 }
 

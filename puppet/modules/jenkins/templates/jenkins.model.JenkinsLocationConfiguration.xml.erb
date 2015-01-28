@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <jenkins.model.JenkinsLocationConfiguration>
   <adminAddress>Jenkins No-Reply &lt;jenkins@<%= scope.function_hiera(["top_domain"]) %>&gt;</adminAddress>
-  <jenkinsUrl>http://<%= scope.function_hiera(["jenkins_pub_url"]) %></jenkinsUrl>
+  <jenkinsUrl><%= scope.function_hiera(["jenkins_pub_url"]) %></jenkinsUrl>
 </jenkins.model.JenkinsLocationConfiguration>
 

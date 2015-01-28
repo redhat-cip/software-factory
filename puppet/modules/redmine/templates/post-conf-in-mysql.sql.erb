@@ -10,7 +10,7 @@ SET @username="<%= @settings['redmine_admin_username'] %>";
 SET @email="<%= @settings['redmine_admin_mail'] %>";
 SET @host="<%= scope.function_hiera(["top_domain"]) %>/_redmine";
 SET @mailfrom="redmine@<%= scope.function_hiera(["top_domain"]) %>";
-SET @footer="You have received this notification because you have either subscribed to it, or are involved in it. To change your notification preferences, please click here: http://<%= scope.function_hiera(["top_domain"]) %>/_redmine/my/account";
+SET @footer="You have received this notification because you have either subscribed to it, or are involved in it. To change your notification preferences, please click here: <%= scope.function_hiera(["gateway_url"]) %>/_redmine/my/account";
 
 INSERT INTO settings (name, value, updated_on) SELECT * FROM (SELECT 'rest_api_enabled','1', CURRENT_TIMESTAMP()) AS TMP WHERE NOT EXISTS(SELECT name FROM settings WHERE name='rest_api_enabled');
 INSERT INTO settings (name, value, updated_on) SELECT * FROM (SELECT @http_auth_config_name, @http_auth_config_value, CURRENT_TIMESTAMP()) AS TMP WHERE NOT EXISTS(SELECT name FROM settings WHERE name=@http_auth_config_name);

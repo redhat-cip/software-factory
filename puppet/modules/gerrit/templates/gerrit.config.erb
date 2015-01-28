@@ -1,6 +1,6 @@
 [gerrit]
     basePath = <%= @settings['repo_base_path'] ? @settings['repo_base_path'] : 'git' %>
-    canonicalWebUrl = http://<%= @settings['weburl'] %>
+    canonicalWebUrl = <%= @settings['gerrit_pub_url'] %>
     gitHttpUrl =<%= @settings['httpurl'] ? @settings['httpurl'] : '' %>
 [database]
     type = MYSQL
@@ -21,7 +21,7 @@
     listenUrl = proxy-http://127.0.0.1:8080/r/
 [commentlink "Redmine"]
     match = ([Bb]ug:\\s+)(\\d+)
-    html = $1<a href=\"http://<%= scope.function_hiera(["redmine_pub_url"]) %>/issues/$2\">$2</a>
+    html = $1<a href=\"<%= scope.function_hiera(["redmine_pub_url"]) %>/issues/$2\">$2</a>
 [gitweb]
     cgi = <%= @gitweb_cgi %>
 [sendemail]

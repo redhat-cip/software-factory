@@ -82,7 +82,7 @@ class Gerrit:
 
 class UserDetailsCreator:
     def __init__(self, conf):
-        self.r = RedmineUtils('http://' + conf.redmine['apihost'],
+        self.r = RedmineUtils(conf.redmine['apiurl'],
                               key=conf.redmine['apikey'])
         self.g = Gerrit(conf)
 
