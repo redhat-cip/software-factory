@@ -53,6 +53,7 @@ function setup_iptables {
     fi
     # Redirect host incoming TCP/80 to the sf gateway on 192.168.134.54/80
     sudo iptables -t nat $switch PREROUTING -p tcp -i eth0 --dport 80 -j DNAT --to-destination 192.168.134.54:80
+    sudo iptables -t nat $switch PREROUTING -p tcp -i eth0 --dport 443 -j DNAT --to-destination 192.168.134.54:443
     # Redirect host incoming TCP/29418 to the sf gateway on 192.168.134.54/29418 (a socat service listens 29418 to redirect internally to the Gerrit service)
     sudo iptables -t nat $switch PREROUTING -p tcp -i eth0 --dport 29418 -j DNAT --to-destination 192.168.134.54:29418
     # Redirect host incoming TCP/8080 and TCP/45452 to the sf gateway on 192.168.134.54 (a socat service listens 8080 and 45452 to redirect internally to the Jenkins service)
