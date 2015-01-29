@@ -26,8 +26,8 @@ EDEPLOY_PROJECT=https://github.com/enovance/edeploy.git
 EDEPLOY_ROLES_PROJECT=https://github.com/enovance/edeploy-roles.git
 
 # Edeploy source version
-ED_COMMIT=b4c2d390
-ED_ROLES_COMMIT=4c1c7b17
+ED_COMMIT=master
+ED_ROLES_COMMIT=master
 
 # Qcow2 params
 IMG_CFG=params.virt
