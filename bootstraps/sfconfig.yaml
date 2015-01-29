@@ -4,6 +4,9 @@
 # using tests.com as domain is fine.
 domain: tests.dom
 
+# SSL options
+enforce_ssl: false
+
 # This is the identity of the Administrator user of SF. This user
 # will heritate of the Admin right on Redmine, Gerrit, Jenkins.
 admin_name: user1
