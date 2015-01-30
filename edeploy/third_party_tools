@@ -85,7 +85,7 @@ URL_LIST="$URL_LIST $FONTAWESOME_URL"
 # nodejs
 NODEJS_NPM="https://www.npmjs.com/install.sh"
 NPM_INSTALL=1.4.21
-NPM_MIRROR_URL=http://registry.npmjs.eu/
+NPM_MIRROR_URL=http://registry.npmjs.org/
 
 URL_LIST="$URL_LIST $NPM_MIRROR_URL $NODEJS_NPM"
 
