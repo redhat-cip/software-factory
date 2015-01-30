@@ -59,3 +59,8 @@ os_username:
 os_password:
 swift_backup_container: sfbackups
 swift_backup_max_retention_secs: 864000
+
+# Add authentication in front off all services. If set to false only
+# zuul/etherpad/paste can be accessed anonymously. Please note that Gerrit,
+# Jenkins and Redmine always require a login.
+authenticated_only: false

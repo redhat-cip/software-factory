@@ -45,18 +45,10 @@
         allow from all
     </Directory>
 
-    <Directory /var/www/dashboard>
-        Order deny,allow
-        Allow from all
-        AuthType mod_auth_pubtkt
-        TKTAuthLoginURL <%= @cauth['signin_url'] %>
-        TKTAuthFakeBasicAuth on
-        TKTAuthDebug 1
-        require valid-user
-    </Directory>
-
-    # Protect Gerrit directly, but allow git requests
-    <LocationMatch ^/r/(?!(.*/(info/refs|git-upload-pack)))>
+    <% if authenticated_only %>
+    # Make sure static files, docs, git and the topmenu are accessible even if
+    # anonymous access is disabled. Git itself is protected by Gerrit
+    <LocationMatch "^(?!/(r/.*/(info/refs|git-upload-pack)|docs|static|auth|index.html|$))">
         Order deny,allow
         Allow from all
         AuthType mod_auth_pubtkt
@@ -65,3 +57,4 @@
         TKTAuthDebug 1
         require valid-user
     </LocationMatch>
+    <% end %>

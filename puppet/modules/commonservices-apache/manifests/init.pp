@@ -13,7 +13,8 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-class commonservices-apache ($cauth = hiera_hash('cauth', '')) {
+class commonservices-apache ($cauth = hiera_hash('cauth', ''),
+                             $authenticated_only = hiera('authenticated_only', false)) {
 
   require hosts
 
@@ -45,6 +46,7 @@ class commonservices-apache ($cauth = hiera_hash('cauth', '')) {
     owner  => $httpd_user,
     group  => $httpd_user,
     content => template('commonservices-apache/gateway.common'),
+    notify => Service['webserver'],
   }
 
   file {'00-ssl.conf':

@@ -57,7 +57,10 @@ class TestGateway(unittest.TestCase):
         """ Test if Zuul is accessible on gateway host
         """
         url = "https://%s/zuul/" % config.GATEWAY_HOST
-        resp = requests.get(url)
+        resp = requests.get(
+            url,
+            cookies=dict(
+                auth_pubtkt=config.USERS[config.USER_1]['auth_cookie']))
         self.assertEqual(resp.status_code, 200)
         self.assertTrue('<title>Zuul Status</title>' in resp.text)
 
@@ -86,7 +89,10 @@ class TestGateway(unittest.TestCase):
         """ Test if Etherpad is accessible on gateway host
         """
         url = "https://%s/etherpad/" % config.GATEWAY_HOST
-        resp = requests.get(url)
+        resp = requests.get(
+            url,
+            cookies=dict(
+                auth_pubtkt=config.USERS[config.USER_1]['auth_cookie']))
         self.assertEqual(resp.status_code, 200)
         self.assertTrue('<title>SF - Etherpad</title>' in resp.text)
 
@@ -94,7 +100,10 @@ class TestGateway(unittest.TestCase):
         """ Test if Paste is accessible on gateway host
         """
         url = "https://%s/paste/" % config.GATEWAY_HOST
-        resp = requests.get(url)
+        resp = requests.get(
+            url,
+            cookies=dict(
+                auth_pubtkt=config.USERS[config.USER_1]['auth_cookie']))
         self.assertEqual(resp.status_code, 200)
         self.assertTrue('<title>New Paste | LodgeIt!</title>' in resp.text)
 
