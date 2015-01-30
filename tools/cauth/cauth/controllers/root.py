@@ -125,12 +125,15 @@ class GithubController(object):
                 jresp.get('error_description', None)))
         return None
 
-    def organization_allowed(self, login):
+    def organization_allowed(self, token):
         allowed_orgs = conf.auth['github'].get('allowed_organizations')
         if allowed_orgs:
-            resp = requests.get("https://api.github.com/users/%s/orgs" % login)
+            resp = requests.get("https://api.github.com/user/orgs",
+                                headers={'Authorization': 'token ' + token})
+
             user_orgs = resp.json()
             user_orgs = [org['login'] for org in user_orgs]
+
             allowed_orgs = allowed_orgs.split(',')
             allowed_orgs = filter(None, allowed_orgs)
             allowed = set(user_orgs) & set(allowed_orgs)
@@ -173,7 +176,7 @@ class GithubController(object):
                             headers={'Authorization': 'token ' + token})
         ssh_keys = resp.json()
 
-        if not self.organization_allowed(login):
+        if not self.organization_allowed(token):
             abort(401)
 
         logger.info(

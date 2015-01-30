@@ -365,19 +365,25 @@ class TestGithubController(TestCase):
         mocked_get.return_value.json.return_value = [{'login': 'acme'}]
 
         # allowed_organizations not set -> allowed
-        self.assertEqual(True, gc.organization_allowed('user'))
+        self.assertEqual(True, gc.organization_allowed('token'))
 
         # allowed_organizations set empty -> allowed
         self.conf.auth['github']['allowed_organizations'] = ''
-        self.assertEqual(True, gc.organization_allowed('user'))
+        self.assertEqual(True, gc.organization_allowed('token'))
 
-        # allowed_organizations set, doesn't match user orgs -> not allowed
+        # allowed_organizations set, doesn't match token orgs -> not allowed
         self.conf.auth['github']['allowed_organizations'] = 'some,other'
-        self.assertEqual(False, gc.organization_allowed('user'))
+        self.assertEqual(False, gc.organization_allowed('token'))
+        mocked_get.assert_called_with(
+            'https://api.github.com/user/orgs',
+            headers={'Authorization': 'token token'})
 
-        # allowed_organizations set, doesn't match user orgs -> not allowed
+        # allowed_organizations set, doesn't match token orgs -> not allowed
         self.conf.auth['github']['allowed_organizations'] = 'some,other,acme'
-        self.assertEqual(True, gc.organization_allowed('user'))
+        self.assertEqual(True, gc.organization_allowed('token'))
+        mocked_get.assert_called_with(
+            'https://api.github.com/user/orgs',
+            headers={'Authorization': 'token token'})
 
 
 class TestCauthApp(FunctionalTest):
