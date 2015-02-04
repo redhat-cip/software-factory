@@ -136,4 +136,5 @@ glance_delete_images
 checkpoint "glance_delete_images"
 publish_artifacts
 checkpoint "publish-artifacts"
+clean_old_cache
 exit 0;

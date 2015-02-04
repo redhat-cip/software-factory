@@ -23,6 +23,19 @@ ARTIFACTS_DIR="${ARTIFACTS_ROOT}/${ARTIFACTS_RELPATH}"
 
 CONFDIR=/var/lib/lxc-conf
 
+function clean_old_cache {
+    # Remove directory older than 1 week (7 days)
+    echo "Removing old item from cache..."
+    for item in $(find /var/lib/sf/roles/upstream/* /var/lib/sf/roles/install/* -maxdepth 0 -ctime +7 | \
+        grep -v "\(${SF_VER}\|${PREVIOUS_SF_VER}\)"); do
+            if [ -f "${item}" ] || [ -d "${item}" ]; then
+                echo ${item}
+                sudo rm -Rf ${item}
+            fi
+    done
+    echo "Done."
+}
+
 function get_ip {
     local p=${CONFDIR}/sf-lxc.yaml
     # This is for compatibility with 0.9.2 version especially for

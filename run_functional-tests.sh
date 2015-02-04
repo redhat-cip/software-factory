@@ -136,4 +136,5 @@ lxc_stop
 checkpoint "lxc-stop"
 publish_artifacts
 checkpoint "publish-artifacts"
+clean_old_cache
 exit 0;
