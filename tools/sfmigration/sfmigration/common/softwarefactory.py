@@ -163,7 +163,8 @@ class SFRedmineMigrator(base.BaseRedmine):
                     except IndexError:
                         log_msg = "Status %s not found, leaving empty"
                         logger.debug(log_msg % mapped_status)
-                        del issue['status_id']
+                        if 'status_id' in issue:
+                            del issue['status_id']
                 # check version
                 if 'version_name' in issue:
                     mapped_version = self.mapper.map(issue['version_name'])
