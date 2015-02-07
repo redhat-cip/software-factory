@@ -19,50 +19,6 @@ parameters:
     type: string
     description: Base64 yaml configuration file for SoftwareFactory
 
-  puppetmaster_flavor:
-    type: string
-    description: Flavor for puppetmaster node
-  mysql_flavor:
-    type: string
-    description: Flavor for mysql node
-  managesf_flavor:
-    type: string
-    description: Flavor for managesf node
-  gerrit_flavor:
-    type: string
-    description: Flavor for gerrit node
-  redmine_flavor:
-    type: string
-    description: Flavor for redmine node
-  jenkins_flavor:
-    type: string
-    description: Flavor for jenkins node
-  slave_flavor:
-    type: string
-    description: Flavor for slave node
-
-  puppetmaster_root_size:
-    type: string
-    description: Root disk size for puppetmaster node
-  mysql_root_size:
-    type: string
-    description: Root disk size for mysql node
-  managesf_root_size:
-    type: string
-    description: Root disk size for managesf node
-  gerrit_root_size:
-    type: string
-    description: Root disk size for gerrit node
-  redmine_root_size:
-    type: string
-    description: Root disk size for redmine node
-  jenkins_root_size:
-    type: string
-    description: Root disk size for jenkins node
-  slave_root_size:
-    type: string
-    description: Root disk size for slave node
-
   puppetmaster_image_id:
     type: string
     description: Glance image ID for the puppet master node
@@ -77,14 +33,6 @@ parameters:
   ext_net_uuid:
     type: string
     description: The UUID of the external net
-  sg_admin_cidr:
-    type: string
-    description: From Ip range to access node by ssh
-    default: 0.0.0.0/0
-  sg_user_cidr:
-    type: string
-    description: From Ip range to access user services of SF
-    default: 0.0.0.0/0
 
 resources:
   sf_net:
@@ -121,52 +69,52 @@ resources:
   sf_ext_secgroup_admin:
     type: OS::Neutron::SecurityGroup
     properties:
-      rules: [
-        {remote_ip_prefix: { get_param: sg_admin_cidr },
+      rules: [{% for cidr in sg_admin_cidr %}
+        {remote_ip_prefix: {{ cidr }},
          protocol: tcp,
          port_range_min: 22,
          port_range_max: 22,},
-        {remote_ip_prefix: { get_param: sg_admin_cidr },
-         protocol: icmp,}
-        ]
+        {remote_ip_prefix: {{ cidr }},
+         protocol: icmp,},
+        {% endfor %}]
 
   sf_ext_secgroup_http:
     type: OS::Neutron::SecurityGroup
     properties:
-      rules: [
-        {remote_ip_prefix: { get_param: sg_user_cidr },
+      rules: [{% for cidr in sg_user_cidr %}
+        {remote_ip_prefix: {{ cidr }},
          protocol: tcp,
          port_range_min: 80,
          port_range_max: 80},
-        {remote_ip_prefix: { get_param: sg_user_cidr },
+        {remote_ip_prefix: {{ cidr }},
          protocol: tcp,
          port_range_min: 443,
          port_range_max: 443},
-        ]
+        {% endfor %}]
 
   sf_ext_secgroup_swarm_slave:
     type: OS::Neutron::SecurityGroup
     properties:
-      rules: [
-        {remote_ip_prefix: { get_param: sg_user_cidr },
+      rules: [{% for cidr in sg_user_cidr %}
+        {remote_ip_prefix: {{ cidr }},
          protocol: tcp,
          port_range_min: 8080,
          port_range_max: 8080},
-        {remote_ip_prefix: { get_param: sg_user_cidr },
+        {remote_ip_prefix: {{ cidr }},
          protocol: tcp,
          port_range_min: 45452,
          port_range_max: 45452},
-        ]
+        {% endfor %}]
 
   sf_ext_secgroup_gerrit_ssh:
     type: OS::Neutron::SecurityGroup
     properties:
-      rules: [
-        {remote_ip_prefix: { get_param: sg_user_cidr },
+      rules: [{% for cidr in sg_user_cidr %}
+        {remote_ip_prefix: {{ cidr }},
          protocol: tcp,
          port_range_min: 29418,
          port_range_max: 29418},
-        ]
+        {% endfor %}]
 
   sf_int_secgroup_default:
     type: OS::Neutron::SecurityGroup
@@ -254,14 +202,14 @@ resources:
     properties:
       name  : "puppetmaster"
       image : { get_param: puppetmaster_image_id }
-      size  : { get_param: puppetmaster_root_size }
+      size  : {{ puppetmaster_root_size }}
 
   puppetmaster_instance:
     type: OS::Nova::Server
     depends_on: [ managesf_instance, gerrit_instance, jenkins_instance, redmine_instance, mysql_instance, slave_instance ]
     properties:
       block_device_mapping: [{ device_name: "vda", volume_id : { get_resource : puppetmaster_volume } }]
-      flavor: { get_param: puppetmaster_flavor }
+      flavor: {{ puppetmaster_flavor }}
       key_name: { get_param: key_name }
       networks:
         - port: { get_resource: puppetmaster_neutron_port }
@@ -340,13 +288,13 @@ resources:
     properties:
       name  : "jenkins"
       image : { get_param: sf_image_id }
-      size  : { get_param: jenkins_root_size }
+      size  : {{ jenkins_root_size }}
 
   jenkins_instance:
     type: OS::Nova::Server
     properties:
       block_device_mapping: [{ device_name: "vda", volume_id : { get_resource : jenkins_volume } }]
-      flavor: { get_param: jenkins_flavor }
+      flavor: {{ jenkins_flavor }}
       key_name: { get_param: key_name }
       networks:
         - port: { get_resource: jenkins_neutron_port }
@@ -378,13 +326,13 @@ resources:
     properties:
       name  : "redmine"
       image : { get_param: sf_image_id }
-      size  : { get_param: redmine_root_size }
+      size  : {{ redmine_root_size }}
 
   redmine_instance:
     type: OS::Nova::Server
     properties:
       block_device_mapping: [{ device_name: "vda", volume_id : { get_resource : redmine_volume } }]
-      flavor: { get_param: redmine_flavor }
+      flavor: {{ redmine_flavor }}
       key_name: { get_param: key_name }
       networks:
         - port: { get_resource: redmine_neutron_port }
@@ -416,13 +364,13 @@ resources:
     properties:
       name  : "gerrit"
       image : { get_param: sf_image_id }
-      size  : { get_param: gerrit_root_size }
+      size  : {{ gerrit_root_size }}
 
   gerrit_instance:
     type: OS::Nova::Server
     properties:
       block_device_mapping: [{ device_name: "vda", volume_id : { get_resource : gerrit_volume } }]
-      flavor: { get_param: gerrit_flavor }
+      flavor: {{ gerrit_flavor }}
       key_name: { get_param: key_name }
       networks:
         - port: { get_resource: gerrit_neutron_port }
@@ -454,13 +402,13 @@ resources:
     properties:
       name  : "managesf"
       image : { get_param: sf_image_id }
-      size  : { get_param: managesf_root_size }
+      size  : {{ managesf_root_size }}
 
   managesf_instance:
     type: OS::Nova::Server
     properties:
       block_device_mapping: [{ device_name: "vda", volume_id : { get_resource : managesf_volume } }]
-      flavor: { get_param: managesf_flavor }
+      flavor: {{ managesf_flavor }}
       key_name: { get_param: key_name }
       networks:
         - port: { get_resource: managesf_neutron_port }
@@ -492,13 +440,13 @@ resources:
     properties:
       name  : "mysql"
       image : { get_param: sf_image_id }
-      size  : { get_param: mysql_root_size }
+      size  : {{ mysql_root_size }}
 
   mysql_instance:
     type: OS::Nova::Server
     properties:
       block_device_mapping: [{ device_name: "vda", volume_id : { get_resource : mysql_volume } }]
-      flavor: { get_param: mysql_flavor }
+      flavor: {{ mysql_flavor }}
       key_name: { get_param: key_name }
       networks:
         - port: { get_resource: mysql_neutron_port }
@@ -530,13 +478,13 @@ resources:
     properties:
       name  : "slave"
       image : { get_param: sf_image_id }
-      size  : { get_param: slave_root_size }
+      size  : {{ slave_root_size }}
 
   slave_instance:
     type: OS::Nova::Server
     properties:
       block_device_mapping: [{ device_name: "vda", volume_id : { get_resource : slave_volume } }]
-      flavor: { get_param: slave_flavor }
+      flavor: {{ slave_flavor }}
       key_name: { get_param: key_name }
       networks:
         - port: { get_resource: slave_neutron_port }

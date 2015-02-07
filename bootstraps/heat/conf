@@ -22,10 +22,10 @@ slave_root_size="40"
 # External network UUID
 ext_net_uuid="6c83db7b-480e-4198-bc69-88df6fd17e55"
 
-# Network from TCP/22 is accessible
+# Space separated list of networks from TCP/22 is accessible
 sg_admin_cidr="0.0.0.0/0"
 
-# Network from ALL SF services are accessible
+# Space separated list of networks from ALL SF services are accessible
 sg_user_cidr="0.0.0.0/0"
 
 # Namservers IPs used by all VMs (comma separated IPs)

@@ -42,6 +42,7 @@ nosetests.xml
 # Generated files
 edeploy/jenkins-ci.org.key
 build/
+bootstraps/heat/software-factory.hot
 
 # Git Review
 .gitreview

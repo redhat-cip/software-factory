@@ -27,24 +27,7 @@ jenkins_user_pwd=$(generate_random_pswd 8)
 
 params="key_name=$key_name;suffix=$suffix"
 
-params="$params;puppetmaster_flavor=$puppetmaster_flavor"
-params="$params;mysql_flavor=$mysql_flavor"
-params="$params;managesf_flavor=$managesf_flavor"
-params="$params;gerrit_flavor=$gerrit_flavor"
-params="$params;redmine_flavor=$redmine_flavor"
-params="$params;jenkins_flavor=$jenkins_flavor"
-params="$params;slave_flavor=$slave_flavor"
-
-params="$params;puppetmaster_root_size=$puppetmaster_root_size"
-params="$params;mysql_root_size=$mysql_root_size"
-params="$params;managesf_root_size=$managesf_root_size"
-params="$params;gerrit_root_size=$gerrit_root_size"
-params="$params;redmine_root_size=$redmine_root_size"
-params="$params;jenkins_root_size=$jenkins_root_size"
-params="$params;slave_root_size=$slave_root_size"
-
 params="$params;jenkins_user_pwd=$jenkins_user_pwd"
-params="$params;sg_admin_cidr=$sg_admin_cidr;sg_user_cidr=$sg_user_cidr"
 params="$params;ext_net_uuid=$ext_net_uuid"
 params="$params;nameservers=$nameservers"
 
@@ -129,7 +112,8 @@ function delete_images {
 
 function start_stack {
     get_params
-    heat stack-create --template-file sf.yaml -P "$params" $STACKNAME
+    python simple_renderer.py software-factory.hot.tmpl > software-factory.hot
+    heat stack-create --template-file software-factory.hot -P "$params" $STACKNAME
 }
 
 function delete_stack {
