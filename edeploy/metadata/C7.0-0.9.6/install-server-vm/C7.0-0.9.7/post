@@ -1,7 +1,4 @@
 #!/bin/sh
 
-# Adds new default variable
-echo 'enforce_ssl: false' >> /root/sfconfig.yaml
-
 # Unit files may changed - so ask for a reload after having updated the files system.
 systemctl daemon-reload

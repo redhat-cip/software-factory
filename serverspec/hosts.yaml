@@ -6,7 +6,7 @@ puppetmaster:
     - ntp
   :username: root
   :hostname: puppetmaster
-  :roleversion: C7.0-0.9.6
+  :roleversion: C7.0-0.9.7
 
 redmine:
   :roles:
@@ -17,7 +17,7 @@ redmine:
     - ntp
   :username: root
   :hostname: redmine
-  :roleversion: C7.0-0.9.6
+  :roleversion: C7.0-0.9.7
 
 mysql:
   :roles:
@@ -28,7 +28,7 @@ mysql:
     - ntp
   :username: root
   :hostname: mysql
-  :roleversion: C7.0-0.9.6
+  :roleversion: C7.0-0.9.7
 
 gerrit:
   :roles:
@@ -39,7 +39,7 @@ gerrit:
     - ntp
   :username: root
   :hostname: gerrit
-  :roleversion: C7.0-0.9.6
+  :roleversion: C7.0-0.9.7
 
 jenkins:
   :roles:
@@ -50,7 +50,7 @@ jenkins:
     - ntp
   :username: root
   :hostname: jenkins
-  :roleversion: C7.0-0.9.6
+  :roleversion: C7.0-0.9.7
 
 managesf:
   :roles:
@@ -61,5 +61,5 @@ managesf:
     - ntp
   :username: root
   :hostname: managesf
-  :roleversion: C7.0-0.9.6
-  :sfversion: 0.9.6
+  :roleversion: C7.0-0.9.7
+  :sfversion: 0.9.7

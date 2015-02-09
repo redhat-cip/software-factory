@@ -8,6 +8,8 @@
 
 - Fix Github authentication filtered by organization when
   membership is private.
+- SSL based authentications was not working properly
+- Functional tests now clean old images after a successful run
 
 ### Added
 
@@ -22,6 +24,11 @@
   and Zuul behind the authentication.
 - Improve documentation about issue status update by the
   Gerrit hooks.
+
+### Changed
+
+- Heat stack now support multiple DNS and cidr for security groups
+
 
 ## 0.9.5 2015-02-03
 
