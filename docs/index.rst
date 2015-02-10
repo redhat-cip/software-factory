@@ -11,6 +11,7 @@ Welcome to software-factory's documentation!
 
    intro
    deploy
+   migration
    upgrade
    submitpatches
    managesf
