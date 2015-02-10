@@ -26,7 +26,7 @@ class cauth ($cauth = hiera_hash('cauth', ''),
     mode   => '0640',
     owner  => $httpd_user,
     group  => $httpd_user,
-    content=> template('cauth/cauth.site.erb'),
+    source => 'puppet:///modules/cauth/cauth.site',
     notify => Service['webserver'],
   }
 
@@ -86,15 +86,4 @@ class cauth ($cauth = hiera_hash('cauth', ''),
     content => template('cauth/login.html'),
     require => File['/var/www/cauth/cauth/templates'],
   }
-
-  file { '/var/www/cauth/cauth/adminsettings.py':
-    ensure  => present,
-    owner  => $httpd_user,
-    group  => $httpd_user,
-    mode    => '0640',
-    content => template('cauth/adminsettings.py.erb'),
-    require => File['/var/www/cauth/'],
-    replace => true,
-  }
-
 }
