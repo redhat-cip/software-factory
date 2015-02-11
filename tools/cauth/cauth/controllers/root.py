@@ -212,6 +212,32 @@ class GithubController(object):
 
 
 class LoginController(RestController):
+    def check_ldap_user(self, config, username, password):
+        try:
+            conn = ldap.initialize(config['host'])
+            conn.set_option(ldap.OPT_REFERRALS, 0)
+        except ldap.LDAPError:
+            logger.error('Client unable to bind on LDAP unexpected behavior.')
+            return None
+
+        who = config['dn'] % {'username': username}
+        try:
+            conn.simple_bind_s(who, password)
+        except (ldap.INVALID_CREDENTIALS, ldap.SERVER_DOWN):
+            logger.error('Client unable to bind on LDAP invalid credentials.')
+            return None
+
+        result = conn.search_s(who, ldap.SCOPE_SUBTREE, '(cn=*)',
+                               attrlist=[config['sn'], config['mail']])
+        if len(result) == 1:
+            user = result[0]  # user is a tuple
+            mail = user[1].get(config['mail'], [None])
+            lastname = user[1].get(config['sn'], [None])
+            return mail[0], lastname[0]
+
+        logger.error('LDAP client search failed')
+        return None
+
     def check_valid_user(self, username, password):
         user = conf.auth.get('users', {}).get(username)
         if user:
@@ -219,34 +245,18 @@ class LoginController(RestController):
             if salted_password == crypt.crypt(password, salted_password):
                 return user.get('mail'), user.get('lastname')
 
-        l = conf.auth['ldap']
-        conn = ldap.initialize(l['host'])
-        conn.set_option(ldap.OPT_REFERRALS, 0)
-        who = l['dn'] % {'username': username}
-        try:
-            conn.simple_bind_s(who, password)
-        except (ldap.INVALID_CREDENTIALS, ldap.SERVER_DOWN):
-            logger.error('Client unable to bind on LDAP invalid credentials.')
-            return None
-        result = conn.search_s(
-            who, ldap.SCOPE_SUBTREE, '(cn=*)',
-            attrlist=[l['sn'], l['mail']])
-        if len(result) == 1:
-            user = result[0]  # user is a tuple
-            mail = user[1].get(l['mail'], [None])
-            lastname = user[1].get(l['sn'], [None])
-            return mail[0], lastname[0]
-        # Something went wrong if no or more than one result is retrieved
-        logger.error('Client unable to bind on LDAP unexpected behavior.')
-        return (None, None)
+        ldap = conf.auth.get('ldap')
+        if ldap:
+            return self.check_ldap_user(ldap, username, password)
+
+        logger.error('User not autheticated')
+        return None
 
     @expose()
     def post(self, **kwargs):
-        logger.info('Client requests authentication via LDAP.')
+        logger.info('Client requests authentication.')
         if 'back' not in kwargs:
-            logger.error(
-                'Client requests authentication via LDAP without' +
-                'back in params.')
+            logger.error('Client requests authentication without back url.')
             abort(422)
         back = kwargs['back']
         if 'username' in kwargs and 'password' in kwargs:
@@ -254,26 +264,19 @@ class LoginController(RestController):
             password = kwargs['password']
             valid_user = self.check_valid_user(username, password)
             if not valid_user:
-                logger.error(
-                    'Client requests authentication via LDAP with' +
-                    'wrong credentials.')
+                logger.error('Client requests authentication with wrong'
+                             ' credentials.')
                 response.status = 401
-                return render(
-                    'login.html',
-                    dict(back=back, message='Authorization failed.'))
+                return render('login.html',
+                              dict(back=back, message='Authorization failed.'))
             email, lastname = valid_user
-            logger.info(
-                'Client requests authentication via LDAP success (%s).'
-                % username)
+            logger.info('Client requests authentication success %s' % username)
             setup_response(username, back, email, lastname)
         else:
-            logger.error(
-                'Client requests authentication via LDAP without' +
-                'credentials in params.')
+            logger.error('Client requests authentication without credentials.')
             response.status = 401
-            return render(
-                'login.html',
-                dict(back=back, message='Authorization failed.'))
+            return render('login.html', dict(back=back,
+                                             message='Authorization failed.'))
 
     @expose(template='login.html')
     def get(self, **kwargs):

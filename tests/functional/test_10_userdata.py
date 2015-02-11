@@ -100,3 +100,10 @@ class TestUserdata(Base):
         # verify if user is created in gerrit and redmine
         self.verify_userdata_gerrit('user5')
         self.verify_userdata_redmine('user5')
+
+    def test_invalid_user_login(self):
+        """ Functional test when trying to login with an invalid user
+        """
+        self.logout()
+        response = self.login('toto', 'nopass', '/')
+        self.assertEqual(response.status_code, 401)
