@@ -124,6 +124,15 @@ After adding the files, you need to commit the changes in your local repo
 
  $ git commit -m "Detailed description about the change"
 
+Commit message hooks
+''''''''''''''''''''
+
+If you are working on a feature or a bug that is defined in a ticket on Redmine,
+you can add a line like "Bug: XXX" in your commit message, where XXX is the
+ticket number on Redmine. This way, when you submit your change for review, the
+ticket will see its status updated to "In Progress"; when the change is merged
+the ticket will be closed automatically.
+
 .. _publishchange:
 
 Publishing the change
