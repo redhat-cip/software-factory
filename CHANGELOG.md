@@ -1,6 +1,27 @@
 # Change Log
 
-## 0.9.6 [unreleased]
+## 0.9.7 [unreleased]
+
+## 0.9.6 2015-02-12
+
+### Fixed
+
+- Fix Github authentication filtered by organization when
+  membership is private.
+
+### Added
+
+- Allow to specify more than one nameserver during the HEAT
+  deployment.
+- Add an issue migration tool. Currently support migration
+  from regular Redmine to SF Redmine. A section has been added in
+  the documentation about that feature.
+- Add an option to configure an automatic backup export to a
+  Swift container.
+- Add an option to hidden all services including Pastie, Etherpad
+  and Zuul behind the authentication.
+- Improve documentation about issue status update by the
+  Gerrit hooks.
 
 ## 0.9.5 2015-02-03
 
