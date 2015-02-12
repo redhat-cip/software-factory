@@ -177,7 +177,8 @@ class SFRedmineMigrator(base.BaseRedmine):
                     except IndexError:
                         log_msg = "Version %s not found, leaving empty"
                         logger.debug(log_msg % mapped_version)
-                        del issue['fixed_version_id']
+                        if 'fixed_version_id' in issue:
+                            del issue['fixed_version_id']
                 # check user
                 if 'assigned_to_login' in issue:
                     mapped_user = self.mapper.map(issue['assigned_to_login'])
@@ -193,7 +194,8 @@ class SFRedmineMigrator(base.BaseRedmine):
                     except IndexError:
                         log_msg = "User %s not found, leaving empty"
                         logger.debug(log_msg % mapped_user)
-                        del issue['assigned_to_id']
+                        if 'assigned_to_id' in issue:
+                            del issue['assigned_to_id']
                 # check priority
                 if 'priority_name' in issue:
                     mapped_priority = self.mapper.map(issue['priority_name'])
