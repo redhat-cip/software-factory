@@ -60,7 +60,11 @@ auth = {
     'github': {
         'top_domain': '<%= scope.function_hiera(["top_domain"]) %>',
         'auth_url':  'https://github.com/login/oauth/authorize',
-        'redirect_uri': '<%= @cauth['github_redirect_url'] %>',
+        <% if scope.function_hiera(["enforce_ssl"]) %>
+        'redirect_uri': 'https://<%= @cauth['github_redirect_url'] %>',
+        <% else %>
+        'redirect_uri': 'http://<%= @cauth['github_redirect_url'] %>',
+        <% end %>
         'client_id': '<%= @cauth['github_app_id'] %>',
         'client_secret': '<%= @cauth['github_app_secret'] %>',
         'allowed_organizations': '<%= @cauth['allowed_organizations'] %>'

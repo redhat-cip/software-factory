@@ -22,6 +22,7 @@ import urllib
 import ldap
 import logging
 import requests
+from requests.exceptions import ConnectionError
 from urlparse import urlparse
 
 from M2Crypto import RSA
@@ -108,14 +109,18 @@ def setup_response(username, back, email=None, lastname=None, keys=None):
 class GithubController(object):
     def get_access_token(self, code):
         github = conf.auth['github']
-        resp = requests.post(
-            "https://github.com/login/oauth/access_token",
-            params={
-                "client_id": github['client_id'],
-                "client_secret": github['client_secret'],
-                "code": code,
-                "redirect_uri": github['redirect_uri']},
-            headers={'Accept': 'application/json'})
+        url = "https://github.com/login/oauth/access_token"
+        params = {
+            "client_id": github['client_id'],
+            "client_secret": github['client_secret'],
+            "code": code,
+            "redirect_uri": github['redirect_uri']}
+        headers = {'Accept': 'application/json'}
+        try:
+            resp = requests.post(url, params=params, headers=headers)
+        except ConnectionError:
+            return None
+
         jresp = resp.json()
         if 'access_token' in jresp:
             return jresp['access_token']
