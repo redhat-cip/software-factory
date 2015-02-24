@@ -27,6 +27,12 @@
             <div class="col-sm-4 col-md-4 col-xs-4">
                 <div class="panel panel-default" id="login">
                     <div class="panel-body text-center">
+                    % if message:
+                        <div class="alert alert-danger" role="alert">
+                          <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+                          <span class="sr-only">${message}</span>
+			</div>
+                    % endif
                         <div class="btn-group input-group btn-group-justified" data-toggle="buttons">
                             <a href='/auth/login/github?back=${back}' class="btn btn-primary" target="_top">
                                 <i class="fa fa-lg fa-github"></i>
@@ -36,11 +42,19 @@
                        </div>
                        <hr />
                         <form method="post" action="/auth/login/" class="form-signin" target="_top">
+                            % if message:
+                            <div class="form-group has-error">
+                            % else:
                             <div class="form-group">
+                            % endif
                                 <input class="form-control" name="username" id="username" type="text" value="" placeholder="Username" required autofocus>
                             </div>
 
+                            % if message:
+                            <div class="form-group has-error">
+                            % else:
                             <div class="form-group">
+                            % endif
                                 <input class="form-control" name="password" id="password" type="password" placeholder="Password" required>
                             </div>
 
