@@ -107,3 +107,15 @@ class TestUserdata(Base):
         self.logout()
         response = self.login('toto', 'nopass', '/')
         self.assertEqual(response.status_code, 401)
+
+    def test_nonmember_backlog_permissions(self):
+        """Make sure project non members can see the backlog and add
+        stories"""
+        # default value, skip gracefully if it cannot be found
+        try:
+            non_member_role = self.rm.r.role.get(1)
+            assert non_member_role.name == 'Non member'
+        except:
+            self.skipTest("Could not fetch non-member permissions")
+        self.assertTrue('view_master_backlog' in non_member_role.permissions)
+        self.assertTrue('create_stories' in non_member_role.permissions)

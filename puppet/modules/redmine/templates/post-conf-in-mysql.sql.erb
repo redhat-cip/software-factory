@@ -12,18 +12,22 @@ SET @host="<%= scope.function_hiera(["top_domain"]) %>/_redmine";
 SET @mailfrom="redmine@<%= scope.function_hiera(["top_domain"]) %>";
 SET @footer="You have received this notification because you have either subscribed to it, or are involved in it. To change your notification preferences, please click here: <%= scope.function_hiera(["gateway_url"]) %>/_redmine/my/account";
 
-INSERT INTO settings (name, value, updated_on) SELECT * FROM (SELECT 'rest_api_enabled','1', CURRENT_TIMESTAMP()) AS TMP WHERE NOT EXISTS(SELECT name FROM settings WHERE name='rest_api_enabled');
+
+INSERT IGNORE INTO settings (name, value, updated_on) SELECT * FROM (SELECT 'rest_api_enabled','1', CURRENT_TIMESTAMP()) AS TMP WHERE NOT EXISTS(SELECT name FROM settings WHERE name='rest_api_enabled');
 INSERT INTO settings (name, value, updated_on) SELECT * FROM (SELECT @http_auth_config_name, @http_auth_config_value, CURRENT_TIMESTAMP()) AS TMP WHERE NOT EXISTS(SELECT name FROM settings WHERE name=@http_auth_config_name);
 
-INSERT INTO users VALUES (3, @username, '', @username, 'Redmine Admin', @email, 1, 1, NULL, 'en', NULL, NULL, NULL, 'User', NULL, 'all', '', 0);
+INSERT IGNORE INTO users VALUES (3, @username, '', @username, 'Redmine Admin', @email, 1, 1, NULL, 'en', NULL, NULL, NULL, 'User', NULL, 'all', '', 0);
 DELETE FROM users WHERE id=1; # Autocreated Admin user
 DELETE FROM users WHERE id=2; # Autocreated Anonymous user
 SELECT id INTO @user_id FROM users WHERE login=@username;
-INSERT INTO tokens (user_id, action, value, created_on) VALUES(@user_id, 'api', @api_key, CURRENT_TIMESTAMP());
+INSERT IGNORE INTO tokens (user_id, action, value, created_on) VALUES(@user_id, 'api', @api_key, CURRENT_TIMESTAMP());
 
 DELETE FROM settings WHERE name='host_name';
-INSERT INTO settings (name, value, updated_on) VALUES('host_name', @host, CURRENT_TIMESTAMP());
+INSERT IGNORE INTO settings (name, value, updated_on) VALUES('host_name', @host, CURRENT_TIMESTAMP());
 DELETE FROM settings WHERE name='mail_from';
-INSERT INTO settings (name, value, updated_on) VALUES('mail_from', @mailfrom, CURRENT_TIMESTAMP());
+INSERT IGNORE INTO settings (name, value, updated_on) VALUES('mail_from', @mailfrom, CURRENT_TIMESTAMP());
 DELETE FROM settings WHERE name='emails_footer';
-INSERT INTO settings (name, value, updated_on) VALUES('emails_footer', @footer, CURRENT_TIMESTAMP());
+INSERT IGNORE INTO settings (name, value, updated_on) VALUES('emails_footer', @footer, CURRENT_TIMESTAMP());
+
+UPDATE roles SET permissions = CONCAT_WS('\n', permissions, '- :view_master_backlog') WHERE name = 'Non member' AND permissions NOT LIKE CONCAT('%', '- :view_master_backlog', '%');
+UPDATE roles SET permissions = CONCAT_WS('\n', permissions, '- :create_stories') WHERE name = 'Non member' AND permissions NOT LIKE CONCAT('%', '- :create_stories', '%');
