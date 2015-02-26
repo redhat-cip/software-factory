@@ -13,7 +13,7 @@
 # under the License.
 
 from unittest import TestCase
-from mock import patch, Mock
+from mock import patch, Mock, ANY
 from M2Crypto import RSA, BIO
 
 from cauth.controllers.userdetails import Gerrit
@@ -24,6 +24,7 @@ from webtest import TestApp
 from pecan import load_app
 from webob.exc import HTTPUnauthorized
 
+import base64
 import crypt
 import tempfile
 import json
@@ -289,7 +290,7 @@ class TestLoginController(TestCase):
 
 
 @httmock.urlmatch(netloc=r'(.*\.)?github\.com$')
-def oauthmock_request(url, request):
+def githubmock_request(url, request):
     users = {
         "user6": {"login": "user6",
                   "password": "userpass",
@@ -312,10 +313,23 @@ def oauthmock_request(url, request):
         content = {"access_token": token}
     # Handle informations request
     else:
+        u = None
         for user in users:
-            if users[user]['token'] in request.headers['Authorization']:
+            auth_header = request.headers['Authorization']
+            _token = users[user]['token']
+            # handle oauth
+            if _token in auth_header:
                 u = user
                 break
+            # handle API key auth
+            elif base64.b64encode(_token + ':x-oauth-basic') in auth_header:
+                u = user
+                break
+        if not u:
+            # user not found, do not authorize
+            error_content = {u'message': u'Bad credentials'}
+
+            return httmock.response(401, error_content)
         if 'keys' in url.path:
             content = {'key': users[u]['ssh_keys']}
         else:
@@ -323,6 +337,59 @@ def oauthmock_request(url, request):
                        'email': users[u]['email'],
                        'name': users[u]['name']}
     return httmock.response(200, content, headers, None, 5, request)
+
+
+class TestPersonalAccessTokenGithubController(TestCase):
+    @classmethod
+    def setupClass(cls):
+        cls.conf = dummy_conf()
+        gen_rsa_key()
+        root.conf = cls.conf
+
+    @classmethod
+    def tearDownClass(cls):
+        pass
+
+    def test_authenticate(self):
+        with httmock.HTTMock(githubmock_request):
+            root.setup_response = Mock()
+            gc = root.PersonalAccessTokenGithubController()
+            gc.organization_allowed = lambda token: True
+            gc.index(back='/r/', token='user6_token')
+            root.setup_response.assert_called_once_with(
+                'user6', '/r/', 'user6@tests.dom', 'Demo user6', {'key': ''})
+
+        with httmock.HTTMock(githubmock_request):
+            gc = root.PersonalAccessTokenGithubController()
+            gc.organization_allowed = lambda token: False
+            self.assertRaises(HTTPUnauthorized,
+                              gc.index, back='/r/', token='bad_token')
+
+    @patch('requests.get')
+    def test_organization_allowed(self, mocked_get):
+        gc = root.PersonalAccessTokenGithubController()
+        mocked_get.return_value.json.return_value = [{'login': 'acme'}]
+
+        # allowed_organizations not set -> allowed
+        self.assertEqual(True, gc.organization_allowed('token'))
+
+        # allowed_organizations set empty -> allowed
+        self.conf.auth['github']['allowed_organizations'] = ''
+        self.assertEqual(True, gc.organization_allowed('token'))
+
+        # allowed_organizations set, doesn't match token orgs -> not allowed
+        self.conf.auth['github']['allowed_organizations'] = 'some,other'
+        self.assertEqual(False, gc.organization_allowed('token'))
+        mocked_get.assert_called_with(
+            'https://api.github.com/user/orgs',
+            auth=ANY)
+
+        # allowed_organizations set, doesn't match token orgs -> not allowed
+        self.conf.auth['github']['allowed_organizations'] = 'some,other,acme'
+        self.assertEqual(True, gc.organization_allowed('token'))
+        mocked_get.assert_called_with(
+            'https://api.github.com/user/orgs',
+            auth=ANY)
 
 
 class TestGithubController(TestCase):
@@ -337,13 +404,13 @@ class TestGithubController(TestCase):
         pass
 
     def test_get_access_token(self):
-        with httmock.HTTMock(oauthmock_request):
+        with httmock.HTTMock(githubmock_request):
             gc = root.GithubController()
             self.assertEqual('user6_token',
                              gc.get_access_token('user6_code'))
 
     def test_callback(self):
-        with httmock.HTTMock(oauthmock_request):
+        with httmock.HTTMock(githubmock_request):
             db.get_url = Mock(return_value='/r/')
             root.setup_response = Mock()
             gc = root.GithubController()
@@ -352,7 +419,7 @@ class TestGithubController(TestCase):
             root.setup_response.assert_called_once_with(
                 'user6', '/r/', 'user6@tests.dom', 'Demo user6', {'key': ''})
 
-        with httmock.HTTMock(oauthmock_request):
+        with httmock.HTTMock(githubmock_request):
             db.get_url = Mock(return_value='/r/')
             gc = root.GithubController()
             gc.organization_allowed = lambda login: False
@@ -419,7 +486,7 @@ class TestCauthApp(FunctionalTest):
         self.assertEqual(response.status_int, 401)
 
     def test_github_login(self):
-        with httmock.HTTMock(oauthmock_request):
+        with httmock.HTTMock(githubmock_request):
             with patch('cauth.controllers.root.userdetails'):
                 response = self.app.get('/login/github/index',
                                         params={'username': 'user6',

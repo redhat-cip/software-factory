@@ -33,3 +33,8 @@ class TestSFAuth(TestCase):
             self.assertEqual(
                 '1234',
                 sfauth.get_cookie('auth.tests.dom', 'user1', 'userpass'))
+            self.assertEqual(
+                '1234',
+                sfauth.get_cookie('auth.tests.dom',
+                                  github_access_token='abcd'))
+            self.assertRaises(ValueError, sfauth.get_cookie, 'auth.tests.dom')

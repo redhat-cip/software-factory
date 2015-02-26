@@ -17,18 +17,26 @@
 import requests
 
 
-def get_cookie(auth_server, username, password, use_ssl=False, verify=True):
+def get_cookie(auth_server,
+               username=None, password=None,
+               github_access_token=None,
+               use_ssl=False, verify=True):
+    if username and password:
+        url = "%s/auth/login" % auth_server
+        params = {'username': username,
+                  'password': password,
+                  'back': '/'}
+    elif github_access_token:
+        url = "%s/auth/login/githubAPIkey/" % auth_server
+        params = {'token': github_access_token,
+                  'back': '/'}
+    else:
+        raise ValueError("Missing credentials")
     if use_ssl:
-        url = "https://%s/auth/login" % auth_server
-        resp = requests.post(url, params={'username': username,
-                                          'password': password,
-                                          'back': '/'},
-                             allow_redirects=False,
+        url = "https://" + url
+        resp = requests.post(url, params, allow_redirects=False,
                              verify=verify)
     else:
-        url = "http://%s/auth/login" % auth_server
-        resp = requests.post(url, params={'username': username,
-                                          'password': password,
-                                          'back': '/'},
-                             allow_redirects=False)
+        url = "http://" + url
+        resp = requests.post(url, params, allow_redirects=False)
     return resp.cookies.get('auth_pubtkt', '')

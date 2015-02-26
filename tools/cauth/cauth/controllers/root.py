@@ -106,6 +106,59 @@ def setup_response(username, back, email=None, lastname=None, keys=None):
     response.location = clean_back(back)
 
 
+class PersonalAccessTokenGithubController(object):
+    """Allows a github user to authenticate with a personal access token,
+    see https://github.com/blog/1509-personal-api-tokens and make sure the
+    token has at least the following rights:
+    'user:email, read:public_key, read:org'"""
+
+    def organization_allowed(self, token):
+        allowed_orgs = conf.auth['github'].get('allowed_organizations')
+
+        if allowed_orgs:
+            basic_auth = requests.auth.HTTPBasicAuth(token,
+                                                     'x-oauth-basic')
+            resp = requests.get("https://api.github.com/user/orgs",
+                                auth=basic_auth)
+            user_orgs = resp.json()
+            user_orgs = [org['login'] for org in user_orgs]
+
+            allowed_orgs = allowed_orgs.split(',')
+            allowed_orgs = filter(None, allowed_orgs)
+            allowed = set(user_orgs) & set(allowed_orgs)
+            if not allowed:
+                return False
+        return True
+
+    @expose()
+    def index(self, **kwargs):
+        if 'back' not in kwargs:
+            logger.error('Client requests authentication without back url.')
+            abort(422)
+        back = kwargs['back']
+        if 'token' not in kwargs:
+            logger.error('Client requests authentication without token.')
+            abort(422)
+        token = kwargs['token']
+        resp = requests.get("https://api.github.com/user",
+                            auth=requests.auth.HTTPBasicAuth(token,
+                                                             'x-oauth-basic'))
+        data = resp.json()
+        login = data.get('login')
+        email = data.get('email')
+        name = data.get('name')
+        resp = requests.get("https://api.github.com/user/keys",
+                            auth=requests.auth.HTTPBasicAuth(token,
+                                                             'x-oauth-basic'))
+        ssh_keys = resp.json()
+
+        if not self.organization_allowed(token):
+            abort(401)
+        msg = 'Client %s (%s) auth with Github Personal Access token success.'
+        logger.info(msg % (login, email))
+        setup_response(login, back, email, name, ssh_keys)
+
+
 class GithubController(object):
     def get_access_token(self, code):
         github = conf.auth['github']
@@ -287,6 +340,7 @@ class LoginController(RestController):
         return dict(back=kwargs["back"], message='')
 
     github = GithubController()
+    githubAPIkey = PersonalAccessTokenGithubController()
 
 
 class LogoutController(RestController):
