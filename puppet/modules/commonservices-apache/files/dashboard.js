@@ -3,6 +3,8 @@ var sfDashboard = angular.module('sfDashboard', []);
 function mainController($scope, $http) {
     $scope.data = {};
     $scope.members= [];
+    $scope.testRunning = Object();
+    $scope.testLabels = [];
 
     function initProjects() {
         $scope.errors = false;
@@ -19,44 +21,6 @@ function mainController($scope, $http) {
             });
     };
 
-    function initReviews() {
-        $http.get('/r/changes/?q=status:open')
-            .success(function(data) {
-                var reviews = {};
-                for (key in data) {
-                    var p = data[key].project;
-                    if (reviews[p] == null) {
-                        reviews[p] = 0;
-                    }
-                    reviews[p]++;
-                }
-                $scope.open_reviews = reviews;
-            })
-            .error(function(data) {
-                $scope.errors = data;
-            });
-    };
-
-    function initBugs() {
-        $http.get('/redmine//issues.json?status_id=open')
-            .success(function(data) {
-                var bugs = {};
-                for (var key in data['issues']) {
-                    var p = data['issues'][key]["project"]["name"];
-                    if (bugs[p] == null) {
-                        bugs[p] = {};
-                        bugs[p]['id'] = data['issues'][key]["project"]["id"];
-                        bugs[p]['count'] = 0;
-                    }
-                    bugs[p]['count']++;
-                }
-                $scope.open_bugs = bugs;
-            })
-            .error(function(data) {
-                $scope.errors = data;
-            });
-    };
-
     function initMembers() {
         $http.get('/manage/project/membership/')
             .success( function (data) {
@@ -67,11 +31,47 @@ function mainController($scope, $http) {
             });
     };
 
+    function initTests() {
+        $http.get('/zuul/status.json')
+            .success( function (data) {
+                var projectName;
+                var tests;
+                var pipelines = data.pipelines;
+
+                for ( var i = 0; i < pipelines.length; i++ ) {
+                    // Create the list of test labels 
+                    $scope.testLabels.push(pipelines[i].name);
+                    tests = pipelines[i].change_queues;
+
+                    for ( var j = 0; j < tests.length; j++  ) {
+                        // Create an entry only if there's a test running
+                        for ( var k = 0; k < tests[j].heads.length; k++ ) {
+
+                            for ( var l = 0; l < tests[j].heads[k].length; l++ ) {
+                                projectName = tests[j].heads[k][l].project;
+                            
+                                // Initialize test values of the project. 
+                                if ( !(projectName in $scope.testRunning) ) {
+                                    $scope.testRunning[projectName] = [];
+                                    var z = pipelines.length;
+                                    while (z) $scope.testRunning[projectName][--z] = 0;
+                                }
+
+                                $scope.testRunning[projectName][i]++;
+                            }
+                        }
+                    } 
+                }
+            })
+            .error( function (data) {
+                $scope.errors = data;
+            });
+    };
+
     function init() {
         initProjects();
-        initReviews();
-        initBugs();
         initMembers();
+        initTests();
     };
 
     $scope.createProject = function() {

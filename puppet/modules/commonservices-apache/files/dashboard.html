@@ -32,6 +32,21 @@
         <table class="table table-striped">
             <thead>
                 <tr>
+                    <th>Running Tests</th>
+                    <th ng-repeat="name in testLabels">{{ name }}</th> 
+                </tr>
+            </thead>
+            <tbody>
+                <tr ng-repeat="(name, tests) in testRunning">
+                   <td>{{ name }}</td>
+                   <td ng-repeat="test in tests track by $index">{{ test }}</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <table class="table table-striped">
+            <thead>
+                <tr>
                     <th>Project</th>
                     <th class="text-center">Open Reviews</th>
                     <th class="text-center">Open Bugs</th>
