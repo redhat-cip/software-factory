@@ -59,7 +59,8 @@ case "$(package_tool)" in
      # Install Passenger for Redmine
      mkdir -p ${dir}/var/www/html
      mkdir -p ${dir}/var/log/httpd
-     HOME=/root do_chroot ${dir} gem install passenger bundler
+     HOME=/root do_chroot ${dir} gem install passenger --version 4.0.58
+     HOME=/root do_chroot ${dir} gem install bundler
      HOME=/root do_chroot ${dir} passenger-install-apache2-module -a
      do_chroot ${dir} bash -c "ln -s \$(find /usr/local/share/gems/gems/passenger-${PASSENGER_VERSION}.* -maxdepth 0) /usr/lib/passenger"
      # Install Redmine

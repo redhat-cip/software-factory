@@ -27,6 +27,16 @@ ORIG=$(cd $(dirname $0); pwd)
 
 update_repositories ${dir}
 
+retry $EDEPLOY_ROLES_PATH/puppet-master.install $dir $dir $version
+
+# Temporary workaround for http://softwarefactory.enovance.com/redmine/issues/881
+cat >${dir}/etc/puppet/auth.conf<<EOF
+path ~ .*
+auth any
+allow *
+EOF
+
+
 case "$(package_tool)" in
     "yum")
         add_epel_repository $DIST
