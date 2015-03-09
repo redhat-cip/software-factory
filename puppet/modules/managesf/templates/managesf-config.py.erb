@@ -77,7 +77,7 @@ admin = {
 gerrit = {
     'user': 'gerrit',
     'host': '<%= scope.function_hiera(["gerrit_host"]) %>',
-    'url': '<%= scope.function_hiera(["gerrit_url"]) %>',
+    'url': '<%= scope.function_hiera(["gateway_url"]) %>',
     'top_domain': '<%= scope.function_hiera(["top_domain"]) %>',
     'ssh_port': <%= @gerrit['gerrit_sshd_port'] %>,
     'sshkey_priv_path': '/var/www/managesf/gerrit_admin_rsa',

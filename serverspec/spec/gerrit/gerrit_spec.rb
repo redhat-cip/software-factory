@@ -180,11 +180,6 @@ describe service('gerrit') do
   it { should be_enabled }
 end
 
-# Apache in front of Gerrit
-describe port(80) do
-  it { should be_listening }
-end
-
 # Gerrit itself
 describe port(8080) do
   it { should be_listening }

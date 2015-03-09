@@ -123,7 +123,7 @@ redmine = {
 }
 
 gerrit = {
-    'url': '<%= scope.function_hiera(["gerrit_url"]) %>',
+    'url': '<%= scope.function_hiera(["gateway_url"]) %>',
     'admin_user': '<%= @gerrit['gerrit_admin_username'] %>',
     'admin_password': '<%= @gerrit['gerrit_admin_password'] %>',
     'db_host': '<%= @gerrit['gerrit_mysql_address'] %>',

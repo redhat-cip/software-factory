@@ -7,7 +7,7 @@ if [ -f /root/config.kicked ]; then
 fi
 
 if [ ! -d "/root/config" ]; then
-    git clone <%= scope.function_hiera(["gerrit_url"]) %>/r/config /root/config
+    git clone <%= scope.function_hiera(["gateway_url"]) %>/r/config /root/config
 fi
 
 # JJB

@@ -18,7 +18,7 @@
 [sshd]
     listenAddress = <%= @settings['sshd_listen_address'] ? @settings['sshd_listen_address'] : '*:29418' %>
 [httpd]
-    listenUrl = proxy-http://127.0.0.1:8080/r/
+    listenUrl = proxy-http://0.0.0.0:8080/r/
 [commentlink "Redmine"]
     match = ([Bb]ug:\\s+)(\\d+)
     html = $1<a href=\"<%= scope.function_hiera(["redmine_pub_url"]) %>/issues/$2\">$2</a>

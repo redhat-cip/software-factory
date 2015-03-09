@@ -23,32 +23,11 @@ class gerrit ($settings = hiera_hash('gerrit', ''),
   $httpd_user = "apache"
   $gitweb_cgi = "/var/www/git/gitweb.cgi"
 
-  file { '/etc/httpd/conf.d/gerrit.conf':
-    ensure  => present,
-    mode    => '0640',
-    content => template('gerrit/apache_gerrit.erb'),
-  }
-
   file { 'gerrit_init':
     path  => '/lib/systemd/system/gerrit.service',
     owner => 'gerrit',
     content => template('gerrit/gerrit.service.erb'),
     require => Exec['gerrit-initial-init'],
-  }
-
-  # Apache process restart only when one of the configuration files change
-  service { 'webserver':
-    name        => $http,
-    ensure      => running,
-    enable      => true,
-    hasrestart  => true,
-    provider    => $provider,
-    require     => Service['gerrit'],
-    subscribe   => File['/etc/httpd/conf.d/gerrit.conf'],
-  }
-
-  package { $http:
-    ensure => present,
   }
 
   group { 'gerrit':

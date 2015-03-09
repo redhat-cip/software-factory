@@ -41,7 +41,6 @@ node /.*redmine.*/ inherits base {
 node /.*gerrit.*/ inherits base {
   include ssh_keys_gerrit
   include gerrit
-  include cauth_client
   include bup
 }
 
