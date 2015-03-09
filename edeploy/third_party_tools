@@ -31,7 +31,7 @@ MOD_AUTH_PUBTKT_URL="https://neon1.net/mod_auth_pubtkt/mod_auth_pubtkt-${MOD_AUT
 URL_LIST="$URL_LIST $MOD_AUTH_PUBTKT_URL"
 
 # passenger (rubygem)
-PASSENGER_VERSION=4.0
+PASSENGER_VERSION=4.0.58
 
 # redmine
 REDMINE_VERSION=2.5.2

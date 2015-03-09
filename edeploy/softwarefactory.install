@@ -59,10 +59,10 @@ case "$(package_tool)" in
      # Install Passenger for Redmine
      mkdir -p ${dir}/var/www/html
      mkdir -p ${dir}/var/log/httpd
-     HOME=/root do_chroot ${dir} gem install passenger --version 4.0.58
+     HOME=/root do_chroot ${dir} gem install passenger --version ${PASSENGER_VERSION}
      HOME=/root do_chroot ${dir} gem install bundler
      HOME=/root do_chroot ${dir} passenger-install-apache2-module -a
-     do_chroot ${dir} bash -c "ln -s \$(find /usr/local/share/gems/gems/passenger-${PASSENGER_VERSION}.* -maxdepth 0) /usr/lib/passenger"
+     do_chroot ${dir} bash -c "ln -s \$(find /usr/local/share/gems/gems/passenger-${PASSENGER_VERSION} -maxdepth 0) /usr/lib/passenger"
      # Install Redmine
      http_fetch $REDMINE_RHEL_URL ${dir}/usr/share/redmine.tar.gz
      do_chroot ${dir} bash -c "cd /usr/share && tar -xzpf redmine.tar.gz && mv redmine-${REDMINE_VERSION} redmine && chown -R root:root redmine"
