@@ -34,6 +34,17 @@ echo "Detected version is $current_version"
 # get the domain from sfconfig.yaml
 DOMAIN=$(egrep "^domain:" /etc/puppet/hiera/sf/sfconfig.yaml | sed 's/domain://' | tr -d ' ')
 
+# update new default variable
+SRC=/srv/software-factory/bootstraps/sfconfig.yaml
+DST=/root/sfconfig.yaml
+if [ ! -f ${SRC} ] || [ ! -f ${DST} ]; then
+    echo "Missing configuration file..."
+    exit -1
+fi
+grep -v '^$\|^\s*\#' ${SRC} | cut -d: -f1 | while read k; do
+    grep -q "^$k:" ${DST} || (grep "^$k:" ${SRC} >> ${DST} && echo "Adding default value $k" );
+done
+
 # Start the upgrade by jumping in the cloned version and running
 # the ansible playbook.
 cd ${clone_path}/upgrade/${PREVIOUS_SF_VER}/${SF_VER}/ || exit -1
