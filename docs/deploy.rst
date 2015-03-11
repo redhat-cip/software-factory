@@ -433,3 +433,70 @@ authentication.
 
 Note that a user has to be member of at least one of this organizations to use this SF deployment.
 Leave empty if not required.
+
+Setup replication to GitHub
+---------------------------
+
+Sometimes you want to have an external repository that Gerrit should push
+changes to, for example a repository on Github where you want to host your code
+too.  This is a short guide howto setup a replication for one or more
+repositories to an external git server, in this case Github.
+
+1. Create a new SSH key and add the public key to your project "Deploy keys"
+project on Github (in Settings->Deploy Keys). The private key should be stored
+with permission 600 somewhere in /home/gerrit/site_path/etc
+
+.. code-block:: bash
+
+ ssh-keygen -f /home/gerrit/site_path/etc/github_repo_name_key
+
+2. Create a SSH config entry in /home/gerrit/.ssh/config:
+
+.. code-block:: guess
+
+ Host "github_repo_name"
+     Hostname github.com
+     PreferredAuthentications publickey
+     IdentityFile /home/gerrit/site_path/etc/github_repo_name_key.pub
+     StrictHostKeyChecking no
+     UserKnownHostsFile /dev/null
+
+3. Create the following config in /home/gerrit/site_path/etc/replication.config:
+
+.. code-block:: guess
+
+ [remote "github_repo_name"]
+ url = git@github_repo_name:GITHUB_USERNAME/github_repo_name.git
+ push = +refs/heads/*:refs/heads/*
+ push = +refs/tags/*:refs/tags/*
+ projects = test-sf
+
+Please note that the hostname is not the real hostname from github in this case.
+It's the name that is also used in the SSH configuration; this makes it possible
+to use different SSH deploy keys for different repositories in Github -
+otherwise you could only use a single hostname.
+
+4. Restart Gerrit
+
+.. code-block:: bash
+
+ service gerrit restart
+
+5. Trigger replication (from my host, using my identity):
+
+.. code-block:: bash
+
+ ssh -p 29418 softwarefactory.hostname replication start test-sf --wait
+
+The initial replication takes some time, but finally it will respond with
+something like this:
+
+.. code-block:: guess
+
+    Replicate test-sf to test-sf.github, Succeeded!
+    ----------------------------------------------
+    Replication completed successfully!
+
+Please note that Gerrit overwrites all commits that are merged elsewhere. That
+means that merged Pull Requests in Github itself will be lost in the history
+(technically they are still there, but no longer visible).
