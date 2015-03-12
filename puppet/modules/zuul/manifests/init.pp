@@ -31,6 +31,12 @@ class zuul ($settings = hiera_hash('jenkins', ''), $gh = hiera('gerrit_host'), $
     target  => '/srv/zuul/etc/status/public_html',
   }
 
+  file {'/srv/zuul/etc/status/public_html/index.html':
+    ensure  => present,
+    mode    => '0644',
+    source  => 'puppet:///modules/zuul/index.html',
+  }
+
   file {'/etc/httpd/conf.d/zuul.conf':
     ensure => file,
     mode   => '0640',

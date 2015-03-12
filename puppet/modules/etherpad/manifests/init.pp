@@ -99,4 +99,13 @@ class etherpad ($etherpad = hiera_hash('etherpad', '')) {
                    Exec['change_owner']],
   }
 
+  file { '/var/www/etherpad-lite/src/static/custom/pad.css':
+    ensure  => present,
+    owner   => 'etherpad',
+    group   => 'etherpad',
+    mode    => '0740',
+    source  => 'puppet:///modules/etherpad/pad.css',
+    require => File['/var/www/etherpad-lite'],
+  }
+
 }

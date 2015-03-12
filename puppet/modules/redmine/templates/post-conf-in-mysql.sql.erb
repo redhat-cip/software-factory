@@ -8,9 +8,9 @@ SET @http_auth_config_value="--- !ruby/hash:ActiveSupport::HashWithIndifferentAc
 SET @api_key="<%= @settings['issues_tracker_api_key'] %>";
 SET @username="<%= @settings['redmine_admin_username'] %>";
 SET @email="<%= @settings['redmine_admin_mail'] %>";
-SET @host="<%= scope.function_hiera(["top_domain"]) %>/_redmine";
+SET @host="<%= scope.function_hiera(["redmine_pub_url"]) %>";
 SET @mailfrom="redmine@<%= scope.function_hiera(["top_domain"]) %>";
-SET @footer="You have received this notification because you have either subscribed to it, or are involved in it. To change your notification preferences, please click here: <%= scope.function_hiera(["gateway_url"]) %>/_redmine/my/account";
+SET @footer="You have received this notification because you have either subscribed to it, or are involved in it. To change your notification preferences, please click here: <%= scope.function_hiera(["redmine_pub_url"]) %>my/account";
 
 
 INSERT IGNORE INTO settings (name, value, updated_on) SELECT * FROM (SELECT 'rest_api_enabled','1', CURRENT_TIMESTAMP()) AS TMP WHERE NOT EXISTS(SELECT name FROM settings WHERE name='rest_api_enabled');
@@ -31,3 +31,6 @@ INSERT IGNORE INTO settings (name, value, updated_on) VALUES('emails_footer', @f
 
 UPDATE roles SET permissions = CONCAT_WS('\n', permissions, '- :view_master_backlog') WHERE name = 'Non member' AND permissions NOT LIKE CONCAT('%', '- :view_master_backlog', '%');
 UPDATE roles SET permissions = CONCAT_WS('\n', permissions, '- :create_stories') WHERE name = 'Non member' AND permissions NOT LIKE CONCAT('%', '- :create_stories', '%');
+
+DELETE FROM settings WHERE name='ui_theme';
+INSERT IGNORE INTO settings (name, value, updated_on) VALUES('ui_theme', "classic", CURRENT_TIMESTAMP());

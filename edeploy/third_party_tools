@@ -43,8 +43,8 @@ URL_LIST="$URL_LIST $REDMINE_RHEL_URL"
 GIT_REPO_LIST="$GIT_REPO_LIST $REDMINE_BACKLOG_URL $REDMINE_HTTP_PLUGIN_URL"
 
 # gerrit
-GERRIT_VERSION=2861
-GERRIT_URL="http://os.enocloud.com:8080/v1/AUTH_70aab03f69b549cead3cb5f463174a51/gerrit/gerrit${GERRIT_VERSION}.war"
+GERRIT_VERSION=2.8.6.1
+GERRIT_URL="http://gerrit-releases.storage.googleapis.com/gerrit-${GERRIT_VERSION}.war"
 MYSQLJAVA_VERSION=5.1.21
 MYSQLJAVA_URL="http://repo2.maven.org/maven2/mysql/mysql-connector-java/${MYSQLJAVA_VERSION}/mysql-connector-java-${MYSQLJAVA_VERSION}.jar"
 BCPROV_VERSION="1.49"
@@ -68,7 +68,9 @@ JENKINS_SWARM_VERSION=1.22
 JENKINS_SWARM_CLIENT_URL="http://maven.jenkins-ci.org/content/repositories/releases/org/jenkins-ci/plugins/swarm-client/${JENKINS_SWARM_VERSION}/swarm-client-${JENKINS_SWARM_VERSION}-jar-with-dependencies.jar"
 JENKINS_SWARM_PLUGIN_URL="http://repo.jenkins-ci.org/releases/org/jenkins-ci/plugins/swarm/${JENKINS_SWARM_VERSION}/swarm-${JENKINS_SWARM_VERSION}.hpi"
 
-URL_LIST="$URL_LIST $JENKINS_SWARM_CLIENT_URL $JENKINS_SWARM_PLUGIN_URL"
+JENKINS_THEME_PLUGIN_URL="http://updates.jenkins-ci.org/latest/simple-theme-plugin.hpi"
+
+URL_LIST="$URL_LIST $JENKINS_SWARM_CLIENT_URL $JENKINS_SWARM_PLUGIN_URL JENKINS_THEME_PLUGIN_URL"
 
 # etherpad
 ETHERPAD_LITE_VERSION=1.4.0

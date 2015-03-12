@@ -318,4 +318,4 @@ class TestGerrit(Base):
             url,
             cookies=dict(
                 auth_pubtkt=config.USERS[config.USER_1]['auth_cookie']))
-        self.assertTrue('"2.8.6.1-dirty"' in resp.text)
+        self.assertTrue('"2.8.6.1"' in resp.text)

@@ -213,14 +213,6 @@ class gerrit ($settings = hiera_hash('gerrit', ''),
     mode    => '0644',
     source  => '/root/gerrit_data_source/gerrit.war',
   }
-  file { '/home/gerrit/site_path/etc/mail/RegisterNewEmail.vm':
-    ensure  => present,
-    owner   => 'gerrit',
-    group   => 'gerrit',
-    mode    => '0640',
-    source  => 'puppet:///modules/gerrit/RegisterNewEmail.vm',
-    require => file['/home/gerrit/site_path/etc/mail'],
-  }
 
   # Here we setup file based on templates
   file { '/home/gerrit/site_path/etc/gerrit.config':
@@ -491,4 +483,10 @@ class gerrit ($settings = hiera_hash('gerrit', ''),
     require => File['/home/gerrit/.ssh'],
   }
 
+  file { '/home/gerrit/site_path/etc/GerritSiteHeader.html':
+    ensure  => present,
+    owner   => 'gerrit',
+    group   => 'gerrit',
+    source  => 'puppet:///modules/gerrit/GerritSiteHeader.html',
+  }
 }

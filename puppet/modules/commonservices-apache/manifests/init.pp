@@ -78,21 +78,21 @@ class commonservices-apache ($cauth = hiera_hash('cauth', ''),
                 File['00-ssl.conf']]
   }
 
-  file {'/var/www/index.py':
-    ensure => file,
-    mode   => '0740',
-    owner  => $httpd_user,
-    group  => $httpd_user,
-    source  => 'puppet:///modules/commonservices-apache/index.py',
-    notify => Service['webserver'],
-  }
-
-  file {'/var/www/index.html.tmpl':
+  file {'/var/www/static/js/topmenu.js':
     ensure => file,
     mode   => '0640',
     owner  => $httpd_user,
     group  => $httpd_user,
-    content => template('commonservices-apache/index.html.tmpl'),
+    source  => 'puppet:///modules/commonservices-apache/topmenu.js',
+    notify => Service['webserver'],
+  }
+
+  file {'/var/www/topmenu.html':
+    ensure => file,
+    mode   => '0640',
+    owner  => $httpd_user,
+    group  => $httpd_user,
+    source  => 'puppet:///modules/commonservices-apache/topmenu.html',
     notify => Service['webserver'],
   }
 

@@ -81,7 +81,7 @@ class TestUserdata(Base):
         self.logout()
         response = self.login('user5', 'userpass',
                               'http%3a%2f%2ftests.dom%2fjenkins%2f')
-        expected_url = "https://{}/_jenkins/".format(config.GATEWAY_HOST)
+        expected_url = "http://{}/jenkins/".format(config.GATEWAY_HOST)
 
         self.assertEqual(expected_url, response.url)
         # verify if user is created in gerrit and redmine
@@ -94,7 +94,7 @@ class TestUserdata(Base):
         self.logout()
         response = self.login('user5', 'userpass',
                               'http%3a%2f%2ftests.dom%2fredmine%2fprojects')
-        expect_url = "https://{}/_redmine/projects".format(config.GATEWAY_HOST)
+        expect_url = "http://{}/redmine/projects".format(config.GATEWAY_HOST)
 
         self.assertEqual(expect_url, response.url)
         # verify if user is created in gerrit and redmine

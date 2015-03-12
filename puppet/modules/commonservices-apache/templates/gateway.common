@@ -57,15 +57,12 @@
 
     </IfModule>
 
-    Alias /static/ /var/www/static/
-    Alias /docs/ /var/www/docs/
-    Alias /dashboard/ /var/www/dashboard/
+    DocumentRoot /var/www/
 
-    ScriptAliasMatch ^/[^(auth)|(managesf)].*$ /var/www/index.py
+    RewriteEngine On
+    RewriteRule ^/$ /dashboard [R]
 
     <Directory /var/www>
-        AddHandler cgi-script .py
-        Options +ExecCGI
         AllowOverride None
         Order allow,deny
         allow from all

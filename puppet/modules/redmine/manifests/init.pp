@@ -166,4 +166,22 @@ class redmine ($settings = hiera_hash('redmine', ''),
       unless  => '/usr/bin/grep "relative_url_root = \"/redmine\"" /usr/share/redmine/config/environment.rb',
       notify      => Exec['chown_redmine'],
     }
+
+    file {'/usr/share/redmine/public/themes/classic/javascripts/':
+      ensure => directory,
+      mode   => '0644',
+      owner  => $httpd_user,
+      group  => $httpd_user,
+    }
+
+    file { 'topmenu.js':
+      path    => '/usr/share/redmine/public/themes/classic/javascripts/theme.js',
+      ensure  => file,
+      mode    => '0644',
+      owner   => $httpd_user,
+      group   => $httpd_user,
+      source  => 'puppet:///modules/commonservices-apache/topmenu.js',
+      require => File['/usr/share/redmine/public/themes/classic/javascripts/'],
+    }
+
 }

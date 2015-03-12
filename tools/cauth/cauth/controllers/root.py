@@ -23,7 +23,6 @@ import ldap
 import logging
 import requests
 from requests.exceptions import ConnectionError
-from urlparse import urlparse
 
 from M2Crypto import RSA
 
@@ -37,27 +36,6 @@ LOGOUT_MSG = "You have been successfully logged " \
              "out of all the Software factory services."
 
 logger = logging.getLogger(__name__)
-
-
-def clean_back(value):
-    """Returns an absolute url path that matches the valid path available.
-    """
-    valid_paths = ('/_jenkins/', '/_zuul/', '/_redmine/', '/_etherpad/',
-                   '/_paste/', '/_dashboard/')
-
-    uri = urllib.unquote_plus(value).decode("utf8")
-    parsed = urlparse(uri)
-    path = parsed.path
-    if not path.startswith('/_'):
-        if path[0] == '/':
-            path = '/_' + path[1:]
-        elif path[0] == '_':
-            path = '/' + path
-        else:
-            path = '/_' + path
-    if any(path.startswith(x) for x in valid_paths):
-        return path
-    return '/_r/'
 
 
 def signature(data):
@@ -103,7 +81,7 @@ def setup_response(username, back, email=None, lastname=None, keys=None):
                         max_age=conf.app['cookie_period'],
                         overwrite=True)
     response.status_code = 303
-    response.location = clean_back(back)
+    response.location = urllib.unquote_plus(back).decode("utf8")
 
 
 class PersonalAccessTokenGithubController(object):

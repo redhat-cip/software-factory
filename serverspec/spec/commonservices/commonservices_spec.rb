@@ -36,7 +36,3 @@ end
 describe port(5000) do
   it { should be_listening }
 end
-
-describe file('/var/www/index.html.tmpl') do
-  it { should contain "<title>Software Factory (#{property[:sfversion]})</title>" }
-end
