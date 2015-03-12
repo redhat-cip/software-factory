@@ -132,6 +132,13 @@ you can add a line like "Bug: XXX" in your commit message, where XXX is the
 ticket number on Redmine. This way, when you submit your change for review, the
 ticket will see its status updated to "In Progress"; when the change is merged
 the ticket will be closed automatically.
+The following keywords are supported:
+
+* bug/Bug
+* issue/Issue
+* fix/Fix
+* close/Close
+* Related to/Related-To (this will not close the bug upon merging the patch)
 
 .. _publishchange:
 

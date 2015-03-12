@@ -22,7 +22,7 @@ echo "$(date) - $(hostname)"
 
 echo "FLAKE8 tests"
 echo "~~~~~~~~~~~~"
-find . -iname "*.py" | grep -v .tox | xargs flake8
+find . -iname "*.py" -o -name "change-merged" -o -name "patchset-created" | grep -v .tox | xargs flake8
 FLAKE8_ERRORS=$?
 echo
 

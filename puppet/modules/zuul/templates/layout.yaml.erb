@@ -11,7 +11,10 @@ pipelines:
       gerrit:
         - event: patchset-created
         - event: comment-added
-          comment_filter: retrigger
+          comment: (?i)retrigger
+        # this one is for people used to the openstack workflow
+        - event: comment-added
+          comment: (?i)recheck
     start:
       gerrit:
         verified: 0

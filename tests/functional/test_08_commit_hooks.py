@@ -28,6 +28,20 @@ from pysflib.sfredmine import RedmineUtils
 from pysflib.sfgerrit import GerritUtils
 
 
+TEST_MSGS = [
+    ('bug: %s', 'Closed'),
+    ('Bug: %s', 'Closed'),
+    ('bug: #%s', 'Closed'),
+    ('Bug: #%s', 'Closed'),
+    ('issue: %s', 'Closed'),
+    ('Issue: %s', 'Closed'),
+    ('issue: #%s', 'Closed'),
+    ('Issue: #%s', 'Closed'),
+    ('related to: %s', 'In Progress'),
+    ('Related-To: #%s', 'In Progress'),
+]
+
+
 class TestGerritHooks(Base):
     """ Functional tests that validate Gerrit hooks.
     """
@@ -74,7 +88,7 @@ class TestGerritHooks(Base):
                                options)
         self.projects.append(name)
 
-    def test_update_issue_hooks(self):
+    def _test_update_issue_hooks(self, comment_template, status):
         """ A referenced issue in commit msg triggers the hook
         """
         pname = 'p_%s' % create_random_str()
@@ -94,7 +108,7 @@ class TestGerritHooks(Base):
         url = "ssh://%s@%s:29418/%s" % (self.u, config.GATEWAY_HOST,
                                         pname)
         clone_dir = self.gitu.clone(url, pname)
-        cmt_msg = "Fix bug: %s" % issue_id
+        cmt_msg = comment_template % issue_id
         self.gitu.add_commit_and_publish(clone_dir, 'master', cmt_msg)
 
         # Check issue status (Gerrit hook updates the issue to in progress)
@@ -107,7 +121,9 @@ class TestGerritHooks(Base):
             time.sleep(1)
             attempt += 1
         self.assertTrue(self.rm.test_issue_status(issue_id, 'In Progress'))
+        self._test_merging(pname, issue_id, status)
 
+    def _test_merging(self, pname, issue_id, status):
         # Get the change id and merge the patch
         change_ids = self.gu.get_my_changes_for_project(pname)
         self.assertGreater(len(change_ids), 0)
@@ -121,10 +137,15 @@ class TestGerritHooks(Base):
         # Check issue status (Gerrit hook updates the issue to in progress)
         attempt = 0
         while True:
-            if self.rm.test_issue_status(issue_id, 'Closed'):
+            if self.rm.test_issue_status(issue_id, status):
                 break
             if attempt > 10:
                 break
             time.sleep(1)
             attempt += 1
-        self.assertTrue(self.rm.test_issue_status(issue_id, 'Closed'))
+        self.assertTrue(self.rm.test_issue_status(issue_id, status))
+
+    def test_gerrit_hook(self):
+        """test various commit messages triggering a hook"""
+        for template, final_status in TEST_MSGS:
+            self._test_update_issue_hooks(template, final_status)

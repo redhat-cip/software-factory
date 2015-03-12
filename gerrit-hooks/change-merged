@@ -19,7 +19,7 @@
 # - add an issue note with :
 #   - The review URL
 #   - The submitter name
-#   - TODO (fbo) : The URL of the commit in cgit/gitweb using the commit id
+#   - The URL of the commit in cgit/gitweb using the commit id
 #   - Branch
 #   - Full commit message
 
@@ -35,86 +35,51 @@
 #                  --submitter <uploader>
 #                  --commit <sha1>
 
-import argparse
 import os
-import re
-import subprocess
 import sys
-import yaml
 
-from pysflib.sfredmine import RedmineUtils
+from pysflib.hooks import sfgerrit as hooks
+
 
 # Look for the config in the Gerrit hooks directory
 HOOKS_CONFIG = os.path.join(os.path.dirname(os.path.realpath(__file__)),
                             'hooks.config')
-ISSUE_REGEX = '([Bb]ug:\s+)(\d+)'
+
 MESSAGE = """The following change on Gerrit has been merged to: %(branch)s
 Review: %(url)s
 Submitter: %(submitter)s
 
 Commit message:
 %(commit)s
+
+gitweb: %(gitweb)s
 """
-issue_reg = re.compile(ISSUE_REGEX)
 
 
-def parse_commit_message(message):
-    """Parse the commit message
+arguments = ('change', 'change-url', 'project',
+             'branch', 'topic', 'submitter', 'commit')
 
-    :returns: The redmine issue ID
-              or None if there is no Issue reference
-    """
-    m = issue_reg.findall(message)
-    if not m:
-        return None
-    # Only match the first mentionned bug
-    return m[0][1]
+
+class ChangeMergedHook(hooks.GerritHook):
+    def __init__(self):
+        super(ChangeMergedHook, self).__init__(arguments,
+                                               file(HOOKS_CONFIG))
+        self.status_closing = 5
+        self.status_related = 2
+        self.msg = MESSAGE
+
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    for arg in ('change', 'change-url', 'project',
-                'branch', 'topic', 'submitter', 'commit'):
-        parser.add_argument('--%s' % arg)
-    args = parser.parse_args()
-
     if not os.path.isfile(HOOKS_CONFIG):
-        print "Unable to find hooks config !"
+        hooks.logger.error("Unable to find hooks config !")
         sys.exit(0)
 
+    merged_hook = ChangeMergedHook()
+    args = merged_hook.get_parser().parse_args()
+    hooks.logger.debug("Patchset merged with %r" % args)
     try:
-        config = yaml.load(file(HOOKS_CONFIG))
-        redmine_url = config['redmine_url']
-        redmine_key = config['redmine_key']
-    except Exception, err:
-        print "Unable to read hooks config file (Missing key ? Bad format ?)"
-        print err
-        sys.exit(0)
-
-    # GIT_SSH env var is setup by Gerrit when calling the hook
-    commit = subprocess.check_output(['git', 'cat-file', '-p', args.commit])
-
-    # Look for the Redmine issue ID
-    issue = parse_commit_message(commit)
-    if not issue:
-        print "Do nothing as there is no issue mentionned"
-        sys.exit(0)
-
-    # We remove the fourth first lines of the commit message
-    # tree, parent, author, commiter and we just keep
-    # the real user message
-    commit = "\n".join(commit.splitlines()[4:])
-
-    # Build message for the issue
-    message = MESSAGE % {'branch': args.branch,
-                         'url': args.change_url,
-                         'submitter': args.submitter,
-                         'commit': commit}
-
-    # Post message on the Redmine issue
-    redmine_client = RedmineUtils(redmine_url,
-                                  key=redmine_key)
-    if redmine_client.set_issue_status(issue, 5,
-                                       message=message):
-        sys.exit(0)
-    else:
+        e = merged_hook.main(args)
+        sys.exit(e)
+    except Exception as e:
+        hooks.logger.error(e)
         sys.exit(1)
