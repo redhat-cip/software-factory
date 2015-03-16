@@ -1,5 +1,36 @@
 var sfDashboard = angular.module('sfDashboard', []);
 
+sfDashboard.filter('projectMembers', function() {
+    return function (members, searchMember) {
+	var items;
+        var filtered = [];
+        var groups;
+	var name;
+        // Get all active project members
+        if ( typeof members !== 'undefined' ) {
+	    items = members.slice();
+            for ( var i = 0; i < items.length; i++ ) {
+                groups = items[i].groups;
+                if (groups.ptl || groups.core || groups.dev) {
+                    filtered.push(items[i]);
+                    items.splice(i--, 1);
+                }
+            }
+
+            // Add to the end any users that match the list.
+            if ( (typeof searchMember !== 'undefined') && (searchMember.length >= 1) ) {
+                for (var j = 0; j < items.length; j++ ) {
+		    name = items[j].name.toLocaleLowerCase();
+                    if (name.search(searchMember.toLocaleLowerCase()) !==-1 ){
+                        filtered.push(items[j]);
+                    }
+                }
+            }
+        }
+        return filtered;
+    };
+});
+
 function mainController($scope, $http) {
     $scope.data = {};
     $scope.members= [];

@@ -92,16 +92,16 @@
 
             <form>
               <div class="modal-body row">
-                  Search: <input ng-model="searchMember.name">
+                  Search: <input ng-model="searchMember" placeholder="Search for users">
                   <table class="table table-stripped">
                       <thead><tr>
                           <th>Members</th>
 			  <th>PTL</th>
 			  <th>Core</th>
-			  <th ng-if="selectedProject.private">Dev</th>
+			  <th>Dev</th>
                       </tr></thead>
                       <tbody>
-                          <tr ng-repeat="member in selectedMembers | filter:searchMember:strict">
+                          <tr ng-repeat="member in selectedMembers | projectMembers:searchMember">
                               <td>{{ member.name }}</td>
                               <td><input type="checkbox" ng-model="member.groups.ptl" /></td>
                               <td><input type="checkbox" ng-model="member.groups.core" /></td>
