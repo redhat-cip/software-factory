@@ -136,18 +136,21 @@ class GerritRepo(object):
         self.email = "%(admin)s <%(email)s>" % \
                      {'admin': conf.admin['name'],
                       'email': conf.admin['email']}
-        ssh_wrapper = "ssh -o StrictHostKeyChecking=no -i" \
-                      "%(gerrit-keyfile)s \"$@\"" % \
-                      {'gerrit-keyfile': conf.gerrit['sshkey_priv_path']}
-        wrapper_path = os.path.join(tempfile.mkdtemp(), 'ssh_wrapper.sh')
-        file(wrapper_path, 'w').write(ssh_wrapper)
-        os.chmod(wrapper_path, stat.S_IRWXU)
+        wrapper_path = self._ssh_wraper_setup(conf.gerrit['sshkey_priv_path'])
         self.env = os.environ.copy()
         self.env['GIT_SSH'] = wrapper_path
         # Commit will be reject by gerrit if the commiter info
         # is not a registered user (author can be anything else)
         self.env['GIT_COMMITTER_NAME'] = conf.admin['name']
         self.env['GIT_COMMITTER_EMAIL'] = conf.admin['email']
+
+    def _ssh_wraper_setup(self, filename):
+        ssh_wrapper = "ssh -o StrictHostKeyChecking=no -i %s \"$@\"" % filename
+        wrapper_path = os.path.join(tempfile.mkdtemp(), 'ssh_wrapper.sh')
+        file(wrapper_path, 'w').write(ssh_wrapper)
+        os.chmod(wrapper_path, stat.S_IRWXU)
+        self.env = os.environ.copy()
+        return wrapper_path
 
     def _exec(self, cmd, cwd=None):
         cmd = shlex.split(cmd)
@@ -222,7 +225,17 @@ class GerritRepo(object):
         logger.info("[gerrit] Push on master for repository %s" %
                     self.prj_name)
 
-    def push_master_from_git_remote(self, remote):
+    def push_master_from_git_remote(self, remote, ssh_key=None):
+        if ssh_key:
+            tmpf = tempfile.NamedTemporaryFile(delete=False)
+            tmpf.close()
+            fname = tmpf.name
+            with open(fname, "wb") as f:
+                f.write(ssh_key)
+            os.chmod(f.name, 0600)
+            wrapper_path = self._ssh_wraper_setup(fname)
+            self.env = os.environ.copy()
+            self.env['GIT_SSH'] = wrapper_path
         logger.info("[gerrit] Fetch git objects from a remote and push "
                     "to master for repository %s" % self.prj_name)
         cmd = "git checkout master"
@@ -231,6 +244,12 @@ class GerritRepo(object):
         self._exec(cmd, cwd=self.infos['localcopy_path'])
         cmd = "git fetch upstream"
         self._exec(cmd, cwd=self.infos['localcopy_path'])
+        if ssh_key:
+            wrapper_path = self._ssh_wraper_setup(
+                conf.gerrit['sshkey_priv_path'])
+            self.env = os.environ.copy()
+            self.env['GIT_SSH'] = wrapper_path
+            os.remove(f.name)
         logger.info("[gerrit] Push remote (master branch) of %s to the "
                     "Gerrit repository" % remote)
         cmd = "git push -f origin upstream/master:master"
@@ -268,7 +287,7 @@ class CustomGerritClient(gerrit.Gerrit):
             logger.info("[gerrit] Replication Trigger error - %s" % err)
 
 
-def init_git_repo(prj_name, prj_desc, upstream, private):
+def init_git_repo(prj_name, prj_desc, upstream, private, ssh_key=None):
     logger.info("[gerrit] Init gerrit project repo: %s" % prj_name)
     ge = get_client()
     grps = {}
@@ -294,7 +313,7 @@ def init_git_repo(prj_name, prj_desc, upstream, private):
     paths['groups'] = file(template(prefix + 'groups')).read() % grps
     grepo.push_config(paths)
     if upstream:
-        grepo.push_master_from_git_remote(upstream)
+        grepo.push_master_from_git_remote(upstream, ssh_key)
     paths = {}
     paths['.gitreview'] = file(template('gitreview')).read() % \
         {'gerrit-host': conf.gerrit['top_domain'],
@@ -307,9 +326,10 @@ def init_git_repo(prj_name, prj_desc, upstream, private):
 def init_project(name, json):
     logger.info("[gerrit] Init gerrit project: %s" % name)
     upstream = None if 'upstream' not in json else json['upstream']
+    ssh_key = (False if 'upstream-ssh-key' not in json
+               else json['upstream-ssh-key'])
     description = "" if 'description' not in json else json['description']
     private = False if 'private' not in json else json['private']
-
     ge = get_client()
     core = get_core_group_name(name)
     core_desc = "Core developers for project " + name
@@ -336,7 +356,7 @@ def init_project(name, json):
 
     owner = [get_ptl_group_name(name)]
     ge.create_project(name, description, owner)
-    init_git_repo(name, description, upstream, private)
+    init_git_repo(name, description, upstream, private, ssh_key)
 
 
 def add_user_to_projectgroups(project, user, groups):

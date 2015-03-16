@@ -196,7 +196,8 @@ class TestGerritController(TestCase):
             self.assertTupleEqual(('p1', 'the desc', ['p1-ptl']),
                                   cp.mock_calls[0][1])
             self.assertTupleEqual(('p1', 'the desc',
-                                   'git://tests.net/git/blah.git', True),
+                                   'git://tests.net/git/blah.git',
+                                   True, False),
                                   igr.mock_calls[0][1])
 
     def test_add_user_to_projectgroups(self):

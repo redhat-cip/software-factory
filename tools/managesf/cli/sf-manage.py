@@ -85,6 +85,8 @@ def project_command(sp):
     cp.add_argument('--description', '-d', nargs='?',
                     metavar='project-description')
     cp.add_argument('--upstream', '-u', nargs='?', metavar='GIT link')
+    cp.add_argument('--upstream-ssh-key', metavar='upstream-ssh-key',
+                    help='SSH key for upstream repository')
     cp.add_argument('--core-group', '-c', metavar='core-group-members',
                     help='member ids separated by comma', nargs='?')
     cp.add_argument('--ptl-group', '-p', metavar='ptl-group-members',
@@ -237,11 +239,15 @@ def project_action(args, base_url, headers):
             args.ptl_group = split_and_strip(args.ptl_group)
         if getattr(args, 'dev_group'):
             args.dev_group = split_and_strip(args.dev_group)
+        if getattr(args, 'upstream_ssh_key'):
+            with open(args.upstream_ssh_key) as ssh_key_file:
+                args.upstream_ssh_key = ssh_key_file.read()
         substitute = {'description': 'description',
                       'core_group': 'core-group-members',
                       'ptl_group': 'ptl-group-members',
                       'dev_group': 'dev-group-members',
                       'upstream': 'upstream',
+                      'upstream_ssh_key': 'upstream-ssh-key',
                       'private': 'private'}
         info = {}
         for key, word in substitute.iteritems():
