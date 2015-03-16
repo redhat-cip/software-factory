@@ -1,6 +1,10 @@
 projects:
  - name: dummy_project1
-   issues: 2
+   issues:
+    - name: Issue1
+      review: true
+    - name: Issue2
+      review: true
    files:
     - name: file1
     - name: file2
@@ -8,7 +12,11 @@ projects:
     - name: job1
     - name: job2
  - name: dummy_project2
-   issues: 2
+   issues:
+    - name: Issue3
+      review: true
+    - name: Issue4
+      review: false
    files:
     - name: file3
     - name: file4

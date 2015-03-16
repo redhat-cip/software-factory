@@ -53,7 +53,7 @@ class SFchecker:
             auth_cookie=config.USERS[config.ADMIN_USER]['auth_cookie'])
 
     def check_project(self, name):
-        print " Check project %s exists ..."
+        print " Check project %s exists ..." % name
         assert self.gu.project_exists(name)
         assert self.rm.project_exists(name)
 
@@ -66,15 +66,26 @@ class SFchecker:
         for f in files:
             assert os.path.isfile(os.path.join(clone_dir, f))
 
-    def check_issues_on_project(self, name, amount):
+    def check_issues_on_project(self, name, issues):
         print " Check that at least %s issues exists for that project ..." %\
-            amount
-        assert len(self.rm.get_issues_by_project(name)) >= 2
+            len(issues)
+        current_issues = self.rm.get_issues_by_project(name)
+        if len(current_issues) < len(issues):
+            msg = "expected %s, project has %s" % (len(issues),
+                                                   len(current_issues))
+            raise AssertionError(msg)
 
     def check_jenkins_jobs(self, name, jobnames):
         print " Check that jenkins jobs(%s) exists ..." % ",".join(jobnames)
         for jobname in jobnames:
             assert '%s_%s' % (name, jobname) in self.ju.list_jobs()
+
+    def check_reviews_on_project(self, name, issues):
+        reviews = [i for i in issues if i['review']]
+        print " Check that at least %s reviews exists for that project ..." %\
+            len(reviews)
+        pending_reviews = self.ggu.list_open_reviews(name, config.GATEWAY_HOST)
+        assert len(pending_reviews) >= len(reviews)
 
     def check_pads(self, amount):
         pass
@@ -89,6 +100,8 @@ class SFchecker:
             self.check_files_in_project(project['name'],
                                         [f['name'] for f in project['files']])
             self.check_issues_on_project(project['name'], project['issues'])
+            # TODO activate on a future patch
+            # self.check_reviews_on_project(project['name'], project['issues'])
             self.check_jenkins_jobs(project['name'],
                                     [j['name'] for j in project['jobnames']])
         self.check_pads(2)

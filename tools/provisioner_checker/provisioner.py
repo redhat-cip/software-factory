@@ -62,20 +62,21 @@ class SFProvisioner(object):
     def push_files_in_project(self, name, files):
         print " Add files(%s) in a commit ..." % ",".join(files)
         # TODO(fbo); use gateway host instead of gerrit host
-        url = "ssh://%s@%s:29418/%s" % (config.ADMIN_USER,
-                                        config.GATEWAY_HOST, name)
-        clone_dir = self.ggu.clone(url, name, config_review=False)
+        self.url = "ssh://%s@%s:29418/%s" % (config.ADMIN_USER,
+                                             config.GATEWAY_HOST, name)
+        clone_dir = self.ggu.clone(self.url, name, config_review=False)
+        self.clone_dir = clone_dir
         for f in files:
             file(os.path.join(clone_dir, f), 'w').write('data')
             self.ggu.git_add(clone_dir, (f,))
         self.ggu.add_commit_for_all_new_additions(clone_dir)
         self.ggu.direct_push_branch(clone_dir, 'master')
 
-    def create_issues_on_project(self, name, amount):
-        print " Create %s issue(s) for that project ..." % amount
-        while(amount > 0):
-            self.rm.create_issue(name, 'Issue %s' % amount)
-            amount -= 1
+    def create_issues_on_project(self, name, issues):
+        print " Create %s issue(s) for that project ..." % len(issues)
+        for i in issues:
+            issue = self.rm.create_issue(name, i['name'])
+            yield issue, i['review']
 
     def create_jenkins_jobs(self, name, jobnames):
         print " Create Jenkins jobs(%s)  ..." % ",".join(jobnames)
@@ -90,13 +91,27 @@ class SFProvisioner(object):
         # TODO
         pass
 
+    def create_review(self, project, issue):
+        """Very basic review creator for statistics and restore tests
+        purposes."""
+        self.ggu.config_review(self.clone_dir)
+        self.ggu.add_commit_in_branch(self.clone_dir,
+                                      'branch_' + issue,
+                                      commit='test\n\nBug: %s' % issue)
+        self.ggu.review_push_branch(self.clone_dir, 'branch_' + issue)
+
     def provision(self):
         for project in self.resources['projects']:
             print "Create user datas for %s" % project['name']
             self.create_project(project['name'])
             self.push_files_in_project(project['name'],
                                        [f['name'] for f in project['files']])
-            self.create_issues_on_project(project['name'], project['issues'])
+            for i, review in self.create_issues_on_project(project['name'],
+                                                           project['issues']):
+                if review:
+                    print "Create review for bug %i in %s" % (i,
+                                                              project['name'])
+                    self.create_review(project['name'], str(i))
             self.create_jenkins_jobs(project['name'],
                                      [j['name'] for j in project['jobnames']])
         self.create_pads(2)

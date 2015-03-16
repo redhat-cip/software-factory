@@ -14,6 +14,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import json
 import os
 import unittest
 import subprocess
@@ -100,13 +101,14 @@ class Tool:
         if cwd:
             os.chdir(cwd)
         try:
-            p = subprocess.Popen(cmd, stdout=self.debug,
+            p = subprocess.Popen(cmd, stdout=subprocess.PIPE,
                                  stderr=subprocess.STDOUT,
                                  env=self.env)
-            p.wait()
+            output = p.communicate()[0]
+            self.debug.write(output)
         finally:
             os.chdir(ocwd)
-        return p
+        return output
 
 
 class ManageSfUtils(Tool):
@@ -206,6 +208,22 @@ class GerritGitUtils(Tool):
     def config_review(self, clone_dir):
         self.exe("ssh-agent bash -c 'ssh-add %s; git review -s'" %
                  self.priv_key_path, clone_dir)
+
+    def list_open_reviews(self, project, uri, port=29418):
+        cmd = "ssh -o StrictHostKeyChecking=no -i %s"
+        cmd += " -p %s %s@%s gerrit "
+        cmd += "query project:%s status:open --format=JSON"
+        reviews = self.exe(cmd % (os.path.abspath(self.priv_key_path),
+                                  str(port),
+                                  self.user,
+                                  uri,
+                                  project))
+
+        # encapsulate the JSON answers so that it appears as an array
+        array_json = "[" + ',\n'.join(reviews.split('\n')[:-1]) + "]"
+        j = json.loads(array_json)
+        # last response element is only statistics, discard it
+        return j[:-1]
 
     def clone(self, uri, target, config_review=True):
         if not uri.startswith('ssh://'):
