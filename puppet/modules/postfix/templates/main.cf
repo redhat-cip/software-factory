@@ -4,7 +4,7 @@ biff = no
 append_dot_mydomain = no
 
 mydomain = <%= scope.function_hiera(["top_domain"]) %>
-myhostname = <%= hostname %>.<%= scope.function_hiera(["top_domain"]) %>
+myhostname = <%= scope.function_hiera(["top_domain"]) %>
 alias_maps = hash:/etc/aliases
 alias_database = hash:/etc/aliases
 myorigin = <%= scope.function_hiera(["top_domain"]) %>
