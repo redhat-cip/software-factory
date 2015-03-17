@@ -15,12 +15,12 @@
 # under the License.
 
 import config
-import unittest
+from utils import Base
 
 import requests
 
 
-class TestGateway(unittest.TestCase):
+class TestGateway(Base):
     def test_topmenu_links_shown(self):
         """ Test if all service links are shown in topmenu
         """
