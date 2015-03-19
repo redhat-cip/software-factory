@@ -1,6 +1,32 @@
 # Change Log
 
-## 0.9.7 [unreleased]
+## 0.9.8 [unreleased]
+
+## 0.9.7 2015-03-31
+
+### Added
+
+- Support for github issues migration.
+- Support for CSV issue migration.
+- Make Redmine backlog available to non members by default.
+- Add authentication with Github API key
+- New top menu
+- More keywords like "Closes", "Fix", "Related to" for
+  Gerrit hooks.
+- Add "recheck" hook in zuul for people used to the
+  OpenStack workflow.
+- Display amount of running tests per project in the sashboard.
+
+### Fixed
+
+- Add error message to the login page in case of wrong auth.
+- Fix top menu missbehaviors
+
+### Removed
+
+- Cascading Apache between gateway and Gerrit (no more apache
+  on Gerrit node)
+
 
 ## 0.9.6 2015-02-12
 
