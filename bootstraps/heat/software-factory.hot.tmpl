@@ -550,6 +550,7 @@ resources:
             SF_SUFFIX: { get_param: suffix }
             JENKINS_USER_PASSWORD: { get_param: jenkins_user_pwd }
             MANAGESF_IP: { get_attr: [managesf_instance, first_address] }
+            SSHPASS: {get_attr: [ssh_password, value]}
 
 
 outputs:

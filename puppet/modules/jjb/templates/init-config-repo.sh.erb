@@ -43,7 +43,7 @@ if [ "$upgrade" = "false" ]; then
         sf-manage --url $gateway_url --auth $auth replication_config add --section mysql_config url gerrit@$gateway_host:/home/gerrit/site_path/git/\${name}.git
         sf-manage --url $gateway_url --auth $auth replication_config add --section mysql_config push +refs/heads/*:refs/heads/*
         sf-manage --url $gateway_url --auth $auth replication_config add --section mysql_config push +refs/tags/*:refs/tags/*
-        sf-manage --url $gateway_url --auth $auth trigger_replication --project config
+        sf-manage --url $gateway_url --auth $auth trigger_replication --project config || true
         touch /usr/share/config.init.done
     fi
 fi
