@@ -87,6 +87,15 @@ class commonservices-apache ($cauth = hiera_hash('cauth', ''),
     notify => Service['webserver'],
   }
 
+  file {'/var/www/static/js/menu.js':
+    ensure => file,
+    mode   => '0640',
+    owner  => $httpd_user,
+    group  => $httpd_user,
+    source  => 'puppet:///modules/commonservices-apache/menu.js',
+    notify => Service['webserver'],
+  }
+
   file {'/var/www/topmenu.html':
     ensure => file,
     mode   => '0640',
