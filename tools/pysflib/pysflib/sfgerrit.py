@@ -234,21 +234,28 @@ class GerritUtils:
         except HTTPError as e:
             return self._manage_errors(e)
 
-    def get_group_member_id(self, group_id, username=None, mail=None):
+    def get_group_members(self, group_id):
         try:
-            resp = self.g.get('groups/%s/members/' % group_id)
-            if username:
-                uid = [m['_account_id'] for m in resp if
-                       m['username'] == username]
-            if mail:
-                uid = [m['_account_id'] for m in resp if
-                       m['email'] == mail]
-            if uid:
-                return uid[0]
-            else:
-                return None
+            return self.g.get('groups/%s/members/' % group_id)
         except HTTPError as e:
             return self._manage_errors(e)
+
+    def get_group_member_id(self, group_id, username=None, mail=None):
+        resp = self.get_group_members(group_id)
+        if not resp:
+            # hitting the HTTPError, returning the result of _manage_errors
+            return resp
+        uid = [None, ]
+        # poor man's XOR
+        if not (bool(username) ^ bool(mail)):
+            raise ValueError("Filter by username OR mail")
+        if username:
+            uid = [m['_account_id'] for m in resp if
+                   m['username'] == username] or uid
+        elif mail:
+            uid = [m['_account_id'] for m in resp if
+                   m['email'] == mail] or uid
+        return uid[0]
 
     def get_group_owner(self, name):
         try:

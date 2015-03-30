@@ -206,6 +206,13 @@ class TestGerritUtils(TestCase):
                    side_effect=raise_fake_exc):
             self.assertFalse(self.ge.get_group_member_id('p1-ptl', 'user1'))
 
+    def test_get_group_members(self):
+        with patch('pysflib.sfgerrit.SFGerritRestAPI.get') as g:
+            members = [{'_account_id': 1, 'username': 'user1'}]
+            g.return_value = members
+            self.assertEqual(self.ge.get_group_members('p1-ptl'),
+                             members)
+
     def test_get_group_owner(self):
         with patch('pysflib.sfgerrit.SFGerritRestAPI.get') as g:
             g.return_value = {'owner': 'user1'}
