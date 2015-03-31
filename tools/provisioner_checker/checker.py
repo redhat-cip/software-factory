@@ -100,8 +100,7 @@ class SFchecker:
             self.check_files_in_project(project['name'],
                                         [f['name'] for f in project['files']])
             self.check_issues_on_project(project['name'], project['issues'])
-            # TODO activate on a future patch
-            # self.check_reviews_on_project(project['name'], project['issues'])
+            self.check_reviews_on_project(project['name'], project['issues'])
             self.check_jenkins_jobs(project['name'],
                                     [j['name'] for j in project['jobnames']])
         self.check_pads(2)
