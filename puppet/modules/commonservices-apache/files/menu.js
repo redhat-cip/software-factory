@@ -22,8 +22,9 @@ function getValueOfKey(target, key) {
 function displayLoggedIn(username) {
     try {
         document.getElementById("login-msg").innerHTML = "Welcome " + username;
-        document.getElementById("login-btn").style.visibility = "hidden";
-        document.getElementById("logout-btn").style.visibility = "visible";
+        document.getElementById("login-msg").style.display = "block";
+        document.getElementById("login-btn").style.display = "none";
+        document.getElementById("logout-btn").style.display = "block";
     } catch (err) {
     }
 }
@@ -31,8 +32,9 @@ function displayLoggedIn(username) {
 function displaySignIn() {
     try {
         document.getElementById("login-msg").innerText = "";
-        document.getElementById("login-btn").style.visibility = "visible";
-        document.getElementById("logout-btn").style.visibility = "hidden";
+        document.getElementById("login-msg").style.display = "none";
+        document.getElementById("login-btn").style.display = "block";
+        document.getElementById("logout-btn").style.display = "none";
     } catch (err) {
     }
 }
