@@ -21,6 +21,11 @@ import requests
 
 
 class TestGateway(Base):
+    def _auth_required(self, url):
+        resp = requests.get(url, allow_redirects=False)
+        self.assertEqual(resp.status_code, 307)
+        self.assertTrue("/auth/login" in resp.headers['Location'])
+
     def test_topmenu_links_shown(self):
         """ Test if all service links are shown in topmenu
         """
@@ -36,6 +41,9 @@ class TestGateway(Base):
         """ Test if Gerrit is accessible on gateway hosts
         """
         url = "https://%s/r/" % config.GATEWAY_HOST
+
+        self._auth_required(url)
+
         resp = requests.get(
             url,
             cookies=dict(
@@ -47,6 +55,9 @@ class TestGateway(Base):
         """ Test if Jenkins is accessible on gateway host
         """
         url = "https://%s/jenkins/" % config.GATEWAY_HOST
+
+        self._auth_required(url)
+
         resp = requests.get(
             url, cookies=dict(
                 auth_pubtkt=config.USERS[config.USER_1]['auth_cookie']))
@@ -68,6 +79,9 @@ class TestGateway(Base):
         """ Test if Redmine is accessible on gateway host
         """
         url = "https://%s/redmine/" % config.GATEWAY_HOST
+
+        self._auth_required(url)
+
         resp = requests.get(
             url,
             cookies=dict(
@@ -142,9 +156,7 @@ class TestGateway(Base):
         """
         url = "https://%s/dashboard/" % config.GATEWAY_HOST
 
-        resp = requests.get(url, allow_redirects=False)
-        self.assertEqual(resp.status_code, 307)
-        self.assertTrue("/auth/login" in resp.headers['Location'])
+        self._auth_required(url)
 
         resp = requests.get(
             url,

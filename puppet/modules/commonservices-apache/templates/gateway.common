@@ -1,4 +1,4 @@
-    <LocationMatch "/r/(a|login)">
+    <LocationMatch "/(r/a|r/login|r/$)">
         RewriteEngine On
         RewriteCond %{REQUEST_URI} ^/r/logout$
         RewriteCond %{QUERY_STRING} (^.*$)
