@@ -62,6 +62,17 @@
     RewriteEngine On
     RewriteRule ^/$ /dashboard [R]
 
+    <LocationMatch "/dashboard">
+        Order Allow,Deny
+        Allow from all
+
+        AuthType mod_auth_pubtkt
+        TKTAuthFakeBasicAuth on
+        TKTAuthLoginURL <%= @cauth['signin_url'] %>
+        TKTAuthDebug 1
+        require valid-user
+    </LocationMatch>
+
     <Directory /var/www>
         AllowOverride None
         Order allow,deny

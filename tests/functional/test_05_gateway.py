@@ -136,3 +136,19 @@ class TestGateway(Base):
         url = "https://%s/docs/index.html" % config.GATEWAY_HOST
         resp = requests.get(url)
         self.assertEqual(resp.status_code, 200)
+
+    def test_dashboard_accessible(self):
+        """ Test if Dashboard is accessible on gateway host
+        """
+        url = "https://%s/dashboard/" % config.GATEWAY_HOST
+
+        resp = requests.get(url, allow_redirects=False)
+        self.assertEqual(resp.status_code, 307)
+        self.assertTrue("/auth/login" in resp.headers['Location'])
+
+        resp = requests.get(
+            url,
+            cookies=dict(
+                auth_pubtkt=config.USERS[config.USER_1]['auth_cookie']))
+        self.assertEqual(resp.status_code, 200)
+        self.assertTrue('<body ng-controller="mainController">' in resp.text)
