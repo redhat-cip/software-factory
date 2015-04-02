@@ -40,16 +40,20 @@ class TestGateway(Base):
     def test_gerrit_accessible(self):
         """ Test if Gerrit is accessible on gateway hosts
         """
-        url = "https://%s/r/" % config.GATEWAY_HOST
 
-        self._auth_required(url)
+        urls = ["https://%s/r/" % config.GATEWAY_HOST,
+                "https://%s/r/#/" % config.GATEWAY_HOST]
 
-        resp = requests.get(
-            url,
-            cookies=dict(
-                auth_pubtkt=config.USERS[config.USER_1]['auth_cookie']))
-        self.assertEqual(resp.status_code, 200)
-        self.assertTrue('<title>Gerrit Code Review</title>' in resp.text)
+        for url in urls:
+
+            self._auth_required(url)
+
+            resp = requests.get(
+                url,
+                cookies=dict(
+                    auth_pubtkt=config.USERS[config.USER_1]['auth_cookie']))
+            self.assertEqual(resp.status_code, 200)
+            self.assertTrue('<title>Gerrit Code Review</title>' in resp.text)
 
     def test_jenkins_accessible(self):
         """ Test if Jenkins is accessible on gateway host

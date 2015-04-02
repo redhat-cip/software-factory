@@ -1,4 +1,4 @@
-    <LocationMatch "/(r/a|r/login|r/$)">
+    <LocationMatch "/r/(?!(.*/(info/refs|git-upload-pack)$))">
         RewriteEngine On
         RewriteCond %{REQUEST_URI} ^/r/logout$
         RewriteCond %{QUERY_STRING} (^.*$)
