@@ -174,7 +174,7 @@ class redmine ($settings = hiera_hash('redmine', ''),
       group  => $httpd_user,
     }
 
-    file { 'topmenu.js':
+    file {'topmenu.js':
       path    => '/usr/share/redmine/public/themes/classic/javascripts/theme.js',
       ensure  => file,
       mode    => '0644',
@@ -184,4 +184,10 @@ class redmine ($settings = hiera_hash('redmine', ''),
       require => File['/usr/share/redmine/public/themes/classic/javascripts/'],
     }
 
+    exec {'backlog_topmenu':
+      command => "sed -i '/<head>/a <script src=\"/redmine/themes/classic/javascripts/theme.js\" type=\"text/javascript\"></script>' /usr/share/redmine/plugins/redmine_backlogs/app/views/layouts/rb.html.erb",
+      path    => '/usr/sbin/:/usr/bin/:/bin/',
+      require => File['topmenu.js'],
+      unless  => '/usr/bin/grep "javascripts/theme.js" /usr/share/redmine/plugins/redmine_backlogs/app/views/layouts/rb.html.erb',
+    }
 }
