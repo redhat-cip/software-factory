@@ -1,6 +1,32 @@
 # Change Log
 
-## 0.9.8 [unreleased]
+## 1.0.1 [unreleased]
+
+## 1.0.0 2015-04-27
+
+### Added
+
+- Bump SF version to 1.0.0
+- Enforce authentication for dashboard page if not logged in
+- Redirect unauthenticated users trying to access Gerrit main
+  page directly in Apache
+
+### Fixed
+
+- Fix missing topmenu in Jenkins.
+- Fix missing topmenu in Redmine backlog.
+- Fix typos in Readme.md
+
+
+## 0.9.9 2015-04-27
+
+Not released. Skipped version.
+
+
+## 0.9.8 2015-04-27
+
+Not released. Skipped version.
+
 
 ## 0.9.7 2015-03-31
 
