@@ -180,7 +180,7 @@ class redmine ($settings = hiera_hash('redmine', ''),
       mode    => '0644',
       owner   => $httpd_user,
       group   => $httpd_user,
-      source  => 'puppet:///modules/commonservices-apache/topmenu.js',
+      content => template('commonservices-apache/topmenu.js'),
       require => File['/usr/share/redmine/public/themes/classic/javascripts/'],
     }
 

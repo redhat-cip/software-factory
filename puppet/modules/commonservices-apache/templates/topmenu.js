@@ -5,6 +5,7 @@ function loadTopmenu() {
         iframe.setAttribute("height", "51px");
         iframe.frameBorder = 0;
         document.body.insertBefore(iframe, document.body.firstChild);
+        document.title += ' [SF <%= scope.function_hiera(["sf_version"]) %>]';
 };
 
 if (document.body) {

@@ -83,7 +83,7 @@ class commonservices-apache ($cauth = hiera_hash('cauth', ''),
     mode   => '0640',
     owner  => $httpd_user,
     group  => $httpd_user,
-    source  => 'puppet:///modules/commonservices-apache/topmenu.js',
+    content => template('commonservices-apache/topmenu.js'),
     notify => Service['webserver'],
   }
 
