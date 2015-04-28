@@ -188,7 +188,8 @@ EOF
 
 # install pysflib
 [ ! -d "${dir}/var/www" ] && mkdir ${dir}/var/www
-cp -r ../tools/pysflib ${dir}/var/www/pysflib
+retry do_chroot ${dir} git clone ${PYSFLIB_REPO} /var/www/pysflib
+retry do_chroot ${dir} bash -c "cd /var/www/pysflib && git checkout ${PYSFLIB_VERSION}"
 retry do_chroot ${dir} bash -c "cd /var/www/pysflib && pip install -r requirements.txt"
 do_chroot ${dir} bash -c "cd /var/www/pysflib && python setup.py install"
 

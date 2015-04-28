@@ -1,4 +1,4 @@
-../pysflib
+-e git+https://github.com/enovance/pysflib.git#egg=pysflib
 pecan
 gerritlib
 python-ldap

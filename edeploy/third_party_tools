@@ -3,6 +3,26 @@
 URL_LIST=""
 GIT_REPO_LIST=""
 
+function latest_tag_or_master {
+    pushd /tmp/ > /dev/null
+    if [ -d testtag ]; then
+        rm -rf testtag/.git
+        rm -rf testtag
+    fi
+    git clone $1 testtag
+    cd testtag
+    git fetch --tags
+    tagref=$(git rev-list --tags --max-count=1 2>/dev/null)
+    latestTag=$(git describe --tags ${tagref})
+    popd > /dev/null
+    echo ${latestTag:-master}
+}
+
+# pysflib
+PYSFLIB_REPO=${PYSFLIB_REPO:=https://github.com/enovance/pysflib.git}
+PYSFLIB_LATEST_TAG=$(latest_tag_or_master $PYSFLIB_REPO)
+# default deployment version is latest tag
+PYSFLIB_VERSION=${PYSFLIB_VERSION:=$PYSFLIB_LATEST_TAG}
 
 # puppet
 PUPPET_CODENAME_MAJOR=7

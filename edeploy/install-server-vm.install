@@ -23,6 +23,7 @@ ROLE=install-server-vm
 
 ORIG=$(cd $(dirname $0); pwd)
 
+. ${ORIG}/third_party_tools
 . ${ORIG}/functions
 
 update_repositories ${dir}
@@ -87,6 +88,8 @@ cp -Rv ../bootstraps/*.sh ${dir}/root/puppet-bootstrapper/
 cp -Rv ../bootstraps/sfcreds.yaml ${dir}/root/puppet-bootstrapper/
 
 # install pysflib
+retry do_chroot ${dir} git clone ${PYSFLIB_REPO} /root/puppet-bootstrapper/tools/pysflib
+retry do_chroot ${dir} bash -c "cd /root/puppet-bootstrapper/tools/pysflib && git checkout ${PYSFLIB_VERSION}"
 retry do_chroot ${dir} bash -c "cd /root/puppet-bootstrapper/tools/pysflib; pip install -r requirements.txt"
 do_chroot ${dir} bash -c "cd /root/puppet-bootstrapper/tools/pysflib; python setup.py install"
 

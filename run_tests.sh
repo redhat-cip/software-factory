@@ -32,12 +32,6 @@ find . -name "*.sh" | grep -v '\.tox' | xargs bash8
 BASH8_ERRORS=$?
 echo
 
-echo "Pysflib tests"
-echo "~~~~~~~~~~~~~"
-(cd tools/pysflib; rm -Rf .tox; tox)
-PYSFLIB_ERRORS=$?
-echo
-
 echo "Cauth tests"
 echo "~~~~~~~~~~~"
 (cd tools/cauth; rm -Rf .tox; tox)
@@ -56,4 +50,4 @@ echo "~~~~~~~~~~~~~~~~~"
 SFMIGRATION_ERRORS=$?
 echo
 
-exit $[${FLAKE8_ERRORS} + ${BASH8_ERRORS} + ${PYSFLIB_ERRORS} + ${CAUTH_ERRORS} + ${MANAGESF_ERRORS} + ${SFMIGRATION_ERRORS}];
+exit $[${FLAKE8_ERRORS} + ${BASH8_ERRORS} + ${CAUTH_ERRORS} + ${MANAGESF_ERRORS} + ${SFMIGRATION_ERRORS}];

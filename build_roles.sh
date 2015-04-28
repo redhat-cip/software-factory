@@ -76,6 +76,7 @@ function build_role {
         return
     fi
     # Check upstream role MD5 to know if upstream role can be re-used
+    # TODO how to include checking external libs in the build check ?
     # Provide SKIP_UPSTREAM=1 to avoid checking the upstream pre-built role
     if [ -f "${UPSTREAM_FILE}.md5" ] && [ "$(cat ${UPSTREAM_FILE}.md5)" == "${ROLE_MD5}" ] && [ -z "$SKIP_UPSTREAM" ]; then
         echo "Upstream ${ROLE_NAME} md5 is similar to what we computed from your git branch state, I will use the upstream role."
@@ -106,7 +107,7 @@ function build_role {
             else
                 ROLE_OUTPUT=/dev/stdout
             fi
-            sudo -H ${MAKE} EDEPLOY_ROLES_PATH=${EDEPLOY_ROLES} PREBUILD_EDR_TARGET=${EDEPLOY_ROLES_REL} ${ROLE_NAME} &> ${ROLE_OUTPUT}
+            sudo -H  PYSFLIB_REPO=${PYSFLIB_REPO} PYSFLIB_VERSION=${PYSFLIB_VERSION} ${MAKE} EDEPLOY_ROLES_PATH=${EDEPLOY_ROLES} PREBUILD_EDR_TARGET=${EDEPLOY_ROLES_REL} ${ROLE_NAME} &> ${ROLE_OUTPUT}
             echo ${ROLE_MD5} | sudo tee ${ROLE_FILE}.md5
             if [ -n "$VIRT" ]; then
                 echo "Upstream ${ROLE_NAME} is NOT similar ! I rebuild the qcow2 image."
