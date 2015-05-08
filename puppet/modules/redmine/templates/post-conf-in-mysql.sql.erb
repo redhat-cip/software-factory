@@ -34,3 +34,32 @@ UPDATE roles SET permissions = CONCAT_WS('\n', permissions, '- :create_stories')
 
 DELETE FROM settings WHERE name='ui_theme';
 INSERT IGNORE INTO settings (name, value, updated_on) VALUES('ui_theme', "classic", CURRENT_TIMESTAMP());
+
+SET @backlog_config="--- !ruby/hash:ActiveSupport::HashWithIndifferentAccess
+story_trackers:
+- '5'
+default_story_tracker: '5'
+task_tracker: '4'
+wiki_template: ''
+show_redmine_std_header: enabled
+scrum_stats_menu_position: top
+story_points: 0.5,1,2,3,5,8,13,20,40,100
+new_story_position: bottom
+story_follow_task_status: nil
+story_close_status_id: '0'
+points_burn_direction: down
+burndown_print_width: ''
+burndown_print_height: ''
+show_burndown_in_sidebar: enabled
+burndown_timezone: Etc/GMT-0
+card_spec: APLI 01293
+taskboard_card_order: story_follows_tasks
+autorefresh_wait: '1000'
+sprint_sort_order: asc
+sharing_enabled: enabled
+sharing_new_sprint_sharingmode: none
+";
+
+INSERT IGNORE INTO trackers (id, name, is_in_chlog, position, is_in_roadmap, fields_bits) VALUES(5, "Story", 0, 5, 1, 0);
+DELETE FROM settings WHERE name='plugin_redmine_backlogs';
+INSERT IGNORE INTO settings (name, value, updated_on) VALUES('plugin_redmine_backlogs', @backlog_config, CURRENT_TIMESTAMP());
