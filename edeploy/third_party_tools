@@ -24,6 +24,16 @@ PYSFLIB_LATEST_TAG=$(latest_tag_or_master $PYSFLIB_REPO)
 # default deployment version is latest tag
 PYSFLIB_VERSION=${PYSFLIB_VERSION:=$PYSFLIB_LATEST_TAG}
 
+GIT_REPO_LIST="$GIT_REPO_LIST $PYSFLIB_REPO"
+
+# cauth
+CAUTH_REPO=${CAUTH_REPO:=https://github.com/enovance/cauth.git}
+CAUTH_LATEST_TAG=$(latest_tag_or_master $CAUTH_REPO)
+# default deployment version is latest tag
+CAUTH_VERSION=${CAUTH_VERSION:=$CAUTH_LATEST_TAG}
+
+GIT_REPO_LIST="$GIT_REPO_LIST $CAUTH_REPO"
+
 # puppet
 PUPPET_CODENAME_MAJOR=7
 PUPPET_REPO_VERSION="${PUPPET_CODENAME_MAJOR}-11"

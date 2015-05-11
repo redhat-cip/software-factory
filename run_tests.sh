@@ -32,12 +32,6 @@ find . -name "*.sh" | grep -v '\.tox' | xargs bash8
 BASH8_ERRORS=$?
 echo
 
-echo "Cauth tests"
-echo "~~~~~~~~~~~"
-(cd tools/cauth; rm -Rf .tox; tox)
-CAUTH_ERRORS=$?
-echo
-
 echo "ManageSF tests"
 echo "~~~~~~~~~~~~~~"
 (cd tools/managesf; rm -Rf .tox; tox)

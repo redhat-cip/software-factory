@@ -1,9 +1,0 @@
--e git+https://github.com/enovance/pysflib.git#egg=pysflib
-pecan
-mock
-mockldap
-httmock
-SQLAlchemy
-nose
-M2Crypto
-MySQL-python
