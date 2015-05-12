@@ -32,16 +32,10 @@ find . -name "*.sh" | grep -v '\.tox' | xargs bash8
 BASH8_ERRORS=$?
 echo
 
-echo "ManageSF tests"
-echo "~~~~~~~~~~~~~~"
-(cd tools/managesf; rm -Rf .tox; tox)
-MANAGESF_ERRORS=$?
-echo
-
 echo "sfmigration tests"
 echo "~~~~~~~~~~~~~~~~~"
 (cd tools/sfmigration; rm -Rf .tox; tox)
 SFMIGRATION_ERRORS=$?
 echo
 
-exit $[${FLAKE8_ERRORS} + ${BASH8_ERRORS} + ${CAUTH_ERRORS} + ${MANAGESF_ERRORS} + ${SFMIGRATION_ERRORS}];
+exit $[${FLAKE8_ERRORS} + ${BASH8_ERRORS} + ${SFMIGRATION_ERRORS}];

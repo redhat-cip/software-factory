@@ -23,7 +23,7 @@ project history from your local copy, like so:
 
 .. code-block:: bash
 
- $ sf-manage --url <http://sfgateway.dom> --auth-server-url <http://sfgateway.dom> --auth <user>:<password> create --name <sfproject>
+ $ sfmanager --url <http://sfgateway.dom> --auth-server-url <http://sfgateway.dom> --auth <user>:<password> create --name <sfproject>
  $ git clone <http://sfgateway.dom/r/p/sfproject.git>
  $ cd <sfproject> && git review -v
  $ git remote add local /path/to/localproject

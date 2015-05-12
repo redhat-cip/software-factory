@@ -38,15 +38,9 @@ class jjb ($settings = hiera_hash('jenkins', ''),
     source => 'puppet:///modules/jjb/gerrit_admin_rsa',
   }
 
-  file {'/var/www/managesf/cli/sf-manage.py':
+  file {'/usr/bin/sfmanager':
     ensure  => present,
-    mode    => '0755',
-  }
-
-  file {'/usr/bin/sf-manage':
-    ensure  => link,
-    target  => '/var/www/managesf/cli/sf-manage.py',
-    require => File['/var/www/managesf/cli/sf-manage.py']
+    mode    => "0755",
   }
 
   file {'/root/init-config-repo.sh':
@@ -115,7 +109,7 @@ class jjb ($settings = hiera_hash('jenkins', ''),
                 File['/usr/share/sf-jjb/projects.yaml'],
                 File['/usr/share/sf-jjb/sf_jjb_conf.yaml'],
                 File['/usr/share/sf-zuul/layout.yaml'],
-                File['/usr/bin/sf-manage'],
+                File['/usr/bin/sfmanager'],
                 File['/root/gerrit_admin_rsa']],
     creates => '/usr/share/config.init.done',
   }

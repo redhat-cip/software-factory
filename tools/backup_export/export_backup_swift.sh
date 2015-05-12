@@ -35,8 +35,6 @@ set -e
 [ -z "$BACKUP_CONTAINER" ] && exit 0
 [ -z "$BACKUP_RET" ] && exit 0
 
-CLI="/root/puppet-bootstrapper/tools/managesf/cli/sf-manage.py"
-chmod +x $CLI
 SWIFT_CONTAINER=${BACKUP_CONTAINER}
 RETENTION_SECS=${BACKUP_RET}
 
@@ -63,8 +61,8 @@ for backup in $backups; do
 done
 
 # Get SF backup via managesf
-$CLI --url http://$HOST --auth $ADMIN:$ADMIN_PASSWORD backup_start
-$CLI --url http://$HOST --auth $ADMIN:$ADMIN_PASSWORD backup_get
+sfmanager --url http://$HOST --auth $ADMIN:$ADMIN_PASSWORD backup_start
+sfmanager --url http://$HOST --auth $ADMIN:$ADMIN_PASSWORD backup_get
 mv sf_backup.tar.gz /tmp/sf_backup.tar.gz
 # Upload backup
 swift upload $SWIFT_CONTAINER /tmp/sf_backup.tar.gz --object-name sf_backup_${epoch}.tar.gz &> /dev/null

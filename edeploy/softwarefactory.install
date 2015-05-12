@@ -189,20 +189,22 @@ EOF
 # install pysflib
 [ ! -d "${dir}/var/www" ] && mkdir ${dir}/var/www
 retry do_chroot ${dir} git clone ${PYSFLIB_REPO} /var/www/pysflib
-retry do_chroot ${dir} bash -c "cd /var/www/pysflib && git checkout ${PYSFLIB_VERSION}"
+do_chroot ${dir} bash -c "cd /var/www/pysflib && git checkout ${PYSFLIB_VERSION}"
 retry do_chroot ${dir} bash -c "cd /var/www/pysflib && pip install -r requirements.txt"
 do_chroot ${dir} bash -c "cd /var/www/pysflib && python setup.py install"
 
 # Cauth server
 [ ! -d "${dir}/var/www" ] && mkdir ${dir}/var/www
 retry do_chroot ${dir} git clone ${CAUTH_REPO} /var/www/cauth
-retry do_chroot ${dir} bash -c "cd /var/www/cauth && git checkout ${CAUTH_VERSION}"
+do_chroot ${dir} bash -c "cd /var/www/cauth && git checkout ${CAUTH_VERSION}"
 retry do_chroot ${dir} bash -c "cd /var/www/cauth && pip install -r requirements.txt"
 
 # Managesf
 [ ! -d "${dir}/var/www" ] && mkdir ${dir}/var/www
-cp -r ../tools/managesf ${dir}/var/www/managesf
+retry do_chroot ${dir} git clone ${MANAGESF_REPO} /var/www/managesf
+do_chroot ${dir} bash -c "cd /var/www/managesf && git checkout ${MANAGESF_VERSION}"
 retry do_chroot ${dir} bash -c "cd /var/www/managesf && pip install -r requirements.txt"
+do_chroot ${dir} bash -c "cd /var/www/managesf && python setup.py install"
 
 # JJB need pbr > 0.8
 retry do_chroot ${dir} pip install -U pbr==${PBR_VERSION}

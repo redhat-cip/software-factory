@@ -114,9 +114,7 @@ class Tool:
 class ManageSfUtils(Tool):
     def __init__(self, url):
         Tool.__init__(self)
-        self.install_dir = os.path.join(config.SF_ROOT,
-                                        "tools/managesf/cli")
-        self.base_cmd = "python sf-manage.py --url %s --auth-server-url " \
+        self.base_cmd = "sfmanager --url %s --auth-server-url " \
             "%s --auth %%s:%%s " % (url, config.GATEWAY_URL)
 
     def createProject(self, name, user, options=None, cookie=None):
@@ -130,12 +128,12 @@ class ManageSfUtils(Tool):
             for k, v in options.items():
                 cmd = cmd + " --" + k + " " + v
 
-        self.exe(cmd, self.install_dir)
+        self.exe(cmd)
 
     def deleteProject(self, name, user):
         passwd = config.USERS[user]['password']
         cmd = self.base_cmd % (user, passwd) + "delete --name %s" % name
-        self.exe(cmd, self.install_dir)
+        self.exe(cmd)
 
     def replicationModifyConfig(self, user, cmd, section,
                                 setting=None, value=None):
@@ -146,7 +144,7 @@ class ManageSfUtils(Tool):
             cmd = cmd + " " + setting
         if value:
             cmd = cmd + " " + value
-        self.exe(cmd, self.install_dir)
+        self.exe(cmd)
 
     def replicationTrigger(self, user, project=None, url=None):
         passwd = config.USERS[user]['password']
@@ -155,7 +153,7 @@ class ManageSfUtils(Tool):
             cmd = cmd + " --project " + project
         if url:
             cmd = cmd + " --url " + url
-        self.exe(cmd, self.install_dir)
+        self.exe(cmd)
 
     def addUsertoProjectGroups(self, auth_user, project, new_user, groups):
         passwd = config.USERS[auth_user]['password']
@@ -163,7 +161,7 @@ class ManageSfUtils(Tool):
         cmd = self.base_cmd % (auth_user, passwd)
         cmd = cmd + " add_user --name %s " % project
         cmd = cmd + " --user %s --groups %s" % (umail, groups)
-        self.exe(cmd, self.install_dir)
+        self.exe(cmd)
 
     def deleteUserFromProjectGroups(self, auth_user,
                                     project, user, group=None):
@@ -173,18 +171,16 @@ class ManageSfUtils(Tool):
         cmd = cmd + " --name %s --user %s " % (project, umail)
         if group:
             cmd = cmd + " --group %s " % group
-        self.exe(cmd, self.install_dir)
+        self.exe(cmd)
 
     def list_active_members(self, user):
         passwd = config.USERS[user]['password']
         cmd = self.base_cmd % (user, passwd) + " list_active_users "
         cmd = shlex.split(cmd)
-        ocwd = os.getcwd()
-        os.chdir(self.install_dir)
         try:
             output = subprocess.check_output(cmd)
-        finally:
-            os.chdir(ocwd)
+        except:
+            output = None
         return output
 
 

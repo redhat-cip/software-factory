@@ -322,11 +322,11 @@ function run_backup_restore_tests {
         # Start the provisioner
         ./tools/provisioner_checker/run.sh provisioner
         # Create a backup
-        ssh -o StrictHostKeyChecking=no root@`get_ip puppetmaster` "cd puppet-bootstrapper/tools/managesf/cli; python sf-manage.py --url ${MANAGESF_URL} --auth-server-url ${MANAGESF_URL} --auth user1:userpass backup_start"
+        ssh -o StrictHostKeyChecking=no root@`get_ip puppetmaster` "sfmanager --url ${MANAGESF_URL} --auth-server-url ${MANAGESF_URL} --auth user1:userpass backup_start"
         sleep 10
         # Fetch the backup
-        ssh -o StrictHostKeyChecking=no root@`get_ip puppetmaster` "cd puppet-bootstrapper/tools/managesf/cli; python sf-manage.py --url ${MANAGESF_URL} --auth-server-url ${MANAGESF_URL} --auth user1:userpass backup_get"
-        scp -o  StrictHostKeyChecking=no root@`get_ip puppetmaster`:/root/puppet-bootstrapper/tools/managesf/cli/sf_backup.tar.gz /tmp
+        ssh -o StrictHostKeyChecking=no root@`get_ip puppetmaster` "sfmanager --url ${MANAGESF_URL} --auth-server-url ${MANAGESF_URL} --auth user1:userpass backup_get"
+        scp -o  StrictHostKeyChecking=no root@`get_ip puppetmaster`:sf_backup.tar.gz /tmp
         # We assume if we cannot move the backup file
         # we need to stop right now
         return $?
@@ -337,8 +337,8 @@ function run_backup_restore_tests {
         # Run server spec to be more confident
         run_serverspec || pre_fail "Serverspec failed"
         # Restore backup
-        scp -o  StrictHostKeyChecking=no /tmp/sf_backup.tar.gz root@`get_ip puppetmaster`:/root/puppet-bootstrapper/tools/managesf/cli/
-        ssh -o StrictHostKeyChecking=no root@`get_ip puppetmaster` "cd puppet-bootstrapper/tools/managesf/cli; python sf-manage.py --url ${MANAGESF_URL} --auth-server-url ${MANAGESF_URL} --auth user1:userpass restore --filename sf_backup.tar.gz"
+        scp -o  StrictHostKeyChecking=no /tmp/sf_backup.tar.gz root@`get_ip puppetmaster`:/root/
+        ssh -o StrictHostKeyChecking=no root@`get_ip puppetmaster` "sfmanager --url ${MANAGESF_URL} --auth-server-url ${MANAGESF_URL} --auth user1:userpass restore --filename sf_backup.tar.gz"
         # Start the checker
         sleep 60
         ./tools/provisioner_checker/run.sh checker

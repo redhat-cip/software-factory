@@ -15,6 +15,8 @@
 # under the License.
 
 SRC=$(cd $(dirname $0); pwd)
+
+. ${SRC}/softwarefactory_subprojects
 . ${SRC}/third_party_tools
 
 echo "Testing third party URLs"
