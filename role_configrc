@@ -1,7 +1,7 @@
 #!/bin/sh
 #
-PREVIOUS_SF_REL=0.9.7
-SF_REL=1.0.0
+PREVIOUS_SF_REL=1.0.0
+SF_REL=1.0.1
 DVER=C7.0
 DIST=centos
 
