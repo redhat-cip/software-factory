@@ -20,6 +20,16 @@
         require valid-user
     </LocationMatch>
 
+    # Redirect a gerrit page that give an easy access to gitweb
+    # if user does not have the GerritAccount cookie in its browser
+    # This prevent the 'Not Found' 404 from Gerrit if cookie not set
+    <LocationMatch "/r/gitweb.*">
+        RewriteEngine On
+        RewriteCond %{HTTP_COOKIE} !^.*gerritaccount.*$ [NC]
+        RewriteCond %{QUERY_STRING} ^p=(.*).git;a=summary$
+        RewriteRule /r/gitweb.*$ /r/#/admin/projects/%1,branches [QSD,R,L,NE]
+    </LocationMatch>
+
     <IfModule mod_proxy.c>
         ProxyVia On
         ProxyRequests Off
