@@ -15,3 +15,6 @@ jenkins     ansible_ssh_user=root
 
 [managesf]
 managesf    ansible_ssh_user=root
+
+[mysql]
+mysql       ansible_ssh_user=root
