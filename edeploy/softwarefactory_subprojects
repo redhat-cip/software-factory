@@ -33,7 +33,7 @@ if [ -d md5pysflib ]; then
     rm -rf md5pysflib
 fi
 git clone $PYSFLIB_REPO md5pysflib && cd md5pysflib
-PYSFLIB_LATEST_TAG=$(latest_tag_or_master)
+PYSFLIB_LATEST_TAG=0.1
 # default deployment version is latest tag
 PYSFLIB_VERSION=${PYSFLIB_VERSION:=$PYSFLIB_LATEST_TAG}
 git checkout ${PYSFLIB_VERSION}
@@ -44,7 +44,7 @@ if [ -d md5cauth ]; then
     rm -rf md5cauth
 fi
 git clone $CAUTH_REPO md5cauth && cd md5cauth
-CAUTH_LATEST_TAG=$(latest_tag_or_master)
+CAUTH_LATEST_TAG=0.2.0
 # default deployment version is latest tag
 CAUTH_VERSION=${CAUTH_VERSION:=$CAUTH_LATEST_TAG}
 git checkout ${CAUTH_VERSION}
@@ -55,7 +55,7 @@ if [ -d md5managesf ]; then
     rm -rf md5managesf
 fi
 git clone $MANAGESF_REPO md5managesf && cd md5managesf
-MANAGESF_LATEST_TAG=$(latest_tag_or_master)
+MANAGESF_LATEST_TAG=0.2.0
 # default deployment version is latest tag
 MANAGESF_VERSION=${MANAGESF_VERSION:=$MANAGESF_LATEST_TAG}
 git checkout ${MANAGESF_VERSION}
