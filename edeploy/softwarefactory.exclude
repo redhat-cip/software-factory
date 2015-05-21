@@ -66,10 +66,12 @@
 /var/spool/
 /var/lib/postfix/master.lock
 /var/lib/zuul/
+/var/lib/managesf/users.db
 /var/www/zuul/
 /var/www/static/lodgeit/
 /var/www/managesf/gerrit_admin_rsa
 /var/www/managesf/config.py
+/var/www/managesf/users.db
 /var/www/index.py
 /var/www/index.html.tmpl
 /var/www/cauth/keys/

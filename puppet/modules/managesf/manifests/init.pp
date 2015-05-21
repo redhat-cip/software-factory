@@ -70,6 +70,13 @@ class managesf ($gerrit = hiera_hash('gerrit', ''),
     mode    => '0750',
   }
 
+  file { '/var/lib/managesf/':
+    ensure  => directory,
+    owner   => $httpd_user,
+    group   => $httpd_user,
+    mode    => '0750',
+  }
+
   file { '/var/www/managesf/':
     ensure  => directory,
     owner   => $httpd_user,
