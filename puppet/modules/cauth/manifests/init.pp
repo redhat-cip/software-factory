@@ -37,6 +37,13 @@ class cauth ($cauth = hiera_hash('cauth', ''),
     mode    => '0640'
   }
 
+  file { '/var/lib/cauth/':
+    ensure  => directory,
+    owner  => $httpd_user,
+    group  => $httpd_user,
+    mode    => '0750'
+  }
+
   file { '/var/www/cauth/keys':
     ensure  => directory,
     owner   => 'root',

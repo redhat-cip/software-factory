@@ -67,6 +67,7 @@
 /var/lib/postfix/master.lock
 /var/lib/zuul/
 /var/lib/managesf/users.db
+/var/lib/cauth/state_mapping.db
 /var/www/zuul/
 /var/www/static/lodgeit/
 /var/www/managesf/gerrit_admin_rsa
@@ -75,7 +76,6 @@
 /var/www/index.py
 /var/www/index.html.tmpl
 /var/www/cauth/keys/
-/var/www/cauth/state_mapping.db
 /var/www/cauth/config.py
 /usr/share/redmine/log
 /usr/share/redmine/public/plugin_assets
