@@ -101,7 +101,7 @@ class commonservices-apache ($cauth = hiera_hash('cauth', ''),
     mode   => '0640',
     owner  => $httpd_user,
     group  => $httpd_user,
-    source  => 'puppet:///modules/commonservices-apache/topmenu.html',
+    content => template('commonservices-apache/topmenu.html'),
     notify => Service['webserver'],
   }
 

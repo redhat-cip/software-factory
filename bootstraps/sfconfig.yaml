@@ -64,3 +64,10 @@ swift_backup_max_retention_secs: 864000
 # zuul/etherpad/paste can be accessed anonymously. Please note that Gerrit,
 # Jenkins and Redmine always require a login.
 authenticated_only: false
+
+# By default all service entries in the topmenu are shown. However, it might be
+# required to disable individual entries. Note that this only disables the menu
+# entry, not the service itself.
+topmenu_hide_redmine: false
+topmenu_hide_etherpad: false
+topmenu_hide_paste: false

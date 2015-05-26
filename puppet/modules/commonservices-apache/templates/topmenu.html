@@ -16,9 +16,15 @@
                 <li><a href="/r/" target="_top">Gerrit</a></li>
                 <li><a href="/jenkins/" target="_top">Jenkins</a></li>
                 <li><a href="/zuul/" target="_top">Zuul</a></li>
+                <% if not scope.function_hiera(["topmenu_hide_redmine"]) %>
                 <li><a href="/redmine/" target="_top">Redmine</a></li>
+                <% end %>
+                <% if not scope.function_hiera(["topmenu_hide_etherpad"]) %>
                 <li><a href="/etherpad/" target="_top">Etherpad</a></li>
+                <% end %>
+                <% if not scope.function_hiera(["topmenu_hide_paste"]) %>
                 <li><a href="/paste/" target="_top">Paste</a></li>
+                <% end %>
             </ul>
             <ul class="nav navbar-nav pull-right">
                 <li><a href="/docs/" target="_top">Get Started</a></li>
