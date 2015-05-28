@@ -69,6 +69,9 @@ auth = {
         'client_secret': '<%= @cauth['github_app_secret'] %>',
         'allowed_organizations': '<%= @cauth['allowed_organizations'] %>'
     },
+    'localdb': {
+        'managesf_url': 'http://managesf.<%= scope.function_hiera(["top_domain"]) %>',
+    },
     'users': {
         "<%= scope.function_hiera(['admin_name']) %>": {
             "lastname": "<%= scope.function_hiera(['admin_lastname']) %>",

@@ -30,7 +30,7 @@ import time
 import yaml
 
 import logging
-
+import pkg_resources
 
 logging.getLogger("requests").setLevel(logging.WARNING)
 logging.captureWarnings(True)
@@ -50,6 +50,22 @@ EMPTY_JOB_XML = """<?xml version='1.0' encoding='UTF-8'?>
   <publishers/>
   <buildWrappers/>
 </project>"""
+
+
+# for easier imports
+skipIf = unittest.skipIf
+skip = unittest.skip
+
+
+def get_module_version(module):
+    m = module
+    if not isinstance(m, basestring):
+        m = module.__name__
+    try:
+        return pkg_resources.get_distribution(m).version
+    except pkg_resources.DistributionNotFound:
+        # module not available, return dummy version
+        return "0"
 
 
 def create_random_str():
@@ -176,6 +192,22 @@ class ManageSfUtils(Tool):
     def list_active_members(self, user):
         passwd = config.USERS[user]['password']
         cmd = self.base_cmd % (user, passwd) + " list_active_users "
+        cmd = shlex.split(cmd)
+        try:
+            output = subprocess.check_output(cmd)
+        except:
+            output = None
+        return output
+
+    def create_user(self, user, password, email):
+        if get_module_version('managesf') < "0.1.1":
+            raise NotImplementedError
+        subcmd = (" user create --username=%s "
+                  "--password=%s --email=%s "
+                  "--fullname=%s" % (user, password, email, user))
+        auth_user = config.ADMIN_USER
+        auth_password = config.USERS[config.ADMIN_USER]['password']
+        cmd = self.base_cmd % (auth_user, auth_password) + subcmd
         cmd = shlex.split(cmd)
         try:
             output = subprocess.check_output(cmd)

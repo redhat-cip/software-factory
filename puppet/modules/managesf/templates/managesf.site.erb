@@ -12,3 +12,8 @@ WSGIDaemonProcess managesf python-path=/var/www/managesf/
     TKTAuthDebug 1
     require valid-user
 </Location>
+<Location /manage/bind>
+    Allow from All
+    Satisfy Any
+</Location>
+
