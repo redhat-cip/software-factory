@@ -134,9 +134,9 @@ function build_roles {
     fi
 
     cd $SF_ROLES
-    build_role "softwarefactory"   $(cd ..; find ${SF_DEPS} ${SUBPROJECTS_DEPS} -type f | sort | xargs cat | md5sum | awk '{ print $1}')
+    build_role "softwarefactory"   $(cd ..; find ${SF_DEPS} ${SUBPROJECTS_DEPS} -type f -not -path "*/.git/*" | sort | xargs cat | md5sum | awk '{ print $1}')
     SFE=$?
-    build_role "install-server-vm" $(cd ..; find ${IS_DEPS} ${SUBPROJECTS_DEPS} -type f | sort | xargs cat | md5sum | awk '{ print $1}')
+    build_role "install-server-vm" $(cd ..; find ${IS_DEPS} ${SUBPROJECTS_DEPS} -type f -not -path "*/.git/*" | sort | xargs cat | md5sum | awk '{ print $1}')
     IE=$?
 }
 
