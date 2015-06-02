@@ -147,4 +147,12 @@ class commonservices-apache ($cauth = hiera_hash('cauth', ''),
     require => File['/var/www/dashboard'],
   }
 
+  file {'managesf_htpasswd':
+    path   => '/etc/httpd/managesf_htpasswd',
+    ensure => file,
+    mode   => '0640',
+    owner  => $httpd_user,
+    group  => $httpd_user,
+  }
+
 }

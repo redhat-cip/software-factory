@@ -83,9 +83,17 @@
         require valid-user
     </LocationMatch>
 
-     <LocationMatch "/api">
+    <LocationMatch "^/api">
+        AuthType Basic
+        AuthName "Gerrit API"
+        AuthUserFile /etc/httpd/managesf_htpasswd
+        require valid-user
+
         Order Allow,Deny
-        Allow from <%= scope.function_hiera(["top_domain"]) %>
+        Allow from <%= scope.function_hiera(["managesf_url"]) %>
+
+        # Grant access based on password authentication or IP address
+        Satisfy any
     </LocationMatch>
 
     <Directory /var/www>
