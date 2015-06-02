@@ -83,6 +83,11 @@
         require valid-user
     </LocationMatch>
 
+     <LocationMatch "/api">
+        Order Allow,Deny
+        Allow from <%= scope.function_hiera(["top_domain"]) %>
+    </LocationMatch>
+
     <Directory /var/www>
         AllowOverride None
         Order allow,deny
