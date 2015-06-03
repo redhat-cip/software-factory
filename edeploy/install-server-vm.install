@@ -101,6 +101,8 @@ do_chroot ${dir} bash -c "cd /root/puppet-bootstrapper/tools/pysflib; python set
 # install sfmanager
 retry do_chroot ${dir} git clone ${MANAGESF_REPO} /root/puppet-bootstrapper/tools/managesf
 do_chroot ${dir} bash -c "cd /root/puppet-bootstrapper/tools/managesf && git checkout ${MANAGESF_VERSION}"
+# override pysflib version from requirements
+do_chroot ${dir} sed -i '/pysflib/d' /root/puppet-bootstrapper/tools/managesf/requirements.txt
 retry do_chroot ${dir} bash -c "cd /root/puppet-bootstrapper/tools/managesf; pip install -r requirements.txt"
 do_chroot ${dir} bash -c "cd /root/puppet-bootstrapper/tools/managesf; python setup.py install"
 

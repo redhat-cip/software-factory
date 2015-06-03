@@ -203,12 +203,16 @@ do_chroot ${dir} bash -c "cd /var/www/pysflib && python setup.py install"
 [ ! -d "${dir}/var/www" ] && mkdir ${dir}/var/www
 retry do_chroot ${dir} git clone ${CAUTH_REPO} /var/www/cauth
 do_chroot ${dir} bash -c "cd /var/www/cauth && git checkout ${CAUTH_VERSION}"
+# override pysflib version from requirements
+do_chroot ${dir} sed -i '/pysflib/d' /var/www/cauth/requirements.txt
 retry do_chroot ${dir} bash -c "cd /var/www/cauth && pip install -r requirements.txt"
 
 # Managesf
 [ ! -d "${dir}/var/www" ] && mkdir ${dir}/var/www
 retry do_chroot ${dir} git clone ${MANAGESF_REPO} /var/www/managesf
 do_chroot ${dir} bash -c "cd /var/www/managesf && git checkout ${MANAGESF_VERSION}"
+# override pysflib version from requirements
+do_chroot ${dir} sed -i '/pysflib/d' /var/www/managesf/requirements.txt
 retry do_chroot ${dir} bash -c "cd /var/www/managesf && pip install -r requirements.txt"
 do_chroot ${dir} bash -c "cd /var/www/managesf && python setup.py install"
 
