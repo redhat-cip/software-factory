@@ -13,6 +13,17 @@
 
 <body ng-controller="mainController">
     <div class="container">
+
+        <div class="pull-right">
+	        <button class="btn btn-success btn-xs" ng-if="htpasswd_set" ng-click="htpasswd_disable()">
+                <span class="glyphicon glyphicon-lock"></span>
+            </button>
+
+            <button class="btn btn-default btn-xs" ng-if="!htpasswd_set" ng-click="htpasswd_enable()">
+                <span class="glyphicon glyphicon-lock"></span>
+            </button>
+        </div>
+
         <div ng-if="errors" class="alert alert-danger" role="alert">
              <button type="button" class="close" data-dismiss="alert">
                 <span aria-hidden="true">&times;</span>
