@@ -43,9 +43,15 @@ case "$(package_tool)" in
      add_epel_repository $DIST
 
      install_packages ${dir} "puppet monit postfix git vim-enhanced nodejs httpd java-1.6.0-openjdk mariadb-server python-werkzeug python-babel python-jinja2 MySQL-python socat mod_wsgi m2crypto mariadb gitweb debootstrap unzip pigz ntp openssl mod_ssl"
-     DEVEL_PKGS="openldap-devel zlib-devel libcurl-devel openssl-devel httpd-devel apr-devel apr-util-devel mariadb-devel gcc-c++ ruby-devel ImageMagick-devel gcc cpp python-devel libxml2-devel libxslt-devel"
+     DEVEL_PKGS="libffi-devel openldap-devel zlib-devel libcurl-devel openssl-devel httpd-devel apr-devel apr-util-devel mariadb-devel gcc-c++ ruby-devel ImageMagick-devel gcc cpp python-devel libxml2-devel libxslt-devel"
 
      install_packages ${dir} ${DEVEL_PKGS}
+
+     # Install a secure platform to get rid of SSL warnings, needs gcc
+     retry do_chroot ${dir} pip install pyopenssl
+     retry do_chroot ${dir} pip install ndg-httpsclient
+     retry do_chroot ${dir} pip install pyasn1
+
 
      # Install SQLAlchemy for paste lodegit (not available in yum)
      # TODO(mhu) manage mirror choice with pip
