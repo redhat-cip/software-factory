@@ -2,7 +2,7 @@
 - hosts: puppetmaster
   gather_facts: no
   vars:
-    version: C7.0-1.0.1
+    version: C7.0-1.0.2
   tasks:
   - name: Create target directory for role trees
     command: mkdir -p /var/lib/sf/roles/upstream/
