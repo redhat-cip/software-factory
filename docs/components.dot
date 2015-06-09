@@ -6,6 +6,7 @@ digraph {
     "User" [shape=box];
     "LDAP" [color=gray];
     "Github" [color=gray label="Github\n(OAuth)"];
+    "LocalAuth" [color=gray];
 
     subgraph cluster_agenda {
         style=invis;
@@ -70,6 +71,7 @@ digraph {
         "Paste";
         "managesf";
         "cauth";
+        "LocalAuth";
     }
 
     edge [color=blue];
@@ -89,6 +91,7 @@ digraph {
     "managesf" -> "Redmine";
     "managesf" -> "Gerrit";
     "Gerrit" -> "Redmine" [constraint=False];
+    "cauth" -> "managesf";
 
     edge [color=red];
     "User" -> "Gerrit";
@@ -98,6 +101,7 @@ digraph {
     "Gerrit" -> "MySQL";
     "Etherpad" -> "MySQL";
     "Paste" -> "MySQL";
+    "managesf" -> "LocalAuth";
 
     edge [color=gray];
     "RedmineApache" -> "Redmine";

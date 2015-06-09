@@ -182,10 +182,11 @@ SF provides an unified authentication through Gerrit, Redmine and Jenkins.
 Once your are authenticated on Gerrit your are also logged in on Redmine and Jenkins.
 A logout from one service logs you out from other services as well.
 
-Currently SF provides two kind of backends to authenticate:
+Currently SF provides three kind of backends to authenticate:
 
 * LDAP backend
 * Github OAuth
+* local user database hosted in the managesf node
 
 .. image:: imgs/login.jpg
 

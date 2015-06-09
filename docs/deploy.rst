@@ -434,6 +434,42 @@ authentication.
 Note that a user has to be member of at least one of this organizations to use this SF deployment.
 Leave empty if not required.
 
+Local user management
+---------------------
+
+For simple deployments without a LDAP backend for users or github authentication,
+user management (except for the default admin user, defined in the sfconfig.yaml file)
+can be done through the SFmanager command-line utility.
+
+The following operations must be performed as the admin user.
+
+Adding a user:
+
+.. code-block:: bash
+
+ sfmanager user add --username=X --password=Y --email=Z@abc.net --fullname=xxx --ssh-key=/path/to/pub_key
+
+Deleting a user:
+
+.. code-block:: bash
+
+ sfmanager user delete --username=X
+
+The following operation can be performed by the admin user or the user himself:
+
+Updating a user's details (password, ssh key ...):
+
+.. code-block:: bash
+
+ sfmanager user update --username=X --password=YY
+
+If --password is used but no value is set in the command line, the user will be
+prompted for it.
+When updating your own details, --username is not mandatory.
+
+Please not that currently only a password change will have an effect. In order
+to change your ssh keys, do it in the gerrit preferences page.
+
 Setup replication to GitHub
 ---------------------------
 
