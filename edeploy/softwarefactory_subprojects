@@ -55,7 +55,7 @@ if [ -d md5managesf ]; then
     rm -rf md5managesf
 fi
 git clone $MANAGESF_REPO md5managesf && cd md5managesf
-MANAGESF_LATEST_TAG=0.2.0
+MANAGESF_LATEST_TAG=0.3.0
 # default deployment version is latest tag
 MANAGESF_VERSION=${MANAGESF_VERSION:=$MANAGESF_LATEST_TAG}
 git checkout ${MANAGESF_VERSION}

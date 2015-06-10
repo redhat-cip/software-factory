@@ -199,6 +199,28 @@ class ManageSfUtils(Tool):
             output = None
         return output
 
+    def create_gerrit_api_password(self, user):
+        passwd = config.USERS[user]['password']
+        cmd = self.base_cmd % (user, passwd) + \
+            "gerrit_api_htpasswd generate_password"
+        cmd = shlex.split(cmd)
+        try:
+            output = subprocess.check_output(cmd)
+        except:
+            output = None
+        return output
+
+    def delete_gerrit_api_password(self, user):
+        passwd = config.USERS[user]['password']
+        cmd = self.base_cmd % (user, passwd) + \
+            "gerrit_api_htpasswd delete_password"
+        cmd = shlex.split(cmd)
+        try:
+            output = subprocess.check_output(cmd)
+        except:
+            output = None
+        return output
+
     def create_user(self, user, password, email):
         if get_module_version('managesf') < "0.1.1":
             raise NotImplementedError

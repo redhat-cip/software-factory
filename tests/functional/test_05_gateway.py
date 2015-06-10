@@ -16,6 +16,11 @@
 
 import config
 from utils import Base
+from utils import ManageSfUtils
+from pysflib.sfgerrit import GerritUtils
+
+from requests.auth import HTTPBasicAuth
+from requests.exceptions import HTTPError
 
 import requests
 
@@ -54,6 +59,29 @@ class TestGateway(Base):
                     auth_pubtkt=config.USERS[config.USER_1]['auth_cookie']))
             self.assertEqual(resp.status_code, 200)
             self.assertTrue('<title>Gerrit Code Review</title>' in resp.text)
+
+    def test_gerrit_api_accessible(self):
+        """ Test if Gerrit API is accessible on gateway hosts
+        """
+        m = ManageSfUtils(config.GATEWAY_URL)
+        url = "https://%s/api/" % config.GATEWAY_HOST
+
+        a = GerritUtils(url)
+        a.g.url = "%s/" % a.g.url.rstrip('a/')
+        self.assertRaises(HTTPError, a.get_account, 'user1')
+
+        api_passwd = m.create_gerrit_api_password('user1')
+        auth = HTTPBasicAuth('user1', api_passwd)
+        a = GerritUtils(url, auth=auth)
+        self.assertTrue(a.get_account('user1'))
+
+        m.delete_gerrit_api_password('user1')
+        a = GerritUtils(url, auth=auth)
+        self.assertRaises(HTTPError, a.get_account, 'user1')
+
+        a = GerritUtils(url)
+        a.g.url = "%s/" % a.g.url.rstrip('a/')
+        self.assertRaises(HTTPError, a.get_account, 'john')
 
     def test_jenkins_accessible(self):
         """ Test if Jenkins is accessible on gateway host
