@@ -59,7 +59,7 @@ BOOTSTRAP_URL="https://github.com/twbs/bootstrap/releases/download/v${BOOTSTRAP_
 URL_LIST="$URL_LIST $BOOTSTRAP_URL"
 
 # jenkins
-export JENKINS_VERSION=1.580-1.1 # LTS
+export JENKINS_VERSION=1.580.3-1.1 # LTS
 JENKINS_SWARM_VERSION=1.22
 JENKINS_SWARM_CLIENT_URL="http://maven.jenkins-ci.org/content/repositories/releases/org/jenkins-ci/plugins/swarm-client/${JENKINS_SWARM_VERSION}/swarm-client-${JENKINS_SWARM_VERSION}-jar-with-dependencies.jar"
 JENKINS_SWARM_PLUGIN_URL="http://repo.jenkins-ci.org/releases/org/jenkins-ci/plugins/swarm/${JENKINS_SWARM_VERSION}/swarm-${JENKINS_SWARM_VERSION}.hpi"

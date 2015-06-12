@@ -129,6 +129,6 @@ do_chroot ${dir} passwd -l root
 disable_selinux
 
 # install third party puppet modules
-do_chroot $dir puppet module install puppetlabs-ntp --environment=sf
+retry do_chroot $dir puppet module install puppetlabs-ntp --environment=sf
 
 put_git_mark $dir
