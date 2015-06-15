@@ -15,5 +15,7 @@ Welcome to software-factory's documentation!
    upgrade
    submitpatches
    managesf
+   analytics
    testing
    contribute
+   tools

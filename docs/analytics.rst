@@ -56,7 +56,7 @@ The utilities will then be used like so:
 
 With the following sample results, taken from Software Factory:
 
-..code-block:: bash
+.. code-block:: bash
 
   Reviews for the last 14 days in softwarefactory
   ** -- softwarefactory-core team member
