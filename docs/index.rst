@@ -14,7 +14,7 @@ Welcome to software-factory's documentation!
    migration
    upgrade
    submitpatches
-   managesf
+   sfmanager
    analytics
    testing
    contribute
