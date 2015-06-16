@@ -26,7 +26,7 @@ function install_bup {
     do_chroot ${dir} bash -c 'cd /opt/bup && ./configure && make && make install'
 }
 
-function http_fetch {
+function _http_fetch {
     local remote_location=$1
     local local_location=$2
     # We retry 12 times with 10 seconds delay between retries
@@ -54,6 +54,10 @@ function retry {
         sleep $delay
     done
     return 1
+}
+
+function http_fetch {
+    retry _http_fetch "$@"
 }
 
 . ${ORIG}/functions
