@@ -249,13 +249,6 @@ class gerrit ($settings = hiera_hash('gerrit', ''),
     mode    => '0640',
     source  => 'puppet:///modules/gerrit/project.config',
   }
-  file { '/root/gerrit_data_source/rules.pl':
-    ensure  => present,
-    owner   => 'root',
-    group   => 'root',
-    mode    => '0640',
-    source  => 'puppet:///modules/gerrit/rules.pl',
-  }
   file { '/root/gerrit_data_source/ssh_wrapper.sh':
     ensure  => present,
     owner   => 'root',
@@ -361,7 +354,6 @@ class gerrit ($settings = hiera_hash('gerrit', ''),
     logoutput   => on_failure,
     subscribe   => Exec['gerrit-init-firstuser'],
     require     => [Service['gerrit'], Exec['wait4gerrit'],
-                    File['/root/gerrit_data_source/rules.pl'],
                     File['/root/gerrit_data_source/project.config'],
                     File['/root/gerrit_data_source/ssh_wrapper.sh'],
                     File['/home/gerrit/gerrit.war']],

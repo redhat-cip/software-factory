@@ -18,3 +18,7 @@
   gather_facts: no
   tasks:
   - include: tasks/submitconfigreview.yml
+- hosts: gerrit
+  gather_facts: no
+  tasks:
+  - include: tasks/allprojectsupdate.yml

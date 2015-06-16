@@ -6,8 +6,8 @@ set -e
 # Git config complains about HOME env var missing ...
 export HOME=/root
 
-ADMINUSER=<%= @settings['gerrit_admin_username'] %> 
-ADMINUSEREMAIL=<%= @settings['gerrit_admin_mail'] %> 
+ADMINUSER=<%= @settings['gerrit_admin_username'] %>
+ADMINUSEREMAIL=<%= @settings['gerrit_admin_mail'] %>
 CLONETEMPDIR="/tmp/All-projects"
 
 [ -d "$CLONETEMPDIR" ] && rm -Rf $CLONETEMPDIR
@@ -18,12 +18,20 @@ git config --global user.email $ADMINUSEREMAIL
 git remote add origin ssh://$ADMINUSER@localhost:29418/All-Projects
 GIT_SSH=/root/gerrit_data_source/ssh_wrapper.sh git fetch origin refs/meta/config:refs/remotes/origin/meta/config
 git checkout meta/config
-cp /root/gerrit_data_source/project.config .
-cp /root/gerrit_data_source/rules.pl .
+[ "$1" = "upgrade" ] && {
+    [ -f rules.pl ] && git rm rules.pl
+    cmsg="Auto upgrade default config"
+}
+[ -z "$1" ] && {
+    cp /root/gerrit_data_source/project.config .
+    cmsg="Provide the default config"
+}
+git status
 git diff
-git add project.config rules.pl
+git add *
+
 # git returns exit code 1 in case there is nothing to do
 # This fails during an upgrade, thus always return exit code 0
-git commit -a -m"Provide the default config" || true
+git commit -a -m"$cmsg" || true
 GIT_SSH=/root/gerrit_data_source/ssh_wrapper.sh git push origin meta/config:meta/config
 cd -

@@ -217,7 +217,6 @@ class TestProjectTestsWorkflow(Base):
 
         # review the change
         self.gu2.submit_change_note(change_id, "current", "Code-Review", "2")
-        self.gu.submit_change_note(change_id, "current", "Code-Review", "2")
         self.gu2.submit_change_note(change_id, "current", "Workflow", "1")
 
         # now zuul processes gate pipeline and runs config-check job

@@ -13,6 +13,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+
 import os
 import shutil
 import time
@@ -124,7 +125,7 @@ class TestGerrit(Base):
         return change_id, gu, k_index
 
     def test_review_submit_approval(self):
-        """ Test submit criteria - CR(2 +2s), V(+1), A(+1)
+        """ Test submit criteria - CR(+2s), V(+1), W(+1)
         """
         change_id, gu, k_index = self._prepare_review_submit_testing()
 
@@ -138,45 +139,8 @@ class TestGerrit(Base):
         self.assertFalse(gu.submit_patch(change_id, "current"))
 
         gu.submit_change_note(change_id, "current", "Code-Review", "2")
-        self.assertFalse(gu.submit_patch(change_id, "current"))
-
-        gu_user2 = GerritUtils(
-            'https://%s/' % config.GATEWAY_HOST,
-            auth_cookie=config.USERS[config.USER_2]['auth_cookie'])
-        gu_user2.submit_change_note(change_id, "current", "Code-Review", "2")
         self.assertTrue(gu.submit_patch(change_id, "current"))
-        gu.del_pubkey(k_index)
 
-    def test_review_submit_approval_with_extra_code_review(self):
-        """ Test submit criteria - CR(3 +2s), V(+1), A(+1)
-        """
-        u2mail = config.USERS[config.USER_2]['email']
-        u3mail = config.USERS[config.USER_3]['email']
-        options = {'core-group': '%s,%s' % (u2mail, u3mail)}
-        change_id, gu, k_index = self._prepare_review_submit_testing(options)
-
-        gu.submit_change_note(change_id, "current", "Code-Review", "1")
-        self.assertFalse(gu.submit_patch(change_id, "current"))
-
-        gu.submit_change_note(change_id, "current", "Verified", "2")
-        self.assertFalse(gu.submit_patch(change_id, "current"))
-
-        gu.submit_change_note(change_id, "current", "Workflow", "1")
-        self.assertFalse(gu.submit_patch(change_id, "current"))
-
-        gu.submit_change_note(change_id, "current", "Code-Review", "2")
-        self.assertFalse(gu.submit_patch(change_id, "current"))
-
-        gu_user2 = GerritUtils(
-            'https://%s/' % config.GATEWAY_HOST,
-            auth_cookie=config.USERS[config.USER_2]['auth_cookie'])
-        gu_user2.submit_change_note(change_id, "current", "Code-Review", "2")
-        gu_user3 = GerritUtils(
-            'https://%s/' % config.GATEWAY_HOST,
-            auth_cookie=config.USERS[config.USER_3]['auth_cookie'])
-        gu_user3.submit_change_note(change_id, "current", "Code-Review", "2")
-
-        self.assertTrue(gu.submit_patch(change_id, "current"))
         gu.del_pubkey(k_index)
 
     def test_plugins_installed(self):
@@ -275,8 +239,6 @@ class TestGerrit(Base):
         gu_second_u = GerritUtils(
             'https://%s/' % config.GATEWAY_HOST,
             auth_cookie=config.USERS[second_u]['auth_cookie'])
-        gu_second_u.submit_change_note(
-            change_id, "current", "Code-Review", "2")
         self.assertTrue(gu_first_u.submit_patch(change_id, "current"))
         # Change the file we have commited with Admin user
         k2_index = gu_second_u.add_pubkey(config.USERS[second_u]["pubkey"])
