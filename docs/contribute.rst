@@ -27,7 +27,7 @@ Prepare a development environment with sfstack
 ----------------------------------------------
 
 Sfstack is a suite of scripts that you can download from our public
-softwarefactory instance. The idea is to install a Ubuntu 14.04 in a
+softwarefactory instance. The idea is to install a CentOS 7 in a
 VM somewhere, and start the *sfinstall.sh* script in order to prepare
 a development environment.
 

@@ -1,4 +1,4 @@
-smtpd_banner = $myhostname ESMTP $mail_name (Ubuntu)
+smtpd_banner = $myhostname ESMTP $mail_name
 biff = no
 
 append_dot_mydomain = no

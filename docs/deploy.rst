@@ -120,17 +120,17 @@ Build SF images
 ...............
 
 To build the images on your own (it is not advised to do so), follow the process
-below. The build has been only tested on Ubuntu 14.04.1 LTS. So the
-best is to install a VM with that Ubuntu version before trying
-to build the SF images. Ensure that the current user can act as root
-via sudo without password. If not you must login as root.
+below. The build has been only tested on CentOS 7. So the best is to install a
+VM before trying to build the SF images. Ensure that the current user can act
+as root via sudo without password. If not you must login as root.
 
 Some dependencies needs to be installed on your local system to build the images:
 
 .. code-block:: bash
 
- $ sudo apt-get update
- $ sudo apt-get install build-essential debootstrap pigz python-dev python-pip unzip graphviz curl git kpartx python-yaml
+ $ sudo yum update
+ $ sudo yum install -y epel-release
+ $ sudo yum install -y pigz python-devel python-pip unzip graphviz curl wget git kpartx python-yaml patch
  $ sudo pip install Sphinx oslosphinx
 
 You need to clone the Software Factory Git repository :
@@ -290,14 +290,13 @@ for production.
 
 This step requires that VM images have been built `Build or retrieve SF VM images`_.
 
-The LXC deployment has been only tested on Ubuntu 14.04 LTS. We advice to
-setup an Ubuntu 14.04 VM somewhere either on OpenStack or VirtualBox or wherever
-you prefer. Please make sure your instance is up-to-date:
+The LXC deployment only support CentOS 7 host.
 
 .. code-block:: bash
 
- $ sudo apt-get update
- $ sudo apt-get upgrade
+ $ sudo yum update
+ $ sudo yum upgrade
+ $ sudo yum install -y epel-release
 
 If there were any kernel updates applied you also need to reboot.
 
@@ -305,8 +304,7 @@ Now install the following dependencies:
 
 .. code-block:: bash
 
- $ sudo apt-get install linux-image-extra-$(uname -r) git python-augeas bridge-utils curl lxc libmysqlclient-dev \
- libssl-dev swig libldap2-dev libsasl2-dev python-dev python-pip graphviz python-yaml
+ $ sudo yum install -y git python-augeas bridge-utils curl lxc wget swig python-devel python-pip graphviz python-yaml
  $ sudo pip install flake8 bash8
  $ sudo pip install -U tox==1.6.1 virtualenv==1.10.1 Sphinx oslosphinx
 

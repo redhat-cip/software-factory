@@ -93,6 +93,9 @@ function init {
     sed -i "s/JENKINS_USER_PASSWORD/${JENKINS_USER_PASSWORD}/" ${CONFDIR}/puppetmaster.cloudinit
     sed -i "s/MY_PRIV_IP=.*/MY_PRIV_IP=$ip/" ${CONFDIR}/puppetmaster.cloudinit
 
+    # temp fix for ubuntu test slave
+    [ -f "/etc/lsb-release" ] && sed -i "s/overlay/aufs/g" ${CONFDIR}/sf-lxc.yaml
+
     echo "Now running edeploy-lxc"
     sudo ${EDEPLOY_LXC} --config ${CONFDIR}/sf-lxc.yaml stop || exit -1
 
@@ -143,10 +146,20 @@ function start {
     # Mount rootfs
     base_aufs=$(grep aufs_dir ${CONFDIR}/sf-lxc.yaml | awk 'FS=":" {print $2}')
     roles_dir=$(grep " dir: " ${CONFDIR}/sf-lxc.yaml | awk 'FS=":" {print $2}')
-    sudo mount -t aufs -o "br=${base_aufs}/puppetmaster:${roles_dir}/install-server-vm" none /var/lib/lxc/puppetmaster/rootfs
-    for name in `echo $ROLES | sed s/puppetmaster//`; do
-        sudo mount -t aufs -o "br=${base_aufs}/${name}:${roles_dir}/softwarefactory" none /var/lib/lxc/${name}/rootfs
-    done
+    union_fs=$(grep "union_fs:" ${CONFDIR}/sf-lxc.yaml  | awk '{ print $2 }')
+    if [ "${union_fs}" == "aufs" ]; then
+        sudo mount -t aufs -o "br=${base_aufs}/puppetmaster:${roles_dir}/install-server-vm" none /var/lib/lxc/puppetmaster/rootfs
+        for name in `echo $ROLES | sed s/puppetmaster//`; do
+            sudo mount -t aufs -o "br=${base_aufs}/${name}:${roles_dir}/softwarefactory" none /var/lib/lxc/${name}/rootfs
+        done
+    else
+        sudo mkdir -p /tmp/base_overlay/puppetmaster/workdir ${base_aufs}/puppetmaster /var/lib/lxc/puppetmaster/rootfs
+        sudo mount -t overlay -o "upperdir=${base_aufs}/puppetmaster,lowerdir=${roles_dir}/install-server-vm,workdir=/tmp/base_overlay/puppetmaster/workdir" none /var/lib/lxc/puppetmaster/rootfs
+        for name in `echo $ROLES | sed s/puppetmaster//`; do
+            sudo mkdir -p /tmp/base_overlay/${name}/workdir ${base_aufs}/${name} /var/lib/lxc/${name}/rootfs
+            sudo mount -t overlay -o "upperdir=${base_aufs}/${name},lowerdir=${roles_dir}/softwarefactory,workdir=/tmp/base_overlay/${name}/workdir" none /var/lib/lxc/${name}/rootfs
+        done
+    fi
     # Start LXC containers
     for name in mysql puppetmaster; do
         sudo lxc-start -d -L /var/log/lxc$name.log --name $name;

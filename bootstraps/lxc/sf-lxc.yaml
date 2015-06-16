@@ -7,6 +7,7 @@ general:
 edeploy:
     dir: ROLES_DIR
     aufs_dir: /var/lib/base_aufs
+    union_fs: overlay
 hosts:
   -
     address: 192.168.134.49

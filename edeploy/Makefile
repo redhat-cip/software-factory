@@ -31,7 +31,7 @@ DVER=D7
 STRIPPED_TARGET=false
 
 ARCH=amd64
-export PATH := /sbin:/bin::$(PATH)
+export PATH := /sbin:/bin:/usr/bin:/usr/sbin:/usr/local/bin
 
 MAKEFILE_TARGET=$(MAKECMDGOALS)
 CURRENT_TARGET=$@
