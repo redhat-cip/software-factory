@@ -204,6 +204,7 @@ cp -Rv /tmp/md5cauth/* ${dir}/var/www/cauth/
 # override pysflib version from requirements
 do_chroot ${dir} sed -i '/pysflib/d' /var/www/cauth/requirements.txt
 retry do_chroot ${dir} bash -c "cd /var/www/cauth && pip install -r requirements.txt"
+do_chroot ${dir} bash -c "cd /var/www/cauth && python setup.py install"
 
 # Managesf. managesf has been checkouted before on the build node in /tmp
 [ ! -d "${dir}/var/www/managesf" ] && mkdir ${dir}/var/www/managesf
