@@ -55,4 +55,4 @@ echo "Done"
 rm -rf $BUILDDIR
 
 echo "Docs are accessible here :"
-echo "${HOST}/v1/${ACCOUNT}/${CONTAINER}/index.html"
+echo "${SWIFT_BASE_URL}/v1/${SWIFT_ACCOUNT}/${CONTAINER}/index.html"
