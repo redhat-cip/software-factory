@@ -163,6 +163,11 @@ Edit jobs/projects.yaml to define your new job:
            set -e
            sloccount .
            echo do a custom check/test
+     wrappers:
+       - credentials-binding:
+         - file:
+            credential-id: c6a71f95-be85-4cad-9cec-3bea066ee80a
+            variable: my_secret_file
      triggers:
        - zuul
      node: centos7-slave
@@ -178,6 +183,7 @@ Some quick explanation about this job configuration:
   "prepare-workspace" builder and then the "shell" one. The former uses "zuul-cloner" to
   checkout the project + the change to be tested in the workspace. Then the later uses
   ZUUL_PROJECT to jump into the project source directory and then performs your custom actions.
+- wrappers for credential bindings (optional): this makes credentials defined in Jenkins available in the job's workspace. In this example, a file will be created and stored in the path set by the shell variable ${my_secret_file} for the duration of the job.
 - triggers: using "zuul" trigger is mandatory to expose environments variables (set by
   zuul's scheduler) in the job workspace. Indeed "zuul-cloner" use them. ZUUL_PROJECT is
   also part of these variables.
