@@ -6,7 +6,7 @@ general:
     ssh_key: SSH_PUBKEY
 edeploy:
     dir: ROLES_DIR
-    aufs_dir: /var/lib/base_aufs
+    overlay_dir: /var/lib/base_aufs
     union_fs: overlay
 hosts:
   -

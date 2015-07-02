@@ -27,6 +27,8 @@ EDEPLOY_ROLES=${EDEPLOY_ROLES:-/var/lib/sf/roles/}
 SSH_PUBKEY=${SSH_PUBKEY:-${HOME}/.ssh/id_rsa.pub}
 export SF_SUFFIX
 
+IN_FUNC_TEST=${IN_FUNC_TESTS:-""}
+
 EDEPLOY_LXC=/srv/edeploy-lxc/edeploy-lxc
 CONFDIR=/var/lib/lxc-conf
 
@@ -48,8 +50,11 @@ function setup_iptables {
     fi
     if [ "$1" = "up" ]; then
         switch="-A"
-        # Enable NAT on the container hosts (do not do that automatically)
-        # sudo iptables -t nat $switch POSTROUTING -o eth0 -j MASQUERADE
+        # Enable IP MASQUERADE to allow container access internet
+        # This is deactivated during functional test
+        [ -z "$IN_FUNC_TESTS" ] && sudo iptables -t nat $switch POSTROUTING -o eth0 -j MASQUERADE
+        # Enable IP forward (host routes packets to containers)
+        echo "net.ipv4.ip_forward=1" | sudo tee /etc/sysctl.d/sf.conf
     fi
     # Redirect host incoming TCP/80 to the sf gateway on 192.168.134.54/80
     sudo iptables -t nat $switch PREROUTING -p tcp -i eth0 --dport 80 -j DNAT --to-destination 192.168.134.54:80
@@ -144,9 +149,9 @@ function start {
     sudo brctl addbr $bridge
     sudo ifconfig $bridge $gateway
     # Mount rootfs
-    base_aufs=$(grep aufs_dir ${CONFDIR}/sf-lxc.yaml | awk 'FS=":" {print $2}')
-    roles_dir=$(grep " dir: " ${CONFDIR}/sf-lxc.yaml | awk 'FS=":" {print $2}')
     union_fs=$(grep "union_fs:" ${CONFDIR}/sf-lxc.yaml  | awk '{ print $2 }')
+    base_aufs=$(grep ${union_fs}_dir ${CONFDIR}/sf-lxc.yaml | awk 'FS=":" {print $2}')
+    roles_dir=$(grep " dir: " ${CONFDIR}/sf-lxc.yaml | awk 'FS=":" {print $2}')
     if [ "${union_fs}" == "aufs" ]; then
         sudo mount -t aufs -o "br=${base_aufs}/puppetmaster:${roles_dir}/install-server-vm" none /var/lib/lxc/puppetmaster/rootfs
         for name in `echo $ROLES | sed s/puppetmaster//`; do
@@ -154,10 +159,10 @@ function start {
         done
     else
         sudo mkdir -p /tmp/base_overlay/puppetmaster/workdir ${base_aufs}/puppetmaster /var/lib/lxc/puppetmaster/rootfs
-        sudo mount -t overlay -o "upperdir=${base_aufs}/puppetmaster,lowerdir=${roles_dir}/install-server-vm,workdir=/tmp/base_overlay/puppetmaster/workdir" none /var/lib/lxc/puppetmaster/rootfs
+        sudo mount -t overlay -o "upperdir=${base_aufs}/puppetmaster/upperdir,lowerdir=${roles_dir}/install-server-vm,workdir=${base_aufs}/puppetmaster/workdir" none /var/lib/lxc/puppetmaster/rootfs
         for name in `echo $ROLES | sed s/puppetmaster//`; do
             sudo mkdir -p /tmp/base_overlay/${name}/workdir ${base_aufs}/${name} /var/lib/lxc/${name}/rootfs
-            sudo mount -t overlay -o "upperdir=${base_aufs}/${name},lowerdir=${roles_dir}/softwarefactory,workdir=/tmp/base_overlay/${name}/workdir" none /var/lib/lxc/${name}/rootfs
+            sudo mount -t overlay -o "upperdir=${base_aufs}/${name}/upperdir,lowerdir=${roles_dir}/softwarefactory,workdir=${base_aufs}/${name}/workdir" none /var/lib/lxc/${name}/rootfs
         done
     fi
     # Start LXC containers

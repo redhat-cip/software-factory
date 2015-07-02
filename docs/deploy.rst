@@ -288,7 +288,7 @@ The LXC deployment is a deployment method that should only be used
 for test deployments. Only the SF deployment method for OpenStack is targeted
 for production.
 
-This step requires that VM images have been built `Build or retrieve SF VM images`_.
+This step requires that VM images have been built or fetched `Build or retrieve SF VM images`_.
 
 The LXC deployment only support CentOS 7 host.
 
@@ -337,21 +337,38 @@ In order to start the SF deployment perform the commands below:
 
  $ cd bootstraps/lxc
  $ ./start.sh init
- $ sudo lxc-ls -f
+ $ for node in $(sudo lxc-ls); do echo "State of the node: $node"; sudo lxc-info -si --name $node; done
 
 The lxc-ls command should report the following :
 
 .. code-block:: none
 
- NAME          STATE    IPV4            IPV6  AUTOSTART
- ------------------------------------------------------
- gerrit        RUNNING  192.168.134.52  -     NO
- jenkins       RUNNING  192.168.134.53  -     NO
- managesf      RUNNING  192.168.134.54  -     NO
- mysql         RUNNING  192.168.134.50  -     NO
- puppetmaster  RUNNING  192.168.134.49  -     NO
- redmine       RUNNING  192.168.134.51  -     NO
- slave         RUNNING  192.168.134.55  -     NO
+ State of the node: gerrit
+ State:          RUNNING
+ IP:             192.168.134.52
+ State of the node: jenkins
+ State:          RUNNING
+ IP:             192.168.134.53
+ State of the node: managesf
+ State:          RUNNING
+ IP:             192.168.134.54
+ State of the node: mysql
+ State:          RUNNING
+ IP:             192.168.134.50
+ State of the node: puppetmaster
+ State:          RUNNING
+ IP:             192.168.134.49
+ State of the node: redmine
+ State:          RUNNING
+ IP:             192.168.134.51
+ State of the node: slave
+ State:          RUNNING
+ IP:             192.168.134.55
+
+The bootstrap process can take some time, indeed after containers
+have started some puppet manifests will be applied on each
+node. When all manifests have been applied your instance
+should be functional.
 
 You can follow the bootstrap process by connecting to the
 puppetmaster node and tail -f /var/log/sf-bootstrap.log:
@@ -371,6 +388,9 @@ you can use the default pre-provisioned users that are user1, user2,
 user3 with 'userpass' as password. User *user1* is the default administrator
 in this LXC SF deployment.
 
+Default users are only usable if the domain used is "tests.dom". If
+you want to deploy in production do not use this default domain.
+
 
 LXC deployment lifecycle
 ........................
@@ -383,12 +403,12 @@ If you need to stop your SF instance then use the *stop* argument. This will sto
 the LXC containers, umount the aufs mounts, delete the bridge and clean iptables.
 
 If you need to start a SF instance (previous bootstrapped with *init*) use the *start*
-argument. This will create the bridge, mount the aufs mount, start the
+argument. This will create the bridge, mount the overlayfs mount, start the
 containers and setup the iptables rules.
 
 The *destroy* argument should be only used if you don't care about the data
 you stored on your SF instance (projects, issues, ...). Indeed data on the
-aufs directories will be destroyed.
+overlayfs directories will be destroyed.
 
 The default admin user
 ----------------------
