@@ -24,6 +24,10 @@ source functestslib.sh
 echo "Running functional-tests with this HEAD"
 display_head
 
+# This prevent the bootstrap LXC script to set up IP MASQUERADE
+# during the functional tests
+export IN_FUNC_TESTS=1
+
 function lxc_stop {
     if [ ! ${SF_SKIP_BOOTSTRAP} ]; then
         if [ ! ${DEBUG} ]; then
