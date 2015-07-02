@@ -8,8 +8,8 @@ function loadTopmenu() {
         document.title += ' [SF <%= scope.function_hiera(["sf_version"]) %>]';
 };
 
-if (document.body) {
-    loadTopmenu();
+if (document.addEventListener) {
+    document.addEventListener("DOMContentLoaded", loadTopmenu, false);
 } else {
-    window.onload = function() {loadTopmenu();};
-};
+    window.onload = loadTopmenu;
+}
