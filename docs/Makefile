@@ -6,7 +6,7 @@ SPHINXOPTS    =
 SPHINXBUILD   = sphinx-build
 PAPER         =
 BUILDDIR      = _build
-GET_MANAGESF  = cp /tmp/md5managesf/docs/source/sfmanager.rst sfmanager.rst
+GET_MANAGESF  = cp ${MANAGESF_CLONED_PATH}/docs/source/sfmanager.rst sfmanager.rst
 
 # User-friendly check for sphinx-build
 ifeq ($(shell which $(SPHINXBUILD) >/dev/null 2>&1; echo $$?), 1)

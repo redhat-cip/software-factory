@@ -194,13 +194,13 @@ EOF
 
 # install pysflib. pysflib has been checkouted before on the build node in /tmp
 [ ! -d "${dir}/var/www/pysflib" ] && mkdir ${dir}/var/www/pysflib
-cp -Rv /tmp/md5pysflib/* ${dir}/var/www/pysflib/
+cp -Rv ${PYSFLIB_CLONED_PATH}/* ${dir}/var/www/pysflib/
 retry do_chroot ${dir} bash -c "cd /var/www/pysflib && pip install -r requirements.txt"
 do_chroot ${dir} bash -c "cd /var/www/pysflib && python setup.py install"
 
 # Cauth server. cauth has been checkouted before on the build node in /tmp
 [ ! -d "${dir}/var/www/cauth" ] && mkdir ${dir}/var/www/cauth
-cp -Rv /tmp/md5cauth/* ${dir}/var/www/cauth/
+cp -Rv ${CAUTH_CLONED_PATH}/* ${dir}/var/www/cauth/
 # override pysflib version from requirements
 do_chroot ${dir} sed -i '/pysflib/d' /var/www/cauth/requirements.txt
 retry do_chroot ${dir} bash -c "cd /var/www/cauth && pip install -r requirements.txt"
@@ -208,7 +208,7 @@ do_chroot ${dir} bash -c "cd /var/www/cauth && python setup.py install"
 
 # Managesf. managesf has been checkouted before on the build node in /tmp
 [ ! -d "${dir}/var/www/managesf" ] && mkdir ${dir}/var/www/managesf
-cp -Rv /tmp/md5managesf/* ${dir}/var/www/managesf/
+cp -Rv ${MANAGESF_CLONED_PATH}/* ${dir}/var/www/managesf/
 # override pysflib version from requirements
 do_chroot ${dir} sed -i '/pysflib/d' /var/www/managesf/requirements.txt
 retry do_chroot ${dir} bash -c "cd /var/www/managesf && pip install -r requirements.txt"
@@ -220,7 +220,7 @@ retry do_chroot ${dir} pip install -U pbr==${PBR_VERSION}
 # Documentation
 DOCBUILDDIR=/tmp/_build
 [ ! -d "${dir}/var/www/docs" ] && mkdir ${dir}/var/www/docs
-cd ${DOCDIR} && make BUILDDIR=$DOCBUILDDIR html ; cd -
+cd ${DOCDIR} && make BUILDDIR=$DOCBUILDDIR MANAGESF_CLONED_PATH=${MANAGESF_CLONED_PATH} html ; cd -
 cp -r $DOCBUILDDIR/html/* ${dir}/var/www/docs/
 rm -rf $DOCBUILDDIR
 

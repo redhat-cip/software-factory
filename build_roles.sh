@@ -34,7 +34,6 @@ set -e
 [ -n "$DEBUG" ] && set -x
 
 . ./role_configrc
-. ./edeploy/softwarefactory_subprojects
 
 CURRENT=`pwd`
 SF_ROLES=$CURRENT/edeploy/
@@ -108,7 +107,9 @@ function build_role {
             else
                 ROLE_OUTPUT=/dev/stdout
             fi
-            sudo -H ${MAKE} EDEPLOY_ROLES_PATH=${EDEPLOY_ROLES} PREBUILD_EDR_TARGET=${EDEPLOY_ROLES_REL} ${ROLE_NAME} &> ${ROLE_OUTPUT}
+            sudo -H ${MAKE} EDEPLOY_ROLES_PATH=${EDEPLOY_ROLES} PREBUILD_EDR_TARGET=${EDEPLOY_ROLES_REL} \
+                PYSFLIB_CLONED_PATH=${PYSFLIB_CLONED_PATH} CAUTH_CLONED_PATH=${CAUTH_CLONED_PATH} \
+                MANAGESF_CLONED_PATH=${MANAGESF_CLONED_PATH} ${ROLE_NAME} &> ${ROLE_OUTPUT}
             echo ${ROLE_MD5} | sudo tee ${ROLE_FILE}.md5
             if [ -n "$VIRT" ]; then
                 echo "Upstream ${ROLE_NAME} is NOT similar ! I rebuild the qcow2 image."
@@ -154,6 +155,8 @@ prepare_buildenv
 }
 
 fetch_edeploy
+./edeploy/fetch_subprojects.sh
+echo
 build_roles
 
 exit $[ $SFE + $IE ];

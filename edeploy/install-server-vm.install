@@ -94,13 +94,13 @@ cp -Rv ../bootstraps/sfcreds.yaml ${dir}/root/puppet-bootstrapper/
 
 # install pysflib. pysflib has been checkouted before on the build node in /tmp
 mkdir -p ${dir}/root/puppet-bootstrapper/tools/pysflib
-cp -Rv /tmp/md5pysflib/* ${dir}/root/puppet-bootstrapper/tools/pysflib/
+cp -Rv ${PYSFLIB_CLONED_PATH}/* ${dir}/root/puppet-bootstrapper/tools/pysflib/
 retry do_chroot ${dir} bash -c "cd /root/puppet-bootstrapper/tools/pysflib; pip install -r requirements.txt"
 do_chroot ${dir} bash -c "cd /root/puppet-bootstrapper/tools/pysflib; python setup.py install"
 
 # install sfmanager. managesf has been checkouted before on the build node in /tmp
 mkdir -p ${dir}/root/puppet-bootstrapper/tools/managesf
-cp -Rv /tmp/md5managesf/* ${dir}/root/puppet-bootstrapper/tools/managesf/
+cp -Rv ${MANAGESF_CLONED_PATH}/* ${dir}/root/puppet-bootstrapper/tools/managesf/
 # override pysflib version from requirements
 do_chroot ${dir} sed -i '/pysflib/d' /root/puppet-bootstrapper/tools/managesf/requirements.txt
 retry do_chroot ${dir} bash -c "cd /root/puppet-bootstrapper/tools/managesf; pip install -r requirements.txt"
