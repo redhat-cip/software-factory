@@ -6,6 +6,11 @@ Configure automatic tests for a project
 The big picture
 ---------------
 
+Software Factory relies on Zuul to enable a CI workflow. If you
+want to have a deeper understanding of Zuul then you can have a
+look at the `official documentation <http://docs.openstack.org/infra/zuul/>`_ and/or at this
+`blog post <http://techs.enovance.com/7542/dive-into-zuul-gated-commit-system-2>`_.
+
 By default a Software Factory deployment embeds a special project
 called **config**. The purpose of this project is to store all the
 Jenkins and Zuul configurations that details how to run tests for
@@ -16,65 +21,56 @@ templates and also a default Zuul layout file.
 
 The default Zuul layout.yaml provided four test pipelines:
 
-* The check pipeline: The intend of that pipeline is to run
-  Jenkins jobs (mainly tests) related to a Gerrit
-  change (a submitted patch) and to report a note (-1, or +1) in
-  the **Verified** label.
+* The check pipeline: Is used to run Jenkins jobs
+  related to a Gerrit change (a submitted patch) and to report
+  a note (-1, or +1) in the **Verified** label according to attached
+  tests result. This pipeline is managed by the independent
+  manager of Zuul.
 
-* The post pipeline: This pipeline can be use to run Jenkins jobs
+* The gate pipeline: Jobs can be configured to run in this pipeline
+  after a change has received all the required approvals,
+  (1 (+2) approval on the **Core-Review** label, one (+1) approval on
+  the **Workflow** label and 1 (+1) on the **Verified** label).
+  This pipeline is managed by the dependent manager of Zuul and acts
+  as a `Gated Commit system <https://en.wikipedia.org/wiki/Gated_Commit>`_.
+
+* The post pipeline: Is used to run Jenkins jobs
   after a change has been merged into the master branch of a
   project. No note are given to the related change if the job fails
-  or pass.
-
-* The gate pipeline: In this pipeline Jenkins job can be configured
-  to run after a change has received all the required approvals,
-  2 approvals on the **Core-Review** label and an approval on
-  the **Workflow** label. This pipeline takes care of rebasing the
-  change on the master branch and run the related Jenkins jobs
-  (mainly tests) and automatically submits the change on the
-  master branch in case of success.
+  or pass. This pipeline is managed by the independent manager of Zuul.
 
 * The periodic pipeline: Is used to run periodic (a bit like a
   cron job) Jenkins jobs.
+  This pipeline is managed by the independent manager of Zuul.
+
+This default pipeline's configuration can be customized according to your
+needs.
+
+More informations about Zuul managers can be found
+`here <http://docs.openstack.org/infra/zuul/zuul.html#pipelines>`_.
 
 Software Factory eases Jenkins jobs definition by using Jenkins
 Job Builder (JJB). Basically JJB is a definition format in yaml
 that allow you to easily configure and define Jenkins Jobs.
 
+More information about Jenkins Job Builder can be found
+`here <http://docs.openstack.org/infra/jenkins-job-builder/definition.html>`_.
+
 As said before Software Factory stores this configuration in
 the special **config** repository. So adding/changing a Jenkins Job
 is simply making a change in that **config** repository as
 usual, by using **git review**. That change is automatically verified
-and, once merged in the master branch of the **config** repository, SF
-triggers Jenkins and Zuul to take care of that new change.
+and, once merged in the master branch of the **config** repository, Zuul
+triggers Jenkins Job Builder and a Zuul's "reload conf" to take care of
+that new change.
 
 .. graphviz:: test_workflow.dot
-
-How to configure
-----------------
-
-New projects and their associated jobs could be configured in the *config* repository.
-
-There are two way to execute jobs:
-
- * either through Gerrit with a change, then jobs need this configuration:
-
-  * Use zuul defaults
-  * No need to checkout code, zuul-git scm will take care of it
-
- * either through a periodic/non related to Gerrit, then jobs need this configuration:
-
-  * Use global configuration
-  * Use gerrit-git-prep builder to checkout either master or a branch
-
-The default configuration provided by software-factory contain some reusable template and
-a complete project configured: the config project itself!
 
 Default architecture
 --------------------
 
-The default test architecture is based on standard script at the root of your project that
-will take care of the actual testing:
+The default test architecture is based on standard scripts at the root of
+your project.
 
 * run_tests.sh              run the unit tests
 * run_functional-tests.sh   run the functional tests
@@ -87,7 +83,7 @@ Then these scripts are executed by their associated job:
 * '{name}-publish-docs'
 
 Obviously, adding these pre-defined scripts to your projects in order to have tests
-executed is not mandatory and you can define your own.
+executed is not mandatory. You can define your own.
 
 How to define tests for a new project
 -------------------------------------
@@ -106,10 +102,10 @@ files that you can modify according to your needs:
  - jobs/projects.yaml (JJB)
  - zuul/projects.yaml (Zuul)
 
-The other files may be modified by an update of Software Factory and *shouldn't be modified manually*.
+The other files may be modified by an upgrade of Software Factory and *shouldn't be modified manually*.
 
-Edit jobs/projects.yaml to define your project and the related job,
-e.g., to get the project "sfstack" created with 2 jobs on Jenkins:
+Edit jobs/projects.yaml to define jobs for your project. e.g., to get the project
+"sfstack" created with 2 jobs on Jenkins:
 
 .. code-block:: yaml
 
@@ -117,18 +113,22 @@ e.g., to get the project "sfstack" created with 2 jobs on Jenkins:
      name: sfstack
      jobs:
        - 'sfstack-unit-tests'
-       - 'periodic-sfstack-unit-tests'
+       - 'sfstack-functional-tests'
 
-Edit zuul/projects.yaml to configure when jobs get executed, e.g., to get the unit tests
-run on check pipelines and also periodically:
+The definition above use the default job templates provided by jobs/sf_jjb_conf.yaml.
+
+Edit zuul/projects.yaml to configure when jobs get executed, e.g., to get the unit and
+functional tests run on check and gate pipelines:
 
 .. code-block:: yaml
 
  - name: sfstack
    check:
      - sfstack-unit-tests
-   periodic:
-     - periodic-sfstack-unit-tests
+     - sfstack-functional-tests
+   gate:
+     - sfstack-unit-tests
+     - sfstack-functional-tests
 
 Once your modifications are done, you need to commit and push your change on Gerrit. Please
 refer to :ref:`publishchange` if you don't know how to use **git-review** to send a new path
@@ -140,11 +140,10 @@ by JJB and Zuul. Then the patch must be peer reviewed, accepted and pushed to ma
 the Gerrit UI. Once published to *config* master branch, the tests will be executed by Zuul/Jenkins
 for each patch on the *sfstack* project in this example.
 
-How to add a new job
+Define your own jobs 
 --------------------
 
-As mentioned above you may want to define custom jobs. To do that you need to checkout the config
-repository and even, if you already have a local copy, rebase the master branch:
+Clone or pull the config repository:
 
 .. code-block:: bash
 
@@ -156,25 +155,36 @@ Edit jobs/projects.yaml to define your new job:
 
  - job:
      name: 'demo-job'
-     defaults: zuul
+     defaults: global
      builders:
-       - shell: |
+       - prepare-workspace
+       - shell:
+           cd $ZUUL_PROJECT
            set -e
            sloccount .
            echo do a custom check/test
-     node: slave1.myslavepool.demo.org
+     triggers:
+       - zuul
+     node: centos7-slave
 
-Then you need to attach this jobs to a project and zuul pipelines as shown in previous chapter by
-modifying jobs/projects.yaml and zuul/projects.yaml.
+Then you need to attach this jobs to project(s) and pipeline(s) as shown in previous chapter by
+modifying zuul/projects.yaml.
 
 Some quick explanation about this job configuration:
 
-- defaults: is the way job are executed, it is either "zuul" (for gerrit change) or "global" (e.g., for periodic or post job)
-- builders: is the actual job code
-- node: is the slave label that will execute the job
+- defaults: is the way the workspace is prepared. In Software Factory default's configuration
+  this defines a freestyle project that can be run concurrently.
+- builders: The builder is the job code. It is important to note that we use the default
+  "prepare-workspace" builder and then the "shell" one. The former uses "zuul-cloner" to
+  checkout the project + the change to be tested in the workspace. Then the later uses
+  ZUUL_PROJECT to jump into the project source directory and then performs your custom actions.
+- triggers: using "zuul" trigger is mandatory to expose environments variables (set by
+  zuul's scheduler) in the job workspace. Indeed "zuul-cloner" use them. ZUUL_PROJECT is
+  also part of these variables.
+- node: is the slave label that specify where the job can be executed.
 
-As explained in the previous chapter you then need to submit and publish the change on Gerrit
-to execute your new job.
+As explained in the previous chapter you need to submit and have your change merged on
+Gerrit *config* repository to have this new test triggered.
 
 Configure a job as "Non Voting"
 -------------------------------
@@ -183,22 +193,22 @@ A test result for a patch determines if the patch is ready to be merged. Indeed 
 reports an evaluation on Gerrit at the end of the test execution and if this result,
 is positive, then it allow the patch to be merged on the master branch of a project. But
 it can be long and difficult to develop a new test that work correctly (stable, not raises
-false-positive, ...) so a good practice is to first setup the test job as "Non Voting".
+false-positive, ...) so a good practice is to first setup the job as "Non Voting".
 
 For instance, for a project you have already one test job that is known as stable and
-reports a note on Gerrit and by the way condition the merge of the patch. Then you
-want to add another test job but you don't want this new on to block the merge of
-patches because your are not yet confident with that test. In that case you
+reports a note on Gerrit and by the way conditions the merge of a patch. Then you
+want to add another test job but you don't want this new job blocks the merge of
+a patch because your are not yet confident with that test. In that case you
 can configure Zuul (zuul/projects.yaml) as follow:
 
 .. code-block:: yaml
 
  jobs:
-   - name: my-new-test
+   - name: demo-job
      branch: master
      voting: false
 
-Zuul will then reports the "my-new-test" result as a comment for the tested patch
+Zuul will then reports the "demo-job" result as a comment for the tested patch
 but wont set the global note negative.
 
 Parallel testing
@@ -239,7 +249,7 @@ To substitute:
     swarm-client/1.22/swarm-client-1.22-jar-with-dependencies.jar
  $ sudo -u jenkins bash
  $ /usr/bin/java -Xmx256m -jar /var/lib/jenkins/swarm-client-1.22-jar-with-dependencies.jar \
-   -fsroot /var/lib/jenkins -master http://<gateway>:8080/jenkins -username jenkins -password \
+   -fsroot /var/lib/jenkins -master http://<gateway>:8080/jenkins -executors 1 -username jenkins -password \
    <password> -name slave1 &> /var/lib/jenkins/swarm.log &
 
 
@@ -249,19 +259,13 @@ also check the Jenkins Web UI in order to verify the slave is listed in the slav
 Then you can customize the slave node according to your needs to install components
 required to run your tests.
 
-Note: The Jenkins user password can be fetched from the file sfcrefs.yaml on the
-puppetmaster node.
+The Jenkins user password can be fetched from the file sfcrefs.yaml on the
+puppetmaster node. You can find it with the following command or request it from
+your Software Factory administrator.
+
+If you want this slave authorizes jobs to be run concurrently then modify the "executors"
+value.
 
 .. code-block:: bash
 
  $ grep creds_jenkins_user_password puppet-bootstrapper/build/hiera/sfcreds.yaml
-
-Useful commands
----------------
-
-Trigger the periodic pipeline at will
-.....................................
-
-.. code-block:: bash
-
- $ zuul enqueue --trigger timer --pipeline periodic --project all --change 0,0

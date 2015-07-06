@@ -7,75 +7,49 @@
     project-type: freestyle
     concurrent: true
 
-- defaults:
-    name: zuul
-    description: |
-      <p>Job triggered by zuul</p>
-
-    project-type: freestyle
-    concurrent: true
-
-    scm:
-     - zuul-git
-
-# Different builder
-- scm:
-    name: zuul-git
-    scm:
-     - git:
-        url: '$ZUUL_URL/$ZUUL_PROJECT'
-        branches:
-         - '$ZUUL_COMMIT'
-        refspec: '$ZUUL_REF'
-
 - builder:
-    name: gerrit-git-prep
-    builders:
-      - shell: "/usr/local/jenkins/slave_scripts/gerrit-git-prep.sh http://<%= scope.function_hiera(["gateway_host"]) %>"
-
-- builder:
-    name: branch-git-prep
+    name: prepare-workspace
     builders:
       - shell: |
-          #!/bin/bash
-          export BRANCH={branch}
-          /usr/local/jenkins/slave_scripts/gerrit-git-prep.sh http://<%= scope.function_hiera(["gateway_host"]) %>
+          # If this is called in a periodic job, these will not be set
+          echo "Use default for ZUUL_BRANCH and ZUUL_REF if needed"
+          export ZUUL_BRANCH=${ZUUL_BRANCH:-master}
+          export ZUUL_REF=${ZUUL_REF:-None}
+          # In the post pipeline ZUUL_REF is master but does not behave as we want
+          # So fall back on None
+          [ "$ZUUL_REF" = "master" ] && ZUUL_REF=None
+          echo "Clean workspace"
+          rm -Rf ./*
+          echo "Clone $ZUUL_PROJECT"
+          zuul-cloner http://<%= scope.function_hiera(["gateway_host"]) %>/r $ZUUL_PROJECT
 
-# Useful job template
+## Useful job template
 - job-template:
     name: '{name}-unit-tests'
-    defaults: zuul
+    defaults: global
     builders:
-      - shell: ./run_tests.sh
+      - prepare-workspace
+      - shell: cd $ZUUL_PROJECT && ./run_tests.sh
     triggers:
       - zuul
     node: '{node}'
 
 - job-template:
     name: '{name}-functional-tests'
-    defaults: zuul
+    defaults: global
     builders:
-      - shell: ./run_functional-tests.sh
+      - prepare-workspace
+      - shell: cd $ZUUL_PROJECT && ./run_functional-tests.sh
     triggers:
       - zuul
     node: '{node}'
 
 - job-template:
     name: '{name}-publish-docs'
-    defaults: zuul
-    builders:
-      - shell: ./publish_docs.sh
-    triggers:
-      - zuul
-    node: '{node}'
-
-- job-template:
-    name: 'periodic-{name}'
     defaults: global
     builders:
-      - branch-git-prep:
-          branch: master
-      - shell: '{periodic_cmd}'
+      - prepare-workspace
+      - shell: cd $ZUUL_PROJECT && ./publish_docs.sh
     triggers:
       - zuul
     node: '{node}'
@@ -83,15 +57,18 @@
 # Config repository associated jobs
 - job:
     name: 'config-check'
-    defaults: zuul
+    defaults: global
     builders:
       - shell: |
           set -e
+          rm -Rf config build
           mkdir build
-          sudo jenkins-jobs test jobs/ -o build/
+          zuul-cloner http://<%= scope.function_hiera(["gateway_host"]) %>/r config
+          cd config
+          sudo jenkins-jobs test jobs/ -o ../build/
           # concat of layout.yaml and projects.yaml to build/layout.yaml
-          cat zuul/layout.yaml zuul/projects.yaml | tee build/layout.yaml
-          sudo zuul-server -t -l build/layout.yaml
+          cat zuul/layout.yaml zuul/projects.yaml | tee ../build/layout.yaml
+          sudo zuul-server -t -l ../build/layout.yaml
     triggers:
       - zuul
     node: master
@@ -100,8 +77,16 @@
     name: 'config-update'
     defaults: global
     builders:
-      - gerrit-git-prep
       - shell: |
+          echo "Use default for ZUUL_BRANCH and ZUUL_REF if needed"
+          export ZUUL_BRANCH=${ZUUL_BRANCH:-master}
+          export ZUUL_REF=${ZUUL_REF:-None}
+          # In the post pipeline ZUUL_REF is master but does not behave as we want
+          # So fall back on None
+          [ "$ZUUL_REF" = "master" ] && ZUUL_REF=None
+          rm -Rf config
+          zuul-cloner http://<%= scope.function_hiera(["gateway_host"]) %>/r config
+          cd config
           sudo rm -Rf /var/lib/jenkins/.cache/jenkins_jobs
           sudo jenkins-jobs -l debug --ignore-cache update --delete-old jobs/
           # concat of layout.yaml and projects.yaml to /etc/zuul/layout.yaml
