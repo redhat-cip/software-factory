@@ -39,7 +39,7 @@ BUILDDIR=/tmp/_build
 echo "Build docs ..."
 cd docs
 
-make BUILDDIR=$BUILDDIR html &> /dev/null
+make MANAGESF_CLONED_PATH=$MANAGESF_CLONED_PATH BUILDDIR=$BUILDDIR html &> /dev/null
 cd $BUILDDIR/html
 
 echo "Export docs ..."
