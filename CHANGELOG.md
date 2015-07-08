@@ -1,6 +1,27 @@
 # Change Log
 
-## 1.0.2 [unreleased]
+## 1.0.3 [unreleased]
+
+## 1.0.2 2015-07-12
+
+### Added
+
+- Zuul-cloner for subprojects fetching
+
+### Fixed
+
+- Documentation errors
+- Fix jenkins configuration page with new top menu
+- External libs building//testing
+
+### Removed
+
+- Unused rspec test of puppet modules
+
+### Changed
+
+- Support CentOS for host system instead of Ubuntu
+- Default workflow changed to allow only 1 +2CR to merge change
 
 ## 1.0.1 2015-06-12
 
