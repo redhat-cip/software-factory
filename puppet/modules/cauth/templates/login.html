@@ -34,13 +34,15 @@
                           <span>${message}</span>
                         </div>
                     % endif
-                        <div class="btn-group input-group btn-group-justified" data-toggle="buttons">
-                            <a href='/auth/login/github?back=${back}' class="btn btn-primary" target="_top">
+                        <form method="post" action="/auth/login/" target="_top">
+                        <input type="hidden" name="back" value="${back}">
+                        <input type="hidden" name="method" value="Github">
+                            <button type="submit" class="btn btn-primary col-md-12">
                                 <i class="fa fa-lg fa-github"></i>
                                 &nbsp;&nbsp;Log in with Github
                                 <i class="fa fa-sign-in fa-fw"></i>
-                            </a>
-                       </div>
+                            </button>
+                       </form>
                        <hr />
                         <form method="post" action="/auth/login/" class="form-signin" target="_top">
                             % if message:
@@ -60,7 +62,8 @@
                             </div>
 
                             <input type="hidden" name="back" value="${back}">
-
+                            <input type="hidden" name="method" value="Password">
+                            
                             <button type="submit" class="btn btn-primary col-md-12">
                                 Internal Login
                                 <i class="fa fa-sign-in fa-fw"></i>
@@ -78,7 +81,7 @@
                             <h4 class="list-group-item-heading">Documentation</h4>
                             <p class="list-group-item-text">
                                 <strong>
-                                    <a href="<%= scope.function_hiera(["loginpage_link_documentation"]) %>">
+                                    <a href="/_docs/">
                                         Read the documentation <i class="fa fa-angle-double-right"></i>
                                     </a>
                                 </strong>
@@ -90,7 +93,7 @@
                             <h4 class="list-group-item-heading">Getting started</h4>
                             <p class="list-group-item-text">
                                 <strong>
-                                    <a href="<%= scope.function_hiera(["loginpage_link_contribute"]) %>">
+                                    <a href="/_docs/contribute.html">
                                         How to contribute <i class="fa fa-angle-double-right"></i>
                                     </a>
                                 </strong>
@@ -102,7 +105,7 @@
                             <h4 class="list-group-item-heading">Discover</h4>
                             <p class="list-group-item-text">
                                 <strong>
-                                    <a href="<%= scope.function_hiera(["loginpage_github_address"]) %>">
+                                    <a href="https://github.com/enovance/software-factory">
                                         Check out the code at Git Hub <i class="fa fa-angle-double-right"></i>
                                     </a>
                                 </strong>
@@ -114,9 +117,7 @@
                             <h4 class="list-group-item-heading">Contact</h4>
                             <p class="list-group-item-text">
                                 <strong>
-                                    <a href="mailto:<%=
-                                    scope.function_hiera(["loginpage_contact_email"])
-                                    %>">
+                                    <a href="mailto:softwarefactory@enovance.com">
                                         Send us an email <i class="fa fa-angle-double-right"></i>
                                     </a>
                                 </strong>
@@ -127,7 +128,7 @@
                 </div>
             </div>
 
-        <%= scope.function_hiera(["loginpage_custom_footer"]) %>
+        
 
     </body>
 </html>
