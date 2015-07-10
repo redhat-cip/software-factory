@@ -13,7 +13,7 @@ First you should join our communication forums:
 * Join us on IRC: You can talk to us directly in the #softwarefactory channel
   on Freenode.
 * Read the official Software Factory documentation. You can access it there:
-  http://softwarefactory.enovance.com/_docs/
+  http://softwarefactory.enovance.com/docs/
 * A good way to start contributing is to report any errors or unclear
   parts in the documentation.
 
