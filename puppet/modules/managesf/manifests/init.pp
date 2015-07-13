@@ -15,9 +15,13 @@
 
 class managesf ($gerrit = hiera_hash('gerrit', ''),
                 $redmine = hiera_hash('redmine', ''),
+                $gerrit_host = hiera('gerrit_host'),
+                $hosts = hiera('hosts'),
                 $cauth = hiera_hash("cauth", '')) {
 
   require hosts
+
+  $gerrit_ip = $hosts["$gerrit_host"]['ip']
 
   $http = "httpd"
   $provider = "systemd"
@@ -100,6 +104,30 @@ class managesf ($gerrit = hiera_hash('gerrit', ''),
     group   => $httpd_user,
     mode   => '0400',
     source => 'puppet:///modules/managesf/gerrit_admin_rsa',
+    require => File['/var/www/managesf/'],
+  }
+
+  exec {'update_gerritip_knownhost':
+    command => "/usr/bin/ssh-keyscan $gerrit_ip >> /usr/share/httpd/.ssh/known_hosts",
+    logoutput => true,
+    user => 'apache',
+    require => File['/usr/share/httpd/.ssh'],
+    unless => "/usr/bin/grep '$gerrit_ip ' /usr/share/httpd/.ssh/known_hosts",
+  }
+
+  exec {'update_gerrithost_knownhost':
+    command => "/usr/bin/ssh-keyscan $gerrit_host >> /usr/share/httpd/.ssh/known_hosts",
+    logoutput => true,
+    user => 'apache',
+    require => File['/usr/share/httpd/.ssh'],
+    unless => "/usr/bin/grep '$gerrit_host ' /usr/share/httpd/.ssh/known_hosts",
+  }
+
+  file { '/var/www/managesf/sshconfig':
+    ensure  => directory,
+    owner   => $httpd_user,
+    group   => $httpd_user,
+    mode    => '0640',
     require => File['/var/www/managesf/'],
   }
 
