@@ -5,6 +5,11 @@ SF_REL=1.0.2
 DVER=C7.0
 DIST=centos
 
+# Pinned versions of the subprojects to go with the current release
+PYSFLIB_PINNED_VERSION=0.2.0
+MANAGESF_PINNED_VERSION=0.4.0
+CAUTH_PINNED_VERSION=0.4.0
+
 export LC_ALL=C
 
 # Version string

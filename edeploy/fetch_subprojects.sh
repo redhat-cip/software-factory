@@ -9,7 +9,21 @@ echo "PREPARE SUBPROJECTS DIRECTORIES"
 [ -n "$ZUUL_PROJECT" ] && IN_ZUUL=1 || IN_ZUUL=0
 [ $IN_ZUUL -eq 1 ] && echo "Triggered by Zuul ..."
 
-# Just before a TAG of SF please target to point on tags for deps too
+function pin_subprojects_for_tag {
+    tagname=$(git name-rev --tags --name-only $(git rev-parse HEAD))
+    if [ "$tagname" != "undefined" ]; then
+        echo "This is a tagged release; using pinned versions of subprojects to build images."
+        PYSFLIB_REV=${PYSFLIB_PINNED_VERSION}
+        CAUTH_REV=${CAUTH_PINNED_VERSION}
+        MANAGESF_REV=${MANAGESF_PINNED_VERSION}
+    else
+        echo "This is a non-tagged release; using current versions of subprojects to build images."
+    fi
+}
+
+# if the build isn't triggered by Zuul, pin the versions if this is a tag build
+[ $IN_ZUUL -eq 0 ] && pin_subprojects_for_tag
+
 PYSFLIB_REV=${PYSFLIB_REV:="master"}
 CAUTH_REV=${CAUTH_REV:="master"}
 MANAGESF_REV=${MANAGESF_REV:="master"}
