@@ -81,7 +81,7 @@
                             <h4 class="list-group-item-heading">Documentation</h4>
                             <p class="list-group-item-text">
                                 <strong>
-                                    <a href="/_docs/">
+                                    <a href="<%= scope.function_hiera(["loginpage_link_documentation"]) %>">
                                         Read the documentation <i class="fa fa-angle-double-right"></i>
                                     </a>
                                 </strong>
@@ -93,7 +93,7 @@
                             <h4 class="list-group-item-heading">Getting started</h4>
                             <p class="list-group-item-text">
                                 <strong>
-                                    <a href="/_docs/contribute.html">
+                                    <a href="<%= scope.function_hiera(["loginpage_link_contribute"]) %>">
                                         How to contribute <i class="fa fa-angle-double-right"></i>
                                     </a>
                                 </strong>
@@ -105,7 +105,7 @@
                             <h4 class="list-group-item-heading">Discover</h4>
                             <p class="list-group-item-text">
                                 <strong>
-                                    <a href="https://github.com/enovance/software-factory">
+                                    <a href="<%= scope.function_hiera(["loginpage_github_address"]) %>">
                                         Check out the code at Git Hub <i class="fa fa-angle-double-right"></i>
                                     </a>
                                 </strong>
@@ -117,7 +117,7 @@
                             <h4 class="list-group-item-heading">Contact</h4>
                             <p class="list-group-item-text">
                                 <strong>
-                                    <a href="mailto:softwarefactory@enovance.com">
+                                    <a href="mailto:<%=scope.function_hiera(["loginpage_contact_email"]) %>">
                                         Send us an email <i class="fa fa-angle-double-right"></i>
                                     </a>
                                 </strong>
@@ -128,7 +128,7 @@
                 </div>
             </div>
 
-        
+        <%= scope.function_hiera(["loginpage_custom_footer"]) %>
 
     </body>
 </html>
