@@ -1,0 +1,3 @@
+Defaults    !requiretty
+
+gerrit    ALL = NOPASSWD: /usr/bin/systemctl restart gerrit.service

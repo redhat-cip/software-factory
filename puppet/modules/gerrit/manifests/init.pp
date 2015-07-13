@@ -481,4 +481,14 @@ class gerrit ($settings = hiera_hash('gerrit', ''),
     group   => 'gerrit',
     source  => 'puppet:///modules/gerrit/GerritSiteHeader.html',
   }
+
+  file {'/etc/sudoers.d/gerrit':
+    ensure  => file,
+    mode    => '0440',
+    owner   => 'root',
+    group   => 'root',
+    source  => 'puppet:///modules/gerrit/sudoers_gerrit',
+    replace => true
+  }
+
 }
