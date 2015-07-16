@@ -72,6 +72,10 @@ auth = {
     'localdb': {
         'managesf_url': 'http://managesf.<%= scope.function_hiera(["top_domain"]) %>',
     },
+    'openid': {
+        'auth_url': 'https://login.launchpad.net/+openid',
+        'redirect_uri': '/auth/login/openid/callback'
+    },
     'users': {
         "<%= scope.function_hiera(['admin_name']) %>": {
             "lastname": "<%= scope.function_hiera(['admin_lastname']) %>",

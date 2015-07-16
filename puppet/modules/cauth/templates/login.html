@@ -45,6 +45,17 @@
                        </form>
                        <br />
                        <hr />
+                        <form method="post" action="/auth/login/" target="_top">
+                        <input type="hidden" name="back" value="${back}">
+                        <input type="hidden" name="method" value="OpenID">
+                            <button type="submit" class="btn btn-warning col-md-12">
+                                <i class="fa fa-lg fa-openid"></i>
+                                &nbsp;&nbsp;Log in with Launchpad
+                                <i class="fa fa-sign-in fa-fw"></i>
+                            </button>
+                       </form>
+                       <br />
+                       <hr />
                         <form method="post" action="/auth/login/" class="form-signin" target="_top">
                             % if message:
                             <div class="form-group has-error">
