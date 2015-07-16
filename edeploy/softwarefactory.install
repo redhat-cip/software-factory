@@ -147,6 +147,9 @@ http_fetch $JQUERY_VISIBILITY_URL ${dir}/srv/zuul/etc/status/public_html/jquery-
 http_fetch $JQUERY_GRAPHITE_URL ${dir}/srv/zuul/etc/status/public_html/jquery.graphite.js
 do_chroot ${dir} cp /var/www/static/js/jquery.min.js /srv/zuul/etc/status/public_html/jquery.min.js
 
+# nodepool
+retry do_chroot ${dir} pip install nodepool
+
 # Etherpad_lite
 http_fetch $ETHERPAD_LITE_URL ${dir}/tmp/etherpad_lite.tar.gz
 http_fetch $NODEJS_NPM ${dir}/tmp/npm-install.sh

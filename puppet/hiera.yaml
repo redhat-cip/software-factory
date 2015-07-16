@@ -24,3 +24,4 @@
   - sfcreds
   - ntpserver
   - auto_backup
+  - nodepool

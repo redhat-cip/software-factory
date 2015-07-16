@@ -173,6 +173,16 @@ class jenkins ($settings = hiera_hash('jenkins', '')) {
                 File['/etc/sudoers.d/jenkins']],
   }
 
+  file {'/var/lib/jenkins/credentials.xml':
+    ensure  => file,
+    replace => false,
+    mode    => '0644',
+    owner   => 'jenkins',
+    group   => 'jenkins',
+    source  => 'puppet:///modules/jenkins/credentials.xml',
+    require => [File['/var/lib/jenkins/config.xml']],
+  }
+
   file {'/var/lib/jenkins/org.codefirst.SimpleThemeDecorator.xml':
     ensure  => file,
     mode    => '0644',

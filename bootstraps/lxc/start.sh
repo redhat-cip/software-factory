@@ -21,6 +21,7 @@ source ../functions.sh
 . ./../../role_configrc
 
 generate_sfconfig
+[ -f ~/sfconfig.local ] && cat ~/sfconfig.local >> $SFCONFIGFILE
 DOMAIN=$(cat $SFCONFIGFILE | grep "^domain:" | cut -d' ' -f2)
 SF_SUFFIX=${SF_SUFFIX:-$DOMAIN}
 EDEPLOY_ROLES=${EDEPLOY_ROLES:-/var/lib/sf/roles/}

@@ -1,0 +1,45 @@
+script-dir: /etc/nodepool/scripts
+dburi: 'mysql+pymysql://<%= @settings['nodepool_mysql_db'] %>:<%= @settings['nodepool_mysql_secret'] %>@<%= @settings['nodepool_mysql_address'] %>/<%= @settings['nodepool_mysql_username'] %>'
+
+zmq-publishers:
+ - tcp://<%= @settings["jenkins_host"] %>:8888
+
+gearman-servers:
+ - host: 127.0.0.1
+   port: 4730
+
+cron:
+  image-update: '14 2 * * *'
+  cleanup: '27 */6 * * *'
+  check: '*/15 * * * *'
+
+providers:
+ - name: default
+   username: '<%= @settings["nodepool_os_username"] %>'
+   password: '<%= @settings["nodepool_os_password"] %>'
+   project-id: '<%= @settings["nodepool_os_project_id"] %>'
+   auth-url: '<%= @settings["nodepool_os_auth_url"] %>'
+   pool: '<%= @settings["nodepool_os_pool"] %>'
+   max-servers: 1
+   images:
+    - name: <%= @settings["nodepool_os_image"] %>
+      base-image: '<%= @settings["nodepool_os_image"] %>'
+      username: <%= @settings["nodepool_os_image_username"] %>
+      private-key: /var/lib/jenkins/.ssh/id_rsa
+      setup: setup.sh
+      min-ram: 4096
+
+labels:
+  - name: <%= @settings["nodepool_os_image"] %>
+    image: <%= @settings["nodepool_os_image"] %>
+    min-ready: 1
+    providers:
+      - name: default
+
+targets:
+  - name: jenkins
+    jenkins:
+      url: '<%= @settings["jenkins_url"] %>'
+      user: 'jenkins'
+      apikey: '<%= @settings["jenkins_password"] %>'
+      credentials-id: '4f98191e-efbb-4ac4-8131-0e4a8bb2ce14'

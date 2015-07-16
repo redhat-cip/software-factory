@@ -29,6 +29,7 @@ node /.*jenkins.*/ inherits base {
   include jenkins
   include jjb
   include zuul
+  include nodepool
   include cauth_client
   include bup
 }

@@ -2,5 +2,6 @@ mysql:
   mysql_root_pwd: "%{hiera('creds_mysql_root_pwd')}"
   redmine_sql_pwd: "%{hiera('creds_redmine_sql_pwd')}"
   gerrit_sql_pwd: "%{hiera('creds_gerrit_sql_pwd')}"
+  nodepool_sql_pwd: "%{hiera('creds_nodepool_sql_pwd')}"
   etherpad_sql_pwd: "%{hiera('creds_etherpad_sql_pwd')}"
   lodgeit_sql_pwd: "%{hiera('creds_lodgeit_sql_pwd')}"

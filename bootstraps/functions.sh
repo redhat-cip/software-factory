@@ -85,11 +85,13 @@ function generate_creds_yaml {
     MYSQL_ROOT_SECRET=$(generate_random_pswd 8)
     REDMINE_MYSQL_SECRET=$(generate_random_pswd 8)
     GERRIT_MYSQL_SECRET=$(generate_random_pswd 8)
+    NODEPOOL_MYSQL_SECRET=$(generate_random_pswd 8)
     ETHERPAD_MYSQL_SECRET=$(generate_random_pswd 8)
     LODGEIT_MYSQL_SECRET=$(generate_random_pswd 8)
     sed -i "s#MYSQL_ROOT_PWD#${MYSQL_ROOT_SECRET}#" ${OUTPUT}/sfcreds.yaml
     sed -i "s#REDMINE_SQL_PWD#${REDMINE_MYSQL_SECRET}#" ${OUTPUT}/sfcreds.yaml
     sed -i "s#GERRIT_SQL_PWD#${GERRIT_MYSQL_SECRET}#" ${OUTPUT}/sfcreds.yaml
+    sed -i "s#NODEPOOL_SQL_PWD#${NODEPOOL_MYSQL_SECRET}#" ${OUTPUT}/sfcreds.yaml
     sed -i "s#ETHERPAD_SQL_PWD#${ETHERPAD_MYSQL_SECRET}#" ${OUTPUT}/sfcreds.yaml
     sed -i "s#LODGEIT_SQL_PWD#${LODGEIT_MYSQL_SECRET}#" ${OUTPUT}/sfcreds.yaml
     # Default authorized ssh keys on each node
@@ -223,6 +225,8 @@ function prepare_etc_puppet {
     cp $DATA/service_rsa.pub /root/.ssh/id_rsa.pub
     cp $DATA/jenkins_rsa /etc/puppet/environments/sf/modules/jenkins/files/
     cp $DATA/jenkins_rsa /etc/puppet/environments/sf/modules/zuul/files/
+    [ ! -d /etc/puppet/environments/sf/modules/nodepool/files/ ] && mkdir /etc/puppet/environments/sf/modules/nodepool/files/
+    cp $DATA/jenkins_rsa.pub /etc/puppet/environments/sf/modules/nodepool/files/
     cp $DATA/gerrit_admin_rsa /etc/puppet/environments/sf/modules/jenkins/files/
     cp $DATA/gerrit_service_rsa /etc/puppet/environments/sf/modules/gerrit/files/
     cp $DATA/gerrit_service_rsa.pub /etc/puppet/environments/sf/modules/gerrit/files/
