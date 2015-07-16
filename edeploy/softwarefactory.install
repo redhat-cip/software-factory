@@ -243,6 +243,9 @@ http_fetch $JENKINS_CREDENTIALS_BINDING_URL ${dir}/var/lib/jenkins/plugins/$(bas
 http_fetch $JENKINS_WORKFLOW_STEP_API_URL ${dir}/var/lib/jenkins/plugins/$(basename $JENKINS_WORKFLOW_STEP_API_URL)
 http_fetch $JENKINS_PLAIN_CREDENTIALS_URL ${dir}/var/lib/jenkins/plugins/$(basename $JENKINS_PLAIN_CREDENTIALS_URL)
 
+# Jenkins ZMQ event plugin
+http_fetch $JENKINS_ZMQ_PLUGIN_URL ${dir}/var/lib/jenkins/plugins/$(basename $JENKINS_ZMQ_PLUGIN_URL)
+
 # install git-review for internal use
 retry do_chroot ${dir} pip install git-review
 

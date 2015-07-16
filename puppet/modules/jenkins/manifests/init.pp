@@ -150,6 +150,16 @@ class jenkins ($settings = hiera_hash('jenkins', '')) {
     source  => 'puppet:///modules/jenkins/org.jenkinsci.main.modules.sshd.SSHD.xml',
     require => User['jenkins'],
   }
+
+  file {'/var/lib/jenkins/org.jenkinsci.plugins.ZMQEventPublisher.HudsonNotificationProperty.xml':
+    ensure  => file,
+    mode    => '0644',
+    owner   => 'jenkins',
+    group   => 'jenkins',
+    source  => 'puppet:///modules/jenkins/org.jenkinsci.plugins.ZMQEventPublisher.HudsonNotificationProperty.xml',
+    require => User['jenkins'],
+  }
+
   file {'/var/lib/jenkins/config.xml':
     ensure  => file,
     mode    => '0644',
