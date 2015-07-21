@@ -108,7 +108,7 @@ do_chroot ${dir} bash -c "cd /root/puppet-bootstrapper/tools/managesf; python se
 
 # install-server-vm embed Jenkins (We dont want to have it here ...)
 # The role Jenkins does not deactivate the jenkins service at startup
-# https://github.com/enovance/edeploy-roles/issues/80
+# https://github.com/redhat-cip/edeploy-roles/issues/80
 do_chroot ${dir} bash -c "for x in {0..6}; do ls /etc/rc\${x}.d/*jenkins | xargs rm -f ; done"
 
 # install requirements for functional tests

@@ -27,8 +27,8 @@ SWIFT_DOCS_URL="${SWIFT_BASE_URL}/v1/AUTH_${SWIFT_ACCOUNT}/sfdocs"
 
 
 # Edeploy and Edeploy-roles project
-EDEPLOY_PROJECT=https://github.com/enovance/edeploy.git
-EDEPLOY_ROLES_PROJECT=https://github.com/enovance/edeploy-roles.git
+EDEPLOY_PROJECT=https://github.com/redhat-cip/edeploy.git
+EDEPLOY_ROLES_PROJECT=https://github.com/redhat-cip/edeploy-roles.git
 
 # Edeploy source version
 ED_COMMIT=master

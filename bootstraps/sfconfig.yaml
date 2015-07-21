@@ -42,7 +42,7 @@ jenkins_user_email: jenkins@tests.dom
 # Links on the login page
 loginpage_link_documentation: /docs/
 loginpage_link_contribute: "/docs/contribute.html"
-loginpage_github_address: "https://github.com/enovance/software-factory"
+loginpage_github_address: "https://github.com/redhat-cip/software-factory"
 loginpage_contact_email: "softwarefactory@enovance.com"
 loginpage_custom_footer: ""
 

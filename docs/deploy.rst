@@ -137,7 +137,7 @@ You need to clone the Software Factory Git repository :
 
 .. code-block:: bash
 
- $ git clone https://github.com/enovance/software-factory.git
+ $ git clone https://github.com/redhat-cip/software-factory.git
 
 Start the build of the VM images (this script will use sudo). If you want to
 deploy on OpenStack you need to set the environment variable VIRT=true before
@@ -316,7 +316,7 @@ images created by Edeploy. So please execute the following command:
 
 .. code-block:: bash
 
- $ sudo git clone https://github.com/enovance/edeploy-lxc.git /srv/edeploy-lxc
+ $ sudo git clone https://github.com/redhat-cip/edeploy-lxc.git /srv/edeploy-lxc
 
 The default SF configuration file bootstrap/sfconfig.yaml is ready to use
 for the LXC deployment. However you can still configure it if the defaults

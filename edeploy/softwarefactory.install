@@ -30,7 +30,7 @@ GERRITHOOKS="../gerrit-hooks"
 
 retry $EDEPLOY_ROLES_PATH/jenkins.install ${dir} ${dir} $version
 # The role Jenkins does not deactivate the jenkins service at startup
-# https://github.com/enovance/edeploy-roles/issues/80
+# https://github.com/redhat-cip/edeploy-roles/issues/80
 do_chroot ${dir} bash -c "for x in {0..6}; do ls /etc/rc\${x}.d/*jenkins | xargs rm -f ; done"
 
 # Install the most recent version of PIP at early stage

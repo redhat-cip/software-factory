@@ -1,4 +1,4 @@
--e git+https://github.com/enovance/pysflib.git#egg=pysflib
+-e git+https://github.com/redhat-cip/pysflib.git#egg=pysflib
 nose
 mock
 requests>=2.4.1
