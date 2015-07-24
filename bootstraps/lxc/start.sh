@@ -55,6 +55,7 @@ function setup_iptables {
         [ -z "$IN_FUNC_TESTS" ] && sudo iptables -t nat $switch POSTROUTING -o eth0 -j MASQUERADE
         # Enable IP forward (host routes packets to containers)
         echo "net.ipv4.ip_forward=1" | sudo tee /etc/sysctl.d/sf.conf
+        echo "1" | sudo tee /proc/sys/net/ipv4/ip_forward
     fi
     # Redirect host incoming TCP/80 to the sf gateway on 192.168.134.54/80
     sudo iptables -t nat $switch PREROUTING -p tcp -i eth0 --dport 80 -j DNAT --to-destination 192.168.134.54:80
