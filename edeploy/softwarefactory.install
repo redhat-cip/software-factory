@@ -241,10 +241,6 @@ http_fetch $JENKINS_THEME_PLUGIN_URL ${dir}/var/lib/jenkins/plugins/$(basename $
 # install git-review for internal use
 retry do_chroot ${dir} pip install git-review
 
-mkdir -p ${dir}/usr/local/jenkins/slave_scripts/
-cp ../puppet/modules/jjb/files/gerrit-git-prep.sh ${dir}/usr/local/jenkins/slave_scripts/
-chmod +x ${dir}/usr/local/jenkins/slave_scripts/gerrit-git-prep.sh
-
 # Cleanup
 clear_packages_cache ${dir}
 # somehow yum left some packages behind...
