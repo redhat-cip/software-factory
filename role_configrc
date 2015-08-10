@@ -5,6 +5,8 @@ SF_REL=1.0.3
 DVER=C7.0
 DIST=centos
 
+# Set this variable to 1 if we tag and set it back to 0 the commit after the tag
+TAGGED_RELEASE=0
 # Pinned versions of the subprojects to go with the current release
 PYSFLIB_PINNED_VERSION=0.2.0
 MANAGESF_PINNED_VERSION=0.4.0
