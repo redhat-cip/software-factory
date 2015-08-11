@@ -98,3 +98,7 @@ sqlalchemy = {
 htpasswd = {
     'filename': '/etc/httpd/managesf_htpasswd'
 }
+
+<% if scope.function_hiera(["top_domain"]) == "tests.dom" %>
+project_create_administrator_only = False
+<% end %>
