@@ -92,6 +92,8 @@
           # concat of layout.yaml and projects.yaml to /etc/zuul/layout.yaml
           cat zuul/layout.yaml zuul/projects.yaml | sudo tee /etc/zuul/layout.yaml
           sudo service zuul reload
+          # copy nodepool script-dir in /etc/nodepool/scripts
+          cp -Rvf nodepool/* /etc/nodepool/scripts/
     triggers:
       - zuul
     node: master

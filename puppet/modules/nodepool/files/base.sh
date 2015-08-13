@@ -22,23 +22,12 @@ sudo yum install -y epel-release
 sudo yum install -y python-pip git python-devel gcc
 sudo pip install zuul gitdb
 
-# For testing using the local Gerrit instance. Needs to be accessible from the
-# slave nodes, thus a public IP is required
-echo '<%= scope.function_hiera(["public_ip"]) %> <%= scope.function_hiera(["top_domain"]) %>' | sudo tee --append /etc/hosts
-
-# Prepare slave for SF
-sudo sed -i 's/^.*SELINUX=.*$/SELINUX=disabled/' /etc/selinux/config
-git clone http://softwarefactory.enovance.com/r/sfstack
-cd sfstack && sudo ./sfinstall.sh
-sudo mkdir /srv/deps
-sudo chown -R jenkins /srv/
-cd /srv/software-factory && ./fetch_roles.sh bases
-cd /srv/software-factory && ./fetch_roles.sh trees
-sudo chmod 777 /var/lib/sf/
-ssh-keygen -N "" -f /home/jenkins/.ssh/id_rsa
-sudo chown -R jenkins /home/jenkins/.ssh
+# The Swarm client should be started by Jenkins via a request from Nodepool.
+# If public_ip has been set in sfconfig.yaml then the slave can be aware
+# of the Jenkins master IP via /etc/hosts.
+echo "$NODEPOOL_SF_PUBLICIP $NODEPOOL_SF_TOPDOMAIN" | sudo tee --append /etc/hosts
 
 # sync FS, otherwise there are 0-byte sized files from the yum/pip installations
 sudo sync
 
-echo "setup.sh finished. Creating snapshot now, this will take a few minutes"
+echo "Base setup done."

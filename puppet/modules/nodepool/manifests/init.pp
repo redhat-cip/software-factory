@@ -44,11 +44,29 @@ class nodepool ($settings = hiera_hash('nodepool', '')) {
     require => [File['/etc/nodepool']]
   }
 
-  file { '/etc/nodepool/scripts/setup.sh':
-    owner => 'jenkins',
-    mode   => '0555',
-    content => template('nodepool/setup.sh.erb'),
-    require => [File['/etc/nodepool/scripts']]
+  file { '/usr/share/sf-nodepool':
+    ensure  => directory,
+    mode    => '0640',
+    owner   => 'root',
+    group   => 'root',
+  }
+
+  file { '/usr/share/sf-nodepool/base.sh':
+    ensure => file,
+    mode   => '0755',
+    owner  => "root",
+    group  => "root",
+    source => 'puppet:///modules/nodepool/base.sh',
+    require => [File['/usr/share/sf-nodepool']]
+  }
+
+  file { '/usr/share/sf-nodepool/sf_slave_setup.sh':
+    ensure => file,
+    mode   => '0755',
+    owner  => "root",
+    group  => "root",
+    source => 'puppet:///modules/nodepool/sf_slave_setup.sh',
+    require => [File['/usr/share/sf-nodepool']]
   }
 
   file { '/etc/nodepool/scripts/authorized_keys':
@@ -80,7 +98,7 @@ class nodepool ($settings = hiera_hash('nodepool', '')) {
                     File['/var/log/nodepool/'],
                     File['/etc/nodepool/nodepool.yaml'],
                     File['/etc/nodepool/nodepool.logging.conf'],
-                    File['/etc/nodepool/scripts/setup.sh'],
+                    File['/etc/nodepool/scripts'],
                     ],
   }
 

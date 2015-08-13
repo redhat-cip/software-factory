@@ -78,7 +78,10 @@ nodepool_os_username: 'username'
 nodepool_os_password: 'secret'
 nodepool_os_project_id: 'tenantname'
 nodepool_os_auth_url: 'http://localhost:35357/v2.0'
+# Compute availability zone
 nodepool_os_pool: 'nova'
+# Glance image name
 nodepool_os_image: 'centos7'
 nodepool_os_image_username: 'jenkins'
-public_ip: 127.0.0.1  # Public IP of deployment, must be accessible by Jenkins slaves
+# Public IP of deployment, will land in slave /etc/hosts
+public_ip: 127.0.0.1

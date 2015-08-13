@@ -72,6 +72,10 @@ if [ "$upgrade" = "false" ]; then
     mkdir ${CONF_TMP}/zuul
     cp -Rv /usr/share/sf-zuul/* ${CONF_TMP}/zuul
 
+    # Add Nodepool files to the config repo
+    mkdir ${CONF_TMP}/nodepool
+    cp -Rv /usr/share/sf-nodepool/* ${CONF_TMP}/nodepool
+
     # Commit the changes
     cd ${CONF_TMP}
     git add .
@@ -82,6 +86,7 @@ fi
 if [ "$upgrade" = "true" ]; then
     cp -v /usr/share/sf-jjb/sf_jjb_conf.yaml ${CONF_TMP}/jobs
     cp -v /usr/share/sf-zuul/layout.yaml ${CONF_TMP}/zuul
+    cp -v /usr/share/sf-nodepool/base.sh ${CONF_TMP}/nodepool
     cd ${CONF_TMP}
     git config --add gitreview.username "$admin"
     # Only perform the commit/review if the upgrade bring new modifications

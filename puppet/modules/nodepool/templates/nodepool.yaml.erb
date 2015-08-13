@@ -26,7 +26,7 @@ providers:
       base-image: '<%= @settings["nodepool_os_image"] %>'
       username: <%= @settings["nodepool_os_image_username"] %>
       private-key: /var/lib/jenkins/.ssh/id_rsa
-      setup: setup.sh
+      setup: base.sh
       min-ram: 4096
 
 labels:

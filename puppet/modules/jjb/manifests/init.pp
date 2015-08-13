@@ -20,6 +20,7 @@ class jjb ($settings = hiera_hash('jenkins', ''),
   require hosts
   require jenkins
   require zuul
+  require nodepool
 
   file {'/etc/jenkins_jobs/jenkins_jobs.ini':
     ensure  => file,
@@ -109,6 +110,8 @@ class jjb ($settings = hiera_hash('jenkins', ''),
                 File['/usr/share/sf-jjb/projects.yaml'],
                 File['/usr/share/sf-jjb/sf_jjb_conf.yaml'],
                 File['/usr/share/sf-zuul/layout.yaml'],
+                File['/usr/share/sf-nodepool/base.sh'],
+                File['/usr/share/sf-nodepool/sf_slave_setup.sh'],
                 File['/usr/bin/sfmanager'],
                 File['/root/gerrit_admin_rsa']],
     creates => '/usr/share/config.init.done',
