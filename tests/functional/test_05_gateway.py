@@ -45,20 +45,30 @@ class TestGateway(Base):
     def test_gerrit_accessible(self):
         """ Test if Gerrit is accessible on gateway hosts
         """
-
+        # Unauthenticated calls
         urls = ["https://%s/r/" % config.GATEWAY_HOST,
                 "https://%s/r/#/" % config.GATEWAY_HOST]
 
         for url in urls:
-
-            self._auth_required(url)
-
-            resp = requests.get(
-                url,
-                cookies=dict(
-                    auth_pubtkt=config.USERS[config.USER_1]['auth_cookie']))
+            resp = requests.get(url)
             self.assertEqual(resp.status_code, 200)
             self.assertTrue('<title>Gerrit Code Review</title>' in resp.text)
+
+        # URL that requires login - shows login page
+        url = "https://%s/r/a/projects/?" % config.GATEWAY_HOST
+        resp = requests.get(url)
+        self.assertEqual(resp.status_code, 200)
+        self.assertTrue('form-signin' in resp.text)
+
+        # Authenticated URL that requires login
+        url = "https://%s/r/a/projects/?" % config.GATEWAY_HOST
+        self._auth_required(url)
+        resp = requests.get(
+            url,
+            cookies=dict(
+                auth_pubtkt=config.USERS[config.USER_1]['auth_cookie']))
+        self.assertEqual(resp.status_code, 200)
+        self.assertTrue('"kind": "gerritcodereview#project",' in resp.text)
 
     def test_gerrit_api_accessible(self):
         """ Test if Gerrit API is accessible on gateway hosts
