@@ -9,16 +9,20 @@
         <script src="/static/js/angular.min.js"></script>
         <script type="text/javascript" src="/static/js/topmenu.js"></script>
         <script src="dashboard.js"></script>
+
+    <style type="text/css">
+	.input[disabled] {pointer-events: auto !important;}
+    </style>
 </head>
 
 <body ng-controller="mainController">
     <div class="container">
         <div class="pull-right">
-	        <button class="btn btn-success btn-xs" ng-if="htpasswd_set" ng-click="htpasswd_disable()">
+	        <button class="btn btn-success btn-xs" ng-if="htpasswd_set" ng-click="htpasswd_disable()" title="Disable password-protected API access to Gerrit for this user">
                 <span class="glyphicon glyphicon-lock"></span>
             </button>
 
-            <button class="btn btn-default btn-xs" ng-if="!htpasswd_set" ng-click="htpasswd_enable()">
+            <button class="btn btn-default btn-xs" ng-if="!htpasswd_set" ng-click="htpasswd_enable()" title="Enable authenticated API access to Gerrit using a randomly generated password for this user">
                 <span class="glyphicon glyphicon-lock"></span>
             </button>
         </div>
@@ -65,7 +69,9 @@
                     <th class="text-center">Open Reviews</th>
                     <th class="text-center">Open Bugs</th>
                     <th class="text-right">
-                        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#modal_create_project">
+                        <button type="button" class="btn btn-primary"
+                        data-toggle="modal" data-target="#modal_create_project"
+                        title="Create a new project in Gerrit and Redmine">
                             <span class="glyphicon glyphicon-plus">
                         </button>
                     </th>
@@ -79,11 +85,11 @@
                     <td class="text-right">
                         <button class="btn btn-primary btn-xs" ng-click="membershipForm(project, entry)"
                             ng-if="entry.admin == 1" data-toggle="modal"
-                            data-target="#modal_create_members">
+                            data-target="#modal_create_members" title="Manage user membership for this project">
                             <span class="glyphicon glyphicon-user"></span>
                         </button>
                         <button class="btn btn-danger btn-xs" ng-click="deleteProject(project)"
-                            ng-if="entry.admin == 1">
+                            ng-if="entry.admin == 1" title="Delete this project and all associated data">
                             <span class="glyphicon glyphicon-trash"></span>
                         </button>
                     </td>
@@ -105,7 +111,7 @@
             </div>
 
             <form>
-              <div class="modal-body row">
+              <div class="modal-body">
                   Search: <input ng-model="searchMember" placeholder="Search for users">
                   <table class="table table-stripped">
                       <thead><tr>
@@ -119,7 +125,10 @@
                               <td>{{ member.name }}</td>
                               <td><input type="checkbox" ng-model="member.groups.ptl" /></td>
                               <td><input type="checkbox" ng-model="member.groups.core" /></td>
-                              <td><input type="checkbox" ng-model="member.groups.dev" ng-if="selectedProject.private" /></td>
+                              <td>
+                                  <input type="checkbox" ng-model="member.groups.dev" ng-if="selectedProject.private" />
+                                  <input type="checkbox" disabled="disabled" ng-if="!selectedProject.private" title="Only available for private projects" />
+                              </td>
                           </tr>
                       </tbody>
                   </table>
