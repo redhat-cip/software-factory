@@ -46,15 +46,17 @@
 
     <LocationMatch "/jenkins/">
         RequestHeader unset X-Forwarded-User
-        AuthType mod_auth_pubtkt
-        TKTAuthLoginURL /auth/login
-        TKTAuthFakeBasicAuth on
-        TKTAuthDebug 1
-        AuthName "Jenkins"
-        require valid-user
-        RewriteEngine On
-        RewriteCond %{LA-U:REMOTE_USER} (.+)
-        RewriteRule .* - [E=RU:%1,NS]
-        RequestHeader set X-Forwarded-User %{RU}e
+        <If "%{HTTP_COOKIE} =~ /auth_pubtkt=.*/">
+            AuthType mod_auth_pubtkt
+            TKTAuthLoginURL /auth/login
+            TKTAuthFakeBasicAuth on
+            TKTAuthDebug 1
+            AuthName "Jenkins"
+            require valid-user
+            RewriteEngine On
+            RewriteCond %{LA-U:REMOTE_USER} (.+)
+            RewriteRule .* - [E=RU:%1,NS]
+            RequestHeader set X-Forwarded-User %{RU}e
+        </If>
     </LocationMatch>
 </VirtualHost>

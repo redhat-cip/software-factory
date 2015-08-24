@@ -98,13 +98,21 @@ class TestGateway(Base):
         """
         url = "https://%s/jenkins/" % config.GATEWAY_HOST
 
-        self._auth_required(url)
+        # Without SSO cookie. Note that auth is no longer enforced
 
+        resp = requests.get(url)
+        self.assertEqual(resp.status_code, 200)
+        self.assertTrue('<title>Dashboard [Jenkins]</title>' in resp.text)
+
+        # With SSO cookie
         resp = requests.get(
             url, cookies=dict(
                 auth_pubtkt=config.USERS[config.USER_1]['auth_cookie']))
         self.assertEqual(resp.status_code, 200)
         self.assertTrue('<title>Dashboard [Jenkins]</title>' in resp.text)
+
+        # User should be known in Jenkins if logged in with SSO
+        self.assertTrue('user1' in resp.text)
 
     def test_zuul_accessible(self):
         """ Test if Zuul is accessible on gateway host
