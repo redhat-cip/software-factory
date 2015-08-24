@@ -56,11 +56,16 @@ NameVirtualHost *:80
   <Directory /usr/share/redmine/public>
     AllowOverride all
     Options -MultiViews
-    AuthType mod_auth_pubtkt
-    TKTAuthLoginURL <%= @cauth['signin_url'] %>
-    TKTAuthFakeBasicAuth on
-    TKTAuthDebug 1
-    require valid-user
+    <If "%{HTTP_COOKIE} =~ /auth_pubtkt=.*/">
+        AuthType mod_auth_pubtkt
+        TKTAuthLoginURL <%= @cauth['signin_url'] %>
+        TKTAuthFakeBasicAuth on
+        TKTAuthDebug 1
+        require valid-user
+   </If>
+   <Else>
+        require all granted
+   </Else>
   </Directory>
 
    <Directory /usr/share/redmine/plugins/redmine_backlogs/assets/>
@@ -68,4 +73,10 @@ NameVirtualHost *:80
      Options -MultiViews
      require all granted
    </Directory>
+
+    # Redirect Redmine links to the login page
+    <LocationMatch "/redmine/(login|account/register).*">
+        RewriteEngine On
+        RewriteRule /.*$ /auth/login?back=/redmine/ [R,L]
+    </LocationMatch>
 </VirtualHost>

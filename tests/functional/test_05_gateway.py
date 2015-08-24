@@ -130,14 +130,21 @@ class TestGateway(Base):
         """
         url = "https://%s/redmine/" % config.GATEWAY_HOST
 
-        self._auth_required(url)
+        # Without SSO cookie. Note that auth is no longer enforced
+        resp = requests.get(url)
+        self.assertEqual(resp.status_code, 200)
+        self.assertTrue('<title>Redmine</title>' in resp.text)
 
+        # With SSO cookie
         resp = requests.get(
             url,
             cookies=dict(
                 auth_pubtkt=config.USERS[config.USER_1]['auth_cookie']))
         self.assertEqual(resp.status_code, 200)
         self.assertTrue('<title>Redmine</title>' in resp.text)
+
+        # User should be known in Redmine if logged in with SSO
+        self.assertTrue('user1' in resp.text)
 
         # Check one of the CSS files to ensure static files are accessible
         css_file = "plugin_assets/redmine_backlogs/stylesheets/global.css"
