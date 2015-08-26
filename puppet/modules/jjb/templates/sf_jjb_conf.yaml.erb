@@ -69,6 +69,14 @@
           # concat of layout.yaml and projects.yaml to build/layout.yaml
           cat zuul/layout.yaml zuul/projects.yaml | tee ../build/layout.yaml
           sudo zuul-server -t -l ../build/layout.yaml
+
+          # Check nodepool configuration
+          [ -d /tmp/nodepool ] && rm -Rf /tmp/nodepool
+          mkdir /tmp/nodepool
+          mv nodepool/*.yaml /tmp/nodepool/
+          cp /etc/nodepool/nodepool.yaml /tmp/nodepool/
+          /usr/local/bin/sf-nodepool-conf-merger.py merged
+          nodepool -c /tmp/nodepool/merged config-validate
     triggers:
       - zuul
     node: master
@@ -92,6 +100,15 @@
           # concat of layout.yaml and projects.yaml to /etc/zuul/layout.yaml
           cat zuul/layout.yaml zuul/projects.yaml | sudo tee /etc/zuul/layout.yaml
           sudo service zuul reload
+          # Merge nodepool.yaml configuration
+          [ -d /tmp/nodepool ] && rm -Rf /tmp/nodepool
+          mkdir /tmp/nodepool
+          mv nodepool/*.yaml /tmp/nodepool/
+          cp /etc/nodepool/nodepool.yaml /tmp/nodepool/
+          /usr/local/bin/sf-nodepool-conf-merger.py merged
+          nodepool -c /tmp/nodepool/merged config-validate
+          sudo cp /tmp/nodepool/merged /etc/nodepool/nodepool.yaml
+          # No need to reload nodepool service - it re-read its conf files.
           # copy nodepool script-dir in /etc/nodepool/scripts
           cp -Rvf nodepool/* /etc/nodepool/scripts/
     triggers:

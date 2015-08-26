@@ -11,5 +11,4 @@ nodepool:
   nodepool_os_project_id: "%{hiera('nodepool_os_project_id')}"
   nodepool_os_auth_url: "%{hiera('nodepool_os_auth_url')}"
   nodepool_os_pool: "%{hiera('nodepool_os_pool')}"
-  nodepool_os_image: "%{hiera('nodepool_os_image')}"
-  nodepool_os_image_username: "%{hiera('nodepool_os_image_username')}"
+  nodepool_os_pool_max_amount: "%{hiera('nodepool_os_pool_max_amount')}"

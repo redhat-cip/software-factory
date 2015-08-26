@@ -51,6 +51,14 @@ class nodepool ($settings = hiera_hash('nodepool', '')) {
     group   => 'root',
   }
 
+  file { '/usr/local/bin/sf-nodepool-conf-merger.py':
+    ensure => file,
+    mode   => '0755',
+    owner  => "root",
+    group  => "root",
+    source => 'puppet:///modules/nodepool/sf-nodepool-conf-merger.py',
+  }
+
   file { '/usr/share/sf-nodepool/base.sh':
     ensure => file,
     mode   => '0755',
@@ -66,6 +74,24 @@ class nodepool ($settings = hiera_hash('nodepool', '')) {
     owner  => "root",
     group  => "root",
     source => 'puppet:///modules/nodepool/sf_slave_setup.sh',
+    require => [File['/usr/share/sf-nodepool']]
+  }
+
+  file { '/usr/share/sf-nodepool/images.yaml':
+    ensure => file,
+    mode   => '0755',
+    owner  => "root",
+    group  => "root",
+    source => 'puppet:///modules/nodepool/images.yaml',
+    require => [File['/usr/share/sf-nodepool']]
+  }
+
+  file { '/usr/share/sf-nodepool/labels.yaml':
+    ensure => file,
+    mode   => '0755',
+    owner  => "root",
+    group  => "root",
+    source => 'puppet:///modules/nodepool/labels.yaml',
     require => [File['/usr/share/sf-nodepool']]
   }
 

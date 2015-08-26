@@ -1,0 +1,9 @@
+ - provider: default
+   images: []
+#   images:
+#    - name: centos7
+#      base-image: centos7-cloud
+#      username: centos
+#      private-key: /var/lib/jenkins/.ssh/id_rsa
+#      setup: base.sh
+#      min-ram: 4096

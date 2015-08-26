@@ -80,8 +80,7 @@ nodepool_os_project_id: 'tenantname'
 nodepool_os_auth_url: 'http://localhost:35357/v2.0'
 # Compute availability zone
 nodepool_os_pool: 'nova'
-# Glance image name
-nodepool_os_image: 'centos7'
-nodepool_os_image_username: 'jenkins'
+# Max amount of Slaves that can be started
+nodepool_os_pool_max_amount: 10
 # Public IP of deployment, will land in slave /etc/hosts
 public_ip: 127.0.0.1
