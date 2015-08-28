@@ -107,6 +107,22 @@ function fetch_sf_roles_prebuilt {
     rm -Rf ${temp}
 }
 
+function deflate_sf_roles_prebuilt {
+    echo "Extract roles to ${INST}"
+    for role in install-server-vm softwarefactory; do
+        EXTRACT_DIR="${INST}/${role}"
+        UPSTREAM_FILE="${UPSTREAM}/${role}-${SF_VER}.edeploy"
+        if [ -d ${EXTRACT_DIR} ]; then
+            echo "${EXTRACT_DIR} already exist..."
+            continue
+        fi
+        sudo mkdir -p ${EXTRACT_DIR}
+        echo "-> ${EXTRACT_DIR} (${UPSTREAM_FILE})"
+        sudo tar -xzf ${UPSTREAM_FILE} -C "${EXTRACT_DIR}"
+    done
+
+}
+
 function fetch_sf_qcow2_roles_prebuilt {
     echo "Fetch prebuilt SF roles images (qcow2) ..."
     # Fetch last available SF roles
@@ -136,3 +152,7 @@ prepare_buildenv
 [ "$1" == "bases" ] && fetch_base_roles_prebuilt || true
 [ "$1" == "trees" ] && fetch_sf_roles_prebuilt || true
 [ "$1" == "imgs" ] && fetch_sf_qcow2_roles_prebuilt || true
+if [ -z "$1" ]; then
+    fetch_sf_roles_prebuilt
+    deflate_sf_roles_prebuilt
+fi

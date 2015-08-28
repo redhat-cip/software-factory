@@ -98,13 +98,8 @@ the process below:
 
 .. code-block:: bash
 
- $ ./fetch_roles.sh trees
- $ SF_SKIP_FETCHBASES=1 ./build_roles.sh
+ $ ./fetch_roles.sh
  $ ls -al /var/lib/sf/roles/install/C7.0-0.9.2/
-
-A call of the script **build_roles.sh** is also needed in order to prepare the
-local FS directory where the bootstrap scripts will look for the required trees
-images.
 
 To fetch the pre-built qcow2 images in order to bootstrap a SF on OpenStack
 follow the process below:

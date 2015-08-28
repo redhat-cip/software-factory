@@ -20,6 +20,14 @@ set -e
 source ../functions.sh
 . ./../../role_configrc
 
+# Check if roles are deflated
+for role in install-server-vm softwarefactory; do
+    if [ ! -d ${INST}/${role} ]; then
+        echo "${INST}/${role} does not exists, uses fetch_roles.sh first"
+        exit 1
+    fi
+done
+
 generate_sfconfig
 [ -f ~/sfconfig.local ] && cat ~/sfconfig.local >> $SFCONFIGFILE
 DOMAIN=$(cat $SFCONFIGFILE | grep "^domain:" | cut -d' ' -f2)
