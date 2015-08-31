@@ -264,6 +264,11 @@ rm -Rf ${dir}/var/lib/jenkins/.[!.]*
 # Remove development packages, they are no longer needed
 remove_packages ${dir} ${DEVEL_PKGS}
 
+# Fix /var/www permissions
+do_chroot ${dir} chmod -R 0644 /var/www
+do_chroot ${dir} find /var/www -type d -exec chmod 0755 {} \;
+do_chroot ${dir} chown -R apache:apache /var/www
+
 # Disable root passwd
 do_chroot ${dir} passwd -l root
 

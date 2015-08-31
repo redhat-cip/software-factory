@@ -105,22 +105,6 @@ class commonservices-apache ($cauth = hiera_hash('cauth', ''),
     notify => Service['webserver'],
   }
 
-  file {'/var/www/docs':
-    ensure => directory,
-    recurse => true,
-    mode   => '0644',
-    owner  => $httpd_user,
-    group  => $httpd_user,
-  }
-
-  file {'/var/www':
-    ensure => directory,
-    recurse => true,
-    mode   => '0644',
-    owner  => $httpd_user,
-    group  => $httpd_user,
-  }
-
   file {'/var/www/dashboard':
     ensure => directory,
     recurse => true,
@@ -154,5 +138,4 @@ class commonservices-apache ($cauth = hiera_hash('cauth', ''),
     owner  => $httpd_user,
     group  => $httpd_user,
   }
-
 }

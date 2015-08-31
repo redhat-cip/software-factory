@@ -30,6 +30,10 @@ class gerrit ($settings = hiera_hash('gerrit', ''),
     require => Exec['gerrit-initial-init'],
   }
 
+  file { '/var/www/git/gitweb.cgi':
+    mode   => 0755,
+  }
+
   group { 'gerrit':
     ensure => present,
   }
@@ -386,7 +390,8 @@ class gerrit ($settings = hiera_hash('gerrit', ''),
     hasrestart  => true,
     provider    => $provider,
     require     => [Exec['gerrit-initial-init'],
-                    File['gerrit_init']],
+                    File['gerrit_init'],
+                    File['/var/www/git/gitweb.cgi']],
     subscribe   => [File['/home/gerrit/gerrit.war'],
                     File['/home/gerrit/site_path/etc/gerrit.config'],
                     File['/home/gerrit/site_path/etc/secure.config']],
