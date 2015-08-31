@@ -27,8 +27,8 @@ ROLES="$ROLES slave"
 
 PUPPETIZED_ROLES=$(echo $ROLES | sed -e s/puppetmaster// -e s/slave//)
 
-SFTMP=/tmp/sf-conf/
-SFCONFIGFILE=$SFTMP/sfconfig.yaml
+BUILD=${BUILD:-/root/sf-bootstrap-data}
+
 INITIAL=${INITIAL:-yes}
 
 if [ "$INITIAL" = "no" ]; then
@@ -43,23 +43,31 @@ function hash_password {
 }
 
 function generate_sfconfig {
-    [ -d $SFTMP ] && sudo rm -Rf $SFTMP
-    mkdir $SFTMP
-    cp ../sfconfig.yaml $SFCONFIGFILE
+    # Write sfconfig.yaml to $1
+    SFCONFIGFILE=$1
+    cp ../sfconfig.yaml $SFCONFIGFILE || return # quit if copy failed
 
     # Set and generated admin password
-    DEFAULT_ADMIN_USER=$(cat ../sfconfig.yaml | grep '^admin_name:' | awk '{ print $2 }')
-    DEFAULT_ADMIN_PASSWORD=$(cat ../sfconfig.yaml | grep '^admin_password:' | awk '{ print $2 }')
+    DEFAULT_ADMIN_USER=$(cat $SFCONFIGFILE | grep '^admin_name:' | awk '{ print $2 }')
+    DEFAULT_ADMIN_PASSWORD=$(cat $SFCONFIGFILE | grep '^admin_password:' | awk '{ print $2 }')
     ADMIN_USER=${ADMIN_USER:-${DEFAULT_ADMIN_USER}}
     ADMIN_PASSWORD=${ADMIN_PASSWORD:-${DEFAULT_ADMIN_PASSWORD}}
     ADMIN_PASSWORD_HASHED=$(hash_password "${ADMIN_PASSWORD}")
     sed -i "s/^admin_name:.*/admin_name: ${ADMIN_USER}/" $SFCONFIGFILE
+
+    # TODO: remove this, it should work without
     sed -i "s/^admin_password:.*/admin_password: ${ADMIN_PASSWORD}/" $SFCONFIGFILE
-    echo "admin_password_hashed: \"${ADMIN_PASSWORD_HASHED}\"" >> $SFCONFIGFILE
+
+    # Make sure admin password is hashed and avoid duplicate entry
+    grep -q "^admin_password_hashed:" $SFCONFIGFILE && {
+        sed -i "s/^admin_password_hashed:.*/admin_password_hashed: \"${ADMIN_PASSWORD_HASHED}\"/" $SFCONFIGFILE
+    } || {
+        echo "admin_password_hashed: \"${ADMIN_PASSWORD_HASHED}\"" >> $SFCONFIGFILE
+    }
 }
 
 function getip_from_yaml {
-    cat ../hosts.yaml  | grep -A 1 "^  $1" | grep 'ip:' | cut -d: -f2 | sed 's/ *//g'
+    cat /etc/puppet/hiera/sf/hosts.yaml  | grep -A 1 "^  $1" | grep 'ip:' | cut -d: -f2 | sed 's/ *//g'
 }
 
 function generate_random_pswd {
@@ -79,7 +87,6 @@ function generate_api_key {
 
 function generate_creds_yaml {
     OUTPUT=${BUILD}/hiera
-    mkdir -p ${OUTPUT}
     cp sfcreds.yaml ${OUTPUT}/
     # MySQL password for services
     MYSQL_ROOT_SECRET=$(generate_random_pswd 8)
@@ -95,8 +102,8 @@ function generate_creds_yaml {
     sed -i "s#ETHERPAD_SQL_PWD#${ETHERPAD_MYSQL_SECRET}#" ${OUTPUT}/sfcreds.yaml
     sed -i "s#LODGEIT_SQL_PWD#${LODGEIT_MYSQL_SECRET}#" ${OUTPUT}/sfcreds.yaml
     # Default authorized ssh keys on each node
-    JENKINS_PUB="$(cat ${OUTPUT}/../data/jenkins_rsa.pub | cut -d' ' -f2)"
-    SERVICE_PUB="$(cat ${OUTPUT}/../data/service_rsa.pub | cut -d' ' -f2)"
+    JENKINS_PUB="$(cat ${BUILD}/ssh_keys/jenkins_rsa.pub | cut -d' ' -f2)"
+    SERVICE_PUB="$(cat ${BUILD}/ssh_keys/service_rsa.pub | cut -d' ' -f2)"
     sed -i "s#JENKINS_PUB_KEY#${JENKINS_PUB}#" ${OUTPUT}/sfcreds.yaml
     sed -i "s#SERVICE_PUB_KEY#${SERVICE_PUB}#" ${OUTPUT}/sfcreds.yaml
     # Redmine part
@@ -105,14 +112,14 @@ function generate_creds_yaml {
     # Gerrit part
     GERRIT_EMAIL_PK=$(generate_random_pswd 32)
     GERRIT_TOKEN_PK=$(generate_random_pswd 32)
-    GERRIT_SERV_PUB="$(cat ${OUTPUT}/../data/gerrit_service_rsa.pub | cut -d' ' -f2)"
-    GERRIT_ADMIN_PUB_KEY="$(cat ${OUTPUT}/../data/gerrit_admin_rsa.pub | cut -d' ' -f2)"
+    GERRIT_SERV_PUB="$(cat ${BUILD}/ssh_keys/gerrit_service_rsa.pub | cut -d' ' -f2)"
+    GERRIT_ADMIN_PUB_KEY="$(cat ${BUILD}/ssh_keys/gerrit_admin_rsa.pub | cut -d' ' -f2)"
     sed -i "s#GERRIT_EMAIL_PK#${GERRIT_EMAIL_PK}#" ${OUTPUT}/sfcreds.yaml
     sed -i "s#GERRIT_TOKEN_PK#${GERRIT_TOKEN_PK}#" ${OUTPUT}/sfcreds.yaml
     sed -i "s#GERRIT_SERV_PUB_KEY#${GERRIT_SERV_PUB}#" ${OUTPUT}/sfcreds.yaml
     sed -i "s#GERRIT_ADMIN_PUB_KEY#${GERRIT_ADMIN_PUB_KEY}#" ${OUTPUT}/sfcreds.yaml
     # Jenkins part
-    JENKINS_USER_PASSWORD="${JUP}"
+    JENKINS_USER_PASSWORD="${JUP}" # passed by cloudinit
     sed -i "s#JENKINS_USER_PASSWORD#${JENKINS_USER_PASSWORD}#" ${OUTPUT}/sfcreds.yaml
     # Etherpad part
     ETHERPAD_SESSION_KEY=$(generate_random_pswd 10)
@@ -172,8 +179,7 @@ function scan_and_configure_knownhosts {
 }
 
 function generate_keys {
-    OUTPUT=${BUILD}/data
-    mkdir -p ${OUTPUT}
+    OUTPUT=${BUILD}/ssh_keys
     # Service key is used to allow puppetmaster root to
     # connect on other node as root
     ssh-keygen -N '' -f ${OUTPUT}/service_rsa
@@ -182,13 +188,13 @@ function generate_keys {
     ssh-keygen -N '' -f ${OUTPUT}/gerrit_service_rsa
     ssh-keygen -N '' -f ${OUTPUT}/gerrit_admin_rsa
     # generating keys for cauth
+    OUTPUT=${BUILD}/certs
     openssl genrsa -out ${OUTPUT}/privkey.pem 1024
     openssl rsa -in ${OUTPUT}/privkey.pem -out ${OUTPUT}/pubkey.pem -pubout
 }
 
 function generate_apache_cert {
-    OUTPUT=${BUILD}/data
-    mkdir -p ${OUTPUT}
+    OUTPUT=${BUILD}/certs
     # Generate self-signed Apache certificate
     cat > openssl.cnf << EOF
 [req]
@@ -209,35 +215,34 @@ EOF
 }
 
 function prepare_etc_puppet {
-    DATA=${BUILD}/data
+    SSH_KEYS=${BUILD}/ssh_keys
+    CERTS=${BUILD}/certs
     HIERA=${BUILD}/hiera
-    cp /root/hosts.yaml /etc/puppet/hiera/sf
-    cp /root/sfconfig.yaml /etc/puppet/hiera/sf
-    cp $HIERA/sfcreds.yaml /etc/puppet/hiera/sf
+    cp ${HIERA}/sfconfig.yaml /etc/puppet/hiera/sf
+    cp ${HIERA}/sfcreds.yaml /etc/puppet/hiera/sf
     TMP_VERSION=$(grep ^VERS= /var/lib/edeploy/conf | cut -d"=" -f2)
     if [ -z "${TMP_VERSION}" ]; then
         echo "FAIL: could not find edeploy version in /var/lib/edeploy/conf..."
         exit -1
     fi
     echo "sf_version: $(echo ${TMP_VERSION} | cut -d'-' -f2)" > /etc/puppet/hiera/sf/sf_version.yaml
-    cp $DATA/service_rsa /etc/puppet/environments/sf/modules/ssh_keys/files/
-    cp $DATA/service_rsa /root/.ssh/id_rsa
-    cp $DATA/service_rsa.pub /root/.ssh/id_rsa.pub
-    cp $DATA/jenkins_rsa /etc/puppet/environments/sf/modules/jenkins/files/
-    cp $DATA/jenkins_rsa /etc/puppet/environments/sf/modules/zuul/files/
-    [ ! -d /etc/puppet/environments/sf/modules/nodepool/files/ ] && mkdir /etc/puppet/environments/sf/modules/nodepool/files/
-    cp $DATA/jenkins_rsa.pub /etc/puppet/environments/sf/modules/nodepool/files/
-    cp $DATA/gerrit_admin_rsa /etc/puppet/environments/sf/modules/jenkins/files/
-    cp $DATA/gerrit_service_rsa /etc/puppet/environments/sf/modules/gerrit/files/
-    cp $DATA/gerrit_service_rsa.pub /etc/puppet/environments/sf/modules/gerrit/files/
-    cp $DATA/gerrit_admin_rsa /etc/puppet/environments/sf/modules/managesf/files/
-    cp $DATA/service_rsa /etc/puppet/environments/sf/modules/managesf/files/
-    cp $DATA/gerrit_admin_rsa /etc/puppet/environments/sf/modules/jjb/files/
-    cp $DATA/privkey.pem /etc/puppet/environments/sf/modules/cauth/files/
-    cp $DATA/pubkey.pem /etc/puppet/environments/sf/modules/cauth/files/
-    cp $DATA/gateway.key /etc/puppet/environments/sf/modules/commonservices-apache/files/
-    cp $DATA/gateway.crt /etc/puppet/environments/sf/modules/commonservices-apache/files/
-    cp $DATA/gateway.crt /etc/puppet/environments/sf/modules/https_cert/files/
+    cp ${SSH_KEYS}/service_rsa /etc/puppet/environments/sf/modules/ssh_keys/files/
+    cp ${SSH_KEYS}/service_rsa /root/.ssh/id_rsa
+    cp ${SSH_KEYS}/service_rsa.pub /root/.ssh/id_rsa.pub
+    cp ${SSH_KEYS}/jenkins_rsa /etc/puppet/environments/sf/modules/jenkins/files/
+    cp ${SSH_KEYS}/jenkins_rsa /etc/puppet/environments/sf/modules/zuul/files/
+    cp ${SSH_KEYS}/jenkins_rsa.pub /etc/puppet/environments/sf/modules/nodepool/files/
+    cp ${SSH_KEYS}/gerrit_admin_rsa /etc/puppet/environments/sf/modules/jenkins/files/
+    cp ${SSH_KEYS}/gerrit_service_rsa /etc/puppet/environments/sf/modules/gerrit/files/
+    cp ${SSH_KEYS}/gerrit_service_rsa.pub /etc/puppet/environments/sf/modules/gerrit/files/
+    cp ${SSH_KEYS}/gerrit_admin_rsa /etc/puppet/environments/sf/modules/managesf/files/
+    cp ${SSH_KEYS}/service_rsa /etc/puppet/environments/sf/modules/managesf/files/
+    cp ${SSH_KEYS}/gerrit_admin_rsa /etc/puppet/environments/sf/modules/jjb/files/
+    cp ${CERTS}/privkey.pem /etc/puppet/environments/sf/modules/cauth/files/
+    cp ${CERTS}/pubkey.pem /etc/puppet/environments/sf/modules/cauth/files/
+    cp ${CERTS}/gateway.key /etc/puppet/environments/sf/modules/commonservices-apache/files/
+    cp ${CERTS}/gateway.crt /etc/puppet/environments/sf/modules/commonservices-apache/files/
+    cp ${CERTS}/gateway.crt /etc/puppet/environments/sf/modules/https_cert/files/
     chown -R puppet:puppet /etc/puppet/environments/sf
     chown -R puppet:puppet /etc/puppet/hiera/sf
     chown -R puppet:puppet /var/lib/puppet

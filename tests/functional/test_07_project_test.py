@@ -38,7 +38,7 @@ class TestProjectTestsWorkflow(Base):
     def setUpClass(cls):
         cls.msu = ManageSfUtils(config.GATEWAY_URL)
         cls.sample_project_dir = \
-            os.path.join(config.SF_ROOT, "tests/sample_project/")
+            os.path.join(config.SF_TESTS_DIR, "sample_project/")
 
     @classmethod
     def tearDownClass(cls):

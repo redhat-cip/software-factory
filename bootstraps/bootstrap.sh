@@ -20,7 +20,7 @@ set -x
 source functions.sh
 
 SF_SUFFIX=${SFSUFFIX:-sf.dom}
-BUILD=build
+BUILD=/root/sf-bootstrap-data
 
 # If boostrap.done does not exist, something bad happened, write 1
 trap "[ -f ${BUILD}/bootstrap.done ] || (echo 1 > ${BUILD}/bootstrap.done)" 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16
@@ -28,14 +28,21 @@ if [  -f "${BUILD}/bootstrap.done" ]; then
     rm ${BUILD}/bootstrap.done
 fi
 
-# Only create site specific if not done yet
-if [ ! -e "${BUILD}/hiera/sfcreds.yaml" ]; then
-    echo "Generate site specifics creds"
+# Make sure sf-bootstrap-data sub-directories exist
+for i in hiera ssh_keys certs; do
+    [ -d ${BUILD}/$i ] || mkdir -p ${BUILD}/$i
+done
+
+# Move sfconfig.yaml installed by cloud-init
+[ -f /root/sfconfig.yaml ] && mv /root/sfconfig.yaml /root/sf-bootstrap-data/hiera
+
+if [ "${INITIAL}" == "yes" ]; then
+    # Generate site specifics creds
     generate_keys
     generate_creds_yaml
 fi
 
-if [ ! -e "${BUILD}/data/gateway.key" ]; then
+if [ ! -e "${BUILD}/certs/gateway.key" ]; then
     generate_apache_cert
 fi
 

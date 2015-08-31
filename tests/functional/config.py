@@ -1,16 +1,22 @@
-from os import path
+from os import path, environ
 
 import yaml
 
-sfconfig_filenames = ["../sfconfig.yaml", "/root/sfconfig.yaml"]
+SF_BOOTSTRAP_DATA = environ.setdefault("SF_BOOTSTRAP_DATA",
+                                       "/root/sf-bootstrap-data")
+SF_TESTS_DIR = "%s/.." % path.dirname(path.abspath(__file__))
+
+sfconfig_filenames = [
+    "../sfconfig.yaml",
+    "%s/hiera/sfconfig.yaml" % SF_BOOTSTRAP_DATA
+]
+sfconfig = None
 for sfconfig_filename in sfconfig_filenames:
     if path.exists(sfconfig_filename):
         with open(sfconfig_filename) as infile:
             sfconfig = yaml.load(infile)
-
-# Software Factory source code root directory is the third directory
-# below this file
-SF_ROOT = path.dirname(path.dirname(path.dirname(path.abspath(__file__))))
+if sfconfig is None:
+    raise RuntimeError("Can't find sfconfig in %s" % str(sfconfig_filenames))
 
 GATEWAY_HOST = sfconfig['domain']
 GATEWAY_URL = 'https://%s/' % GATEWAY_HOST
@@ -18,13 +24,13 @@ JENKINS_URL = 'https://%s/jenkins/' % GATEWAY_HOST
 REDMINE_URL = 'https://%s/redmine/' % GATEWAY_HOST
 
 GERRIT_USER = 'gerrit'
-GERRIT_SERVICE_PRIV_KEY_PATH = '%s/build/data/gerrit_service_rsa' \
-                               % SF_ROOT
+GERRIT_SERVICE_PRIV_KEY_PATH = '%s/ssh_keys/gerrit_service_rsa' \
+                               % SF_BOOTSTRAP_DATA
 
 USER_1 = sfconfig.get('admin_name')
 ADMIN_USER = USER_1
-ADMIN_PRIV_KEY_PATH = '%s/build/data/gerrit_admin_rsa' % SF_ROOT
-ADMIN_PUB_KEY_PATH = '%s/build/data/gerrit_admin_rsa.pub' % SF_ROOT
+ADMIN_PRIV_KEY_PATH = '%s/ssh_keys/gerrit_admin_rsa' % SF_BOOTSTRAP_DATA
+ADMIN_PUB_KEY_PATH = '%s/ssh_keys/gerrit_admin_rsa.pub' % SF_BOOTSTRAP_DATA
 
 USER_2 = 'user2'
 USER_2_PUB_KEY = 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDV6R5m5a' + \

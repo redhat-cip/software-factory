@@ -263,7 +263,7 @@ function wait_for_bootstrap_done {
         echo "-------------------------";
         # The fail below is more targeted for the HEAT deployment (When the bootstrap script ssh fails to connect to the nodes)
         [ -n "$(echo -n $lastlines | grep 'Permission denied')" ] && return 1
-        RET=$(ssh -o StrictHostKeyChecking=no -o PreferredAuthentications=publickey root@`get_ip puppetmaster` cat puppet-bootstrapper/build/bootstrap.done)
+        RET=$(ssh -o StrictHostKeyChecking=no -o PreferredAuthentications=publickey root@`get_ip puppetmaster` cat /root/sf-bootstrap-data/bootstrap.done)
         [ ! -z "${RET}" ] && return ${RET}
         let retries=retries+1
         [ "$retries" == "$max_retries" ] && return 1

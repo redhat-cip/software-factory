@@ -31,7 +31,7 @@ write_files:
       slave.SF_SUFFIX:
         ip: slave_host
         host_aliases: [slave]
-  path: /root/hosts.yaml
+  path: /etc/puppet/hiera/sf/hosts.yaml
 - encoding: b64
   content: SFCONFIGCONTENT
   path: /root/sfconfig.yaml
@@ -39,7 +39,7 @@ runcmd:
   - mkdir -p /var/log/edeploy
   - echo "PROFILE=none" >> /var/log/edeploy/vars
   - MY_PRIV_IP=`curl -s http://169.254.169.254/latest/meta-data/local-ipv4 | cut -d, -f1`
-  - sed -i "s/puppermaster-ip-template/$MY_PRIV_IP/" /root/hosts.yaml
+  - sed -i "s/puppermaster-ip-template/$MY_PRIV_IP/" /etc/puppet/hiera/sf/hosts.yaml
   - echo "127.0.0.1 puppetmaster.SF_SUFFIX puppetmaster" > /etc/hosts
   - echo "mysql_host mysql.SF_SUFFIX mysql" >> /etc/hosts
   - echo "jenkins_host jenkins.SF_SUFFIX jenkins" >> /etc/hosts

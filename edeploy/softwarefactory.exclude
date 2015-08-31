@@ -49,7 +49,7 @@
 /var/tmp/
 
 # Sf state data
-/root/puppet-bootstrapper/build/
+/root/sf-bootstrap-data/
 /var/lib/zuul/
 /var/lib/managesf/users.db
 /var/lib/cauth/state_mapping.db
@@ -74,8 +74,7 @@
 /srv/cauth_keys/
 
 # Sf configuration
-/root/hosts.yaml
-/root/sfconfig.yaml
+/etc/puppet/hiera/sf/hosts.yaml
 /etc/httpd/htpasswd
 
 # REMOVEME?

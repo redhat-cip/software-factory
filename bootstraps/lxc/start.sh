@@ -17,6 +17,11 @@
 set -x
 set -e
 
+# Sanity check
+if [ ! -f ${HOME}/.ssh/id_rsa ]; then
+    ssh-keygen -f ${HOME}/.ssh/id_rsa -N ''
+fi
+
 source ../functions.sh
 . ./../../role_configrc
 
@@ -28,13 +33,16 @@ for role in softwarefactory; do
     fi
 done
 
-generate_sfconfig
+SFCONFIGFILE="$(mktemp /tmp/sfconfig-XXXXXX)"
+generate_sfconfig $SFCONFIGFILE
 [ -f ~/sfconfig.local ] && cat ~/sfconfig.local >> $SFCONFIGFILE
+sfconfigcontent=`cat $SFCONFIGFILE | base64 -w 0`
 DOMAIN=$(cat $SFCONFIGFILE | grep "^domain:" | cut -d' ' -f2)
 SF_SUFFIX=${SF_SUFFIX:-$DOMAIN}
 EDEPLOY_ROLES=${EDEPLOY_ROLES:-/var/lib/sf/roles/}
 SSH_PUBKEY=${SSH_PUBKEY:-${HOME}/.ssh/id_rsa.pub}
 export SF_SUFFIX
+rm ${SFCONFIGFILE}
 
 IN_FUNC_TEST=${IN_FUNC_TESTS:-""}
 
@@ -81,7 +89,7 @@ function setup_iptables {
 function init {
     sudo rm -rf ${CONFDIR}
     sudo mkdir -p ${CONFDIR}
-    CONFDIR=$CONFDIR sudo -E bash -c 'chown $SUDO_USER:$SUDO_USER ${CONFDIR}'
+    sudo chown $USER ${CONFDIR}
     cp sf-lxc.yaml $CONFDIR
     cp ../cloudinit/* $CONFDIR
     jenkins_ip=`get_ip jenkins`
@@ -98,7 +106,6 @@ function init {
     # Complete all the cloudinit templates
     sed -i "s/SF_SUFFIX/${SF_SUFFIX}/g" ${CONFDIR}/*.cloudinit
     sed -i "s/SSHPASS/${SSHPASS}/g" ${CONFDIR}/*.cloudinit
-    sfconfigcontent=`cat $SFCONFIGFILE | base64 -w 0`
     sed -i "s|SFCONFIGCONTENT|${sfconfigcontent}|" $CONFDIR/puppetmaster.cloudinit
     for r in `echo $ROLES | sed s/puppetmaster//`; do
         ip=`get_ip $r`

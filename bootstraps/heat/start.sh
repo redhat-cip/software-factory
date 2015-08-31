@@ -6,7 +6,8 @@ source ../functions.sh
 . ./../../role_configrc
 . conf
 
-generate_sfconfig
+SFCONFIGFILE="./sfconfig.yaml"
+generate_sfconfig $SFCONFIGFILE
 if [ -n "$FROMUPSTREAM" ]; then
     BUILT_ROLES=$UPSTREAM
 else

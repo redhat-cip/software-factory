@@ -230,12 +230,12 @@ to finish their work before you can use your SF deployment.
 So once the stack is created you can connect using SSH on
 the puppetmaster node using the root user (your SSH public key has been added to
 the root's authorized_keys file) and wait for the file
-/root/puppet-bootstrapper/build/bootstrap.done to be created.
+/root/sf-bootstrap-data/bootstrap.done to be created.
 
 .. code-block:: bash
 
  $ heat output-show SoftwareFactory puppetmaster_public_address
- $ ssh root@puppetmaster_public_address ls /root/puppet-bootstrapper/build/bootstrap.done
+ $ ssh root@puppetmaster_public_address ls /root/sf-bootstrap-data/bootstrap.done
 
 This file is created once all scripts and puppet agents have finished to apply the
 manifests to configure all SF services.
@@ -318,13 +318,7 @@ for the LXC deployment. However you can still configure it if the defaults
 are not convenient for you.
 
 Ensure that the current user can act as root via sudo without password.
-If not you must login as root. The current user must have a RSA public
-key available in $HOME/.ssh, if not please create it before with ssh-keygen
-without a passphrase.
-
-.. code-block:: bash
-
- $ ssh-keygen -P ""
+If not you must login as root.
 
 In order to start the SF deployment perform the commands below:
 

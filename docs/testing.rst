@@ -274,4 +274,4 @@ value.
 
 .. code-block:: bash
 
- $ grep creds_jenkins_user_password puppet-bootstrapper/build/hiera/sfcreds.yaml
+ $ grep creds_jenkins_user_password sf-bootstrap-data/hiera/sfcreds.yaml
