@@ -66,8 +66,8 @@
           zuul-cloner http://<%= scope.function_hiera(["gateway_host"]) %>/r config
           cd config
           sudo jenkins-jobs test jobs/ -o ../build/
-          # concat of layout.yaml and projects.yaml to build/layout.yaml
-          cat zuul/layout.yaml zuul/projects.yaml | tee ../build/layout.yaml
+          # concat of layout.yaml and projects.yaml to /etc/zuul/layout.yaml
+          /usr/local/bin/yaml-merger.py zuul | tee ../build/layout.yaml
           sudo zuul-server -t -l ../build/layout.yaml
 
           # Check nodepool configuration
@@ -98,7 +98,7 @@
           sudo rm -Rf /var/lib/jenkins/.cache/jenkins_jobs
           sudo jenkins-jobs -l debug --ignore-cache update --delete-old jobs/
           # concat of layout.yaml and projects.yaml to /etc/zuul/layout.yaml
-          cat zuul/layout.yaml zuul/projects.yaml | sudo tee /etc/zuul/layout.yaml
+          /usr/local/bin/yaml-merger.py zuul | sudo tee /etc/zuul/layout.yaml
           sudo service zuul reload
           # Merge nodepool.yaml configuration
           [ -d /tmp/nodepool ] && rm -Rf /tmp/nodepool
