@@ -39,7 +39,8 @@ function lxc_stop {
 function build {
     if [ ! ${SF_SKIP_BUILDROLES} ]; then
         clear_mountpoint
-        ./build_roles.sh ${ARTIFACTS_DIR} || pre_fail "Roles building FAILED"
+        # Retry to build role if it fails before exiting
+        ./build_roles.sh ${ARTIFACTS_DIR} || ./build_roles.sh ${ARTIFACTS_DIR} || pre_fail "Roles building FAILED"
     fi
 }
 
