@@ -68,7 +68,7 @@ done
 scp -r root@`getip_from_yaml gerrit`:/home/gerrit/site_path/logs/ $dlogs/gerrit/ &> /dev/null
 scp root@`getip_from_yaml gerrit`:/tmp/config.diff $dlogs/gerrit/ &> /dev/null
 
-scp root@`getip_from_yaml redmine`:/var/log/redmine/default/production.log $dlogs/redmine/ &> /dev/null
+scp -r root@`getip_from_yaml redmine`:/usr/share/redmine/log/ $dlogs/redmine/ &> /dev/null
 scp root@`getip_from_yaml managesf`:/var/log/managesf/managesf.log $dlogs/managesf/ &> /dev/null
 scp root@`getip_from_yaml managesf`:/var/log/cauth/cauth.log $dlogs/managesf/ &> /dev/null
 scp -r root@`getip_from_yaml managesf`:/var/log/apache2/ $dlogs/managesf/ &> /dev/null
