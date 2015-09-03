@@ -128,7 +128,6 @@ function destroy {
     # make sure all lxc are shutdown
     for instance in $(sudo lxc-ls); do
         sudo lxc-stop --kill --name ${instance} || echo
-        sudo lxc-destroy --name ${instance} || echo
     done
     setup_iptables 'down'
 }
