@@ -10,6 +10,8 @@
 {% endif %}{% endfor %}
 
 - hosts: all
+  pre_tasks:
+    - include: /etc/ansible/tasks/selinux_check.yml
   roles:
     - sf-base
 
@@ -24,5 +26,7 @@
 {% endif %}{% endfor %}
   post_tasks:
     - include: /etc/ansible/tasks/puppet.yml puppet_statement="{{ host['puppet_statement'] }}"
+    - include: /etc/ansible/tasks/selinux_finalize.yml
+      when: selinuxenabled
 
 {% endfor %}

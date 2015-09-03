@@ -4,4 +4,8 @@
 - template: src=/etc/ansible/templates/etc-hosts.j2 dest=/etc/hosts mode=0644
 - name: Set /etc/ssh/ssh_known_hosts for all inventory
   template: src=global_known_hosts.j2 dest=/etc/ssh/ssh_known_hosts owner=root group=root mode=0644
+# Allow apache to connect database
+- seboolean: name={{ item }} state=yes persistent=yes
+  with_items: [httpd_can_network_connect, httpd_can_network_connect_db]
+  when: selinuxenabled
 - include: /etc/ansible/tasks/puppet.yml puppet_statement="include ::sfbase, ::postfix"

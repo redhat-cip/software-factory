@@ -1,0 +1,8 @@
+---
+- name: Check selinuxenabled
+  command: selinuxenabled
+  ignore_errors: yes
+  register: selinux_test
+- name: Register selinuxenabled fact
+  set_fact: selinuxenabled="{{ not selinux_test.rc != 0 }}"
+

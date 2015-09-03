@@ -16,8 +16,6 @@
 class cauth_client {
   include ::apache
 
-  $pubkey_pem = hiera('pubkey_pem')
-
   file { '/etc/httpd/conf.modules.d/00-tkt.conf':
     ensure  => file,
     content => 'LoadModule auth_pubtkt_module modules/mod_auth_pubtkt.so',
@@ -33,25 +31,8 @@ class cauth_client {
     mode    => '0544',
     owner   => 'root',
     group   => 'root',
-    require => File['/srv/cauth_keys/pubkey.pem'],
     content => 'TKTAuthPublicKey /srv/cauth_keys/pubkey.pem',
     notify  => Service['webserver'],
     replace => true,
-  }
-
-  file { '/srv/cauth_keys':
-    ensure => directory,
-    mode   => '0544',
-    owner  => 'root',
-    group  => 'root',
-  }
-
-  file { '/srv/cauth_keys/pubkey.pem':
-    ensure  => file,
-    mode    => '0544',
-    owner   => 'root',
-    group   => 'root',
-    require => File['/srv/cauth_keys'],
-    content => inline_template('<%= @pubkey_pem %>'),
   }
 }

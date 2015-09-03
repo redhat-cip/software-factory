@@ -21,7 +21,6 @@ class cauth ($cauth = hiera('cauth'), $gerrit = hiera('gerrit')) {
   $theme = hiera('theme')
   $url = hiera('url')
   $network = hiera('network')
-  $privkey_pem = hiera('privkey_pem')
   $admin_password = $auth['admin_password']
   $ldap = $auth['ldap']
   $github = $auth['github']
@@ -49,19 +48,11 @@ class cauth ($cauth = hiera('cauth'), $gerrit = hiera('gerrit')) {
     notify => Service['webserver'],
   }
 
-  file { '/var/www/cauth/':
-    ensure => directory,
-    owner  => 'apache',
-    group  => 'apache',
-    mode   => '0640',
-  }
-
   file { '/var/www/cauth/cauth/':
     ensure  => directory,
     owner   => 'apache',
     group   => 'apache',
     mode    => '0640',
-    require => File['/var/www/cauth/'],
   }
 
   file { '/var/lib/cauth/':
@@ -76,7 +67,6 @@ class cauth ($cauth = hiera('cauth'), $gerrit = hiera('gerrit')) {
     owner   => 'root',
     group   => 'root',
     mode    => '0655',
-    require => File['/var/www/cauth/'],
   }
 
   file { '/var/log/cauth/':
@@ -86,21 +76,12 @@ class cauth ($cauth = hiera('cauth'), $gerrit = hiera('gerrit')) {
     mode   => '0750',
   }
 
-  file { '/srv/cauth_keys/privkey.pem':
-    ensure  => file,
-    owner   => 'root',
-    group   => 'root',
-    mode    => '0444',
-    content => inline_template('<%= @privkey_pem %>'),
-  }
-
   file { '/var/www/cauth/config.py':
     ensure  => file,
     owner   => 'apache',
     group   => 'apache',
     mode    => '0640',
     content => template('cauth/cauth-config.py.erb'),
-    require => File['/var/www/cauth/'],
     replace => true,
     notify  => Service['webserver'],
   }

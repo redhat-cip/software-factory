@@ -1,0 +1,2 @@
+---
+- shell: restorecon -Rv /var/www/
