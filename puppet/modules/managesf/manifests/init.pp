@@ -27,10 +27,6 @@ class managesf ($gerrit = hiera_hash('gerrit', ''),
   $provider = "systemd"
   $httpd_user = "apache"
 
-  package { $http:
-    ensure => present,
-  }
-
   file {'/etc/httpd/conf.d/managesf.conf':
     ensure => file,
     mode   => '0640',

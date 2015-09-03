@@ -75,8 +75,7 @@ class jenkins ($settings = hiera_hash('jenkins', '')) {
     name    => $http,
     ensure  => running,
     enable  => 'true',
-    require => [Package[$http],
-                File['/etc/httpd/conf.d/jenkins.conf'],
+    require => [File['/etc/httpd/conf.d/jenkins.conf'],
                 File['/etc/httpd/conf.d/ports.conf']]
   }
 
@@ -224,13 +223,7 @@ class jenkins ($settings = hiera_hash('jenkins', '')) {
 
   exec {'jenkins_user':
     command   => "/usr/bin/htpasswd -bc $htpasswd jenkins $jenkins_password",
-    require   => Package[$http],
-    subscribe => Package[$http],
     creates => $htpasswd,
-  }
-
-  package { $http:
-    ensure => present,
   }
 
   bup::scripts{ 'jenkins_scripts':

@@ -80,10 +80,6 @@ class redmine ($settings = hiera_hash('redmine', ''),
       unless  => 'stat -c %U /usr/share/redmine | grep apache'
     }
 
-    package { $http:
-        ensure => 'installed',
-    }
-
     file { '/root/post-conf-in-mysql.sql':
         ensure  => present,
         mode    => '0640',
