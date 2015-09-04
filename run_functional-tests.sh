@@ -77,19 +77,19 @@ if [ "$1" == "backup_restore_tests" ]; then
     run_backup_restore_tests 45 "check" || pre_fail "Backup test: check"
 fi
 if [ "$1" == "upgrade" ]; then
+    master=$(pwd)
     cloned=/tmp/software-factory # The place to clone the previous SF version to deploy
     (
-        [ -d $cloned ] && rm -Rf $cloned
+        [ -d $cloned ] && sudo rm -Rf $cloned
         git clone http://softwarefactory.enovance.com/r/software-factory $cloned
         cd $cloned
         # Be sure to checkout the right previous version
         git checkout ${PREVIOUS_SF_REL}
+        # Fix fetch_roles script and clean env (remove this after 1.0.3 releases)
+        cp -v $master/fetch_roles.sh .
+        sudo rm -Rf /var/lib/sf/roles/install/C7.0-1.0.2
         checkpoint "clone previous version"
-        # Fetch the pre-built images
-        ./fetch_roles.sh trees
-        checkpoint "fetch previous trees"
-        # Trigger a build role in order to deflate roles in the right directory if not done yet
-        SF_SKIP_FETCHBASES=1 ./build_roles.sh
+        ./fetch_roles.sh
         checkpoint "extract previous roles"
         (
             cd bootstraps/lxc

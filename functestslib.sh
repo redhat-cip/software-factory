@@ -111,9 +111,8 @@ function swift_upload_artifacts {
 
 function publish_artifacts {
     set +x
-    sudo find ${ARTIFACTS_DIR} -type d -exec chmod 550 {} \;
-    sudo find ${ARTIFACTS_DIR} -type f -exec chmod 440 {} \;
-    sudo chown -R $USER:$GROUP ${ARTIFACTS_DIR}
+    sudo find ${ARTIFACTS_DIR} -type d -exec chmod 555 {} \;
+    sudo find ${ARTIFACTS_DIR} -type f -exec chmod 444 {} \;
     if [ ${GROUP} = 'www-data' ]; then
         echo "Logs are available here: ${JENKINS_URL}/${ARTIFACTS_RELPATH}"
     else
@@ -153,6 +152,10 @@ function get_logs {
 
     # Retrieve Xunit output and store it in Jenkins workspace
     scp -r -o StrictHostKeyChecking=no root@`get_ip puppetmaster`:~/puppet-bootstrapper/nosetests.xml .
+
+    # Retrieve mariadb log
+    mkdir -p ${O}/mysql
+    scp -r -o StrictHostKeyChecking=no root@`get_ip mysql`:/var/log/mariadb/mariadb.log ${O}/mysql
 }
 
 function host_debug {
