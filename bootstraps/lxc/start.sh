@@ -166,13 +166,6 @@ function start {
         for name in `echo $ROLES | sed s/puppetmaster//`; do
             sudo mount -t aufs -o "br=${base_aufs}/${name}:${roles_dir}/softwarefactory" none /var/lib/lxc/${name}/rootfs
         done
-    else
-        sudo mkdir -p /tmp/base_overlay/puppetmaster/workdir ${base_aufs}/puppetmaster /var/lib/lxc/puppetmaster/rootfs
-        sudo mount -t overlay -o "upperdir=${base_aufs}/puppetmaster/upperdir,lowerdir=${roles_dir}/install-server-vm,workdir=${base_aufs}/puppetmaster/workdir" none /var/lib/lxc/puppetmaster/rootfs
-        for name in `echo $ROLES | sed s/puppetmaster//`; do
-            sudo mkdir -p /tmp/base_overlay/${name}/workdir ${base_aufs}/${name} /var/lib/lxc/${name}/rootfs
-            sudo mount -t overlay -o "upperdir=${base_aufs}/${name}/upperdir,lowerdir=${roles_dir}/softwarefactory,workdir=${base_aufs}/${name}/workdir" none /var/lib/lxc/${name}/rootfs
-        done
     fi
     # Start LXC containers
     for name in mysql puppetmaster; do
