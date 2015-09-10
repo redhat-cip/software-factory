@@ -49,8 +49,8 @@ class jenkins ($settings = hiera_hash('jenkins', '')) {
   file {'/lib/systemd/system/jenkins.service':
     ensure => file,
     mode   => '0640',
-    owner  => $httpd_user,
-    group  => $httpd_user,
+    owner  => "jenkins",
+    group  => "jenkins",
     content => template('jenkins/jenkins.service.erb'),
   }
 
