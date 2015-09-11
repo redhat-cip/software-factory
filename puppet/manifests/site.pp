@@ -2,29 +2,19 @@ Package {
   allow_virtual => false,
 }
 
-node base {
-  # these are imported from modules/base
-  include disable_root_pw_login
-  include ssh_keys
-  include hosts
-  include edeploy_client
-  include postfix
-  include monit
-  if $virtual != 'lxc' {
-    include ntpserver
-  }
-  include https_cert
+$httpd_user = "apache"
+
+node default {
 }
 
-node default inherits base {
-}
-
-node /.*puppetmaster.*/ inherits base {
+node /.*puppetmaster.*/ {
+  include sfbase
   include edeploy_server
   include auto_backup
 }
 
-node /.*jenkins.*/ inherits base {
+node /.*jenkins.*/ {
+  include sfbase
   include ssh_keys_jenkins
   include jenkins
   include jjb
@@ -34,23 +24,69 @@ node /.*jenkins.*/ inherits base {
   include bup
 }
 
-node /.*redmine.*/ inherits base {
+node /.*redmine.*/ {
+  include sfbase
   include redmine
   include cauth_client
 }
 
-node /.*gerrit.*/ inherits base {
+node /.*gerrit.*/ {
+  include sfbase
   include ssh_keys_gerrit
   include gerrit
   include bup
 }
 
-node /.*mysql.*/ inherits base {
+node /.*mysql.*/ {
+  include sfbase
   include mysql
   include bup
 }
 
-node /.*managesf.*/ inherits base {
+node /.*managesf.*/ {
+  include sfbase
+  include apache
+  include managesf
+  include cauth
+  include cauth_client
+  include commonservices-apache
+  include commonservices-socat
+  include etherpad
+  include lodgeit
+  include replication
+}
+
+node /.*allinone.*/ {
+  include sfbase
+
+  # Puppetmaster
+  include edeploy_server
+  include auto_backup
+
+  # Jenkins
+  include ssh_keys_jenkins
+  include jenkins
+  include jjb
+  include zuul
+  include nodepool
+  include cauth_client
+  include bup
+
+  # Redmine
+  include redmine
+  include cauth_client
+
+  # Gerrit
+  include ssh_keys_gerrit
+  include gerrit
+  include bup
+
+  # MySql
+  include mysql
+  include bup
+
+  # Managesf gateway
+  include apache
   include managesf
   include cauth
   include cauth_client

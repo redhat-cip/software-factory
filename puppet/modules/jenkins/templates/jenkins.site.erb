@@ -18,7 +18,7 @@
     <LocationMatch "/jenkins/">
         AuthType basic
         AuthBasicProvider file
-        AuthUserFile <%= @htpasswd %>
+        AuthUserFile /etc/httpd/htpasswd
         AuthName "Jenkins"
         Require valid-user
         RewriteEngine On

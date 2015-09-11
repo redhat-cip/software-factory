@@ -1,8 +1,7 @@
 class lodgeit ($lodgeit = hiera_hash('lodgeit', '')) {
 
   require hosts
-
-  $httpd_user = "apache"
+  include apache
 
   file {'init':
     path   => '/lib/systemd/system/lodgeit.service',

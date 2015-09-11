@@ -27,32 +27,38 @@ class bup ($settings = hiera_hash('bup', '')){
         user => 'root',
         creates => '/root/.bup/HEAD',
     }
-
-    cron { "backup":
-        minute      => $bup_minute,
-        hour        => $bup_hour,
-        month       => $bup_month,
-        weekday     => $bup_weekday,
-        user        => 'root',
-        command => "/root/backup.sh",
-        require     => File['/root/backup.sh'],
-    }
 }
 
-define bup::scripts($backup_script, $restore_script) {
-  file { '/root/backup.sh':
+define bup::scripts($name, $backup_script, $restore_script) {
+
+  include bup
+  $bup_minute = $bup::bup_minute
+  $bup_hour = $bup::bup_hour
+  $bup_month = $bup::bup_month
+  $bup_weekday = $bup::bup_weekday
+
+  file { "/root/backup_${name}.sh":
     ensure  => present,
     owner   => 'root',
     group   => 'root',
     mode    => '0744',
     content  => template($backup_script),
   }
-  file { '/root/restore.sh':
+
+  file { "/root/restore_${name}.sh":
     ensure  => present,
     owner   => 'root',
     group   => 'root',
     mode    => '0744',
     content  => template($restore_script),
   }
-}
 
+  cron { "backup_${name}":
+    minute      => $bup_minute,
+    hour        => $bup_hour,
+    month       => $bup_month,
+    weekday     => $bup_weekday,
+    user        => 'root',
+    command => "/root/backup_${name}.sh",
+  }
+}

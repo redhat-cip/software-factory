@@ -17,10 +17,10 @@ class gerrit ($settings = hiera_hash('gerrit', ''),
               $cauth = hiera_hash('cauth', '')) {
 
   require hosts
+  include apache
+  include gerrituser
 
-  $http = "httpd"
   $provider = "systemd"
-  $httpd_user = "apache"
   $gitweb_cgi = "/var/www/git/gitweb.cgi"
 
   file { 'gerrit_init':
@@ -32,24 +32,6 @@ class gerrit ($settings = hiera_hash('gerrit', ''),
 
   file { '/var/www/git/gitweb.cgi':
     mode   => 0755,
-  }
-
-  group { 'gerrit':
-    ensure => present,
-  }
-  user { 'gerrit':
-    ensure => present,
-    home => '/home/gerrit',
-    system => true,
-    managehome => true,
-    comment => 'Gerrit sys user',
-    require => Group['gerrit'],
-  }
-
-  file { '/home/gerrit/.ssh':
-    ensure  => directory,
-    owner   => 'gerrit',
-    require => [User['gerrit'], Group['gerrit']],
   }
 
   # managesf uses gerrit_admin_key to ssh to gerrit
@@ -133,7 +115,7 @@ class gerrit ($settings = hiera_hash('gerrit', ''),
     group   => 'gerrit',
     mode    => '0640',
     source  => 'puppet:///modules/gerrit/replication.jar',
-    require => file['/home/gerrit/site_path/plugins'],
+    require => File['/home/gerrit/site_path/plugins'],
   }
   file { '/home/gerrit/site_path/plugins/reviewersbyblame-2.8.1.jar':
     ensure  => present,
@@ -141,7 +123,7 @@ class gerrit ($settings = hiera_hash('gerrit', ''),
     group   => 'gerrit',
     mode    => '0640',
     source  => 'puppet:///modules/gerrit/reviewersbyblame-2.8.1.jar',
-    require => file['/home/gerrit/site_path/plugins'],
+    require => File['/home/gerrit/site_path/plugins'],
   }
   file { '/home/gerrit/site_path/plugins/gravatar.jar':
     ensure  => present,
@@ -453,7 +435,9 @@ class gerrit ($settings = hiera_hash('gerrit', ''),
     mode    => '0644',
     require => File['/home/gerrit/site_path/etc'],
   }
+
   bup::scripts{ 'gerrit_scripts':
+    name => 'gerrit',
     backup_script => 'gerrit/backup.sh.erb',
     restore_script => 'gerrit/restore.sh.erb',
   }

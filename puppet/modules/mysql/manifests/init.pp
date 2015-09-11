@@ -60,6 +60,7 @@ class mysql ($settings = hiera_hash('mysql', '')) {
     }
 
     bup::scripts{ 'mysql_scripts':
+      name => 'mysql',
       backup_script => 'mysql/backup.sh.erb',
       restore_script => 'mysql/restore.sh.erb',
     }

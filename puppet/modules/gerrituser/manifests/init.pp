@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2014 eNovance SAS <licensing@enovance.com>
+# Copyright (C) 2015 Red Hat Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -13,15 +13,24 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-class replication ($gerrit = hiera_hash('gerrit', '')) {
+class gerrituser () {
 
-  require hosts
-  require gerrituser
-
-  ssh_authorized_key { 'gerrit_local_user':
-     user => 'gerrit',
-     type => 'rsa',
-     key  => $gerrit['gerrit_local_key'],
-     #require => File['gerrit_ssh_dir'],
+  group { 'gerrit':
+    ensure => present,
   }
+  user { 'gerrit':
+    ensure => present,
+    home => '/home/gerrit',
+    system => true,
+    managehome => true,
+    comment => 'Gerrit sys user',
+    require => Group['gerrit'],
+  }
+
+  file { '/home/gerrit/.ssh':
+    ensure  => directory,
+    owner   => 'gerrit',
+    require => [User['gerrit'], Group['gerrit']],
+  }
+
 }

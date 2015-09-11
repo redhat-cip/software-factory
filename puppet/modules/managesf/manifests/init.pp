@@ -23,10 +23,6 @@ class managesf ($gerrit = hiera_hash('gerrit', ''),
 
   $gerrit_ip = $hosts["$gerrit_host"]['ip']
 
-  $http = "httpd"
-  $provider = "systemd"
-  $httpd_user = "apache"
-
   file {'/etc/httpd/conf.d/managesf.conf':
     ensure => file,
     mode   => '0640',
@@ -34,15 +30,6 @@ class managesf ($gerrit = hiera_hash('gerrit', ''),
     group  => $httpd_user,
     content=> template('managesf/managesf.site.erb'),
     notify => Service['webserver'],
-  }
-
-  service {'webserver':
-    name       => $http,
-    ensure     => running,
-    enable     => true,
-    hasrestart => true,
-    hasstatus  => true,
-    provider   => $provider,
   }
 
 # managesf can't access keys in /root/.ssh and can only
@@ -106,7 +93,7 @@ class managesf ($gerrit = hiera_hash('gerrit', ''),
   exec {'update_gerritip_knownhost':
     command => "/usr/bin/ssh-keyscan $gerrit_ip >> /usr/share/httpd/.ssh/known_hosts",
     logoutput => true,
-    user => 'apache',
+    user   => $httpd_user,
     require => File['/usr/share/httpd/.ssh'],
     unless => "/usr/bin/grep '$gerrit_ip ' /usr/share/httpd/.ssh/known_hosts",
   }
@@ -114,7 +101,7 @@ class managesf ($gerrit = hiera_hash('gerrit', ''),
   exec {'update_gerrithost_knownhost':
     command => "/usr/bin/ssh-keyscan $gerrit_host >> /usr/share/httpd/.ssh/known_hosts",
     logoutput => true,
-    user => 'apache',
+    user   => $httpd_user,
     require => File['/usr/share/httpd/.ssh'],
     unless => "/usr/bin/grep '$gerrit_host ' /usr/share/httpd/.ssh/known_hosts",
   }

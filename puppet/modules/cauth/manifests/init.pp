@@ -18,8 +18,6 @@ class cauth ($cauth = hiera_hash('cauth', ''),
              $gerrit = hiera_hash('gerrit', ''),
              $mysql = hiera_hash('mysql', '')) {
 
-  $http = "httpd"
-  $httpd_user = "apache"
 
   file {'/etc/httpd/conf.d/cauth.conf':
     ensure => file,

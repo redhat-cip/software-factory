@@ -17,9 +17,7 @@ class commonservices-apache ($cauth = hiera_hash('cauth', ''),
                              $authenticated_only = hiera('authenticated_only', false)) {
 
   require hosts
-
-  $http = "httpd"
-  $httpd_user = "apache"
+  include apache
 
   file {'gateway_crt':
     path  => '/etc/httpd/conf.d/gateway.crt',
@@ -46,21 +44,6 @@ class commonservices-apache ($cauth = hiera_hash('cauth', ''),
     owner  => $httpd_user,
     group  => $httpd_user,
     content => template('commonservices-apache/gateway.common'),
-    notify => Service['webserver'],
-  }
-
-  file {'00-ssl.conf':
-    path    => "/etc/httpd/conf.modules.d/00-ssl.conf",
-    content => "LoadModule ssl_module modules/mod_ssl.so",
-  }
-
-  file {'ssl.conf':
-    path  => '/etc/httpd/conf.d/ssl.conf',
-    source  => 'puppet:///modules/commonservices-apache/ssl.conf',
-    ensure => file,
-    mode   => '0640',
-    owner  => $httpd_user,
-    group  => $httpd_user,
   }
 
   file {'gateway_conf':
@@ -84,7 +67,6 @@ class commonservices-apache ($cauth = hiera_hash('cauth', ''),
     owner  => $httpd_user,
     group  => $httpd_user,
     content => template('commonservices-apache/topmenu.js'),
-    notify => Service['webserver'],
   }
 
   file {'/var/www/static/js/menu.js':
@@ -93,7 +75,6 @@ class commonservices-apache ($cauth = hiera_hash('cauth', ''),
     owner  => $httpd_user,
     group  => $httpd_user,
     source  => 'puppet:///modules/commonservices-apache/menu.js',
-    notify => Service['webserver'],
   }
 
   file {'/var/www/topmenu.html':
@@ -102,7 +83,6 @@ class commonservices-apache ($cauth = hiera_hash('cauth', ''),
     owner  => $httpd_user,
     group  => $httpd_user,
     content => template('commonservices-apache/topmenu.html'),
-    notify => Service['webserver'],
   }
 
   file {'/var/www/dashboard':

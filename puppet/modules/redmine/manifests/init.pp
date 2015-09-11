@@ -21,10 +21,7 @@ class redmine ($settings = hiera_hash('redmine', ''),
 
     require cauth_client
     require hosts
-
-    $http = "httpd"
-    $provider = "systemd"
-    $httpd_user = "apache"
+    include apache
 
     file { 'conf_yml':
       path   => '/usr/share/redmine/config/configuration.yml',
@@ -50,19 +47,7 @@ class redmine ($settings = hiera_hash('redmine', ''),
       owner  => $httpd_user,
       group  => $httpd_user,
       content => template('redmine/redmine.site.erb'),
-    }
-
-    service {'webserver':
-      name       => $http,
-      ensure     => running,
-      enable     => true,
-      hasrestart => true,
-      hasstatus  => true,
-      subscribe  => [File['/etc/httpd/conf.d/redmine.conf'],
-                     Exec['redmine_backlog_install'],
-                     Exec['plugin_install'],
-                     Exec['set_url_root']],
-      require => Exec['chown_redmine'],
+      notify => Service['webserver'],
     }
 
     exec { 'chown_redmine':

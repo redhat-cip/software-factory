@@ -14,9 +14,7 @@
 # under the License.
 
 class cauth_client () {
-  $http = "httpd"
-  $provider = "systemd"
-  $auth_pubtkt_path = "/etc/httpd/conf.d/auth_pubtkt.conf"
+  include apache
 
   file { '/etc/httpd/conf.modules.d/00-tkt.conf':
     ensure => present,
@@ -24,18 +22,18 @@ class cauth_client () {
     mode   => '0544',
     owner  => 'root',
     group  => 'root',
-    notify => Service[webserver],
+    notify => Service['webserver'],
   }
 
   file { 'auth_pubtkt_conf':
-    path   => $auth_pubtkt_path,
+    path   => "/etc/httpd/conf.d/auth_pubtkt.conf",
     ensure => file,
     mode   => '0544',
     owner  => 'root',
     group  => 'root',
     require => File['/srv/cauth_keys/pubkey.pem'],
     content => "TKTAuthPublicKey /srv/cauth_keys/pubkey.pem",
-    notify => Service[webserver],
+    notify => Service['webserver'],
     replace => true
   }
 

@@ -291,6 +291,15 @@ function run_functional_tests {
     return ${PIPESTATUS[0]}
 }
 
+function run_puppet_allinone_tests {
+    echo "$(date) ======= Starting Puppet all in one tests ========="
+    ssh -o StrictHostKeyChecking=no root@`get_ip puppetmaster` \
+            "puppet master --compile allinone --environment=sf" 2>&1 &> ${ARTIFACTS_DIR}/functional-tests.output
+    return ${PIPESTATUS[0]}
+}
+
+
+
 function run_tests {
     r=$1
     scan_and_configure_knownhosts || pre_fail "Can't SSH"
@@ -301,6 +310,8 @@ function run_tests {
     checkpoint "run_serverspec"
     run_functional_tests || pre_fail "Functional tests failed"
     checkpoint "run_functional_tests"
+    run_puppet_allinone_tests || pre_fail "Puppet all in one tests failed"
+    checkpoint "run_puppet_allinone_tests"
 }
 
 function run_backup_restore_tests {

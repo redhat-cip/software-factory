@@ -16,13 +16,11 @@
 class zuul ($settings = hiera_hash('jenkins', ''), $gh = hiera('gerrit_host'), $hosts = hiera('hosts')){
 
   require hosts
+  include apache
 
   $gfqdn = "$gh"
   $gip = $hosts[$gfqdn]['ip']
 
-  $http = "httpd"
-  $provider = "systemd"
-  $httpd_user = "apache"
   $pub_html_path = "/var/www/zuul"
   $gitweb_path = "/usr/libexec/git-core"
 
@@ -85,7 +83,7 @@ class zuul ($settings = hiera_hash('jenkins', ''), $gh = hiera('gerrit_host'), $
     require => [User['zuul'], Group['zuul']],
   }
 
-  exec {'update_gerritip_knownhost':
+  exec {'update_gerritip_knownhost_zuul':
     command => "/usr/bin/ssh-keyscan -p 29418 $gip >> /home/zuul/.ssh/known_hosts",
     logoutput => true,
     user => 'zuul',
@@ -93,7 +91,7 @@ class zuul ($settings = hiera_hash('jenkins', ''), $gh = hiera('gerrit_host'), $
     unless => '/usr/bin/grep "$gip" /home/zuul/.ssh/known_hosts',
   }
 
-  exec {'update_gerrithost_knownhost':
+  exec {'update_gerrithost_knownhost_zuul':
     command => "/usr/bin/ssh-keyscan -p 29418 $gh >> /home/zuul/.ssh/known_hosts",
     logoutput => true,
     user => 'zuul',
@@ -237,7 +235,7 @@ class zuul ($settings = hiera_hash('jenkins', ''), $gh = hiera('gerrit_host'), $
     require => [File['/lib/systemd/system/zuul-merger.service'],
                 File['/var/lib/zuul'],
                 Service['zuul'],
-                Exec['update_gerritip_knownhost'],
-                Exec['update_gerrithost_knownhost']],
+                Exec['update_gerritip_knownhost_zuul'],
+                Exec['update_gerrithost_knownhost_zuul']],
   }
 }
