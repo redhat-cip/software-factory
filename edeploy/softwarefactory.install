@@ -2,6 +2,8 @@
 #
 # Copyright (C) 2014 eNovance SAS <licensing@enovance.com>
 #
+# Author: Frederic Lepied <frederic.lepied@enovance.com>
+#
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
 # a copy of the License at
@@ -14,10 +16,25 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-src="$1"
-dir="$2"
+set -x
+
+dir="$1"
+src=$dir
+dist="$2"
+
+# Version is SF_VER
 version="$3"
-ROLE=softwarefactory
+
+#note(fbo): useless should be remove
+TOP=/var/lib/debootstrap
+
+CODENAME_MAJOR=7
+DIST=$dist
+
+ROLE=base
+
+PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin
+
 ORIG=$(cd $(dirname $0); pwd)
 
 . ${ORIG}/third_party_tools
@@ -25,57 +42,295 @@ ORIG=$(cd $(dirname $0); pwd)
 
 BUNDLE_RETRIES=3
 
-DOCDIR="../docs"
-GERRITHOOKS="../gerrit-hooks"
+install_edeploy_bin() {
+    target=$1
+    mkdir -p "$target/var/lib/edeploy/${version}"
+    cp -p ${SDIR}/build/edeploy ${target}/usr/sbin/
+    cp ${SDIR}/build/base.exclude "$target/var/lib/edeploy/${version}/exclude"
+}
 
-retry $EDEPLOY_ROLES_PATH/jenkins.install ${dir} ${dir} $version
-# The role Jenkins does not deactivate the jenkins service at startup
-# https://github.com/redhat-cip/edeploy-roles/issues/80
-do_chroot ${dir} bash -c "for x in {0..6}; do ls /etc/rc\${x}.d/*jenkins | xargs rm -f ; done"
+init_redhat_chroot() {
+    local target="$1"
+    local release_rpm_url="$2"
+    local dist="$3"
+    local rpm_repository="$REPOSITORY"
 
-# Install the most recent version of PIP at early stage
-retry do_chroot ${dir} pip install -U pip
+    if [ ! -f "${target}/etc/redhat-release" ]; then
+        rpm --initdb --root="$target"
+        rpm -ivh --root "$target" $release_rpm_url
+    fi
 
-case "$(package_tool)" in
-  "yum")
-     # The puppetlas-release package install repo desc for puppet in yum
-     install_packages ${dir} ${PUPPET_REPO_URL}
-     add_epel_repository $DIST
+    if [ ! -d ${target}/etc/yum.repos.d ]; then
+        mkdir -p ${target}/etc/yum.repos.d
+        curl ${REPOSITORY}/media.repo > ${target}/etc/yum.repos.d/rhel-source.repo
+    fi
 
-     install_packages ${dir} "puppet monit postfix git vim-enhanced nodejs httpd java-1.6.0-openjdk mariadb-server python-werkzeug python-babel python-jinja2 MySQL-python socat mod_wsgi m2crypto mariadb gitweb debootstrap unzip pigz ntp openssl mod_ssl"
-     DEVEL_PKGS="swig libffi-devel openldap-devel zlib-devel libcurl-devel openssl-devel httpd-devel apr-devel apr-util-devel mariadb-devel gcc-c++ ruby-devel ImageMagick-devel gcc cpp python-devel libxml2-devel libxslt-devel"
+    sed -i 's/$releasever/7/g' ${target}/etc/yum.repos.d/*
 
-     install_packages ${dir} ${DEVEL_PKGS}
+    cp -f /etc/resolv.conf "$target/etc/"
 
-     # Install a secure platform to get rid of SSL warnings, needs gcc
-     retry do_chroot ${dir} pip install pyopenssl
-     retry do_chroot ${dir} pip install ndg-httpsclient
-     retry do_chroot ${dir} pip install pyasn1
+    rebuild_db_with_local $target
+    rpm --root="$target" --import $(ls $target/etc/pki/rpm-gpg/RPM-GPG-KEY-* | fgrep -v Debug)
+    # We cannot use install_packages since the basesystem isn't yet setup
+    yum --disableplugin=* --installroot $target install -y basesystem yum
+
+    if [ -f  "$target"/root/.rpmdb/Packages ]; then
+        mv -f "$target"/root/.rpmdb/*  "$target"/root/.rpmdb/.??* "$target"/var/lib/rpm/
+        rmdir "$target"/root/.rpmdb
+    fi
+
+    # In some weird cases, the rpmdb is empty. Let's try to populate it again
+    nb_packages=$(do_chroot $target sh -c "rpm -qa | wc -l")
+    if [ "$nb_packages" = "0" ]; then
+           install_packages "$target" basesystem yum
+    fi
+
+    install_packages $target "shadow-utils"
+    if [ -f ${target}/usr/sbin/useradd ]; then
+        fake_shadow_utils
+    fi
 
 
-     # Install SQLAlchemy for paste lodegit (not available in yum)
-     # TODO(mhu) manage mirror choice with pip
-     retry do_chroot ${dir} pip install SQLAlchemy
-     install_bup ${dir}
-     # Install mod authpub tkt for apache (SSO)
-     http_fetch $MOD_AUTH_PUBTKT_URL ${dir}/tmp/mod_auth_pubtkt-${MOD_AUTH_PUBTKT_VERSION}.tar.gz
-     do_chroot ${dir} bash -c "cd /tmp && tar -xvzf mod_auth_pubtkt-${MOD_AUTH_PUBTKT_VERSION}.tar.gz"
-     do_chroot ${dir} bash -c "cd /tmp/mod_auth_pubtkt-${MOD_AUTH_PUBTKT_VERSION} && ./configure --apxs=/usr/bin/apxs && make && make install"
-     do_chroot ${dir} rm -Rf /tmp/mod_auth_pubtkt-${MOD_AUTH_PUBTKT_VERSION}
-     # Install Passenger for Redmine
-     mkdir -p ${dir}/var/www/html
-     mkdir -p ${dir}/var/log/httpd
-     HOME=/root do_chroot ${dir} gem install passenger --version ${PASSENGER_VERSION}
-     HOME=/root do_chroot ${dir} gem install bundler
-     HOME=/root do_chroot ${dir} passenger-install-apache2-module -a
-     do_chroot ${dir} bash -c "ln -s \$(find /usr/local/share/gems/gems/passenger-${PASSENGER_VERSION} -maxdepth 0) /usr/lib/passenger"
-     # Install Redmine
-     http_fetch $REDMINE_RHEL_URL ${dir}/usr/share/redmine.tar.gz
-     do_chroot ${dir} bash -c "cd /usr/share && tar -xzpf redmine.tar.gz && mv redmine-${REDMINE_VERSION} redmine && chown -R root:root redmine"
+    rebuild_db $target
+}
 
-     # We install this fake database file in order to force the bundle to activate the mysql2 lib
-     # Redmine puppet manifest will overwrite it
-     cat > ${dir}/usr/share/redmine/config/database.yml <<EOF
+bootstrap() {
+    local target=$1
+    rm -rf $target
+
+    mount_fs
+
+    # need to be called after mount to get info from the iso
+    echo $supported_centos_dists
+    echo $CODENAME_MAJOR
+    local repository=$(add_main_repository $dist)
+
+    check_binary yum
+    check_binary rpm
+
+    init_redhat_chroot "$target" "$repository" "$dist"
+    cp ${target}/etc/skel/.bashrc ${target}/root
+    cp ${target}/etc/skel/.bash_profile ${target}/root
+    cp -p ${SDIR}/build/check-ug.py ${target}/usr/sbin/
+    # Control the ids created by useradd and groupadd by wrapping
+    # the commands with mngids.py
+    cp -p ${SDIR}/build/mngids.py ${target}/usr/sbin/
+    cp ${SDIR}/build/C7.0-ids.tables ${dir}/etc/ids.tables
+
+    clean_mount_points
+}
+
+configure_cloudinit() {
+    mkdir -p ${dir}/etc/cloud/cloud.cfg.d
+    rm -f ${dir}/etc/cloud/cloud.cfg
+
+    add_epel_repository $DIST
+    install_packages $dir "cloud-init cloud-utils cloud-utils-growpart"
+    remove_epel_repository $DIST
+
+    cat > ${dir}/etc/cloud/cloud.cfg <<EOF
+user: root
+disable_root: 0
+preserve_hostname: False
+
+cloud_init_modules:
+ - runcmd
+ - growpart
+ - resizefs
+ - set_hostname
+ - update_hostname
+ - update_etc_hosts
+ - ca-certs
+ - rsyslog
+ - users-groups
+ - write-files
+
+cloud_config_modules:
+ - migrator
+ - mounts
+ - ssh-import-id
+ - locale
+ - set-passwords
+ - timezone
+ - puppet
+ - chef
+ - salt-minion
+ - mcollective
+ - disable-ec2-metadata
+ - runcmd
+ - byobu
+
+cloud_final_modules:
+ - rightscale_userdata
+ - scripts-per-once
+ - scripts-per-boot
+ - scripts-per-instance
+ - scripts-user
+ - ssh-authkey-fingerprints
+ - keys-to-console
+ - phone-home
+ - final-message
+EOF
+
+    cat > ${dir}/etc/cloud/cloud.cfg.d/90_sources.cfg << EOF
+datasource_list: [ NoCloud, Ec2, OpenStack, ConfigDrive, None ]
+EOF
+
+    others_cloud_config_modules=$(mktemp)
+    cat > $others_cloud_config_modules << EOF
+ - yum-add-repo
+ - package-update-upgrade-install
+EOF
+    cat >> ${dir}/etc/cloud/cloud.cfg <<EOF
+
+system_info:
+  distro: rhel
+  paths:
+    cloud_dir: /var/lib/cloud
+    templates_dir: /etc/cloud/templates
+  ssh_svcname: sshd
+EOF
+    sed -i "/set-passwords/r  $others_cloud_config_modules" ${dir}/etc/cloud/cloud.cfg
+}
+
+install_base_packages() {
+    target=$1
+    local repository=$(add_main_repository $dist)
+    # Original package list from original base.install (maybe need to strip it)
+    local packages="coreutils dhclient e2fsprogs man-db grub2 grubby initscripts iproute kernel net-tools passwd redhat-lsb-core crontabs openssh-clients bind-utils kexec-tools selinux-policy-targeted setroubleshoot-server acpid bash curl kbd lvm2 openssh-server pciutils rsync rsyslog sudo wget ntpdate logrotate ethtool hdparm iptables"
+
+    install_packages $target "$packages"
+
+    echo  'LANG=en_US.UTF-8' > $target/etc/locale.conf
+    # don't rename net ifaces
+    ln -s /dev/null $dir/etc/udev/rules.d/80-net-name-slot.rules
+    touch ${target}/.autorelabel
+    sed -i 's/SELINUX=.*/SELINUX=permissive/' ${target}/etc/selinux/config
+
+    # tune sshd conf
+    echo UseDNS no >> ${dir}/etc/ssh/sshd_config
+}
+
+install_sf_packages() {
+    install_packages ${dir} ${PUPPET_REPO_URL}
+    add_epel_repository $DIST
+    http_fetch https://oss-binaries.phusionpassenger.com/yum/definitions/el-passenger.repo ${dir}/etc/yum.repos.d/passenger.repo
+
+    install_packages ${dir} $PKGS $DEV_PKGS
+}
+
+upgrade_pip() {
+    retry do_chroot ${dir} pip install -U pip
+}
+
+install_puppetmaster() {
+    mkdir -p ${dir}/usr/share/puppet/rack/puppetmasterd/public
+    mkdir -p ${dir}/usr/share/puppet/rack/puppetmasterd/tmp
+    cp ${dir}/usr/share/puppet/ext/rack/config.ru ${dir}/usr/share/puppet/rack/puppetmasterd/
+    do_chroot ${dir} chown puppet:puppet /usr/share/puppet/rack/puppetmasterd/config.ru
+
+    # Bug https://tickets.puppetlabs.com/browse/PUP-1386
+    cat >> ${dir}/usr/share/puppet/rack/puppetmasterd/config.ru <<EOF
+Encoding.default_external = Encoding::UTF_8
+Encoding.default_internal = Encoding::UTF_8
+EOF
+    
+    cat > ${dir}/etc/httpd/conf.d/puppetmaster.conf.disabled  <<EOF
+Listen 8140
+<VirtualHost *:8140>
+        SSLEngine on
+        SSLProtocol             ALL -SSLv2
+        SSLCipherSuite          ALL:!aNULL:!eNULL:!DES:!3DES:!IDEA:!SEED:!DSS:!PSK:!RC4:!MD5:+HIGH:+MEDIUM:!LOW:!SSLv2:!EXP
+        SSLHonorCipherOrder     on
+        SSLCertificateFile      /var/lib/puppet/ssl/certs/mycert.pem
+        SSLCertificateKeyFile   /var/lib/puppet/ssl/private_keys/mycert.pem
+        SSLCertificateChainFile /var/lib/puppet/ssl/certs/ca.pem
+        SSLCACertificateFile    /var/lib/puppet/ssl/certs/ca.pem
+        SSLVerifyClient optional
+        SSLVerifyDepth  1
+        SSLOptions +StdEnvVars +ExportCertData
+        RequestHeader unset X-Forwarded-For
+        RequestHeader set X-SSL-Subject %{SSL_CLIENT_S_DN}e
+        RequestHeader set X-Client-DN %{SSL_CLIENT_S_DN}e
+        RequestHeader set X-Client-Verify %{SSL_CLIENT_VERIFY}e
+        DocumentRoot /usr/share/puppet/rack/puppetmasterd/public/
+        RackBaseURI /
+        <Directory /usr/share/puppet/rack/puppetmasterd/>
+                Options None
+                AllowOverride None
+                Require all granted
+        </Directory>
+</VirtualHost>
+EOF
+}    
+
+function install_jenkins() {
+
+    wget -O $dir/etc/yum.repos.d/jenkins.repo http://pkg.jenkins-ci.org/redhat-stable/jenkins.repo
+    chroot $dir rpm --import http://pkg.jenkins-ci.org/redhat-stable/jenkins-ci.org.key
+
+    [ -n "$JENKINS_VERSION" ] && JENKINS_VERSION="-${JENKINS_VERSION}"
+    install_packages $dir jenkins${JENKINS_VERSION}
+    
+    mkdir -p ${dir}/var/lib/jenkins/plugins
+    do_chroot $dir chown jenkins /var/lib/jenkins /var/lib/jenkins/plugins
+
+    # Jenkins Swarm client
+    swarm_client=$(basename $JENKINS_SWARM_CLIENT_URL)
+    http_fetch $JENKINS_SWARM_CLIENT_URL ${dir}/var/lib/jenkins/${swarm_client}
+    ln -sf ${swarm_client} ${dir}/var/lib/jenkins/swarm-client-latest.jar
+
+    # Jenkins ssh-agent plugin
+    http_fetch $JENKINS_SSH_AGENT_PLUGIN_URL ${dir}/var/lib/jenkins/plugins/$(basename $JENKINS_SSH_AGENT_PLUGIN_URL)
+    # Jenkins Gearman plugin
+    http_fetch $JENKINS_GEARMAN_PLUGIN_URL ${dir}/var/lib/jenkins/plugins/$(basename $JENKINS_GEARMAN_PLUGIN_URL)
+
+    # Jenkins Swarm plugin
+    http_fetch $JENKINS_SWARM_PLUGIN_URL ${dir}/var/lib/jenkins/plugins/$(basename $JENKINS_SWARM_PLUGIN_URL)
+
+    # Jenkins theme plugin
+    http_fetch $JENKINS_THEME_PLUGIN_URL ${dir}/var/lib/jenkins/plugins/$(basename $JENKINS_THEME_PLUGIN_URL)
+
+    # Jenkins credentials plugin
+    http_fetch $JENKINS_CREDENTIALS_BINDING_URL ${dir}/var/lib/jenkins/plugins/$(basename $JENKINS_CREDENTIALS_BINDING_URL)
+
+    # http_fetch $JENKINS_CREDENTIALS_URL ${dir}/var/lib/jenkins/plugins/$(basename $JENKINS_CREDENTIALS_URL)
+    http_fetch $JENKINS_WORKFLOW_STEP_API_URL ${dir}/var/lib/jenkins/plugins/$(basename $JENKINS_WORKFLOW_STEP_API_URL)
+    http_fetch $JENKINS_PLAIN_CREDENTIALS_URL ${dir}/var/lib/jenkins/plugins/$(basename $JENKINS_PLAIN_CREDENTIALS_URL)
+    http_fetch $JENKINS_REVERSE_AUTH_PROXY_PLUGIN_URL ${dir}/var/lib/jenkins/plugins/$(basename $JENKINS_REVERSE_AUTH_PROXY_PLUGIN_URL)
+
+    # Jenkins ZMQ event plugin
+    http_fetch $JENKINS_ZMQ_PLUGIN_URL ${dir}/var/lib/jenkins/plugins/$(basename $JENKINS_ZMQ_PLUGIN_URL)
+
+    do_chroot ${dir} bash -c "for x in {0..6}; do ls /etc/rc\${x}.d/*jenkins | xargs rm -f ; done"
+
+    # install JJB
+    retry do_chroot ${dir} pip install jenkins-job-builder
+    mkdir -p ${dir}/etc/jenkins_jobs
+
+    retry do_chroot ${dir} pip install nose flake8
+}
+
+function install_gerrit {
+    # Gerrit
+    mkdir ${dir}/root/gerrit_data_source/
+    http_fetch $GERRIT_URL ${dir}/root/gerrit_data_source/gerrit.war
+    http_fetch $MYSQLJAVA_URL ${dir}/root/gerrit_data_source/mysql-connector-java.jar
+    http_fetch $BCPROVJAVA_URL ${dir}/root/gerrit_data_source/bcprov.jar
+    http_fetch $BCPKIXJAVA_URL ${dir}/root/gerrit_data_source/bcpkix.jar
+}
+
+function install_redmine {
+    mkdir -p ${dir}/var/www/html
+    mkdir -p ${dir}/var/log/httpd
+    # Install Redmine
+    http_fetch $REDMINE_RHEL_URL ${dir}/usr/share/redmine.tar.gz
+    do_chroot ${dir} bash -c "cd /usr/share && tar -xzpf redmine.tar.gz && mv redmine-${REDMINE_VERSION} redmine && chown -R root:root redmine"
+
+    HOME=/root do_chroot ${dir} gem install bundler
+    # We install this fake database file in order to force the bundle to activate the mysql2 lib
+    # Redmine puppet manifest will overwrite it
+    cat > ${dir}/usr/share/redmine/config/database.yml <<EOF
 production:
   adapter: mysql2
   database: redmine
@@ -84,196 +339,209 @@ production:
   password: ""
   encoding: utf8
 EOF
-     HOME=/root do_chroot ${dir} bash -c "cd /usr/share/redmine && bundle install --retry $BUNDLE_RETRIES"
-     retry do_chroot ${dir} pip install python-dateutil
-     ;;
-  *)
-     fatal_error "$package_tool isn't supported for $ROLE role"
-     ;;
-esac
+    HOME=/root do_chroot ${dir} bash -c "cd /usr/share/redmine && bundle install" # --retry $BUNDLE_RETRIES"
+    # Install Redmine backlog plugin
+    do_chroot ${dir} mkdir -p /usr/share/redmine/plugins
+    retry do_chroot ${dir} git clone $REDMINE_BACKLOG_URL /usr/share/redmine/plugins/redmine_backlogs
+    # An update of holidays gem 10/12/2014 to 1.0.7 leads to unable to deploy the backlog plugin
+    # Check later if we can safely remove that :
+    cd ${dir}/usr/share/redmine/plugins/redmine_backlogs
+    sed -i 's/gem \"holidays\", \"~>1.0.3\"/gem \"holidays\", \"=1.0.6\"/' Gemfile
+    cd -
+    HOME=/root do_chroot ${dir} bash -c "cd /usr/share/redmine/plugins/redmine_backlogs && bundle install" # --retry $BUNDLE_RETRIES"
+    HOME=/root do_chroot ${dir} bash -c 'cd /usr/share/redmine && bundle update'
 
-# Gerrit
-mkdir ${dir}/root/gerrit_data_source/
-http_fetch $GERRIT_URL ${dir}/root/gerrit_data_source/gerrit.war
-http_fetch $MYSQLJAVA_URL ${dir}/root/gerrit_data_source/mysql-connector-java.jar
-http_fetch $BCPROVJAVA_URL ${dir}/root/gerrit_data_source/bcprov.jar
-http_fetch $BCPKIXJAVA_URL ${dir}/root/gerrit_data_source/bcpkix.jar
-cp -Rf $GERRITHOOKS ${dir}/root/gerrit_data_source/
+    # Install Redmine http plugin
+    retry do_chroot ${dir} git clone $REDMINE_HTTP_PLUGIN_URL /usr/share/redmine/plugins/redmine_http_auth
+}
 
-# Install Redmine backlog plugin
-do_chroot ${dir} mkdir -p /usr/share/redmine/plugins
-retry do_chroot ${dir} git clone $REDMINE_BACKLOG_URL /usr/share/redmine/plugins/redmine_backlogs
-# An update of holidays gem 10/12/2014 to 1.0.7 leads to unable to deploy the backlog plugin
-# Check later if we can safely remove that :
-cd ${dir}/usr/share/redmine/plugins/redmine_backlogs
-sed -i 's/gem \"holidays\", \"~>1.0.3\"/gem \"holidays\", \"=1.0.6\"/' Gemfile
-cd -
-HOME=/root do_chroot ${dir} bash -c "cd /usr/share/redmine/plugins/redmine_backlogs && bundle install --retry $BUNDLE_RETRIES"
-HOME=/root do_chroot ${dir} bash -c 'cd /usr/share/redmine && bundle update'
+install_edeploy() {
+    mkdir -p /var/lib/debootstrap/install /var/lib/debootstrap/metadata /var/lib/edeploy
 
-# Install Redmine http plugin
-retry do_chroot ${dir} git clone $REDMINE_HTTP_PLUGIN_URL /usr/share/redmine/plugins/redmine_http_auth
+    cat > ${dir}/etc/rsyncd.conf << EOF
+uid = root
+gid = root
 
-# Twitter Bootstrap - http://getbootstrap.com/
-http_fetch $BOOTSTRAP_URL ${dir}/tmp/bootstrap.zip
-do_chroot ${dir} unzip -q -o /tmp/bootstrap.zip -d /var/www/static/
-do_chroot ${dir} mv /var/www/static/bootstrap-${BOOTSTRAP_VERSION}-dist /var/www/static/bootstrap
-do_chroot ${dir} rm /tmp/bootstrap.zip
+[install]
+        path = /var/lib/debootstrap/install
+        comment = eDeploy install trees
 
-# Font Awesome - http://fortawesome.github.io/Font-Awesome/
-http_fetch $FONTAWESOME_URL ${dir}/tmp/font-awesome.zip
-do_chroot ${dir} unzip -q -o /tmp/font-awesome.zip -d /var/www/static/
-do_chroot ${dir} mv /var/www/static/Font-Awesome-${FONTAWESOME_VERSION} /var/www/static/font-awesome
-do_chroot ${dir} rm /tmp/font-awesome.zip
+[metadata]
+        path = /var/lib/debootstrap/metadata
+        comment = eDeploy metadata
+EOF
 
-do_chroot ${dir} mkdir /var/www/static/js
-# JQuery - http://jquery.com/
-http_fetch $JQUERY_URL ${dir}/var/www/static/js/jquery.min.js
-# AngularJS
-http_fetch $ANGULARJS_URL ${dir}/var/www/static/js/angular.min.js
+    cat > ${dir}/var/lib/edeploy/conf << EOF
+VERS=${version}
+ROLE=softwarefactory
+RSERV_PORT=873
+RSERV=puppetmaster
+EOF
+}
 
-# zuul
-retry do_chroot ${dir} git clone ${ZUUL_URL} /srv/zuul
-do_chroot ${dir} bash -c "cd /srv/zuul && git checkout -b working ${ZUUL_VERSION}"
-# Install dependencies first
-retry do_chroot ${dir} pip install -U setuptools
-retry do_chroot ${dir} pip install docutils
-retry do_chroot ${dir} bash -c "cd /srv/zuul && pip install -U -r requirements.txt"
-retry do_chroot ${dir} pip install APScheduler==${APSCHEDULER_VERSION}
-retry do_chroot ${dir} pip install GitPython==${GITPYTHON_VERSION}
-do_chroot ${dir} bash -c "cd /srv/zuul && python /srv/zuul/setup.py install"
-do_chroot ${dir} ln -s /var/www/static/bootstrap /srv/zuul/etc/status/public_html/bootstrap
-http_fetch $JQUERY_VISIBILITY_URL ${dir}/srv/zuul/etc/status/public_html/jquery-visibility.min.js
-http_fetch $JQUERY_GRAPHITE_URL ${dir}/srv/zuul/etc/status/public_html/jquery.graphite.js
-do_chroot ${dir} cp /var/www/static/js/jquery.min.js /srv/zuul/etc/status/public_html/jquery.min.js
+install_serverspec() {
+    # serverspec and stuff
+    RSPEC_CORE_VERSION=2.99.0
+    RSPEC_EXPECTATIONS_VERSION=${RSPEC_CORE_VERSION}
+    RSPEC_ITS_VERSION=1.0.0
+    SPECINFRA_VERSION=1.27.0
+    SERVERSPEC_VERSION=1.16.0
 
-# nodepool
-retry do_chroot ${dir} pip install nodepool
+    HOME=/root retry do_chroot ${dir} gem install rspec-core -v ${RSPEC_CORE_VERSION}
+    HOME=/root retry do_chroot ${dir} gem install rspec-expectations -v ${RSPEC_EXPECTATIONS_VERSION}
+    HOME=/root retry do_chroot ${dir} gem install rspec-its -v ${RSPEC_ITS_VERSION}
+    HOME=/root retry do_chroot ${dir} gem install specinfra -v ${SPECINFRA_VERSION}
+    HOME=/root retry do_chroot ${dir} gem install serverspec -v ${SERVERSPEC_VERSION}
+}
 
-# Etherpad_lite
-http_fetch $ETHERPAD_LITE_URL ${dir}/tmp/etherpad_lite.tar.gz
-http_fetch $NODEJS_NPM ${dir}/tmp/npm-install.sh
-## Try to avoid the failure in jenkins
-do_chroot ${dir} sed -i "s#</dev/tty##" /tmp/npm-install.sh
-[ ! -d "${dir}/var/www/etherpad-lite" ] && mkdir -p ${dir}/var/www/etherpad-lite
-do_chroot ${dir} tar -xzf /tmp/etherpad_lite.tar.gz --strip-components=1 -C /var/www/etherpad-lite
-# /bin/installDeps.sh is looking for /usr/bin/node
-[ ! -e "${dir}/usr/bin/node" ] && do_chroot ${dir} ln -s /usr/bin/nodejs /usr/bin/node
-# Node or npm seems to deals with SUDO_UID and SUDO_GID that for results set new created
-# files as user id/gid referenced by sudo. So force id/gid to 0 (root)
-SUDO_UID=0 SUDO_GID=0 HOME=/root npm_install=$NPM_INSTALL do_chroot ${dir} sh /tmp/npm-install.sh
-## Use a mirror
-do_chroot ${dir} sed -i "s|npm install|npm --registry ${NPM_MIRROR_URL} install|" /var/www/etherpad-lite/bin/installDeps.sh
-SUDO_UID=0 SUDO_GID=0 HOME=/root retry do_chroot ${dir} sh /var/www/etherpad-lite/bin/installDeps.sh
+function fix_insecure_plateform {
+    # get rid of SSL warnings, needs gcc
+    retry do_chroot ${dir} pip install pyopenssl
+    retry do_chroot ${dir} pip install ndg-httpsclient
+    retry do_chroot ${dir} pip install pyasn1
+}
 
-# Include topmenu in Etherpad
-cat << EOF | patch ${dir}/var/www/etherpad-lite/src/templates/index.html
+function install_mod_authpub_tkt {
+    # Install mod authpub tkt for apache (SSO)
+    http_fetch $MOD_AUTH_PUBTKT_URL ${dir}/tmp/mod_auth_pubtkt-${MOD_AUTH_PUBTKT_VERSION}.tar.gz
+    do_chroot ${dir} bash -c "cd /tmp && tar -xvzf mod_auth_pubtkt-${MOD_AUTH_PUBTKT_VERSION}.tar.gz"
+    do_chroot ${dir} bash -c "cd /tmp/mod_auth_pubtkt-${MOD_AUTH_PUBTKT_VERSION} && unset DEBUG && ./configure --apxs=/usr/bin/apxs && make && make install"
+    do_chroot ${dir} rm -Rf /tmp/mod_auth_pubtkt-${MOD_AUTH_PUBTKT_VERSION}
+}
+
+function install_fonts {
+    # Twitter Bootstrap - http://getbootstrap.com/
+    http_fetch $BOOTSTRAP_URL ${dir}/tmp/bootstrap.zip
+    do_chroot ${dir} unzip -q -o /tmp/bootstrap.zip -d /var/www/static/
+    do_chroot ${dir} mv /var/www/static/bootstrap-${BOOTSTRAP_VERSION}-dist /var/www/static/bootstrap
+    do_chroot ${dir} rm /tmp/bootstrap.zip
+
+    # Font Awesome - http://fortawesome.github.io/Font-Awesome/
+    http_fetch $FONTAWESOME_URL ${dir}/tmp/font-awesome.zip
+    do_chroot ${dir} unzip -q -o /tmp/font-awesome.zip -d /var/www/static/
+    do_chroot ${dir} mv /var/www/static/Font-Awesome-${FONTAWESOME_VERSION} /var/www/static/font-awesome
+    do_chroot ${dir} rm /tmp/font-awesome.zip
+
+    do_chroot ${dir} mkdir /var/www/static/js
+    # JQuery - http://jquery.com/
+    http_fetch $JQUERY_URL ${dir}/var/www/static/js/jquery.min.js
+    # AngularJS
+    http_fetch $ANGULARJS_URL ${dir}/var/www/static/js/angular.min.js
+}
+
+function install_zuul {
+    # zuul
+    retry do_chroot ${dir} git clone ${ZUUL_URL} /srv/zuul
+    do_chroot ${dir} bash -c "cd /srv/zuul && git checkout -b working ${ZUUL_VERSION}"
+    # Install dependencies first
+    retry do_chroot ${dir} bash -c "cd /srv/zuul && pip install -U -r requirements.txt"
+    retry do_chroot ${dir} pip install APScheduler==${APSCHEDULER_VERSION}
+    do_chroot ${dir} bash -c "cd /srv/zuul && python /srv/zuul/setup.py install"
+    do_chroot ${dir} ln -s /var/www/static/bootstrap /srv/zuul/etc/status/public_html/bootstrap
+    http_fetch $JQUERY_VISIBILITY_URL ${dir}/srv/zuul/etc/status/public_html/jquery-visibility.min.js
+    http_fetch $JQUERY_GRAPHITE_URL ${dir}/srv/zuul/etc/status/public_html/jquery.graphite.js
+    do_chroot ${dir} cp /var/www/static/js/jquery.min.js /srv/zuul/etc/status/public_html/jquery.min.js
+}
+
+function install_nodepool {
+    # nodepool
+    retry do_chroot ${dir} pip install nodepool
+}
+
+function install_etherpad {
+    # Etherpad_lite
+    http_fetch $ETHERPAD_LITE_URL ${dir}/tmp/etherpad_lite.tar.gz
+    http_fetch $NODEJS_NPM ${dir}/tmp/npm-install.sh
+    ## Try to avoid the failure in jenkins
+    do_chroot ${dir} sed -i "s#</dev/tty##" /tmp/npm-install.sh
+    [ ! -d "${dir}/var/www/etherpad-lite" ] && mkdir -p ${dir}/var/www/etherpad-lite
+    do_chroot ${dir} tar -xzf /tmp/etherpad_lite.tar.gz --strip-components=1 -C /var/www/etherpad-lite
+    # /bin/installDeps.sh is looking for /usr/bin/node
+    [ ! -e "${dir}/usr/bin/node" ] && do_chroot ${dir} ln -s /usr/bin/nodejs /usr/bin/node
+    # Node or npm seems to deals with SUDO_UID and SUDO_GID that for results set new created
+    # files as user id/gid referenced by sudo. So force id/gid to 0 (root)
+    SUDO_UID=0 SUDO_GID=0 HOME=/root npm_install=$NPM_INSTALL do_chroot ${dir} sh /tmp/npm-install.sh
+    ## Use a mirror
+    do_chroot ${dir} sed -i "s|npm install|npm --registry ${NPM_MIRROR_URL} install|" /var/www/etherpad-lite/bin/installDeps.sh
+    SUDO_UID=0 SUDO_GID=0 HOME=/root retry do_chroot ${dir} sh /var/www/etherpad-lite/bin/installDeps.sh
+    # Include topmenu in Etherpad
+    cat << EOF | patch ${dir}/var/www/etherpad-lite/src/templates/index.html || true
 38a39
 >         <script type="text/javascript" src="/static/js/topmenu.js"></script>
 53d53
 <               border-top: 8px solid rgba(51,51,51,.8);
 EOF
-
-cat << EOF | patch ${dir}/var/www/etherpad-lite/src/templates/pad.html
+    cat << EOF | patch ${dir}/var/www/etherpad-lite/src/templates/pad.html || true
 50a51
 >         <script type="text/javascript" src="/static/js/topmenu.js"></script>
 EOF
+}
 
-# Paste (Lodgeit)
-do_chroot ${dir} mkdir -p /srv/lodgeit
-retry do_chroot ${dir} git clone ${PASTE_URL} /srv/lodgeit/lodgeit
-do_chroot ${dir} bash -c "cd /srv/lodgeit/lodgeit && git checkout ${PASTE_VERSION}"
+function install_paste {
+    # Paste (Lodgeit)
+    do_chroot ${dir} mkdir -p /srv/lodgeit
+    retry do_chroot ${dir} git clone ${PASTE_URL} /srv/lodgeit/lodgeit
+    do_chroot ${dir} bash -c "cd /srv/lodgeit/lodgeit && git checkout ${PASTE_VERSION}"
 
-# Replace absolute URLs beginning with /static/
-do_chroot ${dir} sed -i -e 's#/static/#/static/lodgeit/#g' /srv/lodgeit/lodgeit/lodgeit/views/layout.html
-do_chroot ${dir} sed -i -e 's#/static/#/static/lodgeit/#g' /srv/lodgeit/lodgeit/lodgeit/views/help/advanced.html
-do_chroot ${dir} sed -i -e 's#/static/#/static/lodgeit/#g' /srv/lodgeit/lodgeit/lodgeit/views/help/pasting.html
-
-# Include topmenu in Paste
-cat << EOF | patch ${dir}/srv/lodgeit/lodgeit/lodgeit/views/layout.html
+    # Replace absolute URLs beginning with /static/
+    do_chroot ${dir} sed -i -e 's#/static/#/static/lodgeit/#g' /srv/lodgeit/lodgeit/lodgeit/views/layout.html
+    do_chroot ${dir} sed -i -e 's#/static/#/static/lodgeit/#g' /srv/lodgeit/lodgeit/lodgeit/views/help/advanced.html
+    do_chroot ${dir} sed -i -e 's#/static/#/static/lodgeit/#g' /srv/lodgeit/lodgeit/lodgeit/views/help/pasting.html
+    # Include topmenu in Paste
+    cat << EOF | patch ${dir}/srv/lodgeit/lodgeit/lodgeit/views/layout.html || true
 11a12
 >     <script type="text/javascript" src="/static/js/topmenu.js"></script>
 EOF
+}
 
-# install pysflib. pysflib has been checkouted before on the build node in /tmp
-[ ! -d "${dir}/var/www/pysflib" ] && mkdir ${dir}/var/www/pysflib
-cp -Rv ${PYSFLIB_CLONED_PATH}/* ${dir}/var/www/pysflib/
-retry do_chroot ${dir} bash -c "cd /var/www/pysflib && pip install -r requirements.txt"
-do_chroot ${dir} bash -c "cd /var/www/pysflib && python setup.py install"
+install_misc() {
+    # Install swift client for the backup script
+    pip install python-swiftclient
 
-# Cauth server. cauth has been checkouted before on the build node in /tmp
-[ ! -d "${dir}/var/www/cauth" ] && mkdir ${dir}/var/www/cauth
-cp -Rv ${CAUTH_CLONED_PATH}/* ${dir}/var/www/cauth/
-# override pysflib version from requirements
-do_chroot ${dir} sed -i '/pysflib/d' /var/www/cauth/requirements.txt
-retry do_chroot ${dir} bash -c "cd /var/www/cauth && SWIG_FEATURES='-cpperraswarn -includeall -I/usr/include/openssl' pip install -r requirements.txt"
-do_chroot ${dir} bash -c "cd /var/www/cauth && python setup.py install"
+    # install third party puppet modules
+    retry do_chroot $dir puppet module install puppetlabs-ntp --environment=sf
+}
 
-# Managesf. managesf has been checkouted before on the build node in /tmp
-[ ! -d "${dir}/var/www/managesf" ] && mkdir ${dir}/var/www/managesf
-cp -Rv ${MANAGESF_CLONED_PATH}/* ${dir}/var/www/managesf/
-# override pysflib version from requirements
-do_chroot ${dir} sed -i '/pysflib/d' /var/www/managesf/requirements.txt
-retry do_chroot ${dir} bash -c "cd /var/www/managesf && pip install -r requirements.txt"
-do_chroot ${dir} bash -c "cd /var/www/managesf && python setup.py install"
+DEV_PKGS="openssl-devel openldap-devel python-devel libffi-devel gcc swig zlib-devel libcurl-devel httpd-devel apr-devel apr-util-devel mariadb-devel gcc-c++ ruby-devel ImageMagick-devel cpp libxml2-devel libxslt-devel"
+PKGS="vim-enhanced openssl postfix bc monit ansible sshpass mod_passenger puppet puppet-server rubygem-rake git python-pip pyxattr pylibacl httpd mod_ssl ntp puppet monit postfix git nodejs httpd java-1.6.0-openjdk mariadb-server python-werkzeug python-babel python-jinja2 MySQL-python socat mod_wsgi m2crypto mariadb gitweb debootstrap unzip pigz ntp openssl mod_ssl"
 
-# JJB need pbr > 0.8
-retry do_chroot ${dir} pip install -U pbr==${PBR_VERSION}
 
-# Documentation
-DOCBUILDDIR=/tmp/_build
-[ ! -d "${dir}/var/www/docs" ] && mkdir ${dir}/var/www/docs
-cd ${DOCDIR} && make BUILDDIR=$DOCBUILDDIR MANAGESF_CLONED_PATH=${MANAGESF_CLONED_PATH} html ; cd -
-cp -r $DOCBUILDDIR/html/* ${dir}/var/www/docs/
-rm -rf $DOCBUILDDIR
+trap cleanup 0
 
-# Jenkins Swarm client
-retry do_chroot ${dir} pip install nose flake8
-swarm_client=$(basename $JENKINS_SWARM_CLIENT_URL)
-http_fetch $JENKINS_SWARM_CLIENT_URL ${dir}/var/lib/jenkins/${swarm_client}
-ln -sf ${swarm_client} ${dir}/var/lib/jenkins/swarm-client-latest.jar
+[ "$STEP" = 1 ] && {
+    bootstrap $dir
+    common_setup
+    install_base_packages $dir
+    install_edeploy_bin $dir
+    configure_cloudinit
 
-# Jenkins Swarm plugin
-mkdir -p ${dir}/var/lib/jenkins/plugins
-http_fetch $JENKINS_SWARM_PLUGIN_URL ${dir}/var/lib/jenkins/plugins/$(basename $JENKINS_SWARM_PLUGIN_URL)
+    install_sf_packages
+    upgrade_pip
+    install_puppetmaster
+    install_jenkins
+    install_redmine
+    install_gerrit
+    install_fonts
+    install_edeploy
+    install_serverspec
+    install_zuul
+    install_nodepool
+    install_etherpad
+    install_paste
+    install_misc
+    fix_insecure_plateform
+    install_bup ${dir}
+    install_mod_authpub_tkt
+    put_git_mark ${dir}
+    do_chroot ${dir} passwd -l root
+    clean $dir
+} || true
 
-# Jenkins theme plugin
-http_fetch $JENKINS_THEME_PLUGIN_URL ${dir}/var/lib/jenkins/plugins/$(basename $JENKINS_THEME_PLUGIN_URL)
-
-# Jenkins credentials plugin
-http_fetch $JENKINS_CREDENTIALS_BINDING_URL ${dir}/var/lib/jenkins/plugins/$(basename $JENKINS_CREDENTIALS_BINDING_URL)
-# http_fetch $JENKINS_CREDENTIALS_URL ${dir}/var/lib/jenkins/plugins/$(basename $JENKINS_CREDENTIALS_URL)
-http_fetch $JENKINS_WORKFLOW_STEP_API_URL ${dir}/var/lib/jenkins/plugins/$(basename $JENKINS_WORKFLOW_STEP_API_URL)
-http_fetch $JENKINS_PLAIN_CREDENTIALS_URL ${dir}/var/lib/jenkins/plugins/$(basename $JENKINS_PLAIN_CREDENTIALS_URL)
-
-# Jenkins ZMQ event plugin
-http_fetch $JENKINS_ZMQ_PLUGIN_URL ${dir}/var/lib/jenkins/plugins/$(basename $JENKINS_ZMQ_PLUGIN_URL)
-
-# install git-review for internal use
-retry do_chroot ${dir} pip install git-review
-
-# Cleanup
-clear_packages_cache ${dir}
-# somehow yum left some packages behind...
-rm -f ${dir}/var/cache/yum/*/packages/*.rpm
-rm -f ${dir}/var/cache/yum/*/*.sqlite
-# When roles are built by jenkins user (the case in our gate)
-# some hidden directories are stored in /var/lib/jenkins (Jenkins home)
-rm -Rf ${dir}/var/lib/jenkins/.[!.]*
-
-# Remove development packages, they are no longer needed
-remove_packages ${dir} ${DEVEL_PKGS}
-
-# Fix /var/www permissions
-do_chroot ${dir} chmod -R 0644 /var/www
-do_chroot ${dir} find /var/www -type d -exec chmod 0755 {} \;
-do_chroot ${dir} chown -R apache:apache /var/www
-
-# Disable root passwd
-do_chroot ${dir} passwd -l root
-
-disable_selinux
-
-put_git_mark ${dir}
-
-# EOF
+[ "$STEP" = 2 ] && {
+    # Install specific SF resources
+    . sf.install
+    install_sf
+    # Remove development packages, they are no longer needed
+    remove_packages ${dir} ${DEV_PKGS}
+    clean $dir
+} || true

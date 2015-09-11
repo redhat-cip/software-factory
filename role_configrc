@@ -30,11 +30,9 @@ SWIFT_DOCS_URL="${SWIFT_BASE_URL}/v1/AUTH_${SWIFT_ACCOUNT}/sfdocs"
 
 # Edeploy and Edeploy-roles project
 EDEPLOY_PROJECT=https://github.com/redhat-cip/edeploy.git
-EDEPLOY_ROLES_PROJECT=https://github.com/redhat-cip/edeploy-roles.git
 
 # Edeploy source version
 ED_COMMIT=master
-ED_ROLES_COMMIT=master
 
 # Qcow2 params
 IMG_CFG=params.virt
@@ -44,7 +42,6 @@ WORKSPACE=/var/lib/sf
 CLONES_DIR=$WORKSPACE/git
 BUILD_DIR=$WORKSPACE/roles
 EDEPLOY=$WORKSPACE/git/edeploy/
-EDEPLOY_ROLES=$WORKSPACE/git/edeploy-roles/
 
 CREATE_IMG=${EDEPLOY}/build/create-image.sh
 
@@ -56,12 +53,10 @@ CAUTH_CLONED_PATH="${PWD}/../deps/cauth"
 MANAGESF_CLONED_PATH="${PWD}/../deps/managesf"
 SUBPROJECTS_DEPS="$PYSFLIB_CLONED_PATH $CAUTH_CLONED_PATH $MANAGESF_CLONED_PATH"
 
-SF_DEPS="./role_configrc ./build_roles.sh ./edeploy/functions ./edeploy/softwarefactory.* ./edeploy/third_party_tools ./edeploy/fetch_subprojects.sh"
-SF_DEPS="${SF_DEPS} ./docs/"
-IS_DEPS="./role_configrc ./build_roles.sh ./edeploy/functions ./edeploy/install-server-vm.*"
-IS_DEPS="${IS_DEPS} ./upgrade/ ./puppet/ ./tests/ ./serverspec/ ./tools/ ./bootstraps/*.sh ./bootstraps/sfcreds.yaml"
+DOCDIR="${PWD}/docs"
+GERRITHOOKS="${PWD}/gerrit-hooks"
 
-MAKE="make DVER=${DVER} DIST=${DIST} SF_REL=${SF_REL} EDEPLOY_PATH=${EDEPLOY} TOP=${BUILD_DIR}"
+BASE_DEPS="./edeploy/softwarefactory.install ./edeploy/third_party_tools"
 
 function prepare_buildenv {
     if [ ! -d $WORKSPACE ]; then
@@ -79,12 +74,7 @@ function fetch_edeploy {
     if [ ! -d "${EDEPLOY}" ]; then
         git clone $EDEPLOY_PROJECT ${EDEPLOY}
     fi
-    if [ ! -d "${EDEPLOY_ROLES}" ]; then
-        git clone $EDEPLOY_ROLES_PROJECT ${EDEPLOY_ROLES}
-    fi
     # Make sure the correct tag is checked out
     (cd ${EDEPLOY}; git checkout master && git pull && git checkout -B $ED_COMMIT $ED_COMMIT)
-    (cd ${EDEPLOY_ROLES}; git checkout master && git pull && git checkout -B $ED_ROLES_COMMIT $ED_ROLES_COMMIT)
-    EDEPLOY_ROLES_REL=$(cd ${EDEPLOY_ROLES}; ${MAKE} version)
     echo
 }

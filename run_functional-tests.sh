@@ -77,7 +77,6 @@ if [ "$1" == "backup_restore_tests" ]; then
     run_backup_restore_tests 45 "check" || pre_fail "Backup test: check"
 fi
 if [ "$1" == "upgrade" ]; then
-    master=$(pwd)
     cloned=/tmp/software-factory # The place to clone the previous SF version to deploy
     (
         [ -d $cloned ] && sudo rm -Rf $cloned
@@ -85,9 +84,6 @@ if [ "$1" == "upgrade" ]; then
         cd $cloned
         # Be sure to checkout the right previous version
         git checkout ${PREVIOUS_SF_REL}
-        # Fix fetch_roles script and clean env (remove this after 1.0.3 releases)
-        cp -v $master/fetch_roles.sh .
-        sudo rm -Rf /var/lib/sf/roles/install/C7.0-1.0.2
         checkpoint "clone previous version"
         ./fetch_roles.sh
         checkpoint "extract previous roles"
@@ -99,6 +95,7 @@ if [ "$1" == "upgrade" ]; then
         )
         checkpoint "lxc_start previous version"
         source functestslib.sh
+        set -e
         wait_for_bootstrap_done
         checkpoint "bootstrap previous version"
         # Run basic tests

@@ -47,9 +47,8 @@ runcmd:
   - chown -R jenkins /var/lib/jenkins
   - echo "root:SSHPASS" | chpasswd
   - echo NAMESERVER > /etc/resolv.conf
-  - echo UseDNS no >> /etc/ssh/sshd_config
-  - service ssh reload || service sshd reload
   - systemctl enable swarm.service
   - systemctl start swarm.service
   - mkdir -p /var/log/edeploy
   - echo "PROFILE=none" >> /var/log/edeploy/vars
+  - /usr/sbin/sshd-keygen

@@ -1,0 +1,82 @@
+#!/bin/sh
+
+function install_sf {
+    set -e
+    test -n "${CAUTH_CLONED_PATH}"
+    test -n "${MANAGESF_CLONED_PATH}"
+    test -n "${PYSFLIB_CLONED_PATH}"
+
+    # Install puppet files for SF
+    do_chroot ${dir} mkdir -p /etc/puppet/environments/sf
+    do_chroot ${dir} mkdir -p /etc/puppet/hiera/sf
+    sudo cp -Rv ./../puppet/manifests ${dir}/etc/puppet/environments/sf
+    sudo cp -Rv ./../puppet/modules ${dir}/etc/puppet/environments/sf
+    sudo cp -Rv ./../puppet/hiera/* ${dir}/etc/puppet/hiera/sf
+    sudo cp -Rv ./../puppet/hiera.yaml ${dir}/etc/puppet/
+
+    # Install the bootstrap scripts
+    sudo mkdir -p ${dir}/root/puppet-bootstrapper
+    sudo cp -Rv ./../tests ${dir}/root/puppet-bootstrapper/
+    sudo cp -Rv ./../tools ${dir}/root/puppet-bootstrapper/
+    sudo cp -Rv ./../serverspec ${dir}/root/puppet-bootstrapper/
+    sudo cp -Rv ./../bootstraps/*.sh ${dir}/root/puppet-bootstrapper/
+    sudo cp -Rv ./../bootstraps/sfcreds.yaml ${dir}/root/puppet-bootstrapper/
+
+    # Install cauth
+    [ ! -d "${dir}/var/www/cauth" ] && sudo mkdir ${dir}/var/www/cauth
+    sudo cp -Rv ${CAUTH_CLONED_PATH}/* ${dir}/var/www/cauth/
+    # override pysflib version from requirements
+    do_chroot ${dir} sed -i '/pysflib/d' /var/www/cauth/requirements.txt
+    do_chroot ${dir} bash -c "cd /var/www/cauth && SWIG_FEATURES='-cpperraswarn -includeall -I/usr/include/openssl' pip install -r requirements.txt"
+    do_chroot ${dir} bash -c "cd /var/www/cauth && python setup.py install"
+
+    # Install pysflib
+    sudo mkdir -p ${dir}/tmp/pysflib
+    sudo cp -Rv ${PYSFLIB_CLONED_PATH}/* ${dir}/tmp/pysflib/
+    do_chroot ${dir} bash -c "cd /tmp/pysflib; pip install -r requirements.txt"
+    do_chroot ${dir} bash -c "cd /tmp/pysflib/src/pygerrit/; python setup.py install"
+    do_chroot ${dir} bash -c "cd /tmp/pysflib; python setup.py install"
+
+    # Install managesf
+    [ ! -d "${dir}/var/www/managesf" ] && sudo mkdir ${dir}/var/www/managesf
+    sudo cp -Rv ${MANAGESF_CLONED_PATH}/* ${dir}/var/www/managesf/
+    # override pysflib version from requirements
+    do_chroot ${dir} sed -i '/pysflib/d' /var/www/managesf/requirements.txt
+    do_chroot ${dir} bash -c "cd /var/www/managesf; pip install -r requirements.txt"
+    do_chroot ${dir} bash -c "cd /var/www/managesf; python setup.py install"
+
+    # install requirements for functional tests
+    do_chroot ${dir} bash -c "cd /root/puppet-bootstrapper/tests; pip install -r requirements.txt"
+
+    do_chroot ${dir} find /root /var/www -name "*.pyc" -exec rm {} \;
+
+    # Install Gerrit hooks
+    cp -Rf $GERRITHOOKS ${dir}/root/gerrit_data_source/
+
+    # Documentation
+    DOCBUILDDIR=/tmp/_build
+    [ ! -d "${dir}/var/www/docs" ] && mkdir ${dir}/var/www/docs
+    cd ${DOCDIR} && make BUILDDIR=$DOCBUILDDIR MANAGESF_CLONED_PATH=${dir}/var/www/managesf html ; cd -
+    cp -r $DOCBUILDDIR/html/* ${dir}/var/www/docs/
+    rm -rf $DOCBUILDDIR
+
+    # Fix localhost crt
+    cat > ${dir}/tmp/openssl.cnf << EOF
+[req]
+req_extensions = v3_req
+distinguished_name = req_distinguished_name
+
+[ req_distinguished_name ]
+commonName_default = localhost
+
+[ v3_req ]
+subjectAltName=@alt_names
+
+[alt_names]
+DNS.1 = localhost
+EOF
+
+    do_chroot ${dir} openssl req -x509 -nodes -days 3650 -newkey rsa:2048 -subj "/C=FR/O=SoftwareFactory/CN=localhost" -keyout /etc/pki/tls/private/localhost.key -out /etc/ssl/certs/localhost.crt -extensions v3_req -config /tmp/openssl.cnf
+
+    rm -f ${dir}/tmp/openssl.cnf
+}

@@ -16,9 +16,4 @@
   - name: Stop puppet server
     service: name=httpd state=stopped
   - include: tasks/edeploysync.yml
-- hosts: mysql
-  gather_facts: no
-  tasks:
-  - name: convert redmine db to utf8
-    script: tasks/redmine_utf8_conversion.sh
 

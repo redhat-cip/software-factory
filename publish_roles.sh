@@ -14,7 +14,7 @@ CONTAINER="edeploy-roles"
 
 cd ${INST}
 TEMP_DIR=$(mktemp -d /tmp/edeploy-check-XXXXX)
-for role_name in install-server-vm softwarefactory; do
+for role_name in softwarefactory; do
     role=${role_name}-${SF_VER}
     echo "[+] Check if ${role} have changed"
     curl -s -o ${TEMP_DIR}/${role}.md5 ${SWIFT_SF_URL}/${role}.md5 || true

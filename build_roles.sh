@@ -14,26 +14,24 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-if [ ! -z "${1}" ]; then
-    ARTIFACTS_DIR=${1}/edeploy
-    mkdir -p ${ARTIFACTS_DIR}
-    ERROR_LOG=${ARTIFACTS_DIR}/error_log
-else
-    ERROR_LOG=/dev/stderr
-fi
-
 LOCK="/var/run/sf-build_roles.lock"
 if [ -f ${LOCK} ]; then
     echo "Lock file present: ${LOCK}"
-    killall make
+    killall softwarefactory.install
 fi
 sudo touch ${LOCK}
-trap "sudo rm -f ${LOCK}" 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+trap "sudo rm -f ${LOCK}" EXIT
 
 set -e
 [ -n "$DEBUG" ] && set -x
 
 . ./role_configrc
+
+if [ ! -z "${1}" ]; then
+    ARTIFACTS_DIR=${1}/edeploy
+    mkdir -p ${ARTIFACTS_DIR}
+fi
+
 
 CURRENT=`pwd`
 SF_ROLES=$CURRENT/edeploy/
@@ -58,105 +56,70 @@ function build_role {
     ROLE_FILE="${INST}/${ROLE_NAME}-${SF_VER}"
     UPSTREAM_FILE="${UPSTREAM}/${ROLE_NAME}-${SF_VER}"
 
-    echo "${ROLE_NAME} local hash is ${ROLE_MD5}"
+    echo "(STEP1) ${ROLE_NAME} local hash is ${ROLE_MD5}"
 
-    # Make sure role tree is not mounted
-    grep -q "${SF_VER}\/${ROLE_NAME}\/proc" /proc/mounts && {
-        while true; do
-            sudo umount ${INST}/${ROLE_NAME}/proc || break
-        done
-    }
-    # Check if we can find roles built locally and that md5 is similar
-    if [ -f "${ROLE_FILE}.md5" ] && [ "$(cat ${ROLE_FILE}.md5)" = "${ROLE_MD5}" ]; then
-        echo "The locally built ${ROLE_NAME} md5 is similar to what we computed from your git branch state. Nothing to do"
-        if [ -n "$VIRT" ] && [ ! -f "${ROLE_FILE}.img.qcow2" ]; then
-            echo "The locally built qcow2 (${ROLE_FILE}.img.qcow2) is not available ! so built it."
-            build_img ${ROLE_FILE} ${INST}/${ROLE_NAME} $IMG_CFG
-        fi
-        return
-    fi
-    # Check upstream role MD5 to know if upstream role can be re-used
-    # TODO how to include checking external libs in the build check ?
-    # Provide SKIP_UPSTREAM=1 to avoid checking the upstream pre-built role
-    if [ -f "${UPSTREAM_FILE}.md5" ] && [ "$(cat ${UPSTREAM_FILE}.md5)" == "${ROLE_MD5}" ] && [ -z "$SKIP_UPSTREAM" ]; then
-        echo "Upstream ${ROLE_NAME} md5 is similar to what we computed from your git branch state, I will use the upstream role."
-        sudo rm -Rf ${INST}/${ROLE_NAME}
-        sudo mkdir ${INST}/${ROLE_NAME}
-        echo "Unarchive ..."
-        sudo tar -xzf ${UPSTREAM_FILE}.edeploy -C "${INST}/${ROLE_NAME}"
-        sudo touch ${INST}/${ROLE_NAME}.done
-        echo ${ROLE_MD5} | sudo tee ${ROLE_FILE}.md5
-        if [ -n "$VIRT" ]; then
-            echo "Copy prebuilt qcow2 image ..."
-            if [ -f ${UPSTREAM_FILE}.img.qcow2 ]; then
-                sudo cp ${UPSTREAM_FILE}.img.qcow2 ${INST}/
-                sudo cp ${UPSTREAM_FILE}.img.qcow2.md5 ${INST}/
-            else
-                # Should not be the case !
-                echo "Prebuilt qcow2 image ${UPSTREAM_FILE}.img.qcow2 is not available upstream ! so build it."
-                build_img ${ROLE_FILE} ${INST}/${ROLE_NAME} $IMG_CFG
-            fi
-        fi
-    else
-        if [ ! -f "${ROLE_FILE}.md5" ] || [ "$(cat ${ROLE_FILE}.md5)" != "${ROLE_MD5}" ]; then
-            echo "The locally built ${ROLE_NAME} md5 is different to what we computed from your git branch state."
-            echo "Building role now..."
-            sudo rm -f ${INST}/${ROLE_NAME}.done
+    if [ ! -f "${ROLE_FILE}.md5" ] || [ "$(cat ${ROLE_FILE}.md5)" != "${ROLE_MD5}" ]; then
+        echo "(STEP1) The local cache for ${ROLE_NAME} md5 ($(cat ${ROLE_FILE}.md5)) is different to what we computed from your git branch state (${ROLE_MD5})."
+        [ ! -d "${INST}/${ROLE_NAME}_cache" ] && sudo mkdir -p "${INST}/${ROLE_NAME}_cache"
+        [ -z "$SKIP_BUILD" ] && {
+            echo "(STEP1) Rebuilding cache now..."
             if [ ! -z "${ARTIFACTS_DIR}" ]; then
-                ROLE_OUTPUT=${ARTIFACTS_DIR}/${ROLE_NAME}_build.log
+                ROLE_OUTPUT=${ARTIFACTS_DIR}/${ROLE_NAME}_step_1_build.log
             else
                 ROLE_OUTPUT=/dev/stdout
             fi
-            sudo -H ${MAKE} EDEPLOY_ROLES_PATH=${EDEPLOY_ROLES} PREBUILD_EDR_TARGET=${EDEPLOY_ROLES_REL} \
-                PYSFLIB_CLONED_PATH=${PYSFLIB_CLONED_PATH} CAUTH_CLONED_PATH=${CAUTH_CLONED_PATH} \
-                MANAGESF_CLONED_PATH=${MANAGESF_CLONED_PATH} ${ROLE_NAME} &> ${ROLE_OUTPUT}
-            echo ${ROLE_MD5} | sudo tee ${ROLE_FILE}.md5
-            if [ -n "$VIRT" ]; then
-                echo "Upstream ${ROLE_NAME} is NOT similar ! I rebuild the qcow2 image."
-                build_img ${ROLE_FILE} ${INST}/${ROLE_NAME} $IMG_CFG
-            fi
-        fi
+            cd $SF_ROLES
+            STEP=1 SDIR=/var/lib/sf/git/edeploy \
+            sudo -E ./softwarefactory.install "${INST}/${ROLE_NAME}_cache" centos ${SF_VER} &> ${ROLE_OUTPUT} || { echo "(STEP1) Build failed"; sudo rm -Rf ${ROLE_FILE}.md5; exit 1; }
+            cd -
+        } || {
+            echo "(STEP1) Skip rebuilding cache (forced)."
+            return
+        }
     fi
 }
 
-function build_roles {
-    [ ! -d "$BUILD_DIR/install/${DVER}-${SF_REL}" ] && sudo mkdir -p $BUILD_DIR/install/${DVER}-${SF_REL}
+function finalize_role {
+    ROLE_NAME="$1"
+    ROLE_FILE="${INST}/${ROLE_NAME}-${SF_VER}"
 
-    # Clean the local copy before the md5 computations
-    if [ -z "$(git ls-files -o -m --exclude-standard)" ]; then
-        git clean -ffdx
+    echo "(STEP2) Finalize role building..."
+
+    # Make sure role tree is not mounted
+    grep -q "${SF_VER}\/${ROLE_NAME}_cache\/proc" /proc/mounts && {
+        while true; do
+            sudo umount ${INST}/${ROLE_NAME}_cache/proc || break
+        done
+    }
+
+    if [ ! -z "${ARTIFACTS_DIR}" ]; then
+        ROLE_OUTPUT=${ARTIFACTS_DIR}/${ROLE_NAME}_step_2_build.log
     else
-        (
-            echo "---------------------------------------------------------------------"
-            echo "Error: You have unstaged file in your local copy. Please stage them !"
-            echo "---------------------------------------------------------------------"
-        ) > ${ERROR_LOG}
-        exit 1
+        ROLE_OUTPUT=/dev/stdout
     fi
 
+    [ ! -d "${INST}/${ROLE_NAME}" ] && sudo mkdir -p "${INST}/${ROLE_NAME}"
+    sudo rsync -a --delete "${INST}/${ROLE_NAME}_cache/" "${INST}/${ROLE_NAME}/"
+
+    TAGGED_RELEASE=${TAGGED_RELEASE} PYSFLIB_PINNED_VERSION=${PYSFLIB_PINNED_VERSION} \
+    MANAGESF_PINNED_VERSION=${MANAGESF_PINNED_VERSION} CAUTH_PINNED_VERSION=${CAUTH_PINNED_VERSION} \
+    sudo -E ./edeploy/fetch_subprojects.sh
+
     cd $SF_ROLES
-    build_role "softwarefactory"   $(cd ..; find ${SF_DEPS} ${SUBPROJECTS_DEPS} -type f -not -path "*/.git/*" | sort | xargs cat | md5sum | awk '{ print $1}')
-    SFE=$?
-    build_role "install-server-vm" $(cd ..; find ${IS_DEPS} ${SUBPROJECTS_DEPS} -type f -not -path "*/.git/*" | sort | xargs cat | md5sum | awk '{ print $1}')
-    IE=$?
+    STEP=2 DOCDIR=$DOCDIR GERRITHOOKS=$GERRITHOOKS PYSFLIB_CLONED_PATH=$PYSFLIB_CLONED_PATH \
+    CAUTH_CLONED_PATH=$CAUTH_CLONED_PATH MANAGESF_CLONED_PATH=$MANAGESF_CLONED_PATH \
+    SDIR=/var/lib/sf/git/edeploy \
+    sudo -E ./softwarefactory.install ${INST}/${ROLE_NAME} centos ${SF_VER} &> ${ROLE_OUTPUT}
+    cd -
+
+    echo ${ROLE_MD5} | sudo tee ${ROLE_FILE}.md5
 }
 
 prepare_buildenv
-[ -z "$SKIP_UPSTREAM" ] && {
-    [ -z "$SF_SKIP_FETCHBASES" ] && {
-        ./fetch_roles.sh bases || echo "pass..."
-        echo
-    }
-    ./fetch_roles.sh trees || echo "pass..."
-    echo
-    [ -n "$VIRT" ] && {
-        ./fetch_roles.sh imgs || echo "pass..."
-    }
-}
-
 fetch_edeploy
-TAGGED_RELEASE=${TAGGED_RELEASE} PYSFLIB_PINNED_VERSION=${PYSFLIB_PINNED_VERSION} MANAGESF_PINNED_VERSION=${MANAGESF_PINNED_VERSION} CAUTH_PINNED_VERSION=${CAUTH_PINNED_VERSION} ./edeploy/fetch_subprojects.sh
-echo
-build_roles
-
-exit $[ $SFE + $IE ];
+build_role "softwarefactory" $(find ${BASE_DEPS} -type f -not -path "*/.git/*" | sort | xargs cat | md5sum | awk '{ print $1}')
+finalize_role "softwarefactory"
+if [ -n "$VIRT" ]; then
+    echo "Upstream ${ROLE_NAME} is NOT similar ! I rebuild the qcow2 image."
+    build_img ${ROLE_FILE} ${INST}/${ROLE_NAME} $IMG_CFG
+fi

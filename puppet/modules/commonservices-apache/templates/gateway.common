@@ -50,8 +50,8 @@
         ProxyPass /zuul/ http://<%= scope.function_hiera(["jenkins_url"]) %>/ nocanon retry=0
         ProxyPassReverse /zuul/ http://<%= scope.function_hiera(["jenkins_url"]) %>/
 
-        ProxyPass /redmine/ <%= scope.function_hiera(["redmine_url"]) %>/redmine/ nocanon retry=0
-        ProxyPassReverse /redmine/ <%= scope.function_hiera(["redmine_url"]) %>/redmine/
+        ProxyPass /redmine/ <%= scope.function_hiera(["redmine_url"]) %>/ nocanon retry=0
+        ProxyPassReverse /redmine/ <%= scope.function_hiera(["redmine_url"]) %>/
 
         ProxyPass /etherpad/ http://127.0.0.1:9001/ retry=0
         ProxyPassReverse /etherpad/ http://127.0.0.1:9001/

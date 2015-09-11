@@ -8,9 +8,6 @@
 /run/
 /home/
 
-# FIXME: this seems to prevent kernel updates
-/boot/grub/
-
 # System Configuration
 /etc/fstab
 /etc/group*
@@ -35,20 +32,9 @@
 /etc/sysconfig/network-scripts/ifcfg-eth0
 /etc/systemd/system/multi-user.target.wants
 /etc/udev/rules.d/*persistent*
+/etc/puppet/environments/production
+/etc/puppet/puppet.conf
 /root/.ssh
-/usr/share/httpd/
-/usr/share/sf-jjb/
-/usr/share/sf-zuul/
-
-
-# systemd
-/usr/lib/systemd/system/etherpad.service
-/usr/lib/systemd/system/gerrit.service
-/usr/lib/systemd/system/jenkins.service
-/usr/lib/systemd/system/lodgeit.service
-/usr/lib/systemd/system/socat.service
-/usr/lib/systemd/system/zuul-merger.service
-/usr/lib/systemd/system/zuul.service
 
 # System var stuff
 /var/cache/
@@ -63,20 +49,13 @@
 /var/tmp/
 
 # Sf state data
-/var/spool/
-/var/lib/postfix/master.lock
+/root/puppet-bootstrapper/build/
 /var/lib/zuul/
 /var/lib/managesf/users.db
 /var/lib/cauth/state_mapping.db
-/var/www/zuul/
-/var/www/static/lodgeit/
 /var/www/managesf/gerrit_admin_rsa
-/var/www/managesf/config.py
 /var/www/managesf/users.db
-/var/www/index.py
-/var/www/index.html.tmpl
 /var/www/cauth/keys/
-/var/www/cauth/config.py
 /usr/share/redmine/log
 /usr/share/redmine/public/plugin_assets
 /usr/share/config.init.done
@@ -95,11 +74,21 @@
 /srv/cauth_keys/
 
 # Sf configuration
-/etc/puppet/
-/etc/httpd/conf.d/
-/etc/httpd/conf.modules.d/
+/root/hosts.yaml
+/root/sfconfig.yaml
 /etc/httpd/htpasswd
+
+# REMOVEME?
 /etc/zuul/
 /etc/jenkins_jobs/
-+ /root/gerrit_data_source/
-- /root/*
+/srv/software-factory
+/usr/lib/systemd/system/etherpad.service
+/usr/lib/systemd/system/gerrit.service
+/usr/lib/systemd/system/jenkins.service
+/usr/lib/systemd/system/lodgeit.service
+/usr/lib/systemd/system/socat.service
+/usr/lib/systemd/system/zuul-merger.service
+/usr/lib/systemd/system/zuul.service
+/usr/share/httpd/
+/usr/share/sf-jjb/
+/usr/share/sf-zuul/

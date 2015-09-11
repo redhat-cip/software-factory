@@ -123,13 +123,13 @@ function publish_artifacts {
 
 function scan_and_configure_knownhosts {
     local ip=`get_ip puppetmaster`
-    ssh-keygen -f "$HOME/.ssh/known_hosts" -R "$ip" > /dev/null 2>&1 || echo
+    rm -f "$HOME/.ssh/known_hosts"
     RETRIES=0
     echo " [+] Starting ssh-keyscan on $ip:22"
     while true; do
-        KEY=`ssh-keyscan -p 22 $ip 2> /dev/null`
+        KEY=`ssh-keyscan -p 22 $ip`
         if [ "$KEY" != ""  ]; then
-            ssh-keyscan $ip 2> /dev/null >> "$HOME/.ssh/known_hosts"
+            ssh-keyscan $ip | tee -a "$HOME/.ssh/known_hosts"
             echo "  -> $role:22 is up!"
             return 0
         fi
@@ -156,6 +156,11 @@ function get_logs {
     # Retrieve mariadb log
     mkdir -p ${O}/mysql
     scp -r -o StrictHostKeyChecking=no root@`get_ip mysql`:/var/log/mariadb/mariadb.log ${O}/mysql
+
+    for i in gerrit  jenkins  managesf  mysql  puppetmaster  redmine  slave; do
+        mkdir -p ${O}/$i/system
+        sudo cp -f /var/lib/lxc/$i/rootfs/var/log/{messages,cloud-init*} ${O}/$i/system
+    done
 }
 
 function host_debug {
@@ -176,11 +181,8 @@ function display_head {
 }
 
 function pre_fail {
-    set +x
+    set -x
     DISABLE_SETX=1
-    exec 6>&1                                   # Link file descriptor #6 with stdout.
-    exec > ${ARTIFACTS_DIR}/failure-reason.txt  # stdout replaced with file "logfile.txt".
-
     echo "$(hostname) FAIL to run functionnal tests of this change:"
     display_head
 
@@ -192,16 +194,7 @@ function pre_fail {
     echo -e "\n\n\n====== $1 OUTPUT ======\n"
     case $1 in
         "Roles building FAILED")
-            if [ -f "${ARTIFACTS_DIR}/edeploy/softwarefactory_build.log" ]; then
-                F="${ARTIFACTS_DIR}/edeploy/softwarefactory_build.log"
-            elif [ -f "${ARTIFACTS_DIR}/edeploy/install-server-vm_build.log" ]; then
-                F="${ARTIFACTS_DIR}/edeploy/install-server-vm_build.log"
-            fi
-            if [ -f "${F}" ]; then
-                echo ${F}
-                tail -n 120 ${F}
-            fi
-            [ -f "${ARTIFACTS_DIR}/edeploy/error_log" ] && cat ${ARTIFACTS_DIR}/edeploy/error_log
+            echo "bad luck..."
             ;;
         "LXC bootstrap FAILED")
             tail -n 120 ${ARTIFACTS_DIR}/lxc-start.output
@@ -230,10 +223,6 @@ function pre_fail {
     publish_artifacts
     checkpoint "publish-artifacts"
 
-    exec 1>&6 6>&-      # Restore stdout and close file descriptor #6.
-    echo -e "\n---------------------------------------------------------------------------\n"
-    cat ${ARTIFACTS_DIR}/failure-reason.txt
-    [ "${0##*/}" = "run_functional-tests-heat.sh" ] &&  { heat_stop; exit 1; }
     exit 1
 }
 
@@ -274,7 +263,7 @@ function wait_for_bootstrap_done {
         echo "-------------------------";
         # The fail below is more targeted for the HEAT deployment (When the bootstrap script ssh fails to connect to the nodes)
         [ -n "$(echo -n $lastlines | grep 'Permission denied')" ] && return 1
-        RET=$(ssh -o StrictHostKeyChecking=no -o PreferredAuthentications=publickey root@`get_ip puppetmaster` cat puppet-bootstrapper/build/bootstrap.done 2> /dev/null)
+        RET=$(ssh -o StrictHostKeyChecking=no -o PreferredAuthentications=publickey root@`get_ip puppetmaster` cat puppet-bootstrapper/build/bootstrap.done)
         [ ! -z "${RET}" ] && return ${RET}
         let retries=retries+1
         [ "$retries" == "$max_retries" ] && return 1

@@ -21,7 +21,7 @@ function install_bup {
     fi
     install_packages ${dir} "cpp gcc python-devel pyxattr pylibacl perl-Time-HiRes"
     do_chroot ${dir} mkdir -p /opt/bup
-    do_chroot ${dir} git clone ${BUP_URL} /opt/bup/
+    do_chroot ${dir} git clone --depth 1 ${BUP_URL} /opt/bup/
     do_chroot ${dir} bash -c 'cd /opt/bup && git checkout ${BUP_VERSION}'
     do_chroot ${dir} bash -c 'cd /opt/bup && ./configure && make && make install'
 }
@@ -60,4 +60,34 @@ function http_fetch {
     retry _http_fetch "$@"
 }
 
-. ${ORIG}/functions
+
+function clean {
+    target=$1
+    rm -rf ${target}/var/tmp/* ${target}/tmp/*
+    clear_packages_cache $target
+    rm -f ${target}/var/cache/yum/*/packages/*rpm
+    remove_epel_repository $DIST
+    clear_packages_cache ${dir}
+}
+
+. ${ORIG}/common
+
+if [ -z "$dir" -o ! -d "$src" -o -z "$version" ]; then
+    echo "Usage: $0 <base directory> <target directory name> <version>" 1>&2
+    exit 1
+fi
+
+if [ -z "${SRC}" ]; then
+    SRC="${ORIG}"
+fi
+
+check_variables
+
+set -e
+
+# not nested call check
+if [ ${src} != ${dir} ]; then
+    echo -n "Copying tree ${src}/ to ${dir}/ "
+    rsync -aX --delete --numeric-ids ${src}/ ${dir}/
+    echo ": done"
+fi

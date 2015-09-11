@@ -6,6 +6,7 @@
 - hosts: puppetmaster
   gather_facts: no
   tasks:
+  - copy: src=files/puppetmaster.conf.disabled dest=/etc/httpd/conf.d/puppetmaster.conf.disabled
   - name: Reinit the puppetmaster configuration
     shell: INITIAL=no ./config_puppetmaster.sh >> /var/log/sf-bootstrap.log
     args:

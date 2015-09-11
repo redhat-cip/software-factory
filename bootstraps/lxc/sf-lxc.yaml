@@ -12,7 +12,7 @@ hosts:
   -
     address: 192.168.134.49
     name: puppetmaster
-    role: install-server-vm
+    role: softwarefactory
     cloudinit: CIPATH/puppetmaster.cloudinit
   -
     address: 192.168.134.50

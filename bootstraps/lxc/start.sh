@@ -21,7 +21,7 @@ source ../functions.sh
 . ./../../role_configrc
 
 # Check if roles are deflated
-for role in install-server-vm softwarefactory; do
+for role in softwarefactory; do
     if [ ! -d ${INST}/${role} ]; then
         echo "${INST}/${role} does not exists, uses fetch_roles.sh first"
         exit 1
@@ -162,8 +162,7 @@ function start {
     base_aufs=$(grep ${union_fs}_dir ${CONFDIR}/sf-lxc.yaml | awk 'FS=":" {print $2}')
     roles_dir=$(grep " dir: " ${CONFDIR}/sf-lxc.yaml | awk 'FS=":" {print $2}')
     if [ "${union_fs}" == "aufs" ]; then
-        sudo mount -t aufs -o "br=${base_aufs}/puppetmaster:${roles_dir}/install-server-vm" none /var/lib/lxc/puppetmaster/rootfs
-        for name in `echo $ROLES | sed s/puppetmaster//`; do
+        for name in $ROLES; do
             sudo mount -t aufs -o "br=${base_aufs}/${name}:${roles_dir}/softwarefactory" none /var/lib/lxc/${name}/rootfs
         done
     fi

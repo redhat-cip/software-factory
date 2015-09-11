@@ -1,6 +1,6 @@
 ---
 - name: Check pre-built image trees are already there
-  stat: path={{ upstream_path }}/install-server-vm-{{ version }}.edeploy
+  stat: path={{ upstream_path }}/softwarefactory-{{ version }}.edeploy
   register: check_path
 - name: Fetch new pre-built image trees
   command: /srv/software-factory/fetch_roles.sh trees

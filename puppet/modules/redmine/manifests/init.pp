@@ -44,14 +44,6 @@ class redmine ($settings = hiera_hash('redmine', ''),
       content => template('redmine/database.erb'),
     }
 
-    file {'/etc/httpd/conf.modules.d/passenger.conf':
-      ensure => file,
-      mode   => '0640',
-      owner  => $httpd_user,
-      group  => $httpd_user,
-      source =>'puppet:///modules/redmine/centos_passenger.conf',
-    }
-
     file {'/etc/httpd/conf.d/redmine.conf':
       ensure => file,
       mode   => '0640',
@@ -67,7 +59,6 @@ class redmine ($settings = hiera_hash('redmine', ''),
       hasrestart => true,
       hasstatus  => true,
       subscribe  => [File['/etc/httpd/conf.d/redmine.conf'],
-                     File['/etc/httpd/conf.modules.d/passenger.conf'],
                      Exec['redmine_backlog_install'],
                      Exec['plugin_install'],
                      Exec['set_url_root']],
