@@ -379,6 +379,18 @@ RSERV=puppetmaster
 EOF
 }
 
+function install_bup {
+    local dir=$1
+    if [ -d "${dir}/etc/apt/" ]; then
+        # This is only usage on yum based dist
+        return
+    fi
+    do_chroot ${dir} mkdir -p /opt/bup
+    do_chroot ${dir} git clone --depth 1 ${BUP_URL} /opt/bup/
+    do_chroot ${dir} bash -c 'cd /opt/bup && git checkout ${BUP_VERSION}'
+    do_chroot ${dir} bash -c 'cd /opt/bup && ./configure && make && make install'
+}
+
 install_serverspec() {
 
     HOME=/root retry do_chroot ${dir} gem install rspec-core -v ${RSPEC_CORE_VERSION}

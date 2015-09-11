@@ -9,23 +9,6 @@ function put_git_mark {
     echo $sha >> ${dir}/etc/SF_GIT_COMMIT
 }
 
-# bup
-BUP_URL="https://github.com/bup/bup.git"
-BUP_VERSION=0.26
-
-function install_bup {
-    local dir=$1
-    if [ -d "${dir}/etc/apt/" ]; then
-        # This is only usage on yum based dist
-        return
-    fi
-    install_packages ${dir} "cpp gcc python-devel pyxattr pylibacl perl-Time-HiRes"
-    do_chroot ${dir} mkdir -p /opt/bup
-    do_chroot ${dir} git clone --depth 1 ${BUP_URL} /opt/bup/
-    do_chroot ${dir} bash -c 'cd /opt/bup && git checkout ${BUP_VERSION}'
-    do_chroot ${dir} bash -c 'cd /opt/bup && ./configure && make && make install'
-}
-
 function _http_fetch {
     local remote_location=$1
     local local_location=$2

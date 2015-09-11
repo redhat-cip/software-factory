@@ -42,6 +42,12 @@ REDMINE_HTTP_PLUGIN_URL="git://github.com/kevinfoote/redmine_http_auth.git"
 URL_LIST="$URL_LIST $REDMINE_RHEL_URL"
 GIT_REPO_LIST="$GIT_REPO_LIST $REDMINE_BACKLOG_URL $REDMINE_HTTP_PLUGIN_URL"
 
+# bup
+BUP_URL="https://github.com/bup/bup.git"
+BUP_VERSION=0.26
+
+GIT_REPO_LIST="$GIT_REPO_LIST $BUP_URL"
+
 # gerrit
 GERRIT_VERSION=2.8.6.1
 GERRIT_URL="http://gerrit-releases.storage.googleapis.com/gerrit-${GERRIT_VERSION}.war"
