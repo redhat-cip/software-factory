@@ -37,12 +37,12 @@
         ProxyVia On
         ProxyRequests Off
 
-        ProxyPass /r/ <%= scope.function_hiera(["gerrit_url"]) %>:8080/r/ nocanon retry=0
-        ProxyPassReverse /r/ <%= scope.function_hiera(["gerrit_url"]) %>:8080/r/
+        ProxyPass /r/ <%= scope.function_hiera(["gerrit_url"]) %>:8000/r/ nocanon retry=0
+        ProxyPassReverse /r/ <%= scope.function_hiera(["gerrit_url"]) %>:8000/r/
 
         # Requires internal authentication in Gerrit (without SSO)
-        ProxyPass /api/ <%= scope.function_hiera(["gerrit_url"]) %>:8080/r/ nocanon
-        ProxyPassReverse /api/ <%= scope.function_hiera(["gerrit_url"]) %>:8080/
+        ProxyPass /api/ <%= scope.function_hiera(["gerrit_url"]) %>:8000/r/ nocanon
+        ProxyPassReverse /api/ <%= scope.function_hiera(["gerrit_url"]) %>:8000/
 
         ProxyPass /jenkins/ http://<%= scope.function_hiera(["jenkins_url"]) %>:8081/jenkins/ nocanon retry=0
         ProxyPassReverse /jenkins/ http://<%= scope.function_hiera(["jenkins_url"]) %>:8081/jenkins/

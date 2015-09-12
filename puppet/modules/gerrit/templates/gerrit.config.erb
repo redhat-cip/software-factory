@@ -20,7 +20,7 @@
 [sshd]
     listenAddress = <%= @settings['sshd_listen_address'] ? @settings['sshd_listen_address'] : '*:29418' %>
 [httpd]
-    listenUrl = proxy-http://0.0.0.0:8080/r/
+    listenUrl = proxy-http://0.0.0.0:8000/r/
 [commentlink "changeid"]
   match = (I[0-9a-f]{8,40})
   link = "#q,$1,n,z"

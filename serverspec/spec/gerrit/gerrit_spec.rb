@@ -181,7 +181,7 @@ describe service('gerrit') do
 end
 
 # Gerrit itself
-describe port(8080) do
+describe port(8000) do
   it { should be_listening }
 end
 
