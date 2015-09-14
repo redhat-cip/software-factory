@@ -27,23 +27,15 @@ SWIFT_SF_URL="${SWIFT_BASE_URL}/v1/AUTH_${SWIFT_ACCOUNT}/edeploy-roles"
 # Url where latest doc is stored
 SWIFT_DOCS_URL="${SWIFT_BASE_URL}/v1/AUTH_${SWIFT_ACCOUNT}/sfdocs"
 
-
-# Edeploy and Edeploy-roles project
-EDEPLOY_PROJECT=https://github.com/redhat-cip/edeploy.git
-
-# Edeploy source version
-ED_COMMIT=master
-
-# Qcow2 params
-IMG_CFG=params.virt
-
 # Paths
 WORKSPACE=/var/lib/sf
 CLONES_DIR=$WORKSPACE/git
 BUILD_DIR=$WORKSPACE/roles
 EDEPLOY=$WORKSPACE/git/edeploy/
 
-CREATE_IMG=${EDEPLOY}/build/create-image.sh
+CREATE_IMG=$PWD/edeploy/create-image.sh
+# Qcow2 params
+IMG_CFG=$PWD/edeploy/params.virt
 
 UPSTREAM=${BUILD_DIR}/upstream
 INST=${BUILD_DIR}/install/${SF_VER}
@@ -68,13 +60,4 @@ function prepare_buildenv {
     [ ! -d "$UPSTREAM" ] && sudo mkdir -p $UPSTREAM
     [ ! -d "$CLONES_DIR" ] && sudo mkdir -p $CLONES_DIR
     sudo chown -R ${USER} ${CLONES_DIR}
-}
-
-function fetch_edeploy {
-    if [ ! -d "${EDEPLOY}" ]; then
-        git clone $EDEPLOY_PROJECT ${EDEPLOY}
-    fi
-    # Make sure the correct tag is checked out
-    (cd ${EDEPLOY}; git checkout master && git pull && git checkout -B $ED_COMMIT $ED_COMMIT)
-    echo
 }

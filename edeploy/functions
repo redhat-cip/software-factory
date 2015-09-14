@@ -1,7 +1,8 @@
 # -*- shell-script -*-
 
-ORIG=${SDIR}/build
+#ORIG=${SDIR}/build
 SRC=$(cd $(dirname $0); pwd)
+ORIG=${SRC}
 
 function put_git_mark {
     local dir=$1
@@ -22,6 +23,7 @@ function _http_fetch {
 }
 
 function disable_selinux {
+    #touch ${dir}/.autorelabel
     if [ -f "${dir}/etc/selinux/config" ]; then
         sed -i "s/^SELINUX=.*/SELINUX=disabled/" "${dir}/etc/selinux/config"
     fi
@@ -43,34 +45,279 @@ function http_fetch {
     retry _http_fetch "$@"
 }
 
-
 function clean {
     target=$1
-    rm -rf ${target}/var/tmp/* ${target}/tmp/*
-    clear_packages_cache $target
-    rm -f ${target}/var/cache/yum/*/packages/*rpm
-    remove_epel_repository $DIST
-    clear_packages_cache ${dir}
 }
 
-. ${ORIG}/common
+add_main_repository() {
+    local base=http://mirror.centos.org/centos/7/os/x86_64/Packages/
+    local releaserpm=$(wget -O- -q $base/|fgrep centos-release|sed -n -e 's@.*>\(centos-release-.*\.rpm\)<.*@\1@p')
+    echo "$base/$releaserpm"
+}
 
-if [ -z "$dir" -o ! -d "$src" -o -z "$version" ]; then
-    echo "Usage: $0 <base directory> <target directory name> <version>" 1>&2
+add_epel_repository() {
+    install_packages $dir epel-release
+}
+
+remove_epel_repository() {
+    remove_packages $dir epel-release
+}
+
+update_repositories() {
+    do_chroot $dir yum check-update || true
+}
+
+disable_repository() {
+    do_chroot $dir yum-config-manager --disable $repository
+}
+
+export supported_centos_dists='centos'
+export all_supported_dists="$supported_centos_dists"
+
+fake_shadow_utils() {
+    for cmd in useradd groupadd; do
+        if [ ! -f ${dir}/usr/sbin/${cmd}.real ]; then
+            mv ${dir}/usr/sbin/${cmd} ${target}/usr/sbin/${cmd}.real
+        fi
+        do_chroot ${dir} ln -sf /usr/sbin/mngids.py /usr/sbin/${cmd}
+    done
+}
+
+install_packages_disabled() {
+    local chroot=$1
+    shift
+    local packages=$@
+
+    do_chroot ${chroot} mv /sbin/chkconfig /sbin/chkconfig.save
+    cat >> ${chroot}/sbin/chkconfig << EOF
+#!/bin/bash
+for i in \$*; do
+    arg2=\$arg1
+    arg1=\$i
+done
+
+if echo \$arg1 | egrep -q '^(on|off|reset|resetpriorities)$'; then
+    service=\$arg2
+else
+    service=\$arg1
+fi
+
+chkconfig.save \$* || exit 1
+chkconfig.save \$service off || exit 0
+EOF
+
+    chmod +x ${chroot}/sbin/chkconfig
+
+    if do_chroot ${chroot} which systemctl > /dev/null; then
+        do_chroot ${chroot} mv /usr/bin/systemctl /usr/bin/systemctl.save
+        cat >> ${chroot}/usr/bin/systemctl << EOF
+#!/bin/bash
+
+new_arg_line=\$(echo \$* | sed 's/\(enable\|disable\) /disable /g')
+exec /usr/bin/systemctl.save \$new_arg_line
+EOF
+        chmod +x ${chroot}/usr/bin/systemctl
+    fi
+
+    install_packages $chroot $packages
+
+    do_chroot ${chroot} mv /sbin/chkconfig.save /sbin/chkconfig
+
+    # systemd support starts from 7
+    if do_chroot ${chroot} which systemctl > /dev/null; then
+        do_chroot ${chroot} mv /usr/bin/systemctl.save /usr/bin/systemctl
+    fi
+}
+
+install_packages() {
+    local chroot=$1
+    shift
+    local packages=$@
+    do_chroot $chroot yum $INSTALL_OPTIONS install -y $packages
+    # YUM does not fail when a package in the list is not available.
+    # That means we have to detect that all packages of our list are
+    # really installed.
+    PKG_MISSING=
+    for pkg in $packages; do
+        # Some packages are passed with a full URL (ie. hpacucli)
+        # We need to retrieve the package name to be able to pass
+        # it through rpm -q
+        package_name=$(basename $pkg)
+        package_stripname="${package_name%.rpm}"
+        do_chroot $dir rpm -q $package_stripname &>/dev/null || PKG_MISSING="$PKG_MISSING $package_stripname"
+    done
+    if [ -n "${PKG_MISSING}" ];then
+        fatal_error "The following packages are missing: ${PKG_MISSING}"
+    fi
+}
+
+
+remove_packages() {
+    local chroot=$1
+    shift
+    local packages=$@
+    do_chroot ${chroot} yum remove $packages --assumeyes
+}
+
+update_system() {
+    do_chroot ${dir} yum update -y
+    if [ ! -L ${dir}/usr/sbin/useradd ]; then
+        fake_shadow_utils
+    fi
+}
+
+
+clear_packages_cache() {
+    do_chroot ${dir} yum clean all
+    do_chroot ${dir} rm -f /var/cache/yum/*/packages/*rpm
+}
+
+rebuild_db() {
+    do_chroot $dir rpm --rebuilddb
+}
+
+fatal_error() {
+    echo "$*" 1>&2
+    clean_mount_points
     exit 1
-fi
+}
 
-if [ -z "${SRC}" ]; then
-    SRC="${ORIG}"
-fi
+check_binary() {
+    type -p $1 || fatal_error "$1 is missing"
+}
 
-check_variables
+do_chroot() {
+    local chdir="$1"
+    shift
+    PATH=/bin/:/sbin:$PATH LANG=C LC_ALL=C LC_CTYPE=C LANGUAGE=C chroot "$chdir" "$@"
+}
 
-set -e
+clean_chroot() {
+    for log in $(find $dir/var/log -type f || :); do
+        > $log
+    done
+    rm -rf $dir/tmp/* $dir/var/tmp/* $dir/tmp/.??* $dir/var/tmp/* $dir/var/tmp/.??* || :
+}
 
-# not nested call check
-if [ ${src} != ${dir} ]; then
-    echo -n "Copying tree ${src}/ to ${dir}/ "
-    rsync -aX --delete --numeric-ids ${src}/ ${dir}/
-    echo ": done"
-fi
+clean_mount_points() {
+    if [ ! -d "${dir}" ]; then
+        return
+    fi
+
+    # Since /dev is a copy, we shall clean it as it will be reconstructed at boot time
+    rm -rf ${dir}/dev
+    mkdir -p ${dir}/dev
+
+    a=10
+    local lazy=""
+
+    while (grep -qi " ${dir}" /proc/mounts); do
+        # After 8 tries, let's try the lazy umount
+        # As we are on virtual fs, this is not an issue
+        if [ $a -eq 8 ]; then
+            lazy="-l"
+        fi
+
+        # Let's umount all mounted dir by taking the longest path first
+        grep -i " ${dir}" /proc/mounts | awk '{print $2}' | sort -u -r | xargs umount $lazy && a=10 && lazy=""
+
+        a=$(($a - 1))
+        if [ $a -eq 0 ]; then
+            echo "clean_mount_points() FAILED!"
+            return 1
+        fi
+    done
+
+    return 0
+}
+
+prevent_ctrl_c() {
+    case "$1" in
+        "on")
+            trap '' 2
+        ;;
+        "off")
+            trap 2
+        ;;
+    esac
+}
+
+# Called to clean packages, temporary files and to create the compressed archive
+# usually by a "trap cleanup 0" in a script
+cleanup() {
+    ret=$?
+
+    # This part of the code shall never by breaked by a user
+    prevent_ctrl_c on
+
+    clear_trap
+    set +e
+    last_command=$BASH_COMMAND
+    if [ "$ret" != "0" ]; then
+        echo "################"
+        echo "TRAP TRIGGERED !"
+        echo "################"
+        echo "$last_command returned $ret"
+    fi
+
+    if [ "$ret" = "0" ]; then
+
+        # The step 2 is the last one - so perform here last actions
+        if [ "$STEP" = 2 ]; then
+            # Let's disable apt-get and yum for normal usage
+            if [ -z "$KEEP_PKGMNGR" -a -x ${dir}/usr/sbin/edeploy ]; then
+                do_chroot ${dir} /usr/sbin/edeploy deactivate-pkgmngr
+            fi
+            # Verify the IDS are correct
+            [ -f "${dir}/usr/sbin/check-ug.py" ] && do_chroot ${dir} /usr/sbin/check-ug.py
+            # store role information at the end for nested calls
+            echo -e "\nRole ${ROLE}\nVersion ${version}\n" > ${dir}/etc/motd
+
+            if [ ! -d ${dir}/var/lib/edeploy ]; then
+                mkdir -p ${dir}/var/lib/edeploy
+            fi
+            echo -e "VERS=${version}\nROLE=${ROLE}" > ${dir}/var/lib/edeploy/conf
+
+            echo ${ROLE} > ${dir}/etc/hostname
+            mkdir -p "$dir/var/lib/edeploy/${version}"
+
+            echo > "${dir}"/etc/resolv.conf
+
+            # Remove development packages, they are no longer needed
+            remove_packages ${dir} ${DEV_PKGS}
+        fi
+
+        # clear package cache before removing the pkg manager
+        clear_packages_cache $dir
+
+        clean_chroot
+        clean_mount_points
+
+    else
+        clean_mount_points
+
+        echo "###########"
+        echo "END OF TRAP"
+        echo "###########"
+    fi
+
+    prevent_ctrl_c off
+    exit $ret
+}
+
+clear_trap() {
+    trap - 0
+}
+
+mount_fs() {
+    for virtual_dir in /proc; do
+        if [ ! -d ${dir}/${virtual_dir} ]; then
+            mkdir -p ${dir}/${virtual_dir}
+        fi
+        mount -obind ${virtual_dir} ${dir}/${virtual_dir}
+    done
+
+    # Let's create a copy of the current /dev
+    mkdir -p ${dir}/dev/pts
+    rsync -aX --delete-before --exclude=shm /dev/ ${dir}/dev/
+}

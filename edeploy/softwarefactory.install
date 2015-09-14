@@ -16,26 +16,33 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-set -x
+set -ex
 
+# Target dir where the centos images will be built
 dir="$1"
-src=$dir
-dist="$2"
-
 # Version is SF_VER
-version="$3"
+version="$2"
 
-#note(fbo): useless should be remove
-TOP=/var/lib/debootstrap
-
+dist="centos"
 CODENAME_MAJOR=7
-DIST=$dist
 
-ROLE=base
+export LC_ALL=C
+
+ROLE=softwarefactory
 
 PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin
 
 ORIG=$(cd $(dirname $0); pwd)
+
+if [ -z "$ORIG" ]; then
+    echo "ORIG env variable must be set to the top dir of the sources" 1>&2
+    exit 1
+fi
+
+if [ -z "$dir" ]; then
+    echo "dir env variable must be set to the top dir of your destination directory" 1>&2
+    exit 1
+fi
 
 . ${ORIG}/third_party_tools
 . ${ORIG}/functions
@@ -45,31 +52,26 @@ BUNDLE_RETRIES=3
 install_edeploy_bin() {
     target=$1
     mkdir -p "$target/var/lib/edeploy/${version}"
-    cp -p ${SDIR}/build/edeploy ${target}/usr/sbin/
-    cp ${SDIR}/build/base.exclude "$target/var/lib/edeploy/${version}/exclude"
+    cp -p ${ORIG}/build/edeploy ${target}/usr/sbin/
 }
 
-init_redhat_chroot() {
-    local target="$1"
-    local release_rpm_url="$2"
-    local dist="$3"
-    local rpm_repository="$REPOSITORY"
+bootstrap() {
+    local target=$1
+    rm -rf $target
+
+    mount_fs
+
+    local release_rpm_url=$(add_main_repository)
 
     if [ ! -f "${target}/etc/redhat-release" ]; then
         rpm --initdb --root="$target"
         rpm -ivh --root "$target" $release_rpm_url
     fi
 
-    if [ ! -d ${target}/etc/yum.repos.d ]; then
-        mkdir -p ${target}/etc/yum.repos.d
-        curl ${REPOSITORY}/media.repo > ${target}/etc/yum.repos.d/rhel-source.repo
-    fi
-
     sed -i 's/$releasever/7/g' ${target}/etc/yum.repos.d/*
 
     cp -f /etc/resolv.conf "$target/etc/"
 
-    rebuild_db_with_local $target
     rpm --root="$target" --import $(ls $target/etc/pki/rpm-gpg/RPM-GPG-KEY-* | fgrep -v Debug)
     # We cannot use install_packages since the basesystem isn't yet setup
     yum --disableplugin=* --installroot $target install -y basesystem yum
@@ -79,54 +81,30 @@ init_redhat_chroot() {
         rmdir "$target"/root/.rpmdb
     fi
 
-    # In some weird cases, the rpmdb is empty. Let's try to populate it again
-    nb_packages=$(do_chroot $target sh -c "rpm -qa | wc -l")
-    if [ "$nb_packages" = "0" ]; then
-           install_packages "$target" basesystem yum
-    fi
-
-    install_packages $target "shadow-utils"
     if [ -f ${target}/usr/sbin/useradd ]; then
         fake_shadow_utils
     fi
 
-
     rebuild_db $target
-}
 
-bootstrap() {
-    local target=$1
-    rm -rf $target
-
-    mount_fs
-
-    # need to be called after mount to get info from the iso
-    echo $supported_centos_dists
-    echo $CODENAME_MAJOR
-    local repository=$(add_main_repository $dist)
-
-    check_binary yum
-    check_binary rpm
-
-    init_redhat_chroot "$target" "$repository" "$dist"
     cp ${target}/etc/skel/.bashrc ${target}/root
     cp ${target}/etc/skel/.bash_profile ${target}/root
-    cp -p ${SDIR}/build/check-ug.py ${target}/usr/sbin/
-    # Control the ids created by useradd and groupadd by wrapping
-    # the commands with mngids.py
-    cp -p ${SDIR}/build/mngids.py ${target}/usr/sbin/
-    cp ${SDIR}/build/C7.0-ids.tables ${dir}/etc/ids.tables
+    cp -p ${ORIG}/check-ug.py ${target}/usr/sbin/
+    cp -p ${ORIG}/mngids.py ${target}/usr/sbin/
+    cp -p ${ORIG}/edeploy ${target}/usr/sbin/
+    chmod +x ${target}/usr/sbin/check-ug.py
+    chmod +x ${target}/usr/sbin/mngids.py
+    chmod +x ${target}/usr/sbin/edeploy
+    cp ${ORIG}/C7.0-ids.tables ${dir}/etc/ids.tables
 
-    clean_mount_points
+    mkdir -p ${target}/usr/share/edeploy
+
+    echo  'LANG=en_US.UTF-8' > ${target}/etc/locale.conf
 }
 
 configure_cloudinit() {
     mkdir -p ${dir}/etc/cloud/cloud.cfg.d
     rm -f ${dir}/etc/cloud/cloud.cfg
-
-    add_epel_repository $DIST
-    install_packages $dir "cloud-init cloud-utils cloud-utils-growpart"
-    remove_epel_repository $DIST
 
     cat > ${dir}/etc/cloud/cloud.cfg <<EOF
 user: root
@@ -193,30 +171,19 @@ EOF
     sed -i "/set-passwords/r  $others_cloud_config_modules" ${dir}/etc/cloud/cloud.cfg
 }
 
-install_base_packages() {
-    target=$1
-    local repository=$(add_main_repository $dist)
-    # Original package list from original base.install (maybe need to strip it)
-    local packages="coreutils dhclient e2fsprogs man-db grub2 grubby initscripts iproute kernel net-tools passwd redhat-lsb-core crontabs openssh-clients bind-utils kexec-tools selinux-policy-targeted setroubleshoot-server acpid bash curl kbd lvm2 openssh-server pciutils rsync rsyslog sudo wget ntpdate logrotate ethtool hdparm iptables"
-
-    install_packages $target "$packages"
-
-    echo  'LANG=en_US.UTF-8' > $target/etc/locale.conf
-    # don't rename net ifaces
-    ln -s /dev/null $dir/etc/udev/rules.d/80-net-name-slot.rules
-    touch ${target}/.autorelabel
-    sed -i 's/SELINUX=.*/SELINUX=permissive/' ${target}/etc/selinux/config
-
-    # tune sshd conf
-    echo UseDNS no >> ${dir}/etc/ssh/sshd_config
-}
-
 install_sf_packages() {
     install_packages ${dir} ${PUPPET_REPO_URL}
-    add_epel_repository $DIST
+    add_epel_repository
     http_fetch https://oss-binaries.phusionpassenger.com/yum/definitions/el-passenger.repo ${dir}/etc/yum.repos.d/passenger.repo
 
-    install_packages ${dir} $PKGS $DEV_PKGS
+    install_packages ${dir} $BASE_PKGS $PKGS $DEV_PKGS
+    remove_epel_repository
+
+    # don't rename net ifaces
+    ln -s /dev/null ${target}/etc/udev/rules.d/80-net-name-slot.rules
+
+    # tune sshd conf
+    echo UseDNS no >> ${target}/etc/ssh/sshd_config
 }
 
 upgrade_pip() {
@@ -508,21 +475,31 @@ install_misc() {
     retry do_chroot $dir puppet module install puppetlabs-ntp --environment=sf
 }
 
+
+BASE_PKGS="coreutils dhclient e2fsprogs man-db grub2 grubby initscripts iproute kernel net-tools passwd redhat-lsb-core crontabs openssh-clients bind-utils kexec-tools selinux-policy-targeted setroubleshoot-server acpid bash curl kbd lvm2 openssh-server pciutils rsync rsyslog sudo wget ntpdate logrotate ethtool hdparm iptables"
+
 DEV_PKGS="openssl-devel openldap-devel python-devel libffi-devel gcc swig zlib-devel libcurl-devel httpd-devel apr-devel apr-util-devel mariadb-devel gcc-c++ ruby-devel ImageMagick-devel cpp libxml2-devel libxslt-devel"
-PKGS="vim-enhanced openssl postfix bc monit ansible sshpass mod_passenger puppet puppet-server rubygem-rake git python-pip pyxattr pylibacl httpd mod_ssl ntp puppet monit postfix git nodejs httpd java-1.6.0-openjdk mariadb-server python-werkzeug python-babel python-jinja2 MySQL-python socat mod_wsgi m2crypto mariadb gitweb debootstrap unzip pigz ntp openssl mod_ssl"
+PKGS="vim-enhanced openssl postfix bc monit ansible sshpass mod_passenger puppet puppet-server rubygem-rake git python-pip pyxattr pylibacl httpd mod_ssl ntp puppet monit postfix git nodejs httpd java-1.6.0-openjdk mariadb-server python-werkzeug python-babel python-jinja2 MySQL-python socat mod_wsgi m2crypto mariadb gitweb debootstrap unzip pigz ntp openssl mod_ssl cloud-init cloud-utils cloud-utils-growpart"
 
 
 trap cleanup 0
 
+if [ -z "${dir}" ]; then
+    fatal_error "dir variable is not set ! Exiting"
+fi
+
+check_binary yum
+check_binary rpm
+
 [ "$STEP" = 1 ] && {
     bootstrap $dir
-    common_setup
-    install_base_packages $dir
+    install_sf_packages
+    disable_selinux
     install_edeploy_bin $dir
     configure_cloudinit
 
-    install_sf_packages
     upgrade_pip
+    fix_insecure_plateform
     install_puppetmaster
     install_jenkins
     install_redmine
@@ -535,19 +512,14 @@ trap cleanup 0
     install_etherpad
     install_paste
     install_misc
-    fix_insecure_plateform
     install_bup ${dir}
     install_mod_authpub_tkt
     put_git_mark ${dir}
     do_chroot ${dir} passwd -l root
-    clean $dir
 } || true
 
 [ "$STEP" = 2 ] && {
-    # Install specific SF resources
+    mount_fs
     . sf.install
     install_sf
-    # Remove development packages, they are no longer needed
-    remove_packages ${dir} ${DEV_PKGS}
-    clean $dir
 } || true

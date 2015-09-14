@@ -37,8 +37,10 @@ CURRENT=`pwd`
 SF_ROLES=$CURRENT/edeploy/
 
 function build_img {
-    ROLE_FILE="${1}.img"
-    ROLE_TREE_PATH="$2"
+    set -x
+    ROLE_NAME="$1"
+    ROLE_FILE="${INST}/${ROLE_NAME}-${SF_VER}.img"
+    ROLE_TREE_PATH="${INST}/${ROLE_NAME}"
     CFG="$3"
     [ -f "$ROLE_FILE" ] && sudo rm -Rf $ROLE_FILE
     [ -f "${ROLE_FILE}.qcow2" ] && sudo rm -Rf "${ROLE_FILE}.qcow2"
@@ -70,7 +72,7 @@ function build_role {
             fi
             cd $SF_ROLES
             STEP=1 SDIR=/var/lib/sf/git/edeploy \
-            sudo -E ./softwarefactory.install "${INST}/${ROLE_NAME}_cache" centos ${SF_VER} &> ${ROLE_OUTPUT} || { echo "(STEP1) Build failed"; sudo rm -Rf ${ROLE_FILE}.md5; exit 1; }
+            sudo -E ./softwarefactory.install "${INST}/${ROLE_NAME}_cache" ${SF_VER} &> ${ROLE_OUTPUT} || { echo "(STEP1) Build failed"; sudo rm -Rf ${ROLE_FILE}.md5; exit 1; }
             cd -
         } || {
             echo "(STEP1) Skip rebuilding cache (forced)."
@@ -109,17 +111,15 @@ function finalize_role {
     STEP=2 DOCDIR=$DOCDIR GERRITHOOKS=$GERRITHOOKS PYSFLIB_CLONED_PATH=$PYSFLIB_CLONED_PATH \
     CAUTH_CLONED_PATH=$CAUTH_CLONED_PATH MANAGESF_CLONED_PATH=$MANAGESF_CLONED_PATH \
     SDIR=/var/lib/sf/git/edeploy \
-    sudo -E ./softwarefactory.install ${INST}/${ROLE_NAME} centos ${SF_VER} &> ${ROLE_OUTPUT}
+    sudo -E ./softwarefactory.install ${INST}/${ROLE_NAME} ${SF_VER} &> ${ROLE_OUTPUT}
     cd -
 
     echo ${ROLE_MD5} | sudo tee ${ROLE_FILE}.md5
 }
 
 prepare_buildenv
-fetch_edeploy
 build_role "softwarefactory" $(find ${BASE_DEPS} -type f -not -path "*/.git/*" | sort | xargs cat | md5sum | awk '{ print $1}')
 finalize_role "softwarefactory"
 if [ -n "$VIRT" ]; then
-    echo "Upstream ${ROLE_NAME} is NOT similar ! I rebuild the qcow2 image."
-    build_img ${ROLE_FILE} ${INST}/${ROLE_NAME} $IMG_CFG
+    build_img "softwarefactory" $IMG_CFG
 fi
