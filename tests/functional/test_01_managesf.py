@@ -409,7 +409,7 @@ class TestManageSF(Base):
         self.assertEqual(set(files), set(us_files))
 
     def test_delete_project_as_admin(self):
-        """ Checking if admin can delete projects that are not owned by admin
+        """ Check if admin can delete projects that are not owned by admin
         """
         pname = 'p_%s' % create_random_str()
         self.create_project(pname, config.USER_2)
@@ -426,3 +426,25 @@ class TestManageSF(Base):
         """ Check the list of members as a list of tuples of emails and names
         """
         self.assertTrue(self.msu.list_active_members(config.USER_2))
+
+    def test_init_user_tests(self):
+        """ Check if a test init feature behave as expected
+        """
+        project = 'p_%s' % create_random_str()
+        self.create_project(project, config.USER_4)
+        self.msu.create_init_tests(project, config.USER_4)
+        ggu = GerritGitUtils(config.ADMIN_USER,
+                             config.ADMIN_PRIV_KEY_PATH,
+                             config.USERS[config.ADMIN_USER]['email'])
+        open_reviews = ggu.list_open_reviews('config', config.GATEWAY_HOST)
+        match = [True for review in open_reviews if review['commitMessage'].
+                 startswith("%s proposes initial test "
+                            "definition for project %s" %
+                            (config.USER_4, project))]
+        self.assertEqual(len(match), 1)
+        open_reviews = ggu.list_open_reviews(project, config.GATEWAY_HOST)
+        match = [True for review in open_reviews if review['commitMessage'].
+                 startswith("%s proposes initial test "
+                            "scripts for project %s" %
+                            (config.USER_4, project))]
+        self.assertEqual(len(match), 1)
