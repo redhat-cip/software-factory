@@ -139,6 +139,20 @@ class redmine ($settings = hiera_hash('redmine', ''),
       notify      => Exec['chown_redmine'],
     }
 
+    file {'/var/run/passenger':
+      ensure => directory,
+      mode   => '0644',
+      owner  => $httpd_user,
+      group  => $httpd_user,
+    }
+
+    file {'/var/run/passenger-instreg':
+      ensure => directory,
+      mode   => '0644',
+      owner  => $httpd_user,
+      group  => $httpd_user,
+    }
+
     file {'/usr/share/redmine/public/themes/classic/javascripts/':
       ensure => directory,
       mode   => '0644',

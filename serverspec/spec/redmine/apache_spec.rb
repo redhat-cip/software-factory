@@ -20,7 +20,7 @@ if os[:family] == 'RedHat7'
   end
   describe file('/etc/httpd/conf.d/redmine.conf') do
     it { should be_file }
-    it { should contain "DocumentRoot /usr/share/redmine/public" }
+    it { should contain "Alias /redmine/ /usr/share/redmine/public/" }
   end
   describe service('httpd') do
     it { should be_enabled }
@@ -35,7 +35,7 @@ else
   end
   describe file('/etc/apache2/sites-enabled/redmine') do
     it { should be_file }
-    it { should contain "DocumentRoot /usr/share/redmine/public" }
+    it { should contain "Alias /redmine/ /usr/share/redmine/public/" }
   end
   describe service('apache2') do
     it { should be_enabled }
