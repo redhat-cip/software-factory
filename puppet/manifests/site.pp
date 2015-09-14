@@ -51,6 +51,7 @@ node /.*managesf.*/ {
   include cauth_client
   include commonservices-apache
   include commonservices-socat
+  include socat_gerrit
   include etherpad
   include lodgeit
   include replication
@@ -92,6 +93,7 @@ node /.*allinone.*/ {
   include cauth_client
   include commonservices-apache
   include commonservices-socat
+  include socat_gerrit
   include etherpad
   include lodgeit
   include replication

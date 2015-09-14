@@ -19,15 +19,6 @@ class commonservices-socat {
     ensure => present,
   }
 
-  file {'/lib/systemd/system/socat_gerrit.service':
-    ensure => file,
-    mode   => '0640',
-    owner  => 'root',
-    group  => 'root',
-    source  => 'puppet:///modules/commonservices-socat/socat_gerrit.service',
-    notify  => [Exec["reload_units"], Service["socat_gerrit"]],
-  }
-
   file {'/lib/systemd/system/socat_swarm_p1.service':
     ensure => file,
     mode   => '0640',
@@ -50,18 +41,10 @@ class commonservices-socat {
     command => 'systemctl daemon-reload',
     path    => '/usr/sbin/:/usr/bin/:/bin/',
     refreshonly => true,
-    require => [File['/lib/systemd/system/socat_gerrit.service'],
-                File['/lib/systemd/system/socat_swarm_p1.service'],
+    require => [File['/lib/systemd/system/socat_swarm_p1.service'],
                 File['/lib/systemd/system/socat_swarm_p2.service']],
   }
 
-  service {'socat_gerrit':
-    ensure     => running,
-    enable     => true,
-    hasrestart => true,
-    hasstatus  => true,
-    require    => Exec['reload_units'],
-  }
   service {'socat_swarm_p1':
     ensure     => running,
     enable     => true,
