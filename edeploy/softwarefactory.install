@@ -380,12 +380,6 @@ EOF
 }
 
 install_serverspec() {
-    # serverspec and stuff
-    RSPEC_CORE_VERSION=2.99.0
-    RSPEC_EXPECTATIONS_VERSION=${RSPEC_CORE_VERSION}
-    RSPEC_ITS_VERSION=1.0.0
-    SPECINFRA_VERSION=1.27.0
-    SERVERSPEC_VERSION=1.16.0
 
     HOME=/root retry do_chroot ${dir} gem install rspec-core -v ${RSPEC_CORE_VERSION}
     HOME=/root retry do_chroot ${dir} gem install rspec-expectations -v ${RSPEC_EXPECTATIONS_VERSION}
