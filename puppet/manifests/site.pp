@@ -22,58 +22,37 @@ node /.*puppetmaster.*/ {
   include auto_backup
 }
 
-node /.*jenkins.*/ {
-  include sfbase
-  include postfix
-  include monit
-  include ssh_keys_jenkins
-  include jenkins
-  include jjb
-  include zuul
-  include nodepool
-  include cauth_client
-  include bup
-}
+node /.*managesf.*/ {
+  class {'sfbase': stage => first }
+  class {'mysql': stage => first }
+  class {'bup': stage => first }
 
-node /.*redmine.*/ {
-  include sfbase
   include postfix
   include monit
-  include redmine
-  include cauth_client
-}
 
-node /.*gerrit.*/ {
-  include sfbase
-  include postfix
-  include monit
+  # Gerrit
   include ssh_keys_gerrit
   include gerrit
   include bup
-}
 
-node /.*mysql.*/ {
-  include sfbase
-  include postfix
-  include monit
-  include mysql
-  include bup
-}
+  # Redmine
+  include redmine
 
-node /.*managesf.*/ {
-  include sfbase
-  include postfix
-  include monit
+  # Managesf
   include apache
   include managesf
   include cauth
   include cauth_client
   include commonservices-apache
-  include commonservices-socat
-  include socat_gerrit
   include etherpad
   include lodgeit
   include replication
+
+  # Jenkins
+  class {'ssh_keys_jenkins': stage => last }
+  class {'jenkins': stage => last }
+  # jjb also deploys zuul and nodepool
+  class {'jjb': stage => last }
 }
 
 node /.*allinone.*/ {
@@ -113,8 +92,6 @@ node /.*allinone.*/ {
   include cauth
   include cauth_client
   include commonservices-apache
-  include commonservices-socat
-  include socat_gerrit
   include etherpad
   include lodgeit
   include replication

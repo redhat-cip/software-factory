@@ -12,18 +12,18 @@ write_files:
         ip: puppermaster-ip-template
         host_aliases: [puppetmaster]
       mysql.SF_SUFFIX:
-        ip: mysql_host
+        ip: managesf_host
         host_aliases: [mysql]
       jenkins.SF_SUFFIX:
-        ip: jenkins_host
+        ip: managesf_host
         host_aliases: [jenkins]
       redmine.SF_SUFFIX:
-        ip: redmine_host
+        ip: managesf_host
         host_aliases: [redmine]
       api-redmine.SF_SUFFIX:
-        ip: redmine_host
+        ip: managesf_host
       gerrit.SF_SUFFIX:
-        ip: gerrit_host
+        ip: managesf_host
         host_aliases: [gerrit]
       managesf.SF_SUFFIX:
         ip: managesf_host
@@ -38,10 +38,10 @@ runcmd:
   - MY_PRIV_IP=`curl -s http://169.254.169.254/latest/meta-data/local-ipv4 | cut -d, -f1`
   - sed -i "s/puppermaster-ip-template/$MY_PRIV_IP/" /etc/puppet/hiera/sf/hosts.yaml
   - echo "127.0.0.1 puppetmaster.SF_SUFFIX puppetmaster" > /etc/hosts
-  - echo "mysql_host mysql.SF_SUFFIX mysql" >> /etc/hosts
-  - echo "jenkins_host jenkins.SF_SUFFIX jenkins" >> /etc/hosts
-  - echo "redmine_host redmine.SF_SUFFIX redmine" >> /etc/hosts
-  - echo "gerrit_host gerrit.SF_SUFFIX gerrit" >> /etc/hosts
+  - echo "managesf_host mysql.SF_SUFFIX mysql" >> /etc/hosts
+  - echo "managesf_host jenkins.SF_SUFFIX jenkins" >> /etc/hosts
+  - echo "managesf_host redmine.SF_SUFFIX redmine" >> /etc/hosts
+  - echo "managesf_host gerrit.SF_SUFFIX gerrit" >> /etc/hosts
   - echo "managesf_host managesf.SF_SUFFIX auth.SF_SUFFIX managesf SF_SUFFIX" >> /etc/hosts
   - echo NAMESERVER > /etc/resolv.conf
   - cd /root/puppet-bootstrapper

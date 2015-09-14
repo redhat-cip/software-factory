@@ -170,11 +170,11 @@ function start {
         done
     fi
     # Start LXC containers
-    for name in mysql puppetmaster; do
+    for name in puppetmaster; do
         sudo lxc-start -d -L /var/log/lxc$name.log --name $name;
     done
     sleep 20
-    for name in gerrit jenkins managesf redmine slave; do
+    for name in managesf slave; do
         sudo lxc-start -d -L /var/log/lxc$name.log --name $name
     done
     # Start iptables rules

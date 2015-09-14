@@ -77,61 +77,8 @@ if [ "$1" == "backup_restore_tests" ]; then
     run_backup_restore_tests 45 "check" || pre_fail "Backup test: check"
 fi
 if [ "$1" == "upgrade" ]; then
-    cloned=/tmp/software-factory # The place to clone the previous SF version to deploy
-    (
-        [ -d $cloned ] && sudo rm -Rf $cloned
-        git clone http://softwarefactory.enovance.com/r/software-factory $cloned
-        cd $cloned
-        # Be sure to checkout the right previous version
-        git checkout ${PREVIOUS_SF_REL}
-        checkpoint "clone previous version"
-        # Fix upstream url
-        sed -e 's#^SWIFT_BASE_URL=.*#SWIFT_BASE_URL="http://os.enocloud.com:8080"#' \
-            -e 's#^SWIFT_ACCOUNT=.*#SWIFT_ACCOUNT="70aab03f69b549cead3cb5f463174a51"#' \
-            -i ./role_configrc
-        ./fetch_roles.sh
-        checkpoint "extract previous roles"
-        (
-            cd bootstraps/lxc
-            # Deploy
-            ./start.sh destroy
-            ./start.sh init
-        )
-        checkpoint "lxc_start previous version"
-        source functestslib.sh
-        set -e
-        wait_for_bootstrap_done
-        checkpoint "bootstrap previous version"
-        # Run basic tests
-        run_serverspec
-        checkpoint "serverspec previous version"
-    ) || pre_fail "Stable Bootstrap FAILED"
-    # Run the provisioner to put some data on the deployed instance
-    ./tools/provisioner_checker/run.sh provisioner
-    checkpoint "provisioner"
-    # Put needed data to perform the upgrade on the deployed instance
-    # In a real upgrade process this won't be done because next version
-    # (The one we want to upgrade is already published)
-    (
-        cd tests/roles_provision/
-        sudo ./prepare.sh
-        checkpoint "new roles are ready to be copied"
-        export ANSIBLE_HOST_KEY_CHECKING=False
-        ansible-playbook --private-key=${HOME}/.ssh/id_rsa -i inventory playbook.yaml
-    ) || pre_fail "Ansible provision playbook FAILED"
-    checkpoint "sf is ready to be updated"
-    # Start the upgrade
-    ssh -o StrictHostKeyChecking=no root@`get_ip puppetmaster` "cd /srv/software-factory/ && ./upgrade.sh ${SF_REL} true" || pre_fail "Upgrade FAILED"
-    checkpoint "upgrade"
-    # Run basic tests
-    run_serverspec || pre_fail "Serverspec failed"
-    checkpoint "serverspec new version"
-    # Run the checker to validate provisionned data has not been lost
-    ./tools/provisioner_checker/run.sh checker || pre_fail "Provisionned data check failed"
-    checkpoint "check provisioner"
-    # run functional tests from the puppetmaster
-    ssh -o StrictHostKeyChecking=no root@`get_ip puppetmaster` "cd puppet-bootstrapper && nosetests -sv" || pre_fail "Functional tests FAILED after upgrade"
-    checkpoint "functional tests after upgrade"
+    echo "[+] Upgrade tests from 1.0.4 to 2.0.0 are not supported..."
+    exit 1
 fi
 
 DISABLE_SETX=1

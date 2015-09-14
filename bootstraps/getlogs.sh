@@ -37,7 +37,7 @@ echo "Checking for edeploy logs ..."
 [ -f /var/lib/edeploy/rsync_*.out ] && edeploy_logs=true || edeploy_logs=false
 
 # Retrieve Syslog
-for role in gerrit redmine jenkins mysql managesf puppetmaster; do
+for role in managesf puppetmaster; do
     mkdir -p $dlogs/${role}
     ip=$(getip_from_yaml ${role})
     scp root@${ip}:/var/log/syslog $dlogs/${role} &> /dev/null

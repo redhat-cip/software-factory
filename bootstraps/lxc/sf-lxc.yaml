@@ -15,26 +15,6 @@ hosts:
     role: softwarefactory
     cloudinit: CIPATH/puppetmaster.cloudinit
   -
-    address: 192.168.134.50
-    name: mysql
-    role: softwarefactory
-    cloudinit: CIPATH/mysql.cloudinit
-  -
-    address: 192.168.134.51
-    name: redmine
-    role: softwarefactory
-    cloudinit: CIPATH/redmine.cloudinit
-  -
-    address: 192.168.134.52
-    name: gerrit
-    role: softwarefactory
-    cloudinit: CIPATH/gerrit.cloudinit
-  -
-    address: 192.168.134.53
-    name: jenkins
-    role: softwarefactory
-    cloudinit: CIPATH/jenkins.cloudinit
-  -
     address: 192.168.134.54
     name: managesf
     role: softwarefactory

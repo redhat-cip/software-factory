@@ -102,11 +102,7 @@ function get_logs {
     # Retrieve Xunit output and store it in Jenkins workspace
     scp -r -o StrictHostKeyChecking=no root@`get_ip puppetmaster`:~/puppet-bootstrapper/nosetests.xml . || exit 0
 
-    # Retrieve mariadb log
-    mkdir -p ${O}/mysql
-    scp -r -o StrictHostKeyChecking=no root@`get_ip mysql`:/var/log/mariadb/mariadb.log ${O}/mysql
-
-    for i in gerrit  jenkins  managesf  mysql  puppetmaster  redmine; do
+    for i in managesf puppetmaster; do
         mkdir -p ${O}/$i/system
         sudo cp -f /var/lib/lxc/$i/rootfs/var/log/{messages,cloud-init*} ${O}/$i/system
     done
