@@ -16,7 +16,6 @@
 class zuul ($settings = hiera_hash('jenkins', ''), $gh = hiera('gerrit_host'), $hosts = hiera('hosts')){
 
   require hosts
-  include apache
 
   $gfqdn = "$gh"
   $gip = $hosts[$gfqdn]['ip']
@@ -41,7 +40,7 @@ class zuul ($settings = hiera_hash('jenkins', ''), $gh = hiera('gerrit_host'), $
     owner  => $httpd_user,
     group  => $httpd_user,
     content => template('zuul/zuul.site.erb'),
-    notify => Service['webserver'],
+    notify => Exec['webserver_restart'],
   }
 
   file {'zuul_init':

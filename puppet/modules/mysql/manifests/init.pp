@@ -29,13 +29,6 @@ class mysql ($settings = hiera_hash('mysql', '')) {
         require => Service['mysql'],
     }
 
-    file { '/etc/monit/conf.d/mysql':
-        ensure  => present,
-        source  => 'puppet:///modules/mysql/monit',
-        require => Package['monit'],
-        notify  => Service['monit'],
-    }
-
     service {'mysql':
         name       => $mysql,
         ensure     => running,

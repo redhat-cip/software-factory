@@ -16,7 +16,6 @@
 class jenkins ($settings = hiera_hash('jenkins', '')) {
 
   require hosts
-  include apache
 
   $jenkins_password = $settings['jenkins_password']
 
@@ -36,7 +35,12 @@ class jenkins ($settings = hiera_hash('jenkins', '')) {
     content => template('jenkins/jenkins.site.erb'),
     require => [File['/etc/httpd/conf.d/ports.conf'],
         ],
-    notify => Service['webserver'],
+    notify => Exec['webserver_restart'],
+  }
+
+  exec { 'webserver_restart':
+    command => '/usr/sbin/apachectl restart',
+    require => File['/etc/httpd/conf.d/jenkins.conf'],
   }
 
   file {'/etc/init.d/jenkins':
@@ -187,13 +191,6 @@ class jenkins ($settings = hiera_hash('jenkins', '')) {
     group   => 'root',
     source  => 'puppet:///modules/jenkins/sudoers_jenkins',
     replace => true
-  }
-
-  file { '/etc/monit/conf.d/jenkins':
-    ensure  => present,
-    content => template('jenkins/monit.erb'),
-    require => [Package['monit'], File['/etc/monit/conf.d']],
-    notify  => Service['monit'],
   }
 
   file { 'wait4jenkins':
