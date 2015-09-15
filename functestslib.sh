@@ -9,6 +9,7 @@ export SKIP_CLEAN_ROLES="y"
 MANAGESF_URL=https://${SF_HOST}
 ADMIN_USER=admin
 ADMIN_PASSWORD=userpass
+JENKINS_URL="http://${SF_HOST:-tests.dom}/jenkinslogs/${JENKINS_IP}:8081/"
 
 ARTIFACTS_DIR="/var/lib/sf/artifacts"
 # This environment variable is set ZUUL in the jenkins job workspace

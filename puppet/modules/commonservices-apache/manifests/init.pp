@@ -20,6 +20,7 @@ class commonservices-apache ($cauth = hiera_hash('cauth', '')) {
   $auth = hiera('authentication')
   $url = hiera('url')
   $authenticated_only = $auth['authenticated_only']
+  $allowed_proxy_prefixes = $auth['allowed_proxy_prefixes']
   $gateway_crt = hiera('gateway_crt')
   $gateway_key = hiera('gateway_key')
   $network = hiera('network')

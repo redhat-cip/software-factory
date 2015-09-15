@@ -78,7 +78,22 @@
             allow from all
         </Proxy>
 
+	    <% @allowed_proxy_prefixes.each do |prefix| -%>
+        ProxyPassMatch ^/jenkinslogs/<%= prefix %>(.*)$ http://<%= prefix %>$1
+	    <% end -%>
+
     </IfModule>
+
+    <LocationMatch "/jenkinslogs/">
+        Order Allow,Deny
+        Allow from all
+
+        AuthType mod_auth_pubtkt
+        TKTAuthFakeBasicAuth on
+        TKTAuthLoginURL /auth/login
+        TKTAuthDebug 1
+        require valid-user
+    </LocationMatch>
 
     DocumentRoot /var/www/
 

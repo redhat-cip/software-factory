@@ -221,3 +221,27 @@ class TestGateway(Base):
                 auth_pubtkt=config.USERS[config.USER_1]['auth_cookie']))
         self.assertEqual(resp.status_code, 200)
         self.assertTrue('<body ng-controller="mainController">' in resp.text)
+
+    def test_jenkinslogs_accessible(self):
+        """ Test if Jenkins logs are accessible on gateway host
+        """
+        url = "http://%s/jenkinslogs/127.0.0.1/dashboard/" % (
+            config.GATEWAY_HOST)
+        resp = requests.get(url, allow_redirects=False)
+        self.assertEqual(resp.status_code, 307)
+
+        self._auth_required(url)
+
+        resp = requests.get(
+            url,
+            cookies=dict(
+                auth_pubtkt=config.USERS[config.USER_1]['auth_cookie']))
+        self.assertEqual(resp.status_code, 200)
+
+        url = "http://%s/jenkinslogs/127.0.0.2/dashboard/" % (
+            config.GATEWAY_HOST)
+        resp = requests.get(
+            url,
+            cookies=dict(
+                auth_pubtkt=config.USERS[config.USER_1]['auth_cookie']))
+        self.assertEqual(resp.status_code, 404)
