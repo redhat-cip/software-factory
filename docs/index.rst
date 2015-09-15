@@ -18,6 +18,7 @@ Welcome to software-factory's documentation!
    sfmanager
    analytics
    testing
+   jenkinsslaves
    contribute
    rebuild_image
    tools
