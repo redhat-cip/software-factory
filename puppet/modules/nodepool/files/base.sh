@@ -1,15 +1,20 @@
 #!/bin/bash
 
+set -x
+
+sudo yum update -y
+
 # The jenkins user. Must be able to use sudo without password
 sudo useradd -m jenkins
 sudo gpasswd -a jenkins wheel
 echo "jenkins ALL=(ALL) NOPASSWD:ALL" | sudo tee --append /etc/sudoers.d/90-cloud-init-users
+echo "Defaults   !requiretty" | sudo tee --append /etc/sudoers.d/90-cloud-init-users
 
 # SSH key for the Jenkins user
 sudo mkdir /home/jenkins/.ssh
 sudo cp /opt/nodepool-scripts/authorized_keys /home/jenkins/.ssh/authorized_keys
-sudo chown jenkins /home/jenkins/.ssh
-sudo chown jenkins /home/jenkins/.ssh/authorized_keys
+sudo ssh-keygen -N '' -f /home/jenkins/.ssh/id_rsa
+sudo chown -R jenkins /home/jenkins/.ssh
 sudo chmod 700 /home/jenkins/.ssh
 sudo chmod 600 /home/jenkins/.ssh/authorized_keys
 sudo restorecon -R -v /home/jenkins/.ssh/authorized_keys
@@ -26,8 +31,12 @@ sudo yum install -y java
 
 # zuul-cloner is needed as well
 sudo yum install -y epel-release
-sudo yum install -y python-pip git python-devel gcc
-sudo pip install zuul gitdb
+sudo yum install -y python-pip git python-devel gcc patch
+sudo pip install zuul gitdb requests glob2 python-magic argparse
+
+sudo curl -o /usr/local/bin/zuul_swift_upload.py \
+    https://raw.githubusercontent.com/openstack-infra/project-config/master/jenkins/scripts/zuul_swift_upload.py
+sudo chmod +x /usr/local/bin/zuul_swift_upload.py
 
 # The Swarm client should be started by Jenkins via a request from Nodepool.
 # If public_ip has been set in sfconfig.yaml then the slave can be aware
@@ -36,5 +45,8 @@ echo "$NODEPOOL_SF_PUBLICIP $NODEPOOL_SF_TOPDOMAIN" | sudo tee --append /etc/hos
 
 # sync FS, otherwise there are 0-byte sized files from the yum/pip installations
 sudo sync
+
+sudo cat /home/jenkins/.ssh/authorized_keys
+sudo cat /home/centos/.ssh/authorized_keys
 
 echo "Base setup done."

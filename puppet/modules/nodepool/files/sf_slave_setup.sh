@@ -2,19 +2,31 @@
 
 . base.sh
 
-# Prepare slave for SF
+# This should be removed after we fix functestlib.sh and how
+# we manage to store artifacts
+sudo useradd www-data
+
+sudo yum install -y epel-release
+
+sudo yum install -y git python-augeas bridge-utils curl lxc wget swig python-devel python-pip graphviz python-yaml openssl-devel libffi-devel pigz mysql-devel openldap-devel qemu-img libvirt-daemon-lxc git-review
+sudo pip install flake8 bash8 ansible
+sudo pip install -U tox==1.6.1 Sphinx oslosphinx virtualenv restructuredtext_lint python-swiftclient
+
+sudo dd if=/dev/zero of=/srv/swap count=4000 bs=1M
+sudo chmod 600 /srv/swap
+sudo mkswap /srv/swap
+grep swap /etc/fstab || echo "/srv/swap none swap sw 0 0" | sudo tee -a /etc/fstab
+
 sudo sed -i 's/^.*SELINUX=.*$/SELINUX=disabled/' /etc/selinux/config
-git clone http://softwarefactory.enovance.com/r/sfstack
-cd sfstack && sudo ./sfinstall.sh
-sudo mkdir /srv/deps
-sudo chown -R jenkins /srv/
-cd /srv/software-factory && ./fetch_roles.sh bases
-cd /srv/software-factory && ./fetch_roles.sh trees
-sudo chmod 777 /var/lib/sf/
-ssh-keygen -N "" -f /home/jenkins/.ssh/id_rsa
-sudo chown -R jenkins /home/jenkins/.ssh
+
+sudo mkdir -p /var/lib/sf
+sudo mkdir -p /var/lib/sf/artifacts/logs
+sudo chown -R jenkins:jenkins /var/lib/sf/
+
+# Temporary DNS fix
+echo "216.58.213.16 gerrit-releases.storage.googleapis.com" | sudo tee -a /etc/hosts
 
 # sync FS, otherwise there are 0-byte sized files from the yum/pip installations
 sudo sync
 
-echo "setup.sh finished. Creating snapshot now, this will take a few minutes"
+echo "Setup finished. Creating snapshot now, this will take a few minutes"
