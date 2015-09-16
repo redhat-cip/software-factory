@@ -35,5 +35,4 @@ if __name__ == '__main__':
             print err
             sys.exit(1)
 
-        print out
         file(os.path.join(workdir, sys.argv[1]), 'w').write(out)
