@@ -14,6 +14,13 @@ sudo chmod 700 /home/jenkins/.ssh
 sudo chmod 600 /home/jenkins/.ssh/authorized_keys
 sudo restorecon -R -v /home/jenkins/.ssh/authorized_keys
 
+# Nodepool will try to connect on the fresh node using the user
+# defined as username in the provider.image section conf. Usually
+# it is the clouduser. So fetch it and authorize the pub key
+# for that user.
+cloud_user=$(egrep " name:" /etc/cloud/cloud.cfg | awk '{print $2}')
+cat /opt/nodepool-scripts/authorized_keys | sudo tee -a /home/$cloud_user/.ssh/authorized_keys
+
 # Required by Jenkins
 sudo yum install -y java
 
