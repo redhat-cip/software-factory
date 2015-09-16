@@ -104,7 +104,18 @@ class nodepool ($settings = hiera_hash('nodepool', '')) {
     require => [File['/etc/nodepool/scripts']]
   }
 
+  # This file allow an inital start of nodepool
+  # Puppet won't replace if alread present
   file { '/etc/nodepool/nodepool.yaml':
+    owner => 'jenkins',
+    replace => 'no',
+    ensure => 'present',
+    content => template('nodepool/nodepool.yaml.erb'),
+    require => [File['/etc/nodepool']]
+  }
+
+  # This file will be used by the conf merger
+  file { '/etc/nodepool/_nodepool.yaml':
     owner => 'jenkins',
     content => template('nodepool/nodepool.yaml.erb'),
     require => [File['/etc/nodepool']]

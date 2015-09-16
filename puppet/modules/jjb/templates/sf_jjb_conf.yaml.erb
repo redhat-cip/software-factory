@@ -74,7 +74,7 @@
           [ -d /tmp/nodepool ] && rm -Rf /tmp/nodepool
           mkdir /tmp/nodepool
           mv nodepool/*.yaml /tmp/nodepool/
-          cp /etc/nodepool/nodepool.yaml /tmp/nodepool/
+          cp /etc/nodepool/_nodepool.yaml /tmp/nodepool/nodepool.yaml
           /usr/local/bin/sf-nodepool-conf-merger.py merged
           nodepool -c /tmp/nodepool/merged config-validate
     triggers:
@@ -104,7 +104,7 @@
           [ -d /tmp/nodepool ] && rm -Rf /tmp/nodepool
           mkdir /tmp/nodepool
           mv nodepool/*.yaml /tmp/nodepool/
-          cp /etc/nodepool/nodepool.yaml /tmp/nodepool/
+          cp /etc/nodepool/_nodepool.yaml /tmp/nodepool/nodepool.yaml
           /usr/local/bin/sf-nodepool-conf-merger.py merged
           nodepool -c /tmp/nodepool/merged config-validate
           sudo cp /tmp/nodepool/merged /etc/nodepool/nodepool.yaml
