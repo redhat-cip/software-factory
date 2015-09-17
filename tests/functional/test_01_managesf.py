@@ -69,10 +69,8 @@ class TestManageSF(Base):
         for dirs in self.dirs_to_delete:
             shutil.rmtree(dirs)
 
-    def create_project(self, name, user,
-                       options=None):
-        self.msu.createProject(name, user,
-                               options)
+    def create_project(self, name, user, options=None):
+        self.msu.createProject(name, user, options)
         self.projects.append(name)
 
     def test_create_public_project_as_admin(self):

@@ -51,7 +51,7 @@ class TestProjectReplication(Base):
         # Configuration to access mirror repo present in mysql
         self.msql_repo_path = "ssh://%s@%s/%s" \
                               % (config.GERRIT_USER, config.GATEWAY_HOST,
-                                 '/home/gerrit/site_path/git/')
+                                 'home/gerrit/site_path/git/')
         # prepare environment for git clone on mirror repo
         self.mt = Tool()
         self.mt_tempdir = tempfile.mkdtemp()
@@ -84,10 +84,8 @@ class TestProjectReplication(Base):
         clone = os.path.join(self.mt_tempdir, target)
         return clone
 
-    def create_project(self, name, user,
-                       options=None):
-        self.msu.createProject(name, user,
-                               options)
+    def create_project(self, name, user, options=None):
+        self.msu.createProject(name, user, options)
 
     def ssh_run_cmd(self, sshkey_priv_path, user, host, subcmd):
         host = '%s@%s' % (user, host)

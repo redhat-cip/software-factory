@@ -137,9 +137,9 @@ class ManageSfUtils(Tool):
         passwd = config.USERS[user]['password']
         base_cmd = self.base_cmd % (user, passwd)
         if cookie:
-            base_cmd = base_cmd + "--cookie %s " % (cookie)
+            base_cmd = base_cmd + " --cookie %s " % (cookie)
 
-        cmd = base_cmd + "create --name %s" % name
+        cmd = base_cmd + " project create --name %s " % name
         if options:
             for k, v in options.items():
                 cmd = cmd + " --" + k + " " + v
@@ -148,14 +148,15 @@ class ManageSfUtils(Tool):
 
     def deleteProject(self, name, user):
         passwd = config.USERS[user]['password']
-        cmd = self.base_cmd % (user, passwd) + "delete --name %s" % name
+        cmd = self.base_cmd + " project delete --name %s"
+        cmd = cmd % (user, passwd, name)
         self.exe(cmd)
 
     def replicationModifyConfig(self, user, cmd, section,
                                 setting=None, value=None):
         passwd = config.USERS[user]['password']
         cmd = self.base_cmd % (user, passwd) \
-            + " replication_config %s --section %s " % (cmd, section)
+            + " replication configure %s --section %s " % (cmd, section)
         if setting:
             cmd = cmd + " " + setting
         if value:
@@ -164,7 +165,7 @@ class ManageSfUtils(Tool):
 
     def replicationTrigger(self, user, project=None, url=None):
         passwd = config.USERS[user]['password']
-        cmd = self.base_cmd % (user, passwd) + " trigger_replication "
+        cmd = self.base_cmd % (user, passwd) + " replication trigger "
         if project:
             cmd = cmd + " --project " + project
         if url:
@@ -175,7 +176,7 @@ class ManageSfUtils(Tool):
         passwd = config.USERS[auth_user]['password']
         umail = config.USERS[new_user]['email']
         cmd = self.base_cmd % (auth_user, passwd)
-        cmd = cmd + " add_user --name %s " % project
+        cmd = cmd + " project add_user --name %s " % project
         cmd = cmd + " --user %s --groups %s" % (umail, groups)
         self.exe(cmd)
 
@@ -183,7 +184,7 @@ class ManageSfUtils(Tool):
                                     project, user, group=None):
         passwd = config.USERS[auth_user]['password']
         umail = config.USERS[user]['email']
-        cmd = self.base_cmd % (auth_user, passwd) + " delete_user "
+        cmd = self.base_cmd % (auth_user, passwd) + " project delete_user "
         cmd = cmd + " --name %s --user %s " % (project, umail)
         if group:
             cmd = cmd + " --group %s " % group
@@ -191,7 +192,7 @@ class ManageSfUtils(Tool):
 
     def list_active_members(self, user):
         passwd = config.USERS[user]['password']
-        cmd = self.base_cmd % (user, passwd) + " list_active_users "
+        cmd = self.base_cmd % (user, passwd) + " project list_active_users "
         cmd = shlex.split(cmd)
         try:
             output = subprocess.check_output(cmd)
