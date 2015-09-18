@@ -23,6 +23,22 @@
           echo "Clone $ZUUL_PROJECT"
           zuul-cloner http://<%= scope.function_hiera(["gateway_host"]) %>/r $ZUUL_PROJECT
 
+- builder:
+    name: zuul-swift-upload
+    builders:
+      - shell: |
+          # Publish artifacts on a Swift server
+          /usr/local/bin/zuul_swift_upload.py --name artifacts --delete-after 0 artifacts
+
+- publisher:
+    name: zuul-swift-upload
+    publishers:
+      - postbuildscript:
+          builders:
+            - zuul-swift-upload
+          script-only-if-succeeded: False
+          script-only-if-failed: False
+
 ## Useful job template
 - job-template:
     name: '{name}-unit-tests'

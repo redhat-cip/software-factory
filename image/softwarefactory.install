@@ -162,6 +162,9 @@ function install_jenkins() {
     http_fetch $JENKINS_PLAIN_CREDENTIALS_URL ${dir}/var/lib/jenkins/plugins/$(basename $JENKINS_PLAIN_CREDENTIALS_URL)
     http_fetch $JENKINS_REVERSE_AUTH_PROXY_PLUGIN_URL ${dir}/var/lib/jenkins/plugins/$(basename $JENKINS_REVERSE_AUTH_PROXY_PLUGIN_URL)
 
+    # Jenkins plugin to run scripts as publishers
+    http_fetch $JENKINS_POST_BUILDSCRIPT_PLUGIN_URL ${dir}/var/lib/jenkins/plugins/$(basename $JENKINS_POST_BUILDSCRIPT_PLUGIN_URL)
+
     # Jenkins ZMQ event plugin
     http_fetch $JENKINS_ZMQ_PLUGIN_URL ${dir}/var/lib/jenkins/plugins/$(basename $JENKINS_ZMQ_PLUGIN_URL)
 

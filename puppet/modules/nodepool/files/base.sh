@@ -32,7 +32,7 @@ sudo yum install -y java
 # zuul-cloner is needed as well
 sudo yum install -y epel-release
 sudo yum install -y python-pip git python-devel gcc patch
-sudo pip install zuul gitdb requests glob2 python-magic argparse
+sudo pip install zuul gitdb requests glob2 python-magic argparse python-swiftclient python-keystoneclient
 
 sudo curl -o /usr/local/bin/zuul_swift_upload.py \
     https://raw.githubusercontent.com/openstack-infra/project-config/master/jenkins/scripts/zuul_swift_upload.py
