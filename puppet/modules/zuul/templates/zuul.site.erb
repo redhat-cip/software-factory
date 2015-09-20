@@ -1,4 +1,7 @@
-<VirtualHost *:80>
+Listen 8084
+NameVirtualHost *:8084
+
+<VirtualHost *:8084>
   DocumentRoot <%= @pub_html_path %>
 
   LogLevel warn

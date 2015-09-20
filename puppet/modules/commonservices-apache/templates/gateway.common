@@ -47,8 +47,8 @@
         ProxyPass /jenkins/ http://<%= scope.function_hiera(["jenkins_url"]) %>:8081/jenkins/ nocanon retry=0
         ProxyPassReverse /jenkins/ http://<%= scope.function_hiera(["jenkins_url"]) %>:8081/jenkins/
 
-        ProxyPass /zuul/ http://<%= scope.function_hiera(["jenkins_url"]) %>/ nocanon retry=0
-        ProxyPassReverse /zuul/ http://<%= scope.function_hiera(["jenkins_url"]) %>/
+        ProxyPass /zuul/ http://<%= scope.function_hiera(["jenkins_url"]) %>:8084/ nocanon retry=0
+        ProxyPassReverse /zuul/ http://<%= scope.function_hiera(["jenkins_url"]) %>:8084/
 
         ProxyPass /redmine/ <%= scope.function_hiera(["redmine_url"]) %>/ nocanon retry=0
         ProxyPassReverse /redmine/ <%= scope.function_hiera(["redmine_url"]) %>/

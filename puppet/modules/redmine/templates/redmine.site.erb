@@ -1,3 +1,8 @@
+Listen 8083
+NameVirtualHost *:8083
+
+<VirtualHost *:8083>
+
 LogLevel warn
 RailsBaseURI /redmine
 Alias /redmine/plugin_assets/ /usr/share/redmine/plugins/redmine_backlogs/assets/
@@ -42,3 +47,4 @@ RewriteRule logout <%= @cauth["signout_url"] %>?services=%1 [R,L,CO=_redmine_def
   RewriteEngine On
   RewriteRule /.*$ /auth/login?back=/redmine/ [R,L]
 </LocationMatch>
+</VirtualHost>
