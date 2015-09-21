@@ -4,22 +4,13 @@ DISABLE_SETX=0
 
 export SF_SUFFIX=${SF_SUFFIX:-tests.dom}
 export SKIP_CLEAN_ROLES="y"
-export EDEPLOY_ROLES=/var/lib/sf/roles/
 
 MANAGESF_URL=http://managesf.${SF_SUFFIX}
-hostname | grep -q sfstack && JENKINS_IP=$(hostname | sed -e 's/sfstack-[^-]*-//' -e 's/-/./g') || JENKINS_IP=localhost
-JENKINS_URL="http://${JENKINS_IP}:8081/"
 
-GERRIT_PROJECT=${GERRIT_PROJECT-sf}
-CURRENT_BRANCH=`git branch | sed -n -e 's/^\* \(.*\)/\1/p'`
-# If run outside Jenkins use the current branch name
-GERRIT_CHANGE_NUMBER=${GERRIT_CHANGE_NUMBER-$CURRENT_BRANCH}
-GERRIT_PATCHSET_NUMBER=${GERRIT_PATCHSET_NUMBER-0}
-[ "$USER" = "jenkins" ] && GROUP="www-data" || GROUP="$USER"
-
-ARTIFACTS_RELPATH="logs/${LOG_PATH}"
-ARTIFACTS_ROOT="/var/lib/sf/artifacts"
-ARTIFACTS_DIR="${ARTIFACTS_ROOT}/${ARTIFACTS_RELPATH}"
+ARTIFACTS_DIR="/var/lib/sf/artifacts"
+# This environment variable is set ZUUL in the jenkins job workspace
+# The artifacts directory is then at the root of workspace
+[ -n "$SWIFT_artifacts_URL" ] && ARTIFACTS_DIR="$(pwd)/../artifacts"
 
 CONFDIR=/var/lib/lxc-conf
 
@@ -67,58 +58,16 @@ function wait_for_statement {
 function prepare_artifacts {
     [ -d ${ARTIFACTS_DIR} ] && sudo rm -Rf ${ARTIFACTS_DIR}
     sudo mkdir -p ${ARTIFACTS_DIR}
-    sudo chown -R $USER:$GROUP ${ARTIFACTS_ROOT}
-    sudo chmod -R 755 ${ARTIFACTS_ROOT}
+    USER=$(whoami)
+    sudo chown -R $USER:$USER ${ARTIFACTS_DIR}
+    sudo chmod -R 755 ${ARTIFACTS_DIR}
     set +x
-    if [ ${GROUP} = 'www-data' ]; then
-        echo "Logs will be available here: ${JENKINS_URL}/${ARTIFACTS_RELPATH}"
+    if [ -n ${SWIFT_artifacts_URL} ]; then
+        echo "Logs will be available here: $SWIFT_artifacts_URL"
     else
         echo "Logs will be available here: ${ARTIFACTS_DIR}"
     fi
     set -x
-}
-
-function swift_upload_artifacts {
-    # Environment variables HOST, ACCOUNT, CONTAINER and SECRET must be set
-    if [ -z "${HOST}" ] || [ -z "${ACCOUNT}" ] || [ -z "${CONTAINER}" ] || [ -z "${SECRET}" ]; then
-        return
-    fi
-
-    PREFIX=${BUILD_ID:-""}
-    if [ "${PREFIX}" == "" ]; then
-        PREFIX=`date +"%Y%m%d-%H%M%S"`
-    fi
-
-    INDEXFILE=`mktemp`
-
-    echo "<html><body>" > ${INDEXFILE}
-    for OBJECT in `find $1 -type f`; do
-        SWIFT_PATH="/v1/${ACCOUNT}/${CONTAINER}/${PREFIX}/${OBJECT}"
-        TEMPURL=`swift tempurl PUT 3600 ${SWIFT_PATH} ${SECRET}`
-        curl -s -H "X-Delete-After: 864000" -H "Content-Type: text/plain" -X PUT --upload-file "$OBJECT" "http://${HOST}${TEMPURL}"
-        echo -e "<a href=\"http://${HOST}${SWIFT_PATH}\">${OBJECT}</a><br />\n" >> ${INDEXFILE}
-    done
-    echo "</body></html>" >> ${INDEXFILE}
-
-    SWIFT_PATH="/v1/${ACCOUNT}/${CONTAINER}/${PREFIX}/index.html"
-    TEMPURL=`swift tempurl PUT 3600 ${SWIFT_PATH} ${SECRET}`
-    curl -i -H "X-Delete-After: 864000" -X PUT --upload-file ${INDEXFILE} "http://${HOST}${TEMPURL}"
-
-    echo "Artifacts uploaded to Swift: http://${HOST}${SWIFT_PATH}"
-
-    rm ${INDEXFILE}
-}
-
-function publish_artifacts {
-    set +x
-    sudo find ${ARTIFACTS_DIR} -type d -exec chmod 555 {} \;
-    sudo find ${ARTIFACTS_DIR} -type f -exec chmod 444 {} \;
-    if [ ${GROUP} = 'www-data' ]; then
-        echo "Logs are available here: ${JENKINS_URL}/${ARTIFACTS_RELPATH}"
-    else
-        echo "Logs will be available here: ${ARTIFACTS_DIR}"
-    fi
-    swift_upload_artifacts ${ARTIFACTS_DIR}
 }
 
 function scan_and_configure_knownhosts {
@@ -173,7 +122,6 @@ function host_debug {
 }
 
 function display_head {
-    [ ! -z "${GERRIT_PROJECT}" ] && echo "${GERRIT_PROJECT} - change ${GERRIT_CHANGE_NUMBER} patchset ${GERRIT_PATCHSET_NUMBER}  (${CURRENT_BRANCH})"
     echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
     git log -n 1
     echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"

@@ -29,7 +29,9 @@ set -e
 
 if [ ! -z "${1}" ]; then
     ARTIFACTS_DIR=${1}/edeploy
-    mkdir -p ${ARTIFACTS_DIR}
+    sudo mkdir -p ${ARTIFACTS_DIR}
+    USER=$(whoami)
+    sudo chown -R $USER:$USER ${ARTIFACTS_DIR}
 fi
 
 
