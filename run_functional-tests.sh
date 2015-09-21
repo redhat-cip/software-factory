@@ -85,6 +85,10 @@ if [ "$1" == "upgrade" ]; then
         # Be sure to checkout the right previous version
         git checkout ${PREVIOUS_SF_REL}
         checkpoint "clone previous version"
+        # Fix upstream url
+        sed -e 's#^SWIFT_BASE_URL=.*#SWIFT_BASE_URL="http://os.enocloud.com:8080"#' \
+            -e 's#^SWIFT_ACCOUNT=.*#SWIFT_ACCOUNT="70aab03f69b549cead3cb5f463174a51"#' \
+            -i ./role_configrc
         ./fetch_roles.sh
         checkpoint "extract previous roles"
         (

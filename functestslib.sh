@@ -151,7 +151,7 @@ function get_logs {
     scp -r -o StrictHostKeyChecking=no root@`get_ip puppetmaster`:/tmp/logs/* $O/
 
     # Retrieve Xunit output and store it in Jenkins workspace
-    scp -r -o StrictHostKeyChecking=no root@`get_ip puppetmaster`:~/puppet-bootstrapper/nosetests.xml .
+    scp -r -o StrictHostKeyChecking=no root@`get_ip puppetmaster`:~/puppet-bootstrapper/nosetests.xml . || exit 0
 
     # Retrieve mariadb log
     mkdir -p ${O}/mysql

@@ -18,8 +18,8 @@ export LC_ALL=C
 SF_VER=${DVER}-${SF_REL}
 PREVIOUS_SF_VER=${DVER}-${PREVIOUS_SF_REL}
 
-SWIFT_BASE_URL="https://ca.enocloud.com:8080"
-SWIFT_ACCOUNT="84fb00023c0c445fb8e4ecc514bea76d"
+SWIFT_BASE_URL="http://os.enocloud.com:8080"
+SWIFT_ACCOUNT="70aab03f69b549cead3cb5f463174a51"
 # Base roles cloud and install-server
 SWIFT_EDEPLOY_URL="${SWIFT_BASE_URL}/v1/AUTH_${SWIFT_ACCOUNT}/edeploy-base"
 # Url where SF roles (software-factory and install-server-vm) are published
