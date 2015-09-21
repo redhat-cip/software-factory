@@ -12,3 +12,4 @@ nodepool:
   nodepool_os_auth_url: "%{hiera('nodepool_os_auth_url')}"
   nodepool_os_pool: "%{hiera('nodepool_os_pool')}"
   nodepool_os_pool_max_amount: "%{hiera('nodepool_os_pool_max_amount')}"
+  nodepool_provider_rate: "%{hiera('nodepool_provider_rate')}"
