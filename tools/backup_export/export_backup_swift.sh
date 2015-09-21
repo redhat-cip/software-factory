@@ -61,8 +61,8 @@ for backup in $backups; do
 done
 
 # Get SF backup via managesf
-sfmanager --url http://$HOST --auth $ADMIN:$ADMIN_PASSWORD backup start
-sfmanager --url http://$HOST --auth $ADMIN:$ADMIN_PASSWORD backup get
+sfmanager --url http://$HOST --auth $ADMIN:$ADMIN_PASSWORD system backup_start
+sfmanager --url http://$HOST --auth $ADMIN:$ADMIN_PASSWORD system backup_get
 mv sf_backup.tar.gz /tmp/sf_backup.tar.gz
 # Upload backup
 swift upload $SWIFT_CONTAINER /tmp/sf_backup.tar.gz --object-name sf_backup_${epoch}.tar.gz &> /dev/null
