@@ -99,10 +99,6 @@ function init {
     sed -i "s#CIPATH#${CONFDIR}#g" ${CONFDIR}/sf-lxc.yaml
     sed -i "s#SSH_PUBKEY#${SSH_PUBKEY}#g" ${CONFDIR}/sf-lxc.yaml
     sed -i "s#ROLES_DIR#${ROLES_DIR}#g" ${CONFDIR}/sf-lxc.yaml
-    # Complete jenkins slave cloudinit
-    sed -i "s/JENKINS_USER_PASSWORD/${JENKINS_USER_PASSWORD}/g" ${CONFDIR}/slave.cloudinit
-    sed -i "s/JENKINS_IP/${jenkins_ip}/g" ${CONFDIR}/slave.cloudinit
-    sed -i "s/MANAGESF_IP/${managesf_ip}/g" ${CONFDIR}/slave.cloudinit
     # Complete all the cloudinit templates
     sed -i "s/SF_SUFFIX/${SF_SUFFIX}/g" ${CONFDIR}/*.cloudinit
     sed -i "s/SSHPASS/${SSHPASS}/g" ${CONFDIR}/*.cloudinit

@@ -9,5 +9,4 @@ jenkins:
   jenkins_admin_username: "%{hiera('admin_name')}"
   ldap_userSearch: "%{hiera('ldap_account_username_attribute')}={0}"
   jenkins_user_email: "%{hiera('jenkins_user_email')}"
-  jenkins_default_slave: "slave.%{hiera('domain')}"
   jenkins_heap_limit: 256m

@@ -106,7 +106,7 @@ function get_logs {
     mkdir -p ${O}/mysql
     scp -r -o StrictHostKeyChecking=no root@`get_ip mysql`:/var/log/mariadb/mariadb.log ${O}/mysql
 
-    for i in gerrit  jenkins  managesf  mysql  puppetmaster  redmine  slave; do
+    for i in gerrit  jenkins  managesf  mysql  puppetmaster  redmine; do
         mkdir -p ${O}/$i/system
         sudo cp -f /var/lib/lxc/$i/rootfs/var/log/{messages,cloud-init*} ${O}/$i/system
     done

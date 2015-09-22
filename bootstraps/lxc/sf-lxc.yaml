@@ -39,8 +39,3 @@ hosts:
     name: managesf
     role: softwarefactory
     cloudinit: CIPATH/managesf.cloudinit
-  -
-    address: 192.168.134.55
-    name: slave
-    role: softwarefactory
-    cloudinit: CIPATH/slave.cloudinit
