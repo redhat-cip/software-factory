@@ -20,7 +20,7 @@ function install_sf {
     sudo cp -Rv ./../tools ${dir}/root/puppet-bootstrapper/
     sudo cp -Rv ./../serverspec ${dir}/root/puppet-bootstrapper/
     sudo cp -Rv ./../bootstraps/*.sh ${dir}/root/puppet-bootstrapper/
-    sudo cp -Rv ./../bootstraps/sfcreds.yaml ${dir}/root/puppet-bootstrapper/
+    sudo cp -Rv ./../bootstraps/*.yaml ${dir}/root/puppet-bootstrapper/
 
     # Install cauth
     [ ! -d "${dir}/var/www/cauth" ] && sudo mkdir ${dir}/var/www/cauth

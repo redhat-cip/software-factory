@@ -19,28 +19,19 @@ set -x
 
 source functions.sh
 
-SF_SUFFIX=${SFSUFFIX:-sf.dom}
+SF_SUFFIX=${SFSUFFIX:-tests.dom}
 BUILD=/root/sf-bootstrap-data
-
-# If boostrap.done does not exist, something bad happened, write 1
-trap "[ -f ${BUILD}/bootstrap.done ] || (echo 1 > ${BUILD}/bootstrap.done)" 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16
-if [  -f "${BUILD}/bootstrap.done" ]; then
-    rm ${BUILD}/bootstrap.done
-fi
 
 # Make sure sf-bootstrap-data sub-directories exist
 for i in hiera ssh_keys certs; do
     [ -d ${BUILD}/$i ] || mkdir -p ${BUILD}/$i
 done
 
-# Move sfconfig.yaml installed by cloud-init
-[ -f /root/sfconfig.yaml ] && mv /root/sfconfig.yaml /root/sf-bootstrap-data/hiera
-
-if [ "${INITIAL}" == "yes" ]; then
-    # Generate site specifics creds
-    generate_keys
-    generate_creds_yaml
-fi
+# Generate site specifics configuration
+generate_keys
+generate_creds_yaml
+generate_hosts_yaml
+generate_sfconfig
 
 if [ ! -e "${BUILD}/certs/gateway.key" ]; then
     generate_apache_cert
@@ -48,15 +39,9 @@ fi
 
 # Move site specific file to puppet/modules/*/files/
 prepare_etc_puppet
-# Wait for all node SSH service to be up
-wait_all_nodes
-# Start a run locally and start the puppet agent service
-run_puppet_agent
-# Force a stop of puppet agent on each roles
-run_puppet_agent_stop
-# Start a run on each node and start the puppet agent service
-trigger_puppet_apply
-# Force a start of puppet agent on each roles after a delay that let us run func tests smoosly
-run_puppet_agent_start
-# Set a witness file that tell the bootstraping is done
-echo 0 > ${BUILD}/bootstrap.done
+
+# Apply puppet stuff
+set +e
+puppet apply --test --environment sf --modulepath=/etc/puppet/environments/sf/modules/ /etc/puppet/environments/sf/manifests/site.pp
+[ "$?" != 2 ] && exit 1
+exit 0

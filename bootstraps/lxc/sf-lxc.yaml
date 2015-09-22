@@ -10,11 +10,6 @@ edeploy:
     union_fs: overlay
 hosts:
   -
-    address: 192.168.134.49
-    name: puppetmaster
-    role: softwarefactory
-    cloudinit: CIPATH/puppetmaster.cloudinit
-  -
     address: 192.168.134.54
     name: managesf
     role: softwarefactory

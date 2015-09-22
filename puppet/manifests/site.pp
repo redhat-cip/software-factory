@@ -12,17 +12,6 @@ stage { 'last': }
 Stage['main'] -> Stage['last']
 
 node default {
-}
-
-node /.*puppetmaster.*/ {
-  include sfbase
-  include postfix
-  include monit
-  include edeploy_server
-  include auto_backup
-}
-
-node /.*managesf.*/ {
   class {'sfbase': stage => first }
   class {'mysql': stage => first }
   class {'bup': stage => first }
@@ -47,6 +36,9 @@ node /.*managesf.*/ {
   include etherpad
   include lodgeit
   include replication
+
+  include edeploy_server
+  include auto_backup
 
   # Jenkins
   class {'ssh_keys_jenkins': stage => last }

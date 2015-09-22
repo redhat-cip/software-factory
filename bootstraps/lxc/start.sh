@@ -33,31 +33,18 @@ for role in softwarefactory; do
     fi
 done
 
-SFCONFIGFILE="$(mktemp /tmp/sfconfig-XXXXXX)"
-generate_sfconfig $SFCONFIGFILE
-[ -f ~/sfconfig.local ] && cat ~/sfconfig.local >> $SFCONFIGFILE
-sfconfigcontent=`cat $SFCONFIGFILE | base64 -w 0`
-DOMAIN=$(cat $SFCONFIGFILE | grep "^domain:" | cut -d' ' -f2)
-SF_SUFFIX=${SF_SUFFIX:-$DOMAIN}
+SF_SUFFIX=${SF_SUFFIX:-tests.dom}
 EDEPLOY_ROLES=${EDEPLOY_ROLES:-/var/lib/sf/roles/}
 SSH_PUBKEY=${SSH_PUBKEY:-${HOME}/.ssh/id_rsa.pub}
 export SF_SUFFIX
-rm ${SFCONFIGFILE}
 
 IN_FUNC_TEST=${IN_FUNC_TESTS:-""}
 
 EDEPLOY_LXC=/srv/edeploy-lxc/edeploy-lxc
 CONFDIR=/var/lib/lxc-conf
 
-# Need to be select randomly
-SSHPASS=$(generate_random_pswd 8)
-JENKINS_USER_PASSWORD=$(generate_random_pswd 8)
-
 ROLES_DIR=${BUILD_DIR}/install/${SF_VER}/
 
-function get_ip {
-    grep -B 1 "name:[ \t]*$1" sf-lxc.yaml | head -1 | awk '{ print $2 }'
-}
 function setup_iptables {
     set +e
     if [ "$1" = "down" ]; then
@@ -92,27 +79,11 @@ function init {
     sudo chown $USER ${CONFDIR}
     cp sf-lxc.yaml $CONFDIR
     cp ../cloudinit/* $CONFDIR
-    jenkins_ip=`get_ip jenkins`
-    managesf_ip=`get_ip managesf`
     # Complete the sf-lxc template used by edeploy-lxc tool
     sed -i "s/SF_SUFFIX/${SF_SUFFIX}/g" ${CONFDIR}/sf-lxc.yaml
     sed -i "s#CIPATH#${CONFDIR}#g" ${CONFDIR}/sf-lxc.yaml
     sed -i "s#SSH_PUBKEY#${SSH_PUBKEY}#g" ${CONFDIR}/sf-lxc.yaml
     sed -i "s#ROLES_DIR#${ROLES_DIR}#g" ${CONFDIR}/sf-lxc.yaml
-    # Complete all the cloudinit templates
-    sed -i "s/SF_SUFFIX/${SF_SUFFIX}/g" ${CONFDIR}/*.cloudinit
-    sed -i "s/SSHPASS/${SSHPASS}/g" ${CONFDIR}/*.cloudinit
-    sed -i "s|SFCONFIGCONTENT|${sfconfigcontent}|" $CONFDIR/puppetmaster.cloudinit
-    for r in `echo $ROLES | sed s/puppetmaster//`; do
-        ip=`get_ip $r`
-        sed -i "s/${r}_host/$ip/g" ${CONFDIR}/puppetmaster.cloudinit
-    done
-    ip=`get_ip puppetmaster`
-    sed -i "s/JENKINS_USER_PASSWORD/${JENKINS_USER_PASSWORD}/" ${CONFDIR}/puppetmaster.cloudinit
-    sed -i "s/MY_PRIV_IP=.*/MY_PRIV_IP=$ip/" ${CONFDIR}/puppetmaster.cloudinit
-
-    # temp fix for ubuntu test slave
-    [ -f "/etc/lsb-release" ] && sed -i "s/overlay/aufs/g" ${CONFDIR}/sf-lxc.yaml
 
     echo "Now running edeploy-lxc"
     sudo ${EDEPLOY_LXC} --config ${CONFDIR}/sf-lxc.yaml stop || exit -1
@@ -160,15 +131,6 @@ function start {
     gateway=$(grep gateway ${CONFDIR}/sf-lxc.yaml | awk 'FS=":" {print $2}')
     sudo brctl addbr $bridge
     sudo ifconfig $bridge $gateway
-    # Mount rootfs
-    union_fs=$(grep "union_fs:" ${CONFDIR}/sf-lxc.yaml  | awk '{ print $2 }')
-    base_aufs=$(grep ${union_fs}_dir ${CONFDIR}/sf-lxc.yaml | awk 'FS=":" {print $2}')
-    roles_dir=$(grep " dir: " ${CONFDIR}/sf-lxc.yaml | awk 'FS=":" {print $2}')
-    if [ "${union_fs}" == "aufs" ]; then
-        for name in $ROLES; do
-            sudo mount -t aufs -o "br=${base_aufs}/${name}:${roles_dir}/softwarefactory" none /var/lib/lxc/${name}/rootfs
-        done
-    fi
     # Start LXC containers
     for name in puppetmaster; do
         sudo lxc-start -d -L /var/log/lxc$name.log --name $name;

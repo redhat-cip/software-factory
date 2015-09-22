@@ -30,16 +30,13 @@ dlogs=/tmp/logs
 [ -d $dlogs ] && rm -Rf $dlogs
 mkdir $dlogs
 
-# Boostrap process log
-cp /var/log/sf-bootstrap.log $dlogs/
-
 echo "Checking for edeploy logs ..."
 [ -f /var/lib/edeploy/rsync_*.out ] && edeploy_logs=true || edeploy_logs=false
 
 # Retrieve Syslog
-for role in managesf puppetmaster; do
+for role in managesf; do
     mkdir -p $dlogs/${role}
-    ip=$(getip_from_yaml ${role})
+    ip=192.168.134.54
     scp root@${ip}:/var/log/syslog $dlogs/${role} &> /dev/null
     scp root@${ip}:/var/log/messages $dlogs/${role} &> /dev/null
     if [ $edeploy_logs = true ]; then
@@ -65,21 +62,21 @@ done
 # We have copied *.config files in /tmp just before the gerrit.war init (see the
 # manifest) and create a diff after. Here we just display it to help debug.
 
-scp -r root@`getip_from_yaml gerrit`:/home/gerrit/site_path/logs/ $dlogs/gerrit/ &> /dev/null
-scp root@`getip_from_yaml gerrit`:/tmp/config.diff $dlogs/gerrit/ &> /dev/null
+scp -r root@192.168.134.54:/home/gerrit/site_path/logs/ $dlogs/gerrit/ &> /dev/null
+scp root@192.168.134.54:/tmp/config.diff $dlogs/gerrit/ &> /dev/null
 
-scp -r root@`getip_from_yaml redmine`:/usr/share/redmine/log/ $dlogs/redmine/ &> /dev/null
-scp root@`getip_from_yaml managesf`:/var/log/managesf/managesf.log $dlogs/managesf/ &> /dev/null
-scp root@`getip_from_yaml managesf`:/var/log/cauth/cauth.log $dlogs/managesf/ &> /dev/null
-scp -r root@`getip_from_yaml managesf`:/var/log/apache2/ $dlogs/managesf/ &> /dev/null
-scp -r root@`getip_from_yaml managesf`:/var/log/httpd/ $dlogs/managesf/ &> /dev/null
-scp -r root@`getip_from_yaml gerrit`:/var/log/httpd/ $dlogs/gerrit/ &> /dev/null
-scp -r root@`getip_from_yaml jenkins`:/var/log/httpd/ $dlogs/jenkins/ &> /dev/null
-scp -r root@`getip_from_yaml jenkins`:/var/log/zuul $dlogs/zuul/ &> /dev/null
-scp -r root@`getip_from_yaml jenkins`:/var/lib/jenkins/jobs/ $dlogs/jenkins/ &> /dev/null
-scp -r root@`getip_from_yaml jenkins`:/var/lib/jenkins/logs/ $dlogs/jenkins/ &> /dev/null
-scp -r root@`getip_from_yaml jenkins`:/root/config/ $dlogs/config-project &> /dev/null
-scp root@`getip_from_yaml puppetmaster`:/tmp/debug $dlogs/puppetmaster/ &> /dev/null
+scp -r root@192.168.134.54:/usr/share/redmine/log/ $dlogs/redmine/ &> /dev/null
+scp root@192.168.134.54:/var/log/managesf/managesf.log $dlogs/managesf/ &> /dev/null
+scp root@192.168.134.54:/var/log/cauth/cauth.log $dlogs/managesf/ &> /dev/null
+scp -r root@192.168.134.54:/var/log/apache2/ $dlogs/managesf/ &> /dev/null
+scp -r root@192.168.134.54:/var/log/httpd/ $dlogs/managesf/ &> /dev/null
+scp -r root@192.168.134.54:/var/log/httpd/ $dlogs/gerrit/ &> /dev/null
+scp -r root@192.168.134.54:/var/log/httpd/ $dlogs/jenkins/ &> /dev/null
+scp -r root@192.168.134.54:/var/log/zuul $dlogs/zuul/ &> /dev/null
+scp -r root@192.168.134.54:/var/lib/jenkins/jobs/ $dlogs/jenkins/ &> /dev/null
+scp -r root@192.168.134.54:/var/lib/jenkins/logs/ $dlogs/jenkins/ &> /dev/null
+scp -r root@192.168.134.54:/root/config/ $dlogs/config-project &> /dev/null
+scp root@192.168.134.54:/tmp/debug $dlogs/puppetmaster/ &> /dev/null
 
 echo "Done."
 
