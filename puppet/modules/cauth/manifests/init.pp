@@ -19,6 +19,10 @@ class cauth ($cauth = hiera_hash('cauth', ''),
              $mysql = hiera_hash('mysql', '')) {
 
 
+  $admin_password = hiera('admin_password')
+  $admin_password_hashed = generate("/usr/bin/python", "-c", "import crypt, random, string, sys; salt = '\$6\$' + ''.join(random.choice(string.letters + string.digits) for _ in range(16)) + '\$'; sys.stdout.write(crypt.crypt(sys.argv[1], salt))", $admin_password)
+
+
   file {'/etc/httpd/conf.d/cauth.conf':
     ensure => file,
     mode   => '0640',

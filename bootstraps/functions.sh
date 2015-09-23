@@ -19,10 +19,6 @@ set -x
 
 BUILD=${BUILD:-/root/sf-bootstrap-data}
 
-function hash_password {
-    python -c "import crypt, random, string; salt = '\$6\$' + ''.join(random.choice(string.letters + string.digits) for _ in range(16)) + '\$'; print crypt.crypt('$1', salt)"
-}
-
 function generate_hosts_yaml {
     OUTPUT=${BUILD}/hiera
     cat << EOF > ${OUTPUT}/hosts.yaml
@@ -61,18 +57,9 @@ function generate_sfconfig {
     DEFAULT_ADMIN_PASSWORD=$(cat ${OUTPUT}/sfconfig.yaml | grep '^admin_password:' | awk '{ print $2 }')
     ADMIN_USER=${ADMIN_USER:-${DEFAULT_ADMIN_USER}}
     ADMIN_PASSWORD=${ADMIN_PASSWORD:-${DEFAULT_ADMIN_PASSWORD}}
-    ADMIN_PASSWORD_HASHED=$(hash_password "${ADMIN_PASSWORD}")
     sed -i "s/^admin_name:.*/admin_name: ${ADMIN_USER}/" ${OUTPUT}/sfconfig.yaml
-
     # TODO: remove this, it should work without
     sed -i "s/^admin_password:.*/admin_password: ${ADMIN_PASSWORD}/" ${OUTPUT}/sfconfig.yaml
-
-    # Make sure admin password is hashed and avoid duplicate entry
-    grep -q "^admin_password_hashed:" ${OUTPUT}/sfconfig.yaml && {
-        sed -i "s/^admin_password_hashed:.*/admin_password_hashed: \"${ADMIN_PASSWORD_HASHED}\"/" ${OUTPUT}/sfconfig.yaml
-    } || {
-        echo "admin_password_hashed: \"${ADMIN_PASSWORD_HASHED}\"" >> ${OUTPUT}/sfconfig.yaml
-    }
 }
 
 function generate_random_pswd {
