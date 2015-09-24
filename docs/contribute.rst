@@ -79,7 +79,8 @@ The recommended way to edit/add a new test is to work on it locally and then use
 
 .. code-block:: bash
 
-  $ rsync -av tests/ puppetmaster:puppet-bootstrapper/tests/ && ssh -t puppetmaster nosetests --no-byte-compile -s -v puppet-bootstrapper/tests/functional/
+  $ rsync -a puppetmaster:sf-bootstrap-data/ sf-bootstrap-data/
+  $ nosetests --no-byte-compile -s -v tests/functional
 
 Tips: ::
 

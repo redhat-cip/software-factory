@@ -23,13 +23,14 @@ class auto_backup ($backup = hiera_hash('auto_backup', '')) {
     content => template('auto_backup/auto_backup.conf.erb'),
   }
 
- file {'/root/puppet-bootstrapper/tools/backup_export/export_backup_swift.sh':
+ file {'/usr/local/bin/export_backup_swift.sh':
     ensure => file,
     mode   => '740',
+    source => 'puppet:///modules/auto_backup/export_backup_swift.sh',
   }
 
   cron {'auto_backup':
-    command => "/root/puppet-bootstrapper/tools/backup_export/export_backup_swift.sh",
+    command => "/usr/local/bin/export_backup_swift.sh",
     environment => "MAILTO=$m",
     user    => root,
     hour    => 0,

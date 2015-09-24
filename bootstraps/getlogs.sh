@@ -76,7 +76,6 @@ scp -r root@192.168.134.54:/var/log/zuul $dlogs/zuul/ &> /dev/null
 scp -r root@192.168.134.54:/var/lib/jenkins/jobs/ $dlogs/jenkins/ &> /dev/null
 scp -r root@192.168.134.54:/var/lib/jenkins/logs/ $dlogs/jenkins/ &> /dev/null
 scp -r root@192.168.134.54:/root/config/ $dlogs/config-project &> /dev/null
-scp root@192.168.134.54:/tmp/debug $dlogs/puppetmaster/ &> /dev/null
 
 echo "Done."
 

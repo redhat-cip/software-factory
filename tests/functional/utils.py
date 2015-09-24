@@ -359,7 +359,7 @@ class GerritGitUtils(Tool):
 
 class JenkinsUtils:
     def __init__(self):
-        with open('/etc/puppet/hiera/sf/sfcreds.yaml') as fh:
+        with open('%s/hiera/sfcreds.yaml' % config.SF_BOOTSTRAP_DATA) as fh:
             yconfig = yaml.load(fh)
             self.jenkins_user = 'jenkins'
             self.jenkins_password = \

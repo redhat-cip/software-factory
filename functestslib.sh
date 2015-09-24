@@ -89,9 +89,6 @@ function get_logs {
     ssh -o StrictHostKeyChecking=no root@192.168.134.54 "cd puppet-bootstrapper; ./getlogs.sh"
     scp -r -o StrictHostKeyChecking=no root@192.168.134.54:/tmp/logs/* $O/
 
-    # Retrieve Xunit output and store it in Jenkins workspace
-    scp -r -o StrictHostKeyChecking=no root@192.168.134.54:~/puppet-bootstrapper/nosetests.xml .
-
     for i in managesf; do
         mkdir -p ${O}/$i/system
         sudo cp -f /var/lib/lxc/$i/rootfs/var/log/{messages,cloud-init*} ${O}/$i/system
@@ -154,11 +151,71 @@ function wait_for_bootstrap_done {
     return $?
 }
 
+function prepare_functional_tests_venv {
+    echo "$(date) ======= Prepare functional tests venv ======="
+    if [ ! -d /var/lib/sf/venv ]; then
+        sudo virtualenv /var/lib/sf/venv
+        sudo chown -R ${USER} /var/lib/sf/venv
+    fi
+    (
+        . /var/lib/sf/venv/bin/activate
+        pip install --upgrade pip
+        pip install -r ${PYSFLIB_CLONED_PATH}/requirements.txt
+        pip install -r ${CAUTH_CLONED_PATH}/requirements.txt
+        pip install -r ${MANAGESF_CLONED_PATH}/requirements.txt
+        pip install --upgrade setuptools pbr pycrypto
+        pip install pyOpenSSL ndg-httpsclient pyasn1 nose git-review
+        cd ${PYSFLIB_CLONED_PATH}; python setup.py install
+        cd ${CAUTH_CLONED_PATH}; python setup.py install
+        cd ${MANAGESF_CLONED_PATH}; python setup.py install
+    ) > ${ARTIFACTS_DIR}/venv_prepartion.output
+    checkpoint "/var/lib/sf/venv/ prep"
+}
+
+function reset_etc_hosts_dns {
+    (
+        set -x
+        host=$1
+        ip=$2
+        grep -q " ${host}" /etc/hosts || {
+            # adds to /etc/hosts if not already defined
+            echo "${ip} ${host}" | sudo tee -a /etc/hosts
+        } && {
+            # else sed in-place
+            sudo sed -i "s/^.* ${host}/${ip} ${host}/" /etc/hosts
+        }
+    ) &> ${ARTIFACTS_DIR}/etc_hosts.log
+}
+
 function run_functional_tests {
     echo "$(date) ======= Starting functional tests ========="
-    ssh -o StrictHostKeyChecking=no root@192.168.134.54 \
-            "cd puppet-bootstrapper; nosetests --with-xunit -v" 2>&1 | tee ${ARTIFACTS_DIR}/functional-tests.output
-    return ${PIPESTATUS[0]}
+    echo "[+] Adds tests.dom to /etc/hosts"
+    reset_etc_hosts_dns 'tests.dom' 192.168.134.54
+    for host in puppetmaster redmine mysql gerrit jenkins managesf; do
+        reset_etc_hosts_dns "${host}.tests.dom" 192.168.134.54
+    done
+    echo "[+] Avoid ssh error"
+    cat << EOF > ~/.ssh/config
+Host *.tests.dom
+    UserKnownHostsFile no
+    StrictHostKeyChecking no
+EOF
+    chmod 0600 ~/.ssh/config
+    echo "[+] Fetch bootstrap data"
+    rm -Rf sf-bootstrap-data
+    scp -r root@puppetmaster.tests.dom:sf-bootstrap-data .
+    echo "[+] Fetch tests.dom ssl cert"
+    scp -r root@puppetmaster.tests.dom:/etc/pki/ca-trust/extracted/openssl/ca-bundle.trust.crt /var/lib/sf/venv/lib/python2.7/site-packages/requests/cacert.pem
+    cp /var/lib/sf/venv/lib/python2.7/site-packages/requests/cacert.pem /var/lib/sf/venv/lib/python2.7/site-packages/pip/_vendor/requests/cacert.pem
+    echo "[+] Run tests"
+    sudo rm -Rf /tmp/debug
+    . /var/lib/sf/venv/bin/activate
+    checkpoint "functional tests running..."
+    nosetests --with-xunit -v tests/functional 2>&1 | tee ${ARTIFACTS_DIR}/functional-tests.output
+    RES=${PIPESTATUS[0]}
+    mv /tmp/debug ${ARTIFACTS_DIR}/functional_tests.debug
+    deactivate
+    return $RES
 }
 
 function run_puppet_allinone_tests {
@@ -169,6 +226,8 @@ function run_puppet_allinone_tests {
 }
 
 function run_tests {
+    prepare_functional_tests_venv
+    checkpoint "prepare_venv"
     scan_and_configure_knownhosts || pre_fail "Can't SSH"
     checkpoint "scan_and_configure_knownhosts"
     wait_for_bootstrap_done || pre_fail "Bootstrap did not complete"

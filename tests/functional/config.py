@@ -1,22 +1,15 @@
-from os import path, environ
-
 import yaml
 
-SF_BOOTSTRAP_DATA = environ.setdefault("SF_BOOTSTRAP_DATA",
-                                       "/root/sf-bootstrap-data")
-SF_TESTS_DIR = "%s/.." % path.dirname(path.abspath(__file__))
+SF_BOOTSTRAP_DATA = "./sf-bootstrap-data"
+SF_TESTS_DIR = "./tests"
 
-sfconfig_filenames = [
-    "../sfconfig.yaml",
-    "%s/hiera/sfconfig.yaml" % SF_BOOTSTRAP_DATA
-]
-sfconfig = None
-for sfconfig_filename in sfconfig_filenames:
-    if path.exists(sfconfig_filename):
-        with open(sfconfig_filename) as infile:
-            sfconfig = yaml.load(infile)
-if sfconfig is None:
-    raise RuntimeError("Can't find sfconfig in %s" % str(sfconfig_filenames))
+sfconfig_filename = "%s/hiera/sfconfig.yaml" % SF_BOOTSTRAP_DATA
+
+try:
+    sfconfig = yaml.load(open(sfconfig_filename))
+except:
+    print "%s: can't load sfconfig" % sfconfig_filename
+    raise
 
 GATEWAY_HOST = sfconfig['domain']
 GATEWAY_URL = 'https://%s/' % GATEWAY_HOST
