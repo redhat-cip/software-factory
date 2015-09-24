@@ -13,14 +13,14 @@
   <devices>
     <emulator>/usr/libexec/libvirt_lxc</emulator>
     <filesystem type='mount'>
-      <source dir='/var/lib/lxc/jenkins/rootfs' />
+      <source dir='/var/lib/lxc/jenkins/rootfs/' />
       <target dir='/'/>
     </filesystem>
     <interface type='network'>
       <source network='sf-net'/>
       <target dev='sf-vnet02'/>
       <mac address="00:11:22:33:44:56"/>
-      <ip address="192.168.135.55" netmask="255.255.255.0" />
+      <ip address="192.168.135.102" netmask="255.255.255.0" />
     </interface>
     <console type='pty' />
   </devices>

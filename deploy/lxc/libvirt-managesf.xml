@@ -20,7 +20,7 @@
       <source network='sf-net'/>
       <target dev='sf-vnet01'/>
       <mac address="00:11:22:33:44:55"/>
-      <ip address="192.168.135.54" netmask="255.255.255.0" />
+      <ip address="192.168.135.101" netmask="255.255.255.0" />
     </interface>
     <console type='pty' />
   </devices>

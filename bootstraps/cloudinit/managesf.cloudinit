@@ -1,9 +1,0 @@
-#cloud-config
-output: {all: '| tee -a /var/log/cloud-init-output.log'}
-hostname: managesf
-fqdn: managesf.SF_SUFFIX
-disable_root: 0
-runcmd:
-  - echo NAMESERVER > /etc/resolv.conf
-  - mkdir -p /var/log/edeploy
-  - echo "PROFILE=none" >> /var/log/edeploy/vars

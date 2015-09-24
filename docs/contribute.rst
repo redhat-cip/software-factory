@@ -105,7 +105,7 @@ Tips: ::
   Host jenkins
     Hostname 192.168.134.53
   Host managesf
-    Hostname 192.168.134.54
+    Hostname 192.168.134.101
   Host slave
     Hostname 192.168.134.55
 

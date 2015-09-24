@@ -21,65 +21,56 @@
 source functestslib.sh
 . role_configrc
 
+REFARCH="${1:-1node-allinone}"
+TEST_TYPE="${2:-functional}"
+
+###############
+# Preparation #
+###############
 echo "Running functional-tests with this HEAD"
 display_head
-
-# This prevent the bootstrap LXC script to set up IP MASQUERADE
-# during the functional tests
-export IN_FUNC_TESTS=1
-
-function lxc_stop {
-    (cd bootstraps/lxc; ./start.sh stop)
-}
-
-function build {
-    clear_mountpoint
-    # Retry to build role if it fails before exiting
-    ./build_roles.sh ${ARTIFACTS_DIR} || ./build_roles.sh ${ARTIFACTS_DIR} || pre_fail "Roles building FAILED"
-}
-
-function lxc_start {
-    clear_mountpoint
-    (cd bootstraps/lxc; ./start.sh init) || pre_fail "LXC start FAILED"
-}
-
-set -x
 prepare_artifacts
 checkpoint "Running tests on $(hostname)"
 lxc_stop
 checkpoint "lxc-first-clean"
-build
-checkpoint "build_roles"
-if [ -z "$1" ]; then
-    # This test is run by default when no argument provided
-    lxc_start
-    checkpoint "lxc-start"
-    run_tests 15
-    checkpoint "run_tests"
-fi
-if [ "$1" == "backup_restore_tests" ]; then
-    lxc_start
-    checkpoint "lxc-start"
-    run_backup_restore_tests 45 "provision" || pre_fail "Backup test: provision"
-    lxc_stop
-    lxc_start
-    run_backup_restore_tests 45 "check" || pre_fail "Backup test: check"
-fi
-if [ "$1" == "upgrade" ]; then
-    echo "[+] Upgrade tests from 1.0.4 to 2.0.0 are not supported..."
-    exit 1
-fi
+[ -z "${SKIP_BUILD}" ] && {
+    build
+    checkpoint "build_roles"
+    prepare_functional_tests_venv
+    checkpoint "prepare_venv"
+} || {
+    dir=${INST}/softwarefactory
+    sudo rsync -a --delete puppet/manifests/ ${dir}/etc/puppet/environments/sf/manifests/
+    sudo rsync -a --delete puppet/modules/ ${dir}/etc/puppet/environments/sf/modules/
+    sudo rsync -a --delete puppet/hiera/ ${dir}/etc/puppet/hiera/sf/
+    sudo rsync -a --delete bootstraps/ ${dir}/root/bootstraps/
+}
+
+case "${TEST_TYPE}" in
+    "functional")
+        lxc_start
+        run_tests
+        ;;
+    "backup_restore_tests")
+        echo "[+] Backup/restore tests are not supported..."
+        exit 1
+        ;;
+    "upgrade")
+        echo "[+] Upgrade tests from 1.0.4 to 2.0.0 are not supported..."
+        exit 1
+        ;;
+    "*")
+        echo "[+] Unknown test type ${TEST_TYPE}"
+        exit 1
+        ;;
+esac
 
 DISABLE_SETX=1
 checkpoint "end_tests"
 # If run locally (outside of zuul) fetch logs/artifacts. If run
 # through Zuul then a publisher will be used
-[ -z "$SWIFT_artifacts_URL" ] && {
-    get_logs
-    checkpoint "get-logs"
-}
+[ -z "$SWIFT_artifacts_URL" ] && get_logs
 [ -z "${DEBUG}" ] && lxc_stop
-checkpoint "lxc-stop"
 clean_old_cache
 echo "$0: SUCCESS"
 exit 0;

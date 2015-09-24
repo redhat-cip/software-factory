@@ -340,7 +340,7 @@ The lxc-ls command should report the following :
  IP:             192.168.134.53
  State of the node: managesf
  State:          RUNNING
- IP:             192.168.134.54
+ IP:             192.168.134.101
  State of the node: mysql
  State:          RUNNING
  IP:             192.168.134.50

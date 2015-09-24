@@ -1,6 +1,7 @@
 #!/bin/bash
 
 DISABLE_SETX=0
+[ -z "${DEBUG}" ] && DISABLE_SETX=1 || set -x
 
 export SF_SUFFIX=${SF_SUFFIX:-tests.dom}
 export SKIP_CLEAN_ROLES="y"
@@ -17,7 +18,7 @@ CONFDIR=/var/lib/lxc-conf
 function clean_old_cache {
     # Remove directory older than 1 week (7 days)
     echo "Removing old item from cache..."
-    for item in $(find /var/lib/sf/roles/upstream/* /var/lib/sf/roles/install/* -maxdepth 0 -ctime +7 | \
+    for item in $(find /var/lib/sf/roles/upstream/* /var/lib/sf/roles/install/* -maxdepth 0 -ctime +7 2> /dev/null | \
         grep -v "\(${SF_VER}\|${PREVIOUS_SF_VER}\)"); do
             if [ -f "${item}" ] || [ -d "${item}" ]; then
                 echo ${item}
@@ -61,8 +62,23 @@ function prepare_artifacts {
     set -x
 }
 
+function lxc_stop {
+    (cd deploy/lxc; sudo ./deploy.py stop)
+    checkpoint "lxc-stop"
+}
+
+function build {
+    # Retry to build role if it fails before exiting
+    ./build_roles.sh ${ARTIFACTS_DIR} || ./build_roles.sh ${ARTIFACTS_DIR} || fail "Roles building FAILED"
+}
+
+function lxc_start {
+    (cd deploy/lxc; sudo ./deploy.py init --refarch $REFARCH) || fail "LXC start FAILED"
+    checkpoint "lxc-start"
+}
+
 function scan_and_configure_knownhosts {
-    local ip=192.168.135.54
+    local ip=192.168.135.101
     rm -f "$HOME/.ssh/known_hosts"
     RETRIES=0
     echo " [+] Starting ssh-keyscan on $ip:22"
@@ -99,6 +115,7 @@ function get_logs {
     sudo cp -r /var/lib/lxc/managesf/rootfs/var/lib/jenkins/jobs/ ${ARTIFACTS_DIR}/jenkins-jobs/
     sudo cp -r /var/lib/lxc/managesf/rootfs/root/config/ ${ARTIFACTS_DIR}/config-project
     sudo chown -R ${USER} ${ARTIFACTS_DIR}
+    checkpoint "get-logs"
 }
 
 function host_debug {
@@ -107,6 +124,7 @@ function host_debug {
     ps aufx >> ${ARTIFACTS_DIR}/host_debug_ps-aufx
     free -m | tee -a ${ARTIFACTS_DIR}/host_debug_free
     sudo df -h | tee -a ${ARTIFACTS_DIR}/host_debug_df
+    checkpoint "host_debug"
     [ ${DISABLE_SETX} -eq 0 ] && set -x
 }
 
@@ -117,7 +135,7 @@ function display_head {
     echo
 }
 
-function pre_fail {
+function fail {
     set -x
     DISABLE_SETX=1
     echo "$(hostname) FAIL to run functionnal tests of this change:"
@@ -153,8 +171,12 @@ function waiting_stack_created {
 }
 
 function wait_for_bootstrap_done {
-    ssh -o StrictHostKeyChecking=no root@192.168.135.54 "cd puppet-bootstrapper; exec ./bootstrap.sh"
-    return $?
+    eval $(ssh-agent)
+    ssh-add ~/.ssh/id_rsa
+    ssh -A -tt root@192.168.135.101 "cd bootstraps; exec ./bootstrap.sh ${REFARCH}"
+    res=$?
+    kill -9 $SSH_AGENT_PID
+    return $res
 }
 
 function prepare_functional_tests_venv {
@@ -195,9 +217,9 @@ function reset_etc_hosts_dns {
 function run_functional_tests {
     echo "$(date) ======= Starting functional tests ========="
     echo "[+] Adds tests.dom to /etc/hosts"
-    reset_etc_hosts_dns 'tests.dom' 192.168.135.54
+    reset_etc_hosts_dns 'tests.dom' 192.168.135.101
     for host in puppetmaster redmine mysql gerrit jenkins managesf; do
-        reset_etc_hosts_dns "${host}.tests.dom" 192.168.135.54
+        reset_etc_hosts_dns "${host}.tests.dom" 192.168.135.101
     done
     echo "[+] Avoid ssh error"
     cat << EOF > ~/.ssh/config
@@ -225,21 +247,19 @@ EOF
 
 function run_puppet_allinone_tests {
     echo "$(date) ======= Starting Puppet all in one tests ========="
-    ssh -o StrictHostKeyChecking=no root@192.168.135.54 \
+    ssh -o StrictHostKeyChecking=no root@192.168.135.101 \
             "puppet master --compile allinone --environment=sf" 2>&1 &> ${ARTIFACTS_DIR}/functional-tests.output
     return ${PIPESTATUS[0]}
 }
 
 function run_tests {
-    prepare_functional_tests_venv
-    checkpoint "prepare_venv"
-    scan_and_configure_knownhosts || pre_fail "Can't SSH"
+    scan_and_configure_knownhosts || fail "Can't SSH"
     checkpoint "scan_and_configure_knownhosts"
-    wait_for_bootstrap_done || pre_fail "Bootstrap did not complete"
+    wait_for_bootstrap_done || fail "Bootstrap did not complete"
     checkpoint "wait_for_bootstrap_done"
-    run_functional_tests || pre_fail "Functional tests failed"
+    run_functional_tests || fail "Functional tests failed"
     checkpoint "run_functional_tests"
-    run_puppet_allinone_tests || pre_fail "Puppet all in one tests failed"
+    run_puppet_allinone_tests || fail "Puppet all in one tests failed"
     checkpoint "run_puppet_allinone_tests"
 }
 
@@ -248,45 +268,33 @@ function run_backup_restore_tests {
     type=$2
     if [ "$type" == "provision" ]; then
         scan_and_configure_knownhosts
-        wait_for_bootstrap_done || pre_fail "Bootstrap did not complete"
+        wait_for_bootstrap_done || fail "Bootstrap did not complete"
         # Run server spec to be more confident
-        run_serverspec || pre_fail "Serverspec failed"
+        run_serverspec || fail "Serverspec failed"
         # Start the provisioner
         ./tools/provisioner_checker/run.sh provisioner
         # Create a backup
-        ssh -o StrictHostKeyChecking=no root@192.168.135.54 "sfmanager --url ${MANAGESF_URL} --auth-server-url ${MANAGESF_URL} --auth user1:userpass backup start"
+        ssh -o StrictHostKeyChecking=no root@192.168.135.101 "sfmanager --url ${MANAGESF_URL} --auth-server-url ${MANAGESF_URL} --auth user1:userpass backup start"
         sleep 10
         # Fetch the backup
-        ssh -o StrictHostKeyChecking=no root@192.168.135.54 "sfmanager --url ${MANAGESF_URL} --auth-server-url ${MANAGESF_URL} --auth user1:userpass backup get"
-        scp -o  StrictHostKeyChecking=no root@192.168.135.54:sf_backup.tar.gz /tmp
+        ssh -o StrictHostKeyChecking=no root@192.168.135.101 "sfmanager --url ${MANAGESF_URL} --auth-server-url ${MANAGESF_URL} --auth user1:userpass backup get"
+        scp -o  StrictHostKeyChecking=no root@192.168.135.101:sf_backup.tar.gz /tmp
         # We assume if we cannot move the backup file
         # we need to stop right now
         return $?
     fi
     if [ "$type" == "check" ]; then
-        scan_and_configure_knownhosts || pre_fail "Can't SSH"
+        scan_and_configure_knownhosts || fail "Can't SSH"
         # Run server spec to be more confident
-        run_serverspec || pre_fail "Serverspec failed"
+        run_serverspec || fail "Serverspec failed"
         # Restore backup
-        scp -o  StrictHostKeyChecking=no /tmp/sf_backup.tar.gz root@192.168.135.54:/root/
-        ssh -o StrictHostKeyChecking=no root@192.168.135.54 "sfmanager --url ${MANAGESF_URL} --auth-server-url ${MANAGESF_URL} --auth user1:userpass backup restore --filename sf_backup.tar.gz"
+        scp -o  StrictHostKeyChecking=no /tmp/sf_backup.tar.gz root@192.168.135.101:/root/
+        ssh -o StrictHostKeyChecking=no root@192.168.135.101 "sfmanager --url ${MANAGESF_URL} --auth-server-url ${MANAGESF_URL} --auth user1:userpass backup restore --filename sf_backup.tar.gz"
         # Start the checker
         sleep 60
         ./tools/provisioner_checker/run.sh checker
         return $?
     fi
-}
-
-function clear_mountpoint {
-    # Clean mountpoints
-    grep '\/var.*proc' /proc/mounts | awk '{ print $2 }' | while read mountpoint; do
-        echo "[+] UMOUNT ${mountpoint}"
-        sudo umount ${mountpoint} || echo "umount failed";
-    done
-    grep '\/var.*lxc' /proc/mounts | awk '{ print $2 }' | while read mountpoint; do
-        echo "[+] UMOUNT ${mountpoint}"
-        sudo umount ${mountpoint} || echo "umount failed";
-    done
 }
 
 START=$(date '+%s')

@@ -13,7 +13,7 @@ SF_SUFFIX=${SF_SUFFIX:-"tests.dom"}
 
 function run {
     local cmd=$1
-    ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@192.168.134.54` "cd puppet-bootstrapper/tools/provisioner_checker; SF_SUFFIX=${SF_SUFFIX} SF_ROOT=${SF_ROOT} python $cmd.py"
+    ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@192.168.134.101` "cd puppet-bootstrapper/tools/provisioner_checker; SF_SUFFIX=${SF_SUFFIX} SF_ROOT=${SF_ROOT} python $cmd.py"
     ERROR=$?
 }
 

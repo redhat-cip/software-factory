@@ -14,8 +14,7 @@
 # license for the specific language governing permissions and limitations
 # under the license.
 
-set -e
-set -x
+[ -z "${DEBUG}" ] && DISABLE_SETX=1 || set -x
 
 BUILD=${BUILD:-/root/sf-bootstrap-data}
 
@@ -23,28 +22,14 @@ function generate_hosts_yaml {
     OUTPUT=${BUILD}/hiera
     cat << EOF > ${OUTPUT}/hosts.yaml
 hosts:
-  localhost:
-    ip: 127.0.0.1
-  puppetmaster.SF_SUFFIX:
-    ip: 192.168.135.54
-    host_aliases: [puppetmaster]
-  mysql.SF_SUFFIX:
-    ip: 192.168.135.54
-    host_aliases: [mysql]
-  jenkins.SF_SUFFIX:
-    ip: 192.168.135.54
-    host_aliases: [jenkins]
-  redmine.SF_SUFFIX:
-    ip: 192.168.135.54
-    host_aliases: [redmine]
-  api-redmine.SF_SUFFIX:
-    ip: 192.168.135.54
-  gerrit.SF_SUFFIX:
-    ip: 192.168.135.54
-    host_aliases: [gerrit]
-  managesf.SF_SUFFIX:
-    ip: 192.168.135.54
-    host_aliases: [managesf, auth.SF_SUFFIX, SF_SUFFIX]
+  localhost:              {ip: 127.0.0.1}
+  puppetmaster.SF_SUFFIX: {ip: 192.168.135.101, host_aliases: [puppetmaster]}
+  mysql.SF_SUFFIX:        {ip: 192.168.135.101, host_aliases: [mysql]}
+  jenkins.SF_SUFFIX:      {ip: 192.168.135.101, host_aliases: [jenkins]}
+  redmine.SF_SUFFIX:      {ip: 192.168.135.101, host_aliases: [redmine]}
+  api-redmine.SF_SUFFIX:  {ip: 192.168.135.101}
+  gerrit.SF_SUFFIX:       {ip: 192.168.135.101, host_aliases: [gerrit]}
+  managesf.SF_SUFFIX:     {ip: 192.168.135.101, host_aliases: [managesf, auth.SF_SUFFIX, SF_SUFFIX]}
 EOF
     sed -i "s/SF_SUFFIX/${SF_SUFFIX}/g" ${OUTPUT}/hosts.yaml
 }
@@ -123,8 +108,8 @@ function generate_creds_yaml {
 
 function generate_keys {
     OUTPUT=${BUILD}/ssh_keys
-    # Service key is used to allow puppetmaster root to
-    # connect on other node as root
+
+    # Service key is used to allow root access from managesf to other nodes
     ssh-keygen -N '' -f ${OUTPUT}/service_rsa
     cp ${OUTPUT}/service_rsa /root/.ssh/id_rsa
     ssh-keygen -N '' -f ${OUTPUT}/jenkins_rsa
@@ -190,4 +175,5 @@ function prepare_etc_puppet {
     chown -R puppet:puppet /etc/puppet/environments/sf
     chown -R puppet:puppet /etc/puppet/hiera/sf
     chown -R puppet:puppet /var/lib/puppet
+    chmod -R 0750 /etc/puppet/hiera/sf
 }
