@@ -130,7 +130,6 @@ cloud_config_modules:
  - locale
  - set-passwords
  - timezone
- - puppet
  - chef
  - salt-minion
  - mcollective
@@ -189,47 +188,6 @@ install_sf_packages() {
 upgrade_pip() {
     retry do_chroot ${dir} pip install -U pip
 }
-
-install_puppetmaster() {
-    mkdir -p ${dir}/usr/share/puppet/rack/puppetmasterd/public
-    mkdir -p ${dir}/usr/share/puppet/rack/puppetmasterd/tmp
-    cp ${dir}/usr/share/puppet/ext/rack/config.ru ${dir}/usr/share/puppet/rack/puppetmasterd/
-    do_chroot ${dir} chown puppet:puppet /usr/share/puppet/rack/puppetmasterd/config.ru
-
-    # Bug https://tickets.puppetlabs.com/browse/PUP-1386
-    cat >> ${dir}/usr/share/puppet/rack/puppetmasterd/config.ru <<EOF
-Encoding.default_external = Encoding::UTF_8
-Encoding.default_internal = Encoding::UTF_8
-EOF
-    
-    cat > ${dir}/etc/httpd/conf.d/puppetmaster.conf.disabled  <<EOF
-Listen 8140
-<VirtualHost *:8140>
-        SSLEngine on
-        SSLProtocol             ALL -SSLv2
-        SSLCipherSuite          ALL:!aNULL:!eNULL:!DES:!3DES:!IDEA:!SEED:!DSS:!PSK:!RC4:!MD5:+HIGH:+MEDIUM:!LOW:!SSLv2:!EXP
-        SSLHonorCipherOrder     on
-        SSLCertificateFile      /var/lib/puppet/ssl/certs/mycert.pem
-        SSLCertificateKeyFile   /var/lib/puppet/ssl/private_keys/mycert.pem
-        SSLCertificateChainFile /var/lib/puppet/ssl/certs/ca.pem
-        SSLCACertificateFile    /var/lib/puppet/ssl/certs/ca.pem
-        SSLVerifyClient optional
-        SSLVerifyDepth  1
-        SSLOptions +StdEnvVars +ExportCertData
-        RequestHeader unset X-Forwarded-For
-        RequestHeader set X-SSL-Subject %{SSL_CLIENT_S_DN}e
-        RequestHeader set X-Client-DN %{SSL_CLIENT_S_DN}e
-        RequestHeader set X-Client-Verify %{SSL_CLIENT_VERIFY}e
-        DocumentRoot /usr/share/puppet/rack/puppetmasterd/public/
-        RackBaseURI /
-        <Directory /usr/share/puppet/rack/puppetmasterd/>
-                Options None
-                AllowOverride None
-                Require all granted
-        </Directory>
-</VirtualHost>
-EOF
-}    
 
 function install_jenkins() {
 
@@ -342,7 +300,7 @@ EOF
 VERS=${version}
 ROLE=softwarefactory
 RSERV_PORT=873
-RSERV=puppetmaster
+RSERV=managesf
 EOF
 }
 
@@ -482,7 +440,7 @@ install_misc() {
 BASE_PKGS="coreutils dhclient e2fsprogs man-db grub2 grubby initscripts iproute kernel net-tools passwd redhat-lsb-core crontabs openssh-clients bind-utils kexec-tools selinux-policy-targeted setroubleshoot-server acpid bash curl kbd lvm2 openssh-server pciutils rsync rsyslog sudo wget ntpdate logrotate ethtool hdparm iptables"
 
 DEV_PKGS="openssl-devel openldap-devel python-devel libffi-devel gcc swig zlib-devel libcurl-devel httpd-devel apr-devel apr-util-devel mariadb-devel gcc-c++ ruby-devel ImageMagick-devel cpp libxml2-devel libxslt-devel"
-PKGS="vim-enhanced openssl postfix bc monit ansible sshpass mod_passenger puppet puppet-server rubygem-rake git python-pip pyxattr pylibacl httpd mod_ssl ntp puppet monit postfix git nodejs httpd java-1.6.0-openjdk mariadb-server python-werkzeug python-babel python-jinja2 MySQL-python socat mod_wsgi m2crypto mariadb gitweb debootstrap unzip pigz ntp openssl mod_ssl cloud-init cloud-utils cloud-utils-growpart"
+PKGS="vim-enhanced openssl postfix bc monit ansible sshpass mod_passenger puppet rubygem-rake git python-pip pyxattr pylibacl httpd mod_ssl ntp monit postfix git nodejs httpd java-1.6.0-openjdk mariadb-server python-werkzeug python-babel python-jinja2 MySQL-python socat mod_wsgi m2crypto mariadb gitweb debootstrap unzip pigz ntp openssl mod_ssl cloud-init cloud-utils cloud-utils-growpart"
 
 
 trap cleanup 0
@@ -503,7 +461,6 @@ check_binary rpm
 
     upgrade_pip
     fix_insecure_plateform
-    install_puppetmaster
     install_jenkins
     install_redmine
     install_gerrit

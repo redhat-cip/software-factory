@@ -86,15 +86,19 @@ function get_logs {
     #after a failure.
     set +e
     sleep 5
-    O=${ARTIFACTS_DIR}
-    ssh -o StrictHostKeyChecking=no root@192.168.135.54 "cd puppet-bootstrapper; ./getlogs.sh"
-    scp -r -o StrictHostKeyChecking=no root@192.168.135.54:/tmp/logs/* $O/
 
-    for i in managesf; do
-        mkdir -p ${O}/$i/system
-        sudo cp -f /var/lib/lxc/$i/rootfs/var/log/{messages,cloud-init*} ${O}/$i/system
-    done
-    set -e
+    sudo cp /var/lib/lxc/managesf/rootfs/var/log/messages ${ARTIFACTS_DIR}/
+    sudo cp /var/lib/lxc/managesf/rootfs/var/log/cloud-init* ${ARTIFACTS_DIR}/
+    sudo cp -r /var/lib/lxc/managesf/rootfs/home/gerrit/site_path/logs/ ${ARTIFACTS_DIR}/gerrit/
+    sudo cp -r /var/lib/lxc/managesf/rootfs/usr/share/redmine/log/ ${ARTIFACTS_DIR}/redmine/
+    sudo cp -r /var/lib/lxc/managesf/rootfs/var/log/managesf/ ${ARTIFACTS_DIR}/managesf/
+    sudo cp -r /var/lib/lxc/managesf/rootfs/var/log/cauth/ ${ARTIFACTS_DIR}/cauth/
+    sudo cp -r /var/lib/lxc/managesf/rootfs/var/log/httpd/ ${ARTIFACTS_DIR}/httpd/
+    sudo cp -r /var/lib/lxc/managesf/rootfs/var/log/zuul/ ${ARTIFACTS_DIR}/zuul/
+    sudo cp -r /var/lib/lxc/managesf/rootfs/var/log/nodepool/ ${ARTIFACTS_DIR}/nodepool/
+    sudo cp -r /var/lib/lxc/managesf/rootfs/var/lib/jenkins/jobs/ ${ARTIFACTS_DIR}/jenkins-jobs/
+    sudo cp -r /var/lib/lxc/managesf/rootfs/root/config/ ${ARTIFACTS_DIR}/config-project
+    sudo chown -R ${USER} ${ARTIFACTS_DIR}
 }
 
 function host_debug {
