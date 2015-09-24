@@ -84,6 +84,7 @@ function get_logs {
     #This delay is used to wait a bit before fetching log file from hosts
     #in order to not avoid so important logs that can appears some seconds
     #after a failure.
+    set +e
     sleep 5
     O=${ARTIFACTS_DIR}
     ssh -o StrictHostKeyChecking=no root@192.168.135.54 "cd puppet-bootstrapper; ./getlogs.sh"
@@ -93,6 +94,7 @@ function get_logs {
         mkdir -p ${O}/$i/system
         sudo cp -f /var/lib/lxc/$i/rootfs/var/log/{messages,cloud-init*} ${O}/$i/system
     done
+    set -e
 }
 
 function host_debug {
@@ -120,10 +122,10 @@ function pre_fail {
     checkpoint "FAIL: $1"
     host_debug
     checkpoint "host_debug"
-    get_logs
-    checkpoint "get-logs"
-    publish_artifacts
-    checkpoint "publish-artifacts"
+    [ -z "$SWIFT_artifacts_URL" ] && {
+        get_logs
+        checkpoint "get-logs"
+    }
     exit 1
 }
 
