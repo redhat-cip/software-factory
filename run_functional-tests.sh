@@ -29,35 +29,24 @@ display_head
 export IN_FUNC_TESTS=1
 
 function lxc_stop {
-    if [ ! ${SF_SKIP_BOOTSTRAP} ]; then
-        if [ ! ${DEBUG} ]; then
-            (cd bootstraps/lxc; ./start.sh destroy &> ${ARTIFACTS_DIR}/lxc-clean.output)
-        fi
-    fi
+    (cd bootstraps/lxc; ./start.sh stop)
 }
 
 function build {
-    if [ ! ${SF_SKIP_BUILDROLES} ]; then
-        clear_mountpoint
-        # Retry to build role if it fails before exiting
-        ./build_roles.sh ${ARTIFACTS_DIR} || ./build_roles.sh ${ARTIFACTS_DIR} || pre_fail "Roles building FAILED"
-    fi
+    clear_mountpoint
+    # Retry to build role if it fails before exiting
+    ./build_roles.sh ${ARTIFACTS_DIR} || ./build_roles.sh ${ARTIFACTS_DIR} || pre_fail "Roles building FAILED"
 }
 
 function lxc_start {
-    if [ ! ${SF_SKIP_BOOTSTRAP} ]; then
-        clear_mountpoint
-        cd bootstraps/lxc
-        ./start.sh destroy &> ${ARTIFACTS_DIR}/lxc-stop.output
-        ./start.sh init &> ${ARTIFACTS_DIR}/lxc-start.output || pre_fail "LXC bootstrap FAILED"
-        cd -
-    fi
+    clear_mountpoint
+    (cd bootstraps/lxc; ./start.sh init) || pre_fail "LXC start FAILED"
 }
 
 set -x
 prepare_artifacts
 checkpoint "Running tests on $(hostname)"
-(cd bootstraps/lxc; ./start.sh destroy &> ${ARTIFACTS_DIR}/lxc-first-clean.output)
+lxc_stop
 checkpoint "lxc-first-clean"
 build
 checkpoint "build_roles"
@@ -87,7 +76,7 @@ checkpoint "end_tests"
 # through Zuul then a publisher will be used
 [ -z "$SWIFT_artifacts_URL" ] && get_logs
 checkpoint "get-logs"
-lxc_stop
+[ -z "${DEBUG}" ] && lxc_stop
 checkpoint "lxc-stop"
 clean_old_cache
 exit 0;

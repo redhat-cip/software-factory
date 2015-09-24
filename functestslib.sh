@@ -62,7 +62,7 @@ function prepare_artifacts {
 }
 
 function scan_and_configure_knownhosts {
-    local ip=192.168.134.54
+    local ip=192.168.135.54
     rm -f "$HOME/.ssh/known_hosts"
     RETRIES=0
     echo " [+] Starting ssh-keyscan on $ip:22"
@@ -86,8 +86,8 @@ function get_logs {
     #after a failure.
     sleep 5
     O=${ARTIFACTS_DIR}
-    ssh -o StrictHostKeyChecking=no root@192.168.134.54 "cd puppet-bootstrapper; ./getlogs.sh"
-    scp -r -o StrictHostKeyChecking=no root@192.168.134.54:/tmp/logs/* $O/
+    ssh -o StrictHostKeyChecking=no root@192.168.135.54 "cd puppet-bootstrapper; ./getlogs.sh"
+    scp -r -o StrictHostKeyChecking=no root@192.168.135.54:/tmp/logs/* $O/
 
     for i in managesf; do
         mkdir -p ${O}/$i/system
@@ -147,7 +147,7 @@ function waiting_stack_created {
 }
 
 function wait_for_bootstrap_done {
-    ssh -o StrictHostKeyChecking=no root@192.168.134.54 "cd puppet-bootstrapper; exec ./bootstrap.sh"
+    ssh -o StrictHostKeyChecking=no root@192.168.135.54 "cd puppet-bootstrapper; exec ./bootstrap.sh"
     return $?
 }
 
@@ -190,9 +190,9 @@ function reset_etc_hosts_dns {
 function run_functional_tests {
     echo "$(date) ======= Starting functional tests ========="
     echo "[+] Adds tests.dom to /etc/hosts"
-    reset_etc_hosts_dns 'tests.dom' 192.168.134.54
+    reset_etc_hosts_dns 'tests.dom' 192.168.135.54
     for host in puppetmaster redmine mysql gerrit jenkins managesf; do
-        reset_etc_hosts_dns "${host}.tests.dom" 192.168.134.54
+        reset_etc_hosts_dns "${host}.tests.dom" 192.168.135.54
     done
     echo "[+] Avoid ssh error"
     cat << EOF > ~/.ssh/config
@@ -220,7 +220,7 @@ EOF
 
 function run_puppet_allinone_tests {
     echo "$(date) ======= Starting Puppet all in one tests ========="
-    ssh -o StrictHostKeyChecking=no root@192.168.134.54 \
+    ssh -o StrictHostKeyChecking=no root@192.168.135.54 \
             "puppet master --compile allinone --environment=sf" 2>&1 &> ${ARTIFACTS_DIR}/functional-tests.output
     return ${PIPESTATUS[0]}
 }
@@ -249,11 +249,11 @@ function run_backup_restore_tests {
         # Start the provisioner
         ./tools/provisioner_checker/run.sh provisioner
         # Create a backup
-        ssh -o StrictHostKeyChecking=no root@192.168.134.54 "sfmanager --url ${MANAGESF_URL} --auth-server-url ${MANAGESF_URL} --auth user1:userpass backup start"
+        ssh -o StrictHostKeyChecking=no root@192.168.135.54 "sfmanager --url ${MANAGESF_URL} --auth-server-url ${MANAGESF_URL} --auth user1:userpass backup start"
         sleep 10
         # Fetch the backup
-        ssh -o StrictHostKeyChecking=no root@192.168.134.54 "sfmanager --url ${MANAGESF_URL} --auth-server-url ${MANAGESF_URL} --auth user1:userpass backup get"
-        scp -o  StrictHostKeyChecking=no root@192.168.134.54:sf_backup.tar.gz /tmp
+        ssh -o StrictHostKeyChecking=no root@192.168.135.54 "sfmanager --url ${MANAGESF_URL} --auth-server-url ${MANAGESF_URL} --auth user1:userpass backup get"
+        scp -o  StrictHostKeyChecking=no root@192.168.135.54:sf_backup.tar.gz /tmp
         # We assume if we cannot move the backup file
         # we need to stop right now
         return $?
@@ -263,8 +263,8 @@ function run_backup_restore_tests {
         # Run server spec to be more confident
         run_serverspec || pre_fail "Serverspec failed"
         # Restore backup
-        scp -o  StrictHostKeyChecking=no /tmp/sf_backup.tar.gz root@192.168.134.54:/root/
-        ssh -o StrictHostKeyChecking=no root@192.168.134.54 "sfmanager --url ${MANAGESF_URL} --auth-server-url ${MANAGESF_URL} --auth user1:userpass backup restore --filename sf_backup.tar.gz"
+        scp -o  StrictHostKeyChecking=no /tmp/sf_backup.tar.gz root@192.168.135.54:/root/
+        ssh -o StrictHostKeyChecking=no root@192.168.135.54 "sfmanager --url ${MANAGESF_URL} --auth-server-url ${MANAGESF_URL} --auth user1:userpass backup restore --filename sf_backup.tar.gz"
         # Start the checker
         sleep 60
         ./tools/provisioner_checker/run.sh checker

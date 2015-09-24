@@ -30,24 +30,24 @@ hosts:
   localhost:
     ip: 127.0.0.1
   puppetmaster.SF_SUFFIX:
-    ip: 192.168.134.54
+    ip: 192.168.135.54
     host_aliases: [puppetmaster]
   mysql.SF_SUFFIX:
-    ip: 192.168.134.54
+    ip: 192.168.135.54
     host_aliases: [mysql]
   jenkins.SF_SUFFIX:
-    ip: 192.168.134.54
+    ip: 192.168.135.54
     host_aliases: [jenkins]
   redmine.SF_SUFFIX:
-    ip: 192.168.134.54
+    ip: 192.168.135.54
     host_aliases: [redmine]
   api-redmine.SF_SUFFIX:
-    ip: 192.168.134.54
+    ip: 192.168.135.54
   gerrit.SF_SUFFIX:
-    ip: 192.168.134.54
+    ip: 192.168.135.54
     host_aliases: [gerrit]
   managesf.SF_SUFFIX:
-    ip: 192.168.134.54
+    ip: 192.168.135.54
     host_aliases: [managesf, auth.SF_SUFFIX, SF_SUFFIX]
 EOF
     sed -i "s/SF_SUFFIX/${SF_SUFFIX}/g" ${OUTPUT}/hosts.yaml

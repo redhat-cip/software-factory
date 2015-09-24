@@ -1,0 +1,27 @@
+<domain type='lxc'>
+  <name>sf-jenkins</name>
+  <memory unit='MB'>4096</memory>
+  <os>
+    <type>exe</type>
+    <init>/sbin/init</init>
+  </os>
+  <vcpu>4</vcpu>
+  <clock offset='utc'/>
+  <on_poweroff>destroy</on_poweroff>
+  <on_reboot>restart</on_reboot>
+  <on_crash>destroy</on_crash>
+  <devices>
+    <emulator>/usr/libexec/libvirt_lxc</emulator>
+    <filesystem type='mount'>
+      <source dir='/var/lib/lxc/jenkins/rootfs' />
+      <target dir='/'/>
+    </filesystem>
+    <interface type='network'>
+      <source network='sf-net'/>
+      <target dev='sf-vnet02'/>
+      <mac address="00:11:22:33:44:56"/>
+      <ip address="192.168.135.55" netmask="255.255.255.0" />
+    </interface>
+    <console type='pty' />
+  </devices>
+</domain>
