@@ -1,5 +1,4 @@
 #!/bin/bash
-
-service jenkins stop
-bup join -r root@<%= scope.function_hiera(["mysql_url"]) %>: jenkins | tar -xPf -
-service jenkins start
+systemctl stop jenkins
+bup join -r root@managesf.<%= scope.function_hiera(["top_domain"]) %>: jenkins | tar -xPf -
+systemctl start jenkins

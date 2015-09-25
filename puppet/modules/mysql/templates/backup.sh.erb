@@ -1,4 +1,2 @@
 #!/bin/bash
-mysqldump -u root -p<%= @settings['mysql_root_pwd'] %> --ignore-table mysql.event --ignore-table mysql.user  --all-databases | gzip -9   > /root/alldb.sql.gz
-tar --absolute-names -czPf /root/sf_backup.tar.gz /root/.bup /root/alldb.sql.gz
-
+mysqldump -u root -p<%= @settings['mysql_root_pwd'] %> --ignore-table mysql.event --ignore-table mysql.user  --all-databases | gzip -9 | ssh root@managesf.<%= scope.function_hiera(["top_domain"]) %> tee /root/alldb.sql.gz

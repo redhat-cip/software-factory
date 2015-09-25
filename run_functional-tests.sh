@@ -32,12 +32,9 @@ display_head
 prepare_artifacts
 checkpoint "Running tests on $(hostname)"
 lxc_stop
-checkpoint "lxc-first-clean"
 [ -z "${SKIP_BUILD}" ] && {
-    build
-    checkpoint "build_roles"
+    build_image
     prepare_functional_tests_venv
-    checkpoint "prepare_venv"
 } || {
     dir=${INST}/softwarefactory
     sudo rsync -a --delete puppet/manifests/ ${dir}/etc/puppet/environments/sf/manifests/
@@ -49,11 +46,13 @@ checkpoint "lxc-first-clean"
 case "${TEST_TYPE}" in
     "functional")
         lxc_start
+        run_bootstraps
         run_tests
         ;;
-    "backup_restore_tests")
-        echo "[+] Backup/restore tests are not supported..."
-        exit 1
+    "backup")
+        lxc_start
+        run_bootstraps
+        run_backup_tests
         ;;
     "upgrade")
         echo "[+] Upgrade tests from 1.0.4 to 2.0.0 are not supported..."
@@ -71,6 +70,5 @@ checkpoint "end_tests"
 # through Zuul then a publisher will be used
 [ -z "$SWIFT_artifacts_URL" ] && get_logs
 [ -z "${DEBUG}" ] && lxc_stop
-clean_old_cache
 echo "$0: SUCCESS"
 exit 0;

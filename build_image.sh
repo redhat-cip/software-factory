@@ -14,7 +14,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-LOCK="/var/run/sf-build_roles.lock"
+LOCK="/var/run/sf-build_image.lock"
 if [ -f ${LOCK} ]; then
     echo "Lock file present: ${LOCK}"
     killall softwarefactory.install
@@ -54,7 +54,7 @@ function build_img {
     echo $qcow2_md5 | sudo tee ${ROLE_FILE}.qcow2.md5
 }
 
-function build_role {
+function build_image {
     ROLE_NAME="$1"
     ROLE_MD5="$2"
     ROLE_FILE="${INST}/${ROLE_NAME}-${SF_VER}"
@@ -82,13 +82,13 @@ function build_role {
     fi
 }
 
-function finalize_role {
+function finalize_image {
     ROLE_NAME="$1"
     ROLE_FILE="${INST}/${ROLE_NAME}-${SF_VER}"
 
-    echo "(STEP2) Finalize role building..."
+    echo "(STEP2) Finalize image building..."
 
-    # Make sure role tree is not mounted
+    # Make sure image tree is not mounted
     grep -q "${SF_VER}\/${ROLE_NAME}_cache\/proc" /proc/mounts && {
         while true; do
             sudo umount ${INST}/${ROLE_NAME}_cache/proc || break
@@ -119,8 +119,8 @@ function finalize_role {
 }
 
 prepare_buildenv
-build_role "softwarefactory" $(find ${BASE_DEPS} -type f -not -path "*/.git/*" | sort | xargs cat | md5sum | awk '{ print $1}')
-finalize_role "softwarefactory"
+build_image "softwarefactory" $(find ${BASE_DEPS} -type f -not -path "*/.git/*" | sort | xargs cat | md5sum | awk '{ print $1}')
+finalize_image "softwarefactory"
 if [ -n "$VIRT" ]; then
     build_img "softwarefactory" $IMG_CFG
 fi

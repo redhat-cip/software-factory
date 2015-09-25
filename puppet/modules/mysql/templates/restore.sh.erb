@@ -1,7 +1,3 @@
 #!/bin/bash
-tar -xzPf /root/sf_backup.tar.gz
-sleep 2
-gunzip < /root/alldb.sql.gz | mysql -u root -p<%= @settings['mysql_root_pwd'] %>
-sleep 2
-service mariadb restart
-sleep 5
+ssh root@managesf.<%= scope.function_hiera(["top_domain"]) %> cat /root/alldb.sql.gz | gunzip | mysql -u root -p<%= @settings['mysql_root_pwd'] %>
+systemctl restart mariadb

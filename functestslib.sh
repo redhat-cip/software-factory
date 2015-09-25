@@ -6,7 +6,7 @@ DISABLE_SETX=0
 export SF_SUFFIX=${SF_SUFFIX:-tests.dom}
 export SKIP_CLEAN_ROLES="y"
 
-MANAGESF_URL=http://managesf.${SF_SUFFIX}
+MANAGESF_URL=https://${SF_SUFFIX}
 
 ARTIFACTS_DIR="/var/lib/sf/artifacts"
 # This environment variable is set ZUUL in the jenkins job workspace
@@ -14,38 +14,6 @@ ARTIFACTS_DIR="/var/lib/sf/artifacts"
 [ -n "$SWIFT_artifacts_URL" ] && ARTIFACTS_DIR="$(pwd)/../artifacts"
 
 CONFDIR=/var/lib/lxc-conf
-
-function clean_old_cache {
-    # Remove directory older than 1 week (7 days)
-    echo "Removing old item from cache..."
-    for item in $(find /var/lib/sf/roles/upstream/* /var/lib/sf/roles/install/* -maxdepth 0 -ctime +7 2> /dev/null | \
-        grep -v "\(${SF_VER}\|${PREVIOUS_SF_VER}\)"); do
-            if [ -f "${item}" ] || [ -d "${item}" ]; then
-                echo ${item}
-                sudo rm -Rf ${item}
-            fi
-    done
-    echo "Done."
-}
-
-function wait_for_statement {
-    local STATEMENT=$1
-    local EXPECT_RETURN_CODE=${2-0}
-    local MAX_RETRY=${3-40}
-    local SLEEP_TIME=${4-5}
-    while true; do
-        eval "${STATEMENT}" &> /dev/null
-        if [ "$?" == "${EXPECT_RETURN_CODE}" ]; then
-            break
-        fi
-        sleep ${SLEEP_TIME}
-        let MAX_RETRY=MAX_RETRY-1
-        if [ "${MAX_RETRY}" == 0 ]; then
-            echo "Following statement didn't happen: [$STATEMENT]"
-            return 1
-        fi
-    done
-}
 
 function prepare_artifacts {
     [ -d ${ARTIFACTS_DIR} ] && sudo rm -Rf ${ARTIFACTS_DIR}
@@ -67,9 +35,10 @@ function lxc_stop {
     checkpoint "lxc-stop"
 }
 
-function build {
+function build_image {
     # Retry to build role if it fails before exiting
-    ./build_roles.sh ${ARTIFACTS_DIR} || ./build_roles.sh ${ARTIFACTS_DIR} || fail "Roles building FAILED"
+    ./build_image.sh ${ARTIFACTS_DIR} || ./build_image.sh ${ARTIFACTS_DIR} || fail "Roles building FAILED"
+    checkpoint "build_image"
 }
 
 function lxc_start {
@@ -77,23 +46,33 @@ function lxc_start {
     checkpoint "lxc-start"
 }
 
-function scan_and_configure_knownhosts {
+function configure_network {
     local ip=192.168.135.101
     rm -f "$HOME/.ssh/known_hosts"
     RETRIES=0
     echo " [+] Starting ssh-keyscan on $ip:22"
-    while true; do
+    while [ $RETRIES -lt 40 ]; do
         KEY=`ssh-keyscan -p 22 $ip`
         if [ "$KEY" != ""  ]; then
-            ssh-keyscan $ip | tee -a "$HOME/.ssh/known_hosts"
-            echo "  -> $role:22 is up!"
-            return 0
+            echo $KEY > "$HOME/.ssh/known_hosts"
+            echo "  -> $ip:22 is up!"
+            break
         fi
         let RETRIES=RETRIES+1
-        [ "$RETRIES" == "40" ] && return 1
         echo "  [E] ssh-keyscan on $ip:22 failed, will retry in 1 seconds (attempt $RETRIES/40)"
         sleep 1
     done
+    [ $RETRIES -eq 40 ] && fail "Can't connect to $ip"
+    echo "[+] Avoid ssh error"
+    cat << EOF > ~/.ssh/config
+Host tests.dom
+    Hostname 192.168.135.101
+EOF
+    chmod 0600 ~/.ssh/config
+
+    echo "[+] Adds tests.dom to /etc/hosts"
+    reset_etc_hosts_dns 'tests.dom' 192.168.135.101
+    checkpoint "configure_network"
 }
 
 function get_logs {
@@ -115,7 +94,7 @@ function get_logs {
     sudo cp -r /var/lib/lxc/managesf/rootfs/var/lib/jenkins/jobs/ ${ARTIFACTS_DIR}/jenkins-jobs/
     sudo cp -r /var/lib/lxc/managesf/rootfs/root/config/ ${ARTIFACTS_DIR}/config-project
     sudo chown -R ${USER} ${ARTIFACTS_DIR}
-    checkpoint "get-logs"
+    checkpoint "get_logs"
 }
 
 function host_debug {
@@ -129,7 +108,7 @@ function host_debug {
 }
 
 function display_head {
-    echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+    echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
     git log -n 1
     echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
     echo
@@ -143,11 +122,10 @@ function fail {
 
     checkpoint "FAIL: $1"
     host_debug
-    checkpoint "host_debug"
     [ -z "$SWIFT_artifacts_URL" ] && {
         get_logs
-        checkpoint "get-logs"
     }
+    echo "$0: FAILED"
     exit 1
 }
 
@@ -170,13 +148,20 @@ function waiting_stack_created {
     done
 }
 
-function wait_for_bootstrap_done {
+function run_bootstraps {
+    configure_network || fail "Can't SSH"
     eval $(ssh-agent)
     ssh-add ~/.ssh/id_rsa
     ssh -A -tt root@192.168.135.101 "cd bootstraps; exec ./bootstrap.sh ${REFARCH}"
     res=$?
     kill -9 $SSH_AGENT_PID
-    return $res
+    if [ "$res" != "0" ]; then
+        fail "Bootstrap fails"
+    fi
+    echo "[+] Fetch tests.dom ssl cert"
+    scp -r root@tests.dom:/etc/pki/ca-trust/extracted/openssl/ca-bundle.trust.crt /var/lib/sf/venv/lib/python2.7/site-packages/requests/cacert.pem
+    cp /var/lib/sf/venv/lib/python2.7/site-packages/requests/cacert.pem /var/lib/sf/venv/lib/python2.7/site-packages/pip/_vendor/requests/cacert.pem
+    checkpoint "run_bootstraps"
 }
 
 function prepare_functional_tests_venv {
@@ -196,7 +181,7 @@ function prepare_functional_tests_venv {
         cd ${PYSFLIB_CLONED_PATH}; python setup.py install
         cd ${MANAGESF_CLONED_PATH}; python setup.py install
     ) > ${ARTIFACTS_DIR}/venv_prepartion.output
-    checkpoint "/var/lib/sf/venv/ prep"
+    checkpoint "prepare_venv"
 }
 
 function reset_etc_hosts_dns {
@@ -216,24 +201,9 @@ function reset_etc_hosts_dns {
 
 function run_functional_tests {
     echo "$(date) ======= Starting functional tests ========="
-    echo "[+] Adds tests.dom to /etc/hosts"
-    reset_etc_hosts_dns 'tests.dom' 192.168.135.101
-    for host in puppetmaster redmine mysql gerrit jenkins managesf; do
-        reset_etc_hosts_dns "${host}.tests.dom" 192.168.135.101
-    done
-    echo "[+] Avoid ssh error"
-    cat << EOF > ~/.ssh/config
-Host *.tests.dom
-    UserKnownHostsFile no
-    StrictHostKeyChecking no
-EOF
-    chmod 0600 ~/.ssh/config
     echo "[+] Fetch bootstrap data"
     rm -Rf sf-bootstrap-data
-    scp -r root@puppetmaster.tests.dom:sf-bootstrap-data .
-    echo "[+] Fetch tests.dom ssl cert"
-    scp -r root@puppetmaster.tests.dom:/etc/pki/ca-trust/extracted/openssl/ca-bundle.trust.crt /var/lib/sf/venv/lib/python2.7/site-packages/requests/cacert.pem
-    cp /var/lib/sf/venv/lib/python2.7/site-packages/requests/cacert.pem /var/lib/sf/venv/lib/python2.7/site-packages/pip/_vendor/requests/cacert.pem
+    scp -r root@tests.dom:sf-bootstrap-data .
     echo "[+] Run tests"
     sudo rm -Rf /tmp/debug
     . /var/lib/sf/venv/bin/activate
@@ -242,6 +212,7 @@ EOF
     RES=${PIPESTATUS[0]}
     mv /tmp/debug ${ARTIFACTS_DIR}/functional_tests.debug
     deactivate
+    checkpoint "run_functional_tests"
     return $RES
 }
 
@@ -253,21 +224,41 @@ function run_puppet_allinone_tests {
 }
 
 function run_tests {
-    scan_and_configure_knownhosts || fail "Can't SSH"
-    checkpoint "scan_and_configure_knownhosts"
-    wait_for_bootstrap_done || fail "Bootstrap did not complete"
-    checkpoint "wait_for_bootstrap_done"
     run_functional_tests || fail "Functional tests failed"
-    checkpoint "run_functional_tests"
     run_puppet_allinone_tests || fail "Puppet all in one tests failed"
     checkpoint "run_puppet_allinone_tests"
+}
+
+function run_backup_tests {
+    . /var/lib/sf/venv/bin/activate
+    set -x
+    rm -Rf backup_test_project
+    # Create a project, perform a backup, delete project, restore backup, check if project is still there.
+    sfmanager --url "${MANAGESF_URL}" --auth user1:userpass project create --name backup_test_project
+    sfmanager --url "${MANAGESF_URL}" --auth user1:userpass system backup_start || fail "Backup failed"
+    sfmanager --url "${MANAGESF_URL}" --auth user1:userpass system backup_get || fail "Backup get failed"
+    checkpoint "backup created"
+    sfmanager --url "${MANAGESF_URL}" --auth user1:userpass project delete --name backup_test_project
+    git clone http://tests.dom/r/backup_test_project 2> /dev/null && fail "Backup project not deleted" || true
+    sfmanager --url "${MANAGESF_URL}" --auth user1:userpass system restore --filename $(pwd)/sf_backup.tar.gz || fail "Backup resore failed"
+    deactivate
+    checkpoint "backup restore"
+    echo "[+] Waiting for gerrit to restart..."
+    retry=0
+    while [ $retry < 1000 ]; do
+        git clone ${MANAGESF_URL}/r/backup_test_project && break
+        sleep 1
+        retry=$[ $retry + 1 ]
+    done
+    checkpoint "wait for gerrit"
+    [ -d backup_test_project ] || fail "Backup_test project was not restored..."
 }
 
 function run_backup_restore_tests {
     r=$1
     type=$2
     if [ "$type" == "provision" ]; then
-        scan_and_configure_knownhosts
+        configure_network
         wait_for_bootstrap_done || fail "Bootstrap did not complete"
         # Run server spec to be more confident
         run_serverspec || fail "Serverspec failed"
@@ -284,7 +275,7 @@ function run_backup_restore_tests {
         return $?
     fi
     if [ "$type" == "check" ]; then
-        scan_and_configure_knownhosts || fail "Can't SSH"
+        configure_network || fail "Can't SSH"
         # Run server spec to be more confident
         run_serverspec || fail "Serverspec failed"
         # Restore backup
