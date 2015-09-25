@@ -6,8 +6,8 @@ set -e
 # Git config complains about HOME env var missing ...
 export HOME=/root
 
-ADMINUSER=<%= scope.function_hiera(['authentication'])['admin_name'] %>
-ADMINUSEREMAIL=admin@<%= scope.function_hiera(['fqdn']) %>
+ADMINUSER=<%= @auth['admin_name'] %>
+ADMINUSEREMAIL=admin@<%= @fqdn %>
 CLONETEMPDIR="/tmp/All-projects"
 
 [ -d "$CLONETEMPDIR" ] && rm -Rf $CLONETEMPDIR

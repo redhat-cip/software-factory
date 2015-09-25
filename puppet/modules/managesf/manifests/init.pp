@@ -15,13 +15,21 @@
 
 class managesf ($gerrit = hiera_hash('gerrit', ''),
                 $redmine = hiera_hash('redmine', ''),
-                $gerrit_host = hiera('gerrit_host'),
                 $hosts = hiera('hosts'),
                 $cauth = hiera_hash("cauth", '')) {
 
   require hosts
 
-  $gerrit_ip = $hosts["$gerrit_host"]['ip']
+  $fqdn = hiera('fqdn')
+  $auth_url = hiera('auth_url')
+  $mysql_url = hiera('mysql_url')
+  $jenkins_url = hiera('jenkins_url')
+  $managesf_url = hiera('managesf_url')
+  $api_redmine_url = hiera('api_redmine_url')
+  $api_redmine_host = hiera('api_redmine_host')
+  $gateway_url = hiera('gateway_url')
+  $auth = hiera('authentication')
+  $gerrit_ip = $hosts["gerrit.$fqdn"]['ip']
   $gerrit_admin_rsa = hiera('gerrit_admin_rsa')
   $service_rsa = hiera('service_rsa')
 
@@ -101,11 +109,11 @@ class managesf ($gerrit = hiera_hash('gerrit', ''),
   }
 
   exec {'update_gerrithost_knownhost':
-    command => "/usr/bin/ssh-keyscan $gerrit_host >> /usr/share/httpd/.ssh/known_hosts",
+    command => "/usr/bin/ssh-keyscan gerrit.$fqdn >> /usr/share/httpd/.ssh/known_hosts",
     logoutput => true,
     user   => $httpd_user,
     require => File['/usr/share/httpd/.ssh'],
-    unless => "/usr/bin/grep '$gerrit_host ' /usr/share/httpd/.ssh/known_hosts",
+    unless => "/usr/bin/grep 'gerrit.$fqdn ' /usr/share/httpd/.ssh/known_hosts",
   }
 
   file { '/var/www/managesf/sshconfig':

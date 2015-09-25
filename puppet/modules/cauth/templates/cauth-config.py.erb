@@ -20,9 +20,9 @@ app = {
     'static_root': '%(confdir)s/public',
     'template_path': '%(confdir)s/cauth/templates',
     'priv_key_path': '/srv/cauth_keys/privkey.pem',
-    'cookie_domain': '<%= scope.function_hiera(["top_domain"]) %>',
+    'cookie_domain': '<%= @fqdn %>',
     'debug': False,
-    'cookie_period': <%= scope.function_hiera(['authentication'])['sso_cookie_timeout'] %>
+    'cookie_period': <%= @auth['sso_cookie_timeout'] %>
 }
 
 logging = {
@@ -52,37 +52,37 @@ logging = {
 # Authorization configurations
 auth = {
     'ldap': {
-        'host': '<%= scope.function_hiera(['authentication'])['ldap']['ldap_url'] %>',
-        'dn': '<%= scope.function_hiera(['authentication'])['ldap']['ldap_account_username_attribute'] %>=%(username)s,' + '<%= scope.function_hiera(['authentication'])['ldap']['ldap_account_base'] %>',
-        'sn': '<%= scope.function_hiera(['authentication'])['ldap']['ldap_account_surname_attribute'] %>',
-        'mail': '<%= scope.function_hiera(['authentication'])['ldap']['ldap_account_mail_attribute'] %>',
+        'host': '<%= @ldap['ldap_url'] %>',
+        'dn': '<%= @ldap['ldap_account_username_attribute'] %>=%(username)s,' + '<%= @ldap['ldap_account_base'] %>',
+        'sn': '<%= @ldap['ldap_account_surname_attribute'] %>',
+        'mail': '<%= @ldap['ldap_account_mail_attribute'] %>',
     },
     'github': {
-        'top_domain': '<%= scope.function_hiera(["top_domain"]) %>',
+        'top_domain': '<%= @fqdn %>',
         'auth_url':  'https://github.com/login/oauth/authorize',
-        <% if scope.function_hiera(["network"])["enforce_ssl"] %>
-        'redirect_uri': 'https://<%= scope.function_hiera(['fqdn']) %>/auth/login/github/callback',
+        <% if @network['enforce_ssl'] %>
+        'redirect_uri': 'https://<%= @fqdn %>/auth/login/github/callback',
         <% else %>
-        'redirect_uri': 'http://<%= scope.function_hiera(['fqdn']) %>/auth/login/github/callback',
+        'redirect_uri': 'http://<%= @fqdn %>/auth/login/github/callback',
         <% end %>
-        'client_id': '<%= scope.function_hiera(['authentication'])['github']['github_app_id'] %>',
-        'client_secret': '<%= scope.function_hiera(['authentication'])['github']['github_app_secret'] %>',
-        'allowed_organizations': '<%= scope.function_hiera(['authentication'])['github']['allowed_organizations'] %>'
+        'client_id': '<%= @github['github_app_id'] %>',
+        'client_secret': '<%= @github['github_app_secret'] %>',
+        'allowed_organizations': '<%= @github['allowed_organizations'] %>'
     },
     'localdb': {
-        'managesf_url': 'http://managesf.<%= scope.function_hiera(["top_domain"]) %>',
+        'managesf_url': 'http://managesf.<%= @fqdn %>',
     },
     'openid': {
         'auth_url': 'https://login.launchpad.net/+openid',
         'redirect_uri': '/auth/login/openid/callback'
     },
     'users': {
-        "<%= scope.function_hiera(['authentication'])['admin_name'] %>": {
+        "<%= @auth['admin_name'] %>": {
             "lastname": "Software Factory Administrator",
-            "mail": "admin@<%= scope.function_hiera(['top_domain']) %>",
+            "mail": "admin@<%= @fqdn %>",
             "password": "<%= @admin_password_hashed %>",
         },
-        <% if scope.function_hiera(["top_domain"]) == "tests.dom" %>
+        <% if @fqdn == "tests.dom" %>
             "user2": {
                 "lastname": "Demo user2",
                 "mail": "user2@tests.dom",
@@ -116,14 +116,14 @@ sqlalchemy = {
 }
 
 redmine = {
-    'apiurl': '<%= scope.function_hiera(["api_redmine_url"]) %>',
+    'apiurl': '<%= @api_redmine_url %>',
     'apikey': '<%= @redmine['issues_tracker_api_key'] %>',
 }
 
 gerrit = {
-    'url': '<%= scope.function_hiera(["gateway_url"]) %>',
-    'admin_user': '<%= scope.function_hiera(['authentication'])['admin_name'] %>',
-    'admin_password': '<%= scope.function_hiera(['authentication'])['admin_password'] %>',
+    'url': '<%= @gateway_url %>',
+    'admin_user': '<%= @auth['admin_name'] %>',
+    'admin_password': '<%= @auth['admin_password'] %>',
     'db_host': '<%= @gerrit['gerrit_mysql_address'] %>',
     'db_name': '<%= @gerrit['gerrit_mysql_db'] %>',
     'db_user': '<%= @gerrit['gerrit_mysql_username'] %>',

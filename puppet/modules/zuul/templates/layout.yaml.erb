@@ -80,8 +80,8 @@ pipelines:
         - time: '0 0 * * *'
     failure:
       smtp:
-        from: jenkins@<%= scope.function_hiera(["top_domain"]) %>
-        to: dev-robot@<%= scope.function_hiera(["top_domain"]) %>
+        from: jenkins@<%= @fqdn %>
+        to: dev-robot@<%= @fqdn %>
         subject: 'Stable check of {change.project} failed'
 
   - name: tag

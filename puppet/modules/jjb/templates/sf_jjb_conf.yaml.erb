@@ -21,7 +21,7 @@
           echo "Clean workspace"
           rm -Rf ./*
           echo "Clone $ZUUL_PROJECT"
-          zuul-cloner http://<%= scope.function_hiera(["gateway_host"]) %>/r $ZUUL_PROJECT
+          zuul-cloner http://<%= @fqdn %>/r $ZUUL_PROJECT
 
 - builder:
     name: zuul-swift-upload
@@ -79,7 +79,7 @@
           set -e
           rm -Rf config build
           mkdir build
-          zuul-cloner http://<%= scope.function_hiera(["gateway_host"]) %>/r config
+          zuul-cloner http://<%= @fqdn %>/r config
           cd config
           sudo jenkins-jobs test jobs/ -o ../build/
           # concat of layout.yaml and projects.yaml to /etc/zuul/layout.yaml
@@ -109,7 +109,7 @@
           # So fall back on None
           [ "$ZUUL_REF" = "master" ] && ZUUL_REF=None
           rm -Rf config
-          zuul-cloner http://<%= scope.function_hiera(["gateway_host"]) %>/r config
+          zuul-cloner http://<%= @fqdn %>/r config
           cd config
           sudo rm -Rf /var/lib/jenkins/.cache/jenkins_jobs
           sudo jenkins-jobs -l debug --ignore-cache update --delete-old jobs/

@@ -22,7 +22,11 @@ class jjb ($settings = hiera_hash('jenkins', ''),
   require zuul
   require nodepool
 
+  $fqdn = hiera('fqdn')
+  $auth = hiera('authentication')
   $gerrit_admin_rsa = hiera('gerrit_admin_rsa')
+  $gerrit_host = "gerrit.$fqdn"
+  $gateway_url = hiera('gateway_url')
 
   file {'/etc/jenkins_jobs/jenkins_jobs.ini':
     ensure  => file,

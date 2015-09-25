@@ -16,6 +16,8 @@
 class nodepool ($settings = hiera_hash('nodepool', '')) {
 
   $jenkins_rsa_pub = hiera('jenkins_rsa_pub')
+  $nodepool = hiera('nodepool')
+  $fqdn = hiera('fqdn')
 
   $provider = "systemd"
 

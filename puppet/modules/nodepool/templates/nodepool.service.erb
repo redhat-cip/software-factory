@@ -7,7 +7,7 @@ Type=simple
 User=jenkins
 Group=jenkins
 ExecStart=/usr/bin/nodepoold -p /var/run/nodepool/nodepool.pid -l /etc/nodepool/nodepool.logging.conf
-Environment="NODEPOOL_SF_PUBLICIP=<%= scope.function_hiera(["nodepool"])["public_ip"] %>" "NODEPOOL_SF_TOPDOMAIN=<%= scope.function_hiera(["top_domain"]) %>"
+Environment="NODEPOOL_SF_PUBLICIP=<%= @nodepool["public_ip"] %>" "NODEPOOL_SF_TOPDOMAIN=<%= @fqdn %>"
 KillSignal=SIGUSR1
 
 [Install]

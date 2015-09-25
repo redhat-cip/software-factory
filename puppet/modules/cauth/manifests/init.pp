@@ -20,9 +20,17 @@ class cauth ($cauth = hiera_hash('cauth', ''),
 
 
   $auth = hiera('authentication')
-  $admin_password = $auth['admin_password']
-  $admin_password_hashed = generate("/usr/bin/python", "-c", "import crypt, random, string, sys; salt = '\$6\$' + ''.join(random.choice(string.letters + string.digits) for _ in range(16)) + '\$'; sys.stdout.write(crypt.crypt(sys.argv[1], salt))", $admin_password)
+  $fqdn = hiera('fqdn')
+  $theme = hiera('theme')
+  $gateway_url = hiera('gateway_url')
+  $api_redmine_url = hiera('api_redmine_url')
+  $network = hiera('network')
   $privkey_pem = hiera('privkey_pem')
+  $admin_password = $auth['admin_password']
+  $ldap = $auth['ldap']
+  $github = $auth['github']
+
+  $admin_password_hashed = generate("/usr/bin/python", "-c", "import crypt, random, string, sys; salt = '\$6\$' + ''.join(random.choice(string.letters + string.digits) for _ in range(16)) + '\$'; sys.stdout.write(crypt.crypt(sys.argv[1], salt))", $auth['admin_password'])
 
 
   file {'/etc/httpd/conf.d/cauth.conf':

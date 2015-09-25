@@ -17,6 +17,7 @@ class mysql ($settings = hiera_hash('mysql', '')) {
 
     require hosts
 
+    $fqdn = hiera('fqdn')
     $mysql_root_pwd = $settings['mysql_root_pwd']
 
     $mysql = "mariadb"

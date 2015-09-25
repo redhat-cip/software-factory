@@ -18,6 +18,8 @@ class jenkins ($settings = hiera_hash('jenkins', '')) {
   require hosts
 
   $auth = hiera('authentication')
+  $fqdn = hiera('fqdn')
+  $jenkins_url = hiera('jenkins_pub_url')
   $jenkins_password = $settings['jenkins_password']
   $admin_name = $auth['admin_name']
   $jenkins_rsa = hiera('jenkins_rsa')

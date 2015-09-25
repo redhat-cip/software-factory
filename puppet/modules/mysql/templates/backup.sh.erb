@@ -4,4 +4,4 @@ mysqldump -u root -p<%= @settings['mysql_root_pwd'] %> \
     --ignore-table mysql.user  \
     --all-databases | \
         gzip -9 | \
-        ssh root@managesf.<%= scope.function_hiera(["top_domain"]) %> tee /root/alldb.sql.gz > /dev/null
+        ssh root@managesf.<%= @fqdn %> tee /root/alldb.sql.gz > /dev/null

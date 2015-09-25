@@ -1,5 +1,5 @@
 #!/bin/sh
 systemctl stop gerrit
-bup join -r root@managesf.<%= scope.function_hiera(["top_domain"]) %>: gerrit | tar -xPf -
+bup join -r root@managesf.<%= @fqdn %>: gerrit | tar -xPf -
 mysql -u<%= @settings['gerrit_mysql_username'] %> -p<%= @settings['gerrit_mysql_secret'] %> -h<%= @settings['gerrit_mysql_address'] %> -P <%= @settings['gerrit_mysql_port'] %> <%= @settings['gerrit_mysql_db'] %> < /root/gerrit-restore-user-keys.sql
 systemctl start gerrit

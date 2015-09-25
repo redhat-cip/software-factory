@@ -1,7 +1,13 @@
-class lodgeit ($lodgeit = hiera_hash('lodgeit', '')) {
+class lodgeit {
 
   require hosts
   include apache
+
+  $session_key = hiera('creds_lodgeit_session_key')
+  $mysql_db_address = hiera('mysql_url')
+  $mysql_db_secret = hiera('creds_lodgeit_sql_pwd')
+  $mysql_db_username = "lodgeit"
+  $mysql_db = "lodgeit"
 
   file {'init':
     path   => '/lib/systemd/system/lodgeit.service',
@@ -44,5 +50,4 @@ class lodgeit ($lodgeit = hiera_hash('lodgeit', '')) {
     ensure  => link,
     target  => '/srv/lodgeit/lodgeit/lodgeit/static/',
   }
-
 }

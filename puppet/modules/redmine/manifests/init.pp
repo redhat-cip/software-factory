@@ -16,6 +16,11 @@
 class redmine ($settings = hiera_hash('redmine', ''),
                $cauth = hiera_hash('cauth', '')) {
 
+    $theme = hiera('theme')
+    $auth = hiera('authentication')
+    $fqdn = hiera('fqdn')
+    $redmine_pub_url = hiera('redmine_pub_url')
+    $sf_version = hiera('sf_version')
     $mysql_url = $settings['redmine_mysql_db_address']
     $mysql_password = $settings['redmine_mysql_db_secret']
 

@@ -20,8 +20,11 @@ class gerrit ($settings = hiera_hash('gerrit', ''),
   include apache
   include gerrituser
 
+  $fqdn = hiera('fqdn')
+  $redmine_pub_url = hiera('redmine_pub_url')
   $gerrit_service_rsa = hiera('gerrit_service_rsa')
   $gerrit_service_rsa_pub = hiera('gerrit_service_rsa_pub')
+  $auth = hiera('authentication')
   $provider = "systemd"
   $gitweb_cgi = "/var/www/git/gitweb.cgi"
 

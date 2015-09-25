@@ -10,7 +10,7 @@ gerrit:
   gerrit_mysql_username: gerrit
   gerrit_mysql_port: 3306
   http_basic_auth: true
-  gerrit_admin_mail: "admin@%{hiera('top_domain')}"
+  gerrit_admin_mail: "admin@%{hiera('fqdn')}"
   gerrit_admin_sshkey: "ssh-rsa %{hiera('creds_gerrit_admin_sshkey')}"
   gerrit_admin_key: "%{hiera('creds_gerrit_admin_sshkey')}"
   gerrit_jenkins_sshkey: "ssh-rsa %{hiera('creds_jenkins_pub_key')}"

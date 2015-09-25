@@ -22,10 +22,10 @@ targets:
 
 providers:
  - name: default
-   username: '<%= scope.function_hiera(['nodepool'])["nodepool_os_username"] %>'
-   password: '<%= scope.function_hiera(['nodepool'])["nodepool_os_password"] %>'
-   project-id: '<%= scope.function_hiera(['nodepool'])["nodepool_os_project_id"] %>'
-   auth-url: '<%= scope.function_hiera(['nodepool'])["nodepool_os_auth_url"] %>'
-   pool: '<%= scope.function_hiera(['nodepool'])["nodepool_os_pool"] %>'
-   max-servers: <%= scope.function_hiera(['nodepool'])["nodepool_os_pool_max_amount"] %>
-   rate: <%= scope.function_hiera(['nodepool'])["nodepool_provider_rate"] %>
+   username: '<%= @nodepool["nodepool_os_username"] %>'
+   password: '<%= @nodepool["nodepool_os_password"] %>'
+   project-id: '<%= @nodepool["nodepool_os_project_id"] %>'
+   auth-url: '<%= @nodepool["nodepool_os_auth_url"] %>'
+   pool: '<%= @nodepool["nodepool_os_pool"] %>'
+   max-servers: <%= @nodepool["nodepool_os_pool_max_amount"] %>
+   rate: <%= @nodepool["nodepool_provider_rate"] %>

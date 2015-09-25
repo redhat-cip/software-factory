@@ -21,6 +21,14 @@ class commonservices-apache ($cauth = hiera_hash('cauth', '')) {
   $authenticated_only = $auth['authenticated_only']
   $gateway_crt = hiera('gateway_crt')
   $gateway_key = hiera('gateway_key')
+  $gerrit_url = hiera('gerrit_url')
+  $jenkins_url = hiera('jenkins_url')
+  $redmine_url = hiera('redmine_url')
+  $managesf_url = hiera('managesf_url')
+  $network = hiera('network')
+  $fqdn = hiera('fqdn')
+  $theme = hiera('theme')
+  $sf_version = hiera('sf_version')
 
   file {'gateway_crt':
     path  => '/etc/httpd/conf.d/gateway.crt',

@@ -13,8 +13,9 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-class bup ($settings = hiera_hash('bup', '')){
+class bup {
 
+    $settings = hiera_hash('bup', '')
     $bup_minute = $settings['bup_minute']
     $bup_hour = $settings['bup_hour']
     $bup_month = $settings['bup_month']

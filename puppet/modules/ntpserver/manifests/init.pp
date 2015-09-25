@@ -16,11 +16,12 @@
 
 class ntpserver () {
     $network = hiera('network')
+    $reference_server = $network['ntp_main_server']
 
     case $hostname {
         'managesf' : {
             class { '::ntp':
-                    servers => [$network['ntp_main_server']],
+                    servers => [$reference_server',],
                     restrict => ['redmine', 'mysql', 'gerrit', 'jenkins', 'slave', 'managesf'],
             }
         }

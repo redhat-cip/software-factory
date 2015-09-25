@@ -26,10 +26,10 @@
   link = "#q,$1,n,z"
 [commentlink "Redmine_addressing"]
     match = "([Bb]ug|[Ff]ix|[Ss]tory|[Ii]ssue|[Cc]loses?):\\s+#?(\\d+)"
-    html = $1<a href=\"<%= scope.function_hiera(["redmine_pub_url"]) %>/issues/$2\">$2</a>
+    html = $1<a href=\"<%= @redmine_pub_url %>/issues/$2\">$2</a>
 [commentlink "Redmine_related"]
     match = "([Rr]elated|[Rr]elated[ -][Tt]o):\\s+#?(\\d+)"
-    html = $1<a href=\"<%= scope.function_hiera(["redmine_pub_url"]) %>/issues/$2\">$2</a>
+    html = $1<a href=\"<%= @redmine_pub_url %>/issues/$2\">$2</a>
 [gitweb]
     cgi = <%= @gitweb_cgi %>
 [sendemail]
@@ -48,4 +48,4 @@
 [cache]
     directory = cache
 [user]
-    email = gerrit@<%= scope.function_hiera(["top_domain"]) %>
+    email = gerrit@<%= @fqdn %>

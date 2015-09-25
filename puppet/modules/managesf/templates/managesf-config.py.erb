@@ -49,40 +49,40 @@ logging = {
 
 # Authorization configurations
 auth = {
-    'host': '<%= scope.function_hiera(["auth_url"]) %>',
+    'host': '<%= @auth_url %>',
 }
 
 mysql = {
-    'host': '<%= scope.function_hiera(["mysql_url"]) %>',
+    'host': '<%= @mysql_url %>',
 }
 jenkins = {
-    'host': '<%= scope.function_hiera(["jenkins_url"]) %>',
+    'host': '<%= @jenkins_url %>',
 }
 
 managesf = {
-    'host': '<%= scope.function_hiera(["managesf_url"]) %>',
+    'host': '<%= @managesf_url %>',
     'sshkey_priv_path': '/usr/share/httpd/.ssh/id_rsa',
 }
 
 admin = {
-    'name': '<%= scope.function_hiera(['authentication'])['admin_name'] %>',
-    'email': 'admin@<%= scope.function_hiera(['fqdn']) %>',
-    'http_password': '<%= scope.function_hiera(['authentication'])['admin_password'] %>',
+    'name': '<%= @auth['admin_name'] %>',
+    'email': 'admin@<%= @fqdn %>',
+    'http_password': '<%= @auth['admin_password'] %>',
 }
 
 gerrit = {
     'user': 'gerrit',
-    'host': '<%= scope.function_hiera(["gerrit_host"]) %>',
-    'url': '<%= scope.function_hiera(["gateway_url"]) %>',
-    'top_domain': '<%= scope.function_hiera(["top_domain"]) %>',
+    'host': 'gerrit.<%= @fqdn %>',
+    'url': '<%= @gateway_url %>',
+    'top_domain': '<%= @fqdn %>',
     'ssh_port': <%= @gerrit['gerrit_sshd_port'] %>,
     'sshkey_priv_path': '/var/www/managesf/gerrit_admin_rsa',
     'replication_config_path': '/home/gerrit/site_path/etc/replication.config'
 }
 
 redmine = {
-    'host': '<%= scope.function_hiera(["api_redmine_host"]) %>',
-    'url': '<%= scope.function_hiera(["api_redmine_url"]) %>',
+    'host': '<%= @api_redmine_host %>',
+    'url': '<%= @api_redmine_url %>',
     'api_key': '<%= @redmine['issues_tracker_api_key'] %>'
 }
 
@@ -95,6 +95,6 @@ htpasswd = {
     'filename': '/etc/httpd/managesf_htpasswd'
 }
 
-<% if scope.function_hiera(["top_domain"]) == "tests.dom" or scope.function_hiera(["top_domain"]) == "localtests.dom" %>
+<% if @fqdn == "tests.dom" %>
 project_create_administrator_only = False
 <% end %>

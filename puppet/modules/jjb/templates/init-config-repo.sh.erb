@@ -19,18 +19,18 @@ set -e
 
 [ "$1" = "upgrade" ] && upgrade=true || upgrade=false
 
-gerrit_host=<%= scope.function_hiera(["gerrit_host"]) %>
+gerrit_host=<%= @gerrit_host %>
 gerrit_ssh_port=<%= @gerrit['gerrit_sshd_port'] %>
 gh="$gerrit_host:$gerrit_ssh_port"
 
-gateway_host="<%= scope.function_hiera(["gateway_host"]) %>"
-gateway_url="<%= scope.function_hiera(["gateway_url"]) %>"
+gateway_host="<%= @fqdn %>"
+gateway_url="<%= @gateway_url %>"
 
-admin="<%= scope.function_hiera(['authentication'])['admin_name'] %>"
-admin_http_password="<%= scope.function_hiera(['authentication'])['admin_password'] %>"
+admin="<%= @auth['admin_name'] %>"
+admin_http_password="<%= @auth['admin_password'] %>"
 auth=$admin:$admin_http_password
 
-admin_email="admin@<%= scope.function_hiera(['fqdn']) %>"
+admin_email="admin@<%= @fqdn %>"
 
 gerrit_ssh_key="/root/gerrit_admin_rsa"
 jenkins_kick_script="/usr/local/jenkins/slave_scripts/kick.sh"

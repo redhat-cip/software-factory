@@ -13,9 +13,15 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-class etherpad ($etherpad = hiera_hash('etherpad', '')) {
+class etherpad {
 
   require hosts
+
+  $session_key = hiera('creds_etherpad_session_key')
+  $mysql_db_address = hiera('mysql_url')
+  $mysql_db_secret = hiera('creds_etherpad_sql_pwd')
+  $mysql_db_username = "etherpad"
+  $mysql_db = "etherpad"
 
   file { 'init_script':
     path    => '/lib/systemd/system/etherpad.service',

@@ -1,6 +1,4 @@
 ---
-top_domain: "%{hiera('fqdn')}"
-gateway_host: "%{hiera('fqdn')}"
 gateway_url: "http://%{hiera('fqdn')}"
 redmine_url: "http://redmine.%{hiera('fqdn')}:8083/redmine/"
 redmine_host: "redmine.%{hiera('fqdn')}"

@@ -6,11 +6,11 @@ SET @http_auth_config_value="--- !ruby/hash:ActiveSupport::HashWithIndifferentAc
   auto_registration: 'true'
 ";
 SET @api_key="<%= @settings['issues_tracker_api_key'] %>";
-SET @username="<%= scope.function_hiera(['authentication'])['admin_name'] %>";
-SET @email="admin@<%= scope.function_hiera(['fqdn']) %>";
-SET @host="<%= scope.function_hiera(["redmine_pub_url"]) %>";
-SET @mailfrom="redmine@<%= scope.function_hiera(["top_domain"]) %>";
-SET @footer="You have received this notification because you have either subscribed to it, or are involved in it. To change your notification preferences, please click here: <%= scope.function_hiera(["redmine_pub_url"]) %>my/account";
+SET @username="<%= @auth['admin_name'] %>";
+SET @email="admin@<%= @fqdn %>";
+SET @host="<%= @redmine_pub_url %>";
+SET @mailfrom="redmine@<%= @fqdn %>";
+SET @footer="You have received this notification because you have either subscribed to it, or are involved in it. To change your notification preferences, please click here: <%= @redmine_pub_url %>my/account";
 
 
 INSERT IGNORE INTO settings (name, value, updated_on) SELECT * FROM (SELECT 'rest_api_enabled','1', CURRENT_TIMESTAMP()) AS TMP WHERE NOT EXISTS(SELECT name FROM settings WHERE name='rest_api_enabled');

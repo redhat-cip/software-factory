@@ -1,2 +1,2 @@
 #!/bin/sh
-tar --absolute-names -cf - /home/gerrit/site_path/git | bup split -r root@managesf.<%= scope.function_hiera(["top_domain"]) %>: -n gerrit
+tar --absolute-names -cf - /home/gerrit/site_path/git | bup split -r root@managesf.<%= @fqdn %>: -n gerrit

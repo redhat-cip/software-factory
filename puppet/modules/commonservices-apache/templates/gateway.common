@@ -37,21 +37,21 @@
         ProxyVia On
         ProxyRequests Off
 
-        ProxyPass /r/ <%= scope.function_hiera(["gerrit_url"]) %>:8000/r/ nocanon retry=0
-        ProxyPassReverse /r/ <%= scope.function_hiera(["gerrit_url"]) %>:8000/r/
+        ProxyPass /r/ <%= @gerrit_url %>:8000/r/ nocanon retry=0
+        ProxyPassReverse /r/ <%= @gerrit_url %>:8000/r/
 
         # Requires internal authentication in Gerrit (without SSO)
-        ProxyPass /api/ <%= scope.function_hiera(["gerrit_url"]) %>:8000/r/ nocanon
-        ProxyPassReverse /api/ <%= scope.function_hiera(["gerrit_url"]) %>:8000/
+        ProxyPass /api/ <%= @gerrit_url %>:8000/r/ nocanon
+        ProxyPassReverse /api/ <%= @gerrit_url %>:8000/
 
-        ProxyPass /jenkins/ http://<%= scope.function_hiera(["jenkins_url"]) %>:8081/jenkins/ nocanon retry=0
-        ProxyPassReverse /jenkins/ http://<%= scope.function_hiera(["jenkins_url"]) %>:8081/jenkins/
+        ProxyPass /jenkins/ http://<%= @jenkins_url %>:8081/jenkins/ nocanon retry=0
+        ProxyPassReverse /jenkins/ http://<%= @jenkins_url %>:8081/jenkins/
 
-        ProxyPass /zuul/ http://<%= scope.function_hiera(["jenkins_url"]) %>:8084/ nocanon retry=0
-        ProxyPassReverse /zuul/ http://<%= scope.function_hiera(["jenkins_url"]) %>:8084/
+        ProxyPass /zuul/ http://<%= @jenkins_url %>:8084/ nocanon retry=0
+        ProxyPassReverse /zuul/ http://<%= @jenkins_url %>:8084/
 
-        ProxyPass /redmine/ <%= scope.function_hiera(["redmine_url"]) %>/ nocanon retry=0
-        ProxyPassReverse /redmine/ <%= scope.function_hiera(["redmine_url"]) %>/
+        ProxyPass /redmine/ <%= @redmine_url %>/ nocanon retry=0
+        ProxyPassReverse /redmine/ <%= @redmine_url %>/
 
         ProxyPass /etherpad/ http://127.0.0.1:9001/ retry=0
         ProxyPassReverse /etherpad/ http://127.0.0.1:9001/
@@ -93,7 +93,7 @@
         require valid-user
 
         Order Allow,Deny
-        Allow from <%= scope.function_hiera(["managesf_url"]) %>
+        Allow from <%= @managesf_url %>
 
         # Grant access based on password authentication or IP address
         Satisfy any

@@ -1,5 +1,5 @@
-root    <%= scope.function_hiera(["network"])["admin_mail_forward"] %>
-jenkins <%= scope.function_hiera(["network"])["admin_mail_forward"] %>
-backup  <%= scope.function_hiera(["network"])["admin_mail_forward"] %>
-gerrit  <%= scope.function_hiera(["network"])["admin_mail_forward"] %>
-<%= scope.function_hiera(["authentication"])["admin_name"] %> <%= scope.function_hiera(["network"])["admin_mail_forward"] %>
+root    <%= @network["admin_mail_forward"] %>
+jenkins <%= @network["admin_mail_forward"] %>
+backup  <%= @network["admin_mail_forward"] %>
+gerrit  <%= @network["admin_mail_forward"] %>
+<%= @auth["admin_name"] %> <%= @network["admin_mail_forward"] %>

@@ -15,8 +15,17 @@
 
 class auto_backup () {
 
-  $t = hiera('top_domain')
-  $m = "admin@${t}"
+  $fqdn = hiera('fqdn')
+  $auth = hiera('authentication')
+  $backup = hiera('backup')
+
+  $mail = "admin@${fqdn}"
+  $admin_name = $auth['admin_name']
+  $admin_password = $auth['admin_password']
+  $os_auth_url = $backup['os_auth_url']
+  $os_tenant_name = $backup['os_tenant_name']
+  $os_username = $backup['os_username']
+  $os_password = $backup['os_password']
 
   file {'/etc/auto_backup.conf':
     ensure => file,
@@ -32,7 +41,7 @@ class auto_backup () {
 
   cron {'auto_backup':
     command => "/usr/local/bin/export_backup_swift.sh",
-    environment => "MAILTO=$m",
+    environment => "MAILTO=$mail",
     user    => root,
     hour    => 0,
     minute  => 30,

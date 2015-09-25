@@ -13,9 +13,10 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-class ssh_keys ($keys = hiera_hash("ssh_keys")) {
+class ssh_keys {
 
   $service_rsa = hiera('service_rsa')
+  $keys = hiera_hash('ssh_keys', '')
 
   file { '/root/.ssh':
     ensure  => directory,

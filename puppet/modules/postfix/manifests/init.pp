@@ -12,11 +12,14 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-class postfix ($settings = hiera_hash('postfix', '')) {
+class postfix {
 
   require hosts
 
-  $provider = "systemd"
+  $network = hiera('network')
+  $auth = hiera('authentication')
+  $smtp_relay = $network['smtp_relay']
+  $domain = hiera('fqdn')
 
   group { 'postfix':
     ensure => present,
@@ -66,7 +69,6 @@ class postfix ($settings = hiera_hash('postfix', '')) {
     ensure      => running,
     enable      => true,
     hasrestart  => true,
-    provider    => $provider,
     require     => [Package['postfix'], Exec['/etc/mailname']],
     subscribe   => File['/etc/postfix/main.cf'],
   }

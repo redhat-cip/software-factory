@@ -1,5 +1,5 @@
-SET @username="<%= scope.function_hiera(['authentication'])['admin_name'] %>";
-SET @mail="admin@<%= scope.function_hiera(['fqdn']) %>";
+SET @username="<%= @auth['admin_name'] %>";
+SET @mail="admin@<%= @fqdn %>";
 SET @pubkey="<%= @settings['gerrit_admin_sshkey'] %>";
 SET @pubkey2="<%= @settings['gerrit_local_sshkey'] %>";
 
