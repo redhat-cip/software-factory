@@ -413,6 +413,7 @@ function install_paste {
     do_chroot ${dir} mkdir -p /srv/lodgeit
     retry do_chroot ${dir} git clone ${PASTE_URL} /srv/lodgeit/lodgeit
     do_chroot ${dir} bash -c "cd /srv/lodgeit/lodgeit && git checkout ${PASTE_VERSION}"
+    do_chroot ${dir} chown -R apache:apache /srv/lodgeit
 
     # Replace absolute URLs beginning with /static/
     do_chroot ${dir} sed -i -e 's#/static/#/static/lodgeit/#g' /srv/lodgeit/lodgeit/lodgeit/views/layout.html

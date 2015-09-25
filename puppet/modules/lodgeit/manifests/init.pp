@@ -11,18 +11,12 @@ class lodgeit ($lodgeit = hiera_hash('lodgeit', '')) {
     require => File['/srv/lodgeit/lodgeit/manage.py'],
   }
 
-  file { '/srv/lodgeit':
-    ensure => directory,
-    recurse => true,
-    mode   => '0644',
-    owner  => $httpd_user,
-    group  => $httpd_user,
-  }
-
   file { "/srv/lodgeit/lodgeit/manage.py":
     ensure  => present,
     mode    => '0755',
     replace => true,
+    owner   => $httpd_user,
+    group   => $httpd_user,
     content => template('lodgeit/manage.py.erb'),
     notify  => Service['lodgeit'],
   }
@@ -31,7 +25,9 @@ class lodgeit ($lodgeit = hiera_hash('lodgeit', '')) {
     ensure  => present,
     mode    => '0755',
     replace => true,
-    source =>'puppet:///modules/lodgeit/urls.py',
+    owner   => $httpd_user,
+    group   => $httpd_user,
+    source  => 'puppet:///modules/lodgeit/urls.py',
     notify  => Service['lodgeit'],
   }
 
