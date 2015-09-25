@@ -58,7 +58,6 @@ function build_role {
     ROLE_NAME="$1"
     ROLE_MD5="$2"
     ROLE_FILE="${INST}/${ROLE_NAME}-${SF_VER}"
-    UPSTREAM_FILE="${UPSTREAM}/${ROLE_NAME}-${SF_VER}"
 
     echo "(STEP1) ${ROLE_NAME} local hash is ${ROLE_MD5}"
 
@@ -107,7 +106,7 @@ function finalize_role {
 
     TAGGED_RELEASE=${TAGGED_RELEASE} PYSFLIB_PINNED_VERSION=${PYSFLIB_PINNED_VERSION} \
     MANAGESF_PINNED_VERSION=${MANAGESF_PINNED_VERSION} CAUTH_PINNED_VERSION=${CAUTH_PINNED_VERSION} \
-    sudo -E ./edeploy/fetch_subprojects.sh
+    ./edeploy/fetch_subprojects.sh
 
     cd $SF_ROLES
     STEP=2 DOCDIR=$DOCDIR GERRITHOOKS=$GERRITHOOKS PYSFLIB_CLONED_PATH=$PYSFLIB_CLONED_PATH \

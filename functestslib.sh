@@ -163,12 +163,11 @@ function prepare_functional_tests_venv {
         . /var/lib/sf/venv/bin/activate
         pip install --upgrade pip
         pip install -r ${PYSFLIB_CLONED_PATH}/requirements.txt
-        pip install -r ${CAUTH_CLONED_PATH}/requirements.txt
+        sed -i '/pysflib/d' ${MANAGESF_CLONED_PATH}/requirements.txt
         pip install -r ${MANAGESF_CLONED_PATH}/requirements.txt
         pip install --upgrade setuptools pbr pycrypto
         pip install pyOpenSSL ndg-httpsclient pyasn1 nose git-review
         cd ${PYSFLIB_CLONED_PATH}; python setup.py install
-        cd ${CAUTH_CLONED_PATH}; python setup.py install
         cd ${MANAGESF_CLONED_PATH}; python setup.py install
     ) > ${ARTIFACTS_DIR}/venv_prepartion.output
     checkpoint "/var/lib/sf/venv/ prep"

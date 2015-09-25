@@ -29,9 +29,7 @@ SWIFT_DOCS_URL="${SWIFT_BASE_URL}/v1/AUTH_${SWIFT_ACCOUNT}/sfdocs"
 
 # Paths
 WORKSPACE=/var/lib/sf
-CLONES_DIR=$WORKSPACE/git
 BUILD_DIR=$WORKSPACE/roles
-EDEPLOY=$WORKSPACE/git/edeploy/
 
 CREATE_IMG=$PWD/edeploy/create-image.sh
 # Qcow2 params
@@ -39,10 +37,11 @@ IMG_CFG=$PWD/edeploy/params.virt
 
 UPSTREAM=${BUILD_DIR}/upstream
 INST=${BUILD_DIR}/install/${SF_VER}
+DEPS="${PWD}/../deps"
 
-PYSFLIB_CLONED_PATH="${PWD}/../deps/pysflib"
-CAUTH_CLONED_PATH="${PWD}/../deps/cauth"
-MANAGESF_CLONED_PATH="${PWD}/../deps/managesf"
+PYSFLIB_CLONED_PATH="${DEPS}/pysflib"
+CAUTH_CLONED_PATH="${DEPS}/cauth"
+MANAGESF_CLONED_PATH="${DEPS}/managesf"
 SUBPROJECTS_DEPS="$PYSFLIB_CLONED_PATH $CAUTH_CLONED_PATH $MANAGESF_CLONED_PATH"
 
 DOCDIR="${PWD}/docs"
@@ -57,7 +56,6 @@ function prepare_buildenv {
     fi
 
     [ ! -d "$BUILD_DIR" ] && sudo mkdir -p $BUILD_DIR
-    [ ! -d "$UPSTREAM" ] && sudo mkdir -p $UPSTREAM
-    [ ! -d "$CLONES_DIR" ] && sudo mkdir -p $CLONES_DIR
-    sudo chown -R ${USER} ${CLONES_DIR}
+    [ ! -d "$DEPS" ] && sudo mkdir -p $DEPS && sudo chown ${USER}:root $DEPS
+    [ ! -d "$UPSTREAM" ] && sudo mkdir -p $UPSTREAM || true
 }

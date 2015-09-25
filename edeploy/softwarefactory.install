@@ -469,10 +469,13 @@ EOF
 
 install_misc() {
     # Install swift client for the backup script
-    pip install python-swiftclient
+    retry do_chroot ${dir} pip install python-swiftclient
 
     # install third party puppet modules
     retry do_chroot $dir puppet module install puppetlabs-ntp --environment=sf
+
+    # Pin Balel to 2.0 especially for the version of lodgeit we use
+    retry do_chroot ${dir} pip install -U Babel==2.0
 }
 
 
