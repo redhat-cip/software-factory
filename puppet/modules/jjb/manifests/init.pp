@@ -22,6 +22,8 @@ class jjb ($settings = hiera_hash('jenkins', ''),
   require zuul
   require nodepool
 
+  $gerrit_admin_rsa = hiera('gerrit_admin_rsa')
+
   file {'/etc/jenkins_jobs/jenkins_jobs.ini':
     ensure  => file,
     mode    => '0400',
@@ -36,7 +38,7 @@ class jjb ($settings = hiera_hash('jenkins', ''),
     mode   => '0400',
     owner  => "root",
     group  => "root",
-    source => 'puppet:///modules/jjb/gerrit_admin_rsa',
+    content => inline_template('<%= @gerrit_admin_rsa %>'),
   }
 
   file {'/usr/bin/sfmanager':

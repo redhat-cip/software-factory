@@ -22,6 +22,8 @@ class managesf ($gerrit = hiera_hash('gerrit', ''),
   require hosts
 
   $gerrit_ip = $hosts["$gerrit_host"]['ip']
+  $gerrit_admin_rsa = hiera('gerrit_admin_rsa')
+  $service_rsa = hiera('service_rsa')
 
   file {'/etc/httpd/conf.d/managesf.conf':
     ensure => file,
@@ -46,7 +48,7 @@ class managesf ($gerrit = hiera_hash('gerrit', ''),
     owner   => $httpd_user,
     group   => $httpd_user,
     mode    => '0600',
-    source  => 'puppet:///modules/managesf/service_rsa',
+    content => inline_template('<%= @service_rsa %>'),
     require => File['/usr/share/httpd/.ssh'],
   }
 
@@ -86,7 +88,7 @@ class managesf ($gerrit = hiera_hash('gerrit', ''),
     owner   => $httpd_user,
     group   => $httpd_user,
     mode   => '0400',
-    source => 'puppet:///modules/managesf/gerrit_admin_rsa',
+    content => inline_template('<%= @gerrit_admin_rsa %>'),
     require => File['/var/www/managesf/'],
   }
 

@@ -21,6 +21,7 @@ class cauth ($cauth = hiera_hash('cauth', ''),
 
   $admin_password = hiera('admin_password')
   $admin_password_hashed = generate("/usr/bin/python", "-c", "import crypt, random, string, sys; salt = '\$6\$' + ''.join(random.choice(string.letters + string.digits) for _ in range(16)) + '\$'; sys.stdout.write(crypt.crypt(sys.argv[1], salt))", $admin_password)
+  $privkey_pem = hiera('privkey_pem')
 
 
   file {'/etc/httpd/conf.d/cauth.conf':
@@ -74,7 +75,7 @@ class cauth ($cauth = hiera_hash('cauth', ''),
     owner => 'root',
     group => 'root',
     mode  => '0444',
-    source => 'puppet:///modules/cauth/privkey.pem'
+    content => inline_template('<%= @privkey_pem %>'),
   }
 
   file { '/var/www/cauth/config.py':

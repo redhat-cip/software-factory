@@ -20,6 +20,8 @@ class gerrit ($settings = hiera_hash('gerrit', ''),
   include apache
   include gerrituser
 
+  $gerrit_service_rsa = hiera('gerrit_service_rsa')
+  $gerrit_service_rsa_pub = hiera('gerrit_service_rsa_pub')
   $provider = "systemd"
   $gitweb_cgi = "/var/www/git/gitweb.cgi"
 
@@ -90,7 +92,7 @@ class gerrit ($settings = hiera_hash('gerrit', ''),
     owner   => 'gerrit',
     group   => 'gerrit',
     mode    => '0600',
-    source  => 'puppet:///modules/gerrit/gerrit_service_rsa',
+    content => inline_template('<%= @gerrit_service_rsa %>'),
     require => File['/home/gerrit/site_path/etc'],
   }
   file { '/home/gerrit/.ssh/id_rsa':
@@ -98,7 +100,7 @@ class gerrit ($settings = hiera_hash('gerrit', ''),
     owner   => 'gerrit',
     group   => 'gerrit',
     mode    => '0600',
-    source  => 'puppet:///modules/gerrit/gerrit_service_rsa',
+    content => inline_template('<%= @gerrit_service_rsa %>'),
     require => File['/home/gerrit/.ssh'],
   }
   file { '/home/gerrit/site_path/etc/ssh_host_rsa_key.pub':
@@ -106,7 +108,7 @@ class gerrit ($settings = hiera_hash('gerrit', ''),
     owner   => 'gerrit',
     group   => 'gerrit',
     mode    => '0644',
-    source  => 'puppet:///modules/gerrit/gerrit_service_rsa.pub',
+    content => inline_template('<%= @gerrit_service_rsa_pub %>'),
     require => File['/home/gerrit/site_path/etc'],
   }
   file { '/home/gerrit/site_path/plugins/replication.jar':

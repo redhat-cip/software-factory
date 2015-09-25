@@ -104,6 +104,17 @@ function generate_creds_yaml {
     # Lodgeit/Paste part
     LODGEIT_SESSION_KEY=$(generate_random_pswd 32)
     sed -i "s#LODGEIT_SESSION_KEY#${LODGEIT_SESSION_KEY}#" ${OUTPUT}/sfcreds.yaml
+
+    ./hieraedit.py --yaml ${OUTPUT}/sfcreds.yaml -f ${BUILD}/ssh_keys/service_rsa service_rsa
+    ./hieraedit.py --yaml ${OUTPUT}/sfcreds.yaml -f ${BUILD}/ssh_keys/jenkins_rsa jenkins_rsa
+    ./hieraedit.py --yaml ${OUTPUT}/sfcreds.yaml -f ${BUILD}/ssh_keys/jenkins_rsa.pub jenkins_rsa_pub
+    ./hieraedit.py --yaml ${OUTPUT}/sfcreds.yaml -f ${BUILD}/ssh_keys/gerrit_admin_rsa gerrit_admin_rsa
+    ./hieraedit.py --yaml ${OUTPUT}/sfcreds.yaml -f ${BUILD}/ssh_keys/gerrit_service_rsa gerrit_service_rsa
+    ./hieraedit.py --yaml ${OUTPUT}/sfcreds.yaml -f ${BUILD}/ssh_keys/gerrit_service_rsa.pub gerrit_service_rsa_pub
+    ./hieraedit.py --yaml ${OUTPUT}/sfcreds.yaml -f ${BUILD}/certs/privkey.pem privkey_pem
+    ./hieraedit.py --yaml ${OUTPUT}/sfcreds.yaml -f ${BUILD}/certs/pubkey.pem  pubkey_pem
+    ./hieraedit.py --yaml ${OUTPUT}/sfcreds.yaml -f ${BUILD}/certs/gateway.key gateway_key
+    ./hieraedit.py --yaml ${OUTPUT}/sfcreds.yaml -f ${BUILD}/certs/gateway.crt gateway_crt
 }
 
 function generate_keys {
@@ -111,7 +122,6 @@ function generate_keys {
 
     # Service key is used to allow root access from managesf to other nodes
     ssh-keygen -N '' -f ${OUTPUT}/service_rsa
-    cp ${OUTPUT}/service_rsa /root/.ssh/id_rsa
     ssh-keygen -N '' -f ${OUTPUT}/jenkins_rsa
     ssh-keygen -N '' -f ${OUTPUT}/gerrit_service_rsa
     ssh-keygen -N '' -f ${OUTPUT}/gerrit_admin_rsa
@@ -143,37 +153,11 @@ EOF
 }
 
 function prepare_etc_puppet {
-    SSH_KEYS=${BUILD}/ssh_keys
-    CERTS=${BUILD}/certs
     HIERA=${BUILD}/hiera
     cp ${HIERA}/sfconfig.yaml /etc/puppet/hiera/sf
     cp ${HIERA}/sfcreds.yaml /etc/puppet/hiera/sf
     cp ${HIERA}/hosts.yaml /etc/puppet/hiera/sf
-    TMP_VERSION=$(grep ^VERS= /var/lib/edeploy/conf | cut -d"=" -f2)
-    if [ -z "${TMP_VERSION}" ]; then
-        echo "FAIL: could not find edeploy version in /var/lib/edeploy/conf..."
-        exit -1
-    fi
-    echo "sf_version: $(echo ${TMP_VERSION} | cut -d'-' -f2)" > /etc/puppet/hiera/sf/sf_version.yaml
-    cp ${SSH_KEYS}/service_rsa /etc/puppet/environments/sf/modules/ssh_keys/files/
-    cp ${SSH_KEYS}/service_rsa /root/.ssh/id_rsa
-    cp ${SSH_KEYS}/service_rsa.pub /root/.ssh/id_rsa.pub
-    cp ${SSH_KEYS}/jenkins_rsa /etc/puppet/environments/sf/modules/jenkins/files/
-    cp ${SSH_KEYS}/jenkins_rsa /etc/puppet/environments/sf/modules/zuul/files/
-    cp ${SSH_KEYS}/jenkins_rsa.pub /etc/puppet/environments/sf/modules/nodepool/files/
-    cp ${SSH_KEYS}/gerrit_admin_rsa /etc/puppet/environments/sf/modules/jenkins/files/
-    cp ${SSH_KEYS}/gerrit_service_rsa /etc/puppet/environments/sf/modules/gerrit/files/
-    cp ${SSH_KEYS}/gerrit_service_rsa.pub /etc/puppet/environments/sf/modules/gerrit/files/
-    cp ${SSH_KEYS}/gerrit_admin_rsa /etc/puppet/environments/sf/modules/managesf/files/
-    cp ${SSH_KEYS}/service_rsa /etc/puppet/environments/sf/modules/managesf/files/
-    cp ${SSH_KEYS}/gerrit_admin_rsa /etc/puppet/environments/sf/modules/jjb/files/
-    cp ${CERTS}/privkey.pem /etc/puppet/environments/sf/modules/cauth/files/
-    cp ${CERTS}/pubkey.pem /etc/puppet/environments/sf/modules/cauth/files/
-    cp ${CERTS}/gateway.key /etc/puppet/environments/sf/modules/commonservices-apache/files/
-    cp ${CERTS}/gateway.crt /etc/puppet/environments/sf/modules/commonservices-apache/files/
-    cp ${CERTS}/gateway.crt /etc/puppet/environments/sf/modules/https_cert/files/
-    chown -R puppet:puppet /etc/puppet/environments/sf
-    chown -R puppet:puppet /etc/puppet/hiera/sf
-    chown -R puppet:puppet /var/lib/puppet
+    echo "sf_version: $(grep ^VERS= /var/lib/edeploy/conf | cut -d"=" -f2 | cut -d'-' -f2)" > /etc/puppet/hiera/sf/sf_version.yaml
+    chown -R root:puppet /etc/puppet/hiera/sf
     chmod -R 0750 /etc/puppet/hiera/sf
 }

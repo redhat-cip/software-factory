@@ -31,10 +31,10 @@ if [ ! -f "${BUILD}/generate.done" ]; then
     mkdir -p /var/log/edeploy
     echo "PROFILE=none" >> /var/log/edeploy/vars
     generate_keys
-    generate_creds_yaml
     generate_hosts_yaml
     generate_sfconfig
     generate_apache_cert
+    generate_creds_yaml
     touch "${BUILD}/generate.done"
 fi
 

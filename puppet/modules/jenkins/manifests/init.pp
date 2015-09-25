@@ -19,6 +19,7 @@ class jenkins ($settings = hiera_hash('jenkins', '')) {
 
   $jenkins_password = $settings['jenkins_password']
   $admin_name = $settings['jenkins_admin_username']
+  $jenkins_rsa = hiera('jenkins_rsa')
 
   file {'/etc/httpd/conf.d/ports.conf':
     ensure => file,
@@ -106,7 +107,7 @@ class jenkins ($settings = hiera_hash('jenkins', '')) {
       owner   => "jenkins",
       group   => "jenkins",
       mode    => 0400,
-      source  => 'puppet:///modules/jenkins/jenkins_rsa',
+      content => inline_template('<%= @jenkins_rsa %>'),
       require => File['/var/lib/jenkins/.ssh'],
   }
   file {'/var/lib/jenkins/jenkins.model.JenkinsLocationConfiguration.xml':
@@ -161,12 +162,12 @@ class jenkins ($settings = hiera_hash('jenkins', '')) {
   
   file {'/etc/jenkins_admin.name':
     ensure  => file,
-    content => inline_template('<%= admin_name %>'),
+    content => inline_template('<%= @admin_name %>'),
     notify  => [Exec['shutdown_jenkins'], Exec['change_admin_name']],
   }
 
   exec {'change_admin_name':
-    command     => "sed -i s/\"$(grep hudson.model.Hudson.Administer /var/lib/jenkins/config.xml | grep -v jenkins | sed -re 's/.+:(.+)<.+/\1/g')\"/$admin_name/ /var/lib/jenkins/config.xml",
+    command     => "sed -i s/\"$(grep hudson.model.Hudson.Administer /var/lib/jenkins/config.xml | grep -v jenkins | sed -re 's/.+:(.+)<.+/\\1/g')\"/$admin_name/ /var/lib/jenkins/config.xml",
     provider    => 'shell',
     refreshonly => true,
     notify      => Service['jenkins'],

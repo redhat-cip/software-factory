@@ -14,11 +14,14 @@
 # under the License.
 
 class https_cert () {
+
+  $gateway_crt = hiera('gateway_crt')
+
   file {'gateway_cert':
     path  => '/etc/pki/ca-trust/source/anchors/gateway.crt',
+    content => inline_template('<%= @gateway_crt %>'),
     ensure => file,
     mode   => '0644',
-    source  => 'puppet:///modules/https_cert/gateway.crt',
   }
 
   exec {'update-ca-trust':

@@ -16,6 +16,8 @@
 class cauth_client () {
   include apache
 
+  $pubkey_pem = hiera('pubkey_pem')
+
   file { '/etc/httpd/conf.modules.d/00-tkt.conf':
     ensure => present,
     content => "LoadModule auth_pubtkt_module modules/mod_auth_pubtkt.so",
@@ -50,7 +52,7 @@ class cauth_client () {
     owner  => 'root',
     group  => 'root',
     require => File['/srv/cauth_keys'],
-    source  => 'puppet:///modules/cauth/pubkey.pem'
+    content => inline_template('<%= @pubkey_pem %>'),
   }
 
 }

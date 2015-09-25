@@ -19,9 +19,12 @@ class commonservices-apache ($cauth = hiera_hash('cauth', ''),
   require hosts
   include apache
 
+  $gateway_crt = hiera('gateway_crt')
+  $gateway_key = hiera('gateway_key')
+
   file {'gateway_crt':
     path  => '/etc/httpd/conf.d/gateway.crt',
-    source  => 'puppet:///modules/commonservices-apache/gateway.crt',
+    content => inline_template('<%= @gateway_crt %>'),
     ensure => file,
     mode   => '0640',
     owner  => $httpd_user,
@@ -30,7 +33,7 @@ class commonservices-apache ($cauth = hiera_hash('cauth', ''),
 
   file {'gateway_key':
     path  => '/etc/httpd/conf.d/gateway.key',
-    source  => 'puppet:///modules/commonservices-apache/gateway.key',
+    content => inline_template('<%= @gateway_key %>'),
     ensure => file,
     mode   => '0640',
     owner  => $httpd_user,

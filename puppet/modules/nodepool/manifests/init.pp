@@ -15,6 +15,8 @@
 
 class nodepool ($settings = hiera_hash('nodepool', '')) {
 
+  $jenkins_rsa_pub = hiera('jenkins_rsa_pub')
+
   $provider = "systemd"
 
   file { 'nodepool_service':
@@ -98,7 +100,7 @@ class nodepool ($settings = hiera_hash('nodepool', '')) {
   file { '/etc/nodepool/scripts/authorized_keys':
     owner => 'jenkins',
     mode   => '0600',
-    source => 'puppet:///modules/nodepool/jenkins_rsa.pub',
+    content => inline_template('<%= @jenkins_rsa %>'),
     require => [File['/etc/nodepool/scripts']]
   }
 

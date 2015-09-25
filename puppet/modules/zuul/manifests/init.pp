@@ -17,6 +17,8 @@ class zuul ($settings = hiera_hash('jenkins', ''), $gh = hiera('gerrit_host'), $
 
   require hosts
 
+  $jenkins_rsa = hiera('jenkins_rsa')
+
   $gfqdn = "$gh"
   $gip = $hosts[$gfqdn]['ip']
 
@@ -160,7 +162,7 @@ class zuul ($settings = hiera_hash('jenkins', ''), $gh = hiera('gerrit_host'), $
     mode    => '0400',
     owner   => 'zuul',
     group   => 'zuul',
-    source  => 'puppet:///modules/zuul/jenkins_rsa',
+    content => inline_template('<%= @jenkins_rsa %>'),
     require => File['/var/lib/zuul/.ssh'],
   }
 
