@@ -16,7 +16,7 @@ SET @footer="You have received this notification because you have either subscri
 INSERT IGNORE INTO settings (name, value, updated_on) SELECT * FROM (SELECT 'rest_api_enabled','1', CURRENT_TIMESTAMP()) AS TMP WHERE NOT EXISTS(SELECT name FROM settings WHERE name='rest_api_enabled');
 INSERT INTO settings (name, value, updated_on) SELECT * FROM (SELECT @http_auth_config_name, @http_auth_config_value, CURRENT_TIMESTAMP()) AS TMP WHERE NOT EXISTS(SELECT name FROM settings WHERE name=@http_auth_config_name);
 
-INSERT IGNORE INTO users VALUES (3, @username, '', @username, 'Redmine Admin', @email, 1, 1, NULL, 'en', NULL, NULL, NULL, 'User', NULL, 'all', '', 0);
+INSERT INTO users VALUES (3, @username, '', @username, 'Redmine Admin', @email, 1, 1, NULL, 'en', NULL, NULL, NULL, 'User', NULL, 'all', '', 0) ON DUPLICATE KEY UPDATE login=@username,firstname=@username,mail=@email;
 DELETE FROM users WHERE id=1; # Autocreated Admin user
 DELETE FROM users WHERE id=2; # Autocreated Anonymous user
 SELECT id INTO @user_id FROM users WHERE login=@username;

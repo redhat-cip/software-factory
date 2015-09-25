@@ -85,6 +85,7 @@ class cauth ($cauth = hiera_hash('cauth', ''),
     content => template('cauth/cauth-config.py.erb'),
     require => File['/var/www/cauth/'],
     replace => true,
+    notify => Service['webserver'],
   }
 
   file { '/var/www/cauth/cauth/templates':

@@ -3,11 +3,12 @@ SET @mail="<%= @settings['gerrit_admin_mail'] %>";
 SET @pubkey="<%= @settings['gerrit_admin_sshkey'] %>";
 SET @pubkey2="<%= @settings['gerrit_local_sshkey'] %>";
 
-INSERT INTO account_external_ids SELECT 1,@mail,NULL,CONCAT('gerrit:',@username) ON DUPLICATE KEY UPDATE external_id=CONCAT('gerrit:',@username);
-INSERT INTO account_external_ids SELECT 1,NULL,NULL,CONCAT('username:',@username) ON DUPLICATE KEY UPDATE external_id=CONCAT('username:',@username);
+DELETE FROM account_external_ids WHERE account_id = 1; 
+INSERT INTO account_external_ids VALUES (1,@mail,NULL,CONCAT('gerrit:',@username));
+INSERT INTO account_external_ids VALUES (1,NULL,NULL,CONCAT('username:',@username));
 INSERT INTO account_group_members SELECT 1,1 ON DUPLICATE KEY UPDATE account_id=1, group_id=1;
 INSERT INTO account_group_members_audit VALUES (1,NULL,NULL,1,CURRENT_TIMESTAMP(),1),(1,NULL,NULL,1,CURRENT_TIMESTAMP(),6);
 INSERT INTO account_id SELECT * FROM(SELECT 1)AS TMP WHERE NOT EXISTS(SELECT s FROM account_id WHERE s=1);
 INSERT INTO account_ssh_keys SELECT @pubkey,'Y',1,1  ON DUPLICATE KEY UPDATE account_id=1, seq=1;
 INSERT INTO account_ssh_keys SELECT @pubkey2,'Y',1,2  ON DUPLICATE KEY UPDATE account_id=1, seq=2;
-INSERT INTO accounts SELECT NULL,NULL,NULL,NULL,'N',NULL,NULL,NULL,'SSH',25,'N','N','Y','N',NULL,'Y','N',@mail,CURRENT_TIMESTAMP(),1 ON DUPLICATE KEY UPDATE account_id=1;
+INSERT INTO accounts SELECT NULL,NULL,NULL,NULL,'N',NULL,NULL,NULL,'SSH',25,'N','N','Y','N',NULL,'Y','N',@mail,CURRENT_TIMESTAMP(),1 ON DUPLICATE KEY UPDATE preferred_email=@mail;
