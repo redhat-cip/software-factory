@@ -15,8 +15,8 @@
 
 class edeploy_client {
   exec {'set edeploy server address':
-    command  => "/bin/sed -i \"s/^RSERV=.*//\" conf; sed -i \"/^$/d\" conf; /bin/echo \"RSERV=puppetmaster\" >> conf",
-    unless   => "/usr/bin/grep 'RSERV=puppetmaster' /var/lib/edeploy/conf",
+    command  => "/bin/sed -i \"s/^RSERV=.*//\" conf; sed -i \"/^$/d\" conf; /bin/echo \"RSERV=managesf\" >> conf",
+    unless   => "/usr/bin/grep 'RSERV=managesf' /var/lib/edeploy/conf",
     cwd      => '/var/lib/edeploy',
   }
   exec {'set edeploy server address port':

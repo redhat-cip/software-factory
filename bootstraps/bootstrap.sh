@@ -41,6 +41,7 @@ fi
 
 function wait_for_ssh {
     local ip=$1
+    echo "[bootstrap][$ip] Waiting for ssh..."
     while true; do
         KEY=`ssh-keyscan -p 22 $ip`
         if [ "$KEY" != ""  ]; then
@@ -53,6 +54,12 @@ function wait_for_ssh {
         echo "  [E] ssh-keyscan on $ip:22 failed, will retry in 1 seconds (attempt $RETRIES/40)"
         sleep 1
     done
+}
+
+function puppet_apply_host {
+    # Update local /etc/hosts
+    echo "[bootstrap] Applying hosts.pp"
+    puppet apply --test --environment sf --modulepath=/etc/puppet/environments/sf/modules/ hosts.pp
 }
 
 function puppet_apply {
@@ -79,8 +86,7 @@ domain=$(cat ${BUILD}/hiera/sfconfig.yaml | grep '^domain:' | awk '{ print $2 }'
 case "${REFARCH}" in
     "1node-allinone")
         prepare_etc_puppet
-        # Update local /etc/hosts
-        puppet apply --test --environment sf --modulepath=/etc/puppet/environments/sf/modules/ hosts.pp
+        puppet_apply_host
         wait_for_ssh "managesf.${domain}"
         puppet_apply "managesf.${domain}" /etc/puppet/environments/sf/manifests/1node-allinone.pp
         ;;
@@ -88,14 +94,13 @@ case "${REFARCH}" in
         # Prepare environment
         sed -i "s/jenkins\.\([^1]*\)192.168.135.101/jenkins.\1192.168.135.102/" ${BUILD}/hiera/hosts.yaml
         prepare_etc_puppet
-        # Update local /etc/hosts
-        puppet apply --test --environment sf --modulepath=/etc/puppet/environments/sf/modules/ hosts.pp
+        puppet_apply_host
         wait_for_ssh "managesf.${domain}"
+        wait_for_ssh "jenkins.${domain}"
+        puppet_copy jenkins.${domain}
 
         # Run puppet apply
         puppet_apply "managesf.${domain}" /etc/puppet/environments/sf/manifests/2nodes-sf.pp
-        wait_for_ssh "jenkins.${domain}"
-        puppet_copy jenkins.${domain}
         puppet_apply "jenkins.${domain}" /etc/puppet/environments/sf/manifests/2nodes-jenkins.pp
         ;;
     "*")

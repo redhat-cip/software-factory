@@ -14,6 +14,7 @@ function install_sf {
     sudo cp -Rv ./../puppet/hiera/* ${dir}/etc/puppet/hiera/sf
     sudo cp -Rv ./../puppet/hiera.yaml ${dir}/etc/puppet/
     sudo cp -Rv ./../bootstraps/  ${dir}/root/bootstraps/
+    sudo cp -Rv ./../serverspec/ ${dir}/root/serverspec/
 
     # Install cauth
     [ ! -d "${dir}/var/www/cauth" ] && sudo mkdir ${dir}/var/www/cauth

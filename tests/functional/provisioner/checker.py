@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/bin/env python
 #
 # Copyright (C) 2014 eNovance SAS <licensing@enovance.com>
 #
@@ -13,13 +13,13 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+
 import os
 import sys
-
-lib_path = os.path.join(os.environ["SF_ROOT"], "tests/functional")
-sys.path.append(lib_path)
-
 import yaml
+
+pwd = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(os.path.dirname(pwd))
 import config
 
 from utils import get_cookie
@@ -37,7 +37,7 @@ class SFchecker:
     Those data must have been provisioned by SFProvisioner.
     """
     def __init__(self):
-        with open('resources.yaml', 'r') as rsc:
+        with open("%s/resources.yaml" % pwd, 'r') as rsc:
             self.resources = yaml.load(rsc)
         config.USERS[config.ADMIN_USER]['auth_cookie'] = get_cookie(
             config.ADMIN_USER, config.USERS[config.ADMIN_USER]['password'])
@@ -53,39 +53,51 @@ class SFchecker:
             auth_cookie=config.USERS[config.ADMIN_USER]['auth_cookie'])
 
     def check_project(self, name):
-        print " Check project %s exists ..." % name
-        assert self.gu.project_exists(name)
-        assert self.rm.project_exists(name)
+        print " Check project %s exists ..." % name,
+        if not self.gu.project_exists(name) or \
+           not self.rm.project_exists(name):
+            print "FAIL"
+            exit(1)
+        print "OK"
 
     def check_files_in_project(self, name, files):
-        print " Check files(%s) exists in project ..." % ",".join(files)
+        print " Check files(%s) exists in project ..." % ",".join(files),
         # TODO(fbo); use gateway host instead of gerrit host
         url = "ssh://%s@%s:29418/%s" % (config.ADMIN_USER,
                                         config.GATEWAY_HOST, name)
         clone_dir = self.ggu.clone(url, name, config_review=False)
         for f in files:
-            assert os.path.isfile(os.path.join(clone_dir, f))
+            if not os.path.isfile(os.path.join(clone_dir, f)):
+                print "FAIL"
+                exit(1)
 
     def check_issues_on_project(self, name, issues):
-        print " Check that at least %s issues exists for that project ..." %\
+        print " Check that at least %s issues exists for that project ...," %\
             len(issues)
         current_issues = self.rm.get_issues_by_project(name)
         if len(current_issues) < len(issues):
-            msg = "expected %s, project has %s" % (len(issues),
-                                                   len(current_issues))
-            raise AssertionError(msg)
+            print "FAIL: expected %s, project has %s" % (
+                len(issues), len(current_issues))
+            exit(1)
+        print "OK"
 
     def check_jenkins_jobs(self, name, jobnames):
-        print " Check that jenkins jobs(%s) exists ..." % ",".join(jobnames)
+        print " Check that jenkins jobs(%s) exists ..." % ",".join(jobnames),
         for jobname in jobnames:
-            assert '%s_%s' % (name, jobname) in self.ju.list_jobs()
+            if not '%s_%s' % (name, jobname) in self.ju.list_jobs():
+                print "FAIL"
+                exit(1)
+        print "OK"
 
     def check_reviews_on_project(self, name, issues):
         reviews = [i for i in issues if i['review']]
         print " Check that at least %s reviews exists for that project ..." %\
-            len(reviews)
+            len(reviews),
         pending_reviews = self.ggu.list_open_reviews(name, config.GATEWAY_HOST)
-        assert len(pending_reviews) >= len(reviews)
+        if not len(pending_reviews) >= len(reviews):
+            print "FAIL"
+            exit(1)
+        print "OK"
 
     def check_pads(self, amount):
         pass

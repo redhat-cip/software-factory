@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/bin/env python
 #
 # Copyright (C) 2014 eNovance SAS <licensing@enovance.com>
 #

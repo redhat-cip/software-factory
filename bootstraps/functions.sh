@@ -24,7 +24,6 @@ function generate_hosts_yaml {
     cat << EOF > ${OUTPUT}/hosts.yaml
 hosts:
   localhost:              {ip: 127.0.0.1}
-  puppetmaster.$domain: {ip: 192.168.135.101, host_aliases: [puppetmaster]}
   mysql.$domain:        {ip: 192.168.135.101, host_aliases: [mysql]}
   jenkins.$domain:      {ip: 192.168.135.101, host_aliases: [jenkins]}
   redmine.$domain:      {ip: 192.168.135.101, host_aliases: [redmine]}

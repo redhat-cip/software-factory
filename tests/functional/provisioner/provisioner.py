@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/bin/env python
 #
 # Copyright (C) 2014 eNovance SAS <licensing@enovance.com>
 #
@@ -16,11 +16,10 @@
 
 import os
 import sys
-
-lib_path = os.path.join(os.environ["SF_ROOT"], "tests/functional")
-sys.path.append(lib_path)
-
 import yaml
+
+pwd = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(os.path.dirname(pwd))
 import config
 
 from utils import ManageSfUtils
@@ -42,7 +41,7 @@ class SFProvisioner(object):
     Provisioned data should remain really simple.
     """
     def __init__(self):
-        with open('resources.yaml', 'r') as rsc:
+        with open("%s/resources.yaml" % pwd, 'r') as rsc:
             self.resources = yaml.load(rsc)
         config.USERS[config.ADMIN_USER]['auth_cookie'] = get_cookie(
             config.ADMIN_USER, config.USERS[config.ADMIN_USER]['password'])

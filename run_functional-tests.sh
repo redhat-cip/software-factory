@@ -41,22 +41,30 @@ lxc_stop
     sudo rsync -a --delete puppet/modules/ ${dir}/etc/puppet/environments/sf/modules/
     sudo rsync -a --delete puppet/hiera/ ${dir}/etc/puppet/hiera/sf/
     sudo rsync -a --delete bootstraps/ ${dir}/root/bootstraps/
+    sudo rsync -a --delete serverspec/ ${dir}/root/serverspec/
 }
 
 case "${TEST_TYPE}" in
     "functional")
         lxc_start
         run_bootstraps
-        run_tests
+        run_serverspec_tests
+        run_functional_tests
         ;;
     "backup")
         lxc_start
         run_bootstraps
-        run_backup_tests
+        run_serverspec_tests
+        run_provisioner
+        lxc_stop
+        lxc_start
+        run_bootstraps
+        run_checker
         ;;
     "upgrade")
-        echo "[+] Upgrade tests from 1.0.4 to 2.0.0 are not supported..."
-        exit 1
+        lxc_start
+        run_bootstraps
+        run_serverspec_tests
         ;;
     "*")
         echo "[+] Unknown test type ${TEST_TYPE}"
@@ -70,5 +78,5 @@ checkpoint "end_tests"
 # through Zuul then a publisher will be used
 [ -z "$SWIFT_artifacts_URL" ] && get_logs
 [ -z "${DEBUG}" ] && lxc_stop
-echo "$0: SUCCESS"
+echo "$0 ${REFARCH} ${TEST_TYPE}: SUCCESS"
 exit 0;

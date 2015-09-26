@@ -1,13 +1,3 @@
-puppetmaster:
-  :roles:
-    - base
-    - edeploy
-    - roleversion
-    - ntp
-  :username: root
-  :hostname: puppetmaster
-  :roleversion: C7.0-2.0.0
-
 redmine:
   :roles:
     - base

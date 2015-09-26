@@ -16,7 +16,7 @@
 
 class ntpserver ($settings = hiera_hash('ntpserver', '')) {
     case $hostname {
-        'puppetmaster' : {
+        'managesf' : {
             class { '::ntp':
                     servers => [$settings['reference_server'], ],
                     restrict => ['redmine', 'mysql', 'gerrit', 'jenkins', 'slave', 'managesf'],
@@ -24,7 +24,7 @@ class ntpserver ($settings = hiera_hash('ntpserver', '')) {
         }
         default : {
             class { '::ntp':
-                    servers => ['puppetmaster',  ],
+                    servers => ['managesf',  ],
             }
         }
     }

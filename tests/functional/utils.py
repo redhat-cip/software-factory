@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/bin/env python
 #
 # Copyright (C) 2014 eNovance SAS <licensing@enovance.com>
 #
@@ -27,6 +27,7 @@ import random
 import config
 import requests
 import time
+import sys
 import yaml
 
 import logging
@@ -106,12 +107,15 @@ class Base(unittest.TestCase):
 
 class Tool:
     def __init__(self):
-        self.debug = file('/tmp/debug', 'a')
+        self.debug = None
+        if "DEBUG" in os.environ:
+            self.debug = sys.stdout
         self.env = os.environ.copy()
 
     def exe(self, cmd, cwd=None):
-        self.debug.write("\n\ncmd = %s\n" % cmd)
-        self.debug.flush()
+        if self.debug:
+            self.debug.write("\n\ncmd = %s\n" % cmd)
+            self.debug.flush()
         cmd = shlex.split(cmd)
         ocwd = os.getcwd()
         if cwd:
@@ -121,7 +125,8 @@ class Tool:
                                  stderr=subprocess.STDOUT,
                                  env=self.env)
             output = p.communicate()[0]
-            self.debug.write(output)
+            if self.debug:
+                self.debug.write(output)
         finally:
             os.chdir(ocwd)
         return output

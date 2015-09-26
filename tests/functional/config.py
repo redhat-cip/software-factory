@@ -1,6 +1,9 @@
+#!/bin/env python
+
+import os
 import yaml
 
-SF_BOOTSTRAP_DATA = "./sf-bootstrap-data"
+SF_BOOTSTRAP_DATA = "%s/sf-bootstrap-data" % os.getcwd()
 SF_TESTS_DIR = "./tests"
 
 sfconfig_filename = "%s/hiera/sfconfig.yaml" % SF_BOOTSTRAP_DATA

@@ -64,10 +64,6 @@ managesf = {
     'sshkey_priv_path': '/usr/share/httpd/.ssh/id_rsa',
 }
 
-puppetmaster = {
-    'host': '<%= scope.function_hiera(["puppetmaster_url"]) %>',
-}
-
 admin = {
     'name': '<%= @gerrit['gerrit_admin_username'] %>',
     'email': '<%= @gerrit['gerrit_admin_mail'] %>',

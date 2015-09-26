@@ -3,10 +3,10 @@
 DISABLE_SETX=0
 [ -z "${DEBUG}" ] && DISABLE_SETX=1 || set -x
 
-export SF_SUFFIX=${SF_SUFFIX:-tests.dom}
+export SF_HOST=${SF_HOST:-tests.dom}
 export SKIP_CLEAN_ROLES="y"
 
-MANAGESF_URL=https://${SF_SUFFIX}
+MANAGESF_URL=https://${SF_HOST}
 
 ARTIFACTS_DIR="/var/lib/sf/artifacts"
 # This environment variable is set ZUUL in the jenkins job workspace
@@ -47,12 +47,16 @@ function lxc_start {
 }
 
 function configure_network {
+    if [ "${SF_HOST}" != "tests.dom" ]; then
+        echo "${SF_HOST} must have ssh key authentitcation and use root user by default"
+        return
+    fi
     local ip=192.168.135.101
     rm -f "$HOME/.ssh/known_hosts"
     RETRIES=0
     echo " [+] Starting ssh-keyscan on $ip:22"
     while [ $RETRIES -lt 40 ]; do
-        KEY=`ssh-keyscan -p 22 $ip`
+        KEY=`ssh-keyscan -p 22 $ip 2> /dev/null`
         if [ "$KEY" != ""  ]; then
             echo $KEY > "$HOME/.ssh/known_hosts"
             echo "  -> $ip:22 is up!"
@@ -65,13 +69,14 @@ function configure_network {
     [ $RETRIES -eq 40 ] && fail "Can't connect to $ip"
     echo "[+] Avoid ssh error"
     cat << EOF > ~/.ssh/config
-Host tests.dom
+Host ${SF_HOST}
     Hostname 192.168.135.101
+    User root
 EOF
     chmod 0600 ~/.ssh/config
 
-    echo "[+] Adds tests.dom to /etc/hosts"
-    reset_etc_hosts_dns 'tests.dom' 192.168.135.101
+    echo "[+] Adds ${SF_HOST} to /etc/hosts"
+    reset_etc_hosts_dns "${SF_HOST}" 192.168.135.101
     checkpoint "configure_network"
 }
 
@@ -99,10 +104,12 @@ function get_logs {
 
 function host_debug {
     set +x
-    sudo dmesg -c > ${ARTIFACTS_DIR}/host_debug_dmesg
-    ps aufx >> ${ARTIFACTS_DIR}/host_debug_ps-aufx
-    free -m | tee -a ${ARTIFACTS_DIR}/host_debug_free
-    sudo df -h | tee -a ${ARTIFACTS_DIR}/host_debug_df
+    mkdir ${ARTIFACTS_DIR}/host_debug
+    sudo dmesg -c > ${ARTIFACTS_DIR}/host_debug/dmesg
+    ps aufx >> ${ARTIFACTS_DIR}/host_debug/ps-aufx
+    free -m | tee -a ${ARTIFACTS_DIR}/host_debug/free
+    sudo df -h | tee -a ${ARTIFACTS_DIR}/host_debug/df
+    cat /etc/hosts > ${ARTIFACTS_DIR}/host_debug/hosts
     checkpoint "host_debug"
     [ ${DISABLE_SETX} -eq 0 ] && set -x
 }
@@ -115,17 +122,24 @@ function display_head {
 }
 
 function fail {
-    set -x
+    set +x
+    msg=$1
+    log_file=$2
     DISABLE_SETX=1
-    echo "$(hostname) FAIL to run functionnal tests of this change:"
+    echo "\n$(hostname) FAIL: $msg"
+    if [ ! -z "$log_file" ] && [ -f "$log_file" ]; then
+        echo "=> Log file $log_file --["
+        tail -n 500 $log_file
+        echo "]--"
+    fi
     display_head
 
-    checkpoint "FAIL: $1"
+    checkpoint "FAIL: $msg"
     host_debug
     [ -z "$SWIFT_artifacts_URL" ] && {
         get_logs
     }
-    echo "$0: FAILED"
+    echo "$0 ${REFARCH} ${TEST_TYPE}: FAILED"
     exit 1
 }
 
@@ -149,18 +163,21 @@ function waiting_stack_created {
 }
 
 function run_bootstraps {
-    configure_network || fail "Can't SSH"
+    configure_network
     eval $(ssh-agent)
     ssh-add ~/.ssh/id_rsa
-    ssh -A -tt root@192.168.135.101 "cd bootstraps; exec ./bootstrap.sh ${REFARCH}"
-    res=$?
+    echo "$(date) ======= run_bootstraps" | tee -a ${ARTIFACTS_DIR}/bootstraps.log
+    ssh -A -tt ${SF_HOST} "cd bootstraps; exec ./bootstrap.sh ${REFARCH}" 2>&1 | tee ${ARTIFACTS_DIR}/bootstraps.log | grep '\(Info:\|Warning:\|Error:\|\[bootstrap\]\)'
+    res=${PIPESTATUS[0]}
     kill -9 $SSH_AGENT_PID
-    if [ "$res" != "0" ]; then
-        fail "Bootstrap fails"
-    fi
-    echo "[+] Fetch tests.dom ssl cert"
-    scp -r root@tests.dom:/etc/pki/ca-trust/extracted/openssl/ca-bundle.trust.crt /var/lib/sf/venv/lib/python2.7/site-packages/requests/cacert.pem
+    [ "$res" != "0" ] && fail "Bootstrap fails" ${ARTIFACTS_DIR}/bootstraps.log
+    echo "[+] Fetch ${SF_HOST} ssl cert"
+    scp -r ${SF_HOST}:/etc/pki/ca-trust/extracted/openssl/ca-bundle.trust.crt /var/lib/sf/venv/lib/python2.7/site-packages/requests/cacert.pem
     cp /var/lib/sf/venv/lib/python2.7/site-packages/requests/cacert.pem /var/lib/sf/venv/lib/python2.7/site-packages/pip/_vendor/requests/cacert.pem
+
+    echo "[+] Fetch bootstrap data"
+    rm -Rf sf-bootstrap-data
+    scp -r ${SF_HOST}:sf-bootstrap-data .
     checkpoint "run_bootstraps"
 }
 
@@ -199,93 +216,46 @@ function reset_etc_hosts_dns {
     ) &> ${ARTIFACTS_DIR}/etc_hosts.log
 }
 
-function run_functional_tests {
-    echo "$(date) ======= Starting functional tests ========="
-    echo "[+] Fetch bootstrap data"
-    rm -Rf sf-bootstrap-data
-    scp -r root@tests.dom:sf-bootstrap-data .
-    echo "[+] Run tests"
-    sudo rm -Rf /tmp/debug
+function run_provisioner {
+    echo "$(date) ======= run_provisioner"
     . /var/lib/sf/venv/bin/activate
-    checkpoint "functional tests running..."
-    nosetests --with-xunit -v tests/functional 2>&1 | tee ${ARTIFACTS_DIR}/functional-tests.output
-    RES=${PIPESTATUS[0]}
-    mv /tmp/debug ${ARTIFACTS_DIR}/functional_tests.debug
-    deactivate
-    checkpoint "run_functional_tests"
-    return $RES
-}
-
-function run_puppet_allinone_tests {
-    echo "$(date) ======= Starting Puppet all in one tests ========="
-    ssh -o StrictHostKeyChecking=no root@192.168.135.101 \
-            "puppet master --compile allinone --environment=sf" 2>&1 &> ${ARTIFACTS_DIR}/functional-tests.output
-    return ${PIPESTATUS[0]}
-}
-
-function run_tests {
-    run_functional_tests || fail "Functional tests failed"
-    run_puppet_allinone_tests || fail "Puppet all in one tests failed"
-    checkpoint "run_puppet_allinone_tests"
-}
-
-function run_backup_tests {
-    . /var/lib/sf/venv/bin/activate
-    set -x
-    rm -Rf backup_test_project
-    # Create a project, perform a backup, delete project, restore backup, check if project is still there.
-    sfmanager --url "${MANAGESF_URL}" --auth user1:userpass project create --name backup_test_project
+    ./tests/functional/provisioner/provisioner.py 2>> ${ARTIFACTS_DIR}/provisioner.debug || fail "Provisioner failed" ${ARTIFACTS_DIR}/provisioner.debug
     sfmanager --url "${MANAGESF_URL}" --auth user1:userpass system backup_start || fail "Backup failed"
     sfmanager --url "${MANAGESF_URL}" --auth user1:userpass system backup_get || fail "Backup get failed"
-    checkpoint "backup created"
-    sfmanager --url "${MANAGESF_URL}" --auth user1:userpass project delete --name backup_test_project
-    git clone http://tests.dom/r/backup_test_project 2> /dev/null && fail "Backup project not deleted" || true
-    sfmanager --url "${MANAGESF_URL}" --auth user1:userpass system restore --filename $(pwd)/sf_backup.tar.gz || fail "Backup resore failed"
     deactivate
-    checkpoint "backup restore"
-    echo "[+] Waiting for gerrit to restart..."
-    retry=0
-    while [ $retry < 1000 ]; do
-        git clone ${MANAGESF_URL}/r/backup_test_project && break
-        sleep 1
-        retry=$[ $retry + 1 ]
-    done
-    checkpoint "wait for gerrit"
-    [ -d backup_test_project ] || fail "Backup_test project was not restored..."
 }
 
-function run_backup_restore_tests {
-    r=$1
-    type=$2
-    if [ "$type" == "provision" ]; then
-        configure_network
-        wait_for_bootstrap_done || fail "Bootstrap did not complete"
-        # Run server spec to be more confident
-        run_serverspec || fail "Serverspec failed"
-        # Start the provisioner
-        ./tools/provisioner_checker/run.sh provisioner
-        # Create a backup
-        ssh -o StrictHostKeyChecking=no root@192.168.135.101 "sfmanager --url ${MANAGESF_URL} --auth-server-url ${MANAGESF_URL} --auth user1:userpass backup start"
-        sleep 10
-        # Fetch the backup
-        ssh -o StrictHostKeyChecking=no root@192.168.135.101 "sfmanager --url ${MANAGESF_URL} --auth-server-url ${MANAGESF_URL} --auth user1:userpass backup get"
-        scp -o  StrictHostKeyChecking=no root@192.168.135.101:sf_backup.tar.gz /tmp
-        # We assume if we cannot move the backup file
-        # we need to stop right now
-        return $?
-    fi
-    if [ "$type" == "check" ]; then
-        configure_network || fail "Can't SSH"
-        # Run server spec to be more confident
-        run_serverspec || fail "Serverspec failed"
-        # Restore backup
-        scp -o  StrictHostKeyChecking=no /tmp/sf_backup.tar.gz root@192.168.135.101:/root/
-        ssh -o StrictHostKeyChecking=no root@192.168.135.101 "sfmanager --url ${MANAGESF_URL} --auth-server-url ${MANAGESF_URL} --auth user1:userpass backup restore --filename sf_backup.tar.gz"
-        # Start the checker
-        sleep 60
-        ./tools/provisioner_checker/run.sh checker
-        return $?
-    fi
+function run_checker {
+    echo "$(date) ======= run_checker"
+    . /var/lib/sf/venv/bin/activate
+    sfmanager --url "${MANAGESF_URL}" --auth user1:userpass system restore --filename $(pwd)/sf_backup.tar.gz || fail "Backup resore failed"
+    echo "[+] Waiting for gerrit to restart..."
+    retry=0
+    while [ $retry -lt 1000 ]; do
+        wget --spider  http://tests.dom/r/ 2> /dev/null && break
+        sleep 1
+        let retry=retry+1
+    done
+    [ $retry -eq 1000 ] && fail "Gerrit did not restart"
+    checkpoint "wait for gerrit"
+    echo "=> Took ${retry} retries"
+
+    ./tests/functional/provisioner/checker.py 2>> ${ARTIFACTS_DIR}/checker.debug || fail "Backup checker failed" ${ARTIFACTS_DIR}/checker.debug
+    deactivate
+}
+
+function run_functional_tests {
+    echo "$(date) ======= run_functional_tests"
+    . /var/lib/sf/venv/bin/activate
+    nosetests --with-xunit -v tests/functional > ${ARTIFACTS_DIR}/functional-tests.debug || fail "Functional tests failed" ${ARTIFACTS_DIR}/functional-tests.debug
+    deactivate
+    checkpoint "run_functional_tests"
+}
+
+function run_serverspec_tests {
+    echo "$(date) ======= run_serverspec_tests"
+    ssh ${SF_HOST} "cd serverspec; rake spec" 2>&1 | tee ${ARTIFACTS_DIR}/serverspec.output || fail "Serverspec tests failed"
+    checkpoint "run_serverspec_tests"
 }
 
 START=$(date '+%s')
@@ -294,6 +264,7 @@ function checkpoint {
     set +x
     NOW=$(date '+%s')
     ELAPSED=$(python -c "print('%03.2fmin' % (($NOW - $START) / 60.0))")
+    echo
     echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
     echo "$ELAPSED - $* ($(date))" | sudo tee -a ${ARTIFACTS_DIR}/tests_profiling
     echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
