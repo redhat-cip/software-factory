@@ -60,13 +60,13 @@ class TestGerritHooks(Base):
         self.u = config.ADMIN_USER
         self.u2 = config.USER_2
         self.rm = RedmineUtils(
-            config.REDMINE_URL,
+            config.GATEWAY_URL + "/redmine/",
             auth_cookie=config.USERS[config.ADMIN_USER]['auth_cookie'])
         self.gu = GerritUtils(
-            'https://%s/' % config.GATEWAY_HOST,
+            config.GATEWAY_URL,
             auth_cookie=config.USERS[self.u]['auth_cookie'])
         self.gu2 = GerritUtils(
-            'https://%s/' % config.GATEWAY_HOST,
+            config.GATEWAY_URL,
             auth_cookie=config.USERS[self.u2]['auth_cookie'])
         self.gu.add_pubkey(config.USERS[self.u]["pubkey"])
         priv_key_path = set_private_key(config.USERS[self.u]["privkey"])

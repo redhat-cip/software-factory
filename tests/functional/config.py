@@ -16,8 +16,6 @@ except:
 
 GATEWAY_HOST = sfconfig['domain']
 GATEWAY_URL = 'https://%s/' % GATEWAY_HOST
-JENKINS_URL = 'https://%s/jenkins/' % GATEWAY_HOST
-REDMINE_URL = 'https://%s/redmine/' % GATEWAY_HOST
 
 GERRIT_USER = 'gerrit'
 GERRIT_SERVICE_PRIV_KEY_PATH = '%s/ssh_keys/gerrit_service_rsa' \

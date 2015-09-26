@@ -49,7 +49,7 @@ class SFchecker:
                                   config.USERS[config.ADMIN_USER]['email'])
         self.ju = JenkinsUtils()
         self.rm = RedmineUtils(
-            config.REDMINE_URL,
+            config.GATEWAY_URL + "/redmine/",
             auth_cookie=config.USERS[config.ADMIN_USER]['auth_cookie'])
 
     def check_project(self, name):

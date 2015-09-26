@@ -38,10 +38,10 @@ class TestProjectReplication(Base):
         self.msu = ManageSfUtils(config.GATEWAY_URL)
         self.un = config.ADMIN_USER
         self.gu = GerritUtils(
-            'https://%s/' % config.GATEWAY_HOST,
+            config.GATEWAY_URL,
             auth_cookie=config.USERS[self.un]['auth_cookie'])
         self.gu2 = GerritUtils(
-            'https://%s/' % config.GATEWAY_HOST,
+            config.GATEWAY_URL,
             auth_cookie=config.USERS[config.USER_2]['auth_cookie'])
         self.k_idx = self.gu2.add_pubkey(config.USERS[config.USER_2]["pubkey"])
         priv_key_path = set_private_key(config.USERS[self.un]["privkey"])

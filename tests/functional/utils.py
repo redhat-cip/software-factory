@@ -369,7 +369,7 @@ class JenkinsUtils:
             self.jenkins_user = 'jenkins'
             self.jenkins_password = \
                 yconfig.get('creds_jenkins_user_password')
-        self.jenkins_url = config.JENKINS_URL
+        self.jenkins_url = config.GATEWAY_URL + "/jenkins/"
         self.cookies = {'auth_pubtkt': get_cookie('user1', 'userpass')}
 
     def get(self, url):

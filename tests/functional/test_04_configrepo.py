@@ -37,7 +37,7 @@ class TestConfigRepo(Base):
     def test_check_config_repo_exists(self):
         pname = 'config'
         gu = GerritUtils(
-            'https://%s/' % config.GATEWAY_HOST,
+            config.GATEWAY_URL,
             auth_cookie=config.USERS[config.ADMIN_USER]['auth_cookie'])
         self.assertTrue(gu.project_exists(pname))
 

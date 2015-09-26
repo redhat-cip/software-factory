@@ -49,10 +49,10 @@ class TestProjectTestsWorkflow(Base):
         self.dirs_to_delete = []
         self.un = config.ADMIN_USER
         self.gu = GerritUtils(
-            'https://%s/' % config.GATEWAY_HOST,
+            config.GATEWAY_URL,
             auth_cookie=config.USERS[self.un]['auth_cookie'])
         self.gu2 = GerritUtils(
-            'https://%s/' % config.GATEWAY_HOST,
+            config.GATEWAY_URL,
             auth_cookie=config.USERS[config.USER_2]['auth_cookie'])
         self.ju = JenkinsUtils()
         self.gu.add_pubkey(config.USERS[self.un]["pubkey"])

@@ -67,7 +67,7 @@ class TestGerrit(Base):
         self.create_project(pname)
         un = config.ADMIN_USER
         gu = GerritUtils(
-            'https://%s/' % config.GATEWAY_HOST,
+            config.GATEWAY_URL,
             auth_cookie=config.USERS[un]['auth_cookie'])
         k_index = gu.add_pubkey(config.USERS[un]["pubkey"])
         self.assertTrue(gu.project_exists(pname))
@@ -103,7 +103,7 @@ class TestGerrit(Base):
         self.create_project(pname, project_options)
         un = config.ADMIN_USER
         gu = GerritUtils(
-            'https://%s/' % config.GATEWAY_HOST,
+            config.GATEWAY_URL,
             auth_cookie=config.USERS[un]['auth_cookie'])
         k_index = gu.add_pubkey(config.USERS[un]["pubkey"])
         self.assertTrue(gu.project_exists(pname))
@@ -147,7 +147,7 @@ class TestGerrit(Base):
         """ Test if plugins are present
         """
         gu = GerritUtils(
-            'https://%s/' % config.GATEWAY_HOST,
+            config.GATEWAY_URL,
             auth_cookie=config.USERS[config.ADMIN_USER]['auth_cookie'])
         plugins = gu.list_plugins()
         self.assertIn('download-commands', plugins)
@@ -161,7 +161,7 @@ class TestGerrit(Base):
         self.create_project(pname)
         un = config.ADMIN_USER
         gu = GerritUtils(
-            'https://%s/' % config.GATEWAY_HOST,
+            config.GATEWAY_URL,
             auth_cookie=config.USERS[un]['auth_cookie'])
         self.assertTrue(gu.project_exists(pname))
         k_index = gu.add_pubkey(config.USERS[un]["pubkey"])
@@ -209,7 +209,7 @@ class TestGerrit(Base):
         self.create_project(pname, options)
         first_u = config.ADMIN_USER
         gu_first_u = GerritUtils(
-            'https://%s/' % config.GATEWAY_HOST,
+            config.GATEWAY_URL,
             auth_cookie=config.USERS[first_u]['auth_cookie'])
         self.assertTrue(gu_first_u.project_exists(pname))
         # Push data in the create project as Admin user
@@ -237,7 +237,7 @@ class TestGerrit(Base):
         gu_first_u.submit_change_note(change_id, "current", "Workflow", "1")
         second_u = config.USER_2
         gu_second_u = GerritUtils(
-            'https://%s/' % config.GATEWAY_HOST,
+            config.GATEWAY_URL,
             auth_cookie=config.USERS[second_u]['auth_cookie'])
         self.assertTrue(gu_first_u.submit_patch(change_id, "current"))
         # Change the file we have commited with Admin user
@@ -275,7 +275,7 @@ class TestGerrit(Base):
     def test_gerrit_version(self):
         """ Test if correct Gerrit version is running
         """
-        url = "https://%s/r/config/server/version" % config.GATEWAY_HOST
+        url = config.GATEWAY_URL + "/r/config/server/version"
         resp = requests.get(
             url,
             cookies=dict(

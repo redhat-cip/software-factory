@@ -15,7 +15,7 @@
 # under the License.
 import config
 import requests
-import time
+import urllib2
 
 from utils import Base
 from utils import ManageSfUtils
@@ -37,10 +37,10 @@ class TestUserdata(Base):
     def setUp(self):
         self.projects = []
         self.rm = RedmineUtils(
-            config.REDMINE_URL,
+            config.GATEWAY_URL + "/redmine/",
             auth_cookie=config.USERS[config.ADMIN_USER]['auth_cookie'])
         self.gu = GerritUtils(
-            'https://%s/' % config.GATEWAY_HOST,
+            config.GATEWAY_URL,
             auth_cookie=config.USERS[config.ADMIN_USER]['auth_cookie'])
 
     def tearDown(self):
@@ -67,11 +67,11 @@ class TestUserdata(Base):
         self.assertEqual(config.USERS[login]['email'], user.mail)
 
     def logout(self):
-        url = 'https://{}/auth/logout/'.format(config.GATEWAY_HOST)
+        url = config.GATEWAY_URL + '/auth/logout/'
         requests.get(url)
 
     def login(self, username, password, redirect='/'):
-        url = "https://%s/auth/login" % config.GATEWAY_HOST
+        url = config.GATEWAY_URL + "/auth/login"
         data = {'username': username,
                 'password': password,
                 'back': redirect}
@@ -81,11 +81,11 @@ class TestUserdata(Base):
         """ Functional test to verify the user creation and the login
         """
         self.logout()
-        response = self.login('user5', 'userpass',
-                              'http%3a%2f%2ftests.dom%2fjenkins%2f')
-        expected_url = "http://{}/jenkins/".format(config.GATEWAY_HOST)
+        url = config.GATEWAY_URL + "jenkins/"
+        quoted_url = urllib2.quote(url, safe='')
+        response = self.login('user5', 'userpass', quoted_url)
 
-        self.assertEqual(expected_url, response.url)
+        self.assertEqual(url, response.url)
         # verify if user is created in gerrit and redmine
         self.verify_userdata_gerrit('user5')
         self.verify_userdata_redmine('user5')
@@ -94,11 +94,11 @@ class TestUserdata(Base):
         """ Functional test to verify the redirect to redmine project page
         """
         self.logout()
-        response = self.login('user5', 'userpass',
-                              'http%3a%2f%2ftests.dom%2fredmine%2fprojects')
-        expect_url = "http://{}/redmine/projects".format(config.GATEWAY_HOST)
+        url = config.GATEWAY_URL + "redmine/projects"
+        quoted_url = urllib2.quote(url, safe='')
+        response = self.login('user5', 'userpass', quoted_url)
 
-        self.assertEqual(expect_url, response.url)
+        self.assertEqual(url, response.url)
         # verify if user is created in gerrit and redmine
         self.verify_userdata_gerrit('user5')
         self.verify_userdata_redmine('user5')
@@ -116,11 +116,10 @@ class TestUserdata(Base):
         except NotImplementedError:
             skip("user management not supported in this version of managesf")
         self.logout()
-        time.sleep(10)
-        response = self.login('Flea', 'RHCP',
-                              'http%3a%2f%2ftests.dom%2fredmine%2fprojects')
-        expect_url = "http://{}/redmine/projects".format(config.GATEWAY_HOST)
-        self.assertEqual(expect_url, response.url)
+        url = config.GATEWAY_URL + "redmine/projects"
+        quoted_url = urllib2.quote(url, safe='')
+        response = self.login('Flea', 'RHCP', quoted_url)
+        self.assertEqual(url, response.url)
 
     def test_nonmember_backlog_permissions(self):
         """Make sure project non members can see the backlog and add

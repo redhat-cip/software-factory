@@ -36,7 +36,7 @@ class TestGateway(Base):
         """
         subpaths = ["/r/", "/jenkins/", "/redmine/",
                     "/zuul/", "/etherpad/", "/paste/", "/docs/"]
-        url = "https://%s/topmenu.html" % config.GATEWAY_HOST
+        url = config.GATEWAY_URL + "/topmenu.html"
         resp = requests.get(url)
         self.assertEqual(resp.status_code, 200)
         for subpath in subpaths:
@@ -46,8 +46,8 @@ class TestGateway(Base):
         """ Test if Gerrit is accessible on gateway hosts
         """
         # Unauthenticated calls
-        urls = ["https://%s/r/" % config.GATEWAY_HOST,
-                "https://%s/r/#/" % config.GATEWAY_HOST]
+        urls = [config.GATEWAY_URL + "/r/",
+                config.GATEWAY_URL + "/r/#/"]
 
         for url in urls:
             resp = requests.get(url)
@@ -55,13 +55,13 @@ class TestGateway(Base):
             self.assertTrue('<title>Gerrit Code Review</title>' in resp.text)
 
         # URL that requires login - shows login page
-        url = "https://%s/r/a/projects/?" % config.GATEWAY_HOST
+        url = config.GATEWAY_URL + "/r/a/projects/?"
         resp = requests.get(url)
         self.assertEqual(resp.status_code, 200)
         self.assertTrue('form-signin' in resp.text)
 
         # Authenticated URL that requires login
-        url = "https://%s/r/a/projects/?" % config.GATEWAY_HOST
+        url = config.GATEWAY_URL + "/r/a/projects/?"
         self._auth_required(url)
         resp = requests.get(
             url,
@@ -74,7 +74,7 @@ class TestGateway(Base):
         """ Test if Gerrit API is accessible on gateway hosts
         """
         m = ManageSfUtils(config.GATEWAY_URL)
-        url = "https://%s/api/" % config.GATEWAY_HOST
+        url = config.GATEWAY_URL + "/api/"
 
         a = GerritUtils(url)
         a.g.url = "%s/" % a.g.url.rstrip('a/')
@@ -96,7 +96,7 @@ class TestGateway(Base):
     def test_jenkins_accessible(self):
         """ Test if Jenkins is accessible on gateway host
         """
-        url = "https://%s/jenkins/" % config.GATEWAY_HOST
+        url = config.GATEWAY_URL + "/jenkins/"
 
         # Without SSO cookie. Note that auth is no longer enforced
 
@@ -117,7 +117,7 @@ class TestGateway(Base):
     def test_zuul_accessible(self):
         """ Test if Zuul is accessible on gateway host
         """
-        url = "https://%s/zuul/" % config.GATEWAY_HOST
+        url = config.GATEWAY_URL + "/zuul/"
         resp = requests.get(
             url,
             cookies=dict(
@@ -128,7 +128,7 @@ class TestGateway(Base):
     def test_redmine_accessible(self):
         """ Test if Redmine is accessible on gateway host
         """
-        url = "https://%s/redmine/" % config.GATEWAY_HOST
+        url = config.GATEWAY_URL + "/redmine/"
 
         # Without SSO cookie. Note that auth is no longer enforced
         resp = requests.get(url)
@@ -148,7 +148,7 @@ class TestGateway(Base):
 
         # Check one of the CSS files to ensure static files are accessible
         css_file = "plugin_assets/redmine_backlogs/stylesheets/global.css"
-        url = "https://%s/redmine/%s" % (config.GATEWAY_HOST, css_file)
+        url = config.GATEWAY_URL + "/redmine/%s" % css_file
         resp = requests.get(
             url,
             cookies=dict(
@@ -159,7 +159,7 @@ class TestGateway(Base):
     def test_etherpad_accessible(self):
         """ Test if Etherpad is accessible on gateway host
         """
-        url = "https://%s/etherpad/" % config.GATEWAY_HOST
+        url = config.GATEWAY_URL + "/etherpad/"
         resp = requests.get(
             url,
             cookies=dict(
@@ -170,7 +170,7 @@ class TestGateway(Base):
     def test_paste_accessible(self):
         """ Test if Paste is accessible on gateway host
         """
-        url = "https://%s/paste/" % config.GATEWAY_HOST
+        url = config.GATEWAY_URL + "/paste/"
         resp = requests.get(
             url,
             cookies=dict(
@@ -181,14 +181,14 @@ class TestGateway(Base):
     def test_css_js_for_topmenu_accessible(self):
         """ Test if css/js for topmenu are accessible on gateway host
         """
-        url = "https://%s/static/js/jquery.min.js" % config.GATEWAY_HOST
+        url = config.GATEWAY_URL + "/static/js/jquery.min.js"
         resp = requests.get(url)
         self.assertEqual(resp.status_code, 200)
         self.assertTrue("jQuery v2.1.1" in resp.content)
 
         paths = ('js/bootstrap.min.js', 'css/bootstrap.min.css')
         for p in paths:
-            url = "https://%s/static/bootstrap/%s" % (config.GATEWAY_HOST, p)
+            url = config.GATEWAY_URL + "/static/bootstrap/%s" % p
             resp = requests.get(url)
             self.assertEqual(resp.status_code, 200)
             self.assertTrue("Bootstrap v3.2.0" in resp.content)
@@ -196,7 +196,7 @@ class TestGateway(Base):
     def test_static_dir_for_paste_accessible(self):
         """ Test if static dir for paste is accessible on gateway host
         """
-        url = "https://%s/static/lodgeit/jquery.js" % config.GATEWAY_HOST
+        url = config.GATEWAY_URL + "/static/lodgeit/jquery.js"
         resp = requests.get(url)
         self.assertEqual(resp.status_code, 200)
         self.assertTrue("jQuery 1.2.6" in resp.content)
@@ -204,14 +204,14 @@ class TestGateway(Base):
     def test_docs_accessible(self):
         """ Test if Sphinx docs are accessible on gateway host
         """
-        url = "https://%s/docs/index.html" % config.GATEWAY_HOST
+        url = config.GATEWAY_URL + "/docs/index.html"
         resp = requests.get(url)
         self.assertEqual(resp.status_code, 200)
 
     def test_dashboard_accessible(self):
         """ Test if Dashboard is accessible on gateway host
         """
-        url = "https://%s/dashboard/" % config.GATEWAY_HOST
+        url = config.GATEWAY_URL + "/dashboard/"
 
         self._auth_required(url)
 
