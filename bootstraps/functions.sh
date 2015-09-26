@@ -20,31 +20,18 @@ BUILD=${BUILD:-/root/sf-bootstrap-data}
 
 function generate_hosts_yaml {
     OUTPUT=${BUILD}/hiera
+    domain=$(cat ${OUTPUT}/sfconfig.yaml | grep '^domain:' | awk '{ print $2 }')
     cat << EOF > ${OUTPUT}/hosts.yaml
 hosts:
   localhost:              {ip: 127.0.0.1}
-  puppetmaster.SF_SUFFIX: {ip: 192.168.135.101, host_aliases: [puppetmaster]}
-  mysql.SF_SUFFIX:        {ip: 192.168.135.101, host_aliases: [mysql]}
-  jenkins.SF_SUFFIX:      {ip: 192.168.135.101, host_aliases: [jenkins]}
-  redmine.SF_SUFFIX:      {ip: 192.168.135.101, host_aliases: [redmine]}
-  api-redmine.SF_SUFFIX:  {ip: 192.168.135.101}
-  gerrit.SF_SUFFIX:       {ip: 192.168.135.101, host_aliases: [gerrit]}
-  managesf.SF_SUFFIX:     {ip: 192.168.135.101, host_aliases: [managesf, auth.SF_SUFFIX, SF_SUFFIX]}
+  puppetmaster.$domain: {ip: 192.168.135.101, host_aliases: [puppetmaster]}
+  mysql.$domain:        {ip: 192.168.135.101, host_aliases: [mysql]}
+  jenkins.$domain:      {ip: 192.168.135.101, host_aliases: [jenkins]}
+  redmine.$domain:      {ip: 192.168.135.101, host_aliases: [redmine]}
+  api-redmine.$domain:  {ip: 192.168.135.101}
+  gerrit.$domain:       {ip: 192.168.135.101, host_aliases: [gerrit]}
+  managesf.$domain:     {ip: 192.168.135.101, host_aliases: [managesf, auth.$domain, $domain]}
 EOF
-    sed -i "s/SF_SUFFIX/${SF_SUFFIX}/g" ${OUTPUT}/hosts.yaml
-}
-
-function generate_sfconfig {
-    OUTPUT=${BUILD}/hiera
-    cp sfconfig.yaml ${OUTPUT}/
-    # Set and generated admin password
-    DEFAULT_ADMIN_USER=$(cat ${OUTPUT}/sfconfig.yaml | grep '^admin_name:' | awk '{ print $2 }')
-    DEFAULT_ADMIN_PASSWORD=$(cat ${OUTPUT}/sfconfig.yaml | grep '^admin_password:' | awk '{ print $2 }')
-    ADMIN_USER=${ADMIN_USER:-${DEFAULT_ADMIN_USER}}
-    ADMIN_PASSWORD=${ADMIN_PASSWORD:-${DEFAULT_ADMIN_PASSWORD}}
-    sed -i "s/^admin_name:.*/admin_name: ${ADMIN_USER}/" ${OUTPUT}/sfconfig.yaml
-    # TODO: remove this, it should work without
-    sed -i "s/^admin_password:.*/admin_password: ${ADMIN_PASSWORD}/" ${OUTPUT}/sfconfig.yaml
 }
 
 function generate_random_pswd {
@@ -133,6 +120,7 @@ function generate_keys {
 
 function generate_apache_cert {
     OUTPUT=${BUILD}/certs
+    domain=$(cat ${BUILD}/hiera/sfconfig.yaml | grep '^domain:' | awk '{ print $2 }')
     # Generate self-signed Apache certificate
     cat > openssl.cnf << EOF
 [req]
@@ -140,16 +128,16 @@ req_extensions = v3_req
 distinguished_name = req_distinguished_name
 
 [ req_distinguished_name ]
-commonName_default = ${SF_SUFFIX}
+commonName_default = $domain
 
 [ v3_req ]
 subjectAltName=@alt_names
 
 [alt_names]
-DNS.1 = ${SF_SUFFIX}
-DNS.2 = auth.${SF_SUFFIX}
+DNS.1 = $domain
+DNS.2 = auth.$domain
 EOF
-    openssl req -x509 -nodes -days 365 -newkey rsa:2048 -subj "/C=FR/O=SoftwareFactory/CN=${SF_SUFFIX}" -keyout ${OUTPUT}/gateway.key -out ${OUTPUT}/gateway.crt -extensions v3_req -config openssl.cnf
+    openssl req -x509 -nodes -days 365 -newkey rsa:2048 -subj "/C=FR/O=SoftwareFactory/CN=$domain" -keyout ${OUTPUT}/gateway.key -out ${OUTPUT}/gateway.crt -extensions v3_req -config openssl.cnf
 }
 
 function prepare_etc_puppet {

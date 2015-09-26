@@ -17,7 +17,6 @@
 DEBUG=1
 source functions.sh
 
-SF_SUFFIX=${SF_SUFFIX:-tests.dom}
 BUILD=/root/sf-bootstrap-data
 REFARCH=${1:-1node-allinone}
 
@@ -26,13 +25,14 @@ for i in hiera ssh_keys certs; do
     [ -d ${BUILD}/$i ] || mkdir -p ${BUILD}/$i
 done
 
+cp sfconfig.yaml ${BUILD}/hiera/
+generate_hosts_yaml
+
 # Generate site specifics configuration
 if [ ! -f "${BUILD}/generate.done" ]; then
     mkdir -p /var/log/edeploy
     echo "PROFILE=none" >> /var/log/edeploy/vars
     generate_keys
-    generate_hosts_yaml
-    generate_sfconfig
     generate_apache_cert
     generate_creds_yaml
     touch "${BUILD}/generate.done"
@@ -74,24 +74,29 @@ function puppet_copy {
 }
 
 echo "Boostrapping $REFARCH"
+domain=$(cat ${BUILD}/hiera/sfconfig.yaml | grep '^domain:' | awk '{ print $2 }')
 # Apply puppet stuff with good old shell scrips
 case "${REFARCH}" in
     "1node-allinone")
         prepare_etc_puppet
-        wait_for_ssh "managesf.${SF_SUFFIX}"
-        puppet_apply "managesf.${SF_SUFFIX}" /etc/puppet/environments/sf/manifests/1node-allinone.pp
+        # Update local /etc/hosts
+        puppet apply --test --environment sf --modulepath=/etc/puppet/environments/sf/modules/ hosts.pp
+        wait_for_ssh "managesf.${domain}"
+        puppet_apply "managesf.${domain}" /etc/puppet/environments/sf/manifests/1node-allinone.pp
         ;;
     "2nodes-jenkins")
         # Prepare environment
         sed -i "s/jenkins\.\([^1]*\)192.168.135.101/jenkins.\1192.168.135.102/" ${BUILD}/hiera/hosts.yaml
         prepare_etc_puppet
-        wait_for_ssh "managesf.${SF_SUFFIX}"
+        # Update local /etc/hosts
+        puppet apply --test --environment sf --modulepath=/etc/puppet/environments/sf/modules/ hosts.pp
+        wait_for_ssh "managesf.${domain}"
 
         # Run puppet apply
-        puppet_apply "managesf.${SF_SUFFIX}" /etc/puppet/environments/sf/manifests/2nodes-sf.pp
-        wait_for_ssh "jenkins.${SF_SUFFIX}"
-        puppet_copy jenkins.${SF_SUFFIX}
-        puppet_apply "jenkins.${SF_SUFFIX}" /etc/puppet/environments/sf/manifests/2nodes-jenkins.pp
+        puppet_apply "managesf.${domain}" /etc/puppet/environments/sf/manifests/2nodes-sf.pp
+        wait_for_ssh "jenkins.${domain}"
+        puppet_copy jenkins.${domain}
+        puppet_apply "jenkins.${domain}" /etc/puppet/environments/sf/manifests/2nodes-jenkins.pp
         ;;
     "*")
         echo "Unknown refarch ${REFARCH}"
