@@ -1,0 +1,4 @@
+---
+# Synchronize the FS with eDeploy
+- name: Synchronize FS with eDeploy
+  command: edeploy upgrade {{ version }}

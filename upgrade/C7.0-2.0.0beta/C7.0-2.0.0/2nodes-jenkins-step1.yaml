@@ -1,0 +1,11 @@
+---
+- hosts: managesf
+  gather_facts: no
+  tasks:
+  - include: tasks/fetchupstream.yml
+- hosts: instances
+  gather_facts: no
+  tasks:
+  - include: tasks/fetchupstream.yml
+  - include: tasks/stopsfservices.yml
+  - include: tasks/edeploysync.yml

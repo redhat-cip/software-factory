@@ -1,4 +1,0 @@
----
-# Stop the puppet agent
-- name: Stop puppet agent
-  service: name=puppet state=stopped

@@ -1,8 +1,5 @@
 #!/bin/sh
 
-# make sure /var/run/passenger-instreg exists
-[ -d /var/run/passenger-instreg ] || mkdir -p /var/run/passenger-instreg
-
 # Unit files may changed - so ask for a reload after having updated the files system.
 systemctl daemon-reload
 

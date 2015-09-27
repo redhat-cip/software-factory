@@ -19,7 +19,7 @@ for role_name in softwarefactory; do
     echo "[+] Upstream is out dated, creating edeploy tarball"
     (cd ${role_name}; sudo tar czf ../${role}.edeploy *)
     md5sum ${role}.edeploy | sudo tee ${role}.edeploy.md5
-    for OBJECT in ${role}.edeploy ${role}.edeploy.md5 ${role}.md5 ${role}.img.qcow2 ${role}.img.qcow2.md5; do
+    for OBJECT in ${role}.edeploy ${role}.edeploy.md5 ${role}.md5 ${role}.img.qcow2 ${role}.img.qcow2.md5 ${role}.rpm ${role}.pip; do
         SWIFT_PATH="/v1/AUTH_${SWIFT_ACCOUNT}/${CONTAINER}/${OBJECT}"
         set +x
         TEMPURL=`swift tempurl PUT 120 ${SWIFT_PATH} ${TEMP_URL_KEY}`

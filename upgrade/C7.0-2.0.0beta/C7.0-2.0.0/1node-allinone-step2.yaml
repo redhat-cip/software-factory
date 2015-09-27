@@ -1,0 +1,17 @@
+---
+- hosts: managesf
+  tasks:
+  - name: systemctl daemon-reload
+    shell: systemctl daemon-reload
+  - name: Restart the bootstrap script
+    shell: ./bootstrap.sh > /var/log/upgrade-bootstrap.log
+    args:
+      chdir: /root/bootstraps
+- hosts: jenkins
+  gather_facts: no
+  tasks:
+  - include: tasks/submitconfigreview.yml
+- hosts: gerrit
+  gather_facts: no
+  tasks:
+  - include: tasks/allprojectsupdate.yml

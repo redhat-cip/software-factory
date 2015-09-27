@@ -35,6 +35,7 @@
 /etc/puppet/environments/production
 /etc/puppet/puppet.conf
 /root/.ssh
+/root/.ansible
 
 # System var stuff
 /var/cache/
@@ -50,6 +51,7 @@
 
 # Sf state data
 /root/sf-bootstrap-data/
+/root/software-factory/
 /var/lib/zuul/
 /var/lib/managesf/users.db
 /var/lib/cauth/state_mapping.db
@@ -74,13 +76,12 @@
 /srv/cauth_keys/
 
 # Sf configuration
+/etc/puppet/hiera/sf/sfcreds.yaml
+/etc/puppet/hiera/sf/sfconfig.yaml
 /etc/puppet/hiera/sf/hosts.yaml
 /etc/httpd/htpasswd
 
 # REMOVEME?
-/etc/zuul/
-/etc/jenkins_jobs/
-/srv/software-factory
 /usr/lib/systemd/system/etherpad.service
 /usr/lib/systemd/system/gerrit.service
 /usr/lib/systemd/system/jenkins.service
@@ -88,6 +89,3 @@
 /usr/lib/systemd/system/socat.service
 /usr/lib/systemd/system/zuul-merger.service
 /usr/lib/systemd/system/zuul.service
-/usr/share/httpd/
-/usr/share/sf-jjb/
-/usr/share/sf-zuul/

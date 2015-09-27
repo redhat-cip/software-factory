@@ -1,9 +1,9 @@
 #!/bin/sh
 #
-PREVIOUS_SF_REL=1.0.4
-SF_REL=2.0.0beta
-DVER=C7.0
-DIST=centos
+
+# Version string
+SF_PREVIOUS_VER=C7.0-2.0.0beta
+SF_VER=C7.0-2.0.0
 
 # Set this variable to 1 if we tag and set it back to 0 the commit after the tag
 TAGGED_RELEASE=0
@@ -13,10 +13,6 @@ MANAGESF_PINNED_VERSION=0.7.0
 CAUTH_PINNED_VERSION=0.5.0
 
 export LC_ALL=C
-
-# Version string
-SF_VER=${DVER}-${SF_REL}
-PREVIOUS_SF_VER=${DVER}-${PREVIOUS_SF_REL}
 
 SWIFT_BASE_URL="http://os.enocloud.com:8080"
 SWIFT_ACCOUNT="70aab03f69b549cead3cb5f463174a51"

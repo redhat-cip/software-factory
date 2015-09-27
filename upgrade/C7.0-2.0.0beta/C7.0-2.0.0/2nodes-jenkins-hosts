@@ -1,0 +1,14 @@
+# file: hosts
+
+[instances]
+127.0.0.1 ansible_connection=local
+jenkins ansible_connection=local
+
+[managesf]
+127.0.0.1 ansible_connection=local
+
+[jenkins]
+jenkins ansible_connection=local
+
+[gerrit]
+127.0.0.1 ansible_connection=local

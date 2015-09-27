@@ -35,7 +35,11 @@ if [ ! -f "${BUILD}/generate.done" ]; then
     generate_keys
     generate_apache_cert
     generate_creds_yaml
+    echo -n ${REFARCH} > ${BUILD}/refarch
     touch "${BUILD}/generate.done"
+else
+    # During upgrade or another bootstrap rup, reuse the same refarch
+    [ -f ${BUILD}/refarch ] && REFARCH=$(cat ${BUILD}/refarch)
 fi
 
 
@@ -68,7 +72,7 @@ function puppet_apply {
     echo "[bootstrap][$host] Applying $manifest"
     ssh -tt root@$host puppet apply --test --environment sf --modulepath=/etc/puppet/environments/sf/modules/ $manifest
     res=$?
-    if [ "$res" != 2 ] && [ "$res" != 0 ]; then # && [ "$res" != 6 ]; then
+    if [ "$res" != 2 ] && [ "$res" != 0 ]; then
         echo "[bootstrap][$host] Failed ($res) to apply $manifest"
         exit 1
     fi
@@ -103,7 +107,7 @@ case "${REFARCH}" in
         puppet_apply "managesf.${domain}" /etc/puppet/environments/sf/manifests/2nodes-sf.pp
         puppet_apply "jenkins.${domain}" /etc/puppet/environments/sf/manifests/2nodes-jenkins.pp
         ;;
-    "*")
+    *)
         echo "Unknown refarch ${REFARCH}"
         exit 1
         ;;

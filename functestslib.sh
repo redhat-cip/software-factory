@@ -35,15 +35,21 @@ function lxc_stop {
     checkpoint "lxc-stop"
 }
 
+function lxc_init {
+    ver=${1:-${SF_VER}}
+    (cd deploy/lxc; sudo ./deploy.py init --refarch $REFARCH --version ${ver}) || fail "LXC start FAILED"
+    checkpoint "lxc-start"
+}
+
+function lxc_start {
+    (cd deploy/lxc; sudo ./deploy.py start --refarch $REFARCH) || fail "LXC start FAILED"
+    checkpoint "lxc-start"
+}
+
 function build_image {
     # Retry to build role if it fails before exiting
     ./build_image.sh ${ARTIFACTS_DIR} || ./build_image.sh ${ARTIFACTS_DIR} || fail "Roles building FAILED"
     checkpoint "build_image"
-}
-
-function lxc_start {
-    (cd deploy/lxc; sudo ./deploy.py init --refarch $REFARCH) || fail "LXC start FAILED"
-    checkpoint "lxc-start"
 }
 
 function configure_network {
@@ -86,8 +92,10 @@ function get_logs {
     #after a failure.
     set +e
     sleep 5
-
+    (
+    sudo cp ${INST}/softwarefactory.{rpm,pip} ${ARTIFACTS_DIR}/
     sudo cp /var/lib/lxc/managesf/rootfs/var/log/messages ${ARTIFACTS_DIR}/
+    sudo cp /var/lib/lxc/managesf/rootfs/var/log/upgrade-bootstrap.log ${ARTIFACTS_DIR}/
     sudo cp /var/lib/lxc/managesf/rootfs/var/log/cloud-init* ${ARTIFACTS_DIR}/
     sudo cp -r /var/lib/lxc/managesf/rootfs/home/gerrit/site_path/logs/ ${ARTIFACTS_DIR}/gerrit/
     sudo cp -r /var/lib/lxc/managesf/rootfs/usr/share/redmine/log/ ${ARTIFACTS_DIR}/redmine/
@@ -98,6 +106,7 @@ function get_logs {
     sudo cp -r /var/lib/lxc/managesf/rootfs/var/log/nodepool/ ${ARTIFACTS_DIR}/nodepool/
     sudo cp -r /var/lib/lxc/managesf/rootfs/var/lib/jenkins/jobs/ ${ARTIFACTS_DIR}/jenkins-jobs/
     sudo cp -r /var/lib/lxc/managesf/rootfs/root/config/ ${ARTIFACTS_DIR}/config-project
+    ) 2> /dev/null
     sudo chown -R ${USER} ${ARTIFACTS_DIR}
     checkpoint "get_logs"
 }
@@ -126,7 +135,7 @@ function fail {
     msg=$1
     log_file=$2
     DISABLE_SETX=1
-    echo "\n$(hostname) FAIL: $msg"
+    echo -e "\n\n>>>>>>>>> $(hostname) FAIL: $msg"
     if [ ! -z "$log_file" ] && [ -f "$log_file" ]; then
         echo "=> Log file $log_file --["
         tail -n 500 $log_file
@@ -220,13 +229,20 @@ function run_provisioner {
     echo "$(date) ======= run_provisioner"
     . /var/lib/sf/venv/bin/activate
     ./tests/functional/provisioner/provisioner.py 2>> ${ARTIFACTS_DIR}/provisioner.debug || fail "Provisioner failed" ${ARTIFACTS_DIR}/provisioner.debug
-    sfmanager --url "${MANAGESF_URL}" --auth user1:userpass system backup_start || fail "Backup failed"
-    sfmanager --url "${MANAGESF_URL}" --auth user1:userpass system backup_get || fail "Backup get failed"
     deactivate
 }
 
-function run_checker {
-    echo "$(date) ======= run_checker"
+function run_backup_start {
+    echo "$(date) ======= run_backup_start"
+    . /var/lib/sf/venv/bin/activate
+    sfmanager --url "${MANAGESF_URL}" --auth user1:userpass system backup_start || fail "Backup failed"
+    sfmanager --url "${MANAGESF_URL}" --auth user1:userpass system backup_get || fail "Backup get failed"
+    deactivate
+
+}
+
+function run_backup_restore {
+    echo "$(date) ======= run_backup_restore"
     . /var/lib/sf/venv/bin/activate
     sfmanager --url "${MANAGESF_URL}" --auth user1:userpass system restore --filename $(pwd)/sf_backup.tar.gz || fail "Backup resore failed"
     echo "[+] Waiting for gerrit to restart..."
@@ -237,9 +253,24 @@ function run_checker {
         let retry=retry+1
     done
     [ $retry -eq 1000 ] && fail "Gerrit did not restart"
-    checkpoint "wait for gerrit"
     echo "=> Took ${retry} retries"
+    deactivate
+}
 
+function run_upgrade {
+    echo "$(date) ======= run_upgrade"
+    sudo git clone file://$(pwd) /var/lib/lxc/managesf/rootfs/root/software-factory  --depth 1 || fail "Could not clone sf in managesf instance"
+    echo "[+] Copying new version (${INST}/softwarefactory -> /var/lib/lxc/managesf/rootfs/var/lib/debootstrap/install/${SF_VER}/softwarefactory/)"
+    sudo mkdir -p /var/lib/lxc/managesf/rootfs/var/lib/debootstrap/install/${SF_VER}/softwarefactory/ || fail "Could not copy ${SF_VER}"
+    sudo rsync -a --delete ${INST}/softwarefactory/ /var/lib/lxc/managesf/rootfs/var/lib/debootstrap/install/${SF_VER}/softwarefactory/ || fail "Could not copy ${SF_VER}"
+    echo "[+] Running upgrade"
+    ssh ${SF_HOST} "cd software-factory; ./upgrade.sh ${REFARCH}" || fail "Upgrade failed" "/var/lib/lxc/managesf/rootfs/var/log/upgrade-bootstrap.log"
+    checkpoint "run_upgrade"
+}
+
+function run_checker {
+    echo "$(date) ======= run_checker"
+    . /var/lib/sf/venv/bin/activate
     ./tests/functional/provisioner/checker.py 2>> ${ARTIFACTS_DIR}/checker.debug || fail "Backup checker failed" ${ARTIFACTS_DIR}/checker.debug
     deactivate
 }
@@ -254,7 +285,8 @@ function run_functional_tests {
 
 function run_serverspec_tests {
     echo "$(date) ======= run_serverspec_tests"
-    ssh ${SF_HOST} "cd serverspec; rake spec" 2>&1 | tee ${ARTIFACTS_DIR}/serverspec.output || fail "Serverspec tests failed"
+    ssh ${SF_HOST} "cd serverspec; rake spec" 2>&1 | tee ${ARTIFACTS_DIR}/serverspec.output
+    [ "${PIPESTATUS[0]}" != "0" ] && fail "Serverspec tests failed"
     checkpoint "run_serverspec_tests"
 }
 

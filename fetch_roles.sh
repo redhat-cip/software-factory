@@ -17,9 +17,10 @@
 set -e
 [ -n "$DEBUG" ] && set -x
 [ -n "$PB" ] && PB="--progress-bar" || PB="-s"
-[ -z "$2" ] || SF_REL=$2
 
 . ./role_configrc
+
+[ -z "$1" ] || SF_VER=$1
 
 function die {
     echo "[ERROR]: $1"
@@ -32,6 +33,10 @@ function fetch_sf_roles_prebuilt {
     local temp=$(mktemp -d /tmp/edeploy-check-XXXXX)
     for role in softwarefactory; do
         role=${role}-${SF_VER}
+        if [ -f ${UPSTREAM}/${role}.edeploy ]; then
+            echo "${UPSTREAM}/${role}.edeploy already exists..."
+            continue
+        fi
         curl -s -o ${temp}/${role}.md5 ${SWIFT_SF_URL}/${role}.md5 &> /dev/null || die "Could not fetch ${SWIFT_SF_URL}/${role}.md5"
         # Swift does not return 404 but 'Not Found'
         grep -q 'Not Found' ${temp}/${role}.md5 && die "${role} does not exist upstream"
