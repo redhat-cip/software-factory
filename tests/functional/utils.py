@@ -262,8 +262,15 @@ class GerritGitUtils(Tool):
         self.env['GIT_COMMITTER_EMAIL'] = self.email
 
     def config_review(self, clone_dir):
+        # We also ensure the domain configured in the .gitreview is
+        # according the one from sfconfig.yaml. It is usefull in
+        # the case we try a domain reconfigure as the .git review of the
+        # config repo has been initialized with another domain.
+        self.exe("sed -i 's/^host=.*/host=%s/' .gitreview" %
+                 config.GATEWAY_HOST, clone_dir)
         self.exe("ssh-agent bash -c 'ssh-add %s; git review -s'" %
                  self.priv_key_path, clone_dir)
+        self.exe("git reset --hard", clone_dir)
 
     def list_open_reviews(self, project, uri, port=29418):
         cmd = "ssh -o StrictHostKeyChecking=no -i %s"
