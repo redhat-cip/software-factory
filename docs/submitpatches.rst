@@ -3,9 +3,7 @@
 Using Software factory for project development
 ==============================================
 
-Create a project on SF
-----------------------
-Any user can create a project. (See :ref:`managesf_create_project`)
+To create a project see :ref:`managesf_create_project`
 
 Contribute to a project on SF
 -----------------------------

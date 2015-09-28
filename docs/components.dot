@@ -5,6 +5,7 @@ digraph {
 
     "User" [shape=box];
     "LDAP" [color=gray];
+    "LaunchPad" [color=gray];
     "Github" [color=gray label="Github\n(OAuth)"];
     "LocalAuth" [color=gray];
 
@@ -42,6 +43,7 @@ digraph {
         "master" [label="Jenkins"];
         "JenkinsApache" [label="Apache"];
         "Zuul";
+        "Nodepool";
     }
 
     subgraph cluster_redmine {
@@ -112,6 +114,7 @@ digraph {
 
     edge [color=green];
     "cauth" -> "LDAP";
+    "cauth" -> "LaunchPad";
 
     MySQL -> m1 [style=invis];
 }

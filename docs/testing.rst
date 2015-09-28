@@ -179,7 +179,7 @@ Some quick explanation about this job configuration:
 
 - defaults: is the way the workspace is prepared. In Software Factory default's configuration
   this defines a freestyle project that can be run concurrently.
-- builders: The builder is the job code. It is important to note that we use the default
+- builders: The builder is the job code. It is important to note that it uses the default
   "prepare-workspace" builder and then the "shell" one. The former uses "zuul-cloner" to
   checkout the project + the change to be tested in the workspace. Then the later uses
   ZUUL_PROJECT to jump into the project source directory and then performs your custom actions.

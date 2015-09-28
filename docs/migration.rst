@@ -1,5 +1,3 @@
-Contents:
-
 .. toctree::
 
 Migrating to Software Factory

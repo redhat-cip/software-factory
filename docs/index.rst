@@ -11,6 +11,7 @@ Welcome to software-factory's documentation!
 
    intro
    deploy
+   auths
    migration
    upgrade
    submitpatches
@@ -18,4 +19,5 @@ Welcome to software-factory's documentation!
    analytics
    testing
    contribute
+   rebuild_image
    tools

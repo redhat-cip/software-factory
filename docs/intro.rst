@@ -5,70 +5,53 @@ Contents:
 Introduction to Software Factory
 ================================
 
-Software Factory is a collection of existing tools that aim to
-provide a powerful platform to collaborate on software development.
-Software Factory eases the deployment of this platform and adds an
-additional management layer. The deployment target is an
-OpenStack compatible cloud.
+Software Factory (also called SF) is a collection of services that provides
+a powerful platform to build software. It's designed to
+run on an OpenStack-based cloud but it can also be used standalone
+without features related to the cloud-like tests environments.
 
-What is Software Factory
-------------------------
 
-The platform deployed by Software Factory is based on two main
-tools that you may already know: Gerrit and Jenkins. This couple
-has proven its robustness in some huge projects and especially
-OpenStack were hundreds of commit are pushed and automatically
-tested every day.
+SF integrates services matching each step in the software
+production chain:
 
-Software Factory will highly facilitate the deployment and
-configuration of such tools. Instead of losing time to
-try to understand deployment details of each component,
-Software Factory will bootstrap a working platform
-within a couple of minutes.
+* Code review system : `Gerrit <http://en.wikipedia.org/wiki/Gerrit_%28software%29>`_
+* Issue tracker : `Redmine <http://en.wikipedia.org/wiki/Redmine>`_
+* Continuous integration : `Zuul <http://ci.openstack.org/zuul/>`_
+* Tests environment : `Jenkins <http://en.wikipedia.org/wiki/Jenkins_%28software%29>`_ and `Nodepool <http://docs.openstack.org/infra/system-config/nodepool.html>`_
+* Collaborative tools : `Etherpad <http://en.wikipedia.org/wiki/Etherpad>`_, `Pastebin <http://en.wikipedia.org/wiki/Pastebin>`_
 
-An OpenStack or OpenStack compatible cloud account is needed
-to deploy the Software Factory stack. The bootstrap process
-will boot all the VMs needed by the platform. Basically
-the bootstrap process will take care of all deployment details
-from uploading Software Factory's pre-built images to
-inter-connection configuration of Gerrit and Jenkins for
-instance. At the end of this process your new development
-platform is ready to use.
+SF offers a seamless user experience with:
 
-Later in this guide we will use SF as Software Factory.
+* Single Sign-On authentication with cauth
+* top-menu to access all services
+* dashboard
 
-Which components SF provides
-----------------------------
+SF tests jobs, instances and pipelines configuration is done through a special project
+called config and is updated through the SF integration pipeline (using code review and zuul gate).
 
-The stack is composed of three main components:
+One should know that SF is entirely developped and produced using SF.
 
-* A code review component : `Gerrit <http://en.wikipedia.org/wiki/Gerrit_%28software%29>`_
-* A continuous integration system : `Jenkins <http://en.wikipedia.org/wiki/Jenkins_%28software%29>`_
-* A Smart project gating system: `Zuul <http://ci.openstack.org/zuul/>`_
-* A project management and bug tracking system : `Redmine <http://en.wikipedia.org/wiki/Redmine>`_
-* A collaborative real time editor : `Etherpad <http://en.wikipedia.org/wiki/Etherpad>`_
-* A `pastebin <http://en.wikipedia.org/wiki/Pastebin>`_ like tool : Lodgeit
-
-Which features SF provides
---------------------------
 
 Ready to use development platform
 .................................
 
 Setting up a development environment manually can really be
 time consuming and sometimes leads to a lot of configuration
-trouble. SF provides a way to easily deploy such environment
-on a running OpenStack cloud. The deployment mainly uses OpenStack
-Heat to deploy cloud resources like virtual machines, block
-volumes, network security groups, and floating IPs. Internal
-configuration of services like Gerrit, Jenkins, and others is done
-by Puppet. At the end of the process the SF environment deployment
-is ready to be used. The whole process from image uploading
-to the system up and ready can take a couple minutes.
+trouble. SF provides an easy way to get all services configured
+and running.
+
+The SF image can be uploaded to a Glance service, deployed on
+a baremetal server or used as a LXC guest image. Once the image is running,
+a configuration script 'bootstraps' needs to be executed to configure
+all services using puppet.
+
+SF does not require access to the Internet to be installed as all components are
+pre installed.
+
+SF feature an automated upgrade process continuously tested with integration test.
 
 Below is an overview of all nodes (shown as dashed boxes) and services
-and their connections to each other. Not shown is the puppetmaster server.
-Each node runs a puppet agent that connects to the puppetmaster server.
+and their connections to each other.
 
 .. graphviz:: components.dot
 
@@ -109,9 +92,8 @@ Jenkins/Zuul
 
 Jenkins is deployed along with SF as the CI component. It is
 configured to work with Zuul. Zuul will control how Jenkins
-perform jobs. The SF deployment configures a first Jenkins VM
-as master and one Jenkins VM as slave. Additional other Jenkins slaves
-can be easily added afterwards.
+perform jobs. Jenkins slaves can be added either as static slaves or as
+nodepool slaves.
 
 .. image:: imgs/jenkins.jpg
 
@@ -124,12 +106,20 @@ On SF Zuul is by default configured to provide four pipelines:
 
 .. image:: imgs/zuul.jpg
 
+Nodepool
+........
+
+Nodepool is a Jenkins slaves manager. It is design to provision and
+maintain one or more pools of Jenkins slave. An Openstack cloud account
+is needed to allow nodepool to store images/snapshot and start slave VMs.
+Within SF Nodepool is already pre-configured to run together with Jenkins and Zuul.
+
 Redmine
 .......
 
 Redmine is the issue tracker inside Software Factory. Redmine
 configuration done by in SF is quite standard. Additionally
-we embed the "Redmine Backlogs" plugin that eases Agile
+SF embed the "Redmine Backlogs" plugin that eases Agile
 methodologies to be used with Redmine.
 
 .. image:: imgs/redmine.jpg
@@ -137,7 +127,7 @@ methodologies to be used with Redmine.
 Etherpad and Lodgeit
 ....................
 
-The Software Factory deploys along with Redmine, Gerrit and Jenkins two
+Software Factory deploys along with Redmine, Gerrit and Jenkins two
 additional collaboration tools. The first one is an Etherpad where team members can
 live edit text documents to collaborate. This is really handy for instance to
 brainstorm of design documents.
@@ -159,8 +149,9 @@ Thanks to it you can easily for instance :
 * Add/remove users from project groups in a unified way.
 * Delete a project with its related group in a unified way.
 * Perform and restore a backup of the SF user data.
+* ...
 
-By unified way we mean action is performed in Gerrit and on Redmine, for
+By unified way it means action is performed in Gerrit and on Redmine, for
 instance if a user is added to the admin group of a project A
 it is also added on the related Redmine and Gerrit group automatically.
 
@@ -182,10 +173,11 @@ SF provides an unified authentication through Gerrit, Redmine and Jenkins.
 Once your are authenticated on Gerrit your are also logged in on Redmine and Jenkins.
 A logout from one service logs you out from other services as well.
 
-Currently SF provides three kind of backends to authenticate:
+Currently SF provides four kind of backends to authenticate:
 
 * LDAP backend
 * Github OAuth
+* Launchpad
 * local user database hosted in the managesf node
 
 .. image:: imgs/login.jpg
@@ -195,12 +187,11 @@ Below is the sequence diagram of the SSO mechanism.
 .. graphviz:: authentication.dot
 
 The future of Software Factory
-------------------------------
+..............................
 
-We want to provide :
+Long term roadmap:
 
-* More ready to use integration between components.
-* Ready and easy to use updates for SF deployments.
-* Autoscaling using Heat.
+* Plugins interface for other issue trackers like Jira or Phabricator
+* More collaborative tools like Taiga, mumble and irc server.
+* Autoscaling and Heat templates.
 * Developer, Project leaders, Scrum master useful dashboard.
-* Provide choice over issues tracker at deployment time.

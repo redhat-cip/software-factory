@@ -49,9 +49,9 @@ copyright = u'2014, eNovance'
 #
 # The short X.Y version.
 version = filter(
-    lambda x: x.startswith("SF_VER="),
+    lambda x: x.startswith("VER="),
     open("../role_configrc").readlines()
-)[0].strip().split('=')[1].split('-')[1]
+)[0].strip().split('=')[1]
 # The full version, including alpha/beta/rc tags.
 release = version
 
