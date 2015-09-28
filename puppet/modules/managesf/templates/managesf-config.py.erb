@@ -95,6 +95,6 @@ htpasswd = {
     'filename': '/etc/httpd/managesf_htpasswd'
 }
 
-<% if scope.function_hiera(["top_domain"]) == "tests.dom" %>
+<% if scope.function_hiera(["top_domain"]) == "tests.dom" or scope.function_hiera(["top_domain"]) == "localtests.dom" %>
 project_create_administrator_only = False
 <% end %>

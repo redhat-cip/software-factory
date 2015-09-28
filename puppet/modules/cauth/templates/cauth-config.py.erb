@@ -82,7 +82,7 @@ auth = {
             "mail": "<%= scope.function_hiera(['admin_mail']) %>",
             "password": "<%= @admin_password_hashed %>",
         },
-	<% if scope.function_hiera(["top_domain"]) == "tests.dom" %>
+	<% if scope.function_hiera(["top_domain"]) == "tests.dom" or scope.function_hiera(["top_domain"]) == "localtests.dom" %>
             "user2": {
                 "lastname": "Demo user2",
                 "mail": "user2@tests.dom",
