@@ -15,114 +15,121 @@
 # under the License.
 
 LOCK="/var/run/sf-build_image.lock"
-if [ -f ${LOCK} ]; then
-    echo "Lock file present: ${LOCK}"
-    killall softwarefactory.install
-fi
-sudo touch ${LOCK}
-trap "sudo rm -f ${LOCK}" EXIT
+function wait_for_lock {
+    [ -f "${LOCK}" ] || return
+    retry=0
+    while [ $retry -lt 360 ]; do
+        [ -f ${LOCK} ] || return
+        echo "Lock file present: ${LOCK}"
+        sleep 1;
+        let retry=retry+1
+    done
+    exit -1
+}
 
-set -e
-[ -n "$DEBUG" ] && set -x
+function put_lock {
+    sudo touch ${LOCK}
+    trap "sudo rm -f ${LOCK}" EXIT
+}
+
+wait_for_lock
+put_lock
 
 . ./role_configrc
+[ -n "$DEBUG" ] && set -x
 
+BUILD_OUTPUT=/dev/stdout
 if [ ! -z "${1}" ]; then
-    ARTIFACTS_DIR=${1}/edeploy
+    ARTIFACTS_DIR=${1}/image_build
     sudo mkdir -p ${ARTIFACTS_DIR}
     USER=$(whoami)
     sudo chown -R $USER:$USER ${ARTIFACTS_DIR}
 fi
 
-
-CURRENT=`pwd`
-SF_ROLES=$CURRENT/edeploy/
-
-function build_img {
-    set -x
-    ROLE_NAME="$1"
-    ROLE_FILE="${INST}/${ROLE_NAME}-${SF_VER}.img"
-    ROLE_TREE_PATH="${INST}/${ROLE_NAME}"
-    CFG="$2"
-    [ -f "$ROLE_FILE" ] && sudo rm -Rf $ROLE_FILE
-    [ -f "${ROLE_FILE}.qcow2" ] && sudo rm -Rf "${ROLE_FILE}.qcow2"
-    sudo $CREATE_IMG $ROLE_TREE_PATH $ROLE_FILE $CFG
+function build_qcow {
+    IMAGE_FILE="${INST}/softwarefactory-${SF_VER}.img"
+    IMAGE_TREE_PATH="${INST}/softwarefactory"
+    [ -f "$IMAGE_FILE" ] && sudo rm -Rf $IMAGE_FILE
+    [ -f "${IMAGE_FILE}.qcow2" ] && sudo rm -Rf "${IMAGE_FILE}.qcow2"
+    sudo ./image/create-image.sh $IMAGE_TREE_PATH $IMAGE_FILE ./image/params.virt
     # Remove the raw image, only keep the qcow2 image
-    sudo rm -f ${ROLE_FILE}
-    sudo rm -f ${ROLE_FILE}.md5
-    qcow2_md5=$(cat ${ROLE_FILE}.qcow2 | md5sum - | cut -d ' ' -f1)
-    echo $qcow2_md5 | sudo tee ${ROLE_FILE}.qcow2.md5
+    sudo rm -f ${IMAGE_FILE} ${IMAGE_FILE}.md5
+}
+
+function build_cache {
+    [ -z "${SKIP_BUILD}" ] || return
+    CACHE_HASH="SF: $(git log --format=oneline -n 1 $CACHE_DEPS)"
+    LOCAL_HASH="$(cat ${CACHE_PATH}.hash 2> /dev/null)"
+
+    echo "(STEP1) ${CACHE_HASH}"
+    if [ "${LOCAL_HASH}" == "${CACHE_HASH}" ]; then
+        echo "(STEP1) Already built, remove ${CACHE_PATH}.hash to force rebuild"
+        return
+    fi
+    echo "(STEP1) The local cache needs update (was: [${LOCAL_HASH}])"
+    sudo rm -Rf ${CACHE_PATH}*
+    sudo mkdir -p ${CACHE_PATH}
+    [ -z "${ARTIFACTS_DIR}" ] || BUILD_OUTPUT=${ARTIFACTS_DIR}/step1_cache_build.log
+    (
+        set -e
+        cd image
+        STEP=1 SDIR=/var/lib/sf/git/edeploy sudo -E ./softwarefactory.install ${CACHE_PATH} ${SF_VER} &> ${BUILD_OUTPUT}
+        sudo chroot ${CACHE_PATH} pip freeze | sort | sudo tee ${CACHE_PATH}.pip &> /dev/null
+        sudo chroot ${CACHE_PATH} rpm -qa | sort | sudo tee ${CACHE_PATH}.rpm &> /dev/null
+        echo ${CACHE_HASH} | sudo tee ${CACHE_PATH}.hash > /dev/null
+    )
+    if [ "$?" != "0" ]; then
+        echo "(STEP1) FAILED"; sudo rm -Rf ${CACHE_PATH}.hash; exit 1;
+    fi
+    echo "(STEP1) SUCCESS: ${CACHE_HASH}"
 }
 
 function build_image {
-    ROLE_NAME="$1"
-    ROLE_MD5="$2"
-    ROLE_FILE="${INST}/${ROLE_NAME}-${SF_VER}"
+    IMAGE_HASH="SF: $(git log --format=oneline -n 1) || CAUTH: $(cd ${CAUTH_CLONED_PATH}; git log --format=oneline -n 1) || PYSFLIB: $(cd ${PYSFLIB_CLONED_PATH}; git log --format=oneline -n 1) || MANAGESF: $(cd ${MANAGESF_CLONED_PATH}; git log --format=oneline -n 1)"
+    LOCAL_HASH=$(cat ${IMAGE_PATH}-${SF_VER}.hash 2> /dev/null)
 
-    echo "(STEP1) ${ROLE_NAME} local hash is ${ROLE_MD5}"
-
-    if [ ! -f "${ROLE_FILE}.md5" ] || [ "$(cat ${ROLE_FILE}.md5)" != "${ROLE_MD5}" ]; then
-        echo "(STEP1) The local cache for ${ROLE_NAME} md5 ($(cat ${ROLE_FILE}.md5)) is different to what we computed from your git branch state (${ROLE_MD5})."
-        [ ! -d "${INST}/${ROLE_NAME}_cache" ] && sudo mkdir -p "${INST}/${ROLE_NAME}_cache"
-        [ -z "$SKIP_BUILD" ] && {
-            echo "(STEP1) Rebuilding cache now..."
-            if [ ! -z "${ARTIFACTS_DIR}" ]; then
-                ROLE_OUTPUT=${ARTIFACTS_DIR}/${ROLE_NAME}_step_1_build.log
-            else
-                ROLE_OUTPUT=/dev/stdout
-            fi
-            cd $SF_ROLES
-            STEP=1 SDIR=/var/lib/sf/git/edeploy \
-            sudo -E ./softwarefactory.install "${INST}/${ROLE_NAME}_cache" ${SF_VER} &> ${ROLE_OUTPUT} || { echo "(STEP1) Build failed"; sudo rm -Rf ${ROLE_FILE}.md5; exit 1; }
-            cd -
-        } || {
-            echo "(STEP1) Skip rebuilding cache (forced)."
-            return
-        }
+    echo "(STEP2) ${IMAGE_HASH}"
+    if [ "${LOCAL_HASH}" == "${IMAGE_HASH}" ]; then
+        echo "(STEP1) Already built, remove ${IMAGE_PATH}-${SF_VER}.hash to force rebuild"
+        return
     fi
-}
-
-function finalize_image {
-    ROLE_NAME="$1"
-    ROLE_FILE="${INST}/${ROLE_NAME}-${SF_VER}"
-
-    echo "(STEP2) Finalize image building..."
+    echo "(STEP2) The local image needs update (was: [${LOCAL_HASH}])"
+    sudo rm -Rf ${IMAGE_PATH}*
+    sudo mkdir -p ${IMAGE_PATH}
 
     # Make sure image tree is not mounted
-    grep -q "${SF_VER}\/${ROLE_NAME}_cache\/proc" /proc/mounts && {
+    grep -q "${CACHE_PATH}\/proc" /proc/mounts && {
         while true; do
-            sudo umount ${INST}/${ROLE_NAME}_cache/proc || break
+            sudo umount ${CACHE_PATH}/proc || break
         done
     }
 
-    if [ ! -z "${ARTIFACTS_DIR}" ]; then
-        ROLE_OUTPUT=${ARTIFACTS_DIR}/${ROLE_NAME}_step_2_build.log
-    else
-        ROLE_OUTPUT=/dev/stdout
+    [ -z "${ARTIFACTS_DIR}" ] || BUILD_OUTPUT=${ARTIFACTS_DIR}/step2_build.log
+
+    # Copy the cache
+    sudo rsync -a --delete "${CACHE_PATH}/" "${IMAGE_PATH}/"
+
+    (
+        set -e
+        cd image
+        STEP=2 DOCDIR=$DOCDIR GERRITHOOKS=$GERRITHOOKS PYSFLIB_CLONED_PATH=$PYSFLIB_CLONED_PATH \
+        CAUTH_CLONED_PATH=$CAUTH_CLONED_PATH MANAGESF_CLONED_PATH=$MANAGESF_CLONED_PATH \
+        SDIR=/var/lib/sf/git/edeploy \
+        sudo -E ./softwarefactory.install ${IMAGE_PATH} ${SF_VER} &> ${BUILD_OUTPUT}
+
+        sudo chroot ${IMAGE_PATH} pip freeze | sort | sudo tee ${IMAGE_PATH}-${SF_VER}.pip &> /dev/null
+        sudo chroot ${IMAGE_PATH} rpm -qa | sort | sudo tee ${IMAGE_PATH}-${SF_VER}.rpm &> /dev/null
+        echo ${IMAGE_HASH} | sudo tee ${IMAGE_PATH}-${SF_VER}.hash > /dev/null
+    )
+    if [ "$?" != "0" ]; then
+        echo "(STEP2) FAILED"; sudo rm -Rf ${IMAGE_PATH}-${SF_VER}.hash; exit 1;
     fi
-
-    [ ! -d "${INST}/${ROLE_NAME}" ] && sudo mkdir -p "${INST}/${ROLE_NAME}"
-    sudo rsync -a --delete "${INST}/${ROLE_NAME}_cache/" "${INST}/${ROLE_NAME}/"
-
-    TAGGED_RELEASE=${TAGGED_RELEASE} PYSFLIB_PINNED_VERSION=${PYSFLIB_PINNED_VERSION} \
-    MANAGESF_PINNED_VERSION=${MANAGESF_PINNED_VERSION} CAUTH_PINNED_VERSION=${CAUTH_PINNED_VERSION} \
-    ./edeploy/fetch_subprojects.sh
-
-    cd $SF_ROLES
-    STEP=2 DOCDIR=$DOCDIR GERRITHOOKS=$GERRITHOOKS PYSFLIB_CLONED_PATH=$PYSFLIB_CLONED_PATH \
-    CAUTH_CLONED_PATH=$CAUTH_CLONED_PATH MANAGESF_CLONED_PATH=$MANAGESF_CLONED_PATH \
-    SDIR=/var/lib/sf/git/edeploy \
-    sudo -E ./softwarefactory.install ${INST}/${ROLE_NAME} ${SF_VER} &> ${ROLE_OUTPUT}
-    cd -
-
-    echo ${ROLE_MD5} | sudo tee ${ROLE_FILE}.md5
-    sudo chroot ${INST}/${ROLE_NAME} pip freeze | sort | sudo tee ${ROLE_FILE}.pip &> /dev/null
-    sudo chroot ${INST}/${ROLE_NAME} rpm -qa | sort | sudo tee ${ROLE_FILE}.rpm &> /dev/null
+    echo "(STEP2) SUCCESS: ${IMAGE_HASH}"
 }
 
 prepare_buildenv
-build_image "softwarefactory" $(find ${BASE_DEPS} -type f -not -path "*/.git/*" | sort | xargs cat | md5sum | awk '{ print $1}')
-finalize_image "softwarefactory"
+build_cache
+build_image
 if [ -n "$VIRT" ]; then
-    build_img "softwarefactory" $IMG_CFG
+    build_qcow
 fi

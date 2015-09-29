@@ -10,4 +10,4 @@
 - name: Create metadata directory for metadata
   file: path={{ metadata_path }} state=directory
 - name: Copy metadata
-  shell: cp -LR {{ clone_path }}/edeploy/metadata/{{ from_version }}/* {{ metadata_path }}/
+  shell: cp -LR {{ clone_path }}/image/metadata/{{ from_version }}/* {{ metadata_path }}/

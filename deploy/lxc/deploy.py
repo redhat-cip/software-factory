@@ -60,6 +60,7 @@ def prepare_role(base_path, name, ip,
 
     if not os.path.isfile("%s/id_rsa" % ssh_dir):
         execute(["ssh-keygen", "-f", "%s/id_rsa" % ssh_dir, "-N", ""])
+        execute(["chown", os.environ['SUDO_USER'], "%s/id_rsa" % ssh_dir])
     open("%s/root/.ssh/authorized_keys" % root, "w").write(
         open("%s/id_rsa.pub" % ssh_dir).read()
     )

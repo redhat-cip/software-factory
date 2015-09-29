@@ -3,7 +3,7 @@
 
 # Version string
 SF_PREVIOUS_VER=C7.0-2.0.0beta
-SF_VER=C7.0-2.0.0
+SF_VER=${SF_VER:-C7.0-2.0.0}
 
 # Set this variable to 1 if we tag and set it back to 0 the commit after the tag
 TAGGED_RELEASE=0
@@ -27,13 +27,11 @@ SWIFT_DOCS_URL="${SWIFT_BASE_URL}/v1/AUTH_${SWIFT_ACCOUNT}/sfdocs"
 WORKSPACE=/var/lib/sf
 BUILD_DIR=$WORKSPACE/roles
 
-CREATE_IMG=$PWD/edeploy/create-image.sh
-# Qcow2 params
-IMG_CFG=$PWD/edeploy/params.virt
-
 UPSTREAM=${BUILD_DIR}/upstream
 INST=${BUILD_DIR}/install/${SF_VER}
 DEPS="${PWD}/../deps"
+CACHE_PATH="${BUILD_DIR}/cache/sf-centos7"
+IMAGE_PATH="${BUILD_DIR}/install/${SF_VER}/softwarefactory"
 
 PYSFLIB_CLONED_PATH="${DEPS}/pysflib"
 CAUTH_CLONED_PATH="${DEPS}/cauth"
@@ -43,7 +41,8 @@ SUBPROJECTS_DEPS="$PYSFLIB_CLONED_PATH $CAUTH_CLONED_PATH $MANAGESF_CLONED_PATH"
 DOCDIR="${PWD}/docs"
 GERRITHOOKS="${PWD}/gerrit-hooks"
 
-BASE_DEPS="./edeploy/softwarefactory.install ./edeploy/third_party_tools"
+# Rebuild cache if these files changed
+CACHE_DEPS="./image/softwarefactory.install ./image/third_party_tools"
 
 function prepare_buildenv {
     if [ ! -d $WORKSPACE ]; then
@@ -52,6 +51,6 @@ function prepare_buildenv {
     fi
 
     [ ! -d "$BUILD_DIR" ] && sudo mkdir -p $BUILD_DIR
-    [ ! -d "$DEPS" ] && sudo mkdir -p $DEPS && sudo chown ${USER}:root $DEPS
-    [ ! -d "$UPSTREAM" ] && sudo mkdir -p $UPSTREAM || true
+    [ ! -d "$DEPS" ]      && sudo mkdir -p $DEPS && sudo chown ${USER}:root $DEPS
+    [ ! -d "$UPSTREAM" ]  && sudo mkdir -p $UPSTREAM
 }

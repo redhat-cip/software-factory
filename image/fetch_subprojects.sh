@@ -9,6 +9,8 @@ echo "PREPARE SUBPROJECTS DIRECTORIES"
 [ -n "$ZUUL_PROJECT" ] && IN_ZUUL=1 || IN_ZUUL=0
 [ $IN_ZUUL -eq 1 ] && echo "Triggered by Zuul ..."
 
+. ./role_configrc
+
 [ "$TAGGED_RELEASE" -eq 1 ] && {
     echo "This is a tagged release; using pinned versions of subprojects to build images."
     PYSFLIB_REV=${PYSFLIB_PINNED_VERSION}
@@ -47,8 +49,11 @@ for PROJECT in "PYSFLIB" "CAUTH" "MANAGESF"; do
     if [ "$PROJECT_FETCH_MODE" = "remote" ]; then
         if [ -z "$PROJECT_KEEP" ]; then
             echo "Fetch $PROJECT:$PROJECT_REV in $PROJECT_CLONED_PATH."
-            [ -d $PROJECT_CLONED_PATH ] && rm -Rf $PROJECT_CLONED_PATH
-            (git clone $PROJECT_REPO $PROJECT_CLONED_PATH &> /dev/null && cd $PROJECT_CLONED_PATH) || { echo "Fail to fetch $PROJECT" && exit 1; }
+            if [ -d $PROJECT_CLONED_PATH ]; then
+                (cd $PROJECT_CLONED_PATH; git fetch --all) &> /dev/null
+            else
+                git clone $PROJECT_REPO $PROJECT_CLONED_PATH &> /dev/null || { echo "Fail to fetch $PROJECT" && exit 1; }
+            fi
             (cd $PROJECT_CLONED_PATH && git checkout $PROJECT_REV) &> /dev/null || { echo "Fail to checkout rev:$PROJECT_REV" && exit 1; }
         else
             echo "(Forced) Use local source from $PROJECT_CLONED_PATH"

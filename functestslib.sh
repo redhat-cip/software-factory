@@ -47,6 +47,10 @@ function lxc_start {
 }
 
 function build_image {
+    # Make sure subproject are available
+    if [ ! -d "${CAUTH_CLONED_PATH}" ] || [ ! -d "${MANAGESF_CLONED_PATH}" ] || [ ! -d "${PYSFLIB_CLONED_PATH}" ]; then
+        ./image/fetch_subprojects.sh
+    fi
     if [ -z "${SKIP_BUILD}" ]; then
         # Retry to build role if it fails before exiting
         ./build_image.sh ${ARTIFACTS_DIR} || ./build_image.sh ${ARTIFACTS_DIR} || fail "Roles building FAILED"
@@ -69,7 +73,7 @@ function build_image {
         PYSFLIB_LOC=${dir}/$(sudo chroot ${dir} pip show pysflib | grep '^Location:' | awk '{ print $2 }')
         echo "SKIP_BUILD: direct copy of ${PYSFLIB_CLONED_PATH}/pysflib/ to ${PYSFLIB_LOC}/pysflib/"
         sudo rsync -a --delete ${PYSFLIB_CLONED_PATH}/pysflib/ ${PYSFLIB_LOC}/pysflib/
-        sudo cp edeploy/edeploy ${dir}/usr/sbin/edeploy
+        sudo cp image/edeploy ${dir}/usr/sbin/edeploy
         set +e
     fi
 }

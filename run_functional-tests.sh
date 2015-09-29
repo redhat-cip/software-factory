@@ -54,7 +54,7 @@ case "${TEST_TYPE}" in
         run_checker
         ;;
     "upgrade")
-        ./fetch_roles.sh ${SF_PREVIOUS_VER} || fail "Could not fetch ${SF_PREVIOUS_VER}"
+        ./fetch_image.sh ${SF_PREVIOUS_VER} || fail "Could not fetch ${SF_PREVIOUS_VER}"
         lxc_init ${SF_PREVIOUS_VER}
         run_bootstraps
         run_provisioner

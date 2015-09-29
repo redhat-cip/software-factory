@@ -16,6 +16,11 @@ function install_sf {
     sudo cp -Rv ./../bootstraps/  ${dir}/root/bootstraps/
     sudo cp -Rv ./../serverspec/ ${dir}/root/serverspec/
 
+    # Make sure subproject are available
+    if [ ! -d "${CAUTH_CLONED_PATH}" ] || [ ! -d "${MANAGESF_CLONED_PATH}" ] || [ ! -d "${PYSFLIB_CLONED_PATH}" ]; then
+        ./fetch_subprojects.sh
+    fi
+
     # Install cauth
     [ ! -d "${dir}/var/www/cauth" ] && sudo mkdir ${dir}/var/www/cauth
     sudo cp -Rv ${CAUTH_CLONED_PATH}/* ${dir}/var/www/cauth/
