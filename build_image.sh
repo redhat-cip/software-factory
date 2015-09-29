@@ -116,8 +116,8 @@ function finalize_image {
     cd -
 
     echo ${ROLE_MD5} | sudo tee ${ROLE_FILE}.md5
-    chroot ${INST}/${ROLE_NAME} pip freeze | sort | sudo tee ${ROLE_FILE}.pip &> /dev/null
-    chroot ${INST}/${ROLE_NAME} rpm -qa | sort | sudo tee ${ROLE_FILE}.rpm &> /dev/null
+    sudo chroot ${INST}/${ROLE_NAME} pip freeze | sort | sudo tee ${ROLE_FILE}.pip &> /dev/null
+    sudo chroot ${INST}/${ROLE_NAME} rpm -qa | sort | sudo tee ${ROLE_FILE}.rpm &> /dev/null
 }
 
 prepare_buildenv

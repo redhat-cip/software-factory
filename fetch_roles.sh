@@ -57,9 +57,9 @@ function fetch_sf_roles_prebuilt {
 }
 
 function deflate_sf_roles_prebuilt {
-    echo "Extract roles to ${INST}"
+    echo "Extract roles to /var/lib/sf/roles/install/${SF_VER}"
     for role in softwarefactory; do
-        EXTRACT_DIR="${INST}/${role}"
+        EXTRACT_DIR="/var/lib/sf/roles/install/${SF_VER}/${role}"
         UPSTREAM_FILE="${UPSTREAM}/${role}-${SF_VER}.edeploy"
         if [ -d ${EXTRACT_DIR} ]; then
             echo "${EXTRACT_DIR} already exist..."
