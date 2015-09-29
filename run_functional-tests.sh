@@ -32,18 +32,7 @@ display_head
 prepare_artifacts
 checkpoint "Running tests on $(hostname)"
 lxc_stop
-[ -z "${SKIP_BUILD}" ] && {
-    build_image
-    prepare_functional_tests_venv
-} || {
-    dir=${INST}/softwarefactory
-    sudo rsync -a --delete puppet/manifests/ ${dir}/etc/puppet/environments/sf/manifests/
-    sudo rsync -a --delete puppet/modules/ ${dir}/etc/puppet/environments/sf/modules/
-    sudo rsync -a --delete puppet/hiera/ ${dir}/etc/puppet/hiera/sf/
-    sudo rsync -a --delete bootstraps/ ${dir}/root/bootstraps/
-    sudo rsync -a --delete serverspec/ ${dir}/root/serverspec/
-    sudo cp edeploy/edeploy ${dir}/usr/sbin/edeploy
-}
+build_image
 
 case "${TEST_TYPE}" in
     "functional")

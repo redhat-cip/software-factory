@@ -47,9 +47,31 @@ function lxc_start {
 }
 
 function build_image {
-    # Retry to build role if it fails before exiting
-    ./build_image.sh ${ARTIFACTS_DIR} || ./build_image.sh ${ARTIFACTS_DIR} || fail "Roles building FAILED"
-    checkpoint "build_image"
+    if [ -z "${SKIP_BUILD}" ]; then
+        # Retry to build role if it fails before exiting
+        ./build_image.sh ${ARTIFACTS_DIR} || ./build_image.sh ${ARTIFACTS_DIR} || fail "Roles building FAILED"
+        checkpoint "build_image"
+        prepare_functional_tests_venv
+    else
+        echo "SKIP_BUILD: Reusing previously built image, just update source code without re-installing"
+        echo "            To update requirements and do a full installation, do not use SKIP_BUILD"
+        dir=${INST}/softwarefactory
+        set -e
+        sudo rsync -a --delete puppet/manifests/ ${dir}/etc/puppet/environments/sf/manifests/
+        sudo rsync -a --delete puppet/modules/ ${dir}/etc/puppet/environments/sf/modules/
+        sudo rsync -a --delete puppet/hiera/ ${dir}/etc/puppet/hiera/sf/
+        sudo rsync -a --delete bootstraps/ ${dir}/root/bootstraps/
+        sudo rsync -a --delete serverspec/ ${dir}/root/serverspec/
+        echo "SKIP_BUILD: direct copy of ${MANAGESF_CLONED_PATH}/ to ${dir}/var/www/managesf/"
+        sudo rsync -a --delete ${MANAGESF_CLONED_PATH}/ ${dir}/var/www/managesf/
+        echo "SKIP_BUILD: direct copy of ${CAUTH_CLONED_PATH}/ to ${dir}/var/www/cauth/"
+        sudo rsync -a --delete ${CAUTH_CLONED_PATH}/ ${dir}/var/www/cauth/
+        PYSFLIB_LOC=${dir}/$(sudo chroot ${dir} pip show pysflib | grep '^Location:' | awk '{ print $2 }')
+        echo "SKIP_BUILD: direct copy of ${PYSFLIB_CLONED_PATH}/pysflib/ to ${PYSFLIB_LOC}/pysflib/"
+        sudo rsync -a --delete ${PYSFLIB_CLONED_PATH}/pysflib/ ${PYSFLIB_LOC}/pysflib/
+        sudo cp edeploy/edeploy ${dir}/usr/sbin/edeploy
+        set +e
+    fi
 }
 
 function configure_network {
