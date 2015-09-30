@@ -100,6 +100,12 @@ bootstrap() {
     mkdir -p ${target}/usr/share/edeploy
 
     echo  'LANG=en_US.UTF-8' > ${target}/etc/locale.conf
+
+    cat > ${target}/etc/sysconfig/network <<EOF
+NETWORKING=yes
+NOZEROCONF=yes
+EOF
+    chmod 644 ${target}/etc/sysconfig/network
 }
 
 install_sf_packages() {
