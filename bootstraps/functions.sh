@@ -20,16 +20,18 @@ BUILD=${BUILD:-/root/sf-bootstrap-data}
 
 function generate_hosts_yaml {
     OUTPUT=${BUILD}/hiera
-    domain=$(cat ${OUTPUT}/sfconfig.yaml | grep '^domain:' | awk '{ print $2 }')
+    local domain=$(cat ${OUTPUT}/sfconfig.yaml | grep '^domain:' | awk '{ print $2 }')
+    local localip=$(ip route get 8.8.8.8 | awk '{ print $7 }')
+    local ip=$1
     cat << EOF > ${OUTPUT}/hosts.yaml
 hosts:
-  localhost:              {ip: 127.0.0.1}
-  mysql.$domain:        {ip: 192.168.135.101, host_aliases: [mysql]}
-  jenkins.$domain:      {ip: 192.168.135.101, host_aliases: [jenkins]}
-  redmine.$domain:      {ip: 192.168.135.101, host_aliases: [redmine]}
-  api-redmine.$domain:  {ip: 192.168.135.101}
-  gerrit.$domain:       {ip: 192.168.135.101, host_aliases: [gerrit]}
-  managesf.$domain:     {ip: 192.168.135.101, host_aliases: [managesf, auth.$domain, $domain]}
+  localhost:            {ip: 127.0.0.1}
+  mysql.$domain:        {ip: ${localip}, host_aliases: [mysql]}
+  jenkins.$domain:      {ip: $ip, host_aliases: [jenkins]}
+  redmine.$domain:      {ip: ${localip}, host_aliases: [redmine]}
+  api-redmine.$domain:  {ip: ${localip}}
+  gerrit.$domain:       {ip: ${localip}, host_aliases: [gerrit]}
+  managesf.$domain:     {ip: ${localip}, host_aliases: [managesf, auth.$domain, $domain]}
 EOF
 }
 

@@ -198,8 +198,15 @@ function run_bootstraps {
     eval $(ssh-agent)
     ssh-add ~/.ssh/id_rsa
     echo "$(date) ======= run_bootstraps" | tee -a ${ARTIFACTS_DIR}/bootstraps.log
-    ssh -A -tt ${SF_HOST} "cd bootstraps; exec ./bootstrap.sh ${REFARCH}" 2>&1 | tee ${ARTIFACTS_DIR}/bootstraps.log | grep '\(Info:\|Warning:\|Error:\|\[bootstrap\]\)'
-    res=${PIPESTATUS[0]}
+    [ "${REFARCH}" = "2nodes-jenkins" ] && OPTIONS="-i 192.168.135.102"
+    if [ "${TEST_TYPE}" == "upgrade" ] && [ "${SF_VER}" == "C7.0-2.0.0" ]; then
+        # Support 2.0.0beta bootstrap that doesn't have parameter
+        ssh -A -tt ${SF_HOST} "cd bootstraps; exec ./bootstrap.sh ${REFARCH}" 2>&1 | tee ${ARTIFACTS_DIR}/bootstraps.log | grep '\(Info:\|Warning:\|Error:\|\[bootstrap\]\)'
+        res=${PIPESTATUS[0]}
+    else
+        ssh -A -tt ${SF_HOST} "cd bootstraps; exec ./bootstrap.sh -a ${REFARCH} ${OPTIONS}" 2>&1 | tee ${ARTIFACTS_DIR}/bootstraps.log | grep '\(Info:\|Warning:\|Error:\|\[bootstrap\]\)'
+        res=${PIPESTATUS[0]}
+    fi
     kill -9 $SSH_AGENT_PID
     [ "$res" != "0" ] && fail "Bootstrap fails" ${ARTIFACTS_DIR}/bootstraps.log
     echo "[+] Fetch ${SF_HOST} ssl cert"

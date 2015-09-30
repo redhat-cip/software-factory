@@ -82,6 +82,11 @@ def stop():
     ]).split():
         virsh(["destroy", instance])
         virsh(["undefine", instance])
+    # Make sure no systemd-machinectl domain leaked
+    for machine in pread(['machinectl', 'list']).split('\n'):
+        if 'libvirt-lxc' not in machine:
+            continue
+        execute(['machinectl', 'terminate', machine.split()[0]])
 
 
 def init(base):
