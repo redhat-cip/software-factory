@@ -102,74 +102,6 @@ bootstrap() {
     echo  'LANG=en_US.UTF-8' > ${target}/etc/locale.conf
 }
 
-configure_cloudinit() {
-    mkdir -p ${dir}/etc/cloud/cloud.cfg.d
-    rm -f ${dir}/etc/cloud/cloud.cfg
-
-    cat > ${dir}/etc/cloud/cloud.cfg <<EOF
-user: root
-disable_root: 0
-preserve_hostname: False
-
-cloud_init_modules:
- - runcmd
- - growpart
- - resizefs
- - set_hostname
- - update_hostname
- - update_etc_hosts
- - ca-certs
- - rsyslog
- - users-groups
- - write-files
-
-cloud_config_modules:
- - migrator
- - mounts
- - ssh-import-id
- - locale
- - set-passwords
- - timezone
- - chef
- - salt-minion
- - mcollective
- - disable-ec2-metadata
- - runcmd
- - byobu
-
-cloud_final_modules:
- - rightscale_userdata
- - scripts-per-once
- - scripts-per-boot
- - scripts-per-instance
- - scripts-user
- - ssh-authkey-fingerprints
- - keys-to-console
- - phone-home
- - final-message
-EOF
-
-    cat > ${dir}/etc/cloud/cloud.cfg.d/90_sources.cfg << EOF
-datasource_list: [ NoCloud, Ec2, OpenStack, ConfigDrive, None ]
-EOF
-
-    others_cloud_config_modules=$(mktemp)
-    cat > $others_cloud_config_modules << EOF
- - yum-add-repo
- - package-update-upgrade-install
-EOF
-    cat >> ${dir}/etc/cloud/cloud.cfg <<EOF
-
-system_info:
-  distro: rhel
-  paths:
-    cloud_dir: /var/lib/cloud
-    templates_dir: /etc/cloud/templates
-  ssh_svcname: sshd
-EOF
-    sed -i "/set-passwords/r  $others_cloud_config_modules" ${dir}/etc/cloud/cloud.cfg
-}
-
 install_sf_packages() {
     install_packages ${dir} ${PUPPET_REPO_URL}
     add_epel_repository
@@ -441,7 +373,7 @@ install_misc() {
 BASE_PKGS="coreutils dhclient e2fsprogs man-db grub2 grubby initscripts iproute kernel net-tools passwd redhat-lsb-core crontabs openssh-clients bind-utils kexec-tools selinux-policy-targeted setroubleshoot-server acpid bash curl kbd lvm2 openssh-server pciutils rsync rsyslog sudo wget ntpdate logrotate ethtool hdparm iptables"
 
 DEV_PKGS="openssl-devel openldap-devel python-devel libffi-devel gcc swig zlib-devel libcurl-devel httpd-devel apr-devel apr-util-devel mariadb-devel gcc-c++ ruby-devel ImageMagick-devel cpp libxml2-devel libxslt-devel"
-PKGS="vim-enhanced openssl postfix bc monit ansible sshpass mod_passenger puppet rubygem-rake git python-pip pyxattr pylibacl httpd mod_ssl ntp monit postfix git nodejs httpd java-1.6.0-openjdk mariadb-server python-werkzeug python-babel python-jinja2 MySQL-python socat mod_wsgi m2crypto mariadb gitweb debootstrap unzip pigz ntp openssl mod_ssl cloud-init cloud-utils cloud-utils-growpart"
+PKGS="vim-enhanced openssl postfix bc monit ansible sshpass mod_passenger puppet rubygem-rake git python-pip pyxattr pylibacl httpd mod_ssl ntp monit postfix git nodejs httpd java-1.6.0-openjdk mariadb-server python-werkzeug python-babel python-jinja2 MySQL-python socat mod_wsgi m2crypto mariadb gitweb debootstrap unzip pigz ntp openssl mod_ssl cloud-init cloud-utils-growpart"
 
 
 trap cleanup 0
@@ -458,7 +390,6 @@ check_binary rpm
     install_sf_packages
     disable_selinux
     install_edeploy_bin $dir
-    configure_cloudinit
 
     upgrade_pip
     fix_insecure_plateform

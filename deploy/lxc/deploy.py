@@ -65,10 +65,13 @@ def prepare_role(base_path, name, ip,
     )
 
     # disable cloud-init
-    s = "%s/etc/systemd/system/multi-user.target.wants/cloud-init.service" % (
-        root)
-    if os.path.exists(s):
-        os.unlink(s)
+    for unit in ("cloud-init", "cloud-init-local", "cloud-config",
+                 "cloud-final"):
+        for p in ("etc/systemd/system/multi-user.target.wants",
+                  "usr/lib/systemd/system"):
+            s = "%s/%s/%s.service" % (root, p, unit)
+            if os.path.exists(s):
+                os.unlink(s)
 
 
 def stop():

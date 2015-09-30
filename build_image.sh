@@ -43,7 +43,7 @@ function build_img {
     ROLE_NAME="$1"
     ROLE_FILE="${INST}/${ROLE_NAME}-${SF_VER}.img"
     ROLE_TREE_PATH="${INST}/${ROLE_NAME}"
-    CFG="$3"
+    CFG="$2"
     [ -f "$ROLE_FILE" ] && sudo rm -Rf $ROLE_FILE
     [ -f "${ROLE_FILE}.qcow2" ] && sudo rm -Rf "${ROLE_FILE}.qcow2"
     sudo $CREATE_IMG $ROLE_TREE_PATH $ROLE_FILE $CFG
