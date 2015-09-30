@@ -44,9 +44,6 @@ function install_sf {
     do_chroot ${dir} bash -c "cd /var/www/managesf; pip install -r requirements.txt"
     do_chroot ${dir} bash -c "cd /var/www/managesf; python setup.py install"
 
-    # install requirements for functional tests
-    do_chroot ${dir} bash -c "cd /root/puppet-bootstrapper/tests; pip install -r requirements.txt"
-
     do_chroot ${dir} find /root /var/www -name "*.pyc" -exec rm {} \;
 
     # Install Gerrit hooks
