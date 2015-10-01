@@ -65,7 +65,7 @@ class TestProjectMembership(Base):
         self.assertTrue(self.gu.project_exists(pname))
         self.assertTrue(self.gu.group_exists('%s-ptl' % pname))
         self.assertTrue(self.gu.group_exists('%s-core' % pname))
-        groups = 'ptl-group,core-group'
+        groups = 'ptl-group core-group'
         # Add user2 to ptl and core groups
         self.msu.addUsertoProjectGroups(config.ADMIN_USER, pname,
                                         config.USER_2, groups)
@@ -104,7 +104,7 @@ class TestProjectMembership(Base):
         self.assertTrue(self.gu.project_exists(pname))
         self.assertTrue(self.gu.group_exists('%s-ptl' % pname))
         self.assertTrue(self.gu.group_exists('%s-core' % pname))
-        groups = 'ptl-group,core-group'
+        groups = 'ptl-group core-group'
 
         # ptl should be ale to add users to all groups
         # so user2 should be able to add user3 to ptl and core groups
@@ -232,7 +232,7 @@ class TestProjectMembership(Base):
         # Let admin add user3 to ptl and core groups,
         # then try to remove user3 from ptl and core groups by
         # user2 (i.e non member user)
-        groups = 'ptl-group,core-group'
+        groups = 'ptl-group core-group'
         self.msu.addUsertoProjectGroups(config.ADMIN_USER, pname,
                                         config.USER_3, groups)
         # non-admin user(user2) can't remove users from project groups
