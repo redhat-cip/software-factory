@@ -49,6 +49,7 @@ MANAGESF_CLONED_PATH="${MANAGESF_CLONED_PATH:-${DEPS}/managesf}"
 
 DOCDIR="${PWD}/docs"
 GERRITHOOKS="${PWD}/gerrit-hooks"
+HOT_TEMPLATES="${PWD}/deploy/heat"
 
 # Rebuild cache if these files changed
 CACHE_DEPS="./image/softwarefactory.install ./image/third_party_tools"

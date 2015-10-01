@@ -79,4 +79,7 @@ EOF
     do_chroot ${dir} openssl req -x509 -nodes -days 3650 -newkey rsa:2048 -subj "/C=FR/O=SoftwareFactory/CN=localhost" -keyout /etc/pki/tls/private/localhost.key -out /etc/ssl/certs/localhost.crt -extensions v3_req -config /tmp/openssl.cnf
 
     rm -f ${dir}/tmp/openssl.cnf
+
+    # Deactivate default disabling of root ssh access of cloud-init
+    sed -i 's/disable_root:.*/disable_root: 0/' ${dir}/etc/cloud/cloud.cfg
 }
