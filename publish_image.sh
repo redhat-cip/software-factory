@@ -22,12 +22,12 @@ function publish {
     diff ${TMP_FILE} ${IMG_NAME}.hash && return
     rm -f ${TMP_FILE}
     echo "[+] Upstream is out dated"
-    if [ ! -f "${IMG_NAME}.edeploy" ]; then
+    if [ ! -f "${IMG_NAME}.tgz" ]; then
         echo "[+] Creating edeploy file of ${SRC}"
-        (cd $IMG; sudo tar -c -p --use-compress-program=pigz -f ../${IMG_NAME}.edeploy .)
+        (cd $IMG; sudo tar -c -p --use-compress-program=pigz -f ../${IMG_NAME}.tgz .)
     fi
     echo "[+] Creating manifest"
-    OBJ="$(/bin/ls ${IMG_NAME}.{edeploy,hash,pip,rpm,img.qcow2} 2> /dev/null || true)"
+    OBJ="$(/bin/ls ${IMG_NAME}.{tgz,hash,pip,rpm,img.qcow2} 2> /dev/null || true)"
     sha256sum $OBJ | sudo tee ${IMG_NAME}.digest
     for OBJECT in $OBJ ${IMG_NAME}.digest; do
         [ -f ${OBJECT} ] || continue

@@ -39,8 +39,8 @@ function fetch_prebuilt {
         }
     fi
     rm -f ${TMP_FILE}
-    echo "Fetching ${SWIFT_SF_URL}/${IMG}.edeploy"
-    sudo curl -o ${UPSTREAM}/${IMG}.edeploy ${SWIFT_SF_URL}/${IMG}.edeploy || exit -1
+    echo "Fetching ${SWIFT_SF_URL}/${IMG}.tgz"
+    sudo curl -o ${UPSTREAM}/${IMG}.tgz ${SWIFT_SF_URL}/${IMG}.tgz || exit -1
     echo "Fetching ${SWIFT_SF_URL}/${IMG}.{pip,rpm,digest,hash}"
     sudo curl -o ${UPSTREAM}/${IMG}.pip ${SWIFT_SF_URL}/${IMG}.pip
     sudo curl -o ${UPSTREAM}/${IMG}.rpm ${SWIFT_SF_URL}/${IMG}.rpm
@@ -56,7 +56,7 @@ function sync_and_deflate {
     # IMG is the name of image file
     IMG=$2
     fetch_prebuilt
-    SRC=${UPSTREAM}/$2.edeploy
+    SRC=${UPSTREAM}/$2.tgz
     diff ${UPSTREAM}/${IMG}.hash ${DST}/../${IMG}.hash && {
         echo "already extracted"
         return

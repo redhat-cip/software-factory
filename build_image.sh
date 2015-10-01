@@ -16,7 +16,6 @@
 
 LOCK="/var/run/sf-build_image.lock"
 function wait_for_lock {
-    [ -f "${LOCK}" ] || return
     retry=0
     while [ $retry -lt 360 ]; do
         [ -f ${LOCK} ] || return
@@ -73,7 +72,7 @@ function build_cache {
     (
         set -e
         cd image
-        STEP=1 SDIR=/var/lib/sf/git/edeploy sudo -E ./softwarefactory.install ${CACHE_PATH} ${SF_VER} &> ${BUILD_OUTPUT}
+        STEP=1 sudo -E ./softwarefactory.install ${CACHE_PATH} ${SF_VER} &> ${BUILD_OUTPUT}
         sudo chroot ${CACHE_PATH} pip freeze | sort | sudo tee ${CACHE_PATH}.pip &> /dev/null
         sudo chroot ${CACHE_PATH} rpm -qa | sort | sudo tee ${CACHE_PATH}.rpm &> /dev/null
         echo ${CACHE_HASH} | sudo tee ${CACHE_PATH}.hash > /dev/null
@@ -114,7 +113,6 @@ function build_image {
         cd image
         STEP=2 DOCDIR=$DOCDIR GERRITHOOKS=$GERRITHOOKS PYSFLIB_CLONED_PATH=$PYSFLIB_CLONED_PATH \
         CAUTH_CLONED_PATH=$CAUTH_CLONED_PATH MANAGESF_CLONED_PATH=$MANAGESF_CLONED_PATH \
-        SDIR=/var/lib/sf/git/edeploy \
         sudo -E ./softwarefactory.install ${IMAGE_PATH} ${SF_VER} &> ${BUILD_OUTPUT}
 
         sudo chroot ${IMAGE_PATH} pip freeze | sort | sudo tee ${IMAGE_PATH}-${SF_VER}.pip &> /dev/null
@@ -130,6 +128,6 @@ function build_image {
 prepare_buildenv
 build_cache
 build_image
-if [ -n "$VIRT" ]; then
+if [ -n "$BUILD_QCOW" ]; then
     build_qcow
 fi
