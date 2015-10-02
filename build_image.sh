@@ -46,11 +46,10 @@ if [ ! -z "${1}" ]; then
 fi
 
 function build_qcow {
-    IMAGE_FILE="${INST}/softwarefactory-${SF_VER}.img"
-    IMAGE_TREE_PATH="${INST}/softwarefactory"
-    [ -f "$IMAGE_FILE" ] && sudo rm -Rf $IMAGE_FILE
+    IMAGE_FILE="${IMAGE_PATH}-${SF_VER}.img"
+    [ -f "${IMAGE_FILE}" ] && sudo rm -Rf ${IMAGE_FILE}
     [ -f "${IMAGE_FILE}.qcow2" ] && sudo rm -Rf "${IMAGE_FILE}.qcow2"
-    sudo ./image/create-image.sh $IMAGE_TREE_PATH $IMAGE_FILE ./image/params.virt
+    sudo ./image/create-image.sh ${IMAGE_PATH} ${IMAGE_FILE} ./image/params.virt
     # Remove the raw image, only keep the qcow2 image
     sudo rm -f ${IMAGE_FILE} ${IMAGE_FILE}.md5
 }
@@ -84,7 +83,8 @@ function build_cache {
 }
 
 function build_image {
-    IMAGE_HASH="SF: $(git log --format=oneline -n 1) || CAUTH: $(cd ${CAUTH_CLONED_PATH}; git log --format=oneline -n 1) || PYSFLIB: $(cd ${PYSFLIB_CLONED_PATH}; git log --format=oneline -n 1) || MANAGESF: $(cd ${MANAGESF_CLONED_PATH}; git log --format=oneline -n 1)"
+    # Image hash is last commit of DEPS and the one that changed content of the image (bootstraps/ docs/ gerrit-hooks/ image/ puppet/)
+    IMAGE_HASH="SF: $(git log --format=oneline -n 1 bootstraps/ docs/ gerrit-hooks/ image/ puppet/) || CAUTH: $(cd ${CAUTH_CLONED_PATH}; git log --format=oneline -n 1) || PYSFLIB: $(cd ${PYSFLIB_CLONED_PATH}; git log --format=oneline -n 1) || MANAGESF: $(cd ${MANAGESF_CLONED_PATH}; git log --format=oneline -n 1)"
     LOCAL_HASH=$(cat ${IMAGE_PATH}-${SF_VER}.hash 2> /dev/null)
 
     echo "(STEP2) ${IMAGE_HASH}"

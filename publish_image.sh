@@ -19,7 +19,7 @@ function publish {
     echo "[+] Check if $IMG have changed"
     TMP_FILE=$(mktemp /tmp/swift_hash-${IMG_NAME}-XXXXXX)
     curl -o ${TMP_FILE} ${SWIFT_SF_URL}/${IMG_NAME}.hash
-    diff ${TMP_FILE} ${IMG_NAME}.hash && return
+    diff ${TMP_FILE} ${IMG_NAME}.hash 2> /dev/null && return
     rm -f ${TMP_FILE}
     echo "[+] Upstream is out dated"
     if [ ! -f "${IMG_NAME}.tgz" ]; then

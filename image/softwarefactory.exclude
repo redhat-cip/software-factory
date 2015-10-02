@@ -51,6 +51,7 @@
 
 # Sf state data
 /root/sf-bootstrap-data/
+/root/bootstraps/sfconfig.yaml
 /root/software-factory/
 /var/lib/zuul/
 /var/lib/managesf/users.db

@@ -31,18 +31,18 @@ function prepare_artifacts {
 }
 
 function lxc_stop {
-    (cd deploy/lxc; sudo ./deploy.py stop)
+    (cd deploy/lxc; sudo ./deploy.py --workspace $WORKSPACE stop)
     checkpoint "lxc-stop"
 }
 
 function lxc_init {
     ver=${1:-${SF_VER}}
-    (cd deploy/lxc; sudo ./deploy.py init --refarch $REFARCH --version ${ver}) || fail "LXC start FAILED"
+    (cd deploy/lxc; sudo ./deploy.py init --workspace $WORKSPACE --refarch $REFARCH --version ${ver}) || fail "LXC start FAILED"
     checkpoint "lxc-start"
 }
 
 function lxc_start {
-    (cd deploy/lxc; sudo ./deploy.py start --refarch $REFARCH) || fail "LXC start FAILED"
+    (cd deploy/lxc; sudo ./deploy.py start --workspace $WORKSPACE --refarch $REFARCH) || fail "LXC start FAILED"
     checkpoint "lxc-start"
 }
 
@@ -59,21 +59,19 @@ function build_image {
     else
         echo "SKIP_BUILD: Reusing previously built image, just update source code without re-installing"
         echo "            To update requirements and do a full installation, do not use SKIP_BUILD"
-        dir=${INST}/softwarefactory
         set -e
-        sudo rsync -a --delete puppet/manifests/ ${dir}/etc/puppet/environments/sf/manifests/
-        sudo rsync -a --delete puppet/modules/ ${dir}/etc/puppet/environments/sf/modules/
-        sudo rsync -a --delete puppet/hiera/ ${dir}/etc/puppet/hiera/sf/
-        sudo rsync -a --delete bootstraps/ ${dir}/root/bootstraps/
-        sudo rsync -a --delete serverspec/ ${dir}/root/serverspec/
-        echo "SKIP_BUILD: direct copy of ${MANAGESF_CLONED_PATH}/ to ${dir}/var/www/managesf/"
-        sudo rsync -a --delete ${MANAGESF_CLONED_PATH}/ ${dir}/var/www/managesf/
-        echo "SKIP_BUILD: direct copy of ${CAUTH_CLONED_PATH}/ to ${dir}/var/www/cauth/"
-        sudo rsync -a --delete ${CAUTH_CLONED_PATH}/ ${dir}/var/www/cauth/
-        PYSFLIB_LOC=${dir}/$(sudo chroot ${dir} pip show pysflib | grep '^Location:' | awk '{ print $2 }')
+        sudo rsync -a --delete puppet/manifests/ ${IMAGE_PATH}/etc/puppet/environments/sf/manifests/
+        sudo rsync -a --delete puppet/modules/ ${IMAGE_PATH}/etc/puppet/environments/sf/modules/
+        sudo rsync -a --delete puppet/hiera/ ${IMAGE_PATH}/etc/puppet/hiera/sf/
+        sudo rsync -a --delete bootstraps/ ${IMAGE_PATH}/root/bootstraps/
+        echo "SKIP_BUILD: direct copy of ${MANAGESF_CLONED_PATH}/ to ${IMAGE_PATH}/var/www/managesf/"
+        sudo rsync -a --delete ${MANAGESF_CLONED_PATH}/ ${IMAGE_PATH}/var/www/managesf/
+        echo "SKIP_BUILD: direct copy of ${CAUTH_CLONED_PATH}/ to ${IMAGE_PATH}/var/www/cauth/"
+        sudo rsync -a --delete ${CAUTH_CLONED_PATH}/ ${IMAGE_PATH}/var/www/cauth/
+        PYSFLIB_LOC=${IMAGE_PATH}/$(sudo chroot ${IMAGE_PATH} pip show pysflib | grep '^Location:' | awk '{ print $2 }')
         echo "SKIP_BUILD: direct copy of ${PYSFLIB_CLONED_PATH}/pysflib/ to ${PYSFLIB_LOC}/pysflib/"
         sudo rsync -a --delete ${PYSFLIB_CLONED_PATH}/pysflib/ ${PYSFLIB_LOC}/pysflib/
-        sudo cp image/edeploy ${dir}/usr/sbin/edeploy
+        sudo cp image/edeploy ${IMAGE_PATH}/usr/sbin/edeploy
         set +e
     fi
 }
@@ -119,7 +117,7 @@ function get_logs {
     set +e
     sleep 5
     (
-    sudo cp ${INST}/softwarefactory.{rpm,pip} ${ARTIFACTS_DIR}/
+    sudo cp ${IMAGE_PATH}.{rpm,pip} ${ARTIFACTS_DIR}/
     sudo cp /var/lib/lxc/managesf/rootfs/var/log/messages ${ARTIFACTS_DIR}/
     sudo cp /var/lib/lxc/managesf/rootfs/var/log/upgrade-bootstrap.log ${ARTIFACTS_DIR}/
     sudo cp /var/lib/lxc/managesf/rootfs/var/log/cloud-init* ${ARTIFACTS_DIR}/
@@ -161,7 +159,7 @@ function fail {
     msg=$1
     log_file=$2
     DISABLE_SETX=1
-    echo -e "\n\n>>>>>>>>> $(hostname) FAIL: $msg"
+    echo -e "\n\n-----8<-------8<------\n  END OF TEST, FAIL: "
     if [ ! -z "$log_file" ] && [ -f "$log_file" ]; then
         echo "=> Log file $log_file --["
         tail -n 500 $log_file
@@ -263,15 +261,19 @@ function run_provisioner {
     . /var/lib/sf/venv/bin/activate
     ./tests/functional/provisioner/provisioner.py 2>> ${ARTIFACTS_DIR}/provisioner.debug || fail "Provisioner failed" ${ARTIFACTS_DIR}/provisioner.debug
     deactivate
+    checkpoint "run_provisioner"
 }
 
 function run_backup_start {
     echo "$(date) ======= run_backup_start"
     . /var/lib/sf/venv/bin/activate
     sfmanager --url "${MANAGESF_URL}" --auth user1:userpass system backup_start || fail "Backup failed"
-    sfmanager --url "${MANAGESF_URL}" --auth user1:userpass system backup_get || fail "Backup get failed"
+    sfmanager --url "${MANAGESF_URL}" --auth user1:userpass system backup_get   || fail "Backup get failed"
     deactivate
-
+    sudo cp /var/lib/lxc/managesf/rootfs/var/log/managesf/managesf.log ${ARTIFACTS_DIR}/backup_managesf.log
+    tar tzvf sf_backup.tar.gz > ${ARTIFACTS_DIR}/backup_content.log
+    grep -q '\.bup\/objects\/pack\/.*.pack$' ${ARTIFACTS_DIR}/backup_content.log || fail "Backup empty" ${ARTIFACTS_DIR}/backup_content.log
+    checkpoint "run_backup_start"
 }
 
 function run_backup_restore {
@@ -287,15 +289,18 @@ function run_backup_restore {
     done
     [ $retry -eq 1000 ] && fail "Gerrit did not restart"
     echo "=> Took ${retry} retries"
+    # Give it some more time...
+    sleep 5
     deactivate
+    checkpoint "run_backup_restore"
 }
 
 function run_upgrade {
     echo "$(date) ======= run_upgrade"
     sudo git clone file://$(pwd) /var/lib/lxc/managesf/rootfs/root/software-factory  --depth 1 || fail "Could not clone sf in managesf instance"
-    echo "[+] Copying new version (${INST}/softwarefactory -> /var/lib/lxc/managesf/rootfs/var/lib/debootstrap/install/${SF_VER}/softwarefactory/)"
+    echo "[+] Copying new version (${IMAGE_PATH}/ -> /var/lib/lxc/managesf/rootfs/var/lib/debootstrap/install/${SF_VER}/softwarefactory/)"
     sudo mkdir -p /var/lib/lxc/managesf/rootfs/var/lib/debootstrap/install/${SF_VER}/softwarefactory/ || fail "Could not copy ${SF_VER}"
-    sudo rsync -a --delete ${INST}/softwarefactory/ /var/lib/lxc/managesf/rootfs/var/lib/debootstrap/install/${SF_VER}/softwarefactory/ || fail "Could not copy ${SF_VER}"
+    sudo rsync -a --delete ${IMAGE_PATH}/ /var/lib/lxc/managesf/rootfs/var/lib/debootstrap/install/${SF_VER}/softwarefactory/ || fail "Could not copy ${SF_VER}"
     echo "[+] Running upgrade"
     ssh ${SF_HOST} "cd software-factory; ./upgrade.sh ${REFARCH}" || fail "Upgrade failed" "/var/lib/lxc/managesf/rootfs/var/log/upgrade-bootstrap.log"
     checkpoint "run_upgrade"
@@ -306,6 +311,7 @@ function run_checker {
     . /var/lib/sf/venv/bin/activate
     ./tests/functional/provisioner/checker.py 2>> ${ARTIFACTS_DIR}/checker.debug || fail "Backup checker failed" ${ARTIFACTS_DIR}/checker.debug
     deactivate
+    checkpoint "run_checker"
 }
 
 function run_functional_tests {
@@ -318,6 +324,10 @@ function run_functional_tests {
 
 function run_serverspec_tests {
     echo "$(date) ======= run_serverspec_tests"
+    # Wait a few seconds for zuul to start
+    sleep 5
+    # Copy current serverspec
+    sudo rsync -a --delete serverspec/ ${IMAGE_PATH}/root/serverspec/
     ssh ${SF_HOST} "cd serverspec; rake spec" 2>&1 | tee ${ARTIFACTS_DIR}/serverspec.output
     [ "${PIPESTATUS[0]}" != "0" ] && fail "Serverspec tests failed"
     checkpoint "run_serverspec_tests"

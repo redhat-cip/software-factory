@@ -9,8 +9,6 @@ echo "PREPARE SUBPROJECTS DIRECTORIES"
 [ -n "$ZUUL_PROJECT" ] && IN_ZUUL=1 || IN_ZUUL=0
 [ $IN_ZUUL -eq 1 ] && echo "Triggered by Zuul ..."
 
-. ./role_configrc
-
 [ "$TAGGED_RELEASE" -eq 1 ] && {
     echo "This is a tagged release; using pinned versions of subprojects to build images."
     PYSFLIB_REV=${PYSFLIB_PINNED_VERSION}
@@ -20,19 +18,19 @@ echo "PREPARE SUBPROJECTS DIRECTORIES"
     echo "This is a non-tagged release; using current versions of subprojects to build images."
 }
 
-PYSFLIB_REV=${PYSFLIB_REV:="master"}
-CAUTH_REV=${CAUTH_REV:="master"}
-MANAGESF_REV=${MANAGESF_REV:="master"}
+PYSFLIB_REV=${PYSFLIB_REV:-"origin/master"}
+CAUTH_REV=${CAUTH_REV:-"origin/master"}
+MANAGESF_REV=${MANAGESF_REV:-"origin/master"}
 
 # Default paths to find cloned dependencies
-PYSFLIB_CLONED_PATH=${PYSFLIB_CLONED_PATH:="${PWD}/../deps/pysflib"}
-CAUTH_CLONED_PATH=${CAUTH_CLONED_PATH:="${PWD}/../deps/cauth"}
-MANAGESF_CLONED_PATH=${MANAGESF_CLONED_PATH:="${PWD}/../deps/managesf"}
+PYSFLIB_CLONED_PATH=${PYSFLIB_CLONED_PATH:-"${PWD}/../deps/pysflib"}
+CAUTH_CLONED_PATH=${CAUTH_CLONED_PATH:-"${PWD}/../deps/cauth"}
+MANAGESF_CLONED_PATH=${MANAGESF_CLONED_PATH:-"${PWD}/../deps/managesf"}
 
 # Default repo for deps if we need to fetch them
-PYSFLIB_REPO=${PYSFLIB_REPO:="http://softwarefactory.enovance.com/r/pysflib"}
-CAUTH_REPO=${CAUTH_REPO:="http://softwarefactory.enovance.com/r/cauth"}
-MANAGESF_REPO=${MANAGESF_REPO:="http://softwarefactory.enovance.com/r/managesf"}
+PYSFLIB_REPO=${PYSFLIB_REPO:-"http://softwarefactory.enovance.com/r/pysflib"}
+CAUTH_REPO=${CAUTH_REPO:-"http://softwarefactory.enovance.com/r/cauth"}
+MANAGESF_REPO=${MANAGESF_REPO:-"http://softwarefactory.enovance.com/r/managesf"}
 
 # Check if dependencies are present locally
 # Our automatic job runner must have cloned the deps

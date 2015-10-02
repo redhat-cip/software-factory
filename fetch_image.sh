@@ -33,7 +33,7 @@ function fetch_prebuilt {
         curl -o ${TMP_FILE} ${SWIFT_SF_URL}/${IMG}.hash
         # Swift does not return 404 but 'Not Found'
         grep -q 'Not Found' $TMP_FILE && die "$IMG does not exist upstream"
-        diff ${TMP_FILE} ${UPSTREAM}/${IMG}.hash && {
+        diff ${TMP_FILE} ${UPSTREAM}/${IMG}.hash 2> /dev/null && {
             echo "Already synced"
             return
         }
@@ -57,7 +57,7 @@ function sync_and_deflate {
     IMG=$2
     fetch_prebuilt
     SRC=${UPSTREAM}/$2.tgz
-    diff ${UPSTREAM}/${IMG}.hash ${DST}/../${IMG}.hash && {
+    diff ${UPSTREAM}/${IMG}.hash ${DST}/../${IMG}.hash 2> /dev/null && {
         echo "already extracted"
         return
     }

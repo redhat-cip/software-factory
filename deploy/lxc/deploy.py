@@ -122,6 +122,7 @@ if "SUDO_USER" not in os.environ:
 parser = argparse.ArgumentParser()
 parser.add_argument("--domain", default="tests.dom")
 parser.add_argument("--version")
+parser.add_argument("--workspace", default="/var/lib/sf")
 parser.add_argument("--refarch", choices=[
     "1node-allinone", "2nodes-jenkins"],
     default="1node-allinone")
@@ -140,8 +141,8 @@ elif args.action == "destroy":
     destroy()
 elif args.action == "init":
     if args.version is None:
-        # Extract INST path from role_configrc... needs bash evaluation here
+        # Extracts version from role_configrc... needs bash evaluation here
         args.version = pread([
             "bash", "-c", ". ../../role_configrc; echo $SF_VER"]).strip()
-    init("/var/lib/sf/roles/install/%s" % args.version)
+    init("%s/roles/install/%s" % (args.workspace, args.version))
     start()

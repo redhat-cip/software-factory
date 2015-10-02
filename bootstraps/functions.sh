@@ -16,23 +16,31 @@
 
 [ -z "${DEBUG}" ] && DISABLE_SETX=1 || set -x
 
-BUILD=${BUILD:-/root/sf-bootstrap-data}
+# Defaults
+DOMAIN=tests.dom
+REFARCH=1node-allinone
+BUILD=/root/sf-bootstrap-data
 
-function generate_hosts_yaml {
+
+function update_sfconfig {
     OUTPUT=${BUILD}/hiera
-    local domain=$(cat ${OUTPUT}/sfconfig.yaml | grep '^domain:' | awk '{ print $2 }')
+    # get public ip of managesf
     local localip=$(ip route get 8.8.8.8 | awk '{ print $7 }')
-    local ip=$1
+    [ -z "${IP_JENKINS}" ] && IP_JENKINS=$localip
     cat << EOF > ${OUTPUT}/hosts.yaml
 hosts:
-  localhost:            {ip: 127.0.0.1}
-  mysql.$domain:        {ip: ${localip}, host_aliases: [mysql]}
-  jenkins.$domain:      {ip: $ip, host_aliases: [jenkins]}
-  redmine.$domain:      {ip: ${localip}, host_aliases: [redmine]}
-  api-redmine.$domain:  {ip: ${localip}}
-  gerrit.$domain:       {ip: ${localip}, host_aliases: [gerrit]}
-  managesf.$domain:     {ip: ${localip}, host_aliases: [managesf, auth.$domain, $domain]}
+  localhost:              {ip: 127.0.0.1}
+  mysql.${DOMAIN}:        {ip: ${localip}, host_aliases: [mysql]}
+  jenkins.${DOMAIN}:      {ip: ${IP_JENKINS}, host_aliases: [jenkins]}
+  redmine.${DOMAIN}:      {ip: ${localip}, host_aliases: [redmine]}
+  api-redmine.${DOMAIN}:  {ip: ${localip}}
+  gerrit.${DOMAIN}:       {ip: ${localip}, host_aliases: [gerrit]}
+  managesf.${DOMAIN}:     {ip: ${localip}, host_aliases: [managesf, auth.${DOMAIN}, ${DOMAIN}]}
 EOF
+    ./hieraedit.py --yaml ${OUTPUT}/sfconfig.yaml domain     "${DOMAIN}"
+    ./hieraedit.py --yaml ${OUTPUT}/sfarch.yaml   refarch    "${REFARCH}"
+    ./hieraedit.py --yaml ${OUTPUT}/sfarch.yaml   ip_jenkins "${IP_JENKINS}"
+    echo "sf_version: $(grep ^VERS= /var/lib/edeploy/conf | cut -d"=" -f2 | cut -d'-' -f2)" > /etc/puppet/hiera/sf/sf_version.yaml
 }
 
 function generate_random_pswd {
@@ -50,9 +58,16 @@ function generate_api_key {
     echo $out | awk '{print tolower($0)}'
 }
 
-function generate_creds_yaml {
+function generate_yaml {
     OUTPUT=${BUILD}/hiera
-    cp sfcreds.yaml ${OUTPUT}/
+    echo "[bootstrap] copy defaults hiera to ${OUTPUT}"
+    cp sfconfig.default ${OUTPUT}/sfconfig.yaml
+    cp sfcreds.default ${OUTPUT}/sfcreds.yaml
+    cp sfarch.default ${OUTPUT}/sfarch.yaml
+    # create link to avoid double edit
+    ln -s ${OUTPUT}/sfcreds.yaml .
+    ln -s ${OUTPUT}/sfconfig.yaml .
+    ln -s ${OUTPUT}/sfarch.yaml .
     # MySQL password for services
     MYSQL_ROOT_SECRET=$(generate_random_pswd 32)
     REDMINE_MYSQL_SECRET=$(generate_random_pswd 32)
@@ -103,6 +118,13 @@ function generate_creds_yaml {
     ./hieraedit.py --yaml ${OUTPUT}/sfcreds.yaml -f ${BUILD}/certs/pubkey.pem  pubkey_pem
     ./hieraedit.py --yaml ${OUTPUT}/sfcreds.yaml -f ${BUILD}/certs/gateway.key gateway_key
     ./hieraedit.py --yaml ${OUTPUT}/sfcreds.yaml -f ${BUILD}/certs/gateway.crt gateway_crt
+
+    ln -sf ${OUTPUT}/sfconfig.yaml /etc/puppet/hiera/sf/sfconfig.yaml
+    ln -sf ${OUTPUT}/sfcreds.yaml /etc/puppet/hiera/sf/sfcreds.yaml
+    ln -sf ${OUTPUT}/hosts.yaml /etc/puppet/hiera/sf/hosts.yaml
+
+    chown -R root:puppet /etc/puppet/hiera/sf
+    chmod -R 0750 /etc/puppet/hiera/sf
 }
 
 function generate_keys {
@@ -121,7 +143,6 @@ function generate_keys {
 
 function generate_apache_cert {
     OUTPUT=${BUILD}/certs
-    domain=$(cat ${BUILD}/hiera/sfconfig.yaml | grep '^domain:' | awk '{ print $2 }')
     # Generate self-signed Apache certificate
     cat > openssl.cnf << EOF
 [req]
@@ -129,24 +150,56 @@ req_extensions = v3_req
 distinguished_name = req_distinguished_name
 
 [ req_distinguished_name ]
-commonName_default = $domain
+commonName_default = ${DOMAIN}
 
 [ v3_req ]
 subjectAltName=@alt_names
 
 [alt_names]
-DNS.1 = $domain
-DNS.2 = auth.$domain
+DNS.1 = ${DOMAIN}
+DNS.2 = auth.${DOMAIN}
 EOF
-    openssl req -x509 -nodes -days 365 -newkey rsa:2048 -subj "/C=FR/O=SoftwareFactory/CN=$domain" -keyout ${OUTPUT}/gateway.key -out ${OUTPUT}/gateway.crt -extensions v3_req -config openssl.cnf
+    openssl req -x509 -nodes -days 365 -newkey rsa:2048 -subj "/C=FR/O=SoftwareFactory/CN=${DOMAIN}" -keyout ${OUTPUT}/gateway.key -out ${OUTPUT}/gateway.crt -extensions v3_req -config openssl.cnf
 }
 
-function prepare_etc_puppet {
-    HIERA=${BUILD}/hiera
-    cp ${HIERA}/sfconfig.yaml /etc/puppet/hiera/sf
-    cp ${HIERA}/sfcreds.yaml /etc/puppet/hiera/sf
-    cp ${HIERA}/hosts.yaml /etc/puppet/hiera/sf
-    echo "sf_version: $(grep ^VERS= /var/lib/edeploy/conf | cut -d"=" -f2 | cut -d'-' -f2)" > /etc/puppet/hiera/sf/sf_version.yaml
-    chown -R root:puppet /etc/puppet/hiera/sf
-    chmod -R 0750 /etc/puppet/hiera/sf
+function wait_for_ssh {
+    local ip=$1
+    echo "[bootstrap][$ip] Waiting for ssh..."
+    while true; do
+        KEY=`ssh-keyscan -p 22 $ip`
+        if [ "$KEY" != ""  ]; then
+            ssh-keyscan $ip | grep ssh-rsa | tee -a "$HOME/.ssh/known_hosts"
+            echo "  -> $ip:22 is up!"
+            return 0
+        fi
+        let RETRIES=RETRIES+1
+        [ "$RETRIES" == "40" ] && return 1
+        echo "  [E] ssh-keyscan on $ip:22 failed, will retry in 1 seconds (attempt $RETRIES/40)"
+        sleep 1
+    done
+}
+
+function puppet_apply_host {
+    echo "[bootstrap] Applying hosts.pp"
+    # Update local /etc/hosts
+    puppet apply --test --environment sf --modulepath=/etc/puppet/environments/sf/modules/ hosts.pp
+}
+
+function puppet_apply {
+    host=$1
+    manifest=$2
+    echo "[bootstrap][$host] Applying $manifest"
+    [ "$host" == "managesf.${DOMAIN}" ] && ssh="" || ssh="ssh -tt root@$host"
+    $ssh puppet apply --test --environment sf --modulepath=/etc/puppet/environments/sf/modules/ $manifest
+    res=$?
+    if [ "$res" != 2 ] && [ "$res" != 0 ]; then
+        echo "[bootstrap][$host] Failed ($res) to apply $manifest"
+        exit 1
+    fi
+}
+
+function puppet_copy {
+    host=$1
+    echo "[bootstrap][$host] Copy puppet configuration"
+    rsync -a -L --delete /etc/puppet/hiera/ ${host}:/etc/puppet/hiera/
 }
