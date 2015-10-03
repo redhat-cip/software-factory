@@ -1,6 +1,38 @@
 # Change Log
 
-## 1.0.4 [unreleased]
+## 2.0.0 2015-10-07
+
+SF v2 is a major refactor to make deployment more modular.
+
+### Added
+
+- Backup and restore tests
+- All in one deployment mode
+- Adds custom logo and favicon support
+- Add the mechanics to allow logs/artifacts export in Swift
+- Add a allinone HEAT template
+- Allow domain to change easily via sfconfig.yaml
+- Allow admin username to be change via sfconfig.yaml
+
+### Changed
+
+- Bootstrap do puppet apply instead of agent
+- Only support all-in-one and 2node deployment
+- Image building system without edeploy
+- Functional tests run from host
+- Puppet manifest refactor to be avoid conflict when used together
+- Managesf CLI refactor
+
+### Removed
+
+- Cloud-init bootstrap
+- Puppetmaster and install server
+- Edeploy-roles
+- Puppet agent
+
+## 1.0.4 2015-09-09
+
+- Fix overlayfs usage in LXC deployment
 
 ## 1.0.3 2015-09-04
 
