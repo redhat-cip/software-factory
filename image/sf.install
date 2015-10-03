@@ -6,6 +6,13 @@ function install_sf {
     test -n "${MANAGESF_CLONED_PATH}"
     test -n "${PYSFLIB_CLONED_PATH}"
 
+    # Make sure subproject are available
+    if [ ! -d "${CAUTH_CLONED_PATH}" ] || [ ! -d "${MANAGESF_CLONED_PATH}" ] || [ ! -d "${PYSFLIB_CLONED_PATH}" ]; then
+        echo "Can't find subprojects in $(dirname ${CAUTH_CLONED_PATH})"
+        echo "Run ./image/fetch_subprojects.sh first"
+        exit -1
+    fi
+
     # Install puppet files for SF
     do_chroot ${dir} mkdir -p /etc/puppet/environments/sf
     do_chroot ${dir} mkdir -p /etc/puppet/hiera/sf
@@ -15,11 +22,6 @@ function install_sf {
     sudo cp -Rv ./../puppet/hiera.yaml ${dir}/etc/puppet/
     sudo cp -Rv ./../bootstraps/  ${dir}/root/bootstraps/
     sudo cp -Rv ./../serverspec/ ${dir}/root/serverspec/
-
-    # Make sure subproject are available
-    if [ ! -d "${CAUTH_CLONED_PATH}" ] || [ ! -d "${MANAGESF_CLONED_PATH}" ] || [ ! -d "${PYSFLIB_CLONED_PATH}" ]; then
-        ./fetch_subprojects.sh
-    fi
 
     # Install cauth
     [ ! -d "${dir}/var/www/cauth" ] && sudo mkdir ${dir}/var/www/cauth

@@ -26,7 +26,7 @@ function die {
 }
 
 function fetch_prebuilt {
-    echo "Fetch prebuilt ${IMG} ..."
+    echo "Fetch prebuilt ${IMG} to ${UPSTREAM}/${IMG}"
     # Check if already synced
     if [ -f "${UPSTREAM}/${IMG}.hash" ]; then
         TMP_FILE=$(mktemp /tmp/swift_hash-${IMG}-XXXXXX)
@@ -57,13 +57,13 @@ function sync_and_deflate {
     IMG=$2
     fetch_prebuilt
     SRC=${UPSTREAM}/$2.tgz
+    echo "Extracting ${SRC} to ${DST}"
     diff ${UPSTREAM}/${IMG}.hash ${DST}/../${IMG}.hash 2> /dev/null && {
-        echo "already extracted"
+        echo "Already extracted"
         return
     }
     sudo rm -Rf ${DST}
     sudo mkdir -p ${DST}
-    echo "[+] Extract image ${SRC} to ${DST}"
     sudo tar -xzf ${SRC} -C "${DST}" || exit -1
     echo "[+] Copy metadata"
     sudo cp ${UPSTREAM}/${IMG}.hash ${DST}/../${IMG}.hash

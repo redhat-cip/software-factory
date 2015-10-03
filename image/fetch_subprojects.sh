@@ -2,30 +2,24 @@
 
 set -e
 
+. ./role_configrc
 echo "PREPARE SUBPROJECTS DIRECTORIES"
 
-# If this script is run in our job runner the
-# ZUUL_PROJECT will be set
 [ -n "$ZUUL_PROJECT" ] && IN_ZUUL=1 || IN_ZUUL=0
 [ $IN_ZUUL -eq 1 ] && echo "Triggered by Zuul ..."
 
 [ "$TAGGED_RELEASE" -eq 1 ] && {
-    echo "This is a tagged release; using pinned versions of subprojects to build images."
+    echo "This is a tagged release; using pinned tag versions of subprojects to build images."
     PYSFLIB_REV=${PYSFLIB_PINNED_VERSION}
     CAUTH_REV=${CAUTH_PINNED_VERSION}
     MANAGESF_REV=${MANAGESF_PINNED_VERSION}
 } || {
-    echo "This is a non-tagged release; using current versions of subprojects to build images."
+    echo "This is a non-tagged release; using origin/master branch of subprojects to build images."
 }
 
 PYSFLIB_REV=${PYSFLIB_REV:-"origin/master"}
 CAUTH_REV=${CAUTH_REV:-"origin/master"}
 MANAGESF_REV=${MANAGESF_REV:-"origin/master"}
-
-# Default paths to find cloned dependencies
-PYSFLIB_CLONED_PATH=${PYSFLIB_CLONED_PATH:-"${PWD}/../deps/pysflib"}
-CAUTH_CLONED_PATH=${CAUTH_CLONED_PATH:-"${PWD}/../deps/cauth"}
-MANAGESF_CLONED_PATH=${MANAGESF_CLONED_PATH:-"${PWD}/../deps/managesf"}
 
 # Default repo for deps if we need to fetch them
 PYSFLIB_REPO=${PYSFLIB_REPO:-"http://softwarefactory.enovance.com/r/pysflib"}
@@ -46,7 +40,7 @@ for PROJECT in "PYSFLIB" "CAUTH" "MANAGESF"; do
     eval PROJECT_KEEP=\$${PROJECT}_KEEP
     if [ "$PROJECT_FETCH_MODE" = "remote" ]; then
         if [ -z "$PROJECT_KEEP" ]; then
-            echo "Fetch $PROJECT:$PROJECT_REV in $PROJECT_CLONED_PATH."
+            echo "Fetch $PROJECT:$PROJECT_REV in $PROJECT_CLONED_PATH"
             if [ -d $PROJECT_CLONED_PATH ]; then
                 (cd $PROJECT_CLONED_PATH; git fetch --all) &> /dev/null
             else
@@ -63,5 +57,5 @@ for PROJECT in "PYSFLIB" "CAUTH" "MANAGESF"; do
             (cd $PROJECT_CLONED_PATH && git checkout $PROJECT_REV) &> /dev/null || { echo "Fail to checkout rev:$PROJECT_REV" && exit 1; }
         }
     fi
-    (cd $PROJECT_CLONED_PATH && echo "-> $PROJECT head is: $(git log --pretty=oneline --abbrev-commit HEAD | head -1)")
+    (cd $PROJECT_CLONED_PATH && echo "-> $PROJECT_CLONED_PATH head is: $(git log --pretty=oneline --abbrev-commit HEAD | head -1)")
 done

@@ -204,8 +204,8 @@ class TestProjectTestsWorkflow(Base):
         # Check whether zuul sets verified to +1 after running the tests
         # let some time to Zuul to update the test result to Gerrit.
         attempt = 0
-        while self.gu.get_reviewer_approvals(change_id, 'jenkins')['Verified'] \
-                != '+1':
+        while self.gu.get_reviewer_approvals(change_id,
+                                             'jenkins')['Verified'] != '+1':
             if attempt >= 90:
                 break
             time.sleep(1)
@@ -244,8 +244,8 @@ class TestProjectTestsWorkflow(Base):
         # Check whether zuul sets verified to +2 after running the tests
         # let some time to Zuul to update the test result to Gerrit.
         attempt = 0
-        while self.gu.get_reviewer_approvals(change_id, 'jenkins')['Verified'] \
-                != '+2':
+        while self.gu.get_reviewer_approvals(change_id,
+                                             'jenkins')['Verified'] != '+2':
             if attempt >= 90:
                 break
             time.sleep(1)
@@ -336,8 +336,8 @@ class TestProjectTestsWorkflow(Base):
             attempt += 1
 
         attempt = 0
-        while self.gu.get_reviewer_approvals(change_id, 'jenkins')['Verified'] \
-                != '+1':
+        while self.gu.get_reviewer_approvals(change_id,
+                                             'jenkins')['Verified'] != '+1':
             if attempt >= 90:
                 break
             time.sleep(1)

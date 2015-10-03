@@ -31,18 +31,18 @@ function prepare_artifacts {
 }
 
 function lxc_stop {
-    (cd deploy/lxc; sudo ./deploy.py --workspace $WORKSPACE stop)
+    (cd deploy/lxc; sudo ./deploy.py --workspace ${SF_WORKSPACE} stop)
     checkpoint "lxc-stop"
 }
 
 function lxc_init {
     ver=${1:-${SF_VER}}
-    (cd deploy/lxc; sudo ./deploy.py init --workspace $WORKSPACE --refarch $REFARCH --version ${ver}) || fail "LXC start FAILED"
+    (cd deploy/lxc; sudo ./deploy.py init --workspace ${SF_WORKSPACE} --refarch $REFARCH --version ${ver}) || fail "LXC start FAILED"
     checkpoint "lxc-start"
 }
 
 function lxc_start {
-    (cd deploy/lxc; sudo ./deploy.py start --workspace $WORKSPACE --refarch $REFARCH) || fail "LXC start FAILED"
+    (cd deploy/lxc; sudo ./deploy.py start --workspace ${SF_WORKSPACE} --refarch $REFARCH) || fail "LXC start FAILED"
     checkpoint "lxc-start"
 }
 

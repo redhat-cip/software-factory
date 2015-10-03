@@ -4,19 +4,54 @@ import argparse
 import os
 import subprocess
 
-
-def execute(argv):
-    print "[deploy][debug] Executing %s" % argv
-    return subprocess.Popen(argv).wait()
+DEBUG = False
 
 
-def pread(argv):
-    print "[deploy][debug] Executing %s" % argv
-    return subprocess.Popen(argv, stdout=subprocess.PIPE).communicate()[0]
+def execute(argv, silent=False):
+    if not DEBUG and silent:
+        stderr = subprocess.PIPE
+    else:
+        print "[deploy][debug] Executing %s" % argv
+        stderr = None
+    return subprocess.Popen(argv, stderr=stderr).wait()
 
 
-def virsh(argv):
-    execute(["virsh", "-c", "lxc:///"] + argv)
+def pread(argv, silent=False):
+    if not DEBUG and silent:
+        stderr = subprocess.PIPE
+    else:
+        print "[deploy][debug] Executing %s" % argv
+        stderr = None
+    return subprocess.Popen(argv,
+                            stdout=subprocess.PIPE,
+                            stderr=stderr).communicate()[0]
+
+
+def virsh(argv, silent=False):
+    execute(["virsh", "-c", "lxc:///"] + argv, silent)
+
+
+def port_redirection(mode):
+    if mode == "up":
+        mode_arg = "-I"
+        silent = False
+    elif mode == "down":
+        mode_arg = "-D"
+        silent = True
+
+    try:
+        ext_interface = pread(["ip", "route", "get", "8.8.8.8"],
+                              silent=silent).split()[4]
+    except IndexError:
+        raise RuntimeError("No default route available")
+
+    execute(["iptables", mode_arg, "FORWARD", "-i", ext_interface,
+             "-d", "192.168.135.101", "-j", "ACCEPT"], silent=silent)
+    for port in (80, 443, 29418, 45452):
+        execute(["iptables", mode_arg, "PREROUTING", "-t", "nat",
+                 "-i", ext_interface, "-p", "tcp", "--dport", str(port),
+                 "-j", "DNAT", "--to-destination", "192.168.135.101:%d" % port
+                 ], silent=silent)
 
 
 def prepare_role(base_path, name, ip,
@@ -77,17 +112,18 @@ def prepare_role(base_path, name, ip,
 
 def stop():
     print "[deploy] Stop"
-    execute(["virsh", "net-destroy", "sf-net"])
+    port_redirection("down")
+    execute(["virsh", "net-destroy", "sf-net"], silent=True)
     for instance in pread([
         "virsh", "-c", "lxc:///", "list", "--all", "--name"
-    ]).split():
-        virsh(["destroy", instance])
-        virsh(["undefine", instance])
+    ], silent=True).split():
+        virsh(["destroy", instance], silent=True)
+        virsh(["undefine", instance], silent=True)
     # Make sure no systemd-machinectl domain leaked
-    for machine in pread(['machinectl', 'list']).split('\n'):
+    for machine in pread(['machinectl', 'list'], silent=True).split('\n'):
         if 'libvirt-lxc' not in machine:
             continue
-        execute(['machinectl', 'terminate', machine.split()[0]])
+        execute(['machinectl', 'terminate', machine.split()[0]], silent=True)
 
 
 def init(base):
@@ -99,13 +135,14 @@ def init(base):
 
 def start():
     print "[deploy] Start"
-    if execute(["which", "virsh"]):
+    if execute(["which", "virsh"], silent=True):
         execute(["yum", "install", "-y", "libvirt-daemon-lxc"])
         execute(["systemctl", "restart", "libvirtd"])
     virsh(["net-create", "libvirt-network.xml"])
     virsh(["create", "libvirt-managesf.xml"])
     if args.refarch == "2nodes-jenkins":
         virsh(["create", "libvirt-jenkins.xml"])
+    port_redirection("up")
     virsh(["list"])
 
 
@@ -143,6 +180,7 @@ elif args.action == "init":
     if args.version is None:
         # Extracts version from role_configrc... needs bash evaluation here
         args.version = pread([
-            "bash", "-c", ". ../../role_configrc; echo $SF_VER"]).strip()
+            "bash", "-c", ". ../../role_configrc; echo $SF_VER"],
+            silent=True).strip()
     init("%s/roles/install/%s" % (args.workspace, args.version))
     start()

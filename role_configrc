@@ -26,13 +26,22 @@ SWIFT_SF_URL="${SWIFT_BASE_URL}/v1/AUTH_${SWIFT_ACCOUNT}/edeploy-roles"
 SWIFT_DOCS_URL="${SWIFT_BASE_URL}/v1/AUTH_${SWIFT_ACCOUNT}/sfdocs"
 
 # Paths
-WORKSPACE="${WORKSPACE:-/var/lib/sf}"
-BUILD_DIR="$WORKSPACE/roles"
+SF_WORKSPACE="${SF_WORKSPACE:-/var/lib/sf}"
+BUILD_DIR="${SF_WORKSPACE}/roles"
 
 UPSTREAM="${BUILD_DIR}/upstream"
 CACHE_PATH="${BUILD_DIR}/cache/sf-centos7"
 IMAGE_PATH="${BUILD_DIR}/install/${SF_VER}/softwarefactory"
-DEPS="${WORKSPACE}/deps"
+
+# If this script is run in CI job runner the
+# ZUUL_PROJECT will be set
+if [ -n "${ZUUL_PROJECT}" ]; then
+    DEPS="${WORKSPACE}/deps"
+    IN_ZUUL=1
+else
+    DEPS="${SF_WORKSPACE}/deps"
+    IN_ZUUL=0
+fi
 
 PYSFLIB_CLONED_PATH="${PYSFLIB_CLONED_PATH:-${DEPS}/pysflib}"
 CAUTH_CLONED_PATH="${CAUTH_CLONED_PATH:-${DEPS}/cauth}"
@@ -45,9 +54,9 @@ GERRITHOOKS="${PWD}/gerrit-hooks"
 CACHE_DEPS="./image/softwarefactory.install ./image/third_party_tools"
 
 function prepare_buildenv {
-    if [ ! -d $WORKSPACE ]; then
-        sudo mkdir -m 0770 $WORKSPACE
-        sudo chown ${USER}:root $WORKSPACE
+    if [ ! -d "${SF_WORKSPACE}" ]; then
+        sudo mkdir -m 0770 "${SF_WORKSPACE}"
+        sudo chown ${USER}:root "${SF_WORKSPACE}"
     fi
 
     [ ! -d "$BUILD_DIR" ] && sudo mkdir -p $BUILD_DIR

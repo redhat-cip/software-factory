@@ -74,8 +74,8 @@ if [ ! -f "${BUILD}/generate.done" ]; then
     touch "${BUILD}/generate.done"
 else
     # During upgrade or another bootstrap rup, reuse the same refarch
-    REFARCH=$(cat ${BUILD}/hiera/sfarch.yaml | grep "^refarch:" | cut -d: -f2)
-    IP_JENKINS=$(cat ${BUILD}/hiera/sfarch.yaml | grep "^jenkins_ip:" | cut -d: -f2)
+    REFARCH=$(cat ${BUILD}/hiera/sfarch.yaml | sed 's/ //g' | grep "^refarch:" | cut -d: -f2)
+    IP_JENKINS=$(cat ${BUILD}/hiera/sfarch.yaml | sed 's/ //g' | grep "^jenkins_ip:" | cut -d: -f2)
     # Support 2.0.0beta
     if [ -f ${BUILD}/refarch ]; then
         REFARCH="$(cat ${BUILD}/refarch)"
