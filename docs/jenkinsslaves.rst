@@ -19,11 +19,14 @@ distributions.
 
 .. code-block:: bash
 
+ $ sudo yum install -y epel-release
+ $ sudo yum install -y java-1.8.0-openjdk python-pip gcc python-devel
+ $ sudo pip install zuul
  $ sudo useradd -m jenkins
  $ sudo gpasswd -a jenkins wheel
  $ echo "jenkins ALL=(ALL) NOPASSWD:ALL" | sudo tee /etc/sudoers.d/jenkins-slave
- $ echo "Defaults   !requiretty" | sudo tee --append /etc/sudoers.d/jenkins-slave
- $ chmod 0440 /etc/sudoers.d/jenkins-slave
+ $ echo 'Defaults   !requiretty' | sudo tee --append /etc/sudoers.d/jenkins-slave
+ $ sudo chmod 0440 /etc/sudoers.d/jenkins-slave
  $ sudo mkdir /home/jenkins/.ssh
  $ sudo chown -R jenkins /home/jenkins/.ssh
  $ sudo chmod 700 /home/jenkins/.ssh
@@ -56,11 +59,14 @@ distributions.
 
 .. code-block:: bash
 
+ $ sudo yum install -y epel-release
+ $ sudo yum install -y java-1.8.0-openjdk python-pip gcc python-devel
+ $ sudo pip install zuul
  $ sudo useradd -m jenkins
  $ sudo gpasswd -a jenkins wheel
  $ echo "jenkins ALL=(ALL) NOPASSWD:ALL" | sudo tee /etc/sudoers.d/jenkins-slave
- $ echo "Defaults   !requiretty" | sudo tee --append /etc/sudoers.d/jenkins-slave
- $ chmod 0440 /etc/sudoers.d/jenkins-slave
+ $ echo 'Defaults   !requiretty' | sudo tee --append /etc/sudoers.d/jenkins-slave
+ $ sudo chmod 0440 /etc/sudoers.d/jenkins-slave
  $ # Download and start the swarm client
  $ sudo -u jenkins curl -o /home/jenkins/swarm-client-1.22-jar-with-dependencies.jar \
     http://maven.jenkins-ci.org/content/repositories/releases/org/jenkins-ci/plugins/\
