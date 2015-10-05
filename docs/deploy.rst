@@ -9,7 +9,7 @@ a complete operating system and all services pre-installed.
 While SF really benefits from running on top of OpenStack, the image
 can also be used standalone.
 
-Download the latest image from: http://softwarefactory-project.io/releases
+Download the latest image from: https://github.com/redhat-cip/software-factory
 
 
 Requirements

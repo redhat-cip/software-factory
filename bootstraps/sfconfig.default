@@ -39,11 +39,7 @@ smtp_relay: mail.tests.dom
 # From email adresse used by Jenkins.
 jenkins_user_email: jenkins@tests.dom
 
-# Links on the login page
-loginpage_link_documentation: /docs/
-loginpage_link_contribute: "/docs/contribute.html"
-loginpage_github_address: "https://github.com/redhat-cip/software-factory"
-loginpage_contact_email: "softwarefactory@enovance.com"
+# Styles
 loginpage_custom_footer: ""
 
 # NTP main reference server

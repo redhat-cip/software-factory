@@ -10,22 +10,8 @@
     <body>
 
         <div class="container">
-            <div class="col-sm-12 col-md-12 col-xs-12">
-                <div class="list-group col-sm-12">
-                    <h2>Welcome to Software Factory!</h2>
-                    <p style="font-size: 1.3em;">
-                            Software Factory is an open source, integrated agile
-                            development platform that provides integrated tools
-                            for collaborative software development. Software
-                            Factory is designed to help organizations deliver
-                            high quality applications efficiently and seamlessly
-                            across distributed development teams.
-                    </p>
-                    <hr />
-                </div>
-            </div>
-
-            <div class="col-sm-4 col-md-4 col-xs-4">
+            <br />
+            <div class="col-md-4 col-md-offset-4">
                 <div class="panel panel-default" id="login">
                     <div class="panel-body text-center">
                     % if message:
@@ -75,7 +61,7 @@
 
                             <input type="hidden" name="back" value="${back}">
                             <input type="hidden" name="method" value="Password">
-                            
+
                             <button type="submit" class="btn btn-primary col-md-12">
                                 Internal Login
                                 <i class="fa fa-sign-in fa-fw"></i>
@@ -84,63 +70,6 @@
                     </div>
                 </div>
             </div>
-
-            <div class="col-sm-6 col-md-6 col-xs-6">
-                <div class="pael pnel-default">
-                    <div class="pael-body">
-                        <div class="list-group">
-                            <i class="fa fa-3x fa-book pull-left fa-fw"></i>
-                            <h4 class="list-group-item-heading">Documentation</h4>
-                            <p class="list-group-item-text">
-                                <strong>
-                                    <a href="<%= scope.function_hiera(["loginpage_link_documentation"]) %>">
-                                        Read the documentation <i class="fa fa-angle-double-right"></i>
-                                    </a>
-                                </strong>
-                            </p>
-                        </div>
-
-                         <div class="list-group">
-                            <i class="fa fa-3x fa-code-fork pull-left fa-fw"></i>
-                            <h4 class="list-group-item-heading">Getting started</h4>
-                            <p class="list-group-item-text">
-                                <strong>
-                                    <a href="<%= scope.function_hiera(["loginpage_link_contribute"]) %>">
-                                        How to contribute <i class="fa fa-angle-double-right"></i>
-                                    </a>
-                                </strong>
-                            </p>
-                        </div>
-
-                        <div class="list-group">
-                            <i class="fa fa-3x fa-github pull-left fa-fw"></i>
-                            <h4 class="list-group-item-heading">Discover</h4>
-                            <p class="list-group-item-text">
-                                <strong>
-                                    <a href="<%= scope.function_hiera(["loginpage_github_address"]) %>">
-                                        Check out the code at Git Hub <i class="fa fa-angle-double-right"></i>
-                                    </a>
-                                </strong>
-                            </p>
-                        </div>
-
-                        <div class="list-group">
-                            <i class="fa fa-3x fa-envelope-o pull-left fa-fw"></i>
-                            <h4 class="list-group-item-heading">Contact</h4>
-                            <p class="list-group-item-text">
-                                <strong>
-                                    <a href="mailto:<%=scope.function_hiera(["loginpage_contact_email"]) %>">
-                                        Send us an email <i class="fa fa-angle-double-right"></i>
-                                    </a>
-                                </strong>
-                            </p>
-                        </div>
-
-                    </div>
-                </div>
-            </div>
-
         <%= scope.function_hiera(["loginpage_custom_footer"]) %>
-
     </body>
 </html>
