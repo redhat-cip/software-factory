@@ -27,7 +27,7 @@ function publish {
         (cd $IMG; sudo tar -c -p --use-compress-program=pigz -f ../${IMG_NAME}.tgz .)
     fi
     for hot in $(ls ${HOT_TEMPLATES}/*.hot); do
-        cp $hot $(basename $hot | sed "s/\.hot/-${SF_VER}.hot/")
+        sudo cp $hot $(basename $hot | sed "s/\.hot/-${SF_VER}.hot/")
     done
     echo "[+] Creating manifest"
     OBJ="$(/bin/ls ${IMG_NAME}.{tgz,hash,pip,rpm,img.qcow2,hot} 2> /dev/null || true)"
