@@ -6,7 +6,7 @@ After=network.target
 Type=simple
 User=gerrit
 SyslogIdentifier=gerrit
-ExecStart=/usr/bin/java -Xmx<%= @settings['gerrit_heap_limit'] %> -jar /home/gerrit/site_path/bin/gerrit.war daemon -d /home/gerrit/site_path
+ExecStart=/usr/bin/java -Xmx<%= @settings['gerrit_heap_limit'] %> -Djava.security.egd=file:///dev/urandom -jar /home/gerrit/site_path/bin/gerrit.war daemon -d /home/gerrit/site_path
 LimitCPU=infinity
 LimitFSIZE=infinity
 LimitDATA=infinity
