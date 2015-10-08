@@ -29,7 +29,7 @@ SF offers a seamless user experience with:
 SF tests jobs, instances and pipelines configuration is done through a special project
 called config and is updated through the SF integration pipeline (using code review and zuul gate).
 
-One should know that SF is entirely developped and produced using SF.
+One should know that SF is entirely developed and produced using SF.
 
 
 Ready to use development platform
@@ -110,7 +110,7 @@ Nodepool
 ........
 
 Nodepool is a Jenkins slaves manager. It is design to provision and
-maintain one or more pools of Jenkins slave. An Openstack cloud account
+maintain one or more pools of Jenkins slave. An OpenStack cloud account
 is needed to allow nodepool to store images/snapshot and start slave VMs.
 Within SF Nodepool is already pre-configured to run together with Jenkins and Zuul.
 
@@ -162,7 +162,7 @@ In order to ease the usage of all those nice tools, SF provides
 an unique portal served by only one remotely accessible HTTP server.
 That means only one hostname to remember in order to access all
 the services. Each web interface will be displayed with
-a little menu on the top of your Web browser screen. 
+a little menu on the top of your Web browser screen.
 You can move around all SF services with one click.
 
 Single Sign On

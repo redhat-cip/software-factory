@@ -35,7 +35,7 @@ distributions.
 Then copy inside "/home/jenkins/.ssh/authorized_keys" the public key of Jenkins that you
 can find in this file "/root/sf-bootstrap-data/ssh_keys/jenkins_rsa.pub" on the SF instance.
 
-As the adminitrator, go in "Manage jenkins"/"Manage nodes"/"New node" and select
+As the administrator, go in "Manage jenkins"/"Manage nodes"/"New node" and select
 "Dumb node" plus add a node name. Keep the amount of executor to 1 if your jobs can't
 run in paralllel. Set the "Remote root directory" to "/home/jenkins". Add the needed
 label (your are going to use that label in the JJB descriptions of your jobs).
@@ -97,7 +97,7 @@ that are used for testing, for example when additional packages are required.
 To do this, an account on an OpenStack cloud is required and credentials need to
 be known by Nodepool.
 
-In order to configure Nodepool to define a provider (an Openstack cloud account) you need
+In order to configure Nodepool to define a provider (an OpenStack cloud account) you need
 to adapt sfconfig.yaml. Below is an example of configuration.
 
 .. code-block:: yaml

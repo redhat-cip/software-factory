@@ -10,9 +10,9 @@ As you already know Software Factory eases the deployment of a Continous Integra
 platform by allowing you to deploy such a platform within a couple of minutes but
 an important point is how I maintain this platform up to date ?
 
-- Lastest version of Software Factory workflow.
+- Latest version of Software Factory workflow.
 - Most recent stable version of components like (Jenkins, Gerrit, JJB, Redmine, ...).
-- Most recent base OS packages (librairies, kernel, ...).
+- Most recent base OS packages (libraries, kernel, ...).
 
 Software Factory being image-based, each new releases provides a new set of image to be used
 either for new deployment, or to upgrade an existing one.

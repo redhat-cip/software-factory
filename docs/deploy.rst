@@ -22,7 +22,7 @@ SF deployment needs:
 * Recommended 80GB of hardrive and 8GB of memory
 * FQDN required for web interface OAuth authentication callback
 
-SF can also manage tests running slave instances and test artifact, nodepool and zuul plublisher will need:
+SF can also manage tests running slave instances and test artifact, nodepool and zuul publisher will need:
 
 * One or more dedicated OpenStack tenant to run instance
 * A swift endpoint to store and publish tests artifacts
@@ -67,7 +67,7 @@ well as the FQDN of the deployment (domain parameter):
 Deploy with Nova
 ................
 
-When Heat is not avaiable, SF can also be deployed manually using the following process:
+When Heat is not available, SF can also be deployed manually using the following process:
 
 * Start the instance and open an admin (root) shell with ssh.
 * Edit the configuration sfconfig.default (Set the domain and admin username/password).
@@ -101,7 +101,7 @@ This method of deployment is mostly useful for testing, it uses default configur
 Multi-node deployment
 ---------------------
 
-Multi-node deployment is still a work in progess. However all services are configured in virtual domains and are designed
+Multi-node deployment is still a work in progress. However all services are configured in virtual domains and are designed
 to run independently. Integration tests are currently testing two types of deployments (called reference architectures):
 
 * 1node-allinone: all services run on the same instance.
