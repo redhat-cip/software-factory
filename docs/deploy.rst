@@ -112,14 +112,15 @@ Deployment reconfiguration
 --------------------------
 
 To change settings like the FQDN, enable github replication, authentication backend or cloud provider...
-You need to edit sfconfig.yaml: */etc/puppet/hiera/sfconfig.yaml*.
+You need to edit sfconfig.yaml: */etc/puppet/hiera/sf/sfconfig.yaml*.
 The configuration script (*bootstrap.sh*) needs to executed again after:
 
 .. code-block:: bash
 
- [root@managesf bootstraps]# vim /etc/puppet/hiera/sfconfig.yaml
+ [root@managesf bootstraps]# vim /etc/puppet/hiera/sf/sfconfig.yaml
  [root@managesf bootstraps]# ./bootstraps.sh
 
+If you intend to reconfigure the domain on an already deployed SF, please use the *-d* option of *bootstraps.sh* script.
 
 Network Access
 --------------
