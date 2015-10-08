@@ -35,7 +35,7 @@ digest are signed with gpg, install the key and verify content with:
 
 .. code-block:: bash
 
- $ gpg --keyserver keys.gnupg.net --recv-key 1C3BAE4B
+ $ gpg --keyserver keys.gnupg.net --recv-key 0xE46E04A2344803E5A808BDD7E8C203A71C3BAE4B
  $ gpg --verify softwarefactory-C7.0-2.0.0.digest && sha256sum -c softwarefactory-C7.0-2.0.0.digest
 
 

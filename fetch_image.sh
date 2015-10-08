@@ -41,6 +41,8 @@ function fetch_prebuilt {
     rm -f ${TMP_FILE}
     echo "Fetching ${SWIFT_SF_URL}/${IMG}.tgz"
     sudo curl -o ${UPSTREAM}/${IMG}.tgz ${SWIFT_SF_URL}/${IMG}.tgz || exit -1
+    echo "Fetching ${SWIFT_SF_URL}/${IMG}.img.qcow2"
+    sudo curl -o ${UPSTREAM}/${IMG}.img.qcow2 ${SWIFT_SF_URL}/${IMG}.img.qcow2
     echo "Fetching ${SWIFT_SF_URL}/${IMG}.{pip,rpm,digest,hash,hot}"
     sudo curl -o ${UPSTREAM}/${IMG}.hot ${SWIFT_SF_URL}/${IMG}.hot
     sudo curl -o ${UPSTREAM}/${IMG}.pip ${SWIFT_SF_URL}/${IMG}.pip
@@ -48,6 +50,10 @@ function fetch_prebuilt {
     sudo curl -o ${UPSTREAM}/${IMG}.digest ${SWIFT_SF_URL}/${IMG}.digest
     sudo curl -o ${UPSTREAM}/${IMG}.hash ${SWIFT_SF_URL}/${IMG}.hash || exit -1
     echo "Digests..."
+    if [ "${IMG}" == "softwarefactory-${SF_PREVIOUS_VER}" ]; then
+        gpg --list-sigs ${RELEASE_GPG_FINGERPRINT} &> /dev/null || gpg --keyserver keys.gnupg.net --recv-key ${RELEASE_GPG_FINGERPRINT}
+        gpg --verify ${UPSTREAM}/${IMG}.digest || exit -1
+    fi
     (cd ${UPSTREAM}; exec sha256sum -c ./${IMG}.digest) || exit -1
 }
 
