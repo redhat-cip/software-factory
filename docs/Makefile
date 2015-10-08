@@ -1,12 +1,15 @@
 # Makefile for Sphinx documentation
 #
 
+MAKEFILE_DIR    = $(shell pwd)
+
 # You can set these variables from the command line.
-SPHINXOPTS    =
-SPHINXBUILD   = sphinx-build
-PAPER         =
-BUILDDIR      = _build
-GET_MANAGESF  = cp ${MANAGESF_CLONED_PATH}/docs/source/sfmanager.rst sfmanager.rst
+SPHINXOPTS            =
+SPHINXBUILD           = sphinx-build
+PAPER                 =
+BUILDDIR              = _build
+MANAGESF_CLONED_PATH := $(MAKEFILE_DIR)/../../managesf/
+GET_MANAGESF          = cp $(MANAGESF_CLONED_PATH)/docs/source/sfmanager.rst sfmanager.rst
 
 # User-friendly check for sphinx-build
 ifeq ($(shell which $(SPHINXBUILD) >/dev/null 2>&1; echo $$?), 1)
