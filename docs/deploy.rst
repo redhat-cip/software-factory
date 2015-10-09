@@ -70,16 +70,15 @@ Deploy with Nova
 When Heat is not available, SF can also be deployed manually using the following process:
 
 * Start the instance and open an admin (root) shell with ssh.
-* Edit the configuration sfconfig.default (Set the domain and admin username/password).
+* Edit the configuration sfconfig.yaml (Set the domain and admin username/password).
 * Run configuration script.
 
 .. code-block:: bash
 
  $ nova boot --flavor m1.large --image sf-2.0.0 sf-2.0.0 --key-name SSH_KEY
  $ ssh -A root@sf_instance
- [root@managesf ~]# cd bootstraps
- [root@managesf bootstraps]# vim sfconfig.default
- [root@managesf bootstraps]# ./bootstraps.sh
+ [root@managesf ~]# vim /etc/puppet/hiera/sf/sfconfig.yaml
+ [root@managesf ~]# sfconfig.sh
 
 
 Standalone deployment
@@ -113,12 +112,12 @@ Deployment reconfiguration
 
 To change settings like the FQDN, enable github replication, authentication backend or cloud provider...
 You need to edit sfconfig.yaml: */etc/puppet/hiera/sf/sfconfig.yaml*.
-The configuration script (*bootstrap.sh*) needs to executed again after:
+The configuration script (*sfconfig.sh*) needs to executed again after:
 
 .. code-block:: bash
 
- [root@managesf bootstraps]# vim /etc/puppet/hiera/sf/sfconfig.yaml
- [root@managesf bootstraps]# ./bootstraps.sh
+ [root@managesf ~]# vim /etc/puppet/hiera/sf/sfconfig.yaml
+ [root@managesf ~]# sfconfig.sh
 
 If you intend to reconfigure the domain on an already deployed SF, please use the *-d* option of *bootstraps.sh* script.
 

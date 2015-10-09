@@ -3,10 +3,8 @@
   tasks:
   - name: systemctl daemon-reload
     shell: systemctl daemon-reload
-  - name: Restart the bootstrap script
-    shell: ./bootstrap.sh > /var/log/upgrade-bootstrap.log
-    args:
-      chdir: /root/bootstraps
+  - name: Restart the configuration script
+    shell: sfconfig.sh > /var/log/upgrade-bootstrap.log
 - hosts: jenkins
   gather_facts: no
   tasks:

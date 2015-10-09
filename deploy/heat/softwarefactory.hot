@@ -171,11 +171,10 @@ resources:
                HOME=/root
                ssh-keygen -t rsa -N "" -f /root/.ssh/id_rsa
                cat /root/.ssh/id_rsa.pub >> /root/.ssh/authorized_keys
-               cd /root/bootstraps
-               sed -i 's/admin_name:.*/admin_name: adminname/' sfconfig.default
-               sed -i 's/admin_mail:.*/admin_mail: adminmail/' sfconfig.default
-               sed -i 's/admin_password:.*/admin_password: adminpwd/' sfconfig.default
-               ./bootstrap.sh -d domain
+               sed -i 's/admin_name:.*/admin_name: adminname/' /etc/puppet/hiera/sf/sfconfig.yaml
+               sed -i 's/admin_mail:.*/admin_mail: adminmail/' /etc/puppet/hiera/sf/sfconfig.yaml
+               sed -i 's/admin_password:.*/admin_password: adminpwd/' /etc/puppet/hiera/sf/sfconfig.yaml
+               sfconfig.sh -d domain
               path: /root/startup.sh
             runcmd:
               - chmod +x /root/startup.sh

@@ -84,12 +84,12 @@ function build_cache {
 
 function build_image {
     # Image hash is last commit of DEPS and the one that changed content of the image (bootstraps/ docs/ gerrit-hooks/ image/ puppet/)
-    IMAGE_HASH="SF: $(git log --format=oneline -n 1 bootstraps/ docs/ gerrit-hooks/ image/ puppet/) || CAUTH: $(cd ${CAUTH_CLONED_PATH}; git log --format=oneline -n 1) || PYSFLIB: $(cd ${PYSFLIB_CLONED_PATH}; git log --format=oneline -n 1) || MANAGESF: $(cd ${MANAGESF_CLONED_PATH}; git log --format=oneline -n 1)"
+    IMAGE_HASH="SF: $(git log --format=oneline -n 1 config/ docs/ gerrit-hooks/ image/ puppet/) || CAUTH: $(cd ${CAUTH_CLONED_PATH}; git log --format=oneline -n 1) || PYSFLIB: $(cd ${PYSFLIB_CLONED_PATH}; git log --format=oneline -n 1) || MANAGESF: $(cd ${MANAGESF_CLONED_PATH}; git log --format=oneline -n 1)"
     LOCAL_HASH=$(cat ${IMAGE_PATH}-${SF_VER}.hash 2> /dev/null)
 
     echo "(STEP2) ${IMAGE_HASH}"
     if [ "${LOCAL_HASH}" == "${IMAGE_HASH}" ]; then
-        echo "(STEP1) Already built, remove ${IMAGE_PATH}-${SF_VER}.hash to force rebuild"
+        echo "(STEP2) Already built, remove ${IMAGE_PATH}-${SF_VER}.hash to force rebuild"
         return
     fi
     echo "(STEP2) The local image needs update (was: [${LOCAL_HASH}])"

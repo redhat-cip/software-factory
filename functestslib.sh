@@ -63,7 +63,8 @@ function build_image {
         sudo rsync -a --delete puppet/manifests/ ${IMAGE_PATH}/etc/puppet/environments/sf/manifests/
         sudo rsync -a --delete puppet/modules/ ${IMAGE_PATH}/etc/puppet/environments/sf/modules/
         sudo rsync -a --delete puppet/hiera/ ${IMAGE_PATH}/etc/puppet/hiera/sf/
-        sudo rsync -a --delete bootstraps/ ${IMAGE_PATH}/root/bootstraps/
+        sudo cp -Rv config/scripts/* ${IMAGE_PATH}/usr/local/bin/
+        sudo cp -Rv config/defaults/* ${IMAGE_PATH}/etc/puppet/hiera/sf/
         echo "SKIP_BUILD: direct copy of ${MANAGESF_CLONED_PATH}/ to ${IMAGE_PATH}/var/www/managesf/"
         sudo rsync -a --delete ${MANAGESF_CLONED_PATH}/ ${IMAGE_PATH}/var/www/managesf/
         echo "SKIP_BUILD: direct copy of ${CAUTH_CLONED_PATH}/ to ${IMAGE_PATH}/var/www/cauth/"
@@ -201,12 +202,11 @@ function run_bootstraps {
     ssh-add ~/.ssh/id_rsa
     echo "$(date) ======= run_bootstraps" | tee -a ${ARTIFACTS_DIR}/bootstraps.log
     [ "${REFARCH}" = "2nodes-jenkins" ] && OPTIONS="-i 192.168.135.102"
-    if [ "${TEST_TYPE}" == "upgrade" ] && [ "${SF_VER}" == "C7.0-2.0.0" ]; then
-        # Support 2.0.0beta bootstrap that doesn't have parameter
-        ssh -A -tt ${SF_HOST} "cd bootstraps; exec ./bootstrap.sh ${REFARCH}" 2>&1 | tee ${ARTIFACTS_DIR}/bootstraps.log | grep '\(Info:\|Warning:\|Error:\|\[bootstrap\]\)'
+    if [ "${TEST_TYPE}" == "upgrade" ] && [ "${SF_VER}" == "C7.0-2.0.1" ]; then
+        ssh -A -tt ${SF_HOST} "cd bootstraps; exec ./bootstrap.sh -a ${REFARCH} ${OPTIONS}" 2>&1 | tee ${ARTIFACTS_DIR}/bootstraps.log | grep '\(Info:\|Warning:\|Error:\|\[bootstrap\]\)'
         res=${PIPESTATUS[0]}
     else
-        ssh -A -tt ${SF_HOST} "cd bootstraps; exec ./bootstrap.sh -a ${REFARCH} ${OPTIONS}" 2>&1 | tee ${ARTIFACTS_DIR}/bootstraps.log | grep '\(Info:\|Warning:\|Error:\|\[bootstrap\]\)'
+        ssh -A -tt ${SF_HOST} sfconfig.sh -a ${REFARCH} ${OPTIONS} 2>&1 | tee ${ARTIFACTS_DIR}/bootstraps.log | grep '\(Info:\|Warning:\|Error:\|\[bootstrap\]\)'
         res=${PIPESTATUS[0]}
     fi
     kill -9 $SSH_AGENT_PID
@@ -327,8 +327,8 @@ function run_serverspec_tests {
     # Wait a few seconds for zuul to start
     sleep 5
     # Copy current serverspec
-    sudo rsync -a --delete serverspec/ ${IMAGE_PATH}/root/serverspec/
-    ssh ${SF_HOST} "cd serverspec; rake spec" 2>&1 | tee ${ARTIFACTS_DIR}/serverspec.output
+    sudo rsync -a --delete serverspec/ ${IMAGE_PATH}/etc/serverspec/
+    ssh ${SF_HOST} "cd /etc/serverspec; rake spec" 2>&1 | tee ${ARTIFACTS_DIR}/serverspec.output
     [ "${PIPESTATUS[0]}" != "0" ] && fail "Serverspec tests failed"
     checkpoint "run_serverspec_tests"
 }

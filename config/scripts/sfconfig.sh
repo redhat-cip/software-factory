@@ -14,6 +14,9 @@
 # license for the specific language governing permissions and limitations
 # under the license.
 
+# -----------------
+# Functions
+# -----------------
 [ -z "${DEBUG}" ] && DISABLE_SETX=1 || set -x
 
 # Defaults
@@ -37,9 +40,9 @@ hosts:
   gerrit.${DOMAIN}:       {ip: ${localip}, host_aliases: [gerrit]}
   managesf.${DOMAIN}:     {ip: ${localip}, host_aliases: [managesf, auth.${DOMAIN}, ${DOMAIN}]}
 EOF
-    ./hieraedit.py --yaml ${OUTPUT}/sfconfig.yaml domain     "${DOMAIN}"
-    ./hieraedit.py --yaml ${OUTPUT}/sfarch.yaml   refarch    "${REFARCH}"
-    ./hieraedit.py --yaml ${OUTPUT}/sfarch.yaml   ip_jenkins "${IP_JENKINS}"
+    hieraedit.py --yaml ${OUTPUT}/sfconfig.yaml domain     "${DOMAIN}"
+    hieraedit.py --yaml ${OUTPUT}/sfarch.yaml   refarch    "${REFARCH}"
+    hieraedit.py --yaml ${OUTPUT}/sfarch.yaml   ip_jenkins "${IP_JENKINS}"
     echo "sf_version: $(grep ^VERS= /var/lib/edeploy/conf | cut -d"=" -f2 | cut -d'-' -f2)" > /etc/puppet/hiera/sf/sf_version.yaml
 }
 
@@ -60,14 +63,10 @@ function generate_api_key {
 
 function generate_yaml {
     OUTPUT=${BUILD}/hiera
-    echo "[bootstrap] copy defaults hiera to ${OUTPUT}"
-    cp sfconfig.default ${OUTPUT}/sfconfig.yaml
-    cp sfcreds.default ${OUTPUT}/sfcreds.yaml
-    cp sfarch.default ${OUTPUT}/sfarch.yaml
-    # create link to avoid double edit
-    ln -s ${OUTPUT}/sfcreds.yaml .
-    ln -s ${OUTPUT}/sfconfig.yaml .
-    ln -s ${OUTPUT}/sfarch.yaml .
+    echo "[sfconfig] copy defaults hiera to ${OUTPUT}"
+    mv /etc/puppet/hiera/sf/sfconfig.yaml ${OUTPUT}/ || exit -1
+    mv /etc/puppet/hiera/sf/sfcreds.yaml ${OUTPUT}/
+    mv /etc/puppet/hiera/sf/sfarch.yaml ${OUTPUT}/
     # MySQL password for services
     MYSQL_ROOT_SECRET=$(generate_random_pswd 32)
     REDMINE_MYSQL_SECRET=$(generate_random_pswd 32)
@@ -108,16 +107,16 @@ function generate_yaml {
     LODGEIT_SESSION_KEY=$(generate_random_pswd 32)
     sed -i "s#LODGEIT_SESSION_KEY#${LODGEIT_SESSION_KEY}#" ${OUTPUT}/sfcreds.yaml
 
-    ./hieraedit.py --yaml ${OUTPUT}/sfcreds.yaml -f ${BUILD}/ssh_keys/service_rsa service_rsa
-    ./hieraedit.py --yaml ${OUTPUT}/sfcreds.yaml -f ${BUILD}/ssh_keys/jenkins_rsa jenkins_rsa
-    ./hieraedit.py --yaml ${OUTPUT}/sfcreds.yaml -f ${BUILD}/ssh_keys/jenkins_rsa.pub jenkins_rsa_pub
-    ./hieraedit.py --yaml ${OUTPUT}/sfcreds.yaml -f ${BUILD}/ssh_keys/gerrit_admin_rsa gerrit_admin_rsa
-    ./hieraedit.py --yaml ${OUTPUT}/sfcreds.yaml -f ${BUILD}/ssh_keys/gerrit_service_rsa gerrit_service_rsa
-    ./hieraedit.py --yaml ${OUTPUT}/sfcreds.yaml -f ${BUILD}/ssh_keys/gerrit_service_rsa.pub gerrit_service_rsa_pub
-    ./hieraedit.py --yaml ${OUTPUT}/sfcreds.yaml -f ${BUILD}/certs/privkey.pem privkey_pem
-    ./hieraedit.py --yaml ${OUTPUT}/sfcreds.yaml -f ${BUILD}/certs/pubkey.pem  pubkey_pem
-    ./hieraedit.py --yaml ${OUTPUT}/sfcreds.yaml -f ${BUILD}/certs/gateway.key gateway_key
-    ./hieraedit.py --yaml ${OUTPUT}/sfcreds.yaml -f ${BUILD}/certs/gateway.crt gateway_crt
+    hieraedit.py --yaml ${OUTPUT}/sfcreds.yaml -f ${BUILD}/ssh_keys/service_rsa service_rsa
+    hieraedit.py --yaml ${OUTPUT}/sfcreds.yaml -f ${BUILD}/ssh_keys/jenkins_rsa jenkins_rsa
+    hieraedit.py --yaml ${OUTPUT}/sfcreds.yaml -f ${BUILD}/ssh_keys/jenkins_rsa.pub jenkins_rsa_pub
+    hieraedit.py --yaml ${OUTPUT}/sfcreds.yaml -f ${BUILD}/ssh_keys/gerrit_admin_rsa gerrit_admin_rsa
+    hieraedit.py --yaml ${OUTPUT}/sfcreds.yaml -f ${BUILD}/ssh_keys/gerrit_service_rsa gerrit_service_rsa
+    hieraedit.py --yaml ${OUTPUT}/sfcreds.yaml -f ${BUILD}/ssh_keys/gerrit_service_rsa.pub gerrit_service_rsa_pub
+    hieraedit.py --yaml ${OUTPUT}/sfcreds.yaml -f ${BUILD}/certs/privkey.pem privkey_pem
+    hieraedit.py --yaml ${OUTPUT}/sfcreds.yaml -f ${BUILD}/certs/pubkey.pem  pubkey_pem
+    hieraedit.py --yaml ${OUTPUT}/sfcreds.yaml -f ${BUILD}/certs/gateway.key gateway_key
+    hieraedit.py --yaml ${OUTPUT}/sfcreds.yaml -f ${BUILD}/certs/gateway.crt gateway_crt
 
     ln -sf ${OUTPUT}/sfconfig.yaml /etc/puppet/hiera/sf/sfconfig.yaml
     ln -sf ${OUTPUT}/sfcreds.yaml /etc/puppet/hiera/sf/sfcreds.yaml
@@ -164,7 +163,7 @@ EOF
 
 function wait_for_ssh {
     local ip=$1
-    echo "[bootstrap][$ip] Waiting for ssh..."
+    echo "[sfconfig][$ip] Waiting for ssh..."
     while true; do
         KEY=`ssh-keyscan -p 22 $ip`
         if [ "$KEY" != ""  ]; then
@@ -180,26 +179,123 @@ function wait_for_ssh {
 }
 
 function puppet_apply_host {
-    echo "[bootstrap] Applying hosts.pp"
+    echo "[sfconfig] Applying hosts.pp"
     # Update local /etc/hosts
-    puppet apply --test --environment sf --modulepath=/etc/puppet/environments/sf/modules/ hosts.pp
+    puppet apply --test --environment sf --modulepath=/etc/puppet/environments/sf/modules/ -e "include hosts"
 }
 
 function puppet_apply {
     host=$1
     manifest=$2
-    echo "[bootstrap][$host] Applying $manifest"
+    echo "[sfconfig][$host] Applying $manifest"
     [ "$host" == "managesf.${DOMAIN}" ] && ssh="" || ssh="ssh -tt root@$host"
     $ssh puppet apply --test --environment sf --modulepath=/etc/puppet/environments/sf/modules/ $manifest
     res=$?
     if [ "$res" != 2 ] && [ "$res" != 0 ]; then
-        echo "[bootstrap][$host] Failed ($res) to apply $manifest"
+        echo "[sfconfig][$host] Failed ($res) to apply $manifest"
         exit 1
     fi
 }
 
 function puppet_copy {
     host=$1
-    echo "[bootstrap][$host] Copy puppet configuration"
+    echo "[sfconfig][$host] Copy puppet configuration"
     rsync -a -L --delete /etc/puppet/hiera/ ${host}:/etc/puppet/hiera/
 }
+
+# -----------------
+# End of functions
+# -----------------
+
+while getopts ":a:i:d:h" opt; do
+    case $opt in
+        a)
+            REFARCH=$OPTARG
+            [ $REFARCH != "1node-allinone" -a $REFARCH != "2nodes-jenkins" ] && {
+                    echo "Available REFARCH are: 1node-allinone or 2nodes-jenkins"
+                    exit 1
+            }
+            ;;
+        i)
+            IP_JENKINS=$OPTARG
+            ;;
+        d)
+            DOMAIN=$OPTARG
+            ;;
+        h)
+            echo ""
+            echo "Usage:"
+            echo ""
+            echo "If run without any options sfconfig script will use defaults:"
+            echo "REFARCH=1node-allinone"
+            echo "DOMAIN=tests.dom"
+            echo ""
+            echo "Use the -a option to specify the REFARCH."
+            echo ""
+            echo "If REFARCH is 2nodes-jenkins then is is expected you pass"
+            echo "the ip of the node where the CI system will be installed"
+            echo "via the -i option."
+            echo ""
+            echo "Use -d option to specify under which domain the SF gateway"
+            echo "will be installed. If you intend to reconfigure the domain on"
+            echo "an already deploy SF then this is the option you need to use."
+            exit 0
+            ;;
+        \?)
+            echo "Invalid option: -$OPTARG" >&2
+            exit 1
+            ;;
+        :)
+            echo "Option -$OPTARG requires an argument." >&2
+            exit 1
+            ;;
+    esac
+done
+
+
+# Generate site specifics configuration
+if [ ! -f "${BUILD}/generate.done" ]; then
+    # Make sure sf-bootstrap-data sub-directories exist
+    for i in hiera ssh_keys certs; do
+        [ -d ${BUILD}/$i ] || mkdir -p ${BUILD}/$i
+    done
+    generate_keys
+    generate_apache_cert
+    generate_yaml
+    touch "${BUILD}/generate.done"
+else
+    # During upgrade or another sfconfig run, reuse the same refarch and domain
+    REFARCH=$(cat ${BUILD}/hiera/sfarch.yaml | sed 's/ //g' | grep "^refarch:" | cut -d: -f2)
+    IP_JENKINS=$(cat ${BUILD}/hiera/sfarch.yaml | sed 's/ //g' | grep "^jenkins_ip:" | cut -d: -f2)
+    DOMAIN=$(cat ${BUILD}/hiera/sfconfig.yaml | sed 's/ //g' | grep "^domain:" | cut -d: -f2)
+fi
+
+update_sfconfig
+puppet_apply_host
+echo "[sfconfig] Boostrapping $REFARCH"
+# Apply puppet stuff with good old shell scrips
+case "${REFARCH}" in
+    "1node-allinone")
+        wait_for_ssh "managesf.${DOMAIN}"
+        puppet_apply "managesf.${DOMAIN}" /etc/puppet/environments/sf/manifests/1node-allinone.pp
+        ;;
+    "2nodes-jenkins")
+        [ "$IP_JENKINS" == "127.0.0.1" ] && {
+            echo "[sfconfig] Please select another IP_JENKINS than 127.0.0.1 for this REFARCH"
+            exit 1
+        }
+        wait_for_ssh "managesf.${DOMAIN}"
+        wait_for_ssh "jenkins.${DOMAIN}"
+        puppet_copy jenkins.${DOMAIN}
+
+        # Run puppet apply
+        puppet_apply "managesf.${DOMAIN}" /etc/puppet/environments/sf/manifests/2nodes-sf.pp
+        puppet_apply "jenkins.${DOMAIN}" /etc/puppet/environments/sf/manifests/2nodes-jenkins.pp
+        ;;
+    *)
+        echo "Unknown refarch ${REFARCH}"
+        exit 1
+        ;;
+esac
+echo "SUCCESS ${REFARCH}"
+exit 0

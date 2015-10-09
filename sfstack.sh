@@ -22,10 +22,10 @@ sleep 5
 sed -i 's/.*192\.168\.135\.101.*//' ~/.ssh/known_hosts
 
 echo "[+] Auto configure"
-ssh root@192.168.135.101 "cd bootstraps; ./bootstrap.sh" > /dev/null
+ssh root@192.168.135.101 sfconfig.sh > /dev/null
 
 echo "[+] Run serverspec"
-ssh root@192.168.135.101 "cd serverspec; rake spec"
+ssh root@192.168.135.101 "cd /etc/serverspec; rake spec"
 
 echo "[+] SF is ready to be used:"
 echo "echo PUBLIC_IP tests.dom | sudo tee -a /etc/hosts"

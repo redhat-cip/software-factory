@@ -15,7 +15,7 @@ if [ ! -d "./upgrade/${current_version}" ]; then
     exit 1
 fi
 # update new default variable
-SRC=$(pwd)/bootstraps/sfconfig.default
+SRC=/var/lib/debootstrap/install/${SF_VER}/softwarefactory/etc/puppet/hiera/sf/sfconfig.yaml
 DST=/etc/puppet/hiera/sf/sfconfig.yaml
 if [ ! -f ${SRC} ] || [ ! -e ${DST} ]; then
     echo "Missing configuration file..."
