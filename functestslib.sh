@@ -7,6 +7,8 @@ export SF_HOST=${SF_HOST:-tests.dom}
 export SKIP_CLEAN_ROLES="y"
 
 MANAGESF_URL=https://${SF_HOST}
+ADMIN_USER=admin
+ADMIN_PASSWORD=userpass
 
 ARTIFACTS_DIR="/var/lib/sf/artifacts"
 # This environment variable is set ZUUL in the jenkins job workspace
@@ -206,7 +208,7 @@ function run_bootstraps {
         ssh -A -tt ${SF_HOST} "cd bootstraps; exec ./bootstrap.sh -a ${REFARCH} ${OPTIONS}" 2>&1 | tee ${ARTIFACTS_DIR}/bootstraps.log | grep '\(Info:\|Warning:\|Error:\|\[bootstrap\]\)'
         res=${PIPESTATUS[0]}
     else
-        ssh -A -tt ${SF_HOST} sfconfig.sh -a ${REFARCH} ${OPTIONS} 2>&1 | tee ${ARTIFACTS_DIR}/bootstraps.log | grep '\(Info:\|Warning:\|Error:\|\[bootstrap\]\)'
+        ssh -A -tt ${SF_HOST} sfconfig.sh -a ${REFARCH} ${OPTIONS} 2>&1 | tee ${ARTIFACTS_DIR}/bootstraps.log | grep '\(Info:\|Warning:\|Error:\|\[sfconfig\]\)'
         res=${PIPESTATUS[0]}
     fi
     kill -9 $SSH_AGENT_PID
@@ -267,8 +269,8 @@ function run_provisioner {
 function run_backup_start {
     echo "$(date) ======= run_backup_start"
     . /var/lib/sf/venv/bin/activate
-    sfmanager --url "${MANAGESF_URL}" --auth user1:userpass system backup_start || fail "Backup failed"
-    sfmanager --url "${MANAGESF_URL}" --auth user1:userpass system backup_get   || fail "Backup get failed"
+    sfmanager --url "${MANAGESF_URL}" --auth ${ADMIN_USER}:${ADMIN_PASSWORD} system backup_start || fail "Backup failed"
+    sfmanager --url "${MANAGESF_URL}" --auth ${ADMIN_USER}:${ADMIN_PASSWORD} system backup_get   || fail "Backup get failed"
     deactivate
     sudo cp /var/lib/lxc/managesf/rootfs/var/log/managesf/managesf.log ${ARTIFACTS_DIR}/backup_managesf.log
     tar tzvf sf_backup.tar.gz > ${ARTIFACTS_DIR}/backup_content.log
@@ -279,7 +281,7 @@ function run_backup_start {
 function run_backup_restore {
     echo "$(date) ======= run_backup_restore"
     . /var/lib/sf/venv/bin/activate
-    sfmanager --url "${MANAGESF_URL}" --auth user1:userpass system restore --filename $(pwd)/sf_backup.tar.gz || fail "Backup resore failed"
+    sfmanager --url "${MANAGESF_URL}" --auth ${ADMIN_USER}:${ADMIN_PASSWORD} system restore --filename $(pwd)/sf_backup.tar.gz || fail "Backup resore failed"
     echo "[+] Waiting for gerrit to restart..."
     retry=0
     while [ $retry -lt 1000 ]; do

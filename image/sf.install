@@ -15,6 +15,12 @@ function install_sf {
         exit -1
     fi
 
+    # Disable postfix and remove configuration to reduce puppet noise
+    do_chroot ${dir} systemctl disable postfix
+    for i in main.cf virtual; do
+        echo -n > ${dir}/etc/postfix/$i
+    done
+
     # Install puppet files for SF
     do_chroot ${dir} mkdir -p /etc/puppet/environments/sf
     do_chroot ${dir} mkdir -p /etc/puppet/hiera/sf

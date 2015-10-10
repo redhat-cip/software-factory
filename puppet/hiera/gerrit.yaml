@@ -10,9 +10,7 @@ gerrit:
   gerrit_mysql_username: gerrit
   gerrit_mysql_port: 3306
   http_basic_auth: true
-  gerrit_admin_username: "%{hiera('admin_name')}"
-  gerrit_admin_password: "%{hiera('admin_password')}"
-  gerrit_admin_mail: "%{hiera('admin_mail')}"
+  gerrit_admin_mail: "admin@%{hiera('top_domain')}"
   gerrit_admin_sshkey: "ssh-rsa %{hiera('creds_gerrit_admin_sshkey')}"
   gerrit_admin_key: "%{hiera('creds_gerrit_admin_sshkey')}"
   gerrit_jenkins_sshkey: "ssh-rsa %{hiera('creds_jenkins_pub_key')}"
@@ -22,4 +20,4 @@ gerrit:
   gerrit_token_pk: "%{hiera('creds_gerrit_token_pk')}"
   gerrit_mysql_secret: "%{hiera('creds_gerrit_sql_pwd')}"
   gerrit_heap_limit: 256m
-  jenkins_user_email: "%{hiera('jenkins_user_email')}"
+  jenkins_user_email: "jenkins@%{hiera('fqdn')}"

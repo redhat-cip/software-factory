@@ -1,4 +1,4 @@
 monit:
   smtp_server: localhost
-  mail_from: "monit@%{hiera('domain')}"
-  mail_to: "%{hiera('admin_mail')}"
+  mail_from: "monit@%{hiera('fqdn')}"
+  mail_to: "admin@%{hiera('fqdn')}"

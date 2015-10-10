@@ -31,7 +31,7 @@ this = that
 #field1 = value1
 
 [MAPPINGS]
-user1 = stan
+admin = stan
 user2 = kyle
 #user3 = kenny
 """)
@@ -59,7 +59,7 @@ user2 = kyle
     def test_get_mapping(self):
         self.assertEqual('stan',
                          utils.get_mapping(self.conf_file,
-                                           'user1'))
+                                           'admin'))
         self.assertEqual('user3',
                          utils.get_mapping(self.conf_file,
                                            'user3'))

@@ -14,14 +14,26 @@ except:
     print "%s: can't load sfconfig" % sfconfig_filename
     raise
 
-GATEWAY_HOST = sfconfig['domain']
+if "domain" in sfconfig:
+    # v2.0.0 support
+    GATEWAY_HOST = sfconfig['domain']
+else:
+    GATEWAY_HOST = sfconfig['fqdn']
+
 GATEWAY_URL = 'https://%s/' % GATEWAY_HOST
 
 GERRIT_USER = 'gerrit'
 GERRIT_SERVICE_PRIV_KEY_PATH = '%s/ssh_keys/gerrit_service_rsa' \
                                % SF_BOOTSTRAP_DATA
 
-USER_1 = sfconfig.get('admin_name')
+if "admin_name" in sfconfig:
+    # v2.0.0 support
+    USER_1 = sfconfig.get('admin_name')
+    USER_1_PASSWORD = sfconfig.get('admin_password')
+else:
+    USER_1 = sfconfig.get('authentication')['admin_name']
+    USER_1_PASSWORD = sfconfig.get('authentication')['admin_password']
+
 ADMIN_USER = USER_1
 ADMIN_PRIV_KEY_PATH = '%s/ssh_keys/gerrit_admin_rsa' % SF_BOOTSTRAP_DATA
 ADMIN_PUB_KEY_PATH = '%s/ssh_keys/gerrit_admin_rsa.pub' % SF_BOOTSTRAP_DATA
@@ -153,8 +165,8 @@ USER_6_PRIV_KEY = USER_4_PRIV_KEY
 # to this dictionary please start with USER_7
 
 USERS = {
-    USER_1: {"password": sfconfig.get('admin_password'),
-             "email": sfconfig.get('admin_mail'),
+    USER_1: {"password": USER_1_PASSWORD,
+             "email": "admin@tests.dom",
              "pubkey": file(ADMIN_PUB_KEY_PATH).read(),
              "privkey": file(ADMIN_PRIV_KEY_PATH).read(),
              "auth_cookie": "",

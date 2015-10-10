@@ -17,8 +17,9 @@ class jenkins ($settings = hiera_hash('jenkins', '')) {
 
   require hosts
 
+  $auth = hiera('authentication')
   $jenkins_password = $settings['jenkins_password']
-  $admin_name = $settings['jenkins_admin_username']
+  $admin_name = $auth['admin_name']
   $jenkins_rsa = hiera('jenkins_rsa')
 
   file {'/etc/httpd/conf.d/ports.conf':

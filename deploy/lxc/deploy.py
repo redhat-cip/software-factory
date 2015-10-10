@@ -63,6 +63,7 @@ def prepare_role(base_path, name, ip,
         os.mkdir("/var/lib/lxc/%s" % name, 0755)
     root = "/var/lib/lxc/%s/rootfs" % name
     if execute(["rsync", "-a", "--delete",
+                "--exclude", "/var/lib/debootstrap/install/",
                 "%s/softwarefactory/" % base_path,
                 "%s/" % root]):
         print "Could not prepare %s with %s" % (name, base_path)

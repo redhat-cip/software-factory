@@ -6,8 +6,8 @@ SET @http_auth_config_value="--- !ruby/hash:ActiveSupport::HashWithIndifferentAc
   auto_registration: 'true'
 ";
 SET @api_key="<%= @settings['issues_tracker_api_key'] %>";
-SET @username="<%= @settings['redmine_admin_username'] %>";
-SET @email="<%= @settings['redmine_admin_mail'] %>";
+SET @username="<%= scope.function_hiera(['authentication'])['admin_name'] %>";
+SET @email="admin@<%= scope.function_hiera(['fqdn']) %>";
 SET @host="<%= scope.function_hiera(["redmine_pub_url"]) %>";
 SET @mailfrom="redmine@<%= scope.function_hiera(["top_domain"]) %>";
 SET @footer="You have received this notification because you have either subscribed to it, or are involved in it. To change your notification preferences, please click here: <%= scope.function_hiera(["redmine_pub_url"]) %>my/account";

@@ -266,8 +266,8 @@ class TestGerrit(Base):
             attempts += 1
             time.sleep(1)
         reviewers = gu_second_u.get_reviewers(change_id)
-        self.assertEqual(len(reviewers), 1)
-        self.assertEqual(reviewers[0], first_u)
+        self.assertGreaterEqual(len(reviewers), 1)
+        self.assertTrue(first_u in reviewers)
 
         gu_first_u.del_pubkey(k1_index)
         gu_second_u.del_pubkey(k2_index)

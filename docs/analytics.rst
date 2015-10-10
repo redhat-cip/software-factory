@@ -67,7 +67,7 @@ With the following sample results, taken from Software Factory:
   |     morucci      |      15    0   3   0  12   9    80.0% |    0 (  0.0%)  |
   | TristanCacqueray |      13    0   5   0   8   3    61.5% |    0 (  0.0%)  |
   |     mhuin **     |       4    0   0   0   4   1   100.0% |    0 (  0.0%)  |
-  |      user1       |       2    0   0   0   2   0   100.0% |    0 (  0.0%)  |
+  |      admin       |       2    0   0   0   2   0   100.0% |    0 (  0.0%)  |
   |    peristeri     |       2    0   0   0   2   2   100.0% |    0 (  0.0%)  |
   +------------------+---------------------------------------+----------------+
   Total reviews: 58 (4.1/day)

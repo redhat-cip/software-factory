@@ -1,7 +1,0 @@
-auto_backup:
-  os_auth_url: "%{hiera('os_auth_url')}"
-  os_tenant_name: "%{hiera('os_tenant_name')}"
-  os_username: "%{hiera('os_username')}"
-  os_password: "%{hiera('os_password')}"
-  backup_container: "%{hiera('swift_backup_container')}"
-  backup_max_retention_secs: "%{hiera('swift_backup_max_retention_secs')}"

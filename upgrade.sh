@@ -14,18 +14,31 @@ if [ ! -d "./upgrade/${current_version}" ]; then
     echo "Upgrade path is not supported"
     exit 1
 fi
+
 # update new default variable
-SRC=/var/lib/debootstrap/install/${SF_VER}/softwarefactory/etc/puppet/hiera/sf/sfconfig.yaml
+SRC=./config/defaults/sfconfig.yaml
 DST=/etc/puppet/hiera/sf/sfconfig.yaml
+
+cp ${DST} ${DST}.orig
 if [ ! -f ${SRC} ] || [ ! -e ${DST} ]; then
     echo "Missing configuration file..."
     exit -1
 fi
-grep -v '^$\|^\s*\#' ${SRC} | cut -d: -f1 | while read k; do
-    grep -q "^$k:" ${DST} || (grep "^$k:" ${SRC} >> ${DST} && echo "Adding default value $k" );
-done
+grep -q '^admin_name' ${DST} && {
+    echo "[+] sfconfig migration"
+    ./config/scripts/migration_sfconfig-2.0.0.py ${DST} ${SRC} || exit -1
+}
+./config/scripts/validate_sfconfig.py ${DST} || exit -1
 
-mkdir -p /var/log/edeploy && echo 'PROFILE=none' > /var/log/edeploy/vars
+# check install files
+if [ ! -d "/var/lib/debootstrap/install/${SF_VER}/softwarefactory/" ]; then
+    echo "Fetch new version"
+    ./fetch_image.sh
+    echo "Install files"
+    mkdir -p /var/lib/debootstrap/install/${SF_VER}
+    ln -s ${IMAGE_PATH}/ /var/lib/debootstrap/install/${SF_VER}/softwarefactory/
+fi
+
 
 set -x
 # Start the upgrade by jumping in the cloned version and running

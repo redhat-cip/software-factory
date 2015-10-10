@@ -14,11 +14,13 @@
 # under the License.
 
 
-class ntpserver ($settings = hiera_hash('ntpserver', '')) {
+class ntpserver () {
+    $network = hiera('network')
+
     case $hostname {
         'managesf' : {
             class { '::ntp':
-                    servers => [$settings['reference_server'], ],
+                    servers => [$network['ntp_main_server']],
                     restrict => ['redmine', 'mysql', 'gerrit', 'jenkins', 'slave', 'managesf'],
             }
         }

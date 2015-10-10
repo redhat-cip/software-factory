@@ -56,6 +56,11 @@ case "${TEST_TYPE}" in
     "upgrade")
         ./fetch_image.sh ${SF_PREVIOUS_VER} || fail "Could not fetch ${SF_PREVIOUS_VER}"
         lxc_init ${SF_PREVIOUS_VER}
+        if [ "${SF_PREVIOUS_VER}" == "C7.0-2.0.0" ]; then
+            # 2.0.0 support
+            ADMIN_USER="user1"
+            ADMIN_PASSWORD="userpass"
+        fi
         run_bootstraps
         run_provisioner
         run_upgrade

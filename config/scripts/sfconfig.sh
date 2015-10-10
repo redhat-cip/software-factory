@@ -40,7 +40,7 @@ hosts:
   gerrit.${DOMAIN}:       {ip: ${localip}, host_aliases: [gerrit]}
   managesf.${DOMAIN}:     {ip: ${localip}, host_aliases: [managesf, auth.${DOMAIN}, ${DOMAIN}]}
 EOF
-    hieraedit.py --yaml ${OUTPUT}/sfconfig.yaml domain     "${DOMAIN}"
+    hieraedit.py --yaml ${OUTPUT}/sfconfig.yaml fqdn       "${DOMAIN}"
     hieraedit.py --yaml ${OUTPUT}/sfarch.yaml   refarch    "${REFARCH}"
     hieraedit.py --yaml ${OUTPUT}/sfarch.yaml   ip_jenkins "${IP_JENKINS}"
     echo "sf_version: $(grep ^VERS= /var/lib/edeploy/conf | cut -d"=" -f2 | cut -d'-' -f2)" > /etc/puppet/hiera/sf/sf_version.yaml
@@ -267,7 +267,7 @@ else
     # During upgrade or another sfconfig run, reuse the same refarch and domain
     REFARCH=$(cat ${BUILD}/hiera/sfarch.yaml | sed 's/ //g' | grep "^refarch:" | cut -d: -f2)
     IP_JENKINS=$(cat ${BUILD}/hiera/sfarch.yaml | sed 's/ //g' | grep "^jenkins_ip:" | cut -d: -f2)
-    DOMAIN=$(cat ${BUILD}/hiera/sfconfig.yaml | sed 's/ //g' | grep "^domain:" | cut -d: -f2)
+    DOMAIN=$(cat ${BUILD}/hiera/sfconfig.yaml | sed 's/ //g' | grep "^fqdn:" | cut -d: -f2)
 fi
 
 update_sfconfig

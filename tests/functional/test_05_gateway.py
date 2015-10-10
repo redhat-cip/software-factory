@@ -78,16 +78,16 @@ class TestGateway(Base):
 
         a = GerritUtils(url)
         a.g.url = "%s/" % a.g.url.rstrip('a/')
-        self.assertRaises(HTTPError, a.get_account, 'user1')
+        self.assertRaises(HTTPError, a.get_account, config.USER_1)
 
-        api_passwd = m.create_gerrit_api_password('user1')
-        auth = HTTPBasicAuth('user1', api_passwd)
+        api_passwd = m.create_gerrit_api_password(config.USER_1)
+        auth = HTTPBasicAuth(config.USER_1, api_passwd)
         a = GerritUtils(url, auth=auth)
-        self.assertTrue(a.get_account('user1'))
+        self.assertTrue(a.get_account(config.USER_1))
 
-        m.delete_gerrit_api_password('user1')
+        m.delete_gerrit_api_password(config.USER_1)
         a = GerritUtils(url, auth=auth)
-        self.assertRaises(HTTPError, a.get_account, 'user1')
+        self.assertRaises(HTTPError, a.get_account, config.USER_1)
 
         a = GerritUtils(url)
         a.g.url = "%s/" % a.g.url.rstrip('a/')
@@ -112,7 +112,7 @@ class TestGateway(Base):
         self.assertTrue('<title>Dashboard [Jenkins]</title>' in resp.text)
 
         # User should be known in Jenkins if logged in with SSO
-        self.assertTrue('user1' in resp.text)
+        self.assertTrue(config.USER_1 in resp.text)
 
     def test_zuul_accessible(self):
         """ Test if Zuul is accessible on gateway host
@@ -144,7 +144,7 @@ class TestGateway(Base):
         self.assertTrue('<title>Redmine</title>' in resp.text)
 
         # User should be known in Redmine if logged in with SSO
-        self.assertTrue('user1' in resp.text)
+        self.assertTrue(config.USER_1 in resp.text)
 
         # Check one of the CSS files to ensure static files are accessible
         css_file = "plugin_assets/redmine_backlogs/stylesheets/global.css"

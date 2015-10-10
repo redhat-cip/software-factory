@@ -3,10 +3,7 @@ jenkins:
   gerrit_host: "%{hiera('gerrit_host')}"
   gerrit_username: jenkins
   jenkins_username: jenkins
-  ldap_uri: "ldap://%{hiera('ldap_url')}"
   jenkins_url: "http://%{hiera('jenkins_url')}:8080/jenkins"
   jenkins_password: "%{hiera('creds_jenkins_user_password')}"
-  jenkins_admin_username: "%{hiera('admin_name')}"
-  ldap_userSearch: "%{hiera('ldap_account_username_attribute')}={0}"
-  jenkins_user_email: "%{hiera('jenkins_user_email')}"
+  jenkins_user_email: "jenkins@%{hiera('fqdn')}"
   jenkins_heap_limit: 256m

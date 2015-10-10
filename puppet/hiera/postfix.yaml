@@ -1,2 +1,0 @@
-postfix:
-  stmp_relay: "%{hiera('smtp_relay')}"

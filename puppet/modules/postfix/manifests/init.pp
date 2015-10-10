@@ -55,6 +55,13 @@ class postfix ($settings = hiera_hash('postfix', '')) {
     replace => true,
   }
 
+  file { '/etc/postfix/virtual':
+    ensure  => present,
+    content => template('postfix/virtual'),
+    require => [Package['postfix'], File['/etc/postfix']],
+    replace => true,
+  }
+
   service { 'postfix':
     ensure      => running,
     enable      => true,
@@ -71,4 +78,8 @@ class postfix ($settings = hiera_hash('postfix', '')) {
     notify  => Service['monit'],
   }
 
+  exec {'postfix_update_virtual':
+    command => '/usr/sbin/postmap /etc/postfix/virtual',
+    require => File['/etc/postfix/virtual'],
+  }
 }

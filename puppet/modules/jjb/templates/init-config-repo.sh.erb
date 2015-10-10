@@ -26,11 +26,11 @@ gh="$gerrit_host:$gerrit_ssh_port"
 gateway_host="<%= scope.function_hiera(["gateway_host"]) %>"
 gateway_url="<%= scope.function_hiera(["gateway_url"]) %>"
 
-admin="<%= @gerrit['gerrit_admin_username'] %>"
-admin_http_password="<%= @gerrit['gerrit_admin_password'] %>"
+admin="<%= scope.function_hiera(['authentication'])['admin_name'] %>"
+admin_http_password="<%= scope.function_hiera(['authentication'])['admin_password'] %>"
 auth=$admin:$admin_http_password
 
-admin_email="<%= @gerrit['gerrit_admin_mail'] %>"
+admin_email="admin@<%= scope.function_hiera(['fqdn']) %>"
 
 gerrit_ssh_key="/root/gerrit_admin_rsa"
 jenkins_kick_script="/usr/local/jenkins/slave_scripts/kick.sh"

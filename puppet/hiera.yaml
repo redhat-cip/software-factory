@@ -9,7 +9,6 @@
   - ssh_jenkins
   - edeploy_client
   - edeploy_server
-  - postfix
   - "%{::clientcert}"
   - bup
   - mysql
@@ -22,6 +21,4 @@
   - common
   - sfconfig
   - sfcreds
-  - ntpserver
-  - auto_backup
   - nodepool

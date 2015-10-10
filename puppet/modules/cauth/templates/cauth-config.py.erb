@@ -22,7 +22,7 @@ app = {
     'priv_key_path': '/srv/cauth_keys/privkey.pem',
     'cookie_domain': '<%= scope.function_hiera(["top_domain"]) %>',
     'debug': False,
-    'cookie_period': <%= @cauth['sso_cookie_timeout'] %>
+    'cookie_period': <%= scope.function_hiera(['authentication'])['sso_cookie_timeout'] %>
 }
 
 logging = {
@@ -52,22 +52,22 @@ logging = {
 # Authorization configurations
 auth = {
     'ldap': {
-        'host': '<%= @cauth['ldap_url'] %>',
-        'dn': '<%= @cauth['ldap_account_username_attribute'] %>=%(username)s,' + '<%= @cauth['ldap_account_base'] %>',
-        'sn': '<%= @cauth['ldap_account_surname_attribute'] %>',
-        'mail': '<%= @cauth['ldap_account_mail_attribute'] %>',
+        'host': '<%= scope.function_hiera(['authentication'])['ldap']['ldap_url'] %>',
+        'dn': '<%= scope.function_hiera(['authentication'])['ldap']['ldap_account_username_attribute'] %>=%(username)s,' + '<%= scope.function_hiera(['authentication'])['ldap']['ldap_account_base'] %>',
+        'sn': '<%= scope.function_hiera(['authentication'])['ldap']['ldap_account_surname_attribute'] %>',
+        'mail': '<%= scope.function_hiera(['authentication'])['ldap']['ldap_account_mail_attribute'] %>',
     },
     'github': {
         'top_domain': '<%= scope.function_hiera(["top_domain"]) %>',
         'auth_url':  'https://github.com/login/oauth/authorize',
-        <% if scope.function_hiera(["enforce_ssl"]) %>
-        'redirect_uri': 'https://<%= @cauth['github_redirect_url'] %>',
+        <% if scope.function_hiera(["network"])["enforce_ssl"] %>
+        'redirect_uri': 'https://<%= scope.function_hiera(['fqdn']) %>/auth/login/github/callback',
         <% else %>
-        'redirect_uri': 'http://<%= @cauth['github_redirect_url'] %>',
+        'redirect_uri': 'http://<%= scope.function_hiera(['fqdn']) %>/auth/login/github/callback',
         <% end %>
-        'client_id': '<%= @cauth['github_app_id'] %>',
-        'client_secret': '<%= @cauth['github_app_secret'] %>',
-        'allowed_organizations': '<%= @cauth['allowed_organizations'] %>'
+        'client_id': '<%= scope.function_hiera(['authentication'])['github']['github_app_id'] %>',
+        'client_secret': '<%= scope.function_hiera(['authentication'])['github']['github_app_secret'] %>',
+        'allowed_organizations': '<%= scope.function_hiera(['authentication'])['github']['allowed_organizations'] %>'
     },
     'localdb': {
         'managesf_url': 'http://managesf.<%= scope.function_hiera(["top_domain"]) %>',
@@ -77,12 +77,12 @@ auth = {
         'redirect_uri': '/auth/login/openid/callback'
     },
     'users': {
-        "<%= scope.function_hiera(['admin_name']) %>": {
-            "lastname": "<%= scope.function_hiera(['admin_lastname']) %>",
-            "mail": "<%= scope.function_hiera(['admin_mail']) %>",
+        "<%= scope.function_hiera(['authentication'])['admin_name'] %>": {
+            "lastname": "Software Factory Administrator",
+            "mail": "admin@<%= scope.function_hiera(['top_domain']) %>",
             "password": "<%= @admin_password_hashed %>",
         },
-	<% if scope.function_hiera(["top_domain"]) == "tests.dom" or scope.function_hiera(["top_domain"]) == "localtests.dom" %>
+        <% if scope.function_hiera(["top_domain"]) == "tests.dom" %>
             "user2": {
                 "lastname": "Demo user2",
                 "mail": "user2@tests.dom",
@@ -122,8 +122,8 @@ redmine = {
 
 gerrit = {
     'url': '<%= scope.function_hiera(["gateway_url"]) %>',
-    'admin_user': '<%= @gerrit['gerrit_admin_username'] %>',
-    'admin_password': '<%= @gerrit['gerrit_admin_password'] %>',
+    'admin_user': '<%= scope.function_hiera(['authentication'])['admin_name'] %>',
+    'admin_password': '<%= scope.function_hiera(['authentication'])['admin_password'] %>',
     'db_host': '<%= @gerrit['gerrit_mysql_address'] %>',
     'db_name': '<%= @gerrit['gerrit_mysql_db'] %>',
     'db_user': '<%= @gerrit['gerrit_mysql_username'] %>',

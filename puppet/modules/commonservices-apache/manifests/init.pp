@@ -13,12 +13,12 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-class commonservices-apache ($cauth = hiera_hash('cauth', ''),
-                             $authenticated_only = hiera('authenticated_only', false)) {
-
+class commonservices-apache ($cauth = hiera_hash('cauth', '')) {
   require hosts
   include apache
 
+  $auth = hiera('authentication')
+  $authenticated_only = $auth['authenticated_only']
   $gateway_crt = hiera('gateway_crt')
   $gateway_key = hiera('gateway_key')
 

@@ -29,20 +29,20 @@ git_dir=/var/lib/zuul/git
 zuul_url=http://<%= scope.function_hiera(["top_domain"]) %>/zuul/p
 log_config=/etc/zuul/merger-logging.conf
 
-<% if scope.function_hiera(['swift_logsexport_activated']) != false %>
+<% if scope.function_hiera(['logs'])['swift_logsexport_activated'] != false %>
 [swift]
-default_container=<%= scope.function_hiera(['swift_logsexport_container']) %>
-default_logserver_prefix=<%= scope.function_hiera(['swift_logsexport_logserver_prefix']) %>
-authurl=<%= scope.function_hiera(['swift_logsexport_authurl']) %>
-X-Storage-Url=<%= scope.function_hiera(['swift_logsexport_x_storage_url']) %>
-user=<%= scope.function_hiera(['swift_logsexport_username']) %>
-tenant_name=<%= scope.function_hiera(['swift_logsexport_tenantname']) %>
-key=<%= scope.function_hiera(['swift_logsexport_password']) %>
-auth_version=<%= scope.function_hiera(['swift_logsexport_authversion']) %>
+default_container=<%= scope.function_hiera(['logs'])['swift_logsexport_container'] %>
+default_logserver_prefix=<%= scope.function_hiera(['logs'])['swift_logsexport_logserver_prefix'] %>
+authurl=<%= scope.function_hiera(['logs'])['swift_logsexport_authurl'] %>
+X-Storage-Url=<%= scope.function_hiera(['logs'])['swift_logsexport_x_storage_url'] %>
+user=<%= scope.function_hiera(['logs'])['swift_logsexport_username'] %>
+tenant_name=<%= scope.function_hiera(['logs'])['swift_logsexport_tenantname'] %>
+key=<%= scope.function_hiera(['logs'])['swift_logsexport_password'] %>
+auth_version=<%= scope.function_hiera(['logs'])['swift_logsexport_authversion'] %>
 <% end %>
 
 [smtp]
 server=localhost
 port=25
 default_from=zuul@<%= scope.function_hiera(["top_domain"]) %>
-default_to=<%= scope.function_hiera(["admin_mail"]) %>
+default_to=admin@<%= scope.function_hiera(["top_domain"]) %>

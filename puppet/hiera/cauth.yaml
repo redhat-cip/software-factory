@@ -1,13 +1,3 @@
 cauth:
   signin_url: "/auth/login"
   signout_url: "/auth/logout"
-  github_redirect_url: "%{hiera('gateway_host')}/auth/login/github/callback"
-  github_app_id: "%{hiera('github_app_id')}"
-  github_app_secret: "%{hiera('github_app_secret')}"
-  ldap_url: "%{hiera('ldap_url')}"
-  ldap_account_base: "%{hiera('ldap_account_base')}"
-  ldap_account_username_attribute: "%{hiera('ldap_account_username_attribute')}"
-  ldap_account_mail_attribute: "%{hiera('ldap_account_mail_attribute')}"
-  ldap_account_surname_attribute: "%{hiera('ldap_account_surname_attribute')}"
-  sso_cookie_timeout: "%{hiera('sso_cookie_timeout')}"
-  allowed_organizations: "%{hiera('github_allowed_organizations')}"

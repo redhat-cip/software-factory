@@ -13,9 +13,10 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-class auto_backup ($backup = hiera_hash('auto_backup', '')) {
+class auto_backup () {
 
-  $m = hiera('admin_mail')
+  $t = hiera('top_domain')
+  $m = "admin@${t}"
 
   file {'/etc/auto_backup.conf':
     ensure => file,

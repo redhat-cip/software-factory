@@ -3,13 +3,17 @@ biff = no
 
 append_dot_mydomain = no
 
-mydomain = <%= scope.function_hiera(["top_domain"]) %>
-myhostname = <%= scope.function_hiera(["top_domain"]) %>
+myhostname = managesf.<%= scope.function_hiera(["fqdn"]) %>
+mydomain = $myhostname
+mydestination = $myhostname, localhost
+
 alias_maps = hash:/etc/aliases
 alias_database = hash:/etc/aliases
+
+virtual_alias_domains = <%= scope.function_hiera(["fqdn"]) %>
+virtual_alias_maps = hash:/etc/postfix/virtual
 myorigin = <%= scope.function_hiera(["top_domain"]) %>
-mydestination = <%= scope.function_hiera(["top_domain"]) %>, localhost.novalocal, localhost
-relayhost = <%= @settings['smtp_relay'] %>
+relayhost = <%= scope.function_hiera(["network"])["smtp_relay"] %>
 mynetworks = 127.0.0.0/8 [::ffff:127.0.0.0]/104 [::1]/128
 mailbox_size_limit = 0
 recipient_delimiter = +

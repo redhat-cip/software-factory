@@ -4,5 +4,4 @@ redmine:
   redmine_mysql_db_secret: "%{hiera('creds_redmine_sql_pwd')}"
   redmine_mysql_db_username: redmine
   redmine_mysql_db: redmine
-  redmine_admin_username: "%{hiera('admin_name')}"
-  redmine_admin_mail: "%{hiera('admin_mail')}"
+  redmine_admin_mail: "admin@%{hiera('top_domain')}"

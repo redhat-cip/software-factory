@@ -94,7 +94,7 @@ SF can also be deployed standalone with libvirtd-lxc.
  $ ./sfstack.sh
 
 This method of deployment is mostly useful for testing, it uses default configuration with "tests.dom" domain name and
-"user1/userpass" admin username/password.
+"admin/userpass" admin username/password.
 
 
 Multi-node deployment

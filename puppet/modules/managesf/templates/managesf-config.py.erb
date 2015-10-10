@@ -65,9 +65,9 @@ managesf = {
 }
 
 admin = {
-    'name': '<%= @gerrit['gerrit_admin_username'] %>',
-    'email': '<%= @gerrit['gerrit_admin_mail'] %>',
-    'http_password': '<%= @gerrit['gerrit_admin_password'] %>',
+    'name': '<%= scope.function_hiera(['authentication'])['admin_name'] %>',
+    'email': 'admin@<%= scope.function_hiera(['fqdn']) %>',
+    'http_password': '<%= scope.function_hiera(['authentication'])['admin_password'] %>',
 }
 
 gerrit = {

@@ -7,7 +7,15 @@
 - Renamed bootstraps scripts to sfconfig.sh
 - Moved script from /root to /usr/local/bin
 - Default configuration is /etc/puppet/sf/hiera/sfconfig.yaml
+- sfconfig refactored
 
+### Added
+
+- admin_mail_forward settings to forward notification mail
+
+### Removed
+
+- Admin real name and mail setting
 
 ## 2.0.0 2015-10-07
 

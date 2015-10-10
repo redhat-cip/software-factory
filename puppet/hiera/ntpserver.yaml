@@ -1,3 +1,0 @@
-ntpserver:
-  reference_server: "%{hiera('ntp_main_server')}"
-
