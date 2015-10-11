@@ -3,7 +3,7 @@
 set -x
 set -e
 
-JENKINS_SSHKEY="<%= @settings['gerrit_jenkins_sshkey'] %>"
+JENKINS_SSHKEY="<%= @gerrit_jenkins_sshkey %>"
 ADMINUSER=<%= @auth['admin_name'] %>
 
 # Check if Jenkins user does not exist yet

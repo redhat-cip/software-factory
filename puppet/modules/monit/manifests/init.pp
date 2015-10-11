@@ -12,10 +12,13 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-class monit ($settings = hiera_hash('monit', '')) {
+class monit {
 
   require hosts
 
+  $fqdn = hiera('fqdn')
+  $mail_from = "monit@$fqdn"
+  $mail_to = "admin@fqdn"
   $provider = "systemd"
 
   package { 'monit':

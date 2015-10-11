@@ -13,15 +13,17 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-class replication ($gerrit = hiera_hash('gerrit', '')) {
+class replication {
 
   require hosts
   require gerrituser
 
+  $gerrit_local_key = hiera('creds_gerrit_local_sshkey')
+
   ssh_authorized_key { 'gerrit_local_user':
-     user => 'gerrit',
-     type => 'rsa',
-     key  => $gerrit['gerrit_local_key'],
-     #require => File['gerrit_ssh_dir'],
+     user => "gerrit",
+     type => "ssh-rsa",
+     key  => "$gerrit_local_key",
+     require => File['/home/gerrit/.ssh'],
   }
 }

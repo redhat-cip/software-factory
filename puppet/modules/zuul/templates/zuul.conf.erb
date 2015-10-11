@@ -6,11 +6,11 @@ start=true
 log_config=/etc/zuul/gearman-logging.conf
 
 [gerrit]
-server=<%= @settings['gerrit_host'] %>
+server=<%= @gerrit_host %>
 # baseurl is only use to fetch git refs on diff url than server.
 # Using baseurl we cannot modify url zuul report to user
-baseurl=http://<%= @fqdn %>/r/
-user=<%= @settings['gerrit_username'] %>
+baseurl=<%= @url['gerrit_pub_url'] %>
+user=jenkins
 sshkey=/var/lib/zuul/.ssh/id_rsa
 
 [zuul]
@@ -18,7 +18,7 @@ layout_config=/etc/zuul/layout.yaml
 log_config=/etc/zuul/logging.conf
 pidfile=/var/run/zuul/zuul.pid
 state_dir=/var/lib/zuul
-status_url=http://<%= @zuul_pub_url %>
+status_url=http://<%= @url['zuul_pub_url'] %>
 job_name_in_report=true
 report_times=true
 

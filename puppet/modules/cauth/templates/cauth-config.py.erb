@@ -116,16 +116,16 @@ sqlalchemy = {
 }
 
 redmine = {
-    'apiurl': '<%= @api_redmine_url %>',
-    'apikey': '<%= @redmine['issues_tracker_api_key'] %>',
+    'apiurl': '<%= @url["api_redmine_url"] %>',
+    'apikey': '<%= @issues_tracker_api_key %>',
 }
 
 gerrit = {
-    'url': '<%= @gateway_url %>',
+    'url': '<%= @url["gateway_url"] %>',
     'admin_user': '<%= @auth['admin_name'] %>',
     'admin_password': '<%= @auth['admin_password'] %>',
-    'db_host': '<%= @gerrit['gerrit_mysql_address'] %>',
-    'db_name': '<%= @gerrit['gerrit_mysql_db'] %>',
-    'db_user': '<%= @gerrit['gerrit_mysql_username'] %>',
-    'db_password': '<%= @mysql['gerrit_sql_pwd'] %>'
+    'db_host': '<%= @gerrit_mysql_host %>',
+    'db_name': '<%= @gerrit_mysql_db %>',
+    'db_user': '<%= @gerrit_mysql_username %>',
+    'db_password': '<%= @gerrit_mysql_password %>'
 }

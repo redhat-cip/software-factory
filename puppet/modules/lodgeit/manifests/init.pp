@@ -3,8 +3,9 @@ class lodgeit {
   require hosts
   include apache
 
+  $fqdn = hiera('fqdn')
   $session_key = hiera('creds_lodgeit_session_key')
-  $mysql_db_address = hiera('mysql_url')
+  $mysql_db_address = "mysql.$fqdn"
   $mysql_db_secret = hiera('creds_lodgeit_sql_pwd')
   $mysql_db_username = "lodgeit"
   $mysql_db = "lodgeit"

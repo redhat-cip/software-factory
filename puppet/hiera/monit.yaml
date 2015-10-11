@@ -1,4 +1,0 @@
-monit:
-  smtp_server: localhost
-  mail_from: "monit@%{hiera('fqdn')}"
-  mail_to: "admin@%{hiera('fqdn')}"

@@ -13,14 +13,15 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-class jenkins ($settings = hiera_hash('jenkins', '')) {
+class jenkins {
 
   require hosts
 
-  $auth = hiera('authentication')
   $fqdn = hiera('fqdn')
-  $jenkins_url = hiera('jenkins_pub_url')
-  $jenkins_password = $settings['jenkins_password']
+  $auth = hiera('authentication')
+  $url = hiera('url')
+  $settings = hiera('jenkins')
+  $jenkins_password = hiera('creds_jenkins_user_password')
   $admin_name = $auth['admin_name']
   $jenkins_rsa = hiera('jenkins_rsa')
 

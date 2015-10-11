@@ -1,7 +1,7 @@
 SET @username="<%= @auth['admin_name'] %>";
 SET @mail="admin@<%= @fqdn %>";
-SET @pubkey="<%= @settings['gerrit_admin_sshkey'] %>";
-SET @pubkey2="<%= @settings['gerrit_local_sshkey'] %>";
+SET @pubkey="<%= @gerrit_admin_sshkey %>";
+SET @pubkey2="<%= @gerrit_local_sshkey %>";
 
 DELETE FROM account_external_ids WHERE account_id = 1; 
 INSERT INTO account_external_ids VALUES (1,@mail,NULL,CONCAT('gerrit:',@username));

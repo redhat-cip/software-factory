@@ -13,11 +13,17 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-class nodepool ($settings = hiera_hash('nodepool', '')) {
+class nodepool {
 
   $jenkins_rsa_pub = hiera('jenkins_rsa_pub')
   $nodepool = hiera('nodepool')
   $fqdn = hiera('fqdn')
+  $url = hiera('url')
+
+  $jenkins_host = "jenkins.$fqdn"
+  $jenkins_password = hiera('creds_jenkins_user_password')
+  $nodepool_mysql_address = "mysql.$fqdn"
+  $nodepool_sql_password = hiera('creds_nodepool_sql_pwd')
 
   $provider = "systemd"
 

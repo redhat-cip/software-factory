@@ -1,4 +1,4 @@
 [jenkins]
-user=<%= @settings['jenkins_username'] %>
-password=<%= @settings['jenkins_password'] %>
-url=<%= @settings['jenkins_url'] ? @settings['jenkins_url'] : 'http://localhost:8080' %>
+user=<%= @jenkins_username %>
+password=<%= @jenkins_password %>
+url=<%= @url['jenkins_jjb_url'] %>

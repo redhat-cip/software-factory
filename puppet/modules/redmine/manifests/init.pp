@@ -13,16 +13,17 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-class redmine ($settings = hiera_hash('redmine', ''),
-               $cauth = hiera_hash('cauth', '')) {
+class redmine {
 
+    $cauth = hiera_hash('cauth')
     $theme = hiera('theme')
     $auth = hiera('authentication')
     $fqdn = hiera('fqdn')
-    $redmine_pub_url = hiera('redmine_pub_url')
+    $url = hiera_hash('url')
     $sf_version = hiera('sf_version')
-    $mysql_url = $settings['redmine_mysql_db_address']
-    $mysql_password = $settings['redmine_mysql_db_secret']
+    $api_key = hiera('creds_issues_tracker_api_key')
+    $mysql_url = "mysql.$fqdn"
+    $mysql_password = hiera('creds_redmine_sql_pwd')
 
     require cauth_client
     require hosts

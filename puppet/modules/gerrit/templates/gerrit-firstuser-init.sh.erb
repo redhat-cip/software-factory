@@ -1,3 +1,3 @@
 #!/bin/sh
 
-mysql -u<%= @settings['gerrit_mysql_username'] %> -p<%= @settings['gerrit_mysql_secret'] %> -h<%= @settings['gerrit_mysql_address'] %> -P <%= @settings['gerrit_mysql_port'] %> <%= @settings['gerrit_mysql_db'] %> < /root/gerrit-firstuser-init.sql
+mysql -u<%= @mysql_user %> -p<%= @mysql_password %> -h<%= @mysql_host %> -P <%= @mysql_port %> <%= @mysql_db %> < /root/gerrit-firstuser-init.sql

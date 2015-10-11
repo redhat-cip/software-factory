@@ -1,8 +1,8 @@
 script-dir: /etc/nodepool/scripts
-dburi: 'mysql+pymysql://<%= @settings['nodepool_mysql_db'] %>:<%= @settings['nodepool_mysql_secret'] %>@<%= @settings['nodepool_mysql_address'] %>/<%= @settings['nodepool_mysql_username'] %>'
+dburi: 'mysql+pymysql://nodepool:<%= @nodepool_sql_password %>@<%= @nodepool_mysql_address %>/nodepool'
 
 zmq-publishers:
- - tcp://<%= @settings["jenkins_host"] %>:8888
+ - tcp://<%= @jenkins_host %>:8888
 
 gearman-servers:
  - host: 127.0.0.1
@@ -15,9 +15,9 @@ cron:
 targets:
   - name: jenkins
     jenkins:
-      url: '<%= @settings["jenkins_url"] %>'
+      url: '<%= @url["jenkins_url"] %>'
       user: 'jenkins'
-      apikey: '<%= @settings["jenkins_password"] %>'
+      apikey: '<%= @jenkins_password %>'
       credentials-id: '4f98191e-efbb-4ac4-8131-0e4a8bb2ce14'
 
 providers:

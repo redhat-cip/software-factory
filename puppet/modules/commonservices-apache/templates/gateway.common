@@ -37,21 +37,21 @@
         ProxyVia On
         ProxyRequests Off
 
-        ProxyPass /r/ <%= @gerrit_url %>:8000/r/ nocanon retry=0
-        ProxyPassReverse /r/ <%= @gerrit_url %>:8000/r/
+        ProxyPass /r/ <%= @url["gerrit_url"] %> nocanon retry=0
+        ProxyPassReverse /r/ <%= @url["gerrit_url"] %>
 
         # Requires internal authentication in Gerrit (without SSO)
-        ProxyPass /api/ <%= @gerrit_url %>:8000/r/ nocanon
-        ProxyPassReverse /api/ <%= @gerrit_url %>:8000/
+        ProxyPass /api/ <%= @url["gerrit_url"] %> nocanon
+        ProxyPassReverse /api/ <%= @url["gerrit_url"] %>
 
-        ProxyPass /jenkins/ http://<%= @jenkins_url %>:8081/jenkins/ nocanon retry=0
-        ProxyPassReverse /jenkins/ http://<%= @jenkins_url %>:8081/jenkins/
+        ProxyPass /jenkins/ <%= @url["jenkins_url"] %> nocanon retry=0
+        ProxyPassReverse /jenkins/ <%= @url["jenkins_url"] %>
 
-        ProxyPass /zuul/ http://<%= @jenkins_url %>:8084/ nocanon retry=0
-        ProxyPassReverse /zuul/ http://<%= @jenkins_url %>:8084/
+        ProxyPass /zuul/ <%= @url["zuul_url"] %> nocanon retry=0
+        ProxyPassReverse /zuul/ <%= @url["zuul_url"] %>
 
-        ProxyPass /redmine/ <%= @redmine_url %>/ nocanon retry=0
-        ProxyPassReverse /redmine/ <%= @redmine_url %>/
+        ProxyPass /redmine/ <%= @url["redmine_url"] %>/ nocanon retry=0
+        ProxyPassReverse /redmine/ <%= @url["redmine_url"] %>/
 
         ProxyPass /etherpad/ http://127.0.0.1:9001/ retry=0
         ProxyPassReverse /etherpad/ http://127.0.0.1:9001/
@@ -93,7 +93,7 @@
         require valid-user
 
         Order Allow,Deny
-        Allow from <%= @managesf_url %>
+        Allow from managesf.<%= @fqdn %>
 
         # Grant access based on password authentication or IP address
         Satisfy any

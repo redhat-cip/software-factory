@@ -1,13 +1,13 @@
 [gerrit]
-    basePath = <%= @settings['repo_base_path'] ? @settings['repo_base_path'] : 'git' %>
-    canonicalWebUrl = <%= @settings['gerrit_pub_url'] %>
-    gitHttpUrl =<%= @settings['httpurl'] ? @settings['httpurl'] : '' %>
+    basePath = <%= @settings['repo_base_path'] %>
+    canonicalWebUrl = <%= @url['gerrit_pub_url'] %>
+    gitHttpUrl =
 [database]
     type = MYSQL
-    hostname = <%= @settings['gerrit_mysql_address'] %>
-    database = <%= @settings['gerrit_mysql_db'] ? @settings['gerrit_mysql_db'] : 'gerrit' %>
-    username = <%= @settings['gerrit_mysql_username'] ? @settings['gerrit_mysql_username'] : 'gerrit' %>
-    port = <%= @settings['mysql_port'] ? @settings['mysql_port'] : '3306' %>
+    hostname = <%= @mysql_host %>
+    database = <%= @mysql_db %>
+    username = <%= @mysql_user %>
+    port = <%= @mysql_port %>
 [auth]
     type = HTTP
     gitBasicAuth = true
@@ -18,7 +18,7 @@
     javaHome = /usr/lib/jvm/java-1.6.0-openjdk-1.6.0.0.x86_64/jre
     heapLimit = <%= @settings['gerrit_heap_limit'] %>
 [sshd]
-    listenAddress = <%= @settings['sshd_listen_address'] ? @settings['sshd_listen_address'] : '*:29418' %>
+    listenAddress = <%= @settings['sshd_listen_address'] %>
 [httpd]
     listenUrl = proxy-http://0.0.0.0:8000/r/
 [commentlink "changeid"]
@@ -26,10 +26,10 @@
   link = "#q,$1,n,z"
 [commentlink "Redmine_addressing"]
     match = "([Bb]ug|[Ff]ix|[Ss]tory|[Ii]ssue|[Cc]loses?):\\s+#?(\\d+)"
-    html = $1<a href=\"<%= @redmine_pub_url %>/issues/$2\">$2</a>
+    html = $1<a href=\"<%= @url["redmine_pub_url"] %>/issues/$2\">$2</a>
 [commentlink "Redmine_related"]
     match = "([Rr]elated|[Rr]elated[ -][Tt]o):\\s+#?(\\d+)"
-    html = $1<a href=\"<%= @redmine_pub_url %>/issues/$2\">$2</a>
+    html = $1<a href=\"<%= @url["redmine_pub_url"] %>/issues/$2\">$2</a>
 [gitweb]
     cgi = <%= @gitweb_cgi %>
 [sendemail]

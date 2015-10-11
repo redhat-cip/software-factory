@@ -17,8 +17,9 @@ class etherpad {
 
   require hosts
 
+  $fqdn = hiera('fqdn')
   $session_key = hiera('creds_etherpad_session_key')
-  $mysql_db_address = hiera('mysql_url')
+  $mysql_db_address = "mysql.$fqdn"
   $mysql_db_secret = hiera('creds_etherpad_sql_pwd')
   $mysql_db_username = "etherpad"
   $mysql_db = "etherpad"

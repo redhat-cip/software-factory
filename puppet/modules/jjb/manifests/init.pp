@@ -13,9 +13,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-class jjb ($settings = hiera_hash('jenkins', ''),
-            $gerrit = hiera_hash('gerrit', ''),
-            $redmine = hiera_hash('redmine', '')) {
+class jjb ($gerrit = hiera('gerrit')) {
 
   require hosts
   require jenkins
@@ -24,9 +22,12 @@ class jjb ($settings = hiera_hash('jenkins', ''),
 
   $fqdn = hiera('fqdn')
   $auth = hiera('authentication')
+  $url = hiera('url')
   $gerrit_admin_rsa = hiera('gerrit_admin_rsa')
   $gerrit_host = "gerrit.$fqdn"
-  $gateway_url = hiera('gateway_url')
+
+  $jenkins_password = hiera('creds_jenkins_user_password')
+  $jenkins_username = "jenkins"
 
   file {'/etc/jenkins_jobs/jenkins_jobs.ini':
     ensure  => file,

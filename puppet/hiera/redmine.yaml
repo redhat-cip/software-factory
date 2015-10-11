@@ -1,7 +1,0 @@
-redmine:
-  issues_tracker_api_key: "%{hiera('creds_issues_tracker_api_key')}"
-  redmine_mysql_db_address: "%{hiera('mysql_url')}"
-  redmine_mysql_db_secret: "%{hiera('creds_redmine_sql_pwd')}"
-  redmine_mysql_db_username: redmine
-  redmine_mysql_db: redmine
-  redmine_admin_mail: "admin@%{hiera('fqdn')}"

@@ -18,13 +18,10 @@ class commonservices-apache ($cauth = hiera_hash('cauth', '')) {
   include apache
 
   $auth = hiera('authentication')
+  $url = hiera('url')
   $authenticated_only = $auth['authenticated_only']
   $gateway_crt = hiera('gateway_crt')
   $gateway_key = hiera('gateway_key')
-  $gerrit_url = hiera('gerrit_url')
-  $jenkins_url = hiera('jenkins_url')
-  $redmine_url = hiera('redmine_url')
-  $managesf_url = hiera('managesf_url')
   $network = hiera('network')
   $fqdn = hiera('fqdn')
   $theme = hiera('theme')

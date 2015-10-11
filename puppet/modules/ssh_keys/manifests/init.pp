@@ -16,7 +16,7 @@
 class ssh_keys {
 
   $service_rsa = hiera('service_rsa')
-  $keys = hiera_hash('ssh_keys', '')
+  $keys = hiera('ssh_keys')
 
   file { '/root/.ssh':
     ensure  => directory,

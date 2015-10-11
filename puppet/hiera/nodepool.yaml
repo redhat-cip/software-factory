@@ -1,8 +1,0 @@
-nodepool:
-  nodepool_mysql_address: "%{hiera('mysql_url')}"
-  nodepool_mysql_db: nodepool
-  nodepool_mysql_username: nodepool
-  nodepool_mysql_secret: "%{hiera('creds_nodepool_sql_pwd')}"
-  jenkins_host: "%{hiera('jenkins_url')}"
-  jenkins_url: "http://%{hiera('jenkins_url')}:8080/jenkins"
-  jenkins_password: "%{hiera('creds_jenkins_user_password')}"

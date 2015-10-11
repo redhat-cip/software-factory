@@ -1,5 +1,5 @@
 #!/bin/bash
-mysqldump -u root -p<%= @settings['mysql_root_pwd'] %> \
+mysqldump -u root -p<%= @mysql_root_pwd %> \
     --ignore-table mysql.event \
     --ignore-table mysql.user  \
     --all-databases | \

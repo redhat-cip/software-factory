@@ -13,14 +13,15 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-class zuul ($settings = hiera_hash('jenkins', ''), $gh = hiera('gerrit_host'), $hosts = hiera('hosts')){
+class zuul {
 
   require hosts
 
-  $jenkins_rsa = hiera('jenkins_rsa')
   $fqdn = hiera('fqdn')
-  $zuul_pub_url = hiera('zuul_pub_url')
+  $url = hiera('url')
   $logs = hiera('logs')
+  $hosts = hiera('hosts')
+  $jenkins_rsa = hiera('jenkins_rsa')
   $gerrit_host = "gerrit.$fqdn"
   $gerrit_ip = $hosts[$gerrit_host]['ip']
 

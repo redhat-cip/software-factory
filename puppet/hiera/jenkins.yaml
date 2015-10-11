@@ -1,9 +1,2 @@
 jenkins:
-  gerrit_url: "%{hiera('gerrit_url')}"
-  gerrit_host: "%{hiera('gerrit_host')}"
-  gerrit_username: jenkins
-  jenkins_username: jenkins
-  jenkins_url: "http://%{hiera('jenkins_url')}:8080/jenkins"
-  jenkins_password: "%{hiera('creds_jenkins_user_password')}"
-  jenkins_user_email: "jenkins@%{hiera('fqdn')}"
   jenkins_heap_limit: 256m

@@ -49,18 +49,18 @@ logging = {
 
 # Authorization configurations
 auth = {
-    'host': '<%= @auth_url %>',
+    'host': 'auth.<%= @fqdn %>',
 }
 
 mysql = {
-    'host': '<%= @mysql_url %>',
+    'host': 'mysql.<%= @fqdn %>',
 }
 jenkins = {
-    'host': '<%= @jenkins_url %>',
+    'host': 'jenkins.<%= @fqdn %>',
 }
 
 managesf = {
-    'host': '<%= @managesf_url %>',
+    'host': 'managesf.<%= @fqdn %>',
     'sshkey_priv_path': '/usr/share/httpd/.ssh/id_rsa',
 }
 
@@ -73,7 +73,7 @@ admin = {
 gerrit = {
     'user': 'gerrit',
     'host': 'gerrit.<%= @fqdn %>',
-    'url': '<%= @gateway_url %>',
+    'url': '<%= @url["gateway_url"] %>',
     'top_domain': '<%= @fqdn %>',
     'ssh_port': <%= @gerrit['gerrit_sshd_port'] %>,
     'sshkey_priv_path': '/var/www/managesf/gerrit_admin_rsa',
@@ -81,9 +81,9 @@ gerrit = {
 }
 
 redmine = {
-    'host': '<%= @api_redmine_host %>',
-    'url': '<%= @api_redmine_url %>',
-    'api_key': '<%= @redmine['issues_tracker_api_key'] %>'
+    'host': 'api-redmine.<%= @fqdn %>',
+    'url': '<%= @issues_tracker_api_url %>',
+    'api_key': '<%= @issues_tracker_api_key %>',
 }
 
 sqlalchemy = {

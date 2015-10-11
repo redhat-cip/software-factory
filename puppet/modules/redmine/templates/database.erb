@@ -1,6 +1,6 @@
 production:
   adapter: mysql2
-  database: <%= @settings['redmine_mysql_db'] %>
-  host: <%= @settings['redmine_mysql_db_address'] %>
-  username: <%= @settings['redmine_mysql_db_username'] %>
-  password: <%= @settings['redmine_mysql_db_secret'] %>
+  database: redmine
+  host: <%= @mysql_url %>
+  username: redmine
+  password: <%= @mysql_password %>

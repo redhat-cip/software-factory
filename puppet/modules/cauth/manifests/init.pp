@@ -13,22 +13,22 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-class cauth ($cauth = hiera_hash('cauth', ''),
-             $redmine = hiera_hash('redmine', ''),
-             $gerrit = hiera_hash('gerrit', ''),
-             $mysql = hiera_hash('mysql', '')) {
-
+class cauth ($cauth = hiera('cauth'), $gerrit = hiera('gerrit')) {
 
   $auth = hiera('authentication')
   $fqdn = hiera('fqdn')
   $theme = hiera('theme')
-  $gateway_url = hiera('gateway_url')
-  $api_redmine_url = hiera('api_redmine_url')
+  $url = hiera('url')
   $network = hiera('network')
   $privkey_pem = hiera('privkey_pem')
   $admin_password = $auth['admin_password']
   $ldap = $auth['ldap']
   $github = $auth['github']
+  $issues_tracker_api_key = hiera('creds_issues_tracker_api_key')
+  $gerrit_mysql_host = "mysql.$fqdn"
+  $gerrit_mysql_db = "gerrit"
+  $gerrit_mysql_username = "gerrit"
+  $gerrit_mysql_password = hiera('creds_gerrit_sql_pwd')
 
   $admin_password_hashed = generate("/usr/bin/python", "-c", "import crypt, random, string, sys; salt = '\$6\$' + ''.join(random.choice(string.letters + string.digits) for _ in range(16)) + '\$'; sys.stdout.write(crypt.crypt(sys.argv[1], salt))", $auth['admin_password'])
 

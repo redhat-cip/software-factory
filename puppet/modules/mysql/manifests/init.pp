@@ -13,12 +13,17 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-class mysql ($settings = hiera_hash('mysql', '')) {
+class mysql {
 
     require hosts
 
     $fqdn = hiera('fqdn')
-    $mysql_root_pwd = $settings['mysql_root_pwd']
+    $mysql_root_pwd = hiera('creds_mysql_root_pwd')
+    $creds_redmine_sql_pwd = hiera('creds_redmine_sql_pwd')
+    $creds_gerrit_sql_pwd = hiera('creds_gerrit_sql_pwd')
+    $creds_nodepool_sql_pwd = hiera('creds_nodepool_sql_pwd')
+    $creds_etherpad_sql_pwd = hiera('creds_etherpad_sql_pwd')
+    $creds_lodgeit_sql_pwd = hiera('creds_lodgeit_sql_pwd')
 
     $mysql = "mariadb"
     $provider = "systemd"

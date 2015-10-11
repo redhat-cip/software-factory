@@ -13,22 +13,14 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-class managesf ($gerrit = hiera_hash('gerrit', ''),
-                $redmine = hiera_hash('redmine', ''),
-                $hosts = hiera('hosts'),
-                $cauth = hiera_hash("cauth", '')) {
-
+class managesf ($gerrit = hiera('gerrit'), $hosts = hiera('hosts'), $cauth = hiera('cauth')) {
   require hosts
 
   $fqdn = hiera('fqdn')
-  $auth_url = hiera('auth_url')
-  $mysql_url = hiera('mysql_url')
-  $jenkins_url = hiera('jenkins_url')
-  $managesf_url = hiera('managesf_url')
-  $api_redmine_url = hiera('api_redmine_url')
-  $api_redmine_host = hiera('api_redmine_host')
-  $gateway_url = hiera('gateway_url')
+  $url = hiera('url')
   $auth = hiera('authentication')
+  $issues_tracker_api_key = hiera('creds_issues_tracker_api_key')
+  $issues_tracker_api_url = $url["api_redmine_url"]
   $gerrit_ip = $hosts["gerrit.$fqdn"]['ip']
   $gerrit_admin_rsa = hiera('gerrit_admin_rsa')
   $service_rsa = hiera('service_rsa')

@@ -19,12 +19,12 @@ set -e
 
 [ "$1" = "upgrade" ] && upgrade=true || upgrade=false
 
-gerrit_host=<%= @gerrit_host %>
+gerrit_host=gerrit.<%= @fqdn %>
 gerrit_ssh_port=<%= @gerrit['gerrit_sshd_port'] %>
 gh="$gerrit_host:$gerrit_ssh_port"
 
 gateway_host="<%= @fqdn %>"
-gateway_url="<%= @gateway_url %>"
+gateway_url="<%= @url['gateway_url'] %>"
 
 admin="<%= @auth['admin_name'] %>"
 admin_http_password="<%= @auth['admin_password'] %>"

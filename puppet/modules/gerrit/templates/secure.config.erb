@@ -1,7 +1,7 @@
 [database]
-    password = <%= @settings['gerrit_mysql_secret'] %>
+    password = <%= @mysql_password %>
 [sendmail]
-    smtpPass =<%= @settings['smtp_pass'] ? @settings['smtp_pass'] : '' %>
+    smtpPass =
 [auth]
-    registerEmailPrivateKey = <%= @settings['gerrit_email_pk'] %>
-    restTokenPrivateKey = <%= @settings['gerrit_token_pk'] %>
+    registerEmailPrivateKey = <%= @gerrit_email_pk %>
+    restTokenPrivateKey = <%= @gerrit_token_pk %>

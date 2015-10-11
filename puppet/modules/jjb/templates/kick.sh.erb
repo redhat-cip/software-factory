@@ -7,7 +7,7 @@ if [ -f /root/config.kicked ]; then
 fi
 
 if [ ! -d "/root/config" ]; then
-    git clone <%= @gateway_url %>/r/config /root/config
+    git clone <%= @url['gateway_url'] %>/r/config /root/config
 fi
 
 # JJB
