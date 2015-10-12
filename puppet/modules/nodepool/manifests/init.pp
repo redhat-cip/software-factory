@@ -108,7 +108,7 @@ class nodepool {
   file { '/etc/nodepool/scripts/authorized_keys':
     owner => 'jenkins',
     mode   => '0600',
-    content => inline_template('<%= @jenkins_rsa %>'),
+    content => inline_template('<%= @jenkins_rsa_pub %>'),
     require => [File['/etc/nodepool/scripts']]
   }
 
