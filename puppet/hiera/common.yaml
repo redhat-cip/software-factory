@@ -1,6 +1,6 @@
 ---
 url:
-  gateway_url: "http://%{hiera('fqdn')}"
+  gateway_url: "http://%{hiera('fqdn')}/"
   redmine_url: "http://redmine.%{hiera('fqdn')}:8083/redmine/"
   api_redmine_url: "http://api-redmine.%{hiera('fqdn')}:8083/redmine/"
   jenkins_url: "http://jenkins.%{hiera('fqdn')}:8081/jenkins/"
