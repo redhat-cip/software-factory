@@ -49,6 +49,8 @@ theme:
     topmenu_hide_etherpad: false
     topmenu_hide_paste: false
 
+    # Right topmenu entry, next to the login/logout button
+    topmenu_custom_entry: '<li><a href="/docs/" target="_top">Get started</a></li>'
 
 backup:
     disabled: True
