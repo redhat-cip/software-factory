@@ -1,3 +1,7 @@
+    RewriteEngine On
+    RewriteCond %{HTTP_HOST} !<%= @fqdn %> [NC]
+    RewriteRule ^/(.*)$ <%= @url["gateway_url"] %>/$1 [R=301,L]
+
     <LocationMatch "/r/(?!(login|logout|a))">
 	RewriteEngine On
 
