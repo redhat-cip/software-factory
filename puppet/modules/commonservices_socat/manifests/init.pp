@@ -13,7 +13,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-class commonservices-socat {
+class commonservices_socat {
 
   package { 'socat':
     ensure => present,
@@ -24,7 +24,7 @@ class commonservices-socat {
     mode   => '0640',
     owner  => 'root',
     group  => 'root',
-    source => 'puppet:///modules/commonservices-socat/socat_swarm_p1.service',
+    source => 'puppet:///modules/commonservices_socat/socat_swarm_p1.service',
     notify => [Exec['reload_units'], Service['socat_swarm_p1']],
   }
 
@@ -33,7 +33,7 @@ class commonservices-socat {
     mode   => '0640',
     owner  => 'root',
     group  => 'root',
-    source => 'puppet:///modules/commonservices-socat/socat_swarm_p2.service',
+    source => 'puppet:///modules/commonservices_socat/socat_swarm_p2.service',
     notify => [Exec['reload_units'], Service['socat_swarm_p2']],
   }
 

@@ -172,7 +172,7 @@ class redmine {
       mode    => '0644',
       owner   => $httpd_user,
       group   => $httpd_user,
-      content => template('commonservices-apache/topmenu.js'),
+      content => template('commonservices_apache/topmenu.js'),
       require => File['/usr/share/redmine/public/themes/classic/javascripts/'],
     }
 

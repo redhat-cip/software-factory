@@ -32,7 +32,7 @@ node default {
   include ::managesf
   include ::cauth
   include ::cauth_client
-  include ::commonservices-apache
+  include ::commonservices_apache
   include ::etherpad
   include ::lodgeit
   include ::replication
@@ -83,7 +83,7 @@ node /.*allinone.*/ {
   include ::managesf
   include ::cauth
   include ::cauth_client
-  include ::commonservices-apache
+  include ::commonservices_apache
   include ::etherpad
   include ::lodgeit
   include ::replication

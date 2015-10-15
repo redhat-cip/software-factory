@@ -15,7 +15,7 @@
 
 class socat_gerrit {
 
-  include commonservices-socat
+  include ::commonservices_socat
 
   file {'/lib/systemd/system/socat_gerrit.service':
     ensure => file,
