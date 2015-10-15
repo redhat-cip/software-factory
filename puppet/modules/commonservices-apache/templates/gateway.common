@@ -2,6 +2,12 @@
     RewriteCond %{HTTP_HOST} !<%= @fqdn %> [NC]
     RewriteRule ^/(.*)$ <%= @url["gateway_url"] %>/$1 [R=301,L]
 
+    # Don't login to Redmine itself, use cauth instead
+    <LocationMatch "/redmine/login">
+	RewriteEngine On
+	RewriteRule ^(.*)$ <%= @cauth['signin_url'] %> [R,NC,L]
+    </LocationMatch>
+
     <LocationMatch "/r/(?!(login|logout|a))">
 	RewriteEngine On
 
