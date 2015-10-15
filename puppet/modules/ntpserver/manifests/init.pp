@@ -21,13 +21,13 @@ class ntpserver () {
     case $hostname {
         'managesf' : {
             class { '::ntp':
-                    servers => [$reference_server',],
+                    servers  => [$reference_server],
                     restrict => ['redmine', 'mysql', 'gerrit', 'jenkins', 'slave', 'managesf'],
             }
         }
         default : {
             class { '::ntp':
-                    servers => ['managesf',  ],
+                    servers => ['managesf'],
             }
         }
     }
