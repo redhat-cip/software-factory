@@ -18,10 +18,10 @@ class https_cert () {
   $gateway_crt = hiera('gateway_crt')
 
   file {'gateway_cert':
-    path  => '/etc/pki/ca-trust/source/anchors/gateway.crt',
+    ensure  => file,
+    path    => '/etc/pki/ca-trust/source/anchors/gateway.crt',
     content => inline_template('<%= @gateway_crt %>'),
-    ensure => file,
-    mode   => '0644',
+    mode    => '0644',
   }
 
   exec {'update-ca-trust':

@@ -34,14 +34,14 @@ class jenkins {
   }
 
   file {'/etc/httpd/conf.d/jenkins.conf':
-    ensure => file,
-    mode   => '0640',
-    owner  => $httpd_user,
-    group  => $httpd_user,
+    ensure  => file,
+    mode    => '0640',
+    owner   => $httpd_user,
+    group   => $httpd_user,
     content => template('jenkins/jenkins.site.erb'),
     require => [File['/etc/httpd/conf.d/ports.conf'],
         ],
-    notify => Exec['webserver_restart'],
+    notify  => Exec['webserver_restart'],
   }
 
   exec { 'webserver_restart':
@@ -54,34 +54,34 @@ class jenkins {
   }
 
   file {'/lib/systemd/system/jenkins.service':
-    ensure => file,
-    mode   => '0640',
-    owner  => "jenkins",
-    group  => "jenkins",
+    ensure  => file,
+    mode    => '0640',
+    owner   => 'jenkins',
+    group   => 'jenkins',
     content => template('jenkins/jenkins.service.erb'),
   }
 
-  file { "/var/cache/jenkins":
-      ensure => directory,
-      owner => "jenkins",
-      group => "jenkins",
+  file { '/var/cache/jenkins':
+      ensure  => directory,
+      owner   => 'jenkins',
+      group   => 'jenkins',
       require => [User['jenkins'], Group['jenkins']],
   }
 
   service { 'jenkins':
     ensure  => 'running',
-    enable  => 'true',
+    enable  => true,
     require => [File['/lib/systemd/system/jenkins.service'],
                 File['/etc/init.d/jenkins'],
                 File['/var/lib/jenkins'],
                 File['/var/cache/jenkins'],
-                File['/var/lib/jenkins/config.xml']]
-   }
+                File['/var/lib/jenkins/config.xml']],
+  }
 
   exec { 'shutdown_jenkins':
     provider    => 'shell',
     command     => 'service jenkins stop',
-    refreshonly => 'true',
+    refreshonly => true,
   }
 
   user { 'jenkins':
@@ -93,24 +93,24 @@ class jenkins {
     ensure => present,
   }
 
-  file { "/var/lib/jenkins":
-      ensure => directory,
-      owner => "jenkins",
-      group => "jenkins",
-      require => [User['jenkins'], Group['jenkins']],
+  file { '/var/lib/jenkins':
+    ensure  => directory,
+    owner   => 'jenkins',
+    group   => 'jenkins',
+    require => [User['jenkins'], Group['jenkins']],
   }
 
-  file { "/var/lib/jenkins/.ssh":
-      ensure => directory,
-      owner => "jenkins",
-      group => "jenkins",
+  file { '/var/lib/jenkins/.ssh':
+      ensure  => directory,
+      owner   => 'jenkins',
+      group   => 'jenkins',
       require => [User['jenkins'], Group['jenkins']],
   }
-  file { "/var/lib/jenkins/.ssh/id_rsa":
+  file { '/var/lib/jenkins/.ssh/id_rsa':
       ensure  => file,
-      owner   => "jenkins",
-      group   => "jenkins",
-      mode    => 0400,
+      owner   => 'jenkins',
+      group   => 'jenkins',
+      mode    => '0400',
       content => inline_template('<%= @jenkins_rsa %>'),
       require => File['/var/lib/jenkins/.ssh'],
   }
@@ -163,7 +163,7 @@ class jenkins {
     source  => 'puppet:///modules/jenkins/org.jenkinsci.plugins.ZMQEventPublisher.HudsonNotificationProperty.xml',
     require => User['jenkins'],
   }
-  
+
   file {'/etc/jenkins_admin.name':
     ensure  => file,
     content => inline_template('<%= @admin_name %>'),
@@ -171,12 +171,12 @@ class jenkins {
   }
 
   exec {'change_admin_name':
-    command     => "sed -i s/\"$(grep hudson.model.Hudson.Administer /var/lib/jenkins/config.xml | grep -v jenkins | sed -re 's/.+:(.+)<.+/\\1/g')\"/$admin_name/ /var/lib/jenkins/config.xml",
+    command     => "sed -i s/\"$(grep hudson.model.Hudson.Administer /var/lib/jenkins/config.xml | grep -v jenkins | sed -re 's/.+:(.+)<.+/\\1/g')\"/${admin_name}/ /var/lib/jenkins/config.xml",
     provider    => 'shell',
     refreshonly => true,
     notify      => Service['jenkins'],
     require     => Exec['shutdown_jenkins'],
-    onlyif      => "test -f /var/lib/jenkins/config.xml",
+    onlyif      => 'test -f /var/lib/jenkins/config.xml',
   }
 
   file {'/var/lib/jenkins/config.xml':
@@ -218,13 +218,13 @@ class jenkins {
     owner   => 'root',
     group   => 'root',
     source  => 'puppet:///modules/jenkins/sudoers_jenkins',
-    replace => true
+    replace => true,
   }
 
   file { 'wait4jenkins':
-    path    => '/root/wait4jenkins.sh',
-    mode    => '0740',
-    source  => 'puppet:///modules/jenkins/wait4jenkins.sh',
+    path   => '/root/wait4jenkins.sh',
+    mode   => '0740',
+    source => 'puppet:///modules/jenkins/wait4jenkins.sh',
   }
 
   # This ressource wait for Jenkins to bee fully UP
@@ -236,13 +236,13 @@ class jenkins {
   }
 
   exec {'jenkins_user':
-    command   => "/usr/bin/htpasswd -bc /etc/httpd/htpasswd jenkins $jenkins_password",
-    creates => "/etc/httpd/htpasswd",
+    command => "/usr/bin/htpasswd -bc /etc/httpd/htpasswd jenkins ${jenkins_password}",
+    creates => '/etc/httpd/htpasswd',
   }
 
   bup::scripts{ 'jenkins_scripts':
-    name => 'jenkins',
-    backup_script => 'jenkins/backup.sh.erb',
+    name           => 'jenkins',
+    backup_script  => 'jenkins/backup.sh.erb',
     restore_script => 'jenkins/restore.sh.erb',
   }
 }

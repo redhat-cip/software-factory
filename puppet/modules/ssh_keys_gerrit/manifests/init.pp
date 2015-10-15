@@ -13,6 +13,6 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-class ssh_keys_gerrit ($keys = hiera("ssh_keys_gerrit")) {
+class ssh_keys_gerrit ($keys = hiera('ssh_keys_gerrit')) {
   create_resources('ssh_authorized_key', $keys)
 }

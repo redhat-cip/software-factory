@@ -21,9 +21,9 @@ class replication {
   $gerrit_local_key = hiera('creds_gerrit_local_sshkey')
 
   ssh_authorized_key { 'gerrit_local_user':
-     user => "gerrit",
-     type => "ssh-rsa",
-     key  => "$gerrit_local_key",
-     require => File['/home/gerrit/.ssh'],
+    user    => 'gerrit',
+    type    => 'ssh-rsa',
+    key     => $gerrit_local_key,
+    require => File['/home/gerrit/.ssh'],
   }
 }

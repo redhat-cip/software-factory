@@ -32,7 +32,7 @@ class bup {
 
 define bup::scripts($name, $backup_script, $restore_script) {
 
-  include bup
+  include ::bup
   $bup_minute = $bup::bup_minute
   $bup_hour = $bup::bup_hour
   $bup_month = $bup::bup_month
@@ -43,7 +43,7 @@ define bup::scripts($name, $backup_script, $restore_script) {
     owner   => 'root',
     group   => 'root',
     mode    => '0744',
-    content  => template($backup_script),
+    content => template($backup_script),
   }
 
   file { "/root/restore_${name}.sh":
@@ -51,15 +51,15 @@ define bup::scripts($name, $backup_script, $restore_script) {
     owner   => 'root',
     group   => 'root',
     mode    => '0744',
-    content  => template($restore_script),
+    content => template($restore_script),
   }
 
   cron { "backup_${name}":
-    minute      => $bup_minute,
-    hour        => $bup_hour,
-    month       => $bup_month,
-    weekday     => $bup_weekday,
-    user        => 'root',
+    minute  => $bup_minute,
+    hour    => $bup_hour,
+    month   => $bup_month,
+    weekday => $bup_weekday,
+    user    => 'root',
     command => "/root/backup_${name}.sh",
   }
 }

@@ -15,7 +15,7 @@
 
 class commonservices-apache ($cauth = hiera_hash('cauth', '')) {
   require hosts
-  include apache
+  include ::apache
 
   $auth = hiera('authentication')
   $url = hiera('url')
@@ -29,52 +29,52 @@ class commonservices-apache ($cauth = hiera_hash('cauth', '')) {
   $sf_version = hiera('sf_version')
 
   file {'gateway_crt':
-    path  => '/etc/httpd/conf.d/gateway.crt',
+    ensure  => file,
+    path    => '/etc/httpd/conf.d/gateway.crt',
     content => inline_template('<%= @gateway_crt %>'),
-    ensure => file,
-    mode   => '0640',
-    owner  => $httpd_user,
-    group  => $httpd_user,
+    mode    => '0640',
+    owner   => $httpd_user,
+    group   => $httpd_user,
   }
 
   file {'gateway_key':
-    path  => '/etc/httpd/conf.d/gateway.key',
+    ensure  => file,
+    path    => '/etc/httpd/conf.d/gateway.key',
     content => inline_template('<%= @gateway_key %>'),
-    ensure => file,
-    mode   => '0640',
-    owner  => $httpd_user,
-    group  => $httpd_user,
+    mode    => '0640',
+    owner   => $httpd_user,
+    group   => $httpd_user,
   }
 
   file {'gateway_common':
-    path   => '/etc/httpd/conf.d/gateway.common',
-    ensure => file,
-    mode   => '0640',
-    owner  => $httpd_user,
-    group  => $httpd_user,
+    ensure  => file,
+    path    => '/etc/httpd/conf.d/gateway.common',
+    mode    => '0640',
+    owner   => $httpd_user,
+    group   => $httpd_user,
     content => template('commonservices-apache/gateway.common'),
   }
 
   file {'gateway_conf':
-    path   => '/etc/httpd/conf.d/gateway.conf',
-    ensure => file,
-    mode   => '0640',
-    owner  => $httpd_user,
-    group  => $httpd_user,
+    ensure  => file,
+    path    => '/etc/httpd/conf.d/gateway.conf',
+    mode    => '0640',
+    owner   => $httpd_user,
+    group   => $httpd_user,
     content => template('commonservices-apache/gateway.conf'),
-    notify => Service['webserver'],
+    notify  => Service['webserver'],
     require => [File['gateway_crt'],
                 File['gateway_key'],
                 File['gateway_common'],
                 File['ssl.conf'],
-                File['00-ssl.conf']]
+                File['00-ssl.conf']],
   }
 
   file {'/var/www/static/js/topmenu.js':
-    ensure => file,
-    mode   => '0640',
-    owner  => $httpd_user,
-    group  => $httpd_user,
+    ensure  => file,
+    mode    => '0640',
+    owner   => $httpd_user,
+    group   => $httpd_user,
     content => template('commonservices-apache/topmenu.js'),
   }
 
@@ -83,46 +83,46 @@ class commonservices-apache ($cauth = hiera_hash('cauth', '')) {
     mode   => '0640',
     owner  => $httpd_user,
     group  => $httpd_user,
-    source  => 'puppet:///modules/commonservices-apache/menu.js',
+    source => 'puppet:///modules/commonservices-apache/menu.js',
   }
 
   file {'/var/www/topmenu.html':
-    ensure => file,
-    mode   => '0640',
-    owner  => $httpd_user,
-    group  => $httpd_user,
+    ensure  => file,
+    mode    => '0640',
+    owner   => $httpd_user,
+    group   => $httpd_user,
     content => template('commonservices-apache/topmenu.html'),
   }
 
   file {'/var/www/dashboard':
-    ensure => directory,
+    ensure  => directory,
     recurse => true,
-    mode   => '0644',
-    owner  => $httpd_user,
-    group  => $httpd_user,
+    mode    => '0644',
+    owner   => $httpd_user,
+    group   => $httpd_user,
   }
 
   file {'/var/www/dashboard/index.html':
-    ensure => file,
-    mode   => '0640',
-    owner  => $httpd_user,
-    group  => $httpd_user,
-    source => 'puppet:///modules/commonservices-apache/dashboard.html',
+    ensure  => file,
+    mode    => '0640',
+    owner   => $httpd_user,
+    group   => $httpd_user,
+    source  => 'puppet:///modules/commonservices-apache/dashboard.html',
     require => File['/var/www/dashboard'],
   }
 
-   file {'/var/www/dashboard/dashboard.js':
-    ensure => file,
-    mode   => '0640',
-    owner  => $httpd_user,
-    group  => $httpd_user,
-    source => 'puppet:///modules/commonservices-apache/dashboard.js',
+  file {'/var/www/dashboard/dashboard.js':
+    ensure  => file,
+    mode    => '0640',
+    owner   => $httpd_user,
+    group   => $httpd_user,
+    source  => 'puppet:///modules/commonservices-apache/dashboard.js',
     require => File['/var/www/dashboard'],
   }
 
   file {'managesf_htpasswd':
-    path   => '/etc/httpd/managesf_htpasswd',
     ensure => file,
+    path   => '/etc/httpd/managesf_htpasswd',
     mode   => '0640',
     owner  => $httpd_user,
     group  => $httpd_user,

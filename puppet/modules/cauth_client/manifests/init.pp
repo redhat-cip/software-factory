@@ -14,29 +14,29 @@
 # under the License.
 
 class cauth_client () {
-  include apache
+  include ::apache
 
   $pubkey_pem = hiera('pubkey_pem')
 
   file { '/etc/httpd/conf.modules.d/00-tkt.conf':
-    ensure => present,
-    content => "LoadModule auth_pubtkt_module modules/mod_auth_pubtkt.so",
-    mode   => '0544',
-    owner  => 'root',
-    group  => 'root',
-    notify => Service['webserver'],
+    ensure  => file,
+    content => 'LoadModule auth_pubtkt_module modules/mod_auth_pubtkt.so',
+    mode    => '0544',
+    owner   => 'root',
+    group   => 'root',
+    notify  => Service['webserver'],
   }
 
   file { 'auth_pubtkt_conf':
-    path   => "/etc/httpd/conf.d/auth_pubtkt.conf",
-    ensure => file,
-    mode   => '0544',
-    owner  => 'root',
-    group  => 'root',
+    ensure  => file,
+    path    => '/etc/httpd/conf.d/auth_pubtkt.conf',
+    mode    => '0544',
+    owner   => 'root',
+    group   => 'root',
     require => File['/srv/cauth_keys/pubkey.pem'],
-    content => "TKTAuthPublicKey /srv/cauth_keys/pubkey.pem",
-    notify => Service['webserver'],
-    replace => true
+    content => 'TKTAuthPublicKey /srv/cauth_keys/pubkey.pem',
+    notify  => Service['webserver'],
+    replace => true,
   }
 
   file { '/srv/cauth_keys':
@@ -47,10 +47,10 @@ class cauth_client () {
   }
 
   file { '/srv/cauth_keys/pubkey.pem':
-    ensure => file,
-    mode   => '0544',
-    owner  => 'root',
-    group  => 'root',
+    ensure  => file,
+    mode    => '0544',
+    owner   => 'root',
+    group   => 'root',
     require => File['/srv/cauth_keys'],
     content => inline_template('<%= @pubkey_pem %>'),
   }

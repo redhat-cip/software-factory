@@ -36,45 +36,45 @@ class postfix {
   }
 
   package { 'postfix':
-    ensure => 'installed',
+    ensure  => installed,
     require => [User['postfix'], Group['postfix']],
   }
 
   exec { '/etc/mailname':
     command => 'hostname --fqdn > /etc/mailname',
-    unless   => "/usr/bin/grep `hostname --fqdn` /etc/mailname",
+    unless  => '/usr/bin/grep `hostname --fqdn` /etc/mailname',
     path    => '/usr/sbin/:/usr/bin/:/bin/',
   }
 
   file { '/etc/postfix':
     ensure  => directory,
-    require => Package['postfix']
+    require => Package['postfix'],
   }
 
   file { '/etc/postfix/main.cf':
-    ensure  => present,
+    ensure  => file,
     content => template('postfix/main.cf'),
     require => [Package['postfix'], File['/etc/postfix']],
     replace => true,
   }
 
   file { '/etc/postfix/virtual':
-    ensure  => present,
+    ensure  => file,
     content => template('postfix/virtual'),
     require => [Package['postfix'], File['/etc/postfix']],
     replace => true,
   }
 
   service { 'postfix':
-    ensure      => running,
-    enable      => true,
-    hasrestart  => true,
-    require     => [Package['postfix'], Exec['/etc/mailname']],
-    subscribe   => File['/etc/postfix/main.cf'],
+    ensure     => running,
+    enable     => true,
+    hasrestart => true,
+    require    => [Package['postfix'], Exec['/etc/mailname']],
+    subscribe  => File['/etc/postfix/main.cf'],
   }
 
   file { '/etc/monit/conf.d/postfix':
-    ensure  => present,
+    ensure  => file,
     content => template('postfix/monit.erb'),
     require => [Package['monit'], File['/etc/monit/conf.d']],
     notify  => Service['monit'],

@@ -20,127 +20,127 @@ class nodepool {
   $fqdn = hiera('fqdn')
   $url = hiera('url')
 
-  $jenkins_host = "jenkins.$fqdn"
+  $jenkins_host = "jenkins.${fqdn}"
   $jenkins_password = hiera('creds_jenkins_user_password')
-  $nodepool_mysql_address = "mysql.$fqdn"
+  $nodepool_mysql_address = "mysql.${fqdn}"
   $nodepool_sql_password = hiera('creds_nodepool_sql_pwd')
 
-  $provider = "systemd"
+  $provider = 'systemd'
 
   file { 'nodepool_service':
-    path  => '/lib/systemd/system/nodepool.service',
-    owner => 'jenkins',
+    path    => '/lib/systemd/system/nodepool.service',
+    owner   => 'jenkins',
     content => template('nodepool/nodepool.service.erb'),
   }
 
   file { '/var/run/nodepool':
-    ensure  => directory,
-    owner => 'jenkins',
+    ensure => directory,
+    owner  => 'jenkins',
   }
 
   file { '/var/log/nodepool/':
-    ensure  => directory,
-    owner => 'jenkins',
+    ensure => directory,
+    owner  => 'jenkins',
   }
 
   file { '/etc/nodepool':
-    ensure  => directory,
-    owner => 'jenkins',
+    ensure => directory,
+    owner  => 'jenkins',
   }
 
   file { '/etc/nodepool/scripts':
     ensure  => directory,
-    owner => 'jenkins',
-    require => [File['/etc/nodepool']]
+    owner   => 'jenkins',
+    require => [File['/etc/nodepool']],
   }
 
   file { '/usr/share/sf-nodepool':
-    ensure  => directory,
-    mode    => '0640',
-    owner   => 'root',
-    group   => 'root',
+    ensure => directory,
+    mode   => '0640',
+    owner  => 'root',
+    group  => 'root',
   }
 
   file { '/usr/local/bin/sf-nodepool-conf-merger.py':
     ensure => file,
     mode   => '0755',
-    owner  => "root",
-    group  => "root",
+    owner  => 'root',
+    group  => 'root',
     source => 'puppet:///modules/nodepool/sf-nodepool-conf-merger.py',
   }
 
   file { '/usr/share/sf-nodepool/base.sh':
-    ensure => file,
-    mode   => '0755',
-    owner  => "root",
-    group  => "root",
-    source => 'puppet:///modules/nodepool/base.sh',
-    require => [File['/usr/share/sf-nodepool']]
+    ensure  => file,
+    mode    => '0755',
+    owner   => 'root',
+    group   => 'root',
+    source  => 'puppet:///modules/nodepool/base.sh',
+    require => [File['/usr/share/sf-nodepool']],
   }
 
   file { '/usr/share/sf-nodepool/sf_slave_setup.sh':
-    ensure => file,
-    mode   => '0755',
-    owner  => "root",
-    group  => "root",
-    source => 'puppet:///modules/nodepool/sf_slave_setup.sh',
-    require => [File['/usr/share/sf-nodepool']]
+    ensure  => file,
+    mode    => '0755',
+    owner   => 'root',
+    group   => 'root',
+    source  => 'puppet:///modules/nodepool/sf_slave_setup.sh',
+    require => [File['/usr/share/sf-nodepool']],
   }
 
   file { '/usr/share/sf-nodepool/images.yaml':
-    ensure => file,
-    mode   => '0755',
-    owner  => "root",
-    group  => "root",
-    source => 'puppet:///modules/nodepool/images.yaml',
-    require => [File['/usr/share/sf-nodepool']]
+    ensure  => file,
+    mode    => '0755',
+    owner   => 'root',
+    group   => 'root',
+    source  => 'puppet:///modules/nodepool/images.yaml',
+    require => [File['/usr/share/sf-nodepool']],
   }
 
   file { '/usr/share/sf-nodepool/labels.yaml':
-    ensure => file,
-    mode   => '0755',
-    owner  => "root",
-    group  => "root",
-    source => 'puppet:///modules/nodepool/labels.yaml',
-    require => [File['/usr/share/sf-nodepool']]
+    ensure  => file,
+    mode    => '0755',
+    owner   => 'root',
+    group   => 'root',
+    source  => 'puppet:///modules/nodepool/labels.yaml',
+    require => [File['/usr/share/sf-nodepool']],
   }
 
   file { '/etc/nodepool/scripts/authorized_keys':
-    owner => 'jenkins',
-    mode   => '0600',
+    owner   => 'jenkins',
+    mode    => '0600',
     content => inline_template('<%= @jenkins_rsa_pub %>'),
-    require => [File['/etc/nodepool/scripts']]
+    require => [File['/etc/nodepool/scripts']],
   }
 
   # This file allow an inital start of nodepool
   # Puppet won't replace if alread present
   file { '/etc/nodepool/nodepool.yaml':
-    owner => 'jenkins',
+    ensure  => file,
+    owner   => 'jenkins',
     replace => 'no',
-    ensure => 'present',
     content => template('nodepool/nodepool.yaml.erb'),
-    require => [File['/etc/nodepool']]
+    require => [File['/etc/nodepool']],
   }
 
   # This file will be used by the conf merger
   file { '/etc/nodepool/_nodepool.yaml':
-    owner => 'jenkins',
+    owner   => 'jenkins',
     content => template('nodepool/nodepool.yaml.erb'),
-    require => [File['/etc/nodepool']]
+    require => [File['/etc/nodepool']],
   }
 
   file { '/etc/nodepool/nodepool.logging.conf':
-    owner => 'jenkins',
+    owner   => 'jenkins',
     content => template('nodepool/nodepool.logging.conf'),
-    require => [File['/etc/nodepool']]
+    require => [File['/etc/nodepool']],
   }
 
   service { 'nodepool':
-    ensure      => running,
-    enable      => true,
-    hasrestart  => true,
-    provider    => $provider,
-    require     => [File['nodepool_service'],
+    ensure     => running,
+    enable     => true,
+    hasrestart => true,
+    provider   => $provider,
+    require    => [File['nodepool_service'],
                     File['/var/run/nodepool'],
                     File['/var/log/nodepool/'],
                     File['/etc/nodepool/nodepool.yaml'],

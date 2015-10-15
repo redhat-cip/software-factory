@@ -25,9 +25,9 @@ class cauth ($cauth = hiera('cauth'), $gerrit = hiera('gerrit')) {
   $ldap = $auth['ldap']
   $github = $auth['github']
   $issues_tracker_api_key = hiera('creds_issues_tracker_api_key')
-  $gerrit_mysql_host = "mysql.$fqdn"
-  $gerrit_mysql_db = "gerrit"
-  $gerrit_mysql_username = "gerrit"
+  $gerrit_mysql_host = "mysql.${fqdn}"
+  $gerrit_mysql_db = 'gerrit'
+  $gerrit_mysql_username = 'gerrit'
   $gerrit_mysql_password = hiera('creds_gerrit_sql_pwd')
 
   $admin_password_hashed = generate("/usr/bin/python", "-c", "import crypt, random, string, sys; salt = '\$6\$' + ''.join(random.choice(string.letters + string.digits) for _ in range(16)) + '\$'; sys.stdout.write(crypt.crypt(sys.argv[1], salt))", $auth['admin_password'])
@@ -43,25 +43,25 @@ class cauth ($cauth = hiera('cauth'), $gerrit = hiera('gerrit')) {
   }
 
   file { '/var/www/cauth/':
-    ensure  => directory,
+    ensure => directory,
     owner  => $httpd_user,
     group  => $httpd_user,
-    mode    => '0640'
+    mode   => '0640',
   }
 
   file { '/var/www/cauth/cauth/':
     ensure  => directory,
-    owner  => $httpd_user,
-    group  => $httpd_user,
+    owner   => $httpd_user,
+    group   => $httpd_user,
     mode    => '0640',
     require => File['/var/www/cauth/'],
   }
 
   file { '/var/lib/cauth/':
-    ensure  => directory,
+    ensure => directory,
     owner  => $httpd_user,
     group  => $httpd_user,
-    mode    => '0750'
+    mode   => '0750',
   }
 
   file { '/var/www/cauth/keys':
@@ -73,29 +73,29 @@ class cauth ($cauth = hiera('cauth'), $gerrit = hiera('gerrit')) {
   }
 
   file { '/var/log/cauth/':
-    ensure  => directory,
-    owner   => $httpd_user,
-    group   => $httpd_user,
-    mode    => '0750',
+    ensure => directory,
+    owner  => $httpd_user,
+    group  => $httpd_user,
+    mode   => '0750',
   }
 
   file { '/srv/cauth_keys/privkey.pem':
-    ensure => present,
-    owner => 'root',
-    group => 'root',
-    mode  => '0444',
+    ensure  => file,
+    owner   => 'root',
+    group   => 'root',
+    mode    => '0444',
     content => inline_template('<%= @privkey_pem %>'),
   }
 
   file { '/var/www/cauth/config.py':
-    ensure  => present,
-    owner  => $httpd_user,
-    group  => $httpd_user,
+    ensure  => file,
+    owner   => $httpd_user,
+    group   => $httpd_user,
     mode    => '0640',
     content => template('cauth/cauth-config.py.erb'),
     require => File['/var/www/cauth/'],
     replace => true,
-    notify => Service['webserver'],
+    notify  => Service['webserver'],
   }
 
   file { '/var/www/cauth/cauth/templates':
@@ -107,10 +107,10 @@ class cauth ($cauth = hiera('cauth'), $gerrit = hiera('gerrit')) {
   }
 
   file {'/var/www/cauth/cauth/templates/login.html':
-    ensure => file,
-    mode   => '0640',
-    owner  => $httpd_user,
-    group  => $httpd_user,
+    ensure  => file,
+    mode    => '0640',
+    owner   => $httpd_user,
+    group   => $httpd_user,
     content => template('cauth/login.html'),
     require => File['/var/www/cauth/cauth/templates'],
   }

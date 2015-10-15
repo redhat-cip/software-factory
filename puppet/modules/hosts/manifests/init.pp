@@ -13,6 +13,6 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-class hosts ($hosts = hiera_hash("hosts"))  {
+class hosts ($hosts = hiera_hash('hosts'))  {
   create_resources('host', $hosts)
 }

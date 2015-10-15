@@ -17,19 +17,19 @@ class apache () {
 
   require hosts
 
-  $provider = "systemd"
-  $http = "httpd"
-  $httpd_user = "apache"
+  $provider = 'systemd'
+  $http = 'httpd'
+  $httpd_user = 'apache'
 
   file {'00-ssl.conf':
-    path    => "/etc/httpd/conf.modules.d/00-ssl.conf",
-    content => "LoadModule ssl_module modules/mod_ssl.so",
+    path    => '/etc/httpd/conf.modules.d/00-ssl.conf',
+    content => 'LoadModule ssl_module modules/mod_ssl.so',
   }
 
   file {'ssl.conf':
-    path  => '/etc/httpd/conf.d/ssl.conf',
-    source  => 'puppet:///modules/apache/ssl.conf',
     ensure => file,
+    path   => '/etc/httpd/conf.d/ssl.conf',
+    source => 'puppet:///modules/apache/ssl.conf',
     mode   => '0640',
     owner  => $httpd_user,
     group  => $httpd_user,
@@ -40,8 +40,8 @@ class apache () {
   }
 
   service {'webserver':
-    name       => $http,
     ensure     => running,
+    name       => $http,
     enable     => true,
     hasrestart => true,
     hasstatus  => true,

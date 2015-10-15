@@ -24,8 +24,8 @@ class commonservices-socat {
     mode   => '0640',
     owner  => 'root',
     group  => 'root',
-    source  => 'puppet:///modules/commonservices-socat/socat_swarm_p1.service',
-    notify  => [Exec["reload_units"], Service["socat_swarm_p1"]],
+    source => 'puppet:///modules/commonservices-socat/socat_swarm_p1.service',
+    notify => [Exec['reload_units'], Service['socat_swarm_p1']],
   }
 
   file {'/lib/systemd/system/socat_swarm_p2.service':
@@ -33,15 +33,15 @@ class commonservices-socat {
     mode   => '0640',
     owner  => 'root',
     group  => 'root',
-    source  => 'puppet:///modules/commonservices-socat/socat_swarm_p2.service',
-    notify  => [Exec["reload_units"], Service["socat_swarm_p2"]],
+    source => 'puppet:///modules/commonservices-socat/socat_swarm_p2.service',
+    notify => [Exec['reload_units'], Service['socat_swarm_p2']],
   }
 
   exec {'reload_units':
-    command => 'systemctl daemon-reload',
-    path    => '/usr/sbin/:/usr/bin/:/bin/',
+    command     => 'systemctl daemon-reload',
+    path        => '/usr/sbin/:/usr/bin/:/bin/',
     refreshonly => true,
-    require => [File['/lib/systemd/system/socat_swarm_p1.service'],
+    require     => [File['/lib/systemd/system/socat_swarm_p1.service'],
                 File['/lib/systemd/system/socat_swarm_p2.service']],
   }
 

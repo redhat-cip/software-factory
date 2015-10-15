@@ -26,25 +26,25 @@ class managesf ($gerrit = hiera('gerrit'), $hosts = hiera('hosts'), $cauth = hie
   $service_rsa = hiera('service_rsa')
 
   file {'/etc/httpd/conf.d/managesf.conf':
-    ensure => file,
-    mode   => '0640',
-    owner  => $httpd_user,
-    group  => $httpd_user,
-    content=> template('managesf/managesf.site.erb'),
-    notify => Service['webserver'],
+    ensure  => file,
+    mode    => '0640',
+    owner   => $httpd_user,
+    group   => $httpd_user,
+    content => template('managesf/managesf.site.erb'),
+    notify  => Service['webserver'],
   }
 
 # managesf can't access keys in /root/.ssh and can only
 # access keys from /var/www/.ssh, so creating keys here
   file { '/usr/share/httpd/.ssh':
-    ensure  => directory,
-    owner   => $httpd_user,
-    group   => $httpd_user,
-    mode    => '0755',
+    ensure => directory,
+    owner  => $httpd_user,
+    group  => $httpd_user,
+    mode   => '0755',
   }
 
   file { '/usr/share/httpd/.ssh/id_rsa':
-    ensure  => present,
+    ensure  => file,
     owner   => $httpd_user,
     group   => $httpd_user,
     mode    => '0600',
@@ -53,28 +53,28 @@ class managesf ($gerrit = hiera('gerrit'), $hosts = hiera('hosts'), $cauth = hie
   }
 
   file { '/var/log/managesf/':
-    ensure  => directory,
-    owner   => $httpd_user,
-    group   => $httpd_user,
-    mode    => '0750',
+    ensure => directory,
+    owner  => $httpd_user,
+    group  => $httpd_user,
+    mode   => '0750',
   }
 
   file { '/var/lib/managesf/':
-    ensure  => directory,
-    owner   => $httpd_user,
-    group   => $httpd_user,
-    mode    => '0750',
+    ensure => directory,
+    owner  => $httpd_user,
+    group  => $httpd_user,
+    mode   => '0750',
   }
 
   file { '/var/www/managesf/':
-    ensure  => directory,
-    owner   => $httpd_user,
-    group   => $httpd_user,
-    mode    => '0640',
+    ensure => directory,
+    owner  => $httpd_user,
+    group  => $httpd_user,
+    mode   => '0640',
   }
 
   file { '/var/www/managesf/config.py':
-    ensure  => present,
+    ensure  => file,
     owner   => $httpd_user,
     group   => $httpd_user,
     mode    => '0640',
@@ -84,28 +84,28 @@ class managesf ($gerrit = hiera('gerrit'), $hosts = hiera('hosts'), $cauth = hie
   }
 
   file { '/var/www/managesf/gerrit_admin_rsa':
-    ensure => present,
+    ensure  => file,
     owner   => $httpd_user,
     group   => $httpd_user,
-    mode   => '0400',
+    mode    => '0400',
     content => inline_template('<%= @gerrit_admin_rsa %>'),
     require => File['/var/www/managesf/'],
   }
 
   exec {'update_gerritip_knownhost':
-    command => "/usr/bin/ssh-keyscan $gerrit_ip >> /usr/share/httpd/.ssh/known_hosts",
+    command   => "/usr/bin/ssh-keyscan ${gerrit_ip} >> /usr/share/httpd/.ssh/known_hosts",
     logoutput => true,
-    user   => $httpd_user,
-    require => File['/usr/share/httpd/.ssh'],
-    unless => "/usr/bin/grep '$gerrit_ip ' /usr/share/httpd/.ssh/known_hosts",
+    user      => $httpd_user,
+    require   => File['/usr/share/httpd/.ssh'],
+    unless    => "/usr/bin/grep '${gerrit_ip} ' /usr/share/httpd/.ssh/known_hosts",
   }
 
   exec {'update_gerrithost_knownhost':
-    command => "/usr/bin/ssh-keyscan gerrit.$fqdn >> /usr/share/httpd/.ssh/known_hosts",
+    command   => "/usr/bin/ssh-keyscan gerrit.${fqdn} >> /usr/share/httpd/.ssh/known_hosts",
     logoutput => true,
-    user   => $httpd_user,
-    require => File['/usr/share/httpd/.ssh'],
-    unless => "/usr/bin/grep 'gerrit.$fqdn ' /usr/share/httpd/.ssh/known_hosts",
+    user      => $httpd_user,
+    require   => File['/usr/share/httpd/.ssh'],
+    unless    => "/usr/bin/grep 'gerrit.${fqdn} ' /usr/share/httpd/.ssh/known_hosts",
   }
 
   file { '/var/www/managesf/sshconfig':

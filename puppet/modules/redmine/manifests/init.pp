@@ -22,61 +22,61 @@ class redmine {
     $url = hiera_hash('url')
     $sf_version = hiera('sf_version')
     $api_key = hiera('creds_issues_tracker_api_key')
-    $mysql_url = "mysql.$fqdn"
+    $mysql_url = "mysql.${fqdn}"
     $mysql_password = hiera('creds_redmine_sql_pwd')
 
     require cauth_client
     require hosts
-    include apache
+    include ::apache
 
     file { 'conf_yml':
-      path   => '/usr/share/redmine/config/configuration.yml',
       ensure  => file,
+      path    => '/usr/share/redmine/config/configuration.yml',
       mode    => '0640',
-      owner  => $httpd_user,
-      group  => $httpd_user,
+      owner   => $httpd_user,
+      group   => $httpd_user,
       content => template('redmine/configuration.yml.erb'),
     }
 
     file { 'dbconf_yml':
-      path    => '/usr/share/redmine/config/database.yml',
       ensure  => file,
+      path    => '/usr/share/redmine/config/database.yml',
       mode    => '0640',
-      owner  => $httpd_user,
-      group  => $httpd_user,
+      owner   => $httpd_user,
+      group   => $httpd_user,
       content => template('redmine/database.erb'),
     }
 
     file {'/etc/httpd/conf.d/redmine.conf':
-      ensure => file,
-      mode   => '0640',
-      owner  => $httpd_user,
-      group  => $httpd_user,
+      ensure  => file,
+      mode    => '0640',
+      owner   => $httpd_user,
+      group   => $httpd_user,
       content => template('redmine/redmine.site.erb'),
-      notify => Service['webserver'],
+      notify  => Service['webserver'],
     }
 
     exec { 'chown_redmine':
       path    => '/usr/bin/:/bin/',
-      command => "chown -R $httpd_user:$httpd_user /usr/share/redmine",
-      unless  => 'stat -c %U /usr/share/redmine | grep apache'
+      command => "chown -R ${httpd_user}:${httpd_user} /usr/share/redmine",
+      unless  => 'stat -c %U /usr/share/redmine | grep apache',
     }
 
     file { '/root/post-conf-in-mysql.sql':
-        ensure  => present,
+        ensure  => file,
         mode    => '0640',
         content => template('redmine/post-conf-in-mysql.sql.erb'),
         replace => true,
     }
 
     exec {'create_secret_token':
-        environment => ["HOME=/root"],
-        command => 'bundle exec rake generate_secret_token',
-        path    => '/usr/bin/:/bin/:/usr/local/bin',
-        cwd     => '/usr/share/redmine',
-        require => [File['dbconf_yml'],
-                    File['conf_yml']],
-        creates => "/usr/share/redmine/config/initializers/secret_token.rb",
+        environment => ['HOME=/root'],
+        command     => 'bundle exec rake generate_secret_token',
+        path        => '/usr/bin/:/bin/:/usr/local/bin',
+        cwd         => '/usr/share/redmine',
+        require     => [File['dbconf_yml'],
+                        File['conf_yml']],
+        creates     => '/usr/share/redmine/config/initializers/secret_token.rb',
         notify      => Exec['chown_redmine'],
     }
 
@@ -96,7 +96,7 @@ class redmine {
         path        => '/usr/bin/:/bin/:/usr/local/bin',
         cwd         => '/usr/share/redmine',
         require     => [Exec['create_db']],
-        creates     => "/usr/share/redmine/defautl_data.log",
+        creates     => '/usr/share/redmine/defautl_data.log',
         notify      => Exec['chown_redmine'],
     }
 
@@ -111,7 +111,7 @@ class redmine {
     }
 
     file { '/etc/monit/conf.d/redmine':
-      ensure  => present,
+      ensure  => file,
       content => template('redmine/monit.erb'),
       require => [Package['monit'], File['/etc/monit/conf.d']],
       notify  => Service['monit'],
@@ -128,7 +128,7 @@ class redmine {
     }
 
     exec {'redmine_backlog_install':
-      environment =>  ["labels=false", "story_trackers=Bug", "task_tracker=Task", 'HOME=/root'],
+      environment =>  ['labels=false', 'story_trackers=Bug', 'task_tracker=Task', 'HOME=/root'],
       command     =>  'bundle exec rake redmine:backlogs:install RAILS_ENV=production',
       cwd         =>  '/usr/share/redmine/',
       path        =>  ['/bin', '/usr/bin', '/usr/local/bin'],
@@ -142,7 +142,7 @@ class redmine {
       path    => '/usr/sbin/:/usr/bin/:/bin/',
       require => Exec['default_data'],
       unless  => '/usr/bin/grep "relative_url_root = \"/redmine\"" /usr/share/redmine/config/environment.rb',
-      notify      => Exec['chown_redmine'],
+      notify  => Exec['chown_redmine'],
     }
 
     file {'/var/run/passenger':
@@ -167,8 +167,8 @@ class redmine {
     }
 
     file {'topmenu.js':
-      path    => '/usr/share/redmine/public/themes/classic/javascripts/theme.js',
       ensure  => file,
+      path    => '/usr/share/redmine/public/themes/classic/javascripts/theme.js',
       mode    => '0644',
       owner   => $httpd_user,
       group   => $httpd_user,

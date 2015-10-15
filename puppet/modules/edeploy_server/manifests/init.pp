@@ -15,9 +15,9 @@
 
 class edeploy_server {
   service { 'rsyncd':
-    ensure      => running,
-    enable      => true,
-    hasrestart  => true,
-    provider    => systemd,
+    ensure     => running,
+    enable     => true,
+    hasrestart => true,
+    provider   => systemd,
   }
 }

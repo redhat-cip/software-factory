@@ -19,23 +19,23 @@ class etherpad {
 
   $fqdn = hiera('fqdn')
   $session_key = hiera('creds_etherpad_session_key')
-  $mysql_db_address = "mysql.$fqdn"
+  $mysql_db_address = "mysql.${fqdn}"
   $mysql_db_secret = hiera('creds_etherpad_sql_pwd')
-  $mysql_db_username = "etherpad"
-  $mysql_db = "etherpad"
+  $mysql_db_username = 'etherpad'
+  $mysql_db = 'etherpad'
 
   file { 'init_script':
-    path    => '/lib/systemd/system/etherpad.service',
-    ensure  => present,
-    mode    => '0740',
-    source  => 'puppet:///modules/etherpad/etherpad.service',
-    notify  => Exec["reload_unit"],
+    ensure => file,
+    path   => '/lib/systemd/system/etherpad.service',
+    mode   => '0740',
+    source => 'puppet:///modules/etherpad/etherpad.service',
+    notify => Exec['reload_unit'],
   }
 
   user { 'etherpad':
-    name => 'etherpad',
-    ensure => 'present',
-    home => '/var/www/etherpad-lite',
+    ensure  => present,
+    name    => 'etherpad',
+    home    => '/var/www/etherpad-lite',
     require => Group['etherpad'],
   }
 
@@ -49,7 +49,7 @@ class etherpad {
     group   => 'etherpad',
     require => [User['etherpad'],
                 Group['etherpad']],
-    notify  => Exec["change_owner"],
+    notify  => Exec['change_owner'],
   }
 
   file { '/var/log/etherpad':
@@ -61,53 +61,52 @@ class etherpad {
   }
 
   file { '/var/www/etherpad-lite/run.sh':
-    ensure  => present,
+    ensure  => file,
     owner   => 'etherpad',
     group   => 'etherpad',
     mode    => '0740',
     source  => 'puppet:///modules/etherpad/run.sh',
     require => File['/var/www/etherpad-lite'],
-    notify  => Exec["change_owner"],
+    notify  => Exec['change_owner'],
   }
 
 
   file { '/var/www/etherpad-lite/settings.json':
-    ensure   => present,
-    owner    => 'etherpad',
-    group    => 'etherpad',
-    mode     => '0640',
-    content  => template('etherpad/settings.json.erb'),
-    require  => File['/var/www/etherpad-lite'],
-    notify   => [Service["etherpad"], Exec["change_owner"]],
+    ensure  => file,
+    owner   => 'etherpad',
+    group   => 'etherpad',
+    mode    => '0640',
+    content => template('etherpad/settings.json.erb'),
+    require => File['/var/www/etherpad-lite'],
+    notify  => [Service['etherpad'], Exec['change_owner']],
   }
 
   exec {'change_owner':
-    command => 'chown -R etherpad:etherpad /var/www/etherpad-lite',
-    path    => '/usr/sbin/:/usr/bin/:/bin/',
-    require => [File['/var/www/etherpad-lite/run.sh'],
-                File['init_script'],
-                File['/var/www/etherpad-lite/settings.json']],
+    command     => 'chown -R etherpad:etherpad /var/www/etherpad-lite',
+    path        => '/usr/sbin/:/usr/bin/:/bin/',
+    require     => [File['/var/www/etherpad-lite/run.sh'],
+      File['init_script'],
+      File['/var/www/etherpad-lite/settings.json']],
     refreshonly => true,
   }
 
   exec {'reload_unit':
-    command => 'systemctl daemon-reload',
-    path    => '/usr/sbin/:/usr/bin/:/bin/',
-    require => File['/lib/systemd/system/etherpad.service'],
+    command     => 'systemctl daemon-reload',
+    path        => '/usr/sbin/:/usr/bin/:/bin/',
+    require     => File['/lib/systemd/system/etherpad.service'],
     refreshonly => true,
   }
 
-  service { "etherpad":
+  service { 'etherpad':
     ensure     => running,
     enable     => true,
     hasrestart => true,
     hasstatus  => true,
-    require    => [File['/var/log/etherpad'],
-                   Exec['change_owner']],
+    require    => [File['/var/log/etherpad'],Exec['change_owner']],
   }
 
   file { '/var/www/etherpad-lite/src/static/custom/pad.css':
-    ensure  => present,
+    ensure  => file,
     owner   => 'etherpad',
     group   => 'etherpad',
     mode    => '0740',

@@ -28,22 +28,22 @@ class auto_backup () {
   $os_password = $backup['os_password']
 
   file {'/etc/auto_backup.conf':
-    ensure => file,
-    mode   => '0640',
+    ensure  => file,
+    mode    => '0640',
     content => template('auto_backup/auto_backup.conf.erb'),
   }
 
- file {'/usr/local/bin/export_backup_swift.sh':
+  file {'/usr/local/bin/export_backup_swift.sh':
     ensure => file,
-    mode   => '740',
+    mode   => '0740',
     source => 'puppet:///modules/auto_backup/export_backup_swift.sh',
   }
 
   cron {'auto_backup':
-    command => "/usr/local/bin/export_backup_swift.sh",
-    environment => "MAILTO=$mail",
-    user    => root,
-    hour    => 0,
-    minute  => 30,
+    command     => '/usr/local/bin/export_backup_swift.sh',
+    environment => "MAILTO=${mail}",
+    user        => root,
+    hour        => 0,
+    minute      => 30,
   }
 }

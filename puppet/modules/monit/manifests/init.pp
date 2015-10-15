@@ -17,9 +17,9 @@ class monit {
   require hosts
 
   $fqdn = hiera('fqdn')
-  $mail_from = "monit@$fqdn"
-  $mail_to = "admin@fqdn"
-  $provider = "systemd"
+  $mail_from = "monit@${fqdn}"
+  $mail_to = 'admin@fqdn'
+  $provider = 'systemd'
 
   package { 'monit':
     ensure => present,
@@ -27,39 +27,39 @@ class monit {
 
   file { '/etc/monit':
     ensure  => directory,
-    require => Package['monit']
+    require => Package['monit'],
   }
 
   file { '/etc/monit/conf.d':
     ensure  => directory,
-    require => Package['monit']
+    require => Package['monit'],
   }
 
   file { '/etc/monit/monitrc':
-    ensure  => present,
+    ensure  => file,
     content => template('monit/monitrc'),
     require => [Package['monit'], File['/etc/monit']],
     replace => true,
   }
 
   service { 'monit':
-    ensure      => running,
-    enable      => true,
-    hasrestart  => true,
-    provider    => $provider,
-    require     => Package['monit'],
-    subscribe   => File['/etc/monit/monitrc'],
+    ensure     => running,
+    enable     => true,
+    hasrestart => true,
+    provider   => $provider,
+    require    => Package['monit'],
+    subscribe  => File['/etc/monit/monitrc'],
   }
 
   file { '/etc/monit/conf.d/rootfs':
-    ensure  => present,
+    ensure  => file,
     source  => 'puppet:///modules/monit/rootfs',
     require => [Package['monit'], File['/etc/monit/conf.d']],
     notify  => Service['monit'],
   }
 
   file { '/etc/monit/conf.d/system':
-    ensure  => present,
+    ensure  => file,
     source  => 'puppet:///modules/monit/system',
     require => [Package['monit'], File['/etc/monit/conf.d']],
     notify  => Service['monit'],

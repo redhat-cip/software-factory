@@ -19,12 +19,12 @@ class gerrituser () {
     ensure => present,
   }
   user { 'gerrit':
-    ensure => present,
-    home => '/home/gerrit',
-    system => true,
+    ensure     => present,
+    home       => '/home/gerrit',
+    system     => true,
     managehome => true,
-    comment => 'Gerrit sys user',
-    require => Group['gerrit'],
+    comment    => 'Gerrit sys user',
+    require    => Group['gerrit'],
   }
 
   file { '/home/gerrit/.ssh':

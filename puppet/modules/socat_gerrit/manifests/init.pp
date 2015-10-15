@@ -22,8 +22,8 @@ class socat_gerrit {
     mode   => '0640',
     owner  => 'root',
     group  => 'root',
-    source  => 'puppet:///modules/socat_gerrit/socat_gerrit.service',
-    notify  => [Exec["reload_units"], Service["socat_gerrit"]],
+    source => 'puppet:///modules/socat_gerrit/socat_gerrit.service',
+    notify => [Exec['reload_units'], Service['socat_gerrit']],
   }
 
   service {'socat_gerrit':

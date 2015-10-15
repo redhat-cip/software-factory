@@ -16,8 +16,8 @@
 class gerrit {
 
   require hosts
-  include apache
-  include gerrituser
+  include ::apache
+  include ::gerrituser
 
   $fqdn = hiera('fqdn')
   $url = hiera('url')
@@ -33,43 +33,43 @@ class gerrit {
   $gerrit_service_rsa_pub = hiera('gerrit_service_rsa_pub')
 
   $gerrit_local_sshkey_rsa = hiera('creds_gerrit_local_sshkey')
-  $gerrit_local_sshkey = "ssh-rsa $gerrit_local_sshkey_rsa"
+  $gerrit_local_sshkey = "ssh-rsa ${gerrit_local_sshkey_rsa}"
   $gerrit_admin_sshkey_rsa = hiera('creds_gerrit_admin_sshkey')
-  $gerrit_admin_sshkey = "ssh-rsa $gerrit_admin_sshkey_rsa"
+  $gerrit_admin_sshkey = "ssh-rsa ${gerrit_admin_sshkey_rsa}"
   $gerrit_jenkins_sshkey_rsa = hiera('creds_jenkins_pub_key')
-  $gerrit_jenkins_sshkey = "ssh-rsa $gerrit_jenkins_sshkey_rsa"
+  $gerrit_jenkins_sshkey = "ssh-rsa ${gerrit_jenkins_sshkey_rsa}"
 
   $issues_tracker_api_url = $url['redmine_url']
   $issues_tracker_api_key = hiera('creds_issues_tracker_api_key')
   $gitweb_url = $url['gerrit_pub_url']
 
-  $gerrit_admin_mail = "admin@$fqdn"
-  $provider = "systemd"
-  $gitweb_cgi = "/var/www/git/gitweb.cgi"
+  $gerrit_admin_mail = "admin@${fqdn}"
+  $provider = 'systemd'
+  $gitweb_cgi = '/var/www/git/gitweb.cgi'
 
-  $mysql_host = "mysql.$fqdn"
+  $mysql_host = "mysql.${fqdn}"
   $mysql_port = 3306
-  $mysql_user = "gerrit"
+  $mysql_user = 'gerrit'
   $mysql_password = hiera('creds_gerrit_sql_pwd')
-  $mysql_db = "gerrit"
+  $mysql_db = 'gerrit'
 
   file { 'gerrit_init':
-    path  => '/lib/systemd/system/gerrit.service',
-    owner => 'gerrit',
+    path    => '/lib/systemd/system/gerrit.service',
+    owner   => 'gerrit',
     content => template('gerrit/gerrit.service.erb'),
     require => Exec['gerrit-initial-init'],
   }
 
   file { '/var/www/git/gitweb.cgi':
-    mode   => 0755,
+    mode   => '0755',
   }
 
   # managesf uses gerrit_admin_key to ssh to gerrit
   # and update replication.config
   ssh_authorized_key { 'gerrit_admin_user':
-    user => 'gerrit',
-    type => 'ssh-rsa',
-    key  => "$gerrit_admin_key",
+    user    => 'gerrit',
+    type    => 'ssh-rsa',
+    key     => $gerrit_admin_key,
     require => File['/home/gerrit/.ssh'],
   }
 
@@ -116,7 +116,7 @@ class gerrit {
     require => File['/home/gerrit/site_path'],
   }
   file { '/home/gerrit/site_path/etc/ssh_host_rsa_key':
-    ensure  => present,
+    ensure  => file,
     owner   => 'gerrit',
     group   => 'gerrit',
     mode    => '0600',
@@ -124,7 +124,7 @@ class gerrit {
     require => File['/home/gerrit/site_path/etc'],
   }
   file { '/home/gerrit/.ssh/id_rsa':
-    ensure  => present,
+    ensure  => file,
     owner   => 'gerrit',
     group   => 'gerrit',
     mode    => '0600',
@@ -132,7 +132,7 @@ class gerrit {
     require => File['/home/gerrit/.ssh'],
   }
   file { '/home/gerrit/site_path/etc/ssh_host_rsa_key.pub':
-    ensure  => present,
+    ensure  => file,
     owner   => 'gerrit',
     group   => 'gerrit',
     mode    => '0644',
@@ -140,7 +140,7 @@ class gerrit {
     require => File['/home/gerrit/site_path/etc'],
   }
   file { '/home/gerrit/site_path/plugins/replication.jar':
-    ensure  => present,
+    ensure  => file,
     owner   => 'gerrit',
     group   => 'gerrit',
     mode    => '0640',
@@ -148,7 +148,7 @@ class gerrit {
     require => File['/home/gerrit/site_path/plugins'],
   }
   file { '/home/gerrit/site_path/plugins/reviewersbyblame-2.8.1.jar':
-    ensure  => present,
+    ensure  => file,
     owner   => 'gerrit',
     group   => 'gerrit',
     mode    => '0640',
@@ -156,7 +156,7 @@ class gerrit {
     require => File['/home/gerrit/site_path/plugins'],
   }
   file { '/home/gerrit/site_path/plugins/gravatar.jar':
-    ensure  => present,
+    ensure  => file,
     owner   => 'gerrit',
     group   => 'gerrit',
     mode    => '0640',
@@ -164,7 +164,7 @@ class gerrit {
     require => File['/home/gerrit/site_path/plugins'],
   }
   file { '/home/gerrit/site_path/plugins/delete-project.jar':
-    ensure  => present,
+    ensure  => file,
     owner   => 'gerrit',
     group   => 'gerrit',
     mode    => '0640',
@@ -172,7 +172,7 @@ class gerrit {
     require => File['/home/gerrit/site_path/plugins'],
   }
   file { '/home/gerrit/site_path/plugins/download-commands.jar':
-    ensure  => present,
+    ensure  => file,
     owner   => 'gerrit',
     group   => 'gerrit',
     mode    => '0640',
@@ -183,7 +183,7 @@ class gerrit {
   # otherwise Gerrit downloads the file again
   # https://gerrit.googlesource.com/gerrit/+/v2.8.6.1/gerrit-pgm/src/main/resources/com/google/gerrit/pgm/libraries.config
   file { '/home/gerrit/site_path/lib/mysql-connector-java-5.1.21.jar':
-    ensure  => present,
+    ensure  => file,
     owner   => 'gerrit',
     group   => 'gerrit',
     mode    => '0640',
@@ -191,7 +191,7 @@ class gerrit {
     require => File['/home/gerrit/site_path/lib'],
   }
   file { '/home/gerrit/site_path/lib/bcprov-jdk15on-149.jar':
-    ensure  => present,
+    ensure  => file,
     owner   => 'gerrit',
     group   => 'gerrit',
     mode    => '0640',
@@ -199,7 +199,7 @@ class gerrit {
     require => File['/home/gerrit/site_path/lib'],
   }
   file { '/home/gerrit/site_path/lib/bcpkix-jdk15on-149.jar':
-    ensure  => present,
+    ensure  => file,
     owner   => 'gerrit',
     group   => 'gerrit',
     mode    => '0640',
@@ -207,7 +207,7 @@ class gerrit {
     require => File['/home/gerrit/site_path/lib'],
   }
   file { '/home/gerrit/site_path/hooks/patchset-created':
-    ensure  => present,
+    ensure  => file,
     owner   => 'gerrit',
     group   => 'gerrit',
     mode    => '0740',
@@ -215,7 +215,7 @@ class gerrit {
     require => File['/home/gerrit/site_path/hooks'],
   }
   file { '/home/gerrit/site_path/hooks/change-merged':
-    ensure  => present,
+    ensure  => file,
     owner   => 'gerrit',
     group   => 'gerrit',
     mode    => '0740',
@@ -223,16 +223,16 @@ class gerrit {
     require => File['/home/gerrit/site_path/hooks'],
   }
   file { '/home/gerrit/gerrit.war':
-    ensure  => present,
-    owner   => 'gerrit',
-    group   => 'gerrit',
-    mode    => '0644',
-    source  => '/root/gerrit_data_source/gerrit.war',
+    ensure => file,
+    owner  => 'gerrit',
+    group  => 'gerrit',
+    mode   => '0644',
+    source => '/root/gerrit_data_source/gerrit.war',
   }
 
   # Here we setup file based on templates
   file { '/home/gerrit/site_path/etc/gerrit.config':
-    ensure  => present,
+    ensure  => file,
     owner   => 'gerrit',
     group   => 'gerrit',
     mode    => '0644',
@@ -241,7 +241,7 @@ class gerrit {
     replace => true,
   }
   file { '/home/gerrit/site_path/etc/secure.config':
-    ensure  => present,
+    ensure  => file,
     owner   => 'gerrit',
     group   => 'gerrit',
     mode    => '0600',
@@ -250,7 +250,7 @@ class gerrit {
     replace => true,
   }
   file { '/home/gerrit/site_path/hooks/hooks.config':
-    ensure  => present,
+    ensure  => file,
     owner   => 'gerrit',
     group   => 'gerrit',
     mode    => '0600',
@@ -259,62 +259,62 @@ class gerrit {
     replace => true,
   }
   file { '/root/gerrit_data_source/project.config':
-    ensure  => present,
-    owner   => 'root',
-    group   => 'root',
-    mode    => '0640',
-    source  => 'puppet:///modules/gerrit/project.config',
+    ensure => file,
+    owner  => 'root',
+    group  => 'root',
+    mode   => '0640',
+    source => 'puppet:///modules/gerrit/project.config',
   }
   file { '/root/gerrit_data_source/ssh_wrapper.sh':
-    ensure  => present,
-    owner   => 'root',
-    group   => 'root',
-    mode    => '0740',
-    source  => 'puppet:///modules/gerrit/ssh_wrapper.sh',
+    ensure => file,
+    owner  => 'root',
+    group  => 'root',
+    mode   => '0740',
+    source => 'puppet:///modules/gerrit/ssh_wrapper.sh',
   }
   file { '/root/gerrit-restore-user-keys.sql':
-    ensure  => present,
+    ensure  => file,
     mode    => '0644',
     content => template('gerrit/gerrit-restore-user-keys.sql.erb'),
     replace => true,
   }
   file { '/root/gerrit-firstuser-init.sql':
-    ensure  => present,
+    ensure  => file,
     mode    => '0644',
     content => template('gerrit/gerrit-firstuser-init.sql.erb'),
     replace => true,
     notify  => [Exec['gerrit-init-firstuser']],
   }
   file { '/root/gerrit-firstuser-init.sh':
-    ensure  => present,
+    ensure  => file,
     mode    => '0700',
     content => template('gerrit/gerrit-firstuser-init.sh.erb'),
     replace => true,
   }
   file { '/root/gerrit-set-default-acl.sh':
-    ensure  => present,
+    ensure  => file,
     mode    => '0700',
     content => template('gerrit/gerrit-set-default-acl.sh.erb'),
     replace => true,
   }
   file { '/root/gerrit-set-jenkins-user.sh':
-    ensure  => present,
+    ensure  => file,
     mode    => '0700',
     content => template('gerrit/gerrit-set-jenkins-user.sh.erb'),
     replace => true,
   }
 
   file { 'wait4gerrit':
-    path    => '/root/wait4gerrit.sh',
-    mode    => '0740',
-    source  => 'puppet:///modules/gerrit/wait4gerrit.sh',
+    path   => '/root/wait4gerrit.sh',
+    mode   => '0740',
+    source => 'puppet:///modules/gerrit/wait4gerrit.sh',
   }
 
   # Gerrit first initialization, must be run only when gerrit.war changes
   exec { 'gerrit-initial-init':
-    user      => 'gerrit',
-    command   => '/usr/bin/java -jar /home/gerrit/gerrit.war init -d /home/gerrit/site_path --batch --no-auto-start',
-    require   => [File['/home/gerrit/gerrit.war'],
+    user        => 'gerrit',
+    command     => '/usr/bin/java -jar /home/gerrit/gerrit.war init -d /home/gerrit/site_path --batch --no-auto-start',
+    require     => [File['/home/gerrit/gerrit.war'],
                   File['/home/gerrit/site_path/plugins/replication.jar'],
                   File['/home/gerrit/site_path/plugins/gravatar.jar'],
                   File['/home/gerrit/site_path/plugins/delete-project.jar'],
@@ -331,9 +331,9 @@ class gerrit {
                   File['/root/gerrit-firstuser-init.sh'],
                   File['/root/gerrit-set-default-acl.sh'],
                   File['/root/gerrit-set-jenkins-user.sh']],
-    subscribe => File['/home/gerrit/gerrit.war'],
+    subscribe   => File['/home/gerrit/gerrit.war'],
     refreshonly => true,
-    logoutput => on_failure,
+    logoutput   => on_failure,
   }
 
   # This ressource wait for gerrit TCP ports are up
@@ -376,14 +376,14 @@ class gerrit {
   # Gerrit process restart only when one of the configuration files
   # change or when gerrit-initial-init has been triggered
   service { 'gerrit':
-    ensure      => running,
-    enable      => true,
-    hasrestart  => true,
-    provider    => $provider,
-    require     => [Exec['gerrit-initial-init'],
+    ensure     => running,
+    enable     => true,
+    hasrestart => true,
+    provider   => $provider,
+    require    => [Exec['gerrit-initial-init'],
                     File['gerrit_init'],
                     File['/var/www/git/gitweb.cgi']],
-    subscribe   => [File['/home/gerrit/gerrit.war'],
+    subscribe  => [File['/home/gerrit/gerrit.war'],
                     File['/home/gerrit/site_path/etc/gerrit.config'],
                     File['/root/gerrit-firstuser-init.sql'],
                     File['/home/gerrit/site_path/etc/secure.config']],
@@ -391,20 +391,20 @@ class gerrit {
 
   # Ensure mount point exists
   file { '/home/gerrit/site_path/git':
-    ensure => directory,
-    owner => 'gerrit',
+    ensure  => directory,
+    owner   => 'gerrit',
     require => File['/home/gerrit/site_path'],
   }
 
   file { '/etc/monit/conf.d/gerrit':
-    ensure  => present,
+    ensure  => file,
     content => template('gerrit/monit.erb'),
     require => [Package['monit'], File['/etc/monit/conf.d']],
     notify  => Service['monit'],
   }
 
   file { '/etc/monit/conf.d/gerrit-fs':
-    ensure  => present,
+    ensure  => file,
     source  => 'puppet:///modules/gerrit/monit-fs',
     require => [Package['monit'], File['/etc/monit/conf.d']],
     notify  => Service['monit'],
@@ -412,7 +412,7 @@ class gerrit {
 
   #Create an empty file, later this file is configured with init-config-repo
   file { '/home/gerrit/site_path/etc/replication.config':
-    ensure  => present,
+    ensure  => file,
     owner   => 'gerrit',
     group   => 'gerrit',
     mode    => '0644',
@@ -420,8 +420,8 @@ class gerrit {
   }
 
   bup::scripts{ 'gerrit_scripts':
-    name => 'gerrit',
-    backup_script => 'gerrit/backup.sh.erb',
+    name           => 'gerrit',
+    backup_script  => 'gerrit/backup.sh.erb',
     restore_script => 'gerrit/restore.sh.erb',
   }
 
@@ -429,7 +429,7 @@ class gerrit {
   # this triggers a Gerrit restart, which is required to clear the internal
   # cache
   file { '/home/gerrit/.ssh/known_hosts':
-    ensure  => present,
+    ensure  => file,
     source  => '/home/gerrit/.ssh/known_hosts_gerrit',
     mode    => '0644',
     owner   => 'gerrit',
@@ -440,7 +440,7 @@ class gerrit {
 
   # Just ensure this file exists
   file { '/home/gerrit/.ssh/known_hosts_gerrit':
-    ensure  => present,
+    ensure  => file,
     mode    => '0644',
     owner   => 'gerrit',
     group   => 'gerrit',
@@ -448,10 +448,10 @@ class gerrit {
   }
 
   file { '/home/gerrit/site_path/etc/GerritSiteHeader.html':
-    ensure  => present,
-    owner   => 'gerrit',
-    group   => 'gerrit',
-    source  => 'puppet:///modules/gerrit/GerritSiteHeader.html',
+    ensure => file,
+    owner  => 'gerrit',
+    group  => 'gerrit',
+    source => 'puppet:///modules/gerrit/GerritSiteHeader.html',
   }
 
   file {'/etc/sudoers.d/gerrit':
@@ -460,7 +460,7 @@ class gerrit {
     owner   => 'root',
     group   => 'root',
     source  => 'puppet:///modules/gerrit/sudoers_gerrit',
-    replace => true
+    replace => true,
   }
 
 }

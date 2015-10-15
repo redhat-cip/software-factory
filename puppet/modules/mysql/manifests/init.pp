@@ -25,19 +25,19 @@ class mysql {
     $creds_etherpad_sql_pwd = hiera('creds_etherpad_sql_pwd')
     $creds_lodgeit_sql_pwd = hiera('creds_lodgeit_sql_pwd')
 
-    $mysql = "mariadb"
-    $provider = "systemd"
+    $mysql = 'mariadb'
+    $provider = 'systemd'
 
-    exec { "set_mysql_root_password":
-        unless  => "mysqladmin -uroot -p$mysql_root_pwd status",
-        path    => "/bin:/usr/bin",
-        command => "mysqladmin -uroot password $mysql_root_pwd",
+    exec { 'set_mysql_root_password':
+        unless  => "mysqladmin -uroot -p${mysql_root_pwd} status",
+        path    => '/bin:/usr/bin',
+        command => "mysqladmin -uroot password ${mysql_root_pwd}",
         require => Service['mysql'],
     }
 
     service {'mysql':
-        name       => $mysql,
         ensure     => running,
+        name       => $mysql,
         enable     => true,
         hasrestart => true,
         hasstatus  => true,
@@ -51,7 +51,7 @@ class mysql {
     }
 
     exec {'create_databases':
-        command     => "mysql -u root -p$mysql_root_pwd < /root/create_databases.sql",
+        command     => "mysql -u root -p${mysql_root_pwd} < /root/create_databases.sql",
         path        => '/usr/bin/:/bin/',
         refreshonly => true,
         subscribe   => File['/root/create_databases.sql'],
@@ -59,8 +59,8 @@ class mysql {
     }
 
     bup::scripts{ 'mysql_scripts':
-      name => 'mysql',
-      backup_script => 'mysql/backup.sh.erb',
+      name           => 'mysql',
+      backup_script  => 'mysql/backup.sh.erb',
       restore_script => 'mysql/restore.sh.erb',
     }
 }

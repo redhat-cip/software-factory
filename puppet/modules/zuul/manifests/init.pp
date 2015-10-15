@@ -22,48 +22,48 @@ class zuul {
   $logs = hiera('logs')
   $hosts = hiera('hosts')
   $jenkins_rsa = hiera('jenkins_rsa')
-  $gerrit_host = "gerrit.$fqdn"
+  $gerrit_host = "gerrit.${fqdn}"
   $gerrit_ip = $hosts[$gerrit_host]['ip']
 
-  $pub_html_path = "/var/www/zuul"
-  $gitweb_path = "/usr/libexec/git-core"
+  $pub_html_path = '/var/www/zuul'
+  $gitweb_path = '/usr/libexec/git-core'
 
   file { '/var/www/zuul':
-    ensure  => link,
-    target  => '/srv/zuul/etc/status/public_html',
+    ensure => link,
+    target => '/srv/zuul/etc/status/public_html',
   }
 
   file {'/srv/zuul/etc/status/public_html/index.html':
-    ensure  => present,
-    mode    => '0644',
-    source  => 'puppet:///modules/zuul/index.html',
+    ensure => file,
+    mode   => '0644',
+    source => 'puppet:///modules/zuul/index.html',
   }
 
   file {'/etc/httpd/conf.d/zuul.conf':
-    ensure => file,
-    mode   => '0640',
-    owner  => $httpd_user,
-    group  => $httpd_user,
+    ensure  => file,
+    mode    => '0640',
+    owner   => $httpd_user,
+    group   => $httpd_user,
     content => template('zuul/zuul.site.erb'),
-    notify => Exec['webserver_restart'],
+    notify  => Exec['webserver_restart'],
   }
 
   file {'zuul_init':
+    ensure => file,
     path   => '/lib/systemd/system/zuul.service',
-    ensure => present,
     mode   => '0555',
     owner  => 'root',
     group  => 'root',
-    source => 'puppet:///modules/zuul/zuul.systemd.service'
+    source => 'puppet:///modules/zuul/zuul.systemd.service',
   }
 
   file {'zuul_merger_init':
+    ensure => file,
     path   => '/lib/systemd/system/zuul-merger.service',
-    ensure => present,
     mode   => '0555',
     group  => 'root',
     owner  => 'root',
-    source => 'puppet:///modules/zuul/zuul-merger.systemd.service'
+    source => 'puppet:///modules/zuul/zuul-merger.systemd.service',
   }
 
   group { 'zuul':
@@ -88,42 +88,43 @@ class zuul {
   }
 
   exec {'update_gerritip_knownhost_zuul':
-    command => "/usr/bin/ssh-keyscan -p 29418 $gerrit_ip >> /home/zuul/.ssh/known_hosts",
+    command   => "/usr/bin/ssh-keyscan -p 29418 ${gerrit_ip} >> /home/zuul/.ssh/known_hosts",
     logoutput => true,
-    user => 'zuul',
-    require => File['/home/zuul/.ssh'],
-    unless => '/usr/bin/grep $gerrit_ip /home/zuul/.ssh/known_hosts',
+    user      => 'zuul',
+    require   => File['/home/zuul/.ssh'],
+    unless    => "/usr/bin/grep ${gerrit_ip} /home/zuul/.ssh/known_hosts",
   }
 
   exec {'update_gerrithost_knownhost_zuul':
-    command => "/usr/bin/ssh-keyscan -p 29418 $gerrit_host >> /home/zuul/.ssh/known_hosts",
+    command   => "/usr/bin/ssh-keyscan -p 29418 ${gerrit_host} >> /home/zuul/.ssh/known_hosts",
     logoutput => true,
-    user => 'zuul',
-    require => File['/home/zuul/.ssh'],
-    unless => '/usr/bin/grep "$gerrit_host" /home/zuul/.ssh/known_hosts',
+    user      => 'zuul',
+    require   => File['/home/zuul/.ssh'],
+    #FIXME
+    unless    => "/usr/bin/grep ${gerrit_host} /home/zuul/.ssh/known_hosts",
   }
 
   file {'/usr/share/sf-zuul':
-    ensure  => directory,
-    mode    => '0640',
-    owner   => 'root',
-    group   => 'root',
+    ensure => directory,
+    mode   => '0640',
+    owner  => 'root',
+    group  => 'root',
   }
 
   file {'/usr/share/sf-zuul/layout.yaml':
-    ensure => file,
-    mode   => '0640',
-    owner  => "root",
-    group  => "root",
+    ensure  => file,
+    mode    => '0640',
+    owner   => 'root',
+    group   => 'root',
     require => File['/usr/share/sf-zuul'],
     content => template('zuul/layout.yaml.erb'),
   }
 
   file {'/usr/share/sf-zuul/projects.yaml':
-    ensure => file,
-    mode   => '0640',
-    owner  => "root",
-    group  => "root",
+    ensure  => file,
+    mode    => '0640',
+    owner   => 'root',
+    group   => 'root',
     require => File['/usr/share/sf-zuul'],
     content => template('zuul/projects.yaml.erb'),
   }
@@ -161,7 +162,7 @@ class zuul {
   }
 
   file {'/var/lib/zuul/.ssh/id_rsa':
-    ensure  => present,
+    ensure  => file,
     mode    => '0400',
     owner   => 'zuul',
     group   => 'zuul',
@@ -225,17 +226,17 @@ class zuul {
 
   service {'zuul':
     ensure  => running,
-    enable  => 'true',
+    enable  => true,
     require => [File['/lib/systemd/system/zuul.service'],
                 File['/etc/zuul/zuul.conf'],
                 File['/etc/zuul/layout.yaml'],
                 File['/var/log/zuul/'],
-                File['/var/run/zuul/']]
+                File['/var/run/zuul/']],
   }
 
   service {'zuul-merger':
     ensure  => running,
-    enable  => 'true',
+    enable  => true,
     require => [File['/lib/systemd/system/zuul-merger.service'],
                 File['/var/lib/zuul'],
                 Service['zuul'],
