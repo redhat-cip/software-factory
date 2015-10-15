@@ -28,16 +28,16 @@ class jenkins {
   file {'/etc/httpd/conf.d/ports.conf':
     ensure => file,
     mode   => '0640',
-    owner  => $httpd_user,
-    group  => $httpd_user,
+    owner  => $::httpd_user,
+    group  => $::httpd_user,
     source =>'puppet:///modules/jenkins/ports.conf',
   }
 
   file {'/etc/httpd/conf.d/jenkins.conf':
     ensure  => file,
     mode    => '0640',
-    owner   => $httpd_user,
-    group   => $httpd_user,
+    owner   => $::httpd_user,
+    group   => $::httpd_user,
     content => template('jenkins/jenkins.site.erb'),
     require => [File['/etc/httpd/conf.d/ports.conf'],
         ],

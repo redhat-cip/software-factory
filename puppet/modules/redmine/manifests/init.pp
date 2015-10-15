@@ -33,8 +33,8 @@ class redmine {
       ensure  => file,
       path    => '/usr/share/redmine/config/configuration.yml',
       mode    => '0640',
-      owner   => $httpd_user,
-      group   => $httpd_user,
+      owner   => $::httpd_user,
+      group   => $::httpd_user,
       content => template('redmine/configuration.yml.erb'),
     }
 
@@ -42,23 +42,23 @@ class redmine {
       ensure  => file,
       path    => '/usr/share/redmine/config/database.yml',
       mode    => '0640',
-      owner   => $httpd_user,
-      group   => $httpd_user,
+      owner   => $::httpd_user,
+      group   => $::httpd_user,
       content => template('redmine/database.erb'),
     }
 
     file {'/etc/httpd/conf.d/redmine.conf':
       ensure  => file,
       mode    => '0640',
-      owner   => $httpd_user,
-      group   => $httpd_user,
+      owner   => $::httpd_user,
+      group   => $::httpd_user,
       content => template('redmine/redmine.site.erb'),
       notify  => Service['webserver'],
     }
 
     exec { 'chown_redmine':
       path    => '/usr/bin/:/bin/',
-      command => "chown -R ${httpd_user}:${httpd_user} /usr/share/redmine",
+      command => "chown -R ${::httpd_user}:${::httpd_user} /usr/share/redmine",
       unless  => 'stat -c %U /usr/share/redmine | grep apache',
     }
 
@@ -148,30 +148,30 @@ class redmine {
     file {'/var/run/passenger':
       ensure => directory,
       mode   => '0644',
-      owner  => $httpd_user,
-      group  => $httpd_user,
+      owner  => $::httpd_user,
+      group  => $::httpd_user,
     }
 
     file {'/var/run/passenger-instreg':
       ensure => directory,
       mode   => '0644',
-      owner  => $httpd_user,
-      group  => $httpd_user,
+      owner  => $::httpd_user,
+      group  => $::httpd_user,
     }
 
     file {'/usr/share/redmine/public/themes/classic/javascripts/':
       ensure => directory,
       mode   => '0644',
-      owner  => $httpd_user,
-      group  => $httpd_user,
+      owner  => $::httpd_user,
+      group  => $::httpd_user,
     }
 
     file {'topmenu.js':
       ensure  => file,
       path    => '/usr/share/redmine/public/themes/classic/javascripts/theme.js',
       mode    => '0644',
-      owner   => $httpd_user,
-      group   => $httpd_user,
+      owner   => $::httpd_user,
+      group   => $::httpd_user,
       content => template('commonservices_apache/topmenu.js'),
       require => File['/usr/share/redmine/public/themes/classic/javascripts/'],
     }

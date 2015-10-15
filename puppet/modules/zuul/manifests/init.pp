@@ -42,8 +42,8 @@ class zuul {
   file {'/etc/httpd/conf.d/zuul.conf':
     ensure  => file,
     mode    => '0640',
-    owner   => $httpd_user,
-    group   => $httpd_user,
+    owner   => $::httpd_user,
+    group   => $::httpd_user,
     content => template('zuul/zuul.site.erb'),
     notify  => Exec['webserver_restart'],
   }
@@ -100,7 +100,6 @@ class zuul {
     logoutput => true,
     user      => 'zuul',
     require   => File['/home/zuul/.ssh'],
-    #FIXME
     unless    => "/usr/bin/grep ${gerrit_host} /home/zuul/.ssh/known_hosts",
   }
 

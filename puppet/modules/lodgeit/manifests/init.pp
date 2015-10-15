@@ -23,8 +23,8 @@ class lodgeit {
     ensure  => file,
     mode    => '0755',
     replace => true,
-    owner   => $httpd_user,
-    group   => $httpd_user,
+    owner   => $::httpd_user,
+    group   => $::httpd_user,
     content => template('lodgeit/manage.py.erb'),
     notify  => Service['lodgeit'],
   }
@@ -33,8 +33,8 @@ class lodgeit {
     ensure  => file,
     mode    => '0755',
     replace => true,
-    owner   => $httpd_user,
-    group   => $httpd_user,
+    owner   => $::httpd_user,
+    group   => $::httpd_user,
     source  => 'puppet:///modules/lodgeit/urls.py',
     notify  => Service['lodgeit'],
   }

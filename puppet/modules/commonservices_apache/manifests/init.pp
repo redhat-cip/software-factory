@@ -33,8 +33,8 @@ class commonservices_apache ($cauth = hiera_hash('cauth', '')) {
     path    => '/etc/httpd/conf.d/gateway.crt',
     content => inline_template('<%= @gateway_crt %>'),
     mode    => '0640',
-    owner   => $httpd_user,
-    group   => $httpd_user,
+    owner   => $::httpd_user,
+    group   => $::httpd_user,
   }
 
   file {'gateway_key':
@@ -42,16 +42,16 @@ class commonservices_apache ($cauth = hiera_hash('cauth', '')) {
     path    => '/etc/httpd/conf.d/gateway.key',
     content => inline_template('<%= @gateway_key %>'),
     mode    => '0640',
-    owner   => $httpd_user,
-    group   => $httpd_user,
+    owner   => $::httpd_user,
+    group   => $::httpd_user,
   }
 
   file {'gateway_common':
     ensure  => file,
     path    => '/etc/httpd/conf.d/gateway.common',
     mode    => '0640',
-    owner   => $httpd_user,
-    group   => $httpd_user,
+    owner   => $::httpd_user,
+    group   => $::httpd_user,
     content => template('commonservices_apache/gateway.common'),
   }
 
@@ -59,8 +59,8 @@ class commonservices_apache ($cauth = hiera_hash('cauth', '')) {
     ensure  => file,
     path    => '/etc/httpd/conf.d/gateway.conf',
     mode    => '0640',
-    owner   => $httpd_user,
-    group   => $httpd_user,
+    owner   => $::httpd_user,
+    group   => $::httpd_user,
     content => template('commonservices_apache/gateway.conf'),
     notify  => Service['webserver'],
     require => [File['gateway_crt'],
@@ -73,24 +73,24 @@ class commonservices_apache ($cauth = hiera_hash('cauth', '')) {
   file {'/var/www/static/js/topmenu.js':
     ensure  => file,
     mode    => '0640',
-    owner   => $httpd_user,
-    group   => $httpd_user,
+    owner   => $::httpd_user,
+    group   => $::httpd_user,
     content => template('commonservices_apache/topmenu.js'),
   }
 
   file {'/var/www/static/js/menu.js':
     ensure => file,
     mode   => '0640',
-    owner  => $httpd_user,
-    group  => $httpd_user,
+    owner  => $::httpd_user,
+    group  => $::httpd_user,
     source => 'puppet:///modules/commonservices_apache/menu.js',
   }
 
   file {'/var/www/topmenu.html':
     ensure  => file,
     mode    => '0640',
-    owner   => $httpd_user,
-    group   => $httpd_user,
+    owner   => $::httpd_user,
+    group   => $::httpd_user,
     content => template('commonservices_apache/topmenu.html'),
   }
 
@@ -98,15 +98,15 @@ class commonservices_apache ($cauth = hiera_hash('cauth', '')) {
     ensure  => directory,
     recurse => true,
     mode    => '0644',
-    owner   => $httpd_user,
-    group   => $httpd_user,
+    owner   => $::httpd_user,
+    group   => $::httpd_user,
   }
 
   file {'/var/www/dashboard/index.html':
     ensure  => file,
     mode    => '0640',
-    owner   => $httpd_user,
-    group   => $httpd_user,
+    owner   => $::httpd_user,
+    group   => $::httpd_user,
     source  => 'puppet:///modules/commonservices_apache/dashboard.html',
     require => File['/var/www/dashboard'],
   }
@@ -114,8 +114,8 @@ class commonservices_apache ($cauth = hiera_hash('cauth', '')) {
   file {'/var/www/dashboard/dashboard.js':
     ensure  => file,
     mode    => '0640',
-    owner   => $httpd_user,
-    group   => $httpd_user,
+    owner   => $::httpd_user,
+    group   => $::httpd_user,
     source  => 'puppet:///modules/commonservices_apache/dashboard.js',
     require => File['/var/www/dashboard'],
   }
@@ -124,7 +124,7 @@ class commonservices_apache ($cauth = hiera_hash('cauth', '')) {
     ensure => file,
     path   => '/etc/httpd/managesf_htpasswd',
     mode   => '0640',
-    owner  => $httpd_user,
-    group  => $httpd_user,
+    owner  => $::httpd_user,
+    group  => $::httpd_user,
   }
 }
