@@ -3,7 +3,7 @@
   stat: path={{ install_path }}/softwarefactory
   register: check_path
 - name: Fetch new pre-built image trees
-  command: "{{ clone_path }}/fetch_roles.sh"
+  command: "{{ clone_path }}/fetch_image.sh"
   args:
     chdir: "{{ clone_path }}"
   when: check_path.stat.exists == false

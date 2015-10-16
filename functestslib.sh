@@ -301,9 +301,9 @@ function run_backup_restore {
 function run_upgrade {
     echo "$(date) ======= run_upgrade"
     sudo git clone file://$(pwd) /var/lib/lxc/managesf/rootfs/root/software-factory  --depth 1 || fail "Could not clone sf in managesf instance"
-    echo "[+] Copying new version (${IMAGE_PATH}/ -> /var/lib/lxc/managesf/rootfs/var/lib/debootstrap/install/${SF_VER}/softwarefactory/)"
-    sudo mkdir -p /var/lib/lxc/managesf/rootfs/var/lib/debootstrap/install/${SF_VER}/softwarefactory/ || fail "Could not copy ${SF_VER}"
-    sudo rsync -a --delete ${IMAGE_PATH}/ /var/lib/lxc/managesf/rootfs/var/lib/debootstrap/install/${SF_VER}/softwarefactory/ || fail "Could not copy ${SF_VER}"
+    echo "[+] Copying new version (${IMAGE_PATH}/ -> /var/lib/lxc/managesf/rootfs/${IMAGE_PATH})"
+    sudo mkdir -p /var/lib/lxc/managesf/rootfs/${IMAGE_PATH}/ || fail "Could not copy ${SF_VER}"
+    sudo rsync -a --delete ${IMAGE_PATH}/ /var/lib/lxc/managesf/rootfs/${IMAGE_PATH}/ || fail "Could not copy ${SF_VER}"
     echo "[+] Running upgrade"
     ssh ${SF_HOST} "cd software-factory; ./upgrade.sh ${REFARCH}" || fail "Upgrade failed" "/var/lib/lxc/managesf/rootfs/var/log/upgrade-bootstrap.log"
     checkpoint "run_upgrade"

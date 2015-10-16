@@ -1,7 +1,7 @@
 from_version: FROM
 version: TO
 upstream_path: /var/lib/sf/roles/upstream
-install_base: /var/lib/debootstrap/install
+install_base: /var/lib/sf/roles/install
 metadata_base: /var/lib/debootstrap/metadata
 install_path: "{{ install_base }}/{{ version }}"
 metadata_path: "{{ metadata_base }}/{{ from_version }}"

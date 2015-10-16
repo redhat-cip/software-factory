@@ -15,6 +15,9 @@ if [ ! -d "./upgrade/${current_version}" ]; then
     exit 1
 fi
 
+# set PATH
+export PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin
+
 # update new default variable
 SRC=./config/defaults/sfconfig.yaml
 DST=/etc/puppet/hiera/sf/sfconfig.yaml
@@ -30,15 +33,10 @@ grep -q '^admin_name' ${DST} && {
 }
 ./config/scripts/validate_sfconfig.py ${DST} || exit -1
 
-# check install files
-if [ ! -d "/var/lib/debootstrap/install/${SF_VER}/softwarefactory/" ]; then
-    echo "Fetch new version"
-    ./fetch_image.sh
-    echo "Install files"
-    mkdir -p /var/lib/debootstrap/install/${SF_VER}
-    ln -s ${IMAGE_PATH}/ /var/lib/debootstrap/install/${SF_VER}/softwarefactory/
-fi
-
+# fix rsyncd install dir
+[ -d /var/lib/debootstrap ] || mkdir /var/lib/debootstrap
+[ -e /var/lib/debootstrap/install ] && rm -Rf /var/lib/debootstrap/install
+ln -s /var/lib/sf/roles/install/ /var/lib/debootstrap/install
 
 set -x
 # Start the upgrade by jumping in the cloned version and running
