@@ -50,7 +50,7 @@ function fetch_prebuilt {
     sudo curl -o ${UPSTREAM}/${IMG}.digest ${SWIFT_SF_URL}/${IMG}.digest
     sudo curl -o ${UPSTREAM}/${IMG}.hash ${SWIFT_SF_URL}/${IMG}.hash || exit -1
     echo "Digests..."
-    if [ "${IMG}" == "softwarefactory-${SF_PREVIOUS_VER}" ]; then
+    if [ -z "${SKIP_GPG}" ] && [ "${IMG}" == "softwarefactory-${SF_PREVIOUS_VER}" ]; then
         gpg --list-sigs ${RELEASE_GPG_FINGERPRINT} &> /dev/null || gpg --keyserver keys.gnupg.net --recv-key ${RELEASE_GPG_FINGERPRINT}
         gpg --verify ${UPSTREAM}/${IMG}.digest || exit -1
     fi

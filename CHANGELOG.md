@@ -1,17 +1,26 @@
 # Change Log
 
-## 2.0.1 [unreleased]
+## 2.0.2 [unreleased]
+
+## 2.0.1 2015-10-16
+
+### Fixed
+
+- Puppet manifest lint
+- Redirection url and redmine/gerrit access
 
 ### Changed
 
 - Renamed bootstraps scripts to sfconfig.sh
-- Moved script from /root to /usr/local/bin
+- Moved configuration script from /root to /usr/local/bin
 - Default configuration is /etc/puppet/sf/hiera/sfconfig.yaml
 - sfconfig refactored
 
 ### Added
 
-- admin_mail_forward settings to forward notification mail
+- admin_mail_forward setting to forward notification mail
+- allowed_proxy_prefixes setting to proxify logs access
+- topmenu_custom_entry setting to set a custom link in top-menu
 
 ### Removed
 
