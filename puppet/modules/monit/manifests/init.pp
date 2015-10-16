@@ -37,7 +37,7 @@ class monit {
 
   file { '/etc/monit/monitrc':
     ensure  => file,
-    content => template('monit/monitrc'),
+    content => template('monit/monitrc.erb'),
     require => [Package['monit'], File['/etc/monit']],
     replace => true,
   }

@@ -37,7 +37,7 @@ class jenkins {
     mode    => '0640',
     owner   => $::httpd_user,
     group   => $::httpd_user,
-    content => template('jenkins/jenkins.site.erb'),
+    source  => 'puppet:///modules/jenkins/jenkins.site',
     require => [File['/etc/httpd/conf.d/ports.conf'],
         ],
     notify  => Exec['webserver_restart'],
@@ -136,7 +136,7 @@ class jenkins {
     mode    => '0644',
     owner   => 'jenkins',
     group   => 'jenkins',
-    content => template('jenkins/hudson.tasks.Mailer.xml'),
+    source  => 'puppet:///modules/jenkins/hudson.tasks.Mailer.xml',
     require => User['jenkins'],
   }
   file {'/var/lib/jenkins/org.jenkinsci.main.modules.sshd.SSHD.xml':

@@ -80,7 +80,7 @@ class jjb ($gerrit = hiera('gerrit')) {
     owner   => 'root',
     group   => 'root',
     require => File['/usr/share/sf-jjb'],
-    content => template('jjb/projects.yaml.erb'),
+    source  => 'puppet:///modules/jjb/projects.yaml',
   }
 
   file {'/usr/share/sf-jjb/sf_jjb_conf.yaml':

@@ -53,14 +53,14 @@ class postfix {
 
   file { '/etc/postfix/main.cf':
     ensure  => file,
-    content => template('postfix/main.cf'),
+    content => template('postfix/main.cf.erb'),
     require => [Package['postfix'], File['/etc/postfix']],
     replace => true,
   }
 
   file { '/etc/postfix/virtual':
     ensure  => file,
-    content => template('postfix/virtual'),
+    content => template('postfix/virtual.erb'),
     require => [Package['postfix'], File['/etc/postfix']],
     replace => true,
   }

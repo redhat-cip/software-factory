@@ -111,7 +111,7 @@ class cauth ($cauth = hiera('cauth'), $gerrit = hiera('gerrit')) {
     mode    => '0640',
     owner   => $::httpd_user,
     group   => $::httpd_user,
-    content => template('cauth/login.html'),
+    content => template('cauth/login.html.erb'),
     require => File['/var/www/cauth/cauth/templates'],
   }
 }

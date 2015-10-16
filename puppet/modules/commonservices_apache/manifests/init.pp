@@ -52,7 +52,7 @@ class commonservices_apache ($cauth = hiera_hash('cauth', '')) {
     mode    => '0640',
     owner   => $::httpd_user,
     group   => $::httpd_user,
-    content => template('commonservices_apache/gateway.common'),
+    content => template('commonservices_apache/gateway.common.erb'),
   }
 
   file {'gateway_conf':
@@ -61,7 +61,7 @@ class commonservices_apache ($cauth = hiera_hash('cauth', '')) {
     mode    => '0640',
     owner   => $::httpd_user,
     group   => $::httpd_user,
-    content => template('commonservices_apache/gateway.conf'),
+    content => template('commonservices_apache/gateway.conf.erb'),
     notify  => Service['webserver'],
     require => [File['gateway_crt'],
                 File['gateway_key'],
@@ -75,7 +75,7 @@ class commonservices_apache ($cauth = hiera_hash('cauth', '')) {
     mode    => '0640',
     owner   => $::httpd_user,
     group   => $::httpd_user,
-    content => template('commonservices_apache/topmenu.js'),
+    content => template('commonservices_apache/topmenu.js.erb'),
   }
 
   file {'/var/www/static/js/menu.js':
@@ -91,7 +91,7 @@ class commonservices_apache ($cauth = hiera_hash('cauth', '')) {
     mode    => '0640',
     owner   => $::httpd_user,
     group   => $::httpd_user,
-    content => template('commonservices_apache/topmenu.html'),
+    content => template('commonservices_apache/topmenu.html.erb'),
   }
 
   file {'/var/www/dashboard':

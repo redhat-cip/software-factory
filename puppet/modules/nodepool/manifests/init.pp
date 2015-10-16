@@ -129,7 +129,7 @@ class nodepool {
 
   file { '/etc/nodepool/nodepool.logging.conf':
     owner   => 'jenkins',
-    content => template('nodepool/nodepool.logging.conf'),
+    source  => 'puppet:///modules/nodepool/nodepool.logging.conf',
     require => [File['/etc/nodepool']],
   }
 

@@ -125,7 +125,7 @@ class zuul {
     owner   => 'root',
     group   => 'root',
     require => File['/usr/share/sf-zuul'],
-    content => template('zuul/projects.yaml.erb'),
+    source  => 'puppet:///modules/zuul/projects.yaml',
   }
 
   file {'/var/log/zuul/':

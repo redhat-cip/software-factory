@@ -35,7 +35,7 @@ class redmine {
       mode    => '0640',
       owner   => $::httpd_user,
       group   => $::httpd_user,
-      content => template('redmine/configuration.yml.erb'),
+      source  => 'puppet:///modules/redmine/configuration.yml',
     }
 
     file { 'dbconf_yml':
@@ -172,7 +172,7 @@ class redmine {
       mode    => '0644',
       owner   => $::httpd_user,
       group   => $::httpd_user,
-      content => template('commonservices_apache/topmenu.js'),
+      content => template('commonservices_apache/topmenu.js.erb'),
       require => File['/usr/share/redmine/public/themes/classic/javascripts/'],
     }
 
