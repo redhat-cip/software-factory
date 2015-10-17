@@ -59,4 +59,5 @@ Here are the steps to upgrade:
  $ ssh root@managesf_public_address
  $ git clone http://softwarefactory-project.io/r/software-factory software-factory
  $ cd software-factory
- $ ./upgrade.sh <latest TAG>
+ $ git checkout <latest TAG>
+ $ ./upgrade.sh

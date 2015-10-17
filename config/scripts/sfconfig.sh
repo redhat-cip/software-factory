@@ -20,7 +20,7 @@
 [ -z "${DEBUG}" ] && DISABLE_SETX=1 || set -x
 
 # Defaults
-DOMAIN=tests.dom
+DOMAIN=$(cat /etc/puppet/hiera/sf/sfconfig.yaml | grep "^fqdn:" | cut -d: -f2 | sed 's/ //g')
 REFARCH=1node-allinone
 BUILD=/root/sf-bootstrap-data
 
@@ -207,7 +207,7 @@ function puppet_copy {
 # End of functions
 # -----------------
 
-while getopts ":a:i:d:h" opt; do
+while getopts ":a:i:h" opt; do
     case $opt in
         a)
             REFARCH=$OPTARG
@@ -219,16 +219,12 @@ while getopts ":a:i:d:h" opt; do
         i)
             IP_JENKINS=$OPTARG
             ;;
-        d)
-            DOMAIN=$OPTARG
-            ;;
         h)
             echo ""
             echo "Usage:"
             echo ""
             echo "If run without any options sfconfig script will use defaults:"
             echo "REFARCH=1node-allinone"
-            echo "DOMAIN=tests.dom"
             echo ""
             echo "Use the -a option to specify the REFARCH."
             echo ""
@@ -236,9 +232,6 @@ while getopts ":a:i:d:h" opt; do
             echo "the ip of the node where the CI system will be installed"
             echo "via the -i option."
             echo ""
-            echo "Use -d option to specify under which domain the SF gateway"
-            echo "will be installed. If you intend to reconfigure the domain on"
-            echo "an already deploy SF then this is the option you need to use."
             exit 0
             ;;
         \?)
@@ -264,10 +257,9 @@ if [ ! -f "${BUILD}/generate.done" ]; then
     generate_yaml
     touch "${BUILD}/generate.done"
 else
-    # During upgrade or another sfconfig run, reuse the same refarch and domain
+    # During upgrade or another sfconfig run, reuse the same refarch and jenkins ip
     REFARCH=$(cat ${BUILD}/hiera/sfarch.yaml | sed 's/ //g' | grep "^refarch:" | cut -d: -f2)
     IP_JENKINS=$(cat ${BUILD}/hiera/sfarch.yaml | sed 's/ //g' | grep "^jenkins_ip:" | cut -d: -f2)
-    DOMAIN=$(cat ${BUILD}/hiera/sfconfig.yaml | sed 's/ //g' | grep "^fqdn:" | cut -d: -f2)
 fi
 
 update_sfconfig
