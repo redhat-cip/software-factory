@@ -6,7 +6,7 @@ SET @http_auth_config_value="--- !ruby/hash:ActiveSupport::HashWithIndifferentAc
   auto_registration: 'true'
 ";
 SET @api_key="<%= @api_key %>";
-SET @username="<%= @auth['admin_name'] %>";
+SET @username="admin";
 SET @email="admin@<%= @fqdn %>";
 SET @host="<%= @url['redmine_pub_url'] %>";
 SET @mailfrom="redmine@<%= @fqdn %>";

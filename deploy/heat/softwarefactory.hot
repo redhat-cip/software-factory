@@ -11,10 +11,6 @@ parameters:
     type: string
     description: Hostname of the SF instance
     default: tests.dom
-  admin_name:
-    type: string
-    description: Administrator username of SF services
-    default: admin
   flavor:
     type: string
     description: Flavor of the instance
@@ -167,7 +163,6 @@ resources:
                HOME=/root
                ssh-keygen -t rsa -N "" -f /root/.ssh/id_rsa
                cat /root/.ssh/id_rsa.pub >> /root/.ssh/authorized_keys
-               sed -i 's/admin_name:.*/admin_name: adminname/' /etc/puppet/hiera/sf/sfconfig.yaml
                sed -i 's/admin_password:.*/admin_password: adminpwd/' /etc/puppet/hiera/sf/sfconfig.yaml
                sfconfig.sh -d domain
               path: /root/startup.sh
@@ -177,7 +172,6 @@ resources:
               - rm -f /root/startup.sh
           params:
             domain: { get_param: domain }
-            adminname: {get_param: admin_name }
             adminpwd: {get_attr: [admin_password, value]}
 
 outputs:

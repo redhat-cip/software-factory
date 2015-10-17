@@ -12,7 +12,6 @@ network:
     admin_mail_forward: root@localhost
 
 authentication:
-    admin_name: admin
     admin_password: userpass
     # timeout of session in seconds
     sso_cookie_timeout: 43200

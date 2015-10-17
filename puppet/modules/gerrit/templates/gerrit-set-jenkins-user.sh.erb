@@ -4,7 +4,7 @@ set -x
 set -e
 
 JENKINS_SSHKEY="<%= @gerrit_jenkins_sshkey %>"
-ADMINUSER=<%= @auth['admin_name'] %>
+ADMINUSER=admin
 
 # Check if Jenkins user does not exist yet
 JENKINS_USER_EXISTS=`ssh -i /home/gerrit/site_path/etc/ssh_host_rsa_key -p29418 $ADMINUSER@localhost gerrit ls-members \"Non-Interactive Users\" | { grep Jenkins || true; }`

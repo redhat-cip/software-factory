@@ -2,6 +2,10 @@
 
 ## 2.0.2 [unreleased]
 
+### Removed
+
+- Admin name settings, it's now forced to "admin"
+
 ## 2.0.1 2015-10-16
 
 ### Fixed

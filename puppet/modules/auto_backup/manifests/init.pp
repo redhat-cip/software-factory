@@ -20,7 +20,6 @@ class auto_backup () {
   $backup = hiera('backup')
 
   $mail = "admin@${fqdn}"
-  $admin_name = $auth['admin_name']
   $admin_password = $auth['admin_password']
   $os_auth_url = $backup['os_auth_url']
   $os_tenant_name = $backup['os_tenant_name']

@@ -6,7 +6,7 @@ set -e
 # Git config complains about HOME env var missing ...
 export HOME=/root
 
-ADMINUSER=<%= @auth['admin_name'] %>
+ADMINUSER=admin
 ADMINUSEREMAIL=admin@<%= @fqdn %>
 CLONETEMPDIR="/tmp/All-projects"
 

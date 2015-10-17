@@ -22,7 +22,7 @@ GERRIT_USER = 'gerrit'
 GERRIT_SERVICE_PRIV_KEY_PATH = '%s/ssh_keys/gerrit_service_rsa' \
                                % SF_BOOTSTRAP_DATA
 
-USER_1 = sfconfig.get('authentication')['admin_name']
+USER_1 = "admin"
 USER_1_PASSWORD = sfconfig.get('authentication')['admin_password']
 
 ADMIN_USER = USER_1

@@ -77,7 +77,7 @@ auth = {
         'redirect_uri': '/auth/login/openid/callback'
     },
     'users': {
-        "<%= @auth['admin_name'] %>": {
+        "admin": {
             "lastname": "Software Factory Administrator",
             "mail": "admin@<%= @fqdn %>",
             "password": "<%= @admin_password_hashed %>",
@@ -122,7 +122,7 @@ redmine = {
 
 gerrit = {
     'url': '<%= @url["gateway_url"] %>',
-    'admin_user': '<%= @auth['admin_name'] %>',
+    'admin_user': 'admin',
     'admin_password': '<%= @auth['admin_password'] %>',
     'db_host': '<%= @gerrit_mysql_host %>',
     'db_name': '<%= @gerrit_mysql_db %>',

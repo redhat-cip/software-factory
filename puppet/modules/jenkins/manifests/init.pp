@@ -22,7 +22,6 @@ class jenkins {
   $url = hiera('url')
   $settings = hiera('jenkins')
   $jenkins_password = hiera('creds_jenkins_user_password')
-  $admin_name = $auth['admin_name']
   $jenkins_rsa = hiera('jenkins_rsa')
 
   file {'/etc/httpd/conf.d/ports.conf':
@@ -76,12 +75,6 @@ class jenkins {
                 File['/var/lib/jenkins'],
                 File['/var/cache/jenkins'],
                 File['/var/lib/jenkins/config.xml']],
-  }
-
-  exec { 'shutdown_jenkins':
-    provider    => 'shell',
-    command     => 'service jenkins stop',
-    refreshonly => true,
   }
 
   user { 'jenkins':
@@ -166,17 +159,7 @@ class jenkins {
 
   file {'/etc/jenkins_admin.name':
     ensure  => file,
-    content => inline_template('<%= @admin_name %>'),
-    notify  => [Exec['shutdown_jenkins'], Exec['change_admin_name']],
-  }
-
-  exec {'change_admin_name':
-    command     => "sed -i s/\"$(grep hudson.model.Hudson.Administer /var/lib/jenkins/config.xml | grep -v jenkins | sed -re 's/.+:(.+)<.+/\\1/g')\"/${admin_name}/ /var/lib/jenkins/config.xml",
-    provider    => 'shell',
-    refreshonly => true,
-    notify      => Service['jenkins'],
-    require     => Exec['shutdown_jenkins'],
-    onlyif      => 'test -f /var/lib/jenkins/config.xml',
+    content => inline_template('admin'),
   }
 
   file {'/var/lib/jenkins/config.xml':

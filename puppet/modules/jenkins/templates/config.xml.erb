@@ -7,69 +7,69 @@
   <useSecurity>true</useSecurity>
   <authorizationStrategy class="hudson.security.GlobalMatrixAuthorizationStrategy">
     <permission>com.cloudbees.plugins.credentials.CredentialsProvider.Create:jenkins</permission>
-    <permission>com.cloudbees.plugins.credentials.CredentialsProvider.Create:<%= @auth['admin_name'] %></permission>
+    <permission>com.cloudbees.plugins.credentials.CredentialsProvider.Create:admin</permission>
     <permission>com.cloudbees.plugins.credentials.CredentialsProvider.Delete:jenkins</permission>
-    <permission>com.cloudbees.plugins.credentials.CredentialsProvider.Delete:<%= @auth['admin_name'] %></permission>
+    <permission>com.cloudbees.plugins.credentials.CredentialsProvider.Delete:admin</permission>
     <permission>com.cloudbees.plugins.credentials.CredentialsProvider.ManageDomains:jenkins</permission>
-    <permission>com.cloudbees.plugins.credentials.CredentialsProvider.ManageDomains:<%= @auth['admin_name'] %></permission>
+    <permission>com.cloudbees.plugins.credentials.CredentialsProvider.ManageDomains:admin</permission>
     <permission>com.cloudbees.plugins.credentials.CredentialsProvider.Update:jenkins</permission>
-    <permission>com.cloudbees.plugins.credentials.CredentialsProvider.Update:<%= @auth['admin_name'] %></permission>
+    <permission>com.cloudbees.plugins.credentials.CredentialsProvider.Update:admin</permission>
     <permission>com.cloudbees.plugins.credentials.CredentialsProvider.View:jenkins</permission>
-    <permission>com.cloudbees.plugins.credentials.CredentialsProvider.View:<%= @auth['admin_name'] %></permission>
+    <permission>com.cloudbees.plugins.credentials.CredentialsProvider.View:admin</permission>
     <permission>hudson.model.Computer.Build:jenkins</permission>
-    <permission>hudson.model.Computer.Build:<%= @auth['admin_name'] %></permission>
+    <permission>hudson.model.Computer.Build:admin</permission>
     <permission>hudson.model.Computer.Configure:jenkins</permission>
-    <permission>hudson.model.Computer.Configure:<%= @auth['admin_name'] %></permission>
+    <permission>hudson.model.Computer.Configure:admin</permission>
     <permission>hudson.model.Computer.Connect:jenkins</permission>
-    <permission>hudson.model.Computer.Connect:<%= @auth['admin_name'] %></permission>
+    <permission>hudson.model.Computer.Connect:admin</permission>
     <permission>hudson.model.Computer.Create:jenkins</permission>
-    <permission>hudson.model.Computer.Create:<%= @auth['admin_name'] %></permission>
+    <permission>hudson.model.Computer.Create:admin</permission>
     <permission>hudson.model.Computer.Delete:jenkins</permission>
-    <permission>hudson.model.Computer.Delete:<%= @auth['admin_name'] %></permission>
+    <permission>hudson.model.Computer.Delete:admin</permission>
     <permission>hudson.model.Computer.Disconnect:jenkins</permission>
-    <permission>hudson.model.Computer.Disconnect:<%= @auth['admin_name'] %></permission>
+    <permission>hudson.model.Computer.Disconnect:admin</permission>
     <permission>hudson.model.Hudson.Administer:jenkins</permission>
-    <permission>hudson.model.Hudson.Administer:<%= @auth['admin_name'] %></permission>
+    <permission>hudson.model.Hudson.Administer:admin</permission>
     <permission>hudson.model.Hudson.ConfigureUpdateCenter:jenkins</permission>
-    <permission>hudson.model.Hudson.ConfigureUpdateCenter:<%= @auth['admin_name'] %></permission>
+    <permission>hudson.model.Hudson.ConfigureUpdateCenter:admin</permission>
     <permission>hudson.model.Hudson.Read:anonymous</permission>
     <permission>hudson.model.Hudson.Read:jenkins</permission>
-    <permission>hudson.model.Hudson.Read:<%= @auth['admin_name'] %></permission>
+    <permission>hudson.model.Hudson.Read:admin</permission>
     <permission>hudson.model.Hudson.RunScripts:jenkins</permission>
-    <permission>hudson.model.Hudson.RunScripts:<%= @auth['admin_name'] %></permission>
+    <permission>hudson.model.Hudson.RunScripts:admin</permission>
     <permission>hudson.model.Hudson.UploadPlugins:jenkins</permission>
-    <permission>hudson.model.Hudson.UploadPlugins:<%= @auth['admin_name'] %></permission>
+    <permission>hudson.model.Hudson.UploadPlugins:admin</permission>
     <permission>hudson.model.Item.Build:jenkins</permission>
-    <permission>hudson.model.Item.Build:<%= @auth['admin_name'] %></permission>
+    <permission>hudson.model.Item.Build:admin</permission>
     <permission>hudson.model.Item.Cancel:jenkins</permission>
-    <permission>hudson.model.Item.Cancel:<%= @auth['admin_name'] %></permission>
+    <permission>hudson.model.Item.Cancel:admin</permission>
     <permission>hudson.model.Item.Configure:jenkins</permission>
-    <permission>hudson.model.Item.Configure:<%= @auth['admin_name'] %></permission>
+    <permission>hudson.model.Item.Configure:admin</permission>
     <permission>hudson.model.Item.Create:jenkins</permission>
-    <permission>hudson.model.Item.Create:<%= @auth['admin_name'] %></permission>
+    <permission>hudson.model.Item.Create:admin</permission>
     <permission>hudson.model.Item.Delete:jenkins</permission>
-    <permission>hudson.model.Item.Delete:<%= @auth['admin_name'] %></permission>
+    <permission>hudson.model.Item.Delete:admin</permission>
     <permission>hudson.model.Item.Discover:jenkins</permission>
-    <permission>hudson.model.Item.Discover:<%= @auth['admin_name'] %></permission>
+    <permission>hudson.model.Item.Discover:admin</permission>
     <permission>hudson.model.Item.Read:anonymous</permission>
     <permission>hudson.model.Item.Read:jenkins</permission>
-    <permission>hudson.model.Item.Read:<%= @auth['admin_name'] %></permission>
+    <permission>hudson.model.Item.Read:admin</permission>
     <permission>hudson.model.Item.Workspace:jenkins</permission>
-    <permission>hudson.model.Item.Workspace:<%= @auth['admin_name'] %></permission>
+    <permission>hudson.model.Item.Workspace:admin</permission>
     <permission>hudson.model.Run.Delete:jenkins</permission>
-    <permission>hudson.model.Run.Delete:<%= @auth['admin_name'] %></permission>
+    <permission>hudson.model.Run.Delete:admin</permission>
     <permission>hudson.model.Run.Update:jenkins</permission>
-    <permission>hudson.model.Run.Update:<%= @auth['admin_name'] %></permission>
+    <permission>hudson.model.Run.Update:admin</permission>
     <permission>hudson.model.View.Configure:jenkins</permission>
-    <permission>hudson.model.View.Configure:<%= @auth['admin_name'] %></permission>
+    <permission>hudson.model.View.Configure:admin</permission>
     <permission>hudson.model.View.Create:jenkins</permission>
-    <permission>hudson.model.View.Create:<%= @auth['admin_name'] %></permission>
+    <permission>hudson.model.View.Create:admin</permission>
     <permission>hudson.model.View.Delete:jenkins</permission>
-    <permission>hudson.model.View.Delete:<%= @auth['admin_name'] %></permission>
+    <permission>hudson.model.View.Delete:admin</permission>
     <permission>hudson.model.View.Read:jenkins</permission>
-    <permission>hudson.model.View.Read:<%= @auth['admin_name'] %></permission>
+    <permission>hudson.model.View.Read:admin</permission>
     <permission>hudson.scm.SCM.Tag:jenkins</permission>
-    <permission>hudson.scm.SCM.Tag:<%= @auth['admin_name'] %></permission>
+    <permission>hudson.scm.SCM.Tag:admin</permission>
   </authorizationStrategy>
   <securityRealm class="org.jenkinsci.plugins.reverse_proxy_auth.ReverseProxySecurityRealm" plugin="reverse-proxy-auth-plugin@1.4.0">
     <proxyTemplate/>
