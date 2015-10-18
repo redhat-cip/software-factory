@@ -31,8 +31,8 @@ Leave empty if not required.
 Local user management
 ---------------------
 
-For simple deployments without a LDAP backend for users or github authentication,
-user management (except for the default admin user, defined in the sfconfig.yaml file)
-can be done through the SFmanager command-line utility.
-
-This backend allow to have a little user database locally.
+For simple deployments without a LDAP backend or Github authentication,
+you can manage the users through the SFManager command-line utility in the `User Management` section.
+(except for the default admin user, defined in the sfconfig.yaml file)
+can be done through the SFmanager command-line utility `User management`. This backend allows to have
+a user database locally.

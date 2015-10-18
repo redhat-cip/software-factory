@@ -9,7 +9,7 @@ a complete operating system and all services pre-installed.
 While SF really benefits from running on top of OpenStack, the image
 can also be used standalone.
 
-Download the latest image from: https://github.com/redhat-cip/software-factory
+Find the link to the latest image from: https://github.com/redhat-cip/software-factory
 
 
 Requirements
@@ -17,18 +17,17 @@ Requirements
 
 SF deployment needs:
 
-* Access to an OpenStack Cloud tenant or a standalone CentOS 7
-* Minimum 40GB of hardrive and 4GB of memory
-* Recommended 80GB of hardrive and 8GB of memory
-* FQDN required for web interface OAuth authentication callback
+* **Minimum** 40GB of hardrive and 4GB of memory
+* **Recommended** 80GB of hardrive and 8GB of memory
+* A name entry (in a DNS or local resolver) for the FQDN of your SF deployment. SF can only be accessed by its FQDN (Authentication will fail if accessed via its IP)
 
-SF can also manage tests running slave instances and test artifact, nodepool and zuul publisher will need:
+If you intend to manage your jobs/tests on slaves via Nodepool or publish artifacts on Swift you'll need:
 
 * One or more dedicated OpenStack tenant to run instance
-* A swift endpoint to store and publish tests artifacts
+* A Swift endpoint to store and publish jobs/tests artifacts
 
 Note that SF will use "tests.dom" as default FQDN and if the FQDN doesn't resolve it needs to be locally
-set in etc hosts file because the web interface authentication mechanism redirects browser to the FQDN.
+set in */etc/hosts* file because the web interface authentication mechanism redirects browser to the FQDN.
 
 Always make sure to use the last available tag, the example below use the 2.0.0 version. Release
 digest are signed with gpg, install the key and verify content with:
@@ -42,6 +41,8 @@ digest are signed with gpg, install the key and verify content with:
 OpenStack based deployment
 --------------------------
 
+An account on an OpenStack cloud provider is needed.
+
 Install image
 .............
 
@@ -50,54 +51,53 @@ SF image needs to be uploaded to Glance:
 .. code-block:: bash
 
  $ wget http://os.enocloud.com:8080/v1/AUTH_70aab03f69b549cead3cb5f463174a51/edeploy-roles/softwarefactory-C7.0-2.0.0.img.qcow2
- $ glance image-create --disk-format qcow2 --container-format bare --name sf-2.0.0 --file softwarefactory-C7.0-2.0.0.img.qcow2
+ $ glance image-create --progress --disk-format qcow2 --container-format bare --name sf-2.0.0 --file softwarefactory-C7.0-2.0.0.img.qcow2
 
 Deploy with Heat
 ................
 
-A Heat template is available to automate the deployment process. It requires the SF image uuid and external Neutron network uuid as
-well as the FQDN of the deployment (domain parameter):
+A Heat template is available to automate the deployment process.
+
+It requires:
+
+* the SF image UUID
+* the external Neutron network UUID
+* the FQDN of the deployment (domain parameter)
+* a key-pair name (you should have already created it on your account)
 
 .. code-block:: bash
 
  $ wget http://os.enocloud.com:8080/v1/AUTH_70aab03f69b549cead3cb5f463174a51/edeploy-roles/softwarefactory-C7.0-2.0.0.hot
- $ heat stack-create ./softwarefactory-C7.0-2.0.0.hot -P key_name=SSH_KEY;domain=fqdn_of_deployment;image_id=GLANCE_UUID;sf_root_size=80;ext_net_uuid=NETWORK_UUID
+ $ heat stack-create ./softwarefactory-C7.0-2.0.0.hot -P key_name=SSH_KEY;domain=fqdn_of_deployment;image_id=GLANCE_UUID;ext_net_uuid=NETWORK_UUID
 
+Once the stack is created jump to the section `Configuration and reconfiguration`.
 
 Deploy with Nova
 ................
 
-When Heat is not available, SF can also be deployed manually using the following process:
+When Heat is not available, SF can also be deployed manually using the Nova CLI, or
+using the web UI of your cloud provider.
 
-* Start the instance and open an admin (root) shell with ssh.
-* Edit the configuration sfconfig.yaml (Set the domain and admin username/password).
-* Run configuration script.
+Once the VM is created jump to the section `Configuration and reconfiguration`.
+Don't forget to manage by yourself the security groups for the SF deployment `Network Access`.
 
-.. code-block:: bash
+Outside Openstack
+-----------------
 
- $ nova boot --flavor m1.large --image sf-2.0.0 sf-2.0.0 --key-name SSH_KEY
- $ ssh -A root@sf_instance
- [root@managesf ~]# vim /etc/puppet/hiera/sf/sfconfig.yaml
- [root@managesf ~]# sfconfig.sh
-
-Standalone deployment
----------------------
-
-Standalone deployment (local hypervisor)
-........................................
+Deploy on a local hypervisor
+............................
 
 SF can be deployed on a hypervisor without a metadata server accessible (needed by cloud-init).
 This is often the case when you are using QEMU, KVM or even VirtualBox. You can boot
-a new VM using the SF image and then login with "root:changeme".
-
-**Please change that default password at the first boot !**
+a new VM using the SF image and then login via the console using root user.
 
 
-Standalone deployment (LXC)
-...........................
+Then jump to `Configuration and reconfiguration`.
 
+Deployment inside a LXC container
+.................................
 
-SF can also be deployed standalone with libvirtd-lxc.
+You need a CentOS 7 VM or physical machine. The libvirtd-lxc package is needed.
 
 .. code-block:: bash
 
@@ -106,39 +106,40 @@ SF can also be deployed standalone with libvirtd-lxc.
  $ git checkout 2.0.0
  $ ./sfstack.sh
 
-This method of deployment is mostly useful for testing, it uses default configuration with "tests.dom" domain name and
-"admin/userpass" admin username/password.
+This method of deployment is mostly useful for testing, it uses the default configuration
+with "tests.dom" as the FQDN and "admin/userpass" as admin credentials.
 
 
-Multi-node deployment
----------------------
+Multi-node deployment (WIP)
+---------------------------
 
-Multi-node deployment is still a work in progress. However all services are configured in virtual domains and are designed
-to run independently. Integration tests are currently testing two types of deployments (called reference architectures):
+Multi-node deployment is still a work in progress. However all services are configured in
+virtual domains and are designed to run independently. Integration tests are currently
+testing two types of deployments (called reference architectures):
 
 * 1node-allinone: all services run on the same instance.
 * 2nodes-jenkins: CI components (jenkins/zuul/nodepool) run on another instance.
 
+Configuration and reconfiguration
+---------------------------------
 
-Deployment configuration and reconfiguration
---------------------------------------------
+First time: **Please read `Root password consideration`**.
 
-To change settings like the FQDN, enable github replication, authentication backend or cloud provider...
-You need to edit sfconfig.yaml: */etc/puppet/hiera/sf/sfconfig.yaml*.
-The configuration script (*sfconfig.sh*) needs to executed (again) after:
+* Connect as (root) via SSH.
+* Edit the configuration sfconfig.yaml and set the configuration according to your needs.
+* Run configuration script.
 
 .. code-block:: bash
 
+ $ ssh -A root@sf_instance
  [root@managesf ~]# vim /etc/puppet/hiera/sf/sfconfig.yaml
  [root@managesf ~]# sfconfig.sh
-
-If you intend to reconfigure the domain on an already deployed SF, please use the *-d* option of *bootstraps.sh* script.
 
 Network Access
 --------------
 
 All network access goes through the main instance (called managesf). The FQDN
-used during deployment needs to resolved to the instance floating ip. SF network
+used during deployment needs to resolved to the instance IP. SF network
 access goes through TCP ports:
 
 * 22 for ssh access to reconfigure and update deployment
@@ -146,8 +147,42 @@ access goes through TCP ports:
 * 29418 for gerrit access to submit code review
 * 8080/45452 for Jenkins swarm slave connection
 
-Note that Heat deployment and Standalone deployment automatically configure
+Note that Heat deployment and LXC deployment automatically configure
 security group rules to allow these connections to managesf.
 
+Access Software Factory
+-----------------------
 
-SF is now ready to be used, dashboard is available at https://FQDN and admin user can authenticate using "Internal Login".
+The Dashboard is available at https://FQDN and admin user can authenticate
+using "Internal Login". If you used the default domain *tests.dom* then
+SF allows (user1, user2, user3) with the default "userpass" password to connect.
+
+If you need more information about authentication mechanisms on SF please refer to
+`Software Factory Authentication`.
+
+Root password consideration
+---------------------------
+
+Software Factory image comes with an empty root password. root login is only
+allowed via the console (**root login with password is not allowed via SSH**). The
+empty root password is a facility for folks booting the SF image via a local
+hypervisor (without a metadata server for cloud-init).
+
+It is therefore **highly** recommended to deactivate root login via the console
+**even booted on OpenStack**.
+
+In order to do that:
+
+.. code-block:: bash
+
+  # echo "" > /etc/securetty
+
+However setting a strong password is one of your possibility.
+
+In environments such as OpenStack a metadata server is accessible and the user public
+key will be installed for root and centos users. So user can access the SF node
+via SSH using its private SSH key.
+
+**Outside Openstack, when using a local hypervisor** at first root login via the
+console the user need to add its public ssh key in */root/.ssh/authorized_key* in
+order to be able to access SF node via SSH.
