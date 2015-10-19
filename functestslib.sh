@@ -134,6 +134,8 @@ function get_logs {
     sudo cp -r /var/lib/lxc/managesf/rootfs/var/log/nodepool/ ${ARTIFACTS_DIR}/nodepool/
     sudo cp -r /var/lib/lxc/managesf/rootfs/var/lib/jenkins/jobs/ ${ARTIFACTS_DIR}/jenkins-jobs/
     sudo cp -r /var/lib/lxc/managesf/rootfs/root/config/ ${ARTIFACTS_DIR}/config-project
+    sudo cp -r /var/lib/lxc/managesf/rootfs/etc/puppet/hiera/sf/ ${ARTIFACTS_DIR}/hiera
+    sudo cp -r /var/lib/lxc/managesf/rootfs/root/sf-bootstrap-data/hiera/ ${ARTIFACTS_DIR}/sf-bootstrap-data-hiera
     ) 2> /dev/null
     sudo chown -R ${USER} ${ARTIFACTS_DIR}
     checkpoint "get_logs"
