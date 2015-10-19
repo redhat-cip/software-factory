@@ -83,8 +83,6 @@ nodepool:
     nodepool_os_pool: 'nova'
     # Max amount of Slaves that can be started
     nodepool_os_pool_max_amount: 10
-    # Public IP of deployment, will land in slave /etc/hosts
-    public_ip: 127.0.0.1
     # Delay in seconds between two tasks within nodepool
     nodepool_provider_rate: 10.0
 

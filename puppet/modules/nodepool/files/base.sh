@@ -38,11 +38,6 @@ sudo curl -o /usr/local/bin/zuul_swift_upload.py \
     https://raw.githubusercontent.com/openstack-infra/project-config/master/jenkins/scripts/zuul_swift_upload.py
 sudo chmod +x /usr/local/bin/zuul_swift_upload.py
 
-# The Swarm client should be started by Jenkins via a request from Nodepool.
-# If public_ip has been set in sfconfig.yaml then the slave can be aware
-# of the Jenkins master IP via /etc/hosts.
-echo "$NODEPOOL_SF_PUBLICIP $NODEPOOL_SF_TOPDOMAIN" | sudo tee --append /etc/hosts
-
 # sync FS, otherwise there are 0-byte sized files from the yum/pip installations
 sudo sync
 
