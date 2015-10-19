@@ -29,7 +29,7 @@ git_dir=/var/lib/zuul/git
 zuul_url=http://<%= @fqdn %>/zuul/p
 log_config=/etc/zuul/merger-logging.conf
 
-<% if @logs['swift_logsexport_activated'] != false %>
+<% if not @logs['disabled'] %>
 [swift]
 default_container=<%= @logs['swift_logsexport_container'] %>
 default_logserver_prefix=<%= @logs['swift_logsexport_logserver_prefix'] %>

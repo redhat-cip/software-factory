@@ -88,8 +88,6 @@ nodepool:
 
 logs:
     disabled: True
-    # Zuul configuration for logs/artifacts export to a Swift server
-    swift_logsexport_activated: false
     swift_logsexport_container: logs
     swift_logsexport_logserver_prefix: http://logs.tests.dom:8080/v1/AUTH_test/logs
     # Use Swift auth url for auth v1 and keystone auth url for auth v2

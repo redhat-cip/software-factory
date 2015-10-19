@@ -22,5 +22,9 @@ if "admin_name" in d["authentication"]:
 if 'public_ip' in d['nodepool']:
     del d['nodepool']['public_ip']
 
+# Use disabled key instead (2.0.1 -> 2.0.2)
+if 'swift_logsexport_activated' in d['logs']:
+    del d['logs']['swift_logsexport_activated']
+
 yaml.dump(d, open(argv[1], "w"), default_flow_style=False)
 exit(0)
