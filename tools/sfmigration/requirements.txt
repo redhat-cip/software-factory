@@ -3,5 +3,5 @@ nose
 mock
 requests>=2.4.1
 testfixtures
-python-redmine
+python-redmine==1.2.0
 github3.py>=1.0.0a1
