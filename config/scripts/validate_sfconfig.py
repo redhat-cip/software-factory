@@ -26,5 +26,22 @@ if 'public_ip' in d['nodepool']:
 if 'swift_logsexport_activated' in d['logs']:
     del d['logs']['swift_logsexport_activated']
 
+# Change nodepool setting structure (2.0.1 -> 2.0.2)
+nodepool = d['nodepool']
+if not 'providers' in nodepool:
+    mapping = {'nodepool_os_username': 'username',
+               'nodepool_os_password': 'password',
+               'nodepool_os_project_id': 'project-id',
+               'nodepool_os_auth_url': 'auth-url',
+               'nodepool_os_pool': 'pool',
+               'nodepool_os_pool_max_amount': 'max-servers',
+               'nodepool_provider_rate': 'rate'}
+    nodepool['providers'] = []
+    provider = {'name': 'default'}
+    for k, v in mapping.items():
+        provider[v] = nodepool[k]
+        del nodepool[k]
+    nodepool['providers'].append(provider)
+
 yaml.dump(d, open(argv[1], "w"), default_flow_style=False)
 exit(0)

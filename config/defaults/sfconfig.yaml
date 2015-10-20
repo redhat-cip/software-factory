@@ -73,18 +73,18 @@ backup:
 
 nodepool:
     disabled: True
-    # Nodepool configuration
-    # You need to set the correct OpenStack credentials to enable Nodepool support
-    nodepool_os_username: 'username'
-    nodepool_os_password: 'secret'
-    nodepool_os_project_id: 'tenantname'
-    nodepool_os_auth_url: 'http://localhost:35357/v2.0'
-    # Compute availability zone
-    nodepool_os_pool: 'nova'
-    # Max amount of Slaves that can be started
-    nodepool_os_pool_max_amount: 10
-    # Delay in seconds between two tasks within nodepool
-    nodepool_provider_rate: 10.0
+    providers:
+      - name: default
+        auth-url: http://localhost:35357/v2.0
+        project-id: tenantname
+        username: username
+        password: secret
+        # Compute availability zone
+        pool: nova
+        # Max amount of Slaves that can be started
+        max-servers: 10
+        # Delay in seconds between two tasks within nodepool
+        rate: 10.0
 
 logs:
     disabled: True

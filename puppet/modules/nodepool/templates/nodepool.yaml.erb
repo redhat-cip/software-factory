@@ -21,11 +21,27 @@ targets:
       credentials-id: '4f98191e-efbb-4ac4-8131-0e4a8bb2ce14'
 
 providers:
- - name: default
-   username: '<%= @nodepool["nodepool_os_username"] %>'
-   password: '<%= @nodepool["nodepool_os_password"] %>'
-   project-id: '<%= @nodepool["nodepool_os_project_id"] %>'
-   auth-url: '<%= @nodepool["nodepool_os_auth_url"] %>'
-   pool: '<%= @nodepool["nodepool_os_pool"] %>'
-   max-servers: <%= @nodepool["nodepool_os_pool_max_amount"] %>
-   rate: <%= @nodepool["nodepool_provider_rate"] %>
+<% @nodepool['providers'].each do | provider | -%>
+  - name: <%= provider['name'] %>
+<% if provider['auth-url'] -%>
+    auth-url: <%= provider['auth-url'] %>
+<% end -%>
+<% if provider['project-id'] -%>
+    project-id: <%= provider['project-id'] %>
+<% end -%>
+<% if provider['username'] -%>
+    username: <%= provider['username'] %>
+<% end -%>
+<% if provider['password'] -%>
+    password: <%= provider['password'] %>
+<% end -%>
+<% if provider['pool'] -%>
+    pool: <%= provider['pool'] %>
+<% end -%>
+<% if provider['max-server'] -%>
+    max-servers: <%= provider['max-servers'] %>
+<% end -%>
+<% if provider['rate'] -%>
+    rate: <%= provider['rate'] %>
+<% end -%>
+<% end -%>
