@@ -109,26 +109,10 @@ to adapt sfconfig.yaml. Below is an example of configuration.
  nodepool_os_pool: 'nova'
  # Max amount of Slaves that can be started
  nodepool_os_pool_max_amount: 10
- # Public IP of deployment, will land in slave /etc/hosts
- public_ip: 127.0.0.1
  # Delay in seconds between two tasks within nodepool
  nodepool_provider_rate: 10.0
 
-To apply the configuration you need to run again the bootstrap.sh script. Actually there
-is still some manual commands to apply to let Nodepool use this new configuration.
-
-On the SF via SSH perform the following:
-
-.. code-block:: bash
-
- $ git clone http://tests.dom/r/config /tmp/config
- $ mkdir /tmp/nodepool
- $ cp /tmp/config/nodepool/*.yaml /tmp/nodepool/
- $ cp /etc/nodepool/_nodepool.yaml /tmp/nodepool/nodepool.yaml
- $ /usr/local/bin/sf-nodepool-conf-merger.py merged
- $ nodepool -c /tmp/nodepool/merged config-validate
- $ sudo cp /tmp/nodepool/merged /etc/nodepool/nodepool.yaml
- $ service nodepool restart
+To apply the configuration you need to run again the sfconfig.sh script.
 
 You should be able to validate the configuration via the nodepool client by checking if
 Nodepool is able to authenticate on the cloud account.

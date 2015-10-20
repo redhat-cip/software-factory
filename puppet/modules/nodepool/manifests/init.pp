@@ -25,8 +25,6 @@ class nodepool {
   $nodepool_mysql_address = "mysql.${fqdn}"
   $nodepool_sql_password = hiera('creds_nodepool_sql_pwd')
 
-  $provider = 'systemd'
-
   file { 'nodepool_service':
     path    => '/lib/systemd/system/nodepool.service',
     owner   => 'jenkins',
@@ -67,6 +65,14 @@ class nodepool {
     owner  => 'root',
     group  => 'root',
     source => 'puppet:///modules/nodepool/sf-nodepool-conf-merger.py',
+  }
+
+  file { '/usr/local/bin/sf-nodepool-conf-update.sh':
+    ensure => file,
+    mode   => '0755',
+    owner  => 'root',
+    group  => 'root',
+    content => template('nodepool/sf-nodepool-conf-update.sh.erb'),
   }
 
   file { '/usr/share/sf-nodepool/base.sh':
@@ -112,13 +118,9 @@ class nodepool {
     require => [File['/etc/nodepool/scripts']],
   }
 
-  # This file allow an inital start of nodepool
-  # Puppet won't replace if alread present
-  file { '/etc/nodepool/nodepool.yaml':
-    ensure  => file,
+  file { '/etc/nodepool/nodepool.logging.conf':
     owner   => 'jenkins',
-    replace => 'no',
-    content => template('nodepool/nodepool.yaml.erb'),
+    content => template('nodepool/nodepool.logging.conf'),
     require => [File['/etc/nodepool']],
   }
 
@@ -127,23 +129,25 @@ class nodepool {
     owner   => 'jenkins',
     content => template('nodepool/nodepool.yaml.erb'),
     require => [File['/etc/nodepool']],
+    notify  => Exec['build_etc_nodepool'],
   }
 
-  file { '/etc/nodepool/nodepool.logging.conf':
-    owner   => 'jenkins',
-    content => template('nodepool/nodepool.logging.conf'),
-    require => [File['/etc/nodepool']],
+  exec { 'build_etc_nodepool':
+    command     => '/usr/local/bin/sf-nodepool-conf-update.sh apply',
+    logoutput   => true,
+    onlyif      => '/usr/bin/test -f /root/config.kicked',
+    require     => Exec['kick_jjb'],
+    refreshonly => true,
   }
 
   service { 'nodepool':
     ensure     => running,
     enable     => true,
     hasrestart => true,
-    provider   => $provider,
     require    => [File['nodepool_service'],
                     File['/var/run/nodepool'],
                     File['/var/log/nodepool/'],
-                    File['/etc/nodepool/nodepool.yaml'],
+                    File['/etc/nodepool/_nodepool.yaml'],
                     File['/etc/nodepool/nodepool.logging.conf'],
                     File['/etc/nodepool/scripts'],
                     ],

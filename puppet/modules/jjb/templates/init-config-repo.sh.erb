@@ -91,7 +91,7 @@ if [ "$upgrade" = "true" ]; then
     git config --add gitreview.username "$admin"
     # Only perform the commit/review if the upgrade bring new modifications
     if [ -n "$(git ls-files -o -m --exclude-standard)" ]; then
-        git commit -a --author "$admin <$admin_email>" -m "Upgrade of base JJB/Zuul files"
+        git commit -a --author "$admin <$admin_email>" -m "Upgrade of base JJB/Zuul/Nodepool files"
         (eval $(ssh-agent) && ssh-add $gerrit_ssh_key && git review -s)
         git review -i
     fi

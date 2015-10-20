@@ -4,7 +4,7 @@ import os
 import sys
 import yaml
 
-workdir = "/tmp/nodepool"
+workdir = os.environ.get('WORKDIR', '/tmp/nodepool')
 main = 'nodepool.yaml'
 images = 'images.yaml'
 labels = 'labels.yaml'

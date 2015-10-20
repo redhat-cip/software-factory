@@ -18,7 +18,6 @@ class jjb ($gerrit = hiera('gerrit')) {
   require hosts
   require jenkins
   require zuul
-  require nodepool
 
   $fqdn = hiera('fqdn')
   $auth = hiera('authentication')

@@ -1,0 +1,27 @@
+#!/bin/bash
+
+gateway_url="<%= @url['gateway_url'] %>"
+url=${gateway_url}/r/config
+workdir=$(mktemp -d)
+toclean="${workdir}"
+
+if [ ! -d .git ]; then
+    clonedir=$(mktemp -d)/config
+    git clone $url $clonedir
+    cd $clonedir
+    toclean="${toclean} ${clonedir}"
+fi
+
+mv nodepool/*.yaml ${workdir}/
+cp /etc/nodepool/_nodepool.yaml ${workdir}/nodepool.yaml
+WORKDIR=$workdir /usr/local/bin/sf-nodepool-conf-merger.py merged
+nodepool -c ${workdir}/merged config-validate
+
+if [ "$1" = "apply" ]; then
+    sudo cp ${workdir}/merged /etc/nodepool/nodepool.yaml
+    # No need to reload nodepool service - it re-read its conf files.
+    # copy nodepool script-dir in /etc/nodepool/scripts
+    cp -Rvf nodepool/* /etc/nodepool/scripts/
+fi
+
+rm -Rf ${toclean}
