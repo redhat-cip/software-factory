@@ -25,6 +25,15 @@ class nodepool {
   $nodepool_mysql_address = "mysql.${fqdn}"
   $nodepool_sql_password = hiera('creds_nodepool_sql_pwd')
 
+  if $nodepool['disabled'] {
+    $running = false
+    $enabled = false
+  }
+  else {
+    $running = true
+    $enabled = true
+  }
+
   file { 'nodepool_service':
     path    => '/lib/systemd/system/nodepool.service',
     owner   => 'jenkins',
@@ -141,8 +150,8 @@ class nodepool {
   }
 
   service { 'nodepool':
-    ensure     => running,
-    enable     => true,
+    ensure     => $running,
+    enable     => $enabled,
     hasrestart => true,
     require    => [File['nodepool_service'],
                     File['/var/run/nodepool'],
