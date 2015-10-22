@@ -18,7 +18,7 @@ layout_config=/etc/zuul/layout.yaml
 log_config=/etc/zuul/logging.conf
 pidfile=/var/run/zuul/zuul.pid
 state_dir=/var/lib/zuul
-status_url=http://<%= @url['zuul_pub_url'] %>
+status_url=<%= @url['zuul_pub_url'] %>
 job_name_in_report=true
 report_times=true
 
