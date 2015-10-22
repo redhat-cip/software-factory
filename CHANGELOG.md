@@ -1,10 +1,28 @@
 # Change Log
 
-## 2.0.2 [unreleased]
+## 2.0.2 2015-10-23
+
+### Added
+
+- disabled setting for nodepool and swift
+- Multi providers support for Nodepool
+
+### Changed
+
+- Removed default root password to ease console access
+
+### Fixed
+
+- python-redmine version capped
+- Fix incorrect jenkins url in gerrit comment
+- Avoid manual step to configure Nodepool provider
+- Fix init test feature of managesf
 
 ### Removed
 
-- Admin name settings, it's now forced to "admin"
+- Admin name settings, it is now forced to "admin"
+- public_ip settings for nodepool
+
 
 ## 2.0.1 2015-10-16
 
