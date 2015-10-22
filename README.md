@@ -21,3 +21,7 @@ Previous release is 2.0.0:
 
 * Qcow2 image: http://os.enocloud.com:8080/v1/AUTH_70aab03f69b549cead3cb5f463174a51/edeploy-roles/softwarefactory-C7.0-2.0.0.img.qcow2
 * Signed digest: http://os.enocloud.com:8080/v1/AUTH_70aab03f69b549cead3cb5f463174a51/edeploy-roles/softwarefactory-C7.0-2.0.0.digest
+
+Current dev version is 2.0.2:
+
+* Qcow2 image: http://os.enocloud.com:8080/v1/AUTH_70aab03f69b549cead3cb5f463174a51/edeploy-roles/softwarefactory-C7.0-2.0.2.img.qcow2

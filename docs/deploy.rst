@@ -80,9 +80,22 @@ When Heat is not available, SF can also be deployed manually using the following
  [root@managesf ~]# vim /etc/puppet/hiera/sf/sfconfig.yaml
  [root@managesf ~]# sfconfig.sh
 
-
 Standalone deployment
 ---------------------
+
+Standalone deployment (local hypervisor)
+........................................
+
+SF can be deployed on a hypervisor without a metadata server accessible (needed by cloud-init).
+This is often the case when you are using QEMU, KVM or even VirtualBox. You can boot
+a new VM using the SF image and then login with "root:changeme".
+
+**Please change that default password at the first boot !**
+
+
+Standalone deployment (LXC)
+...........................
+
 
 SF can also be deployed standalone with libvirtd-lxc.
 
@@ -107,12 +120,12 @@ to run independently. Integration tests are currently testing two types of deplo
 * 2nodes-jenkins: CI components (jenkins/zuul/nodepool) run on another instance.
 
 
-Deployment reconfiguration
---------------------------
+Deployment configuration and reconfiguration
+--------------------------------------------
 
 To change settings like the FQDN, enable github replication, authentication backend or cloud provider...
 You need to edit sfconfig.yaml: */etc/puppet/hiera/sf/sfconfig.yaml*.
-The configuration script (*sfconfig.sh*) needs to executed again after:
+The configuration script (*sfconfig.sh*) needs to executed (again) after:
 
 .. code-block:: bash
 

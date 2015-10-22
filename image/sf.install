@@ -91,4 +91,10 @@ EOF
 
     # Deactivate default disabling of root ssh access of cloud-init
     sed -i 's/disable_root:.*/disable_root: 0/' ${dir}/etc/cloud/cloud.cfg
+    
+    # Set a default password. This is needed when image is booted when metadata servers
+    # are not available. Cloudinit will deactivate root auth by password.
+    do_chroot ${dir} bash -c "passwd -d root"
+    # Be sure sshd disallow authentication by password (only allowed by key)
+    sed -i 's/^PasswordAuthentication.*/PasswordAuthentication no/' ${dir}/etc/ssh/sshd_config
 }
