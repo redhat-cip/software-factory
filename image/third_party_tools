@@ -104,8 +104,9 @@ JENKINS_POST_BUILDSCRIPT_PLUGIN_URL="http://updates.jenkins-ci.org/download/plug
 
 JENKINS_THEME_PLUGIN_URL="http://updates.jenkins-ci.org/latest/simple-theme-plugin.hpi"
 JENKINS_ZMQ_PLUGIN_URL="http://updates.jenkins-ci.org/latest/zmq-event-publisher.hpi"
+JENKINS_DASHBOARD_PLUGIN_URL="http://updates.jenkins-ci.org/latest/dashboard-view.hpi"
 
-URL_LIST="$URL_LIST $JENKINS_SWARM_CLIENT_URL $JENKINS_SWARM_PLUGIN_URL $JENKINS_THEME_PLUGIN_URL $JENKINS_CREDENTIALS_BINDING_URL $JENKINS_CREDENTIALS_URL $JENKINS_WORKFLOW_STEP_API_URL $JENKINS_PLAIN_CREDENTIALS_URL $JENKINS_ZMQ_PLUGIN_URL $JENKINS_SSH_AGENT_PLUGIN_URL $JENKINS_GEARMAN_PLUGIN_URL $JENKINS_REVERSE_AUTH_PROXY_PLUGIN_URL $JENKINS_POST_BUILDSCRIPT_PLUGIN_URL"
+URL_LIST="$URL_LIST $JENKINS_SWARM_CLIENT_URL $JENKINS_SWARM_PLUGIN_URL $JENKINS_THEME_PLUGIN_URL $JENKINS_CREDENTIALS_BINDING_URL $JENKINS_CREDENTIALS_URL $JENKINS_WORKFLOW_STEP_API_URL $JENKINS_PLAIN_CREDENTIALS_URL $JENKINS_ZMQ_PLUGIN_URL $JENKINS_SSH_AGENT_PLUGIN_URL $JENKINS_GEARMAN_PLUGIN_URL $JENKINS_REVERSE_AUTH_PROXY_PLUGIN_URL $JENKINS_POST_BUILDSCRIPT_PLUGIN_URL $JENKINS_DASHBOARD_PLUGIN_URL"
 
 # etherpad
 ETHERPAD_LITE_VERSION=1.4.0
@@ -160,27 +161,27 @@ PBR_VERSION=0.8.2
 #---- URL health check -------
 
 function test_url {
-  local e=0
-  for url in $URL_LIST; do
-    HTTP_CODE=$(curl -o /dev/null --silent --head --write-out '%{http_code}' "$url")
+    local e=0
+    for url in $URL_LIST; do
+        HTTP_CODE=$(curl -o /dev/null --silent --head --write-out '%{http_code}' "$url")
 
-    if [ $HTTP_CODE -gt 399 ]
-    then
-      e=1
-      echo "$url - Error $HTTP_CODE"
-    else
-      echo "$url - $HTTP_CODE"
-    fi
-  done;
-  for repo in $GIT_REPO_LIST; do
-    git ls-remote --exit-code $repo > /dev/null 2>&1
-    if [ $? -gt 0 ]
-    then
-      echo "No matching refs for $repo"
-      e=1
-    else
-      echo "$repo - 200"
-    fi
-  done;
-  exit $e
+        if [ $HTTP_CODE -gt 399 ]
+        then
+            e=1
+            echo "$url - Error $HTTP_CODE"
+        else
+            echo "$url - $HTTP_CODE"
+        fi
+    done;
+    for repo in $GIT_REPO_LIST; do
+        git ls-remote --exit-code $repo > /dev/null 2>&1
+        if [ $? -gt 0 ]
+        then
+            echo "No matching refs for $repo"
+            e=1
+        else
+            echo "$repo - 200"
+        fi
+    done;
+    exit $e
 }

@@ -122,6 +122,55 @@
       <filterQueue>false</filterQueue>
       <properties class="hudson.model.View$PropertyList"/>
     </hudson.model.AllView>
+    <hudson.plugins.view.dashboard.Dashboard plugin="dashboard-view@2.9.6">
+      <owner class="hudson" reference="../../.."/>
+      <name>Test-Coverage</name>
+      <filterExecutors>false</filterExecutors>
+      <filterQueue>false</filterQueue>
+      <properties class="hudson.model.View$PropertyList"/>
+      <jobFilters/>
+      <columns>
+        <hudson.views.StatusColumn/>
+        <hudson.views.WeatherColumn/>
+        <hudson.views.JobColumn/>
+        <hudson.views.LastSuccessColumn/>
+        <hudson.views.LastFailureColumn/>
+        <hudson.views.LastDurationColumn/>
+        <hudson.views.BuildButtonColumn/>
+      </columns>
+      <recurse>true</recurse>
+      <statusFilter>true</statusFilter>
+      <useCssStyle>false</useCssStyle>
+      <includeStdJobList>false</includeStdJobList>
+      <leftPortletWidth>50%</leftPortletWidth>
+      <rightPortletWidth>50%</rightPortletWidth>
+      <leftPortlets/>
+      <rightPortlets/>
+      <topPortlets>
+        <hudson.plugins.view.dashboard.test.TestStatisticsChart>
+          <id>dashboard_portlet_24055</id>
+          <name>Test Statistics Chart</name>
+        </hudson.plugins.view.dashboard.test.TestStatisticsChart>
+        <hudson.plugins.view.dashboard.test.TestStatisticsPortlet>
+          <id>dashboard_portlet_9830</id>
+          <name>Test Statistics Grid</name>
+          <useBackgroundColors>false</useBackgroundColors>
+          <skippedColor>FDB813</skippedColor>
+          <successColor>71E66D</successColor>
+          <failureColor>E86850</failureColor>
+        </hudson.plugins.view.dashboard.test.TestStatisticsPortlet>
+        <hudson.plugins.view.dashboard.test.TestTrendChart>
+          <id>dashboard_portlet_29637</id>
+          <name>Test Trend Chart</name>
+          <graphWidth>300</graphWidth>
+          <graphHeight>220</graphHeight>
+          <dateRange>0</dateRange>
+          <dateShift>0</dateShift>
+          <displayStatus>ALL</displayStatus>
+        </hudson.plugins.view.dashboard.test.TestTrendChart>
+      </topPortlets>
+      <bottomPortlets/>
+    </hudson.plugins.view.dashboard.Dashboard>
   </views>
   <primaryView>All</primaryView>
   <slaveAgentPort>45452</slaveAgentPort>

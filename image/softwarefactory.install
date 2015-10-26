@@ -168,6 +168,9 @@ function install_jenkins() {
     # Jenkins ZMQ event plugin
     http_fetch $JENKINS_ZMQ_PLUGIN_URL ${dir}/var/lib/jenkins/plugins/$(basename $JENKINS_ZMQ_PLUGIN_URL)
 
+    # Jenkins Dashboard plugin
+    http_fetch $JENKINS_DASHBOARD_PLUGIN_URL ${dir}/var/lib/jenkins/plugins/$(basename $JENKINS_DASHBOARD_PLUGIN_URL)
+
     do_chroot ${dir} bash -c "for x in {0..6}; do ls /etc/rc\${x}.d/*jenkins | xargs rm -f ; done"
 
     # install JJB
