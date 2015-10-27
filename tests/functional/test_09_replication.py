@@ -153,8 +153,6 @@ class TestProjectReplication(Base):
     def test_replication(self):
         """ Test gerrit replication for review process
         """
-        # Temporary disable this test
-        return True
         # Be sure the project, mirror repo, project in config don't exist
         self.deleteMirrorRepo(self.pname)
         self.deleteConfigSection(self.un, self.pname)
@@ -172,7 +170,8 @@ class TestProjectReplication(Base):
         # is discovered.
         # This may take some time (gerrit in some condition take long
         # to be fully up)
-        call("ssh root@192.168.135.54 systemctl restart gerrit", shell=True)
+        call("ssh root@192.168.135.101 systemctl restart gerrit", shell=True)
+        call("ssh root@192.168.135.101 /root/wait4gerrit.sh", shell=True)
 
         # Clone the project and submit it for review
         priv_key_path = set_private_key(config.USERS[self.un]["privkey"])
