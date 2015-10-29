@@ -179,7 +179,7 @@ class jenkins {
   file {'/var/lib/jenkins/credentials.xml':
     ensure  => file,
     replace => false,
-    mode    => '0644',
+    mode    => '0640',
     owner   => 'jenkins',
     group   => 'jenkins',
     source  => 'puppet:///modules/jenkins/credentials.xml',
