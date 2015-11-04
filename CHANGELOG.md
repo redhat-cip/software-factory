@@ -1,5 +1,11 @@
 # Change Log
 
+## 2.0.3 [unreleased]
+
+### Fixed
+
+- Heat templates usage of sfconfig.sh for fqdn setting
+
 ## 2.0.2 2015-10-23
 
 ### Added
