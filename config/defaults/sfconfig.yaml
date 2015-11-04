@@ -85,6 +85,8 @@ nodepool:
         max-servers: 10
         # Delay in seconds between two tasks within nodepool
         rate: 10.0
+        # Timeout in seconds for SSH login to node
+        boot-timeout: 120
 
 logs:
     disabled: True
