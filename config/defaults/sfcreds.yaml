@@ -4,6 +4,9 @@ creds_gerrit_sql_pwd: GERRIT_SQL_PWD
 creds_nodepool_sql_pwd: NODEPOOL_SQL_PWD
 creds_etherpad_sql_pwd: ETHERPAD_SQL_PWD
 creds_lodgeit_sql_pwd: LODGEIT_SQL_PWD
+creds_graphite_sql_pwd: GRAPHITE_SQL_PWD
+creds_graphite_secret_key: GRAPHITE_SECRET_KEY
+creds_grafana_sql_pwd: GRAFANA_SQL_PWD
 creds_issues_tracker_api_key: REDMINE_API_KEY
 creds_gerrit_email_pk: GERRIT_EMAIL_PK
 creds_gerrit_token_pk: GERRIT_TOKEN_PK

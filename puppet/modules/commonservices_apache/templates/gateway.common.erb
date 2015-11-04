@@ -43,6 +43,22 @@
         RewriteRule /r/gitweb.*$ /r/#/admin/projects/%1,branches [QSD,R,L,NE]
     </LocationMatch>
 
+    <LocationMatch "/grafana/">
+        RequestHeader unset X-Forwarded-User
+        <If "%{HTTP_COOKIE} =~ /auth_pubtkt=.*/">
+            AuthType mod_auth_pubtkt
+            TKTAuthLoginURL /auth/login
+            TKTAuthFakeBasicAuth on
+            TKTAuthDebug 1
+            AuthName "Grafana"
+            require valid-user
+            RewriteEngine On
+            RewriteCond %{LA-U:REMOTE_USER} (.+)
+            RewriteRule .* - [E=RU:%1,NS]
+            RequestHeader set X-Forwarded-User %{RU}e
+        </If>
+    </LocationMatch>
+
     <IfModule mod_proxy.c>
         ProxyVia On
         ProxyRequests Off
@@ -81,6 +97,10 @@
 	    <% @allowed_proxy_prefixes.each do |prefix| -%>
         ProxyPassMatch ^/jenkinslogs/<%= prefix %>(.*)$ http://<%= prefix %>$1
 	    <% end -%>
+
+        RewriteRule ^/grafana$ grafana/ [R]
+        ProxyPass /grafana/ http://127.0.0.1:3000/
+        ProxyPassReverse /grafana/ http://127.0.0.1:3000/
 
     </IfModule>
 

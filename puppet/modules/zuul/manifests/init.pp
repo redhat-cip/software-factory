@@ -54,7 +54,7 @@ class zuul {
     mode   => '0555',
     owner  => 'root',
     group  => 'root',
-    source => 'puppet:///modules/zuul/zuul.systemd.service',
+    content => template('zuul/zuul.systemd.service.erb'),
   }
 
   file {'zuul_merger_init':

@@ -39,6 +39,7 @@ hosts:
   api-redmine.${DOMAIN}:  {ip: ${localip}}
   gerrit.${DOMAIN}:       {ip: ${localip}, host_aliases: [gerrit]}
   managesf.${DOMAIN}:     {ip: ${localip}, host_aliases: [managesf, auth.${DOMAIN}, ${DOMAIN}]}
+  statsd.${DOMAIN}:       {ip: ${localip}, host_aliases: [statsd]}
 EOF
     hieraedit.py --yaml ${OUTPUT}/sfconfig.yaml fqdn       "${DOMAIN}"
     hieraedit.py --yaml ${OUTPUT}/sfarch.yaml   refarch    "${REFARCH}"
@@ -74,12 +75,18 @@ function generate_yaml {
     NODEPOOL_MYSQL_SECRET=$(generate_random_pswd 32)
     ETHERPAD_MYSQL_SECRET=$(generate_random_pswd 32)
     LODGEIT_MYSQL_SECRET=$(generate_random_pswd 32)
+    GRAPHITE_MYSQL_SECRET=$(generate_random_pswd 32)
+    GRAPHITE_SECRET_KEY=$(generate_random_pswd 32)
+    GRAFANA_MYSQL_SECRET=$(generate_random_pswd 32)
     sed -i "s#MYSQL_ROOT_PWD#${MYSQL_ROOT_SECRET}#" ${OUTPUT}/sfcreds.yaml
     sed -i "s#REDMINE_SQL_PWD#${REDMINE_MYSQL_SECRET}#" ${OUTPUT}/sfcreds.yaml
     sed -i "s#GERRIT_SQL_PWD#${GERRIT_MYSQL_SECRET}#" ${OUTPUT}/sfcreds.yaml
     sed -i "s#NODEPOOL_SQL_PWD#${NODEPOOL_MYSQL_SECRET}#" ${OUTPUT}/sfcreds.yaml
     sed -i "s#ETHERPAD_SQL_PWD#${ETHERPAD_MYSQL_SECRET}#" ${OUTPUT}/sfcreds.yaml
     sed -i "s#LODGEIT_SQL_PWD#${LODGEIT_MYSQL_SECRET}#" ${OUTPUT}/sfcreds.yaml
+    sed -i "s#GRAPHITE_SQL_PWD#${GRAPHITE_MYSQL_SECRET}#" ${OUTPUT}/sfcreds.yaml
+    sed -i "s#GRAPHITE_SECRET_KEY#${GRAPHITE_SECRET_KEY}#" ${OUTPUT}/sfcreds.yaml
+    sed -i "s#GRAFANA_SQL_PWD#${GRAFANA_MYSQL_SECRET}#" ${OUTPUT}/sfcreds.yaml
     # Default authorized ssh keys on each node
     JENKINS_PUB="$(cat ${BUILD}/ssh_keys/jenkins_rsa.pub | cut -d' ' -f2)"
     SERVICE_PUB="$(cat ${BUILD}/ssh_keys/service_rsa.pub | cut -d' ' -f2)"

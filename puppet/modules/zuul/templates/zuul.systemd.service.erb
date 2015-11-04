@@ -5,6 +5,7 @@ After=syslog.target network.target
 [Service]
 Type=simple
 ExecStart=/usr/bin/zuul-server -d
+Environment="STATSD_HOST=statsd.<%= @fqdn %>" "STATSD_PORT=8125"
 ExecReload=/bin/kill -HUP $MAINPID
 
 [Install]

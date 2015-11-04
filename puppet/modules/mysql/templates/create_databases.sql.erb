@@ -13,4 +13,10 @@ GRANT ALL PRIVILEGES ON etherpad.* TO 'etherpad'@'localhost' IDENTIFIED BY "<%= 
 CREATE DATABASE IF NOT EXISTS lodgeit CHARACTER SET utf8 COLLATE utf8_general_ci;
 GRANT ALL PRIVILEGES ON lodgeit.* TO 'lodgeit'@'%' IDENTIFIED BY "<%= @creds_lodgeit_sql_pwd %>";
 GRANT ALL PRIVILEGES ON lodgeit.* TO 'lodgeit'@'localhost' IDENTIFIED BY "<%= @creds_lodgeit_sql_pwd %>";
+CREATE DATABASE IF NOT EXISTS graphite CHARACTER SET utf8 COLLATE utf8_general_ci;
+GRANT ALL PRIVILEGES ON graphite.* TO 'graphite'@'%' IDENTIFIED BY "<%= @creds_graphite_sql_pwd %>";
+GRANT ALL PRIVILEGES ON graphite.* TO 'graphite'@'localhost' IDENTIFIED BY "<%= @creds_graphite_sql_pwd %>";
+CREATE DATABASE IF NOT EXISTS grafana CHARACTER SET utf8 COLLATE utf8_general_ci;
+GRANT ALL PRIVILEGES ON grafana.* TO 'grafana'@'%' IDENTIFIED BY "<%= @creds_grafana_sql_pwd %>";
+GRANT ALL PRIVILEGES ON grafana.* TO 'grafana'@'localhost' IDENTIFIED BY "<%= @creds_grafana_sql_pwd %>";
 FLUSH PRIVILEGES;

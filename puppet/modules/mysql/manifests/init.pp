@@ -24,6 +24,8 @@ class mysql {
     $creds_nodepool_sql_pwd = hiera('creds_nodepool_sql_pwd')
     $creds_etherpad_sql_pwd = hiera('creds_etherpad_sql_pwd')
     $creds_lodgeit_sql_pwd = hiera('creds_lodgeit_sql_pwd')
+    $creds_graphite_sql_pwd = hiera('creds_graphite_sql_pwd')
+    $creds_grafana_sql_pwd = hiera('creds_grafana_sql_pwd')
 
     $mysql = 'mariadb'
     $provider = 'systemd'

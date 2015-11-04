@@ -107,7 +107,7 @@ class commonservices_apache ($cauth = hiera_hash('cauth', '')) {
     mode    => '0640',
     owner   => $::httpd_user,
     group   => $::httpd_user,
-    source  => 'puppet:///modules/commonservices_apache/dashboard.html',
+    content => template('commonservices_apache/dashboard.html.erb'),
     require => File['/var/www/dashboard'],
   }
 
