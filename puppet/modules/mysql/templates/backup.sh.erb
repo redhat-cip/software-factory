@@ -2,6 +2,13 @@
 mysqldump -u root -p<%= @mysql_root_pwd %> \
     --ignore-table mysql.event \
     --ignore-table mysql.user  \
+    --databases mysql | \
+        gzip -9 | \
+        ssh root@managesf.<%= @fqdn %> tee /root/mysqldb.sql.gz > /dev/null
+# keep the old call for compatibility issues, will be removed once review 1858 is merged
+mysqldump -u root -p<%= @mysql_root_pwd %> \
+    --ignore-table mysql.event \
+    --ignore-table mysql.user  \
     --all-databases | \
         gzip -9 | \
         ssh root@managesf.<%= @fqdn %> tee /root/alldb.sql.gz > /dev/null

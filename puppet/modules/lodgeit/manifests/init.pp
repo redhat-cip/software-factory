@@ -10,6 +10,7 @@ class lodgeit {
   $mysql_db_secret = hiera('creds_lodgeit_sql_pwd')
   $mysql_db_username = 'lodgeit'
   $mysql_db = 'lodgeit'
+  $mysql_root_pwd = hiera('creds_mysql_root_pwd')
 
   file {'init':
     ensure  => file,
@@ -52,4 +53,11 @@ class lodgeit {
     ensure => link,
     target => '/srv/lodgeit/lodgeit/lodgeit/static/',
   }
+
+  bup::scripts{ 'lodgeit_scripts':
+    name           => 'lodgeit',
+    backup_script  => 'lodgeit/backup.sh.erb',
+    restore_script => 'lodgeit/restore.sh.erb',
+  }
+
 }

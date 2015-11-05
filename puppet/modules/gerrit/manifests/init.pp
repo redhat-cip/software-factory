@@ -52,6 +52,7 @@ class gerrit {
   $mysql_user = 'gerrit'
   $mysql_password = hiera('creds_gerrit_sql_pwd')
   $mysql_db = 'gerrit'
+  $mysql_root_pwd = hiera('creds_mysql_root_pwd')
 
   file { 'gerrit_init':
     path    => '/lib/systemd/system/gerrit.service',

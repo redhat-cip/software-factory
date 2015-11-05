@@ -1,0 +1,7 @@
+#!/bin/bash
+mysqldump -u root -p<%= @mysql_root_pwd %> \
+    --ignore-table mysql.event \
+    --ignore-table mysql.user  \
+    --databases etherpad | \
+        gzip -9 | \
+        ssh root@managesf.<%= @fqdn %> tee /root/etherpaddb.sql.gz > /dev/null

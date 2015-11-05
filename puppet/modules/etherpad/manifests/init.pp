@@ -23,6 +23,7 @@ class etherpad {
   $mysql_db_secret = hiera('creds_etherpad_sql_pwd')
   $mysql_db_username = 'etherpad'
   $mysql_db = 'etherpad'
+  $mysql_root_pwd = hiera('creds_mysql_root_pwd')
 
   file { 'init_script':
     ensure => file,
@@ -112,6 +113,12 @@ class etherpad {
     mode    => '0740',
     source  => 'puppet:///modules/etherpad/pad.css',
     require => File['/var/www/etherpad-lite'],
+  }
+
+  bup::scripts{ 'etherpad_scripts':
+    name           => 'etherpad',
+    backup_script  => 'etherpad/backup.sh.erb',
+    restore_script => 'etherpad/restore.sh.erb',
   }
 
 }

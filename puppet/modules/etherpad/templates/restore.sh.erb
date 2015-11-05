@@ -1,0 +1,3 @@
+#!/bin/bash
+ssh root@managesf.<%= @fqdn %> cat /root/etherpaddb.sql.gz | gunzip | mysql -u root -p<%= @mysql_root_pwd %>
+systemctl restart mariadb

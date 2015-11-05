@@ -1,5 +1,6 @@
 #!/bin/sh
 systemctl stop gerrit
 bup join -r root@managesf.<%= @fqdn %>: gerrit | tar -xPf -
+ssh root@managesf.<%= @fqdn %> cat /root/gerritdb.sql.gz | gunzip | mysql -u root -p<%= @mysql_root_pwd %>
 mysql -u<%= @mysql_user %> -p<%= @mysql_password %> -h<%= @mysql_host %> -P <%= @mysql_port %> <%= @mysql_db %> < /root/gerrit-restore-user-keys.sql
 systemctl start gerrit
