@@ -19,7 +19,9 @@ echo "[+] Start LXC container"
 
 echo "[+] Wait for ssh"
 sleep 5
-sed -i 's/.*192\.168\.135\.101.*//' ~/.ssh/known_hosts
+touch ~/.ssh/known_hosts
+sed -i '/.*192\.168\.135\.101.*/d' ~/.ssh/known_hosts
+ssh-keyscan 192.168.135.101 >> ~/.ssh/known_hosts
 
 echo "[+] Auto configure"
 ssh root@192.168.135.101 sfconfig.sh > /dev/null
