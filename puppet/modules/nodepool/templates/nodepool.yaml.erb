@@ -15,7 +15,7 @@ cron:
 targets:
   - name: jenkins
     jenkins:
-      url: '<%= @url["jenkins_url"] %>'
+      url: '<%= @url["jenkins_jjb_url"] %>'
       user: 'jenkins'
       apikey: '<%= @jenkins_password %>'
       credentials-id: '4f98191e-efbb-4ac4-8131-0e4a8bb2ce14'
@@ -38,7 +38,7 @@ providers:
 <% if provider['pool'] -%>
     pool: <%= provider['pool'] %>
 <% end -%>
-<% if provider['max-server'] -%>
+<% if provider['max-servers'] -%>
     max-servers: <%= provider['max-servers'] %>
 <% end -%>
 <% if provider['rate'] -%>
