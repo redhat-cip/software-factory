@@ -10,7 +10,7 @@ SF_VER=${SF_VER:-C7.0-${VER}}
 # Set this variable to 1 if we tag and set it back to 0 the commit after the tag
 TAGGED_RELEASE=0
 # Pinned versions of the subprojects to go with the current release
-PYSFLIB_PINNED_VERSION=0.5.0
+PYSFLIB_PINNED_VERSION=0.6.0
 MANAGESF_PINNED_VERSION=0.10.0
 CAUTH_PINNED_VERSION=0.7.0
 
