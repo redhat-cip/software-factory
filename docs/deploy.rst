@@ -68,7 +68,7 @@ It requires:
 .. code-block:: bash
 
  $ wget http://os.enocloud.com:8080/v1/AUTH_70aab03f69b549cead3cb5f463174a51/edeploy-roles/softwarefactory-C7.0-2.0.0.hot
- $ heat stack-create ./softwarefactory-C7.0-2.0.0.hot -P key_name=SSH_KEY;domain=fqdn_of_deployment;image_id=GLANCE_UUID;ext_net_uuid=NETWORK_UUID
+ $ heat stack-create --template-file ./softwarefactory-C7.0-2.0.0.hot -P "key_name=SSH_KEY;domain=fqdn_of_deployment;image_id=GLANCE_UUID;ext_net_uuid=NETWORK_UUID;flavor=m1.large" sf_stack
 
 Once the stack is created jump to the section `Configuration and reconfiguration`.
 
