@@ -111,10 +111,10 @@ class redmine {
         notify      => Exec['chown_redmine'],
     }
 
-    file { '/etc/monit/conf.d/redmine':
+    file { '/etc/monit.d/redmine':
       ensure  => file,
       content => template('redmine/monit.erb'),
-      require => [Package['monit'], File['/etc/monit/conf.d']],
+      require => [Package['monit'], File['/etc/monit.d']],
       notify  => Service['monit'],
     }
 

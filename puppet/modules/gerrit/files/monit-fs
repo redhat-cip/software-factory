@@ -1,3 +1,0 @@
-check filesystem gerritfs with path /dev/vdb
-    if space usage > 75% then alert
-    if inode usage > 75% then alert

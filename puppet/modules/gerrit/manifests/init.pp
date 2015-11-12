@@ -397,17 +397,10 @@ class gerrit {
     require => File['/home/gerrit/site_path'],
   }
 
-  file { '/etc/monit/conf.d/gerrit':
+  file { '/etc/monit.d/gerrit':
     ensure  => file,
     content => template('gerrit/monit.erb'),
-    require => [Package['monit'], File['/etc/monit/conf.d']],
-    notify  => Service['monit'],
-  }
-
-  file { '/etc/monit/conf.d/gerrit-fs':
-    ensure  => file,
-    source  => 'puppet:///modules/gerrit/monit-fs',
-    require => [Package['monit'], File['/etc/monit/conf.d']],
+    require => [Package['monit'], File['/etc/monit.d']],
     notify  => Service['monit'],
   }
 

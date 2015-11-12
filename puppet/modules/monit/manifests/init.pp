@@ -18,7 +18,8 @@ class monit {
 
   $fqdn = hiera('fqdn')
   $mail_from = "monit@${fqdn}"
-  $mail_to = 'admin@fqdn'
+  # mail forward managed by admin_mail_forward parameter
+  $mail_to = 'root@localhost'
   $provider = 'systemd'
 
   package { 'monit':
@@ -30,13 +31,13 @@ class monit {
     require => Package['monit'],
   }
 
-  file { '/etc/monit/conf.d':
+  file { '/etc/monit.d':
     ensure  => directory,
     require => Package['monit'],
   }
-
-  file { '/etc/monit/monitrc':
+  file { '/etc/monitrc':
     ensure  => file,
+    mode    => '0600',
     content => template('monit/monitrc.erb'),
     require => [Package['monit'], File['/etc/monit']],
     replace => true,
@@ -48,20 +49,20 @@ class monit {
     hasrestart => true,
     provider   => $provider,
     require    => Package['monit'],
-    subscribe  => File['/etc/monit/monitrc'],
+    subscribe  => File['/etc/monitrc'],
   }
 
-  file { '/etc/monit/conf.d/rootfs':
+  file { '/etc/monit.d/rootfs':
     ensure  => file,
     source  => 'puppet:///modules/monit/rootfs',
-    require => [Package['monit'], File['/etc/monit/conf.d']],
+    require => [Package['monit'], File['/etc/monit.d']],
     notify  => Service['monit'],
   }
 
-  file { '/etc/monit/conf.d/system':
+  file { '/etc/monit.d/system':
     ensure  => file,
     source  => 'puppet:///modules/monit/system',
-    require => [Package['monit'], File['/etc/monit/conf.d']],
+    require => [Package['monit'], File['/etc/monit.d']],
     notify  => Service['monit'],
   }
 

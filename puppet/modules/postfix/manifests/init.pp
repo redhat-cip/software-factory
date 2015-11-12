@@ -73,10 +73,10 @@ class postfix {
     subscribe  => File['/etc/postfix/main.cf'],
   }
 
-  file { '/etc/monit/conf.d/postfix':
+  file { '/etc/monit.d/postfix':
     ensure  => file,
     content => template('postfix/monit.erb'),
-    require => [Package['monit'], File['/etc/monit/conf.d']],
+    require => [Package['monit'], File['/etc/monit.d']],
     notify  => Service['monit'],
   }
 
