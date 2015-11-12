@@ -65,4 +65,7 @@ function prepare_buildenv {
     [ ! -d "$BUILD_DIR" ] && sudo mkdir -p $BUILD_DIR
     [ ! -d "$DEPS" ]      && sudo mkdir -p $DEPS && sudo chown ${USER}:root $DEPS
     [ ! -d "$UPSTREAM" ]  && sudo mkdir -p $UPSTREAM
+    which wget &> /dev/null || sudo yum install -y wget
+    which virtualenv &> /dev/null || sudo yum install -y python-virtualenv
+    which sphinx-build &> /dev/null || sudo yum install -y python-sphinx
 }

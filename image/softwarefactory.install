@@ -49,12 +49,6 @@ fi
 
 BUNDLE_RETRIES=3
 
-install_edeploy_bin() {
-    target=$1
-    mkdir -p "$target/var/lib/edeploy/${version}"
-    cp -p ${ORIG}/build/edeploy ${target}/usr/sbin/
-}
-
 bootstrap() {
     local target=$1
     rm -rf $target
@@ -84,6 +78,8 @@ bootstrap() {
     if [ -f ${target}/usr/sbin/useradd ]; then
         fake_shadow_utils
     fi
+
+    mkdir -p "$target/var/lib/edeploy/${version}"
 
     rebuild_db $target
 
@@ -117,6 +113,7 @@ install_sf_packages() {
     remove_epel_repository
 
     # don't rename net ifaces
+    rm ${target}/etc/udev/rules.d/80-net-name-slot.rules
     ln -s /dev/null ${target}/etc/udev/rules.d/80-net-name-slot.rules
 
     # tune sshd conf
@@ -397,11 +394,10 @@ fi
 check_binary yum
 check_binary rpm
 
-[ "$STEP" = 1 ] && {
+if [ "$STEP" == 1 ]; then
     bootstrap $dir
     install_sf_packages
     disable_selinux
-    install_edeploy_bin $dir
 
     upgrade_pip
     fix_insecure_plateform
@@ -420,10 +416,10 @@ check_binary rpm
     install_mod_authpub_tkt
     put_git_mark ${dir}
     do_chroot ${dir} passwd -l root
-} || true
+fi
 
-[ "$STEP" = 2 ] && {
+if [ "$STEP" == 2 ]; then
     mount_fs
     . sf.install
     install_sf
-} || true
+fi
