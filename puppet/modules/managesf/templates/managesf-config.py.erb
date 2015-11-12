@@ -52,6 +52,11 @@ auth = {
     'host': 'auth.<%= @fqdn %>',
 }
 
+services = [
+    'SFRedmine',
+    'SFGerrit',
+]
+
 mysql = {
     'host': 'mysql.<%= @fqdn %>',
 }
