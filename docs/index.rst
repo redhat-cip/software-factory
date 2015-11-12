@@ -20,5 +20,4 @@ Welcome to software-factory's documentation!
    testing
    jenkinsslaves
    contribute
-   rebuild_image
    tools
