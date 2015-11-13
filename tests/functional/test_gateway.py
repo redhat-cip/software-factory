@@ -68,7 +68,8 @@ class TestGateway(Base):
             cookies=dict(
                 auth_pubtkt=config.USERS[config.USER_1]['auth_cookie']))
         self.assertEqual(resp.status_code, 200)
-        self.assertTrue('"kind": "gerritcodereview#project",' in resp.text)
+        # /r/a/projects returns JSON list of projects
+        self.assertTrue('All-Users' in resp.text)
 
     def test_gerrit_api_accessible(self):
         """ Test if Gerrit API is accessible on gateway hosts

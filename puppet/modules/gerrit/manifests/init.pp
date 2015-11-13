@@ -148,20 +148,28 @@ class gerrit {
     source  => 'puppet:///modules/gerrit/replication.jar',
     require => File['/home/gerrit/site_path/plugins'],
   }
+  # Ensure the old versioned plugin is removed - needed by upgrade
   file { '/home/gerrit/site_path/plugins/reviewersbyblame-2.8.1.jar':
+    ensure  => absent,
+  }
+  # Ensure the old named plugin is removed - needed by upgrade
+  file { '/home/gerrit/site_path/plugins/gravatar.jar':
+    ensure  => absent,
+  }
+  file { '/home/gerrit/site_path/plugins/reviewers-by-blame.jar':
     ensure  => file,
     owner   => 'gerrit',
     group   => 'gerrit',
     mode    => '0640',
-    source  => 'puppet:///modules/gerrit/reviewersbyblame-2.8.1.jar',
+    source  => 'puppet:///modules/gerrit/reviewers-by-blame.jar',
     require => File['/home/gerrit/site_path/plugins'],
   }
-  file { '/home/gerrit/site_path/plugins/gravatar.jar':
+  file { '/home/gerrit/site_path/plugins/avatars-gravatar.jar':
     ensure  => file,
     owner   => 'gerrit',
     group   => 'gerrit',
     mode    => '0640',
-    source  => 'puppet:///modules/gerrit/gravatar.jar',
+    source  => 'puppet:///modules/gerrit/avatars-gravatar.jar',
     require => File['/home/gerrit/site_path/plugins'],
   }
   file { '/home/gerrit/site_path/plugins/delete-project.jar':
@@ -191,7 +199,7 @@ class gerrit {
     source  => '/root/gerrit_data_source/mysql-connector-java.jar',
     require => File['/home/gerrit/site_path/lib'],
   }
-  file { '/home/gerrit/site_path/lib/bcprov-jdk15on-149.jar':
+  file { '/home/gerrit/site_path/lib/bcprov-jdk15on-151.jar':
     ensure  => file,
     owner   => 'gerrit',
     group   => 'gerrit',
@@ -199,7 +207,7 @@ class gerrit {
     source  => '/root/gerrit_data_source/bcprov.jar',
     require => File['/home/gerrit/site_path/lib'],
   }
-  file { '/home/gerrit/site_path/lib/bcpkix-jdk15on-149.jar':
+  file { '/home/gerrit/site_path/lib/bcpkix-jdk15on-151.jar':
     ensure  => file,
     owner   => 'gerrit',
     group   => 'gerrit',
@@ -317,12 +325,12 @@ class gerrit {
     command     => '/usr/bin/java -jar /home/gerrit/gerrit.war init -d /home/gerrit/site_path --batch --no-auto-start',
     require     => [File['/home/gerrit/gerrit.war'],
                   File['/home/gerrit/site_path/plugins/replication.jar'],
-                  File['/home/gerrit/site_path/plugins/gravatar.jar'],
+                  File['/home/gerrit/site_path/plugins/avatars-gravatar.jar'],
                   File['/home/gerrit/site_path/plugins/delete-project.jar'],
-                  File['/home/gerrit/site_path/plugins/reviewersbyblame-2.8.1.jar'],
+                  File['/home/gerrit/site_path/plugins/reviewers-by-blame.jar'],
                   File['/home/gerrit/site_path/lib/mysql-connector-java-5.1.21.jar'],
-                  File['/home/gerrit/site_path/lib/bcprov-jdk15on-149.jar'],
-                  File['/home/gerrit/site_path/lib/bcpkix-jdk15on-149.jar'],
+                  File['/home/gerrit/site_path/lib/bcprov-jdk15on-151.jar'],
+                  File['/home/gerrit/site_path/lib/bcpkix-jdk15on-151.jar'],
                   File['/home/gerrit/site_path/plugins/download-commands.jar'],
                   File['/home/gerrit/site_path/plugins/delete-project.jar'],
                   File['/home/gerrit/site_path/hooks/hooks.config'],
@@ -332,6 +340,16 @@ class gerrit {
                   File['/root/gerrit-firstuser-init.sh'],
                   File['/root/gerrit-set-default-acl.sh'],
                   File['/root/gerrit-set-jenkins-user.sh']],
+    subscribe   => File['/home/gerrit/gerrit.war'],
+    refreshonly => true,
+    logoutput   => on_failure,
+  }
+
+  # Gerrit reindex after first initialization
+  exec { 'gerrit-reindex':
+    user        => 'gerrit',
+    command     => '/usr/bin/java -jar /home/gerrit/gerrit.war reindex -d /home/gerrit/site_path',
+    require     => [Exec['gerrit-initial-init']],
     subscribe   => File['/home/gerrit/gerrit.war'],
     refreshonly => true,
     logoutput   => on_failure,

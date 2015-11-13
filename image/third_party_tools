@@ -49,16 +49,16 @@ BUP_VERSION=0.26
 GIT_REPO_LIST="$GIT_REPO_LIST $BUP_URL"
 
 # gerrit
-GERRIT_VERSION=2.8.6.1
+GERRIT_VERSION=2.11.5
 GERRIT_URL="http://gerrit-releases.storage.googleapis.com/gerrit-${GERRIT_VERSION}.war"
 MYSQLJAVA_VERSION=5.1.21
 MYSQLJAVA_URL="http://repo2.maven.org/maven2/mysql/mysql-connector-java/${MYSQLJAVA_VERSION}/mysql-connector-java-${MYSQLJAVA_VERSION}.jar"
-BCPROV_VERSION="1.49"
+BCPROV_VERSION="151"
 BCPROVJDK_VERSION="jdk15on"
-BCPROVJAVA_URL="http://central.maven.org/maven2/org/bouncycastle/bcprov-${BCPROVJDK_VERSION}/${BCPROV_VERSION}/bcprov-${BCPROVJDK_VERSION}-${BCPROV_VERSION}.jar"
+BCPROVJAVA_URL="http://downloads.bouncycastle.org/java/bcprov-${BCPROVJDK_VERSION}-${BCPROV_VERSION}.jar"
 BCPKIX_VERSION=$BCPROV_VERSION
 BCPKIXJDK_VERSION=$BCPROVJDK_VERSION
-BCPKIXJAVA_URL="http://central.maven.org/maven2/org/bouncycastle/bcpkix-${BCPKIXJDK_VERSION}/${BCPKIX_VERSION}/bcpkix-${BCPKIXJDK_VERSION}-${BCPKIX_VERSION}.jar"
+BCPKIXJAVA_URL="http://downloads.bouncycastle.org/java/bcpkix-${BCPKIXJDK_VERSION}-${BCPKIX_VERSION}.jar"
 
 URL_LIST="$URL_LIST $GERRIT_URL $MYSQLJAVA_URL $BCPROVJAVA_URL $BCPKIXJAVA_URL"
 

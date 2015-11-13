@@ -1,0 +1,18 @@
+---
+- name: Stop Gerrit service
+  service: name=gerrit state=stopped
+
+- name: Upgrade Gerrit schema
+  shell: /usr/bin/java -jar /home/gerrit/gerrit.war init -d /home/gerrit/site_path --batch --no-auto-start
+
+- name: Ensure old reviewers by blame plugin has been removed
+  file: path=/home/gerrit/site_path/plugins/reviewersbyblame-2.8.1.jar state=absent
+
+- name: Create secondary Gerrit index
+  shell: /usr/bin/java -jar /home/gerrit/gerrit.war reindex -d /home/gerrit/site_path
+
+- name: Fix Gerrit permissions
+  file: path=/home/gerrit/ state=directory recurse=yes owner=gerrit group=gerrit
+
+- name: Start Gerrit service
+  service: name=gerrit state=started

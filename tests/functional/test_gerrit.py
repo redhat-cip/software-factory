@@ -151,7 +151,7 @@ class TestGerrit(Base):
             auth_cookie=config.USERS[config.ADMIN_USER]['auth_cookie'])
         plugins = gu.list_plugins()
         self.assertIn('download-commands', plugins)
-        self.assertIn('gravatar-avatar-provider', plugins)
+        self.assertIn('avatars-gravatar', plugins)
         self.assertIn('reviewers-by-blame', plugins)
 
     def test_check_download_commands(self):
@@ -280,4 +280,4 @@ class TestGerrit(Base):
             url,
             cookies=dict(
                 auth_pubtkt=config.USERS[config.USER_1]['auth_cookie']))
-        self.assertTrue('"2.8.6.1"' in resp.text)
+        self.assertTrue('"2.11.5"' in resp.text)

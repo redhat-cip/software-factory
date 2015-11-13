@@ -11,3 +11,4 @@
   gather_facts: no
   tasks:
   - include: tasks/allprojectsupdate.yml
+  - include: tasks/schemaupdate.yml

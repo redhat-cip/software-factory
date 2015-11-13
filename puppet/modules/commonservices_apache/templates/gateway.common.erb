@@ -2,6 +2,8 @@
     RewriteCond %{HTTP_HOST} !<%= @fqdn %> [NC]
     RewriteRule ^/(.*)$ <%= @url["gateway_url"] %>/$1 [R=301,L]
 
+    RewriteMap base64helper "prg:/usr/local/sbin/base64helper"
+
     # Don't login to Redmine itself, use cauth instead
     <LocationMatch "/redmine/login">
 	RewriteEngine On
@@ -142,6 +144,16 @@
 
         # Grant access based on password authentication or IP address
         Satisfy any
+
+        # Helper to send a fake authorization header to Gerrit
+        RewriteCond %{REMOTE_USER} (.+)
+        RewriteRule .* - [E=B64:${base64helper:%{REMOTE_USER}},NE]
+        RequestHeader set Authorization "Basic %{B64}e"
+
+        # Requests from localhost get admin permission
+        RewriteCond %{REMOTE_HOST} ^managesf.<%= @fqdn %>$
+        RewriteRule .* - [E=B64:${base64helper:admin},NE]
+        RequestHeader set Authorization "Basic %{B64}e"
     </LocationMatch>
 
     <Directory /var/www>

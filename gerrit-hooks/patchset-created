@@ -38,8 +38,9 @@ import sys
 from pysflib.hooks import sfgerrit as hooks
 
 
-arguments = ('change', 'is-draft', 'change-url', 'project',
-             'branch', 'topic', 'uploader', 'commit', 'patchset')
+arguments = ('change', 'is-draft', 'change-url', 'project', 'branch',
+             'topic', 'uploader', 'commit', 'patchset', 'kind',
+             'change-owner', 'newrev')
 
 # Look for the config in the Gerrit hooks directory
 HOOKS_CONFIG = os.path.join(os.path.dirname(os.path.realpath(__file__)),

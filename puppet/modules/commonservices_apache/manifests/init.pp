@@ -127,4 +127,14 @@ class commonservices_apache ($cauth = hiera_hash('cauth', '')) {
     owner  => $::httpd_user,
     group  => $::httpd_user,
   }
+
+  file {'base64helper':
+    ensure  => file,
+    path    => '/usr/local/sbin/base64helper',
+    source  => 'puppet:///modules/commonservices_apache/base64helper',
+    mode    => '0755',
+    owner   => $::httpd_user,
+    group   => $::httpd_user,
+  }
+
 }
