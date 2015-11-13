@@ -230,6 +230,7 @@ function prepare_functional_tests_venv {
     (
         . /var/lib/sf/venv/bin/activate
         pip install --upgrade pip
+        pip install 'requests[security]'
         pip install -r ${PYSFLIB_CLONED_PATH}/requirements.txt
         sed -i '/pysflib/d' ${MANAGESF_CLONED_PATH}/requirements.txt
         pip install -r ${MANAGESF_CLONED_PATH}/requirements.txt
