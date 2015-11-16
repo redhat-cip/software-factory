@@ -31,6 +31,7 @@ authentication:
         - "tests.dom"
 
     ldap:
+        disabled: True
         ldap_url: ldap://tests.dom
         ldap_account_base: ou=Users,dc=tests,dc=dom
         ldap_account_username_attribute: cn

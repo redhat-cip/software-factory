@@ -93,5 +93,13 @@ if 'providers' not in nodepool:
         del nodepool[k]
     nodepool['providers'].append(provider)
 
+# Adds ldap disabled settings
+ldap = d['authentication']['ldap']
+if "disabled" not in ldap:
+    if ldap['ldap_url'] not in ('', 'ldap://tests.dom'):
+        ldap['disabled'] = False
+    else:
+        ldap['disabled'] = True
+
 yaml.dump(d, open(argv[1], "w"), default_flow_style=False)
 exit(0)

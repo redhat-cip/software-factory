@@ -51,12 +51,14 @@ logging = {
 
 # Authorization configurations
 auth = {
+<% if not @ldap['disabled'] %>
     'ldap': {
         'host': '<%= @ldap['ldap_url'] %>',
         'dn': '<%= @ldap['ldap_account_username_attribute'] %>=%(username)s,' + '<%= @ldap['ldap_account_base'] %>',
         'sn': '<%= @ldap['ldap_account_surname_attribute'] %>',
         'mail': '<%= @ldap['ldap_account_mail_attribute'] %>',
     },
+<% end %>
     'github': {
         'top_domain': '<%= @fqdn %>',
         'auth_url':  'https://github.com/login/oauth/authorize',
