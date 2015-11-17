@@ -392,7 +392,8 @@ class TestManageSF(Base):
             config.ADMIN_USER, config.GATEWAY_HOST, pname_us)
         pname = 'p_%s' % create_random_str()
         # create the project as admin
-        options = {"upstream": upstream_url}
+        options = {"upstream": upstream_url,
+                   "upstream-ssh-key": config.ADMIN_PRIV_KEY_PATH}
         self.create_project(pname, config.ADMIN_USER, options=options)
 
         ggu = GerritGitUtils(config.ADMIN_USER,
