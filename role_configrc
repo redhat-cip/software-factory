@@ -1,14 +1,14 @@
 #!/bin/sh
 #
 
-VER=2.0.3
+VER=2.0.4
 
 # Version string
-SF_PREVIOUS_VER=C7.0-2.0.2
+SF_PREVIOUS_VER=C7.0-2.0.3
 SF_VER=${SF_VER:-C7.0-${VER}}
 
 # Set this variable to 1 if we tag and set it back to 0 the commit after the tag
-TAGGED_RELEASE=1
+TAGGED_RELEASE=0
 # Pinned versions of the subprojects to go with the current release
 PYSFLIB_PINNED_VERSION=5b2443399d15e1dc3b5ac48d26f243caf8892dd0
 MANAGESF_PINNED_VERSION=253efee73621a917f3fe2747eb6bc176bbbd8b9d
