@@ -1,10 +1,28 @@
 # Change Log
 
-## 2.0.3 [unreleased]
+## 2.0.3 2015-11-19
+
+### Added
+
+- Dashboard plugin in Jenkins
+- Graphite/Grafana+StatsD integrated in SF dashboard
 
 ### Fixed
 
 - Heat templates usage of sfconfig.sh for fqdn setting
+- Typo in nodepool configuration causing KeyError
+- Image build failure now properly abord current job
+- Heat template incorect use of sfconfig.sh configuration script
+
+### Changed
+
+- Prepare managesf service plugins
+- Default SSH timeout in nodepool set to 120 seconds
+
+### Removed
+
+- Deprecated backup/restore commands
+
 
 ## 2.0.2 2015-10-23
 

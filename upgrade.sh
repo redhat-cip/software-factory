@@ -33,7 +33,7 @@ set -x
 # the ansible playbook.
 cd ./upgrade/${current_version}/${SF_VER}/ || exit -1
 cp group_vars/all.tmpl group_vars/all
-sed -i "s/FROM/${PREVIOUS_SF_VER}/" group_vars/all
+sed -i "s/FROM/${current_version}/" group_vars/all
 sed -i "s/TO/${SF_VER}/" group_vars/all
 sed -i "s|CLONE_PATH|${cloned_path}|" group_vars/all
 

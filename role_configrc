@@ -8,11 +8,11 @@ SF_PREVIOUS_VER=C7.0-2.0.2
 SF_VER=${SF_VER:-C7.0-${VER}}
 
 # Set this variable to 1 if we tag and set it back to 0 the commit after the tag
-TAGGED_RELEASE=0
+TAGGED_RELEASE=1
 # Pinned versions of the subprojects to go with the current release
-PYSFLIB_PINNED_VERSION=0.6.0
-MANAGESF_PINNED_VERSION=0.10.0
-CAUTH_PINNED_VERSION=0.7.0
+PYSFLIB_PINNED_VERSION=5b2443399d15e1dc3b5ac48d26f243caf8892dd0
+MANAGESF_PINNED_VERSION=253efee73621a917f3fe2747eb6bc176bbbd8b9d
+CAUTH_PINNED_VERSION=a48fe3aba138f98b13bd93f5324c6790947f22ba
 
 RELEASE_GPG_FINGERPRINT=0xE46E04A2344803E5A808BDD7E8C203A71C3BAE4B
 
@@ -66,7 +66,4 @@ function prepare_buildenv {
     [ ! -d "$DEPS" ]      && sudo mkdir -p $DEPS && sudo chown ${USER}:root $DEPS
     [ ! -d "$UPSTREAM" ]  && sudo mkdir -p $UPSTREAM
     which wget &> /dev/null || sudo yum install -y wget
-    which virtualenv &> /dev/null || sudo yum install -y python-virtualenv
-    which sphinx-build &> /dev/null || sudo yum install -y python-sphinx
-    which gcc &> /dev/null || sudo yum install -y gcc
 }
