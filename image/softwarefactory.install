@@ -387,7 +387,7 @@ install_misc() {
 BASE_PKGS="coreutils dhclient e2fsprogs man-db grub2 grubby initscripts iproute kernel net-tools passwd redhat-lsb-core crontabs openssh-clients bind-utils kexec-tools selinux-policy-targeted setroubleshoot-server acpid bash curl kbd lvm2 openssh-server pciutils rsync rsyslog sudo wget ntpdate logrotate ethtool hdparm iptables git-review"
 
 DEV_PKGS="openssl-devel openldap-devel python-devel libffi-devel gcc swig zlib-devel libcurl-devel httpd-devel apr-devel apr-util-devel mariadb-devel gcc-c++ ruby-devel ImageMagick-devel cpp libxml2-devel libxslt-devel"
-PKGS="vim-enhanced openssl postfix bc monit ansible sshpass mod_passenger puppet rubygem-rake git python-pip pyxattr pylibacl httpd mod_ssl ntp monit postfix git nodejs httpd java-1.6.0-openjdk mariadb-server python-werkzeug python-babel python-jinja2 MySQL-python socat mod_wsgi m2crypto mariadb gitweb debootstrap unzip pigz ntp openssl mod_ssl cloud-init cloud-utils-growpart memcached graphite-web statsd python-carbon"
+PKGS="vim-enhanced openssl postfix bc ansible sshpass mod_passenger puppet rubygem-rake git python-pip pyxattr pylibacl httpd mod_ssl ntp monit postfix nodejs httpd java-1.6.0-openjdk mariadb-server python-werkzeug python-babel python-jinja2 MySQL-python socat mod_wsgi m2crypto mariadb gitweb debootstrap unzip pigz openssl cloud-init cloud-utils-growpart memcached graphite-web statsd python-carbon mutt"
 
 trap cleanup 0
 
