@@ -130,7 +130,7 @@ function build_image {
 prepare_buildenv
 build_cache
 # Make sure subproject are available
-./image/fetch_subprojects.sh
+./image/fetch_subprojects.sh || exit 1
 build_image
 if [ -n "$BUILD_QCOW" ]; then
     build_qcow
