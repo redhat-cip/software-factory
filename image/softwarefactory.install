@@ -380,7 +380,7 @@ install_misc() {
     # Pin Balel to 2.0 especially for the version of lodgeit we use
     retry do_chroot ${dir} pip install -U Babel==2.0
 
-    install_packages ${dir} https://grafanarel.s3.amazonaws.com/builds/grafana-2.5.0-1.x86_64.rpm
+    install_packages ${dir} ${GRAFANA_URL}
 }
 
 
