@@ -46,7 +46,7 @@ for PROJECT in "PYSFLIB" "CAUTH" "MANAGESF"; do
             else
                 git clone $PROJECT_REPO $PROJECT_CLONED_PATH &> /dev/null || { echo "Fail to fetch $PROJECT" && exit 1; }
             fi
-            (cd $PROJECT_CLONED_PATH && git checkout $PROJECT_REV) &> /dev/null || { echo "Fail to checkout rev:$PROJECT_REV" && exit 1; }
+            (cd $PROJECT_CLONED_PATH && git checkout $PROJECT_REV && git clean -fd) &> /dev/null || { echo "Fail to checkout rev:$PROJECT_REV" && exit 1; }
         else
             echo "(Forced) Use local source from $PROJECT_CLONED_PATH"
         fi
