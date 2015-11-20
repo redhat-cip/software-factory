@@ -94,6 +94,34 @@ class nodepool {
     require => [File['/usr/share/sf-nodepool']],
   }
 
+  file { '/usr/share/sf-nodepool/sf_rdo_slave_setup.sh':
+    ensure  => file,
+    mode    => '0755',
+    owner   => 'root',
+    group   => 'root',
+    source  => 'puppet:///modules/nodepool/sf_rdo_slave_setup.sh',
+    require => [File['/usr/share/sf-nodepool']],
+  }
+
+  file { '/usr/share/sf-nodepool/rdo_kilo.sh':
+    ensure  => file,
+    mode    => '0755',
+    owner   => 'root',
+    group   => 'root',
+    source  => 'puppet:///modules/nodepool/rdo_kilo.sh',
+    require => [File['/usr/share/sf-nodepool']],
+  }
+
+
+  file { '/usr/share/sf-nodepool/rdo_liberty.sh':
+    ensure  => file,
+    mode    => '0755',
+    owner   => 'root',
+    group   => 'root',
+    source  => 'puppet:///modules/nodepool/rdo_liberty.sh',
+    require => [File['/usr/share/sf-nodepool']],
+  }
+
   file { '/usr/share/sf-nodepool/sf_slave_setup.sh':
     ensure  => file,
     mode    => '0755',
