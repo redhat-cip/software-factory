@@ -12,16 +12,16 @@ without features related to the cloud-like tests environments.
 
 # Get Last releases
 
-The last stable release is 2.0.2, grab the image here:
+The last stable release is 2.0.3, grab the image here:
+
+* Qcow2 image: http://os.enocloud.com:8080/v1/AUTH_70aab03f69b549cead3cb5f463174a51/edeploy-roles/softwarefactory-C7.0-2.0.3.img.qcow2
+* Signed digest: http://os.enocloud.com:8080/v1/AUTH_70aab03f69b549cead3cb5f463174a51/edeploy-roles/softwarefactory-C7.0-2.0.3.digest
+
+Previous release is 2.0.2:
 
 * Qcow2 image: http://os.enocloud.com:8080/v1/AUTH_70aab03f69b549cead3cb5f463174a51/edeploy-roles/softwarefactory-C7.0-2.0.2.img.qcow2
 * Signed digest: http://os.enocloud.com:8080/v1/AUTH_70aab03f69b549cead3cb5f463174a51/edeploy-roles/softwarefactory-C7.0-2.0.2.digest
 
-Previous release is 2.0.1:
+Current dev version is 2.0.4:
 
-* Qcow2 image: http://os.enocloud.com:8080/v1/AUTH_70aab03f69b549cead3cb5f463174a51/edeploy-roles/softwarefactory-C7.0-2.0.1.img.qcow2
-* Signed digest: http://os.enocloud.com:8080/v1/AUTH_70aab03f69b549cead3cb5f463174a51/edeploy-roles/softwarefactory-C7.0-2.0.1.digest
-
-Current dev version is 2.0.3:
-
-* Qcow2 image: http://os.enocloud.com:8080/v1/AUTH_70aab03f69b549cead3cb5f463174a51/edeploy-roles/softwarefactory-C7.0-2.0.3.img.qcow2
+* Qcow2 image: http://os.enocloud.com:8080/v1/AUTH_70aab03f69b549cead3cb5f463174a51/edeploy-roles/softwarefactory-C7.0-2.0.4.img.qcow2
