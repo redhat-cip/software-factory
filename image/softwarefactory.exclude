@@ -1,4 +1,6 @@
 # System stuff
+/boot/grub/
+/boot/grub2/
 /dev/
 /proc/
 /lost+found/
@@ -10,24 +12,22 @@
 
 # System Configuration
 /etc/fstab
-/etc/group*
-/etc/gshadow*
+/etc/group
+/etc/gshadow
 /etc/hostname
 /etc/hosts
 /etc/ld.so.cache
 /etc/mailname
-/etc/monit/
 /etc/mtab
 /etc/network/
-/etc/passwd*
+/etc/passwd
 /etc/postfix/main.cf
 /etc/rc.local*
 /etc/resolv.conf
-/etc/shadow*
+/etc/shadow
 /etc/ssh/*key
 /etc/ssh/sshd_config
 /etc/ssh/ssh_host*
-/etc/sudoers.d/
 /etc/sysconfig/network
 /etc/sysconfig/network-scripts/ifcfg-eth0
 /etc/systemd/system/multi-user.target.wants

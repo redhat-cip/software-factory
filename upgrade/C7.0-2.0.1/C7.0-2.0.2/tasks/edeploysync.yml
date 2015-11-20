@@ -2,3 +2,9 @@
 # Synchronize the FS with eDeploy
 - name: Synchronize FS with eDeploy
   command: edeploy upgrade {{ version }}
+- name: Check for bootloader
+  stat: path=/boot/grub2/grub.cfg
+  register: bootloader
+- name: Update bootloader configuration
+  command: grub2-mkconfig -o /boot/grub2/grub.cfg
+  when: bootloader.stat.exists == true
