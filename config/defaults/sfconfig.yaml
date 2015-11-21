@@ -1,5 +1,5 @@
 # fqdn of the deployment used by authentication and in notification
-fqdn: tests.dom
+fqdn: sftests.com
 
 network:
     enforce_ssl: false
@@ -28,12 +28,11 @@ authentication:
     allowed_proxy_prefixes:
         - "198.154.188."
         - "127.0.0.1"
-        - "tests.dom"
+        - "sftests.com"
 
     ldap:
-        disabled: True
-        ldap_url: ldap://tests.dom
-        ldap_account_base: ou=Users,dc=tests,dc=dom
+        ldap_url: ldap://sftests.com
+        ldap_account_base: ou=Users,dc=sftests,dc=com
         ldap_account_username_attribute: cn
         ldap_account_mail_attribute: mail
         ldap_account_surname_attribute: sn
@@ -92,11 +91,11 @@ nodepool:
 logs:
     disabled: True
     swift_logsexport_container: logs
-    swift_logsexport_logserver_prefix: http://logs.tests.dom:8080/v1/AUTH_test/logs
+    swift_logsexport_logserver_prefix: http://logs.sftests.com:8080/v1/AUTH_test/logs
     # Use Swift auth url for auth v1 and keystone auth url for auth v2
-    swift_logsexport_authurl: http://logs.tests.dom:8080/auth/v1.0
+    swift_logsexport_authurl: http://logs.sftests.com:8080/auth/v1.0
     # Leave blank if auth v2 is used
-    swift_logsexport_x_storage_url: http://logs.tests.dom:8080/v1/AUTH_test
+    swift_logsexport_x_storage_url: http://logs.sftests.com:8080/v1/AUTH_test
     # For auth v1 use as username : username:tenantname
     swift_logsexport_username: username:tenantname
     swift_logsexport_password: password

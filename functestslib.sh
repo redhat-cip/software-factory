@@ -3,13 +3,13 @@
 DISABLE_SETX=0
 [ -z "${DEBUG}" ] && DISABLE_SETX=1 || set -x
 
-export SF_HOST=${SF_HOST:-tests.dom}
+export SF_HOST=${SF_HOST:-sftests.com}
 export SKIP_CLEAN_ROLES="y"
 
 MANAGESF_URL=https://${SF_HOST}
 ADMIN_USER=admin
 ADMIN_PASSWORD=userpass
-JENKINS_URL="http://${SF_HOST:-tests.dom}/jenkinslogs/${JENKINS_IP}:8081/"
+JENKINS_URL="http://${SF_HOST}/jenkinslogs/${JENKINS_IP}:8081/"
 
 ARTIFACTS_DIR="/var/lib/sf/artifacts"
 # This environment variable is set ZUUL in the jenkins job workspace
@@ -81,7 +81,7 @@ function build_image {
 }
 
 function configure_network {
-    if [ "${SF_HOST}" != "tests.dom" ]; then
+    if [ "${SF_HOST}" != "sftests.com" ]; then
         echo "${SF_HOST} must have ssh key authentitcation and use root user by default"
         return
     fi
@@ -290,7 +290,7 @@ function run_backup_restore {
     echo "[+] Waiting for gerrit to restart..."
     retry=0
     while [ $retry -lt 1000 ]; do
-        wget --spider  http://tests.dom/r/ 2> /dev/null && break
+        wget --spider  http://sftests.com/r/ 2> /dev/null && break
         sleep 1
         let retry=retry+1
     done

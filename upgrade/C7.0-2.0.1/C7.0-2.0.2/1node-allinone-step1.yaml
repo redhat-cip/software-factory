@@ -6,4 +6,3 @@
   - include: tasks/stopsfservices.yml
   - include: tasks/edeploysync.yml
   - include: tasks/graphite.yml
-

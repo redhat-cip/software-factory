@@ -26,7 +26,7 @@ If you intend to manage your jobs/tests on slaves via Nodepool or publish artifa
 * One or more dedicated OpenStack tenant to run instance
 * A Swift endpoint to store and publish jobs/tests artifacts
 
-Note that SF will use "tests.dom" as default FQDN and if the FQDN doesn't resolve it needs to be locally
+Note that SF will use "sftests.com" as default FQDN and if the FQDN doesn't resolve it needs to be locally
 set in */etc/hosts* file because the web interface authentication mechanism redirects browser to the FQDN.
 
 Always make sure to use the last available tag, the example below use the 2.0.0 version. Release
@@ -107,7 +107,7 @@ You need a CentOS 7 VM or physical machine. The libvirtd-lxc package is needed.
  $ ./sfstack.sh
 
 This method of deployment is mostly useful for testing, it uses the default configuration
-with "tests.dom" as the FQDN and "admin/userpass" as admin credentials.
+with "sftests.com" as the FQDN and "admin/userpass" as admin credentials.
 
 
 Multi-node deployment (WIP)
@@ -154,7 +154,7 @@ Access Software Factory
 -----------------------
 
 The Dashboard is available at https://FQDN and admin user can authenticate
-using "Internal Login". If you used the default domain *tests.dom* then
+using "Internal Login". If you used the default domain *sftests.com* then
 SF allows (user1, user2, user3) with the default "userpass" password to connect.
 
 If you need more information about authentication mechanisms on SF please refer to

@@ -60,9 +60,9 @@ will prompt you to enter your Gerrit user name.
  $ git review -s
  Could not connect to gerrit.
  Enter your gerrit username: admin
- Trying again with ssh://admin@tests.dom:29418/p1
+ Trying again with ssh://admin@sftests.com:29418/p1
  Creating a git remote called "gerrit" that maps to:
-         ssh://admin@tests.dom:29418/p1
+         ssh://admin@sftests.com:29418/p1
 
 Submit a patch
 --------------

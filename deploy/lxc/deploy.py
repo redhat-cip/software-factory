@@ -158,7 +158,7 @@ if "SUDO_USER" not in os.environ:
     exit(1)
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--domain", default="tests.dom")
+parser.add_argument("--domain", default="sftests.com")
 parser.add_argument("--version")
 parser.add_argument("--workspace", default="/var/lib/sf")
 parser.add_argument("--refarch", choices=[

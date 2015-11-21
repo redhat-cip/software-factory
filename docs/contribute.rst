@@ -69,7 +69,7 @@ First you need to copy the sf-bootstrap-data/ from the managesf node.
 
 .. code-block:: bash
 
-  $ rsync -a root@tests.dom:sf-bootstrap-data/ sf-bootstrap-data/
+  $ rsync -a root@sftests.com:sf-bootstrap-data/ sf-bootstrap-data/
   $ nosetests --no-byte-compile -s -v tests/functional
 
 Tips: ::
@@ -82,7 +82,7 @@ Tips: ::
 
 .. code-block:: none
 
-  Host tests.dom
+  Host sftests.com
     StrictHostKeyChecking no
     User root
     Hostname 192.168.135.101

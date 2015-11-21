@@ -7,7 +7,7 @@
     ProxyPassReverse /jenkins/ http://127.0.0.1:8082/jenkins/
 
     # jjb fails with "jenkins.NotFoundException: Requested item could not be found" when trying to access:
-    # http://jenkins.tests.dom:8080/api/json?tree=jobs[url,color,name,jobs]
+    # http://jenkins.sftests.com:8080/api/json?tree=jobs[url,color,name,jobs]
     ProxyPass /api/ http://127.0.0.1:8082/jenkins/api/ nocanon retry=1 acquire=3000 timeout=600 Keepalive=On
     ProxyPassReverse /api/ http://127.0.0.1:8082/jenkins/api/
 

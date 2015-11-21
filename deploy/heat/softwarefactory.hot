@@ -10,7 +10,7 @@ parameters:
   domain:
     type: string
     description: Hostname of the SF instance
-    default: tests.dom
+    default: sftests.com
   flavor:
     type: string
     description: Flavor of the instance

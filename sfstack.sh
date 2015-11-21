@@ -30,5 +30,5 @@ echo "[+] Run serverspec"
 ssh root@192.168.135.101 "cd /etc/serverspec; rake spec"
 
 echo "[+] SF is ready to be used:"
-echo "echo PUBLIC_IP tests.dom | sudo tee -a /etc/hosts"
-echo "firefox https://tests.dom"
+echo "echo PUBLIC_IP sftests.com | sudo tee -a /etc/hosts"
+echo "firefox https://sftests.com"

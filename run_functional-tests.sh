@@ -56,6 +56,10 @@ case "${TEST_TYPE}" in
     "upgrade")
         SKIP_GPG=1 ./fetch_image.sh ${SF_PREVIOUS_VER} || fail "Could not fetch ${SF_PREVIOUS_VER}"
         lxc_init ${SF_PREVIOUS_VER}
+        if [ "${SF_PREVIOUS_VER}" == "C7.0-2.0.3" ]; then
+            # Use the new domainname
+            sudo sed -i "s/tests.dom/${SF_HOST}/" /var/lib/lxc/managesf/rootfs/etc/puppet/hiera/sf/sfconfig.yaml
+        fi
         run_bootstraps
         run_provisioner
         run_upgrade
