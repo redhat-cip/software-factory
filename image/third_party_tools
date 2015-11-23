@@ -91,10 +91,10 @@ JENKINS_PLAIN_CREDENTIALS_VERSION=1.0
 JENKINS_PLAIN_CREDENTIALS_URL="http://mirrors.jenkins-ci.org/plugins/plain-credentials/${JENKINS_PLAIN_CREDENTIALS_VERSION}/plain-credentials.hpi"
 
 JENKINS_SSH_AGENT_PLUGIN_VERSION=1.4.1
-JENKINS_SSH_AGENT_PLUGIN_URL="http://jenkins.mirror.isppower.de/plugins/ssh-agent/${JENKINS_SSH_AGENT_PLUGIN_VERSION}/ssh-agent.hpi"
+JENKINS_SSH_AGENT_PLUGIN_URL="http://updates.jenkins-ci.org/download/plugins/ssh-agent/${JENKINS_SSH_AGENT_PLUGIN_VERSION}/ssh-agent.hpi"
 
 JENKINS_GEARMAN_PLUGIN_VERSION=0.1.1
-JENKINS_GEARMAN_PLUGIN_URL="http://jenkins.mirror.isppower.de/plugins/gearman-plugin/${JENKINS_GEARMAN_PLUGIN_VERSION}/gearman-plugin.hpi"
+JENKINS_GEARMAN_PLUGIN_URL="http://updates.jenkins-ci.org/download/plugins/gearman-plugin/${JENKINS_GEARMAN_PLUGIN_VERSION}/gearman-plugin.hpi"
 
 JENKINS_REVERSE_AUTH_PROXY_PLUGIN_VERSION=1.4.0
 JENKINS_REVERSE_AUTH_PROXY_PLUGIN_URL="https://updates.jenkins-ci.org/download/plugins/reverse-proxy-auth-plugin/${JENKINS_REVERSE_AUTH_PROXY_PLUGIN_VERSION}/reverse-proxy-auth-plugin.hpi"
