@@ -30,6 +30,7 @@ distributions.
  $ sudo mkdir /home/jenkins/.ssh
  $ sudo chown -R jenkins /home/jenkins/.ssh
  $ sudo chmod 700 /home/jenkins/.ssh
+ $ sudo touch /home/jenkins/.ssh/authorized_keys
  $ sudo chmod 600 /home/jenkins/.ssh/authorized_keys
 
 Then copy inside "/home/jenkins/.ssh/authorized_keys" the public key of Jenkins that you
