@@ -15,6 +15,10 @@ def merge():
     images_conf = yaml.safe_load(file(os.path.join(workdir, images), 'r'))
     labels_conf = yaml.safe_load(file(os.path.join(workdir, labels), 'r'))
 
+    for defined_provider in conf['providers']:
+        # This makes sure all defined providers have an 'images' section
+        defined_provider['images'] = []
+
     for provider in images_conf:
         for defined_provider in conf['providers']:
             if provider['provider'] == defined_provider['name']:
