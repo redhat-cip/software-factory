@@ -4,7 +4,7 @@ biff = no
 append_dot_mydomain = no
 
 myhostname = managesf.<%= @domain %>
-mydomain = $myhostname
+mydomain = <%= @domain %>
 mydestination = $myhostname, localhost
 
 alias_maps = hash:/etc/aliases
@@ -12,7 +12,9 @@ alias_maps = hash:/etc/aliases
 virtual_alias_domains = <%= @domain %>
 virtual_alias_maps = hash:/etc/postfix/virtual
 myorigin = <%= @domain %>
+<% if @smtp_relay %>
 relayhost = <%= @smtp_relay %>
+<% end %>
 mynetworks = 127.0.0.0/8 [::ffff:127.0.0.0]/104 [::1]/128
 mailbox_size_limit = 0
 recipient_delimiter = +
