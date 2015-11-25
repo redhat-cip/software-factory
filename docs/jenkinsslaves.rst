@@ -102,15 +102,21 @@ to adapt sfconfig.yaml. Below is an example of configuration.
 
 .. code-block:: yaml
 
- nodepool_os_password: 'secret'
- nodepool_os_project_id: 'tenantname'
- nodepool_os_auth_url: 'http://localhost:35357/v2.0'
- # Compute availability zone
- nodepool_os_pool: 'nova'
- # Max amount of Slaves that can be started
- nodepool_os_pool_max_amount: 10
- # Delay in seconds between two tasks within nodepool
- nodepool_provider_rate: 10.0
+ nodepool:
+   disabled: false
+   providers:
+     - auth-url: http://localhost:5000/v2.0
+       boot-timeout: 120
+       # Max amount of Slaves that can be started
+       max-servers: 10
+       name: default
+       password: 'secret'
+       # Compute availability zone
+       pool: nova
+       project-id: 'tenantname'
+       # Delay in seconds between two tasks within nodepool
+       rate: 10.0
+       username: 'user'
 
 To apply the configuration you need to run again the sfconfig.sh script.
 
