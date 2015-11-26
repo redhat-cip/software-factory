@@ -98,7 +98,11 @@ gerrit = {
     'top_domain': '<%= @fqdn %>',
     'ssh_port': <%= @gerrit['gerrit_sshd_port'] %>,
     'sshkey_priv_path': '/var/www/managesf/gerrit_admin_rsa',
-    'replication_config_path': '/home/gerrit/site_path/etc/replication.config'
+    'replication_config_path': '/home/gerrit/site_path/etc/replication.config',
+    'db_host': '<%= @gerrit_mysql_host %>',
+    'db_name': '<%= @gerrit_mysql_db %>',
+    'db_user': '<%= @gerrit_mysql_username %>',
+    'db_password': '<%= @gerrit_mysql_password %>'
 }
 
 redmine = {
