@@ -18,12 +18,10 @@ RELEASE_GPG_FINGERPRINT=0xE46E04A2344803E5A808BDD7E8C203A71C3BAE4B
 
 export LC_ALL=C
 
-SWIFT_BASE_URL="http://os.enocloud.com:8080"
-SWIFT_ACCOUNT="70aab03f69b549cead3cb5f463174a51"
-# Base roles cloud and install-server
-SWIFT_EDEPLOY_URL="${SWIFT_BASE_URL}/v1/AUTH_${SWIFT_ACCOUNT}/edeploy-base"
+SWIFT_BASE_URL="http://46.231.133.241:8080"
+SWIFT_ACCOUNT="sf"
 # Url where SF roles (software-factory and install-server-vm) are published
-SWIFT_SF_URL="${SWIFT_BASE_URL}/v1/AUTH_${SWIFT_ACCOUNT}/edeploy-roles"
+SWIFT_SF_URL="${SWIFT_BASE_URL}/v1/AUTH_${SWIFT_ACCOUNT}/sf-images"
 # Url where latest doc is stored
 SWIFT_DOCS_URL="${SWIFT_BASE_URL}/v1/AUTH_${SWIFT_ACCOUNT}/sfdocs"
 
