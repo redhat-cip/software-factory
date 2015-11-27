@@ -20,10 +20,12 @@ export LC_ALL=C
 
 SWIFT_BASE_URL="http://46.231.133.241:8080"
 SWIFT_ACCOUNT="sf"
+SWIFT_IMAGE_CONTAINER="sf-images"
+SWIFT_DOCS_CONTAINER="sf-docs"
 # Url where SF roles (software-factory and install-server-vm) are published
-SWIFT_SF_URL="${SWIFT_BASE_URL}/v1/AUTH_${SWIFT_ACCOUNT}/sf-images"
+SWIFT_SF_URL="${SWIFT_BASE_URL}/v1/AUTH_${SWIFT_ACCOUNT}/${SWIFT_IMAGE_CONTAINER}"
 # Url where latest doc is stored
-SWIFT_DOCS_URL="${SWIFT_BASE_URL}/v1/AUTH_${SWIFT_ACCOUNT}/sfdocs"
+SWIFT_DOCS_URL="${SWIFT_BASE_URL}/v1/AUTH_${SWIFT_ACCOUNT}/${SWIFT_DOCS_CONTAINER}"
 
 # Paths
 SF_WORKSPACE="${SF_WORKSPACE:-/var/lib/sf}"

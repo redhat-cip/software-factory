@@ -7,8 +7,6 @@ set -e
 
 . ./role_configrc
 
-CONTAINER="edeploy-roles"
-
 trap "rm -f /tmp/swift_hash-*" EXIT
 
 function publish {
@@ -34,8 +32,8 @@ function publish {
     sha256sum $OBJ | sudo tee ${IMG_NAME}.digest
     for OBJECT in $OBJ ${IMG_NAME}.digest; do
         [ -f ${OBJECT} ] || continue
-        echo "[+] Uploading ${OBJECT} to ${SWIFT_BASE_URL}/v1/AUTH_${SWIFT_ACCOUNT}/${CONTAINER}/"
-        SWIFT_PATH="/v1/AUTH_${SWIFT_ACCOUNT}/${CONTAINER}/${OBJECT}"
+        echo "[+] Uploading ${OBJECT} to ${SWIFT_BASE_URL}/v1/AUTH_${SWIFT_ACCOUNT}/${SWIFT_IMAGE_CONTAINER}/"
+        SWIFT_PATH="/v1/AUTH_${SWIFT_ACCOUNT}/${SWIFT_IMAGE_CONTAINER}/${OBJECT}"
         set +x
         TEMPURL=`swift tempurl PUT 120 ${SWIFT_PATH} ${TEMP_URL_KEY}`
         set -x
