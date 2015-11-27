@@ -233,6 +233,27 @@ class ManageSfUtils(Tool):
         output = self.exe(cmd)
         return output
 
+    def update_project_page(self, user, project, url):
+        passwd = config.USERS[user]['password']
+        subcmd = " pages update --name %s --dest %s" % (project, url)
+        cmd = self.base_cmd % (user, passwd) + subcmd
+        output = self.exe(cmd)
+        return output
+
+    def get_project_page(self, user, project):
+        passwd = config.USERS[user]['password']
+        subcmd = " pages get --name %s" % project
+        cmd = self.base_cmd % (user, passwd) + subcmd
+        output = self.exe(cmd)
+        return output
+
+    def delete_project_page(self, user, project):
+        passwd = config.USERS[user]['password']
+        subcmd = " pages delete --name %s" % project
+        cmd = self.base_cmd % (user, passwd) + subcmd
+        output = self.exe(cmd)
+        return output
+
 
 class GerritGitUtils(Tool):
     def __init__(self, user, priv_key_path, email):

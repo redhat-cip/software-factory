@@ -501,3 +501,24 @@ class TestManageSF(Base):
         self.assertTrue(project in resp.json())
         self.assertTrue('config' in resp.json())
         resp = requests.get(url, cookies=user2_cookies)
+
+    def test_project_pages_config(self):
+        """ Check if managesf allow us to configure pages for a project
+        """
+        project = 'p_%s' % create_random_str()
+        self.create_project(project, config.USER_2)
+        self.assertTrue(self.gu.project_exists(project))
+        self.assertTrue(self.rm.project_exists(project))
+        self.msu.update_project_page(config.USER_2, project,
+                                     "http://tests.com/")
+        self.assertEqual(self.msu.get_project_page(config.USER_2,
+                                                   project).strip(),
+                         "\"http://tests.com/\"")
+        self.msu.delete_project_page(config.USER_3, project)
+        self.assertEqual(self.msu.get_project_page(config.USER_2,
+                                                   project).strip(),
+                         "\"http://tests.com/\"")
+        self.msu.delete_project_page(config.USER_2, project)
+        self.assertEqual(self.msu.get_project_page(config.USER_2,
+                                                   project).strip(),
+                         "")
