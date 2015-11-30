@@ -18,6 +18,8 @@ import os
 import config
 import shutil
 
+import requests
+
 from utils import Base
 from utils import ManageSfUtils
 from utils import GerritGitUtils
@@ -449,3 +451,19 @@ class TestManageSF(Base):
                             "scripts for project %s" %
                             (config.USER_4, project))]
         self.assertEqual(len(match), 1)
+
+    def test_managesf_urls_accessible(self):
+        """ Check if managesf URLs are all working
+        """
+        project = 'p_%s' % create_random_str()
+        self.create_project(project, config.ADMIN_USER)
+        cookies = dict(
+            auth_pubtkt=config.USERS[config.ADMIN_USER]['auth_cookie'])
+        paths = [
+            "/manage/project/",
+            "/manage/project/%s" % project,
+            "/manage/project/membership/"]
+        for path in paths:
+            url = "http://%s%s" % (config.GATEWAY_HOST, path)
+            resp = requests.get(url, cookies=cookies)
+            self.assertEqual(200, resp.status_code)
