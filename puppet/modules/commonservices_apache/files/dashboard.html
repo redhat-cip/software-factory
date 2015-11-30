@@ -11,7 +11,7 @@
         <script src="dashboard.js"></script>
 
     <style type="text/css">
-	.input[disabled] {pointer-events: auto !important;}
+    .input[disabled] {pointer-events: auto !important;}
         iframe {border-bottom: 1px solid #ddd;}
     </style>
 </head>
@@ -19,7 +19,7 @@
 <body ng-controller="mainController">
     <div class="container">
         <div class="pull-right">
-	        <button class="btn btn-success btn-xs" ng-if="htpasswd_set" ng-click="htpasswd_disable()" title="Disable password-protected API access to Gerrit for this user">
+            <button class="btn btn-success btn-xs" ng-if="htpasswd_set" ng-click="htpasswd_disable()" title="Disable password-protected API access to Gerrit for this user">
                 <span class="glyphicon glyphicon-lock"></span>
             </button>
 
@@ -111,9 +111,9 @@
                   <table class="table table-stripped">
                       <thead><tr>
                           <th>Members</th>
-			  <th>PTL</th>
-			  <th>Core</th>
-			  <th>Dev</th>
+              <th>PTL</th>
+              <th>Core</th>
+              <th>Dev</th>
                       </tr></thead>
                       <tbody>
                           <tr ng-repeat="member in selectedMembers | projectMembers:searchMember">
@@ -171,11 +171,19 @@
                                     <input type="text" class="form-control" id="upstream" placeholder="For example: git://tests.net/git/sample.git" ng-model="data.upstream">
                                 </div>
                             </div>
+                            <div class="form-group">
+                              <div class="col-sm-offset-2 col-sm-10">
+                                <div class="checkbox">
+                                  <label>
+                                    <input id="add_branches" type="checkbox" ng-model="data.add_branches"/>Include all the branches from the upstream repository.</label>
+                                </div>
+                              </div>
+                            </div>
 
                             <div class="form-group">
                                 <div class="col-sm-offset-2 col-sm-10">
                                     <div class="checkbox">
-                                        <label><input type="checkbox" id="private" ng-model="data.private">Private</label>
+                                        <label><input type="checkbox" id="private" ng-model="data.private">Make the project private</label>
                                     </div>
                                 </div>
                             </div>

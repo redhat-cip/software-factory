@@ -388,6 +388,8 @@ class TestManageSF(Base):
                                     commit="Adding files 1-10",
                                     files=us_files)
         ggu_us.direct_push_branch(us_clone_dir, "master")
+        ggu_us.add_commit_in_branch(us_clone_dir, "branch1")
+        ggu_us.direct_push_branch(us_clone_dir, "branch1")
 
         # No create a test project with upstream pointing to the above
         upstream_url = "ssh://%s@%s:29418/%s" % (
@@ -405,11 +407,23 @@ class TestManageSF(Base):
                                         config.GATEWAY_HOST, pname)
         # clone
         clone_dir = ggu.clone(url, pname)
-        self.dirs_to_delete.append(os.path.dirname(clone_dir))
 
         # Check if the files pushed in upstream project is present
         files = [f for f in os.listdir(clone_dir) if not f.startswith('.')]
         self.assertEqual(set(files), set(us_files))
+        branches = ggu.get_branches(clone_dir, True)
+        self.assertNotIn('gerrit/branch1', branches)
+
+        # Test upstream with additional branches
+        pname2 = 'p_%s' % create_random_str()
+        options['add-branches'] = ''
+        self.create_project(pname2, config.ADMIN_USER, options=options)
+        url = "ssh://%s@%s:29418/%s" % (config.ADMIN_USER,
+                                        config.GATEWAY_HOST, pname2)
+        clone_dir = ggu.clone(url, pname2)
+        branches = ggu.get_branches(clone_dir, True)
+        self.assertIn('gerrit/branch1', branches)
+        self.dirs_to_delete.append(os.path.dirname(clone_dir))
 
     def test_delete_project_as_admin(self):
         """ Check if admin can delete projects that are not owned by admin
