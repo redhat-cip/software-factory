@@ -83,7 +83,7 @@ class TestUserdata(Base):
         self.logout()
         url = config.GATEWAY_URL + "jenkins/"
         quoted_url = urllib2.quote(url, safe='')
-        response = self.login('user5', 'userpass', quoted_url)
+        response = self.login('user5', config.ADMIN_PASSWORD, quoted_url)
 
         self.assertEqual(url, response.url)
         # verify if user is created in gerrit and redmine
@@ -96,7 +96,7 @@ class TestUserdata(Base):
         self.logout()
         url = config.GATEWAY_URL + "redmine/projects"
         quoted_url = urllib2.quote(url, safe='')
-        response = self.login('user5', 'userpass', quoted_url)
+        response = self.login('user5', config.ADMIN_PASSWORD, quoted_url)
 
         self.assertEqual(url, response.url)
         # verify if user is created in gerrit and redmine

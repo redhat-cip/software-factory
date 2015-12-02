@@ -85,7 +85,7 @@ function configure_network {
         echo "${SF_HOST} must have ssh key authentitcation and use root user by default"
         return
     fi
-    local ip=192.168.135.101
+    local ip=$1
     rm -f "$HOME/.ssh/known_hosts"
     RETRIES=0
     echo " [+] Starting ssh-keyscan on $ip:22"
@@ -104,13 +104,13 @@ function configure_network {
     echo "[+] Avoid ssh error"
     cat << EOF > ~/.ssh/config
 Host ${SF_HOST}
-    Hostname 192.168.135.101
+    Hostname ${ip}
     User root
 EOF
     chmod 0600 ~/.ssh/config
 
     echo "[+] Adds ${SF_HOST} to /etc/hosts"
-    reset_etc_hosts_dns "${SF_HOST}" 192.168.135.101
+    reset_etc_hosts_dns "${SF_HOST}" ${ip}
     checkpoint "configure_network"
 }
 
@@ -201,8 +201,20 @@ function waiting_stack_created {
     done
 }
 
+function fetch_bootstraps_data {
+    echo "[+] Fetch ${SF_HOST} ssl cert"
+    scp -r ${SF_HOST}:/etc/pki/ca-trust/extracted/openssl/ca-bundle.trust.crt /var/lib/sf/venv/lib/python2.7/site-packages/requests/cacert.pem
+    cp /var/lib/sf/venv/lib/python2.7/site-packages/requests/cacert.pem /var/lib/sf/venv/lib/python2.7/site-packages/pip/_vendor/requests/cacert.pem
+
+    echo "[+] Fetch bootstrap data"
+    rm -Rf sf-bootstrap-data
+    scp -r ${SF_HOST}:sf-bootstrap-data .
+    checkpoint "fetch_bootstraps_data"
+}
+
 function run_bootstraps {
-    configure_network
+    # Configure lxc host network with container ip 192.168.135.101
+    configure_network 192.168.135.101
     eval $(ssh-agent)
     ssh-add ~/.ssh/id_rsa
     echo "$(date) ======= run_bootstraps" | tee -a ${ARTIFACTS_DIR}/bootstraps.log
@@ -211,14 +223,8 @@ function run_bootstraps {
     res=${PIPESTATUS[0]}
     kill -9 $SSH_AGENT_PID
     [ "$res" != "0" ] && fail "Bootstrap fails" ${ARTIFACTS_DIR}/bootstraps.log
-    echo "[+] Fetch ${SF_HOST} ssl cert"
-    scp -r ${SF_HOST}:/etc/pki/ca-trust/extracted/openssl/ca-bundle.trust.crt /var/lib/sf/venv/lib/python2.7/site-packages/requests/cacert.pem
-    cp /var/lib/sf/venv/lib/python2.7/site-packages/requests/cacert.pem /var/lib/sf/venv/lib/python2.7/site-packages/pip/_vendor/requests/cacert.pem
-
-    echo "[+] Fetch bootstrap data"
-    rm -Rf sf-bootstrap-data
-    scp -r ${SF_HOST}:sf-bootstrap-data .
     checkpoint "run_bootstraps"
+    fetch_bootstraps_data
 }
 
 function prepare_functional_tests_venv {

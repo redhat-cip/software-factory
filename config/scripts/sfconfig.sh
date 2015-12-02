@@ -252,6 +252,11 @@ while getopts ":a:i:h" opt; do
     esac
 done
 
+# Make sure hostname is correct
+if [ "$(hostname -f)" != "managesf.${DOMAIN}" ]; then
+    echo "[sfconfig][$(hostname -f)] Changing hostname to managesf.${DOMAIN}"
+    hostnamectl set-hostname "managesf.${DOMAIN}"
+fi
 
 # Generate site specifics configuration
 if [ ! -f "${BUILD}/generate.done" ]; then

@@ -138,7 +138,7 @@
         require valid-user
 
         Order Allow,Deny
-        Allow from managesf.<%= @fqdn %>
+        Allow from <%= @fqdn %>
 
         # Grant access based on password authentication or IP address
         Satisfy any

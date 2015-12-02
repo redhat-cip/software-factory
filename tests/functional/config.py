@@ -22,8 +22,9 @@ GERRIT_USER = 'gerrit'
 GERRIT_SERVICE_PRIV_KEY_PATH = '%s/ssh_keys/gerrit_service_rsa' \
                                % SF_BOOTSTRAP_DATA
 
+ADMIN_PASSWORD = sfconfig.get('authentication')['admin_password']
 USER_1 = "admin"
-USER_1_PASSWORD = sfconfig.get('authentication')['admin_password']
+USER_1_PASSWORD = ADMIN_PASSWORD
 
 ADMIN_USER = USER_1
 ADMIN_PRIV_KEY_PATH = '%s/ssh_keys/gerrit_admin_rsa' % SF_BOOTSTRAP_DATA
@@ -156,38 +157,38 @@ USER_6_PRIV_KEY = USER_4_PRIV_KEY
 # to this dictionary please start with USER_7
 
 USERS = {
-    USER_1: {"password": USER_1_PASSWORD,
+    USER_1: {"password": ADMIN_PASSWORD,
              "email": "admin@tests.dom",
              "pubkey": file(ADMIN_PUB_KEY_PATH).read(),
              "privkey": file(ADMIN_PRIV_KEY_PATH).read(),
              "auth_cookie": "",
              },
-    USER_2: {"password": "userpass",
+    USER_2: {"password": ADMIN_PASSWORD,
              "email": "user2@tests.dom",
              "pubkey": USER_2_PUB_KEY,
              "privkey": USER_2_PRIV_KEY,
              "auth_cookie": "",
              },
-    USER_3: {"password": "userpass",
+    USER_3: {"password": ADMIN_PASSWORD,
              "email": "user3@tests.dom",
              "pubkey": USER_3_PUB_KEY,
              "privkey": USER_3_PRIV_KEY,
              "auth_cookie": "",
              },
-    USER_4: {"password": "userpass",
+    USER_4: {"password": ADMIN_PASSWORD,
              "email": "user4@tests.dom",
              "pubkey": USER_4_PUB_KEY,
              "privkey": USER_4_PRIV_KEY,
              "auth_cookie": "",
              },
-    USER_5: {"password": "userpass",
+    USER_5: {"password": ADMIN_PASSWORD,
              "email": "user5@tests.dom",
              "pubkey": USER_5_PUB_KEY,
              "privkey": USER_5_PRIV_KEY,
              "auth_cookie": "",
              "lastname": "Demo user5",
              },
-    USER_6: {"password": "userpass",
+    USER_6: {"password": ADMIN_PASSWORD,
              "email": "user6@tests.dom",
              "pubkey": USER_6_PUB_KEY,
              "privkey": USER_6_PRIV_KEY,
