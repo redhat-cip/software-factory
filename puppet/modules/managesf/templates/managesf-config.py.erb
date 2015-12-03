@@ -93,6 +93,8 @@ admin = {
 
 gerrit = {
     'user': 'gerrit',
+    'admin_user': 'admin',
+    'admin_password': '<%= @auth['admin_password'] %>',
     'host': 'gerrit.<%= @fqdn %>',
     'url': '<%= @url["gateway_url"] %>',
     'top_domain': '<%= @fqdn %>',
