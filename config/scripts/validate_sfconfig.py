@@ -96,7 +96,7 @@ if 'providers' not in nodepool:
 # Adds ldap disabled settings
 ldap = d['authentication']['ldap']
 if "disabled" not in ldap:
-    if ldap['ldap_url'] not in ('', 'ldap://tests.dom'):
+    if ldap['ldap_url'] not in ('', 'ldap://sftests.com'):
         ldap['disabled'] = False
     else:
         ldap['disabled'] = True

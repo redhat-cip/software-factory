@@ -21,7 +21,9 @@ sudo yum install -y openstack-packstack puppet libvirt qemu libguestfs erlang-sd
     openstack-nova-cert openstack-nova-common openstack-nova-compute openstack-nova-conductor       \
     openstack-nova-console openstack-nova-novncproxy openstack-nova-scheduler openstack-packstack   \
     openstack-packstack-puppet openstack-puppet-modules openstack-selinux openstack-utils           \
-    python2-django-openstack-auth openstack-swift python-oslo-cache openstack-heat-api
+    python2-django-openstack-auth openstack-swift python-oslo-cache openstack-heat-api              \
+    pm-utils xinetd openstack-swift-account openstack-swift-container openstack-swift-object        \
+    openstack-swift-plugin-swift3 openstack-swift-proxy openstack-heat-engine
 
 sudo yum install -y memcached mariadb-galera-server numpy-f2py tcl tk xorg-x11-font-utils nmap-ncat \
     perl-macros perl-Time-HiRes device-mapper-event device-mapper-event-libs usbredir wxGTK         \

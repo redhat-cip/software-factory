@@ -82,7 +82,6 @@ case "${TEST_TYPE}" in
         heat_init
         heat_wait
         run_heat_bootstraps
-        heat_dashboard_wait
         run_functional_tests
         ;;
     *)

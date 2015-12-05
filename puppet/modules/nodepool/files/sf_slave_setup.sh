@@ -26,6 +26,14 @@ sudo chown -R jenkins:jenkins /var/lib/sf/
 # Temporary DNS fix
 echo "216.58.213.16 gerrit-releases.storage.googleapis.com" | sudo tee -a /etc/hosts
 
+# Fetch prebuilt image
+git clone http://softwarefactory-project.io/r/software-factory --depth 1
+(
+    cd software-factory;
+    ./fetch_image.sh
+    FETCH_CACHE=1 ./fetch_image.sh
+)
+
 # sync FS, otherwise there are 0-byte sized files from the yum/pip installations
 sudo sync
 

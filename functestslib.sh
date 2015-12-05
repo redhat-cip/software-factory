@@ -7,8 +7,6 @@ export SF_HOST=${SF_HOST:-sftests.com}
 export SKIP_CLEAN_ROLES="y"
 
 MANAGESF_URL=https://${SF_HOST}
-ADMIN_USER=admin
-ADMIN_PASSWORD=userpass
 JENKINS_URL="http://${SF_HOST}/jenkinslogs/${JENKINS_IP}:8081/"
 
 ARTIFACTS_DIR="/var/lib/sf/artifacts"
@@ -83,7 +81,7 @@ function heat_init {
     NET_ID=$(neutron net-list | grep 'external_network' | awk '{ print $2 }' | head)
     echo "[+] Starting the stack..."
     heat stack-create --template-file ./deploy/heat/softwarefactory.hot -P \
-        "sf_root_size=5;key_name=id_rsa;domain=tests.dom;image_id=${GLANCE_ID};ext_net_uuid=${NET_ID};flavor=m1.medium" \
+        "sf_root_size=5;key_name=id_rsa;domain=${SF_HOST};image_id=${GLANCE_ID};ext_net_uuid=${NET_ID};flavor=m1.medium" \
         sf_stack || fail "Heat stack-create failed"
     checkpoint "heat-init"
 }
@@ -120,19 +118,6 @@ function heat_wait {
     [ $RETRY -eq 0 ] && fail "Instance ping failed..."
     echo "ok."
     checkpoint "heat-wait"
-}
-
-function heat_dashboard_wait {
-    echo "[+] Waiting for dashboard to be available at http://${SF_HOST}..."
-    RETRY=100
-    while [ $RETRY -gt 0 ]; do
-        curl http://${SF_HOST} 2> /dev/null | grep -q 'dashboard' && break
-        sleep 6
-        let RETRY--
-    done
-    [ $RETRY -eq 0 ] && fail "Instance dashboard is not available..."
-    echo "ok."
-    checkpoint "heat-dashboard-wait"
 }
 
 function build_image {
@@ -277,6 +262,7 @@ function fetch_bootstraps_data {
     rm -Rf sf-bootstrap-data
     scp -r ${SF_HOST}:sf-bootstrap-data .
     checkpoint "fetch_bootstraps_data"
+    ADMIN_PASSWORD=$(cat sf-bootstrap-data/hiera/sfconfig.yaml | grep 'admin_password:' | sed 's/^.*admin_password://' | awk '{ print $1 }' | sed 's/ //g')
 }
 
 function run_bootstraps {
@@ -313,7 +299,10 @@ function run_heat_bootstraps {
         sleep 6
         let RETRY--
     done
-    [ $RETRY -eq 0 ] && fail "Sfconfig.sh didn't finished"
+    [ $RETRY -eq 0 ] && {
+        ssh ${SF_HOST} "cat /var/log/cloud-init-output.log"
+        fail "Sfconfig.sh didn't finished"
+    }
     ssh ${SF_HOST} "tail /var/log/cloud-init-output.log"
     echo "ok."
     checkpoint "run_heat_bootstraps"
@@ -367,8 +356,8 @@ function run_provisioner {
 function run_backup_start {
     echo "$(date) ======= run_backup_start"
     . /var/lib/sf/venv/bin/activate
-    sfmanager --url "${MANAGESF_URL}" --auth ${ADMIN_USER}:${ADMIN_PASSWORD} system backup_start || fail "Backup failed"
-    sfmanager --url "${MANAGESF_URL}" --auth ${ADMIN_USER}:${ADMIN_PASSWORD} system backup_get   || fail "Backup get failed"
+    sfmanager --url "${MANAGESF_URL}" --auth "admin:${ADMIN_PASSWORD}" system backup_start || fail "Backup failed"
+    sfmanager --url "${MANAGESF_URL}" --auth "admin:${ADMIN_PASSWORD}" system backup_get   || fail "Backup get failed"
     deactivate
     sudo cp /var/lib/lxc/managesf/rootfs/var/log/managesf/managesf.log ${ARTIFACTS_DIR}/backup_managesf.log
     tar tzvf sf_backup.tar.gz > ${ARTIFACTS_DIR}/backup_content.log
@@ -379,7 +368,7 @@ function run_backup_start {
 function run_backup_restore {
     echo "$(date) ======= run_backup_restore"
     . /var/lib/sf/venv/bin/activate
-    sfmanager --url "${MANAGESF_URL}" --auth ${ADMIN_USER}:${ADMIN_PASSWORD} system restore --filename $(pwd)/sf_backup.tar.gz || fail "Backup resore failed"
+    sfmanager --url "${MANAGESF_URL}" --auth "admin:${ADMIN_PASSWORD}" system restore --filename $(pwd)/sf_backup.tar.gz || fail "Backup resore failed"
     echo "[+] Waiting for gerrit to restart..."
     retry=0
     while [ $retry -lt 1000 ]; do

@@ -170,8 +170,9 @@ class TestProjectReplication(Base):
         # is discovered.
         # This may take some time (gerrit in some condition take long
         # to be fully up)
-        call("ssh root@192.168.135.101 systemctl restart gerrit", shell=True)
-        call("ssh root@192.168.135.101 /root/wait4gerrit.sh", shell=True)
+        call("ssh %s systemctl restart gerrit" % config.GATEWAY_HOST,
+             shell=True)
+        call("ssh %s /root/wait4gerrit.sh" % config.GATEWAY_HOST, shell=True)
 
         # Clone the project and submit it for review
         priv_key_path = set_private_key(config.USERS[self.un]["privkey"])

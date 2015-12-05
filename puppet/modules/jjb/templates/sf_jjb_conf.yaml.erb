@@ -61,29 +61,28 @@
           sudo systemctl restart openstack-nova-compute
 
           echo "[+] Create network"
-          neutron net-create external_network --provider:network_type flat --provider:physical_network extnet --router:external
+          neutron net-create external_network --provider:network_type flat --provider:physical_network extnet --router:external > /dev/null
           neutron subnet-create --name public_subnet --enable_dhcp=False \
                 --allocation-pool=start=192.168.42.10,end=192.168.42.200 \
-                --gateway=192.168.42.1 external_network 192.168.42.0/24
-          neutron router-create external_gw
-          neutron router-gateway-set external_gw external_network
+                --gateway=192.168.42.1 external_network 192.168.42.0/24 > /dev/null
+          neutron router-create external_gw > /dev/null
+          neutron router-gateway-set external_gw external_network > /dev/null
           sudo ip a add 192.168.42.1/24 dev br-ex
 
           echo "[+] Install cirros"
-          which wget || sudo yum install -y wget
-          wget http://download.cirros-cloud.net/0.3.4/cirros-0.3.4-x86_64-disk.img
-          glance image-create --name=cirros --is-public=true --container-format=bare --disk-format=qcow2 < cirros-0.3.4-x86_64-disk.img
+          wget http://download.cirros-cloud.net/0.3.4/cirros-0.3.4-x86_64-disk.img &> /dev/null
+          glance image-create --name=cirros --is-public=true --container-format=bare --disk-format=qcow2 < cirros-0.3.4-x86_64-disk.img > /dev/null
 
           echo "[+] Create 3 tenants"
-          for tenantname in sfmain sfnodepool sfswift; do
+          (for tenantname in sfmain sfnodepool sfswift; do
             openstack project create $tenantname
             openstack user create --project $tenantname --password sf4ever $tenantname
             openstack role add --project $tenantname --user $tenantname heat_stack_owner
-          done
+          done) > /dev/null
           [ -f ~/.ssh/id_rsa ] || ssh-keygen -N '' -f ~/.ssh/id_rsa
 
           echo "[+] Customize tenants"
-          for tenantname in admin sfmain sfnodepool sfswift; do
+          (for tenantname in admin sfmain sfnodepool sfswift; do
             export OS_USERNAME=$tenantname
             export OS_TENANT_NAME=$tenantname
 
@@ -102,7 +101,7 @@
 
             echo "[+] Create Keypairs"
             nova keypair-add --pub-key ~/.ssh/id_rsa.pub id_rsa
-          done
+          done) > /dev/null
 
 - builder:
     name: rdo-check
