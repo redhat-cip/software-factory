@@ -109,6 +109,10 @@ install_sf_packages() {
     add_epel_repository
     http_fetch https://oss-binaries.phusionpassenger.com/yum/definitions/el-passenger.repo ${dir}/etc/yum.repos.d/passenger.repo
 
+    # (TEMP TRY to remove that later) Force the right selinux-policy version for passenger (10/12/2015)
+    install_packages ${dir} http://buildlogs.centos.org/c7.1511.00/selinux-policy/20151120104451/3.13.1-60.el7.x86_64/selinux-policy-3.13.1-60.el7.noarch.rpm
+    install_packages ${dir} http://buildlogs.centos.org/c7.1511.00/selinux-policy/20151120104451/3.13.1-60.el7.x86_64/selinux-policy-targeted-3.13.1-60.el7.noarch.rpm
+
     install_packages ${dir} $BASE_PKGS $PKGS $DEV_PKGS
     remove_epel_repository
 
