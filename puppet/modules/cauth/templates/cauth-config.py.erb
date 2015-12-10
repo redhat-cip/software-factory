@@ -84,6 +84,11 @@ auth = {
             "mail": "admin@<%= @fqdn %>",
             "password": "<%= @admin_password_hashed %>",
         },
+        "_SF_SERVICE_USER_":{
+            "lastname": "Software Factory user for automated tasks",
+            "mail": "admin@<%= @fqdn %>",
+            "password": "<%= @service_user_password_hashed %>",
+        },
         <% if @fqdn == "sftests.com" %>
             "user2": {
                 "lastname": "Demo user2",

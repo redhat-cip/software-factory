@@ -68,7 +68,7 @@ function generate_yaml {
     mv /etc/puppet/hiera/sf/sfconfig.yaml ${OUTPUT}/ || exit -1
     mv /etc/puppet/hiera/sf/sfcreds.yaml ${OUTPUT}/
     mv /etc/puppet/hiera/sf/sfarch.yaml ${OUTPUT}/
-    # MySQL password for services
+    # MySQL password for services + service user
     MYSQL_ROOT_SECRET=$(generate_random_pswd 32)
     REDMINE_MYSQL_SECRET=$(generate_random_pswd 32)
     GERRIT_MYSQL_SECRET=$(generate_random_pswd 32)
@@ -78,6 +78,7 @@ function generate_yaml {
     GRAPHITE_MYSQL_SECRET=$(generate_random_pswd 32)
     GRAPHITE_SECRET_KEY=$(generate_random_pswd 32)
     GRAFANA_MYSQL_SECRET=$(generate_random_pswd 32)
+    SF_SERVICE_USER_SECRET=$(generate_random_pswd 32)
     sed -i "s#MYSQL_ROOT_PWD#${MYSQL_ROOT_SECRET}#" ${OUTPUT}/sfcreds.yaml
     sed -i "s#REDMINE_SQL_PWD#${REDMINE_MYSQL_SECRET}#" ${OUTPUT}/sfcreds.yaml
     sed -i "s#GERRIT_SQL_PWD#${GERRIT_MYSQL_SECRET}#" ${OUTPUT}/sfcreds.yaml
@@ -87,6 +88,7 @@ function generate_yaml {
     sed -i "s#GRAPHITE_SQL_PWD#${GRAPHITE_MYSQL_SECRET}#" ${OUTPUT}/sfcreds.yaml
     sed -i "s#GRAPHITE_SECRET_KEY#${GRAPHITE_SECRET_KEY}#" ${OUTPUT}/sfcreds.yaml
     sed -i "s#GRAFANA_SQL_PWD#${GRAFANA_MYSQL_SECRET}#" ${OUTPUT}/sfcreds.yaml
+    sed -i "s#SF_SERVICE_USER_PWD#${SF_SERVICE_USER_SECRET}#" ${OUTPUT}/sfcreds.yaml
     # Default authorized ssh keys on each node
     JENKINS_PUB="$(cat ${BUILD}/ssh_keys/jenkins_rsa.pub | cut -d' ' -f2)"
     SERVICE_PUB="$(cat ${BUILD}/ssh_keys/service_rsa.pub | cut -d' ' -f2)"

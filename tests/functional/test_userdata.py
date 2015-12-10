@@ -110,6 +110,15 @@ class TestUserdata(Base):
         response = self.login('toto', 'nopass', '/')
         self.assertEqual(response.status_code, 401)
 
+    def test_hook_user_login(self):
+        """ Functional test when trying to login with service user
+        """
+        self.logout()
+        response = self.login(config.HOOK_USER,
+                              config.HOOK_USER_PASSWORD,
+                              '/')
+        self.assertTrue(response.status_code < 400)
+
     def test_create_local_user_and_login(self):
         try:
             self.msu.create_user('Flea', 'RHCP', 'flea@slapdabass.com')

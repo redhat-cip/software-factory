@@ -7,9 +7,16 @@ SF_BOOTSTRAP_DATA = "%s/sf-bootstrap-data" % os.getcwd()
 SF_TESTS_DIR = "./tests"
 
 sfconfig_filename = "%s/hiera/sfconfig.yaml" % SF_BOOTSTRAP_DATA
+sfcreds_filename = "%s/hiera/sfcreds.yaml" % SF_BOOTSTRAP_DATA
 
 try:
     sfconfig = yaml.load(open(sfconfig_filename))
+except:
+    print "%s: can't load sfconfig" % sfconfig_filename
+    raise
+
+try:
+    sfcreds = yaml.load(open(sfcreds_filename))
 except:
     print "%s: can't load sfconfig" % sfconfig_filename
     raise
@@ -25,6 +32,9 @@ GERRIT_SERVICE_PRIV_KEY_PATH = '%s/ssh_keys/gerrit_service_rsa' \
 ADMIN_PASSWORD = sfconfig.get('authentication')['admin_password']
 USER_1 = "admin"
 USER_1_PASSWORD = ADMIN_PASSWORD
+
+HOOK_USER = "_SF_SERVICE_USER_"
+HOOK_USER_PASSWORD = sfcreds.get('creds_sf_service_user_pwd')
 
 ADMIN_USER = USER_1
 ADMIN_PRIV_KEY_PATH = '%s/ssh_keys/gerrit_admin_rsa' % SF_BOOTSTRAP_DATA

@@ -29,9 +29,10 @@ class cauth ($cauth = hiera('cauth'), $gerrit = hiera('gerrit')) {
   $gerrit_mysql_db = 'gerrit'
   $gerrit_mysql_username = 'gerrit'
   $gerrit_mysql_password = hiera('creds_gerrit_sql_pwd')
+  $service_user_password = hiera('creds_sf_service_user_pwd')
 
   $admin_password_hashed = generate("/usr/bin/python", "-c", "import crypt, random, string, sys; salt = '\$6\$' + ''.join(random.choice(string.letters + string.digits) for _ in range(16)) + '\$'; sys.stdout.write(crypt.crypt(sys.argv[1], salt))", $auth['admin_password'])
-
+  $service_user_password_hashed = generate("/usr/bin/python", "-c", "import crypt, random, string, sys; salt = '\$6\$' + ''.join(random.choice(string.letters + string.digits) for _ in range(16)) + '\$'; sys.stdout.write(crypt.crypt(sys.argv[1], salt))", $service_user_password)
 
   file {'/etc/httpd/conf.d/cauth.conf':
     ensure => file,

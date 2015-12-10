@@ -392,6 +392,8 @@ function run_upgrade {
     sudo rsync -a --delete ${IMAGE_PATH}/ /var/lib/lxc/managesf/rootfs/${IMAGE_PATH}/ || fail "Could not copy ${SF_VER}"
     echo "[+] Running upgrade"
     ssh ${SF_HOST} "cd software-factory; ./upgrade.sh ${REFARCH}" || fail "Upgrade failed" "/var/lib/lxc/managesf/rootfs/var/log/upgrade-bootstrap.log"
+    # copy changes to sfcreds.yaml back to original to account for new service user (unneeded after 2.0.4)
+    scp ${SF_HOST}:sf-bootstrap-data/hiera/sfcreds.yaml sf-bootstrap-data/hiera/
     checkpoint "run_upgrade"
 }
 
