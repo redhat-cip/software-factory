@@ -3,6 +3,7 @@
 - hosts: managesf
   gather_facts: no
   tasks:
+    - include: tasks/update_knownhosts.yaml
     - include: tasks/create_config_repository.yaml
 - hosts: jenkins
   gather_facts: no

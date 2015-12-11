@@ -50,10 +50,10 @@ function lxc_start {
 function heat_stop {
     STOP_RETRY=3
     while [ $STOP_RETRY -gt 0 ]; do
-        heat stack-delete sf_stack &> /dev/null || break
+        heat stack-delete sf_stack &> /dev/null
         RETRY=40
         while [ $RETRY -gt 0 ]; do
-            heat stack-show sf_stack 2>&1 > /dev/null || break
+            heat stack-show sf_stack &> /dev/null || break
             sleep 5
             let RETRY--
         done
@@ -64,7 +64,38 @@ function heat_stop {
     checkpoint "heat-stop"
 }
 
+function clean_nodepool_tenant {
+    export OS_USERNAME="sfnodepool"; export OS_TENANT_NAME="${OS_USERNAME}"
+    for srv in $(openstack  server list -f json | awk '{ print $2 }' | tr ',' ' ' | sed 's/"//g'); do
+        openstack server delete $srv
+    done
+    for image in $(nova image-list | grep template | awk '{ print $2 }'); do
+        nova image-delete $image
+    done
+    export OS_USERNAME="sfmain"; export OS_TENANT_NAME="${OS_USERNAME}"
+    checkpoint "clean nodepool tenant"
+}
+
+function run_it_jenkins_ci {
+    if [ "${REFARCH}" != "1node-allinone" ]; then
+        # skip
+        return
+    fi
+    ./tests/integration/run.py || fail "Basic integration test failed"
+    checkpoint "run_it_jenkins_ci"
+}
+
+function run_it_openstack {
+    it_cmd="./tests/integration/run.py --password ${ADMIN_PASSWORD} --playbook"
+    ${it_cmd} zuul      || fail "Basic integration test failed"
+    ${it_cmd} nodepool --os_base_image "sf-${SF_VER}" --os_user sfnodepool || echo "(non-voting) Nodepool integration test failed"
+    ${it_cmd} swiftlogs || echo "(non-voting) Swift integration test failed"
+    ${it_cmd} alltogether || echo "(non-voting) Alltogether integration test failed"
+    checkpoint "run_it_openstack"
+}
+
 function heat_init {
+    export OS_USERNAME="admin"; export OS_TENANT_NAME="${OS_USERNAME}"
     GLANCE_ID=$(glance image-list | grep "sf-${SF_VER}" | awk '{ print $2 }')
     if [ -n "${GLANCE_ID}" ] && [ ! -n "${KEEP_GLANCE_IMAGE}" ]; then
         echo "[+] Removing old image..."
@@ -73,15 +104,16 @@ function heat_init {
     fi
     if [ ! -n "${GLANCE_ID}" ]; then
         echo "[+] ${IMAGE_PATH}-${SF_VER}.img.qcow2: Uploading glance image..."
-        glance image-create --progress --disk-format qcow2 --container-format bare --name sf-${SF_VER} --file ${IMAGE_PATH}-${SF_VER}.img.qcow2
+        glance image-create --is-public=true --progress --disk-format qcow2 --container-format bare --name sf-${SF_VER} --file ${IMAGE_PATH}-${SF_VER}.img.qcow2
         GLANCE_ID=$(glance image-list | grep "sf-${SF_VER}" | awk '{ print $2 }' | head)
     else
         echo "[+] Going to re-use glance image uuid ${GLANCE_ID}"
     fi
+    export OS_USERNAME="sfmain"; export OS_TENANT_NAME="${OS_USERNAME}"
     NET_ID=$(neutron net-list | grep 'external_network' | awk '{ print $2 }' | head)
     echo "[+] Starting the stack..."
     heat stack-create --template-file ./deploy/heat/softwarefactory.hot -P \
-        "sf_root_size=4;key_name=id_rsa;domain=${SF_HOST};image_id=${GLANCE_ID};ext_net_uuid=${NET_ID};flavor=m1.medium" \
+        "sf_root_size=5;key_name=id_rsa;domain=${SF_HOST};image_id=${GLANCE_ID};ext_net_uuid=${NET_ID};flavor=m1.medium" \
         sf_stack || fail "Heat stack-create failed"
     checkpoint "heat-init"
 }
@@ -127,8 +159,7 @@ function build_image {
         ./image/fetch_subprojects.sh
     fi
     if [ -z "${SKIP_BUILD}" ]; then
-        # Retry to build role if it fails before exiting
-        ./build_image.sh ${ARTIFACTS_DIR} || ./build_image.sh ${ARTIFACTS_DIR} || fail "Roles building FAILED"
+        ./build_image.sh ${ARTIFACTS_DIR} || fail "Roles building FAILED"
         checkpoint "build_image"
         prepare_functional_tests_venv
     else
@@ -193,32 +224,35 @@ function get_logs {
     #in order to not avoid so important logs that can appears some seconds
     #after a failure.
     set +e
-    sleep 5
-    (
-    sudo cp ${IMAGE_PATH}.{rpm,pip} ${ARTIFACTS_DIR}/
-    scp sftests.com:/var/log/messages ${ARTIFACTS_DIR}/
-    scp sftests.com:/var/log/upgrade-bootstrap.log ${ARTIFACTS_DIR}/
-    scp sftests.com:/var/log/cloud-init* ${ARTIFACTS_DIR}/
-    scp sftests.com:/var/log/puppet_apply.log ${ARTIFACTS_DIR}/
-    scp -r sftests.com:/home/gerrit/site_path/logs/ ${ARTIFACTS_DIR}/gerrit/
-    scp -r sftests.com:/home/gerrit/site_path/etc/*.config ${ARTIFACTS_DIR}/gerrit/
-    scp -r sftests.com:/usr/share/redmine/log/ ${ARTIFACTS_DIR}/redmine/
-    scp -r sftests.com:/usr/share/redmine/config ${ARTIFACTS_DIR}/redmine/
-    scp -r sftests.com:/var/log/managesf/ ${ARTIFACTS_DIR}/managesf/
-    scp -r sftests.com:/var/log/cauth/ ${ARTIFACTS_DIR}/cauth/
-    scp sftests.com:/var/www/managesf/config.py ${ARTIFACTS_DIR}/managesf/
-    scp sftests.com:/var/www/cauth/config.py ${ARTIFACTS_DIR}/cauth/
-    scp -r sftests.com:/var/log/httpd/ ${ARTIFACTS_DIR}/httpd/
-    scp -r sftests.com:/var/log/zuul/ ${ARTIFACTS_DIR}/zuul/
-    scp sftests.com:/etc/zuul/* ${ARTIFACTS_DIR}/zuul/
-    scp -r sftests.com:/var/log/nodepool/ ${ARTIFACTS_DIR}/nodepool/
-    scp sftests.com:/etc/nodepool/*.yaml ${ARTIFACTS_DIR}/nodepool/
-    scp -r sftests.com:/var/lib/jenkins/jobs/ ${ARTIFACTS_DIR}/jenkins-jobs/
-    scp sftests.com:/var/lib/jenkins/*.xml ${ARTIFACTS_DIR}/jenkins/
-    scp -r sftests.com:/root/config/ ${ARTIFACTS_DIR}/config-project
-    scp -r sftests.com:/etc/puppet/hiera/sf/ ${ARTIFACTS_DIR}/hiera
-    scp -r sftests.com:/root/sf-bootstrap-data/hiera/ ${ARTIFACTS_DIR}/sf-bootstrap-data-hiera
-    ) &> /dev/null
+    sudo cp ${IMAGE_PATH}.{rpm,pip} ${ARTIFACTS_DIR}/ &> /dev/null
+    ssh sftests.com hostname > /dev/null && {
+        echo "Collecting log from test instance"
+        sleep 1
+        (
+        scp sftests.com:/var/log/messages ${ARTIFACTS_DIR}/
+        scp sftests.com:/var/log/upgrade-bootstrap.log ${ARTIFACTS_DIR}/
+        scp sftests.com:/var/log/cloud-init* ${ARTIFACTS_DIR}/
+        scp sftests.com:/var/log/puppet_apply.log ${ARTIFACTS_DIR}/
+        scp -r sftests.com:/home/gerrit/site_path/logs/ ${ARTIFACTS_DIR}/gerrit/
+        scp -r sftests.com:/home/gerrit/site_path/etc/*.config ${ARTIFACTS_DIR}/gerrit/
+        scp -r sftests.com:/usr/share/redmine/log/ ${ARTIFACTS_DIR}/redmine/
+        scp -r sftests.com:/usr/share/redmine/config ${ARTIFACTS_DIR}/redmine/
+        scp -r sftests.com:/var/log/managesf/ ${ARTIFACTS_DIR}/managesf/
+        scp -r sftests.com:/var/log/cauth/ ${ARTIFACTS_DIR}/cauth/
+        scp sftests.com:/var/www/managesf/config.py ${ARTIFACTS_DIR}/managesf/
+        scp sftests.com:/var/www/cauth/config.py ${ARTIFACTS_DIR}/cauth/
+        scp -r sftests.com:/var/log/httpd/ ${ARTIFACTS_DIR}/httpd/
+        scp -r sftests.com:/var/log/zuul/ ${ARTIFACTS_DIR}/zuul/
+        scp sftests.com:/etc/zuul/* ${ARTIFACTS_DIR}/zuul/
+        scp -r sftests.com:/var/log/nodepool/ ${ARTIFACTS_DIR}/nodepool/
+        scp sftests.com:/etc/nodepool/*.yaml ${ARTIFACTS_DIR}/nodepool/
+        scp -r sftests.com:/var/lib/jenkins/jobs/ ${ARTIFACTS_DIR}/jenkins-jobs/
+        scp sftests.com:/var/lib/jenkins/*.xml ${ARTIFACTS_DIR}/jenkins/
+        scp -r sftests.com:/root/config/ ${ARTIFACTS_DIR}/config-project
+        scp -r sftests.com:/etc/puppet/hiera/sf/ ${ARTIFACTS_DIR}/hiera
+        scp -r sftests.com:/root/sf-bootstrap-data/hiera/ ${ARTIFACTS_DIR}/sf-bootstrap-data-hiera
+        ) &> /dev/null
+    } || echo "Skip fetching logs..."
     sudo chown -R ${USER} ${ARTIFACTS_DIR}
     checkpoint "get_logs"
 }

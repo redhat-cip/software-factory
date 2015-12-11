@@ -78,8 +78,8 @@
         ProxyPass /zuul/ <%= @url["zuul_url"] %> nocanon retry=0
         ProxyPassReverse /zuul/ <%= @url["zuul_url"] %>
 
-        ProxyPass /redmine/ <%= @url["redmine_url"] %>/ nocanon retry=0
-        ProxyPassReverse /redmine/ <%= @url["redmine_url"] %>/
+        ProxyPass /redmine/ <%= @url["redmine_url"] %> nocanon retry=0
+        ProxyPassReverse /redmine/ <%= @url["redmine_url"] %>
 
         ProxyPass /etherpad/ http://127.0.0.1:9001/ retry=0
         ProxyPassReverse /etherpad/ http://127.0.0.1:9001/

@@ -1,0 +1,24 @@
+- name: Reset config
+  command: chdir=config {{ item }}
+  with_items:
+    - git fetch --all
+    - git reset --hard origin/master --
+
+- name: Add jjb project
+  command: >
+    hieraedit.py --yaml config/jobs/projects.yaml --eval --append 0 \
+        "{'project': {'name': '{{ project }}',
+            'node': '{{ node_label }}',
+            'jobs': ['{name}-{{ testname }}']
+        }}"
+
+- name: Add zuul project
+  command: >
+    hieraedit.py --yaml config/zuul/projects.yaml --eval --append projects \
+        "{'name': '{{ project }}',
+          'check': ['{{ project }}-{{ testname }}',],
+          'gate': ['{{ project }}-{{ testname }}',],
+        }"
+
+- name: Commit change
+  command: chdir=config git commit -a -m "Add {{ project }} to config repo"

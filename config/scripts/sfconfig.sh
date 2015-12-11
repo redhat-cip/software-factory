@@ -55,6 +55,13 @@ managesf.${DOMAIN}
 [jenkins]
 jenkins.${DOMAIN}
 EOF
+
+    # update .ssh/config
+    cat << EOF > /root/.ssh/config
+Host ${DOMAIN}
+    User admin
+    IdentityFile /root/gerrit_admin_rsa
+EOF
 }
 
 function generate_random_pswd {

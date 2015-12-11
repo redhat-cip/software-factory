@@ -1,0 +1,17 @@
+- name: "Update change and check for test SUCCESS"
+  command: chdir=build-{{ project }} {{ item }}
+  with_items:
+    - 'bash -c "(echo echo TEST EXPORT \| tee ../artifacts/test_log.txt; echo exit 0; date) > run_tests.sh"' # Add date to prevent (no new changes reject)
+    - 'chmod +x run_tests.sh'
+    - 'git add run_tests.sh'
+    - 'git commit -a -m "Test {{ project }} repo publisher"'
+    - 'submit_and_wait.py --approve --delay 120'
+
+- name: "Get artifact url from console.log"
+  command: "grep '^http' /var/lib/jenkins/jobs/{{ project }}-{{ testname }}/lastSuccessful/log"
+  register: logsurl
+
+- name: "Check artifact is published"
+  command: "curl {{ logsurl.stdout }}artifacts/test_log.txt"
+  register: test_log
+  failed_when: "'TEST EXPORT' not in test_log.stdout"

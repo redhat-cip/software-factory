@@ -1,0 +1,15 @@
+Software Factory integration playbooks
+======================================
+
+Usage
+-----
+
+Use run.py to set environment and run playbooks.
+
+Feature
+-------
+
+* zuul.yaml:        Zuul+Jenkins functional test
+* nodepool.yaml:    Nodepool service functional test
+* swiftlogs.yaml:   Artifact export functional test
+* alltogether.yaml: Test a fullyfledge project (nodepool slave + swift artifacts)

@@ -45,7 +45,7 @@ resources:
     type: OS::Neutron::Subnet
     properties:
       network_id: { get_resource: sf_net }
-      cidr: 192.168.0.0/24
+      cidr: 192.168.240.0/24
       enable_dhcp: true
       dns_nameservers: { get_param: nameservers }
 

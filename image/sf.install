@@ -38,6 +38,12 @@ function install_sf {
     sudo cp -Rv ./../config/ansible/ ${dir}/usr/local/share/sf-ansible
     sudo cp -Rv ./../config/config-repo/ ${dir}/usr/local/share/sf-config-repo
 
+    # External tools
+    sudo curl -o ${dir}/usr/local/bin/zuul_swift_upload.py \
+        https://raw.githubusercontent.com/openstack-infra/project-config/master/jenkins/scripts/zuul_swift_upload.py
+    sudo chmod +x ${dir}/usr/local/bin/zuul_swift_upload.py
+    do_chroot ${dir} pip install glob2 python-magic
+
     # Install cauth
     [ ! -d "${dir}/var/www/cauth" ] && sudo mkdir ${dir}/var/www/cauth
     sudo cp -Rv ${CAUTH_CLONED_PATH}/* ${dir}/var/www/cauth/

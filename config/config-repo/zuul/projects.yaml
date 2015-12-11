@@ -9,3 +9,5 @@ projects:
       - zuul-demo-unit-tests
     periodic:
       - periodic-zuul-demo
+
+jobs: []
