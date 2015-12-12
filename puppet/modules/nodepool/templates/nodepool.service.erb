@@ -6,7 +6,7 @@ After=network.target
 Type=simple
 User=jenkins
 Group=jenkins
-ExecStart=/usr/bin/nodepoold -p /var/run/nodepool/nodepool.pid -l /etc/nodepool/nodepool.logging.conf
+ExecStart=/usr/bin/nodepoold -d -p /var/run/nodepool/nodepool.pid -l /etc/nodepool/nodepool.logging.conf
 Environment="STATSD_HOST=statsd.<%= @fqdn %>" "STATSD_PORT=8125"
 KillSignal=SIGUSR1
 
