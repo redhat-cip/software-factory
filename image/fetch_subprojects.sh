@@ -25,14 +25,16 @@ MANAGESF_REV=${MANAGESF_REV:-"origin/master"}
 PYSFLIB_REPO=${PYSFLIB_REPO:-"http://softwarefactory.enovance.com/r/pysflib"}
 CAUTH_REPO=${CAUTH_REPO:-"http://softwarefactory.enovance.com/r/cauth"}
 MANAGESF_REPO=${MANAGESF_REPO:-"http://softwarefactory.enovance.com/r/managesf"}
+SFMANAGER_REPO=${MANAGESF_REPO:-"http://softwarefactory.enovance.com/r/python-sfmanager"}
 
 # Check if dependencies are present locally
 # Our automatic job runner must have cloned the deps
 [ -d $PYSFLIB_CLONED_PATH -a $IN_ZUUL -eq 1 ] && PYSFLIB_FETCH_MODE="local" || PYSFLIB_FETCH_MODE="remote"
 [ -d $CAUTH_CLONED_PATH -a $IN_ZUUL -eq 1 ] && CAUTH_FETCH_MODE="local" || CAUTH_FETCH_MODE="remote"
 [ -d $MANAGESF_CLONED_PATH -a $IN_ZUUL -eq 1 ] && MANAGESF_FETCH_MODE="local" || MANAGESF_FETCH_MODE="remote"
+[ -d $SFMANAGER_CLONED_PATH -a $IN_ZUUL -eq 1 ] && SFMANAGER_FETCH_MODE="local" || SFMANAGER_FETCH_MODE="remote"
 
-for PROJECT in "PYSFLIB" "CAUTH" "MANAGESF"; do
+for PROJECT in "PYSFLIB" "CAUTH" "MANAGESF" "SFMANAGER"; do
     eval PROJECT_FETCH_MODE=\$${PROJECT}_FETCH_MODE
     eval PROJECT_CLONED_PATH=\$${PROJECT}_CLONED_PATH
     eval PROJECT_REPO=\$${PROJECT}_REPO

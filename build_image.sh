@@ -84,7 +84,7 @@ function build_cache {
 
 function build_image {
     # Image hash is last commit of DEPS and the one that changed content of the image (bootstraps/ docs/ gerrit-hooks/ image/ puppet/)
-    IMAGE_HASH="SF: $(git log --format=oneline -n 1 config/ docs/ gerrit-hooks/ image/ puppet/) || CAUTH: $(cd ${CAUTH_CLONED_PATH}; git log --format=oneline -n 1) || PYSFLIB: $(cd ${PYSFLIB_CLONED_PATH}; git log --format=oneline -n 1) || MANAGESF: $(cd ${MANAGESF_CLONED_PATH}; git log --format=oneline -n 1)"
+    IMAGE_HASH="SF: $(git log --format=oneline -n 1 config/ docs/ gerrit-hooks/ image/ puppet/) || CAUTH: $(cd ${CAUTH_CLONED_PATH}; git log --format=oneline -n 1) || PYSFLIB: $(cd ${PYSFLIB_CLONED_PATH}; git log --format=oneline -n 1) || MANAGESF: $(cd ${MANAGESF_CLONED_PATH}; git log --format=oneline -n 1) || SFMANAGER: $(cd ${SFMANAGER_CLONED_PATH}; git log --format=oneline -n 1)"
     LOCAL_HASH=$(cat ${IMAGE_PATH}-${SF_VER}.hash 2> /dev/null)
 
     echo "(STEP2) ${IMAGE_HASH}"
@@ -113,6 +113,7 @@ function build_image {
         cd image
         STEP=2 DOCDIR=$DOCDIR GERRITHOOKS=$GERRITHOOKS PYSFLIB_CLONED_PATH=$PYSFLIB_CLONED_PATH \
         CAUTH_CLONED_PATH=$CAUTH_CLONED_PATH MANAGESF_CLONED_PATH=$MANAGESF_CLONED_PATH \
+        SFMANAGER_CLONED_PATH=$SFMANAGER_CLONED_PATH \
         sudo -E ./softwarefactory.install ${IMAGE_PATH} ${SF_VER} &> ${BUILD_OUTPUT}
 
         sudo chroot ${IMAGE_PATH} pip freeze | sort | sudo tee ${IMAGE_PATH}-${SF_VER}.pip &> /dev/null

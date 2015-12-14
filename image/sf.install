@@ -57,6 +57,14 @@ function install_sf {
     do_chroot ${dir} bash -c "cd /var/www/managesf; pip install -r requirements.txt"
     do_chroot ${dir} bash -c "cd /var/www/managesf; python setup.py install"
 
+    # Install python-sfmanager
+    sudo mkdir -p ${dir}/tmp/python-sfmanager
+    sudo cp -Rv ${SFMANAGER_CLONED_PATH}/* ${dir}/tmp/python-sfmanager/
+    # override pysflib version from requirements
+    do_chroot ${dir} sed -i '/pysflib/d' /tmp/python-sfmanager/requirements.txt
+    do_chroot ${dir} bash -c "cd /tmp/python-sfmanager; pip install -r requirements.txt"
+    do_chroot ${dir} bash -c "cd /tmp/python-sfmanager; python setup.py install"
+
     do_chroot ${dir} find /root /var/www -name "*.pyc" -exec rm {} \;
 
     # Install Gerrit hooks
@@ -65,7 +73,7 @@ function install_sf {
     # Documentation
     DOCBUILDDIR=$(mktemp -d /tmp/sfdocs_buildXXXXXXX)
     [ ! -d "${dir}/var/www/docs" ] && mkdir ${dir}/var/www/docs
-    cd ${DOCDIR} && make BUILDDIR=$DOCBUILDDIR CAUTH_CLONED_PATH=${CAUTH_CLONED_PATH} MANAGESF_CLONED_PATH=${dir}/var/www/managesf html ; cd -
+    cd ${DOCDIR} && make BUILDDIR=$DOCBUILDDIR CAUTH_CLONED_PATH=${CAUTH_CLONED_PATH} SFMANAGER_CLONED_PATH=${dir}/tmp/python-sfmanager html ; cd -
     mv $DOCBUILDDIR/html/* ${dir}/var/www/docs/
     rm -rf $DOCBUILDDIR
 

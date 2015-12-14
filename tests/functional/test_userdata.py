@@ -78,7 +78,7 @@ class TestUserdata(Base):
         return requests.post(url, data=data)
 
     def test_login_redirect_to_jenkins(self):
-        """ Functional test to verify the user creation and the login
+        """ Verify the user creation and the login
         """
         self.logout()
         url = config.GATEWAY_URL + "jenkins/"
@@ -91,7 +91,7 @@ class TestUserdata(Base):
         self.verify_userdata_redmine('user5')
 
     def test_login_redirect_to_redmine(self):
-        """ Functional test to verify the redirect to redmine project page
+        """ Verify the redirect to redmine project page
         """
         self.logout()
         url = config.GATEWAY_URL + "redmine/projects"
@@ -104,7 +104,7 @@ class TestUserdata(Base):
         self.verify_userdata_redmine('user5')
 
     def test_invalid_user_login(self):
-        """ Functional test when trying to login with an invalid user
+        """ Try to login with an invalid user
         """
         self.logout()
         response = self.login('toto', 'nopass', '/')
@@ -120,6 +120,8 @@ class TestUserdata(Base):
         self.assertTrue(response.status_code < 400)
 
     def test_create_local_user_and_login(self):
+        """ Try to create a local user then login
+        """
         try:
             self.msu.create_user('Flea', 'RHCP', 'flea@slapdabass.com')
         except NotImplementedError:

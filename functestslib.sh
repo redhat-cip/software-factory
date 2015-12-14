@@ -122,7 +122,8 @@ function heat_wait {
 
 function build_image {
     # Make sure subproject are available
-    if [ ! -d "${CAUTH_CLONED_PATH}" ] || [ ! -d "${MANAGESF_CLONED_PATH}" ] || [ ! -d "${PYSFLIB_CLONED_PATH}" ]; then
+    if [ ! -d "${CAUTH_CLONED_PATH}" ] || [ ! -d "${MANAGESF_CLONED_PATH}" ] || \
+        [ ! -d "${PYSFLIB_CLONED_PATH}" ] || [ ! -d "${SFMANAGER_CLONED_PATH}" ]; then
         ./image/fetch_subprojects.sh
     fi
     if [ -z "${SKIP_BUILD}" ]; then
@@ -320,12 +321,12 @@ function prepare_functional_tests_venv {
         pip install --upgrade pip
         pip install 'requests[security]'
         pip install -r ${PYSFLIB_CLONED_PATH}/requirements.txt
-        sed -i '/pysflib/d' ${MANAGESF_CLONED_PATH}/requirements.txt
-        pip install -r ${MANAGESF_CLONED_PATH}/requirements.txt
+        sed -i '/pysflib/d' ${SFMANAGER_CLONED_PATH}/requirements.txt
+        pip install -r ${SFMANAGER_CLONED_PATH}/requirements.txt
         pip install --upgrade setuptools pbr pycrypto
         pip install pyOpenSSL ndg-httpsclient pyasn1 nose git-review
         cd ${PYSFLIB_CLONED_PATH}; python setup.py install
-        cd ${MANAGESF_CLONED_PATH}; python setup.py install
+        cd ${SFMANAGER_CLONED_PATH}; python setup.py install
     ) > ${ARTIFACTS_DIR}/venv_prepartion.output
     checkpoint "prepare_venv"
 }

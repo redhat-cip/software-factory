@@ -24,8 +24,6 @@ from pysflib.sfgerrit import GerritUtils
 
 
 class TestConfigRepo(Base):
-    """ Functional tests to validate config repo bootstrap
-    """
     @classmethod
     def setUpClass(cls):
         pass
@@ -35,6 +33,8 @@ class TestConfigRepo(Base):
         pass
 
     def test_check_config_repo_exists(self):
+        """ Validate config repo has been bootstraped
+        """
         pname = 'config'
         gu = GerritUtils(
             config.GATEWAY_URL,

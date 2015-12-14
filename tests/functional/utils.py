@@ -228,8 +228,6 @@ class ManageSfUtils(Tool):
         return output
 
     def create_user(self, user, password, email):
-        if get_module_version('managesf') < "0.1.1":
-            raise NotImplementedError
         subcmd = (" user create --username=%s "
                   "--password=%s --email=%s "
                   "--fullname=%s" % (user, password, email, user))
