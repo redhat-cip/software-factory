@@ -64,6 +64,17 @@ bootstrap() {
 
     sed -i 's/$releasever/7/g' ${target}/etc/yum.repos.d/*
 
+    if [ ! -z "${http_proxy}" ]; then
+        echo "Using proxies ${http_proxy} and ${https_proxy}" 1>&2
+        # Do not use a mirror; these might change between builds and thus a lot
+        # of requests are not missed at the cache
+        sed -i 's/^#baseurl/baseurl/g' ${target}/etc/yum.repos.d/*
+        sed -i 's/^mirrorlist/#mirrorlist/g' ${target}/etc/yum.repos.d/*
+
+        echo -e "[main]\nproxy=${http_proxy}" >> ${target}/etc/yum.conf
+
+    fi
+
     cp -f /etc/resolv.conf "$target/etc/"
 
     rpm --root="$target" --import $(ls $target/etc/pki/rpm-gpg/RPM-GPG-KEY-* | fgrep -v Debug)
