@@ -283,11 +283,6 @@ function install_bup {
 }
 
 install_serverspec() {
-
-    HOME=/root retry do_chroot ${dir} gem install rspec-core -v ${RSPEC_CORE_VERSION}
-    HOME=/root retry do_chroot ${dir} gem install rspec-expectations -v ${RSPEC_EXPECTATIONS_VERSION}
-    HOME=/root retry do_chroot ${dir} gem install rspec-its -v ${RSPEC_ITS_VERSION}
-    HOME=/root retry do_chroot ${dir} gem install specinfra -v ${SPECINFRA_VERSION}
     HOME=/root retry do_chroot ${dir} gem install serverspec -v ${SERVERSPEC_VERSION}
 }
 

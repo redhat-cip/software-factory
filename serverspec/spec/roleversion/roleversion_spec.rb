@@ -16,5 +16,5 @@
 require 'spec_helper'
 
 describe command('edeploy version') do
-  it { should return_stdout "#{property[:roleversion]}" }
+  its(:stdout) { should contain("#{ENV['ROLEVERSION']}") }
 end

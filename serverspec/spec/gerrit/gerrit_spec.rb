@@ -162,18 +162,10 @@ describe file('/home/gerrit/site_path/lib/bcpkix-jdk15on-151.jar') do
     }
 end
 
-if os[:family] == 'RedHat7'
-  describe file('/lib/systemd/system/gerrit.service') do
-      it {
-          should be_file
-      }
-  end
-else
-  describe file('/etc/init.d/gerrit') do
-      it {
-          should be_linked_to '/home/gerrit/site_path/bin/gerrit.sh'
-      }
-  end
+describe file('/lib/systemd/system/gerrit.service') do
+    it {
+        should be_file
+    }
 end
 
 # Gerrit itself

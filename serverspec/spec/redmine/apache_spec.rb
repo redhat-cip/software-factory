@@ -14,31 +14,16 @@
 # under the License.
 require 'spec_helper'
 
-if os[:family] == 'RedHat7'
-  describe package('httpd') do
-    it { should be_installed }
-  end
-  describe file('/etc/httpd/conf.d/redmine.conf') do
-    it { should be_file }
-    it { should contain "Alias /redmine/ /usr/share/redmine/public/" }
-  end
-  describe service('httpd') do
-    it { should be_running }
-  end
-else
-  describe package('apache2') do
-    it { should be_installed }
-  end
-  describe package('libapache2-mod-passenger') do
-    it { should be_installed }
-  end
-  describe file('/etc/apache2/sites-enabled/redmine') do
-    it { should be_file }
-    it { should contain "Alias /redmine/ /usr/share/redmine/public/" }
-  end
-  describe service('apache2') do
-    it { should be_running }
-  end
+describe package('httpd') do
+  it { should be_installed }
+end
+describe file('/etc/httpd/conf.d/redmine.conf') do
+  it { should be_file }
+  it { should contain "Alias /redmine/ /usr/share/redmine/public/" }
+end
+describe service('httpd') do
+  it { should be_enabled }
+  it { should be_running }
 end
 
 describe port(80) do

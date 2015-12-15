@@ -14,14 +14,8 @@
 # under the License.
 require 'spec_helper'
 
-if os[:family] == 'RedHat7'
-  describe package('mariadb-server') do
-    it { should be_installed }
-  end
-else
-  describe package('mysql-server') do
-    it { should be_installed }
-  end
+describe package('mariadb-server') do
+  it { should be_installed }
 end
 
 describe port(3306) do
