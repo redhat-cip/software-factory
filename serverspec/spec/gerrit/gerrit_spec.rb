@@ -176,10 +176,6 @@ else
   end
 end
 
-describe service('gerrit') do
-  it { should be_enabled }
-end
-
 # Gerrit itself
 describe port(8000) do
   it { should be_listening }

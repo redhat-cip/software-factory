@@ -229,6 +229,10 @@ EOF
 
     # Install Redmine http plugin
     retry do_chroot ${dir} git clone $REDMINE_HTTP_PLUGIN_URL /usr/share/redmine/plugins/redmine_http_auth
+
+    # Rails 3.2.19 installed by Redmine Gemfile require bundler > 1.0
+    # 14/12/2015 1.11.0 version of Bundler conflict with psych so force to stay on 1.10.6
+    HOME=/root do_chroot ${dir} bash -c 'cd /usr/share/redmine && installed=$(bundle list | grep bundler | sed "s/.*(\(.*\)).*/\1/") && gem install bundler -v 1.10.6 && gem uninstall bundler -v $installed'
 }
 
 install_edeploy() {

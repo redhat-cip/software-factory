@@ -41,10 +41,6 @@ describe package('jenkins') do
     it { should be_installed }
 end
 
-describe service('jenkins') do
-  it { should be_enabled }
-end
-
 describe port(8080) do
   it { should be_listening }
 end

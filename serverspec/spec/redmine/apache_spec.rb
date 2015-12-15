@@ -23,7 +23,6 @@ if os[:family] == 'RedHat7'
     it { should contain "Alias /redmine/ /usr/share/redmine/public/" }
   end
   describe service('httpd') do
-    it { should be_enabled }
     it { should be_running }
   end
 else
@@ -38,7 +37,6 @@ else
     it { should contain "Alias /redmine/ /usr/share/redmine/public/" }
   end
   describe service('apache2') do
-    it { should be_enabled }
     it { should be_running }
   end
 end
