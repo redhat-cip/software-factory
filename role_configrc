@@ -51,7 +51,6 @@ MANAGESF_CLONED_PATH="${MANAGESF_CLONED_PATH:-${DEPS}/managesf}"
 SFMANAGER_CLONED_PATH="${SFMANAGER_CLONED_PATH:-${DEPS}/python-sfmanager}"
 
 DOCDIR="${PWD}/docs"
-GERRITHOOKS="${PWD}/gerrit-hooks"
 HOT_TEMPLATES="${PWD}/deploy/heat"
 
 # Rebuild cache if these files changed

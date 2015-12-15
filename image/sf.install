@@ -67,9 +67,6 @@ function install_sf {
 
     do_chroot ${dir} find /root /var/www -name "*.pyc" -exec rm {} \;
 
-    # Install Gerrit hooks
-    cp -Rf $GERRITHOOKS ${dir}/root/gerrit_data_source/
-
     # Documentation
     DOCBUILDDIR=$(mktemp -d /tmp/sfdocs_buildXXXXXXX)
     [ ! -d "${dir}/var/www/docs" ] && mkdir ${dir}/var/www/docs

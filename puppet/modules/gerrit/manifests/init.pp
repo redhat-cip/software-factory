@@ -53,6 +53,7 @@ class gerrit {
   $mysql_password = hiera('creds_gerrit_sql_pwd')
   $mysql_db = 'gerrit'
   $mysql_root_pwd = hiera('creds_mysql_root_pwd')
+  $service_user_password = hiera('creds_sf_service_user_pwd')
 
   file { 'gerrit_init':
     path    => '/lib/systemd/system/gerrit.service',
@@ -220,7 +221,7 @@ class gerrit {
     owner   => 'gerrit',
     group   => 'gerrit',
     mode    => '0740',
-    source  => '/root/gerrit_data_source/gerrit-hooks/patchset-created',
+    content => template('gerrit/patchset-created.erb'),
     require => File['/home/gerrit/site_path/hooks'],
   }
   file { '/home/gerrit/site_path/hooks/change-merged':
@@ -228,7 +229,7 @@ class gerrit {
     owner   => 'gerrit',
     group   => 'gerrit',
     mode    => '0740',
-    source  => '/root/gerrit_data_source/gerrit-hooks/change-merged',
+    content => template('gerrit/change-merged.erb'),
     require => File['/home/gerrit/site_path/hooks'],
   }
   file { '/home/gerrit/gerrit.war':
@@ -256,15 +257,6 @@ class gerrit {
     mode    => '0600',
     content => template('gerrit/secure.config.erb'),
     require => File['/home/gerrit/site_path/etc'],
-    replace => true,
-  }
-  file { '/home/gerrit/site_path/hooks/hooks.config':
-    ensure  => file,
-    owner   => 'gerrit',
-    group   => 'gerrit',
-    mode    => '0600',
-    content => template('gerrit/hooks.config.erb'),
-    require => File['/home/gerrit/site_path/hooks'],
     replace => true,
   }
   file { '/root/gerrit_data_source/project.config':
@@ -333,7 +325,6 @@ class gerrit {
                   File['/home/gerrit/site_path/lib/bcpkix-jdk15on-151.jar'],
                   File['/home/gerrit/site_path/plugins/download-commands.jar'],
                   File['/home/gerrit/site_path/plugins/delete-project.jar'],
-                  File['/home/gerrit/site_path/hooks/hooks.config'],
                   File['/home/gerrit/site_path/etc/gerrit.config'],
                   File['/home/gerrit/site_path/etc/secure.config'],
                   File['/root/gerrit-firstuser-init.sql'],
