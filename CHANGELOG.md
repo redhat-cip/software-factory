@@ -1,5 +1,28 @@
 # Change Log
 
+## 2.0.4 2015-12-21
+
+### Added
+
+- Ldap disable option
+- Openstack based tests support (functional tests of heat deployment)
+- Jenkins ansicolor plugin
+- Support for http_proxy for image building
+- Hiera edit --eval parameter to support complex structure like json dictionaries
+
+### Changed
+
+- Monit configuration
+- Default tests domain changed to sftests.com
+
+### Fixed
+
+- Bug when using more than one nodepool provider
+- Upgrade bootloader issue
+- Links and documentations error
+- Api access for managesf during Heat deployment
+- Bundler update fix
+
 ## 2.0.3 2015-11-19
 
 ### Added

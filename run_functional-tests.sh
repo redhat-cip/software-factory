@@ -18,9 +18,6 @@
 # Then will start the SF in LXC containers
 # Then will run the serverspecs and functional tests
 
-unset http_proxy
-unset https_proxy
-
 source functestslib.sh
 . role_configrc
 
@@ -46,6 +43,11 @@ prepare_artifacts
 checkpoint "Running tests on $(hostname)"
 lxc_stop
 build_image
+
+# nosetests should run without a proxy, otherwise REST APIs on the LXC env might
+# not be accessible
+unset http_proxy
+unset https_proxy
 
 case "${TEST_TYPE}" in
     "functional")
