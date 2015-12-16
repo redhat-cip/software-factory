@@ -18,6 +18,9 @@
 # Then will start the SF in LXC containers
 # Then will run the serverspecs and functional tests
 
+unset http_proxy
+unset https_proxy
+
 source functestslib.sh
 . role_configrc
 
