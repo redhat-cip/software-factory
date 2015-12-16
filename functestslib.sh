@@ -193,20 +193,20 @@ function get_logs {
     sleep 5
     (
     sudo cp ${IMAGE_PATH}.{rpm,pip} ${ARTIFACTS_DIR}/
-    sudo cp /var/lib/lxc/managesf/rootfs/var/log/messages ${ARTIFACTS_DIR}/
-    sudo cp /var/lib/lxc/managesf/rootfs/var/log/upgrade-bootstrap.log ${ARTIFACTS_DIR}/
-    sudo cp /var/lib/lxc/managesf/rootfs/var/log/cloud-init* ${ARTIFACTS_DIR}/
-    sudo cp -r /var/lib/lxc/managesf/rootfs/home/gerrit/site_path/logs/ ${ARTIFACTS_DIR}/gerrit/
-    sudo cp -r /var/lib/lxc/managesf/rootfs/usr/share/redmine/log/ ${ARTIFACTS_DIR}/redmine/
-    sudo cp -r /var/lib/lxc/managesf/rootfs/var/log/managesf/ ${ARTIFACTS_DIR}/managesf/
-    sudo cp -r /var/lib/lxc/managesf/rootfs/var/log/cauth/ ${ARTIFACTS_DIR}/cauth/
-    sudo cp -r /var/lib/lxc/managesf/rootfs/var/log/httpd/ ${ARTIFACTS_DIR}/httpd/
-    sudo cp -r /var/lib/lxc/managesf/rootfs/var/log/zuul/ ${ARTIFACTS_DIR}/zuul/
-    sudo cp -r /var/lib/lxc/managesf/rootfs/var/log/nodepool/ ${ARTIFACTS_DIR}/nodepool/
-    sudo cp -r /var/lib/lxc/managesf/rootfs/var/lib/jenkins/jobs/ ${ARTIFACTS_DIR}/jenkins-jobs/
-    sudo cp -r /var/lib/lxc/managesf/rootfs/root/config/ ${ARTIFACTS_DIR}/config-project
-    sudo cp -r /var/lib/lxc/managesf/rootfs/etc/puppet/hiera/sf/ ${ARTIFACTS_DIR}/hiera
-    sudo cp -r /var/lib/lxc/managesf/rootfs/root/sf-bootstrap-data/hiera/ ${ARTIFACTS_DIR}/sf-bootstrap-data-hiera
+    scp sftests.com:/var/log/messages ${ARTIFACTS_DIR}/
+    scp sftests.com:/var/log/upgrade-bootstrap.log ${ARTIFACTS_DIR}/
+    scp sftests.com:/var/log/cloud-init* ${ARTIFACTS_DIR}/
+    scp -r sftests.com:/home/gerrit/site_path/logs/ ${ARTIFACTS_DIR}/gerrit/
+    scp -r sftests.com:/usr/share/redmine/log/ ${ARTIFACTS_DIR}/redmine/
+    scp -r sftests.com:/var/log/managesf/ ${ARTIFACTS_DIR}/managesf/
+    scp -r sftests.com:/var/log/cauth/ ${ARTIFACTS_DIR}/cauth/
+    scp -r sftests.com:/var/log/httpd/ ${ARTIFACTS_DIR}/httpd/
+    scp -r sftests.com:/var/log/zuul/ ${ARTIFACTS_DIR}/zuul/
+    scp -r sftests.com:/var/log/nodepool/ ${ARTIFACTS_DIR}/nodepool/
+    scp -r sftests.com:/var/lib/jenkins/jobs/ ${ARTIFACTS_DIR}/jenkins-jobs/
+    scp -r sftests.com:/root/config/ ${ARTIFACTS_DIR}/config-project
+    scp -r sftests.com:/etc/puppet/hiera/sf/ ${ARTIFACTS_DIR}/hiera
+    scp -r sftests.com:/root/sf-bootstrap-data/hiera/ ${ARTIFACTS_DIR}/sf-bootstrap-data-hiera
     ) 2> /dev/null
     sudo chown -R ${USER} ${ARTIFACTS_DIR}
     checkpoint "get_logs"
@@ -359,7 +359,7 @@ function run_backup_start {
     sfmanager --url "${MANAGESF_URL}" --auth "admin:${ADMIN_PASSWORD}" system backup_start || fail "Backup failed"
     sfmanager --url "${MANAGESF_URL}" --auth "admin:${ADMIN_PASSWORD}" system backup_get   || fail "Backup get failed"
     deactivate
-    sudo cp /var/lib/lxc/managesf/rootfs/var/log/managesf/managesf.log ${ARTIFACTS_DIR}/backup_managesf.log
+    scp sftests.com:/var/log/managesf/managesf.log ${ARTIFACTS_DIR}/backup_managesf.log
     tar tzvf sf_backup.tar.gz > ${ARTIFACTS_DIR}/backup_content.log
     grep -q '\.bup\/objects\/pack\/.*.pack$' ${ARTIFACTS_DIR}/backup_content.log || fail "Backup empty" ${ARTIFACTS_DIR}/backup_content.log
     checkpoint "run_backup_start"
