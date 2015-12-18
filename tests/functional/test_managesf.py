@@ -452,7 +452,7 @@ class TestManageSF(Base):
                             (config.USER_4, project))]
         self.assertEqual(len(match), 1)
 
-    def test_managesf_urls_accessible(self):
+    def test_rest_urls_accessible(self):
         """ Check if managesf URLs are all working
         """
         project = 'p_%s' % create_random_str()
@@ -467,3 +467,23 @@ class TestManageSF(Base):
             url = "http://%s%s" % (config.GATEWAY_HOST, path)
             resp = requests.get(url, cookies=cookies)
             self.assertEqual(200, resp.status_code)
+
+    def test_validate_get_all_project_details(self):
+        """ Check if managesf allow us to fetch projects details
+        """
+        project = 'p_%s' % create_random_str()
+        self.create_project(project, config.USER_2)
+        admin_cookies = dict(
+            auth_pubtkt=config.USERS[config.ADMIN_USER]['auth_cookie'])
+        user2_cookies = dict(
+            auth_pubtkt=config.USERS[config.USER_2]['auth_cookie'])
+        url = "http://%s%s" % (config.GATEWAY_HOST, "/manage/project/")
+        resp = requests.get(url, cookies=admin_cookies)
+        self.assertEqual(200, resp.status_code)
+        self.assertTrue(project in resp.json())
+        self.assertTrue('config' in resp.json())
+        resp = requests.get(url, cookies=user2_cookies)
+        self.assertEqual(200, resp.status_code)
+        self.assertTrue(project in resp.json())
+        self.assertTrue('config' in resp.json())
+        resp = requests.get(url, cookies=user2_cookies)
