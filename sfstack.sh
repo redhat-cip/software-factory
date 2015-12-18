@@ -5,7 +5,7 @@ set -e
 
 echo "[+] Install dependencies"
 sudo yum update -y
-sudo yum install -y libvirt-daemon-lxc libvirt git vim-enhanced tmux curl python-devel wget python-pip python-virtualenv python-devel gcc libffi-devel openldap-devel openssl-devel python-sphinx
+sudo yum install -y libvirt-daemon-lxc libvirt git vim-enhanced tmux curl python-devel wget python-pip python-virtualenv mariadb-devel gcc libffi-devel openldap-devel openssl-devel python-sphinx
 sudo systemctl restart libvirtd
 
 echo "[+] Fetch image"

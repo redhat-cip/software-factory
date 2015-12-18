@@ -21,7 +21,7 @@ you need access to a CentOS 7 and execute:
 .. code-block:: bash
 
  $ sudo yum install -y epel-release
- $ sudo yum install -y libvirt libvirt-daemon-lxc git vim-enhanced tmux curl python-devel wget python-pip python-virtualenv python-devel gcc libffi-devel openldap-devel openssl-devel python-sphinx python-tox python-flake8
+ $ sudo yum install -y libvirt libvirt-daemon-lxc git vim-enhanced tmux curl python-devel wget python-pip mariadb-devel python-virtualenv python-devel gcc libffi-devel openldap-devel openssl-devel python-sphinx python-tox python-flake8
  $ sudo service libvirtd start
  $ git clone http://softwarefactory-project.io/r/software-factory
  $ cd software-factory
