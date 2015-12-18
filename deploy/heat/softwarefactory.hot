@@ -145,6 +145,10 @@ resources:
   sf_instance:
     type: OS::Nova::Server
     properties:
+      name:
+        str_replace:
+          template: managesf.domain
+          params: {domain: {get_param: domain}}
       block_device_mapping: [{ device_name: "vda", volume_id : { get_resource : sf_volume } }]
       flavor: { get_param: flavor }
       key_name: { get_param: key_name }
@@ -172,7 +176,7 @@ resources:
               - /root/startup.sh
               - rm -f /root/startup.sh
           params:
-            domain: { get_param: domain }
+            domain: {get_param: domain}
             adminpwd: {get_attr: [admin_password, value]}
 
 outputs:

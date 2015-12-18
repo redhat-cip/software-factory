@@ -29,18 +29,18 @@ function update_sfconfig {
     OUTPUT=${BUILD}/hiera
     # get public ip of managesf
     local localip=$(ip route get 8.8.8.8 | awk '{ print $7 }')
-    [ -z "${IP_JENKINS}" ] && IP_JENKINS=$localip
+    local localalias="${DOMAIN}, mysql.${DOMAIN}, mysql, redmine.${DOMAIN}, redmine, api-redmine.${DOMAIN}, api-redmine, gerrit.${DOMAIN}, gerrit, managesf, auth.${DOMAIN}, auth, statsd.${DOMAIN}, statsd"
+    if [ -n "${IP_JENKINS}" ]; then
+        local jenkins_host="  jenkins.${DOMAIN}:      {ip: ${IP_JENKINS}, host_aliases: [jenkins,]}"
+    else
+        localalias="${localalias}, jenkins.${DOMAIN}, jenkins"
+    fi
     cat << EOF > ${OUTPUT}/hosts.yaml
 hosts:
   localhost:              {ip: 127.0.0.1}
-  mysql.${DOMAIN}:        {ip: ${localip}, host_aliases: [mysql]}
-  jenkins.${DOMAIN}:      {ip: ${IP_JENKINS}, host_aliases: [jenkins]}
-  redmine.${DOMAIN}:      {ip: ${localip}, host_aliases: [redmine]}
-  api-redmine.${DOMAIN}:  {ip: ${localip}}
-  gerrit.${DOMAIN}:       {ip: ${localip}, host_aliases: [gerrit]}
-  managesf.${DOMAIN}:     {ip: ${localip}, host_aliases: [managesf, auth.${DOMAIN}, ${DOMAIN}]}
-  statsd.${DOMAIN}:       {ip: ${localip}, host_aliases: [statsd]}
+  managesf.${DOMAIN}:     {ip: ${localip}, host_aliases: [$localalias]}
 EOF
+    [ -n "${jenkins_host}" ] && echo "${jenkins_host}" >> ${OUTPUT}/hosts.yaml
     hieraedit.py --yaml ${OUTPUT}/sfconfig.yaml fqdn       "${DOMAIN}"
     hieraedit.py --yaml ${OUTPUT}/sfarch.yaml   refarch    "${REFARCH}"
     hieraedit.py --yaml ${OUTPUT}/sfarch.yaml   ip_jenkins "${IP_JENKINS}"
@@ -189,6 +189,8 @@ function wait_for_ssh {
 
 function puppet_apply_host {
     echo "[sfconfig] Applying hosts.pp"
+    # Set /etc/hosts to a known state...
+    grep -q localdomain /etc/hosts && echo "127.0.0.1       localhost" > /etc/hosts
     # Update local /etc/hosts
     puppet apply --test --environment sf --modulepath=/etc/puppet/environments/sf/modules/ -e "include hosts"
 }

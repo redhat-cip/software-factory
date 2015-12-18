@@ -29,9 +29,7 @@ if [ ${TEST_TYPE} == "openstack" ]; then
         echo "Source openrc first"
         exit 1
     fi
-    if [ ! -f "${IMAGE_PATH}-${SF_VER}.img.qcow2" ]; then
-        export BUILD_QCOW=1
-    fi
+    export BUILD_QCOW=1
 fi
 
 ###############

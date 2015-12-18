@@ -23,7 +23,6 @@ class zuul {
   $hosts = hiera('hosts')
   $jenkins_rsa = hiera('jenkins_rsa')
   $gerrit_host = "gerrit.${fqdn}"
-  $gerrit_ip = $hosts[$gerrit_host]['ip']
 
   $pub_html_path = '/var/www/zuul'
   $gitweb_path = '/usr/libexec/git-core'
@@ -88,11 +87,11 @@ class zuul {
   }
 
   exec {'update_gerritip_knownhost_zuul':
-    command   => "/usr/bin/ssh-keyscan -p 29418 ${gerrit_ip} >> /home/zuul/.ssh/known_hosts",
+    command   => "/usr/bin/ssh-keyscan -p 29418 ${gerrit_host} >> /home/zuul/.ssh/known_hosts",
     logoutput => true,
     user      => 'zuul',
     require   => File['/home/zuul/.ssh'],
-    unless    => "/usr/bin/grep ${gerrit_ip} /home/zuul/.ssh/known_hosts",
+    unless    => "/usr/bin/grep ${gerrit_host} /home/zuul/.ssh/known_hosts",
   }
 
   exec {'update_gerrithost_knownhost_zuul':

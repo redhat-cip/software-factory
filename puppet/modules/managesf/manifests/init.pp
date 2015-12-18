@@ -21,7 +21,7 @@ class managesf ($gerrit = hiera('gerrit'), $hosts = hiera('hosts'), $cauth = hie
   $auth = hiera('authentication')
   $issues_tracker_api_key = hiera('creds_issues_tracker_api_key')
   $issues_tracker_api_url = $url["api_redmine_url"]
-  $gerrit_ip = $hosts["gerrit.$fqdn"]['ip']
+  $gerrit_host = "gerrit.${fqdn}"
   $gerrit_admin_rsa = hiera('gerrit_admin_rsa')
   $service_rsa = hiera('service_rsa')
   $gerrit_mysql_host = "mysql.${fqdn}"
@@ -98,11 +98,11 @@ class managesf ($gerrit = hiera('gerrit'), $hosts = hiera('hosts'), $cauth = hie
   }
 
   exec {'update_gerritip_knownhost':
-    command   => "/usr/bin/ssh-keyscan ${gerrit_ip} >> /usr/share/httpd/.ssh/known_hosts",
+    command   => "/usr/bin/ssh-keyscan ${gerrit_host} >> /usr/share/httpd/.ssh/known_hosts",
     logoutput => true,
     user      => $::httpd_user,
     require   => File['/usr/share/httpd/.ssh'],
-    unless    => "/usr/bin/grep '${gerrit_ip} ' /usr/share/httpd/.ssh/known_hosts",
+    unless    => "/usr/bin/grep '${gerrit_host} ' /usr/share/httpd/.ssh/known_hosts",
   }
 
   exec {'update_gerrithost_knownhost':

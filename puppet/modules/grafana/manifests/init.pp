@@ -47,7 +47,7 @@ class grafana {
   }
 
   exec { 'grafana-init':
-    command     => "/usr/bin/mysql -u ${mysql_user} -p${mysql_password} ${mysql_db} < /root/grafana-init.sql",
+    command     => "/usr/bin/mysql -u ${mysql_user} -p${mysql_password} -h ${mysql_host} ${mysql_db} < /root/grafana-init.sql",
     logoutput   => true,
     require     => [
 	    File['/root/grafana-init.sql'],
