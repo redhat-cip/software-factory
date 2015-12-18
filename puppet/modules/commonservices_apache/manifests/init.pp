@@ -137,4 +137,16 @@ class commonservices_apache ($cauth = hiera_hash('cauth', '')) {
     group   => $::httpd_user,
   }
 
+  file {'/etc/httpd/conf.d/autoindex.conf':
+    ensure  => absent,
+  }
+
+  file {'/etc/httpd/conf.d/userdir.conf':
+    ensure  => absent,
+  }
+
+  file {'/etc/httpd/conf.d/welcome.conf':
+    ensure  => absent,
+  }
+
 }
