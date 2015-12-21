@@ -22,10 +22,10 @@ CAUTH_REV=${CAUTH_REV:-"origin/master"}
 MANAGESF_REV=${MANAGESF_REV:-"origin/master"}
 
 # Default repo for deps if we need to fetch them
-PYSFLIB_REPO=${PYSFLIB_REPO:-"http://softwarefactory.enovance.com/r/pysflib"}
-CAUTH_REPO=${CAUTH_REPO:-"http://softwarefactory.enovance.com/r/cauth"}
-MANAGESF_REPO=${MANAGESF_REPO:-"http://softwarefactory.enovance.com/r/managesf"}
-SFMANAGER_REPO=${MANAGESF_REPO:-"http://softwarefactory.enovance.com/r/python-sfmanager"}
+PYSFLIB_REPO=${PYSFLIB_REPO:-"http://softwarefactory-project.io/r/pysflib"}
+CAUTH_REPO=${CAUTH_REPO:-"http://softwarefactory-project.io/r/cauth"}
+MANAGESF_REPO=${MANAGESF_REPO:-"http://softwarefactory-project.io/r/managesf"}
+SFMANAGER_REPO=${SFMANAGER_REPO:-"http://softwarefactory-project.io/r/python-sfmanager"}
 
 # Check if dependencies are present locally
 # Our automatic job runner must have cloned the deps
