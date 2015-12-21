@@ -30,7 +30,7 @@ MOD_AUTH_PUBTKT_URL="https://neon1.net/mod_auth_pubtkt/mod_auth_pubtkt-${MOD_AUT
 URL_LIST="$URL_LIST $MOD_AUTH_PUBTKT_URL"
 
 # redmine
-REDMINE_VERSION=2.5.2
+REDMINE_VERSION=2.6.9
 REDMINE_RHEL_URL="http://www.redmine.org/releases/redmine-${REDMINE_VERSION}.tar.gz"
 REDMINE_BACKLOG_URL="git://github.com/backlogs/redmine_backlogs.git"
 REDMINE_HTTP_PLUGIN_URL="git://github.com/kevinfoote/redmine_http_auth.git"
