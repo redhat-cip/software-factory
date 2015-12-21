@@ -198,13 +198,20 @@ function get_logs {
     scp sftests.com:/var/log/upgrade-bootstrap.log ${ARTIFACTS_DIR}/
     scp sftests.com:/var/log/cloud-init* ${ARTIFACTS_DIR}/
     scp -r sftests.com:/home/gerrit/site_path/logs/ ${ARTIFACTS_DIR}/gerrit/
+    scp -r sftests.com:/home/gerrit/site_path/etc/*.config ${ARTIFACTS_DIR}/gerrit/
     scp -r sftests.com:/usr/share/redmine/log/ ${ARTIFACTS_DIR}/redmine/
+    scp -r sftests.com:/usr/share/redmine/config ${ARTIFACTS_DIR}/redmine/
     scp -r sftests.com:/var/log/managesf/ ${ARTIFACTS_DIR}/managesf/
     scp -r sftests.com:/var/log/cauth/ ${ARTIFACTS_DIR}/cauth/
+    scp sftests.com:/var/www/managesf/config.py ${ARTIFACTS_DIR}/managesf/
+    scp sftests.com:/var/www/cauth/config.py ${ARTIFACTS_DIR}/cauth/
     scp -r sftests.com:/var/log/httpd/ ${ARTIFACTS_DIR}/httpd/
     scp -r sftests.com:/var/log/zuul/ ${ARTIFACTS_DIR}/zuul/
+    scp sftests.com:/etc/zuul/* ${ARTIFACTS_DIR}/zuul/
     scp -r sftests.com:/var/log/nodepool/ ${ARTIFACTS_DIR}/nodepool/
+    scp sftests.com:/etc/nodepool/*.yaml ${ARTIFACTS_DIR}/nodepool/
     scp -r sftests.com:/var/lib/jenkins/jobs/ ${ARTIFACTS_DIR}/jenkins-jobs/
+    scp sftests.com:/var/lib/jenkins/*.xml ${ARTIFACTS_DIR}/jenkins/
     scp -r sftests.com:/root/config/ ${ARTIFACTS_DIR}/config-project
     scp -r sftests.com:/etc/puppet/hiera/sf/ ${ARTIFACTS_DIR}/hiera
     scp -r sftests.com:/root/sf-bootstrap-data/hiera/ ${ARTIFACTS_DIR}/sf-bootstrap-data-hiera
