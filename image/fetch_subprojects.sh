@@ -13,6 +13,7 @@ echo "PREPARE SUBPROJECTS DIRECTORIES"
     PYSFLIB_REV=${PYSFLIB_PINNED_VERSION}
     CAUTH_REV=${CAUTH_PINNED_VERSION}
     MANAGESF_REV=${MANAGESF_PINNED_VERSION}
+    SFMANAGER_REV=${SFMANAGER_PINNED_VERSION}
 } || {
     echo "This is a non-tagged release; using origin/master branch of subprojects to build images."
 }
@@ -20,6 +21,7 @@ echo "PREPARE SUBPROJECTS DIRECTORIES"
 PYSFLIB_REV=${PYSFLIB_REV:-"origin/master"}
 CAUTH_REV=${CAUTH_REV:-"origin/master"}
 MANAGESF_REV=${MANAGESF_REV:-"origin/master"}
+SFMANAGER_REV=${SFMANAGER_REV:-"origin/master"}
 
 # Default repo for deps if we need to fetch them
 PYSFLIB_REPO=${PYSFLIB_REPO:-"http://softwarefactory-project.io/r/pysflib"}
