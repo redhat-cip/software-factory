@@ -7,7 +7,7 @@ redmine:
     - ntp
   :username: root
   :hostname: redmine
-  :roleversion: C7.0-2.1.0
+  :roleversion: C7.0-2.1.1
 
 mysql:
   :roles:
@@ -18,7 +18,7 @@ mysql:
     - ntp
   :username: root
   :hostname: mysql
-  :roleversion: C7.0-2.1.0
+  :roleversion: C7.0-2.1.1
 
 gerrit:
   :roles:
@@ -29,7 +29,7 @@ gerrit:
     - ntp
   :username: root
   :hostname: gerrit
-  :roleversion: C7.0-2.1.0
+  :roleversion: C7.0-2.1.1
 
 jenkins:
   :roles:
@@ -40,7 +40,7 @@ jenkins:
     - ntp
   :username: root
   :hostname: jenkins
-  :roleversion: C7.0-2.1.0
+  :roleversion: C7.0-2.1.1
 
 managesf:
   :roles:
@@ -51,5 +51,5 @@ managesf:
     - ntp
   :username: root
   :hostname: managesf
-  :roleversion: C7.0-2.1.0
-  :sfversion: 2.1.0
+  :roleversion: C7.0-2.1.1
+  :sfversion: 2.1.1

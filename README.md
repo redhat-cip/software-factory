@@ -12,16 +12,16 @@ without features related to the cloud-like tests environments.
 
 # Get Last releases
 
-The last stable release is 2.0.4, grab the image here:
+The last stable release is 2.1.0, grab the image here:
+
+* Qcow2 image: http://46.231.133.241:8080/v1/AUTH_sf/sf-images/softwarefactory-C7.0-2.1.0.img.qcow2
+* Signed digest: http://46.231.133.241:8080/v1/AUTH_sf/sf-images/softwarefactory-C7.0-2.1.0.digest
+
+Previous release is 2.0.4:
 
 * Qcow2 image: http://46.231.133.241:8080/v1/AUTH_sf/sf-images/softwarefactory-C7.0-2.0.4.img.qcow2
 * Signed digest: http://46.231.133.241:8080/v1/AUTH_sf/sf-images/softwarefactory-C7.0-2.0.4.digest
 
-Previous release is 2.0.3:
+Current dev version is 2.1.1:
 
-* Qcow2 image: http://46.231.133.241:8080/v1/AUTH_sf/sf-images/softwarefactory-C7.0-2.0.3.img.qcow2
-* Signed digest: http://46.231.133.241:8080/v1/AUTH_sf/sf-images/softwarefactory-C7.0-2.0.3.digest
-
-Current dev version is 2.1.0:
-
-* Qcow2 image: http://os.enocloud.com:8080/v1/AUTH_70aab03f69b549cead3cb5f463174a51/edeploy-roles/softwarefactory-C7.0-2.1.0.img.qcow2
+* Qcow2 image: http://os.enocloud.com:8080/v1/AUTH_70aab03f69b549cead3cb5f463174a51/edeploy-roles/softwarefactory-C7.0-2.1.1.img.qcow2

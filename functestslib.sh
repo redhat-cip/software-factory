@@ -300,7 +300,7 @@ function run_heat_bootstraps {
     done
     [ $RETRY -eq 0 ] && fail "Couldn't ssh to ${SF_HOST}"
     echo "ok."
-    RETRY=100
+    RETRY=150
     echo "[+] Waiting for SUCCESS in cloud-init log..."
     while [ $RETRY -gt 0 ]; do
         ssh ${SF_HOST} "tail /var/log/cloud-init-output.log" 2> /dev/null | grep SUCCESS && break
