@@ -22,6 +22,7 @@ class auto_backup () {
   $mail = "admin@${fqdn}"
   $admin_password = $auth['admin_password']
   $os_auth_url = $backup['os_auth_url']
+  $os_auth_version = $backup['os_auth_version']
   $os_tenant_name = $backup['os_tenant_name']
   $os_username = $backup['os_username']
   $os_password = $backup['os_password']

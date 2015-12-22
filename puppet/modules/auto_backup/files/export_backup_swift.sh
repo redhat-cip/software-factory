@@ -31,6 +31,19 @@ set -e
 [ -z "$OS_USERNAME" ] && exit 0
 [ -z "$OS_PASSWORD" ] && exit 0
 
+if [ ! -z "$OS_AUTH_VERSION" ]; then
+    if [ "$OS_AUTH_VERSION" == 1 ]; then
+        export ST_AUTH="${OS_AUTH_URL}"
+        export ST_USER="${OS_TENANT_NAME}:${OS_USERNAME}"
+        export ST_KEY="${OS_PASSWORD}"
+        unset OS_AUTH_URL
+        unset OS_AUTH_VERSION
+        unset OS_TENANT_NAME
+        unset OS_USERNAME
+        unset OS_PASSWORD
+    fi
+fi
+
 # Exit silently if we don"t have enough BACKUP_* env vars
 [ -z "$BACKUP_CONTAINER" ] && exit 0
 [ -z "$BACKUP_RET" ] && exit 0

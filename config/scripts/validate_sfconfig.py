@@ -101,5 +101,9 @@ if "disabled" not in ldap:
     else:
         ldap['disabled'] = True
 
+# Make sure backup has os_auth_version (2.0.4 -> 2.1.0)
+if "os_auth_version" not in d["backup"]:
+    d["backup"]["os_auth_version"] = 1
+
 yaml.dump(d, open(argv[1], "w"), default_flow_style=False)
 exit(0)

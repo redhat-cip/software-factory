@@ -65,6 +65,7 @@ theme:
 backup:
     disabled: True
     os_auth_url:
+    os_auth_version:
     os_tenant_name:
     os_username:
     os_password:
