@@ -31,9 +31,9 @@ function update_sfconfig {
     local localip=$(ip route get 8.8.8.8 | awk '{ print $7 }')
     local localalias="${DOMAIN}, mysql.${DOMAIN}, mysql, redmine.${DOMAIN}, redmine, api-redmine.${DOMAIN}, api-redmine, gerrit.${DOMAIN}, gerrit, managesf, auth.${DOMAIN}, auth, statsd.${DOMAIN}, statsd"
     if [ -n "${IP_JENKINS}" ]; then
-        local jenkins_host="  jenkins.${DOMAIN}:      {ip: ${IP_JENKINS}, host_aliases: [jenkins,]}"
+        local jenkins_host="  jenkins.${DOMAIN}:      {ip: ${IP_JENKINS}, host_aliases: [jenkins, nodepool.${DOMAIN}]}"
     else
-        localalias="${localalias}, jenkins.${DOMAIN}, jenkins"
+        localalias="${localalias}, jenkins.${DOMAIN}, jenkins, nodepool.${DOMAIN}"
     fi
     cat << EOF > ${OUTPUT}/hosts.yaml
 hosts:
