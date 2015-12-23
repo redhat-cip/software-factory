@@ -204,16 +204,16 @@ class TestProjectTestsWorkflow(Base):
         # Check whether zuul sets verified to +1 after running the tests
         # let some time to Zuul to update the test result to Gerrit.
         attempt = 0
-        while self.gu.get_reviewer_approvals(change_id,
-                                             'jenkins')['Verified'] != '+1':
+        approvals = self.gu.get_reviewer_approvals(change_id, 'jenkins')
+        while not approvals and approvals.get('Verified') != '+1':
             if attempt >= 90:
                 break
             time.sleep(1)
             attempt += 1
+            approvals = self.gu.get_reviewer_approvals(change_id, 'jenkins')
 
-        self.assertEqual(
-            self.gu.get_reviewer_approvals(change_id, 'jenkins')['Verified'],
-            "+1")
+        self.assertTrue(approvals)
+        self.assertEqual(approvals.get('Verified'), "+1")
 
         # review the change
         self.gu2.submit_change_note(change_id, "current", "Code-Review", "2")
