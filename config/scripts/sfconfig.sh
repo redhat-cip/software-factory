@@ -192,7 +192,7 @@ function puppet_apply_host {
     # Set /etc/hosts to a known state...
     grep -q localdomain /etc/hosts && echo "127.0.0.1       localhost" > /etc/hosts
     # Update local /etc/hosts
-    puppet apply --test --environment sf --modulepath=/etc/puppet/environments/sf/modules/ -e "include hosts"
+    puppet apply --test --environment sf --modulepath=/etc/puppet/environments/sf/modules/:/etc/puppet/modules/ -e "include hosts"
 }
 
 function puppet_apply {
@@ -200,7 +200,7 @@ function puppet_apply {
     manifest=$2
     echo "[sfconfig][$host] Applying $manifest"
     [ "$host" == "managesf.${DOMAIN}" ] && ssh="" || ssh="ssh -tt root@$host"
-    $ssh puppet apply --test --environment sf --modulepath=/etc/puppet/environments/sf/modules/ $manifest
+    $ssh puppet apply --test --environment sf --modulepath=/etc/puppet/environments/sf/modules/:/etc/puppet/modules/ $manifest
     res=$?
     if [ "$res" != 2 ] && [ "$res" != 0 ]; then
         echo "[sfconfig][$host] Failed ($res) to apply $manifest"
