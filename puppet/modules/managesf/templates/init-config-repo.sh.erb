@@ -64,17 +64,8 @@ if [ "$upgrade" = "false" ]; then
         exit 0
     fi
 
-    # Add JJB files to the config repo
-    mkdir ${CONF_TMP}/jobs
-    cp -Rv /usr/share/sf-jjb/* ${CONF_TMP}/jobs
-
-    # Add Zuul files to the config repo
-    mkdir ${CONF_TMP}/zuul
-    cp -Rv /usr/share/sf-zuul/* ${CONF_TMP}/zuul
-
-    # Add Nodepool files to the config repo
-    mkdir ${CONF_TMP}/nodepool
-    cp -Rv /usr/share/sf-nodepool/* ${CONF_TMP}/nodepool
+    # Add default files
+    rsync -av /usr/local/share/sf-config-repo/ ${CONF_TMP}/
 
     # Commit the changes
     cd ${CONF_TMP}
@@ -84,9 +75,7 @@ if [ "$upgrade" = "false" ]; then
 fi
 
 if [ "$upgrade" = "true" ]; then
-    cp -v /usr/share/sf-jjb/sf_jjb_conf.yaml ${CONF_TMP}/jobs
-    cp -v /usr/share/sf-zuul/layout.yaml ${CONF_TMP}/zuul
-    cp -v /usr/share/sf-nodepool/base.sh ${CONF_TMP}/nodepool
+    rsync -av /usr/local/share/sf-config-repo/ ${CONF_TMP}/
     cd ${CONF_TMP}
     git config --add gitreview.username "$admin"
     # Only perform the commit/review if the upgrade bring new modifications

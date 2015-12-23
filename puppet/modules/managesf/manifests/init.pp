@@ -121,4 +121,27 @@ class managesf ($gerrit = hiera('gerrit'), $hosts = hiera('hosts'), $cauth = hie
     require => File['/var/www/managesf/'],
   }
 
+  file {'/root/init-config-repo.sh':
+    ensure  => file,
+    mode    => '0540',
+    owner   => 'root',
+    group   => 'root',
+    content => template('managesf/init-config-repo.sh.erb'),
+  }
+
+  file {'/usr/local/share/sf-config-repo/jobs/sf_jjb_conf.yaml':
+    ensure  => file,
+    mode    => '0640',
+    owner   => 'root',
+    group   => 'root',
+    content => template('managesf/sf_jjb_conf.yaml.erb'),
+  }
+
+  file {'/usr/local/share/sf-config-repo/zuul/layout.yaml':
+    ensure  => file,
+    mode    => '0640',
+    owner   => 'root',
+    group   => 'root',
+    content => template('managesf/layout.yaml.erb'),
+  }
 }

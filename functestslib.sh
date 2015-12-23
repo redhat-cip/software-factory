@@ -138,6 +138,8 @@ function build_image {
         sudo rsync -a --delete puppet/manifests/ ${IMAGE_PATH}/etc/puppet/environments/sf/manifests/
         sudo rsync -a --delete puppet/modules/ ${IMAGE_PATH}/etc/puppet/environments/sf/modules/
         sudo rsync -a --delete puppet/hiera/ ${IMAGE_PATH}/etc/puppet/hiera/sf/
+        sudo rsync -a --delete config/ansible/ ${IMAGE_PATH}/usr/local/share/sf-ansible/
+        sudo rsync -a --delete config/config-repo/ ${IMAGE_PATH}/usr/local/share/sf-config-repo/
         sudo cp -Rv config/scripts/* ${IMAGE_PATH}/usr/local/bin/
         sudo cp -Rv config/defaults/* ${IMAGE_PATH}/etc/puppet/hiera/sf/
         echo "SKIP_BUILD: direct copy of ${MANAGESF_CLONED_PATH}/ to ${IMAGE_PATH}/var/www/managesf/"
@@ -197,6 +199,7 @@ function get_logs {
     scp sftests.com:/var/log/messages ${ARTIFACTS_DIR}/
     scp sftests.com:/var/log/upgrade-bootstrap.log ${ARTIFACTS_DIR}/
     scp sftests.com:/var/log/cloud-init* ${ARTIFACTS_DIR}/
+    scp sftests.com:/var/log/puppet_apply.log ${ARTIFACTS_DIR}/
     scp -r sftests.com:/home/gerrit/site_path/logs/ ${ARTIFACTS_DIR}/gerrit/
     scp -r sftests.com:/home/gerrit/site_path/etc/*.config ${ARTIFACTS_DIR}/gerrit/
     scp -r sftests.com:/usr/share/redmine/log/ ${ARTIFACTS_DIR}/redmine/
@@ -215,7 +218,7 @@ function get_logs {
     scp -r sftests.com:/root/config/ ${ARTIFACTS_DIR}/config-project
     scp -r sftests.com:/etc/puppet/hiera/sf/ ${ARTIFACTS_DIR}/hiera
     scp -r sftests.com:/root/sf-bootstrap-data/hiera/ ${ARTIFACTS_DIR}/sf-bootstrap-data-hiera
-    ) 2> /dev/null
+    ) &> /dev/null
     sudo chown -R ${USER} ${ARTIFACTS_DIR}
     checkpoint "get_logs"
 }
@@ -280,7 +283,7 @@ function run_bootstraps {
     ssh-add ~/.ssh/id_rsa
     echo "$(date) ======= run_bootstraps" | tee -a ${ARTIFACTS_DIR}/bootstraps.log
     [ "${REFARCH}" = "2nodes-jenkins" ] && OPTIONS="-i 192.168.135.102"
-    ssh -A -tt ${SF_HOST} sfconfig.sh -a ${REFARCH} ${OPTIONS} 2>&1 | tee ${ARTIFACTS_DIR}/bootstraps.log | grep '\(Info:\|Warning:\|Error:\|\[sfconfig\]\)'
+    ssh -A -tt ${SF_HOST} sfconfig.sh -a ${REFARCH} ${OPTIONS} 2>&1 | tee ${ARTIFACTS_DIR}/sfconfig.log
     res=${PIPESTATUS[0]}
     kill -9 $SSH_AGENT_PID
     [ "$res" != "0" ] && fail "Bootstrap fails" ${ARTIFACTS_DIR}/bootstraps.log

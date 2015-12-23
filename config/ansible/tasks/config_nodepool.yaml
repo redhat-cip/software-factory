@@ -1,0 +1,3 @@
+---
+- name: Run sf-nodepool-conf-update
+  command: /usr/local/bin/sf-nodepool-conf-update.sh apply

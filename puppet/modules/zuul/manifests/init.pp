@@ -71,60 +71,11 @@ class zuul {
 
   user { 'zuul':
     ensure     => present,
-    home       => '/home/zuul',
+    home       => '/var/lib/zuul',
     shell      => '/bin/bash',
     gid        => 'zuul',
     managehome => true,
     require    => Group['zuul'],
-  }
-
-  file {'/home/zuul/.ssh':
-    ensure  => directory,
-    mode    => '0777',
-    owner   => 'zuul',
-    group   => 'zuul',
-    require => [User['zuul'], Group['zuul']],
-  }
-
-  exec {'update_gerritip_knownhost_zuul':
-    command   => "/usr/bin/ssh-keyscan -p 29418 ${gerrit_host} >> /home/zuul/.ssh/known_hosts",
-    logoutput => true,
-    user      => 'zuul',
-    require   => File['/home/zuul/.ssh'],
-    unless    => "/usr/bin/grep ${gerrit_host} /home/zuul/.ssh/known_hosts",
-  }
-
-  exec {'update_gerrithost_knownhost_zuul':
-    command   => "/usr/bin/ssh-keyscan -p 29418 ${gerrit_host} >> /home/zuul/.ssh/known_hosts",
-    logoutput => true,
-    user      => 'zuul',
-    require   => File['/home/zuul/.ssh'],
-    unless    => "/usr/bin/grep ${gerrit_host} /home/zuul/.ssh/known_hosts",
-  }
-
-  file {'/usr/share/sf-zuul':
-    ensure => directory,
-    mode   => '0640',
-    owner  => 'root',
-    group  => 'root',
-  }
-
-  file {'/usr/share/sf-zuul/layout.yaml':
-    ensure  => file,
-    mode    => '0640',
-    owner   => 'root',
-    group   => 'root',
-    require => File['/usr/share/sf-zuul'],
-    content => template('zuul/layout.yaml.erb'),
-  }
-
-  file {'/usr/share/sf-zuul/projects.yaml':
-    ensure  => file,
-    mode    => '0640',
-    owner   => 'root',
-    group   => 'root',
-    require => File['/usr/share/sf-zuul'],
-    source  => 'puppet:///modules/zuul/projects.yaml',
   }
 
   file {'/var/log/zuul/':
@@ -237,8 +188,6 @@ class zuul {
     enable  => true,
     require => [File['/lib/systemd/system/zuul-merger.service'],
                 File['/var/lib/zuul'],
-                Service['zuul'],
-                Exec['update_gerritip_knownhost_zuul'],
-                Exec['update_gerrithost_knownhost_zuul']],
+                Service['zuul']],
   }
 }

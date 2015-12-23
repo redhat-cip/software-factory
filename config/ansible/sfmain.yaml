@@ -1,0 +1,11 @@
+---
+# hosts: gerrit:  init firstuser, set defaultacl, ...
+- hosts: managesf
+  gather_facts: no
+  tasks:
+    - include: tasks/create_config_repository.yaml
+- hosts: jenkins
+  gather_facts: no
+  tasks:
+    - include: tasks/jenkins_kick.yaml
+    - include: tasks/config_nodepool.yaml

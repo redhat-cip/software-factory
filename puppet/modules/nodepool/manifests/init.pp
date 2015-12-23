@@ -62,93 +62,6 @@ class nodepool {
     require => [File['/etc/nodepool']],
   }
 
-  file { '/usr/share/sf-nodepool':
-    ensure => directory,
-    mode   => '0640',
-    owner  => 'root',
-    group  => 'root',
-  }
-
-  file { '/usr/local/bin/sf-nodepool-conf-merger.py':
-    ensure => file,
-    mode   => '0755',
-    owner  => 'root',
-    group  => 'root',
-    source => 'puppet:///modules/nodepool/sf-nodepool-conf-merger.py',
-  }
-
-  file { '/usr/local/bin/sf-nodepool-conf-update.sh':
-    ensure => file,
-    mode   => '0755',
-    owner  => 'root',
-    group  => 'root',
-    content => template('nodepool/sf-nodepool-conf-update.sh.erb'),
-  }
-
-  file { '/usr/share/sf-nodepool/base.sh':
-    ensure  => file,
-    mode    => '0755',
-    owner   => 'root',
-    group   => 'root',
-    source  => 'puppet:///modules/nodepool/base.sh',
-    require => [File['/usr/share/sf-nodepool']],
-  }
-
-  file { '/usr/share/sf-nodepool/sf_rdo_slave_setup.sh':
-    ensure  => file,
-    mode    => '0755',
-    owner   => 'root',
-    group   => 'root',
-    source  => 'puppet:///modules/nodepool/sf_rdo_slave_setup.sh',
-    require => [File['/usr/share/sf-nodepool']],
-  }
-
-  file { '/usr/share/sf-nodepool/rdo_kilo.sh':
-    ensure  => file,
-    mode    => '0755',
-    owner   => 'root',
-    group   => 'root',
-    source  => 'puppet:///modules/nodepool/rdo_kilo.sh',
-    require => [File['/usr/share/sf-nodepool']],
-  }
-
-
-  file { '/usr/share/sf-nodepool/rdo_liberty.sh':
-    ensure  => file,
-    mode    => '0755',
-    owner   => 'root',
-    group   => 'root',
-    source  => 'puppet:///modules/nodepool/rdo_liberty.sh',
-    require => [File['/usr/share/sf-nodepool']],
-  }
-
-  file { '/usr/share/sf-nodepool/sf_slave_setup.sh':
-    ensure  => file,
-    mode    => '0755',
-    owner   => 'root',
-    group   => 'root',
-    source  => 'puppet:///modules/nodepool/sf_slave_setup.sh',
-    require => [File['/usr/share/sf-nodepool']],
-  }
-
-  file { '/usr/share/sf-nodepool/images.yaml':
-    ensure  => file,
-    mode    => '0755',
-    owner   => 'root',
-    group   => 'root',
-    source  => 'puppet:///modules/nodepool/images.yaml',
-    require => [File['/usr/share/sf-nodepool']],
-  }
-
-  file { '/usr/share/sf-nodepool/labels.yaml':
-    ensure  => file,
-    mode    => '0755',
-    owner   => 'root',
-    group   => 'root',
-    source  => 'puppet:///modules/nodepool/labels.yaml',
-    require => [File['/usr/share/sf-nodepool']],
-  }
-
   file { '/etc/nodepool/scripts/authorized_keys':
     owner   => 'jenkins',
     mode    => '0600',
@@ -167,15 +80,14 @@ class nodepool {
     owner   => 'jenkins',
     content => template('nodepool/nodepool.yaml.erb'),
     require => [File['/etc/nodepool']],
-    notify  => Exec['build_etc_nodepool'],
   }
 
-  exec { 'build_etc_nodepool':
-    command     => '/usr/local/bin/sf-nodepool-conf-update.sh apply',
-    logoutput   => true,
-    onlyif      => '/usr/bin/test -f /root/config.kicked',
-    require     => Exec['kick_jjb'],
-    refreshonly => true,
+  file { '/usr/local/bin/sf-nodepool-conf-update.sh':
+    ensure => file,
+    mode   => '0755',
+    owner  => 'root',
+    group  => 'root',
+    content => template('nodepool/sf-nodepool-conf-update.sh.erb'),
   }
 
   service { 'nodepool':
@@ -196,5 +108,4 @@ class nodepool {
     backup_script  => 'nodepool/backup.sh.erb',
     restore_script => 'nodepool/restore.sh.erb',
   }
-
 }

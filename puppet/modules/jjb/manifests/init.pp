@@ -22,7 +22,6 @@ class jjb ($gerrit = hiera('gerrit')) {
   $fqdn = hiera('fqdn')
   $auth = hiera('authentication')
   $url = hiera('url')
-  $gerrit_admin_rsa = hiera('gerrit_admin_rsa')
   $gerrit_host = "gerrit.${fqdn}"
 
   $jenkins_password = hiera('creds_jenkins_user_password')
@@ -37,59 +36,9 @@ class jjb ($gerrit = hiera('gerrit')) {
     require => User['jenkins'],
   }
 
-  file {'/root/gerrit_admin_rsa':
-    ensure  => file,
-    mode    => '0400',
-    owner   => 'root',
-    group   => 'root',
-    content => inline_template('<%= @gerrit_admin_rsa %>'),
-  }
-
   file {'/usr/bin/sfmanager':
     ensure => file,
     mode   => '0755',
-  }
-
-  file {'/root/init-config-repo.sh':
-    ensure  => file,
-    mode    => '0540',
-    owner   => 'root',
-    group   => 'root',
-    content => template('jjb/init-config-repo.sh.erb'),
-  }
-
-  file {'/usr/share/sf-jjb':
-    ensure => directory,
-    mode   => '0750',
-    owner  => 'root',
-    group  => 'root',
-  }
-
-  file {'/usr/local/bin/yaml-merger.py':
-    ensure  => file,
-    mode    => '0755',
-    owner   => 'root',
-    group   => 'root',
-    require => File['/usr/share/sf-jjb'],
-    source  => 'puppet:///modules/jjb/yaml-merger.py',
-  }
-
-  file {'/usr/share/sf-jjb/projects.yaml':
-    ensure  => file,
-    mode    => '0640',
-    owner   => 'root',
-    group   => 'root',
-    require => File['/usr/share/sf-jjb'],
-    source  => 'puppet:///modules/jjb/projects.yaml',
-  }
-
-  file {'/usr/share/sf-jjb/sf_jjb_conf.yaml':
-    ensure  => file,
-    mode    => '0640',
-    owner   => 'root',
-    group   => 'root',
-    require => File['/usr/share/sf-jjb'],
-    content => template('jjb/sf_jjb_conf.yaml.erb'),
   }
 
   file {'/usr/local/jenkins':
@@ -114,34 +63,5 @@ class jjb ($gerrit = hiera('gerrit')) {
     group   => 'root',
     content => template('jjb/kick.sh.erb'),
     require => File['/usr/local/jenkins/slave_scripts'],
-  }
-
-  exec {'init_config_repo':
-    command   => '/root/init-config-repo.sh',
-    path      => '/usr/sbin/:/usr/bin/:/bin/:/usr/local/bin',
-    logoutput => true,
-    provider  => shell,
-    require   => [File['/root/init-config-repo.sh'],
-                File['/usr/share/sf-jjb/projects.yaml'],
-                File['/usr/share/sf-jjb/sf_jjb_conf.yaml'],
-                File['/usr/share/sf-zuul/layout.yaml'],
-                File['/usr/share/sf-nodepool/base.sh'],
-                File['/usr/share/sf-nodepool/sf_slave_setup.sh'],
-                File['/usr/share/sf-nodepool/images.yaml'],
-                File['/usr/share/sf-nodepool/labels.yaml'],
-                File['/usr/bin/sfmanager'],
-                File['/root/gerrit_admin_rsa']],
-    creates   => '/usr/share/config.init.done',
-  }
-
-  exec {'kick_jjb':
-    command   => '/usr/local/jenkins/slave_scripts/kick.sh',
-    path      => '/usr/sbin/:/usr/bin/:/bin/:/usr/local/bin',
-    logoutput => true,
-    provider  => shell,
-    require   => [Exec['init_config_repo'],
-                File['/etc/jenkins_jobs/jenkins_jobs.ini'],
-                File['/usr/local/jenkins/slave_scripts/kick.sh']],
-    creates   => '/root/config.kicked',
   }
 }

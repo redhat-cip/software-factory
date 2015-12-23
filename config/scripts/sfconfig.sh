@@ -45,6 +45,15 @@ EOF
     hieraedit.py --yaml ${OUTPUT}/sfarch.yaml   refarch    "${REFARCH}"
     hieraedit.py --yaml ${OUTPUT}/sfarch.yaml   ip_jenkins "${IP_JENKINS}"
     echo "sf_version: $(grep ^VERS= /var/lib/edeploy/conf | cut -d"=" -f2 | cut -d'-' -f2)" > /etc/puppet/hiera/sf/sf_version.yaml
+
+    # update inventory
+    cat << EOF > /etc/ansible/hosts
+[managesf]
+managesf.${DOMAIN}
+
+[jenkins]
+jenkins.${DOMAIN}
+EOF
 }
 
 function generate_random_pswd {
@@ -139,10 +148,10 @@ function generate_keys {
     OUTPUT=${BUILD}/ssh_keys
 
     # Service key is used to allow root access from managesf to other nodes
-    ssh-keygen -N '' -f ${OUTPUT}/service_rsa
-    ssh-keygen -N '' -f ${OUTPUT}/jenkins_rsa
-    ssh-keygen -N '' -f ${OUTPUT}/gerrit_service_rsa
-    ssh-keygen -N '' -f ${OUTPUT}/gerrit_admin_rsa
+    ssh-keygen -N '' -f ${OUTPUT}/service_rsa > /dev/null
+    ssh-keygen -N '' -f ${OUTPUT}/jenkins_rsa > /dev/null
+    ssh-keygen -N '' -f ${OUTPUT}/gerrit_service_rsa > /dev/null
+    ssh-keygen -N '' -f ${OUTPUT}/gerrit_admin_rsa > /dev/null
     # generating keys for cauth
     OUTPUT=${BUILD}/certs
     openssl genrsa -out ${OUTPUT}/privkey.pem 1024
@@ -173,6 +182,7 @@ EOF
 function wait_for_ssh {
     local ip=$1
     echo "[sfconfig][$ip] Waiting for ssh..."
+    [ -d "${HOME}/.ssh" ] || mkdir -m 0700 "${HOME}/.ssh"
     while true; do
         KEY=`ssh-keyscan -p 22 $ip`
         if [ "$KEY" != ""  ]; then
@@ -198,9 +208,10 @@ function puppet_apply_host {
 function puppet_apply {
     host=$1
     manifest=$2
-    echo "[sfconfig][$host] Applying $manifest"
+    echo "[sfconfig][$host] Applying $manifest" | tee -a /var/log/puppet_apply.log
     [ "$host" == "managesf.${DOMAIN}" ] && ssh="" || ssh="ssh -tt root@$host"
-    $ssh puppet apply --test --environment sf --modulepath=/etc/puppet/environments/sf/modules/:/etc/puppet/modules/ $manifest
+    $ssh puppet apply --test --environment sf --modulepath=/etc/puppet/environments/sf/modules/:/etc/puppet/modules/ $manifest 2>&1 \
+        | tee -a /var/log/puppet_apply.log | grep '\(Info:\|Warning:\|Error:\|Notice: Compiled\|Notice: Finished\)'
     res=$?
     if [ "$res" != 2 ] && [ "$res" != 0 ]; then
         echo "[sfconfig][$host] Failed ($res) to apply $manifest"
@@ -280,11 +291,12 @@ fi
 
 update_sfconfig
 puppet_apply_host
+wait_for_ssh "managesf.${DOMAIN}"
+wait_for_ssh "jenkins.${DOMAIN}"
 echo "[sfconfig] Boostrapping $REFARCH"
 # Apply puppet stuff with good old shell scrips
 case "${REFARCH}" in
     "1node-allinone")
-        wait_for_ssh "managesf.${DOMAIN}"
         puppet_apply "managesf.${DOMAIN}" /etc/puppet/environments/sf/manifests/1node-allinone.pp
         ;;
     "2nodes-jenkins")
@@ -292,8 +304,6 @@ case "${REFARCH}" in
             echo "[sfconfig] Please select another IP_JENKINS than 127.0.0.1 for this REFARCH"
             exit 1
         }
-        wait_for_ssh "managesf.${DOMAIN}"
-        wait_for_ssh "jenkins.${DOMAIN}"
         puppet_copy jenkins.${DOMAIN}
 
         # Run puppet apply
@@ -305,5 +315,17 @@ case "${REFARCH}" in
         exit 1
         ;;
 esac
+
+echo "[sfconfig] Ansible configuration"
+cd /usr/local/share/sf-ansible
+[ -d group_vars ] || {
+    mkdir group_vars
+    ln -s /etc/puppet/hiera/sf/sfconfig.yaml group_vars/all.yaml
+}
+ansible-playbook sfmain.yaml || {
+    echo "[sfconfig] Ansible playbook failed"
+    exit 1
+}
+
 echo "SUCCESS ${REFARCH}"
 exit 0

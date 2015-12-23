@@ -31,6 +31,7 @@ class gerrit {
   $gerrit_admin_key = hiera('creds_gerrit_admin_sshkey')
   $gerrit_service_rsa = hiera('gerrit_service_rsa')
   $gerrit_service_rsa_pub = hiera('gerrit_service_rsa_pub')
+  $gerrit_admin_rsa = hiera('gerrit_admin_rsa')
 
   $gerrit_local_sshkey_rsa = hiera('creds_gerrit_local_sshkey')
   $gerrit_local_sshkey = "ssh-rsa ${gerrit_local_sshkey_rsa}"
@@ -259,6 +260,14 @@ class gerrit {
     require => File['/home/gerrit/site_path/etc'],
     replace => true,
   }
+
+  file {'/root/gerrit_admin_rsa':
+    ensure  => file,
+    mode    => '0400',
+    owner   => 'root',
+    group   => 'root',
+    content => inline_template('<%= @gerrit_admin_rsa %>'),
+  }
   file { '/root/gerrit_data_source/project.config':
     ensure => file,
     owner  => 'root',
@@ -272,6 +281,7 @@ class gerrit {
     group  => 'root',
     mode   => '0740',
     source => 'puppet:///modules/gerrit/ssh_wrapper.sh',
+    require => File['/root/gerrit_admin_rsa'],
   }
   file { '/root/gerrit-restore-user-keys.sql':
     ensure  => file,

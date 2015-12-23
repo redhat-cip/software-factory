@@ -33,6 +33,8 @@ function install_sf {
     # Sf-config
     sudo cp -Rv ./../config/scripts/* ${dir}/usr/local/bin/
     sudo cp -Rv ./../config/defaults/* ${dir}/etc/puppet/hiera/sf/
+    sudo cp -Rv ./../config/ansible/ ${dir}/usr/local/share/sf-ansible
+    sudo cp -Rv ./../config/config-repo/ ${dir}/usr/local/share/sf-config-repo
 
     # Install cauth
     [ ! -d "${dir}/var/www/cauth" ] && sudo mkdir ${dir}/var/www/cauth

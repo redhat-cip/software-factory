@@ -1,2 +1,2 @@
 #!/bin/sh
-ssh -o StrictHostKeyChecking=no -i /home/gerrit/site_path/etc/ssh_host_rsa_key "$@"
+ssh -o StrictHostKeyChecking=no -i /root/gerrit_admin_rsa "$@"

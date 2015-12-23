@@ -1,0 +1,3 @@
+---
+- name: Run init-config-repo.sh
+  command: /root/init-config-repo.sh
