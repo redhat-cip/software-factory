@@ -22,7 +22,7 @@ class bup {
     $bup_weekday = $settings['bup_weekday']
 
     exec {'bup_init':
-        path    => '/usr/bin:/usr/sbin:/bin',
+        path    => '/usr/bin:/usr/sbin:/bin:/usr/local/bin:/usr/local/sbin',
         command => 'bup init',
         cwd => '/root',
         user => 'root',

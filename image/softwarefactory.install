@@ -327,7 +327,6 @@ function install_zuul {
     do_chroot ${dir} bash -c "cd /srv/zuul && git checkout -b working ${ZUUL_VERSION}"
     # Install dependencies first
     retry do_chroot ${dir} bash -c "cd /srv/zuul && pip install -U -r requirements.txt"
-    retry do_chroot ${dir} pip install APScheduler==${APSCHEDULER_VERSION}
     do_chroot ${dir} bash -c "cd /srv/zuul && python /srv/zuul/setup.py install"
     do_chroot ${dir} ln -s /var/www/static/bootstrap /srv/zuul/etc/status/public_html/bootstrap
     http_fetch $JQUERY_VISIBILITY_URL ${dir}/srv/zuul/etc/status/public_html/jquery-visibility.min.js
@@ -337,7 +336,7 @@ function install_zuul {
 
 function install_nodepool {
     # nodepool
-    retry do_chroot ${dir} pip install nodepool
+    retry do_chroot ${dir} pip install nodepool==${NODEPOOL_VERSION}
 }
 
 function install_etherpad {
@@ -401,10 +400,10 @@ install_misc() {
 }
 
 
-BASE_PKGS="coreutils dhclient e2fsprogs man-db grub2 grubby initscripts iproute kernel net-tools passwd redhat-lsb-core crontabs openssh-clients bind-utils kexec-tools selinux-policy-targeted setroubleshoot-server acpid bash curl kbd lvm2 openssh-server pciutils rsync rsyslog sudo wget ntpdate logrotate ethtool hdparm iptables git-review"
+BASE_PKGS="coreutils dhclient e2fsprogs man-db grub2 grubby initscripts iproute kernel net-tools passwd redhat-lsb-core crontabs openssh-clients bind-utils kexec-tools selinux-policy-targeted setroubleshoot-server acpid bash curl kbd lvm2 openssh-server pciutils rsync rsyslog sudo wget ntpdate logrotate ethtool hdparm iptables git-review tmux"
 
 DEV_PKGS="openssl-devel openldap-devel python-devel libffi-devel gcc swig zlib-devel libcurl-devel httpd-devel apr-devel apr-util-devel mariadb-devel gcc-c++ ruby-devel ImageMagick-devel cpp libxml2-devel libxslt-devel"
-PKGS="vim-enhanced openssl postfix bc ansible sshpass mod_passenger puppet rubygem-rake git python-pip pyxattr pylibacl httpd mod_ssl ntp monit postfix nodejs httpd java-1.7.0-openjdk mariadb-server python-werkzeug python-babel python-jinja2 MySQL-python socat mod_wsgi m2crypto mariadb gitweb debootstrap unzip pigz openssl cloud-init cloud-utils-growpart memcached graphite-web statsd python-carbon mutt"
+PKGS="vim-enhanced openssl postfix bc ansible sshpass mod_passenger puppet rubygem-rake git python-pip pyxattr pylibacl httpd mod_ssl ntp monit postfix nodejs httpd java-1.7.0-openjdk mariadb-server python-werkzeug python-babel python-jinja2 MySQL-python socat mod_wsgi m2crypto mariadb gitweb debootstrap unzip pigz openssl cloud-init cloud-utils-growpart memcached graphite-web statsd python-carbon mutt python-testrepository"
 
 trap cleanup 0
 
