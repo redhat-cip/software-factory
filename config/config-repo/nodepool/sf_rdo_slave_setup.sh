@@ -23,7 +23,7 @@ sudo yum install -y memcached mariadb-galera-server numpy-f2py tcl tk xorg-x11-f
     python-urwid python-suds python-stevedore python-sqlalchemy python-qpid-common python-pbr       \
     python-lxml python-ldap python-ldappool python-kombu python-keystonemiddleware python-heatclient \
     python-glance-store python-greenlet python-futures python-eventlet gtk2 hiera hivex httpd       \
-    httpd-tools graphviz graphite2 gnutls-dane glusterfs glusterfs-api glusterfs-libs               \
+    httpd-tools graphviz gnutls-dane glusterfs glusterfs-api glusterfs-libs                         \
     gdk-pixbuf2 galera fuse-libs fuse facter fontawesome-fonts-web ebtables dosfstools              \
     dnsmasq-utils device-mapper-persistent-data cyrus-sasl cryptsetup conntrack-tools cairo         \
     bridge-utils bootswatch-fonts bootswatch-common blas avahi-libs attr alsa-lib apr apr-util      \

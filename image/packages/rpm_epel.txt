@@ -1,5 +1,4 @@
 debootstrap
-graphite-web
 hiera
 http-parser
 monit

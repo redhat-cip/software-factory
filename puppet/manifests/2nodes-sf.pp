@@ -13,7 +13,7 @@ Stage['main'] -> Stage['last']
 
 node default {
   class {'::sfbase': stage => first }
-  class {'::mysql': stage => first }
+  class {'::sfmysql': stage => first }
   class {'::bup': stage => first }
 
   include ::postfix
@@ -39,10 +39,6 @@ node default {
 
   include ::edeploy_server
   include ::auto_backup
-
-  # graphite, statsd and grafana
-  include ::graphite
-  include ::grafana
 
   class {'::nodepool': stage => last }
   class {'::zuul': stage => last }

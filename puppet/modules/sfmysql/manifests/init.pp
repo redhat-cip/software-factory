@@ -13,7 +13,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-class mysql {
+class sfmysql {
 
     require hosts
 
@@ -24,8 +24,8 @@ class mysql {
     $creds_nodepool_sql_pwd = hiera('creds_nodepool_sql_pwd')
     $creds_etherpad_sql_pwd = hiera('creds_etherpad_sql_pwd')
     $creds_lodgeit_sql_pwd = hiera('creds_lodgeit_sql_pwd')
-    $creds_graphite_sql_pwd = hiera('creds_graphite_sql_pwd')
     $creds_grafana_sql_pwd = hiera('creds_grafana_sql_pwd')
+    $creds_gnocchi_sql_pwd = hiera('creds_gnocchi_sql_pwd')
 
     $mysql = 'mariadb'
     $provider = 'systemd'
@@ -49,7 +49,7 @@ class mysql {
     file {'/root/create_databases.sql':
         ensure  => file,
         mode    => '0600',
-        content => template('mysql/create_databases.sql.erb'),
+        content => template('sfmysql/create_databases.sql.erb'),
     }
 
     exec {'create_databases':
@@ -62,7 +62,7 @@ class mysql {
 
     bup::scripts{ 'mysql_scripts':
       name           => 'mysql',
-      backup_script  => 'mysql/backup.sh.erb',
-      restore_script => 'mysql/restore.sh.erb',
+      backup_script  => 'sfmysql/backup.sh.erb',
+      restore_script => 'sfmysql/restore.sh.erb',
     }
 }
