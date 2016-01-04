@@ -5,11 +5,13 @@ function install_sf {
     test -n "${CAUTH_CLONED_PATH}"
     test -n "${MANAGESF_CLONED_PATH}"
     test -n "${PYSFLIB_CLONED_PATH}"
+    test -n "${SFMANAGER_CLONED_PATH}"
 
     cp -f /etc/resolv.conf "${dir}/etc/"
 
     # Make sure subproject are available
-    if [ ! -d "${CAUTH_CLONED_PATH}" ] || [ ! -d "${MANAGESF_CLONED_PATH}" ] || [ ! -d "${PYSFLIB_CLONED_PATH}" ]; then
+    if [ ! -d "${CAUTH_CLONED_PATH}" ] || [ ! -d "${MANAGESF_CLONED_PATH}" ] || \
+       [ ! -d "${PYSFLIB_CLONED_PATH}" ] || [ ! -d "${SFMANAGER_CLONED_PATH}" ]; then
         echo "Can't find subprojects in $(dirname ${CAUTH_CLONED_PATH})"
         echo "Run ./image/fetch_subprojects.sh first"
         exit -1
