@@ -23,6 +23,7 @@
 DOMAIN=$(cat /etc/puppet/hiera/sf/sfconfig.yaml | grep "^fqdn:" | cut -d: -f2 | sed 's/ //g')
 REFARCH=1node-allinone
 BUILD=/root/sf-bootstrap-data
+HOME=/root
 
 
 function update_sfconfig {

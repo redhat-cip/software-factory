@@ -1,6 +1,21 @@
 # Change Log
 
-## 2.1.1 [unreleased]
+## 2.1.1 2016-01-06
+
+### Added
+
+- python-testrepository and tmux to the base image
+
+### Changed
+
+- sfconfig.sh now uses ansible to perform extra configuration task
+- ntp is enabled by default
+
+### Fixed
+
+- Nodepool version downgraded to 0.1.1
+- Managesf and pysflib error debugging
+- sfconfig.sh usage from cloudinit (set default HOME=/root)
 
 ## 2.1.0 2015-12-22
 

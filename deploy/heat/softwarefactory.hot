@@ -164,9 +164,6 @@ resources:
             - content: |
                #!/bin/bash
                set -x
-               HOME=/root
-               ssh-keygen -t rsa -N "" -f /root/.ssh/id_rsa
-               cat /root/.ssh/id_rsa.pub >> /root/.ssh/authorized_keys
                sed -i 's/admin_password:.*/admin_password: adminpwd/' /etc/puppet/hiera/sf/sfconfig.yaml
                sed -i 's/^fqdn:.*/fqdn: domain/' /etc/puppet/hiera/sf/sfconfig.yaml
                sfconfig.sh
