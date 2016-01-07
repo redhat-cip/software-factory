@@ -82,6 +82,16 @@ class TestProjectTestsWorkflow(Base):
         for dirs in self.dirs_to_delete:
             shutil.rmtree(dirs)
 
+    def assert_reviewer_approvals(self, change_id, value):
+        approvals = {}
+        for _ in range(90):
+            approvals = self.gu.get_reviewer_approvals(change_id,
+                                                       'jenkins')
+            if approvals and approvals.get('Verified') == value:
+                break
+            time.sleep(1)
+        self.assertEqual(value, approvals.get('Verified'))
+
     def clone_as_admin(self, pname):
         url = "ssh://%s@%s:29418/%s" % (self.un, config.GATEWAY_HOST,
                                         pname)
@@ -203,17 +213,7 @@ class TestProjectTestsWorkflow(Base):
 
         # Check whether zuul sets verified to +1 after running the tests
         # let some time to Zuul to update the test result to Gerrit.
-        attempt = 0
-        approvals = self.gu.get_reviewer_approvals(change_id, 'jenkins')
-        while not approvals and approvals.get('Verified') != '+1':
-            if attempt >= 90:
-                break
-            time.sleep(1)
-            attempt += 1
-            approvals = self.gu.get_reviewer_approvals(change_id, 'jenkins')
-
-        self.assertTrue(approvals)
-        self.assertEqual(approvals.get('Verified'), "+1")
+        self.assert_reviewer_approvals(change_id, '+1')
 
         # review the change
         self.gu2.submit_change_note(change_id, "current", "Code-Review", "2")
@@ -243,17 +243,7 @@ class TestProjectTestsWorkflow(Base):
 
         # Check whether zuul sets verified to +2 after running the tests
         # let some time to Zuul to update the test result to Gerrit.
-        attempt = 0
-        while self.gu.get_reviewer_approvals(change_id,
-                                             'jenkins')['Verified'] != '+2':
-            if attempt >= 90:
-                break
-            time.sleep(1)
-            attempt += 1
-
-        self.assertEqual(
-            self.gu.get_reviewer_approvals(change_id, 'jenkins')['Verified'],
-            "+2")
+        self.assert_reviewer_approvals(change_id, '+2')
 
         # verify whether zuul merged the patch
         change = self.gu.get_change('config', 'master', change_id)
@@ -328,21 +318,9 @@ class TestProjectTestsWorkflow(Base):
         change_id = change_ids[0]
 
         # let some time to Zuul to update the test result to Gerrit.
-        attempt = 0
-        while "jenkins" not in self.gu.get_reviewers(change_id):
-            if attempt >= 90:
+        for i in range(90):
+            if "jenkins" in self.gu.get_reviewers(change_id):
                 break
             time.sleep(1)
-            attempt += 1
 
-        attempt = 0
-        while self.gu.get_reviewer_approvals(change_id,
-                                             'jenkins')['Verified'] != '+1':
-            if attempt >= 90:
-                break
-            time.sleep(1)
-            attempt += 1
-
-        self.assertEqual(
-            self.gu.get_reviewer_approvals(change_id, 'jenkins')['Verified'],
-            "+1")
+        self.assert_reviewer_approvals(change_id, '+1')
