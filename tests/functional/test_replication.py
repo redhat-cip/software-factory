@@ -126,7 +126,7 @@ class TestProjectReplication(Base):
     def deleteConfigSection(self, user, project):
         # section name will be node name and the project
         section = 'managesf_%s' % project
-        self.msu.replicationModifyConfig(user, 'remove-section', section)
+        self.msu.replicationModifyConfig(user, 'remove', section)
 
     def mirror_clone_and_check_files(self, url, pname, us_files):
         retries = 0

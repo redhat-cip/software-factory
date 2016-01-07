@@ -35,6 +35,7 @@ import pkg_resources
 
 logging.getLogger("requests").setLevel(logging.WARNING)
 logging.captureWarnings(True)
+logger = logging.getLogger(__name__)
 
 # Empty job for jenkins
 EMPTY_JOB_XML = """<?xml version='1.0' encoding='UTF-8'?>
@@ -113,20 +114,20 @@ class Tool:
         self.env = os.environ.copy()
 
     def exe(self, cmd, cwd=None):
-        if self.debug:
-            self.debug.write("\n\ncmd = %s\n" % cmd)
-            self.debug.flush()
+        logger.debug('Process Command %s' % cmd)
         cmd = shlex.split(cmd)
         ocwd = os.getcwd()
+        output = ''
         if cwd:
             os.chdir(cwd)
         try:
-            p = subprocess.Popen(cmd, stdout=subprocess.PIPE,
-                                 stderr=subprocess.STDOUT,
-                                 env=self.env)
-            output = p.communicate()[0]
-            if self.debug:
-                self.debug.write(output)
+            output = subprocess.check_output(cmd, env=self.env)
+            logger.debug('Process Output %s' % output)
+        except subprocess.CalledProcessError as err:
+            if err.output:
+                logger.exception("%s: Output %s" % (err, err.output))
+            else:
+                logger.exception(err)
         finally:
             os.chdir(ocwd)
         return output
@@ -198,33 +199,21 @@ class ManageSfUtils(Tool):
     def list_active_members(self, user):
         passwd = config.USERS[user]['password']
         cmd = self.base_cmd % (user, passwd) + " membership list"
-        cmd = shlex.split(cmd)
-        try:
-            output = subprocess.check_output(cmd)
-        except:
-            output = None
+        output = self.exe(cmd)
         return output
 
     def create_gerrit_api_password(self, user):
         passwd = config.USERS[user]['password']
         cmd = self.base_cmd % (user, passwd) + \
             "gerrit_api_htpasswd generate_password"
-        cmd = shlex.split(cmd)
-        try:
-            output = subprocess.check_output(cmd)
-        except:
-            output = None
+        output = self.exe(cmd)
         return output
 
     def delete_gerrit_api_password(self, user):
         passwd = config.USERS[user]['password']
         cmd = self.base_cmd % (user, passwd) + \
             "gerrit_api_htpasswd delete_password"
-        cmd = shlex.split(cmd)
-        try:
-            output = subprocess.check_output(cmd)
-        except:
-            output = None
+        output = self.exe(cmd)
         return output
 
     def create_user(self, user, password, email):
@@ -234,22 +223,14 @@ class ManageSfUtils(Tool):
         auth_user = config.ADMIN_USER
         auth_password = config.USERS[config.ADMIN_USER]['password']
         cmd = self.base_cmd % (auth_user, auth_password) + subcmd
-        cmd = shlex.split(cmd)
-        try:
-            output = subprocess.check_output(cmd)
-        except:
-            output = None
+        output = self.exe(cmd)
         return output
 
     def create_init_tests(self, project, user):
         subcmd = " tests init --project=%s" % project
         passwd = config.USERS[user]['password']
         cmd = self.base_cmd % (user, passwd) + subcmd
-        cmd = shlex.split(cmd)
-        try:
-            output = subprocess.check_output(cmd)
-        except:
-            output = None
+        output = self.exe(cmd)
         return output
 
 
