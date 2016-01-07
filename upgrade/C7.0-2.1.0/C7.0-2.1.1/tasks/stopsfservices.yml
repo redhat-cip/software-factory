@@ -28,5 +28,5 @@
   service: name=mariadb state=stopped
   ignore_errors: yes
 - name: Stop Postfix
-  service: name=mariadb state=stopped
+  service: name=postfix state=stopped
   ignore_errors: yes
