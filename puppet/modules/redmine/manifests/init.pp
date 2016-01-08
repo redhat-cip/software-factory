@@ -139,7 +139,7 @@ class redmine {
     }
 
     exec {'set_url_root':
-      command => "sed -i '/^.*::relative_url_root =.*/d' /usr/share/redmine/config/environment.rb && echo 'Redmine::Utils::relative_url_root = \"/redmine\"' >> /usr/share/redmine/config/environment.rb",
+      command => "sed -i '/^.*::relative_url_root =.*/d' /usr/share/redmine/config/environment.rb && echo -e 'Redmine::Utils::relative_url_root = \"/redmine\"\nActionController::Base.relative_url_root = \"/redmine\"' >> /usr/share/redmine/config/environment.rb",
       path    => '/usr/sbin/:/usr/bin/:/bin/',
       require => Exec['default_data'],
       unless  => '/usr/bin/grep "relative_url_root = \"/redmine\"" /usr/share/redmine/config/environment.rb',

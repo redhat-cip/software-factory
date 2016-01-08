@@ -75,7 +75,8 @@ if [ "$upgrade" = "false" ]; then
 fi
 
 if [ "$upgrade" = "true" ]; then
-    rsync -av /usr/local/share/sf-config-repo/ ${CONF_TMP}/
+    rsync --exclude jobs/projects.yaml --exclude zuul/projects.yaml --exclude nodepool/images.yaml --exclude nodepool/labels.yaml \
+          -av /usr/local/share/sf-config-repo/ ${CONF_TMP}/
     cd ${CONF_TMP}
     git config --add gitreview.username "$admin"
     # Only perform the commit/review if the upgrade bring new modifications

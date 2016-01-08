@@ -1,6 +1,13 @@
 # Change Log
 
-## 2.1.2 [unreleased]
+## 2.1.2 2016-01-08
+
+### Fixed
+
+- Incorrect redmine relative_url_root setting
+- Incorrect postfix restart command during upgrade
+- Restart grafana-server after upgrade
+- Fix config update review to not remove user data
 
 ## 2.1.1 2016-01-06
 

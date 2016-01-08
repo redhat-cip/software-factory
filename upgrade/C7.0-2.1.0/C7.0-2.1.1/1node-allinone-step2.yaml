@@ -5,6 +5,8 @@
     shell: systemctl daemon-reload
   - name: Restart the configuration script
     shell: sfconfig.sh > /var/log/upgrade-bootstrap.log
+  - name: Restart grafana-server
+    shell: systemctl restart grafana-server
 - hosts: jenkins
   gather_facts: no
   tasks:
