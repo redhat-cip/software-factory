@@ -76,10 +76,6 @@ JENKINS_SWARM_PLUGIN_URL="http://repo.jenkins-ci.org/releases/org/jenkins-ci/plu
 JENKINS_CREDENTIALS_BINDING_VERSION=1.4
 JENKINS_CREDENTIALS_BINDING_URL="http://mirrors.jenkins-ci.org/plugins/credentials-binding/${JENKINS_CREDENTIALS_BINDING_VERSION}/credentials-binding.hpi"
 
-
-JENKINS_CREDENTIALS_VERSION=1.22
-JENKINS_CREDENTIALS_URL="http://mirrors.jenkins-ci.org/plugins/credentials/${JENKINS_CREDENTIALS_VERSION}/credentials.hpi"
-
 JENKINS_WORKFLOW_STEP_API_VERSION=1.8
 JENKINS_WORKFLOW_STEP_API_URL="http://mirrors.jenkins-ci.org/plugins/workflow-step-api/${JENKINS_WORKFLOW_STEP_API_VERSION}/workflow-step-api.hpi"
 
@@ -102,9 +98,12 @@ JENKINS_ANSI_COLOR_PLUGIN_VERSION=0.4.2
 JENKINS_ANSI_COLOR_PLUGIN_URL="http://updates.jenkins-ci.org/download/plugins/ansicolor/${JENKINS_ANSI_COLOR_PLUGIN_VERSION}/ansicolor.hpi"
 
 JENKINS_THEME_PLUGIN_URL="http://updates.jenkins-ci.org/latest/simple-theme-plugin.hpi"
-JENKINS_ZMQ_PLUGIN_URL="http://updates.jenkins-ci.org/latest/zmq-event-publisher.hpi"
+JENKINS_ZMQ_PLUGIN_URL="http://mirrors.jenkins-ci.org/plugins/zmq-event-publisher/latest/zmq-event-publisher.hpi"
 JENKINS_DASHBOARD_PLUGIN_URL="http://updates.jenkins-ci.org/latest/dashboard-view.hpi"
 JENKINS_COBERTURA_URL="http://updates.jenkins-ci.org/latest/cobertura.hpi"
+
+ZUUL_SWIFT_UPLOAD_URL="https://raw.githubusercontent.com/openstack-infra/project-config/master/jenkins/scripts/zuul_swift_upload.py"
+URL_LIST="${URL_LIST} ${ZUUL_SWIFT_UPLOAD_URL}"
 
 URL_LIST="$URL_LIST $JENKINS_SWARM_CLIENT_URL $JENKINS_SWARM_PLUGIN_URL $JENKINS_THEME_PLUGIN_URL $JENKINS_CREDENTIALS_BINDING_URL $JENKINS_CREDENTIALS_URL $JENKINS_WORKFLOW_STEP_API_URL $JENKINS_PLAIN_CREDENTIALS_URL $JENKINS_ZMQ_PLUGIN_URL $JENKINS_SSH_AGENT_PLUGIN_URL $JENKINS_GEARMAN_PLUGIN_URL $JENKINS_REVERSE_AUTH_PROXY_PLUGIN_URL $JENKINS_POST_BUILDSCRIPT_PLUGIN_URL $JENKINS_DASHBOARD_PLUGIN_URL $JENKINS_COBERTURA_URL $JENKINS_ANSI_COLOR_PLUGIN_URL"
 
@@ -145,6 +144,7 @@ URL_LIST="$URL_LIST $ANGULARJS_URL"
 ZUUL_URL="https://github.com/openstack-infra/zuul"
 ZUUL_VERSION=fd463c84bfb342701061fe383c6d17e7a1bd4786
 
+NODEPOOL_URL="https://github.com/openstack-infra/nodepool"
 NODEPOOL_VERSION=0.1.1
 
 URL_LIST="$URL_LIST $ZUUL_URL"
@@ -186,3 +186,57 @@ function test_url {
   done;
   exit $e
 }
+
+# Packages (use image/sf.install STAGING_PKGS first to adds new packages without full cache rebuild)
+#
+BASE_PKGS="coreutils dhclient e2fsprogs man-db grub2 grubby initscripts iproute kernel"
+BASE_PKGS="${BASE_PKGS} passwd redhat-lsb-core crontabs openssh-clients bind-utils kexec-tools"
+BASE_PKGS="${BASE_PKGS} selinux-policy-targeted setroubleshoot-server acpid bash curl kbd lvm2"
+BASE_PKGS="${BASE_PKGS} openssh-server pciutils rsync rsyslog sudo wget ntpdate logrotate"
+BASE_PKGS="${BASE_PKGS} ethtool hdparm iptables git-review tmux net-tools"
+
+BASE_TESTING_PKGS="python2-jenkins-job-builder python-statsd python2-voluptuous"
+
+DEV_PKGS="openssl-devel openldap-devel python-devel libffi-devel gcc swig zlib-devel libcurl-devel"
+DEV_PKGS="${DEV_PKGS} httpd-devel apr-devel apr-util-devel mariadb-devel gcc-c++ ruby-devel"
+DEV_PKGS="${DEV_PKGS} ImageMagick-devel cpp libxml2-devel libxslt-devel"
+
+PKGS="vim-enhanced openssl postfix bc ansible sshpass mod_passenger puppet rubygem-rake git"
+PKGS="${PKGS} python-pip pyxattr pylibacl httpd mod_ssl ntp monit postfix nodejs httpd"
+PKGS="${PKGS} java-1.7.0-openjdk mariadb-server python-werkzeug python-babel python-jinja2"
+PKGS="${PKGS} MySQL-python socat mod_wsgi m2crypto mariadb gitweb debootstrap unzip pigz openssl"
+PKGS="${PKGS} cloud-init cloud-utils-growpart memcached graphite-web statsd python-carbon mutt"
+PKGS="${PKGS} python-testrepository PyYAML python-paramiko python-gear python-babel python-daemon"
+PKGS="${PKGS} python-magic python-jenkins"
+
+RDO_PKGS="${RDO_PKGS} python-swiftclient diskimage-builder python2-PyMySQL python-glanceclient"
+RDO_PKGS="${RDO_PKGS} python-novaclient python-keystoneclient GitPython python-webob"
+RDO_PKGS="${RDO_PKGS} openstack-gnocchi-api openstack-gnocchi-statsd openstack-gnocchi-metricd"
+RDO_PKGS="${RDO_PKGS} python-ldap python2-passlib python-sqlalchemy python-urllib3"
+RDO_PKGS="${RDO_PKGS} python-stevedore MySQL-python python-m2ext python-sphinx"
+RDO_PKGS="${RDO_PKGS} python-ecdsa python2-pecan"
+
+RPM_PKGS="${BASE_PKGS} ${BASE_TESTING_PKGS} ${DEV_PKGS} ${PKGS} ${RDO_PKGS} jenkins grafana"
+
+
+# Pip Packages (use image/sf.install STAGING_PIP first to adds new packages without full cache rebuild)
+#
+# Pin Balel to 2.0 especially for the version of lodgeit we use
+PIP_PKGS="Babel==2.0"
+PIP_PKGS="${PIP_PKGS} pyopenssl ndg-httpsclient pyasn1 requests[security]"
+PIP_PKGS="${PIP_PKGS} setuptools nose flake8 glob2 pycrypto"
+
+# Graphite
+PIP_PKGS="${PIP_PKGS}
+django<1.8
+django-tagging
+"
+
+# Sf requirement
+PIP_PKGS="${PIP_PKGS}
+python-redmine
+gerritlib==0.4.0
+basicauth==0.3
+htpasswd
+wsgiref==0.1.2
+"

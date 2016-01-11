@@ -41,6 +41,16 @@ function retry {
 }
 
 function http_fetch {
+    if [ -f "$2" ]; then
+        # Check file size
+        if [ $(du -b "$2" | awk '{ print $1 }') -eq 0 ]; then
+            # Remove empty file
+            rm "$2"
+        else
+            # Already downloaded
+            return 0
+        fi
+    fi
     retry _http_fetch "$@"
 }
 
@@ -52,14 +62,6 @@ add_main_repository() {
     local base=http://mirror.centos.org/centos/7/os/x86_64/Packages/
     local releaserpm=$(wget -O- -q $base/|fgrep centos-release|sed -n -e 's@.*>\(centos-release-.*\.rpm\)<.*@\1@p')
     echo "$base/$releaserpm"
-}
-
-add_epel_repository() {
-    install_packages $dir epel-release
-}
-
-remove_epel_repository() {
-    remove_packages $dir epel-release
 }
 
 update_repositories() {
@@ -136,6 +138,12 @@ install_packages() {
     # YUM does not fail when a package in the list is not available.
     # That means we have to detect that all packages of our list are
     # really installed.
+}
+
+check_rpm_packages() {
+    local chroot=$1
+    shift
+    local packages=$@
     PKG_MISSING=
     for pkg in $packages; do
         # Some packages are passed with a full URL (ie. hpacucli)
@@ -149,7 +157,6 @@ install_packages() {
         fatal_error "The following packages are missing: ${PKG_MISSING}"
     fi
 }
-
 
 remove_packages() {
     local chroot=$1

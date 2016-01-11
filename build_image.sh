@@ -37,7 +37,6 @@ put_lock
 . ./role_configrc
 [ -n "$DEBUG" ] && set -x
 
-BUILD_OUTPUT=/dev/stdout
 if [ ! -z "${1}" ]; then
     ARTIFACTS_DIR=${1}/image_build
     sudo mkdir -p ${ARTIFACTS_DIR}
@@ -57,40 +56,38 @@ function build_qcow {
 function build_cache {
     [ -z "${SKIP_BUILD}" ] || return
     CACHE_HASH="SF: $(git log --format=oneline -n 1 $CACHE_DEPS)"
-    LOCAL_HASH="$(cat ${CACHE_PATH}.hash 2> /dev/null)"
+    LOCAL_HASH="$(head -n 1 ${CACHE_PATH}.description 2> /dev/null)"
 
     echo "(STEP1) ${CACHE_HASH}"
     if [ "${LOCAL_HASH}" == "${CACHE_HASH}" ]; then
-        echo "(STEP1) Already built, remove ${CACHE_PATH}.hash to force rebuild"
+        echo "(STEP1) Already built, remove ${CACHE_PATH}.description to force rebuild"
         return
     fi
     echo "(STEP1) The local cache needs update (was: [${LOCAL_HASH}])"
     sudo rm -Rf ${CACHE_PATH}*
     sudo mkdir -p ${CACHE_PATH}
-    [ -z "${ARTIFACTS_DIR}" ] || BUILD_OUTPUT=${ARTIFACTS_DIR}/step1_cache_build.log
     (
         set -e
         cd image
-        STEP=1 sudo -E ./softwarefactory.install ${CACHE_PATH} ${SF_VER} &> ${BUILD_OUTPUT}
-        sudo chroot ${CACHE_PATH} pip freeze | sort | sudo tee ${CACHE_PATH}.pip &> /dev/null
-        sudo chroot ${CACHE_PATH} rpm -qa | sort | sudo tee ${CACHE_PATH}.rpm &> /dev/null
-        echo ${CACHE_HASH} | sudo tee ${CACHE_PATH}.hash > /dev/null
+        STEP=1 sudo -E ./softwarefactory.install ${CACHE_PATH} ${SF_VER}
+        echo ${CACHE_HASH} | sudo tee ${CACHE_PATH}.description > /dev/null
+        ./get_image_versions_information.sh ${CACHE_PATH} | sudo tee -a ${CACHE_PATH}.description > /dev/null
     )
     if [ "$?" != "0" ]; then
-        echo "(STEP1) FAILED"; sudo rm -Rf ${CACHE_PATH}.hash; exit 1;
+        echo "(STEP1) FAILED"; sudo rm -Rf ${CACHE_PATH}.description; exit 1;
     fi
     echo "(STEP1) SUCCESS: ${CACHE_HASH}"
 }
 
 function build_image {
-    # Image hash is last commit of DEPS and the one that changed content of the image (bootstraps/ docs/ gerrit-hooks/ image/ puppet/)
-    IMAGE_HASH="SF: $(git log --format=oneline -n 1 config/ docs/ image/ puppet/) || CAUTH: $(cd ${CAUTH_CLONED_PATH}; git log --format=oneline -n 1) || PYSFLIB: $(cd ${PYSFLIB_CLONED_PATH}; git log --format=oneline -n 1) || MANAGESF: $(cd ${MANAGESF_CLONED_PATH}; git log --format=oneline -n 1) || SFMANAGER: $(cd ${SFMANAGER_CLONED_PATH}; git log --format=oneline -n 1)"
+    # Image description is last commit of DEPS and the one that changed content of the image (bootstraps/ docs/ gerrit-hooks/ image/ puppet/)
+    IMAGE_HASH="SF: $(git log --format=oneline -n 1 config/ docs/ image/ puppet/) || CAUTH: $(cd ${CAUTH_CLONED_PATH}; git log --format=oneline -n 1) || PYSFLIB: $(cd ${PYSFLIB_CLONED_PATH}; git log --format=oneline -n 1) || MANAGESF: $(cd ${MANAGESF_CLONED_PATH}; git log --format=oneline -n 1) || SFMANAGER: $(cd ${SFMANAGER_CLONED_PATH}; git log --format=oneline -n 1)"
 
-    LOCAL_HASH=$(cat ${IMAGE_PATH}-${SF_VER}.hash 2> /dev/null)
+    LOCAL_HASH=$(head -n 1 ${IMAGE_PATH}-${SF_VER}.description 2> /dev/null)
 
     echo "(STEP2) ${IMAGE_HASH}"
     if [ "${LOCAL_HASH}" == "${IMAGE_HASH}" ]; then
-        echo "(STEP2) Already built, remove ${IMAGE_PATH}-${SF_VER}.hash to force rebuild"
+        echo "(STEP2) Already built, remove ${IMAGE_PATH}-${SF_VER}.description to force rebuild"
         return
     fi
     echo "(STEP2) The local image needs update (was: [${LOCAL_HASH}])"
@@ -104,8 +101,6 @@ function build_image {
         done
     }
 
-    [ -z "${ARTIFACTS_DIR}" ] || BUILD_OUTPUT=${ARTIFACTS_DIR}/step2_build.log
-
     # Copy the cache
     sudo rsync -a --delete "${CACHE_PATH}/" "${IMAGE_PATH}/"
 
@@ -115,14 +110,13 @@ function build_image {
         STEP=2 DOCDIR=$DOCDIR PYSFLIB_CLONED_PATH=$PYSFLIB_CLONED_PATH \
         CAUTH_CLONED_PATH=$CAUTH_CLONED_PATH MANAGESF_CLONED_PATH=$MANAGESF_CLONED_PATH \
         SFMANAGER_CLONED_PATH=$SFMANAGER_CLONED_PATH \
-        sudo -E ./softwarefactory.install ${IMAGE_PATH} ${SF_VER} &> ${BUILD_OUTPUT}
+        sudo -E ./softwarefactory.install ${IMAGE_PATH} ${SF_VER}
 
-        sudo chroot ${IMAGE_PATH} pip freeze | sort | sudo tee ${IMAGE_PATH}-${SF_VER}.pip &> /dev/null
-        sudo chroot ${IMAGE_PATH} rpm -qa | sort | sudo tee ${IMAGE_PATH}-${SF_VER}.rpm &> /dev/null
-        echo ${IMAGE_HASH} | sudo tee ${IMAGE_PATH}-${SF_VER}.hash > /dev/null
+        echo ${IMAGE_HASH} | sudo tee ${IMAGE_PATH}-${SF_VER}.description > /dev/null
+        ./get_image_versions_information.sh ${IMAGE_PATH} | sudo tee -a ${IMAGE_PATH}-${SF_VER}.description > /dev/null
     )
     if [ "$?" != "0" ]; then
-        echo "(STEP2) FAILED"; sudo rm -Rf ${IMAGE_PATH}-${SF_VER}.hash; exit 1;
+        echo "(STEP2) FAILED"; sudo rm -Rf ${IMAGE_PATH}-${SF_VER}.description; exit 1;
     fi
     echo "(STEP2) SUCCESS: ${IMAGE_HASH}"
 }
@@ -133,5 +127,6 @@ build_cache
 ./image/fetch_subprojects.sh || exit 1
 build_image
 if [ -n "$BUILD_QCOW" ]; then
+    echo "(STEP3) Building qcow, please wait..."
     build_qcow
 fi

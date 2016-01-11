@@ -6,6 +6,16 @@ import yaml
 SF_BOOTSTRAP_DATA = "%s/sf-bootstrap-data" % os.getcwd()
 SF_TESTS_DIR = "./tests"
 
+# Remove http[s] proxy settings for functional tests
+if "http_proxy" in os.environ:
+    del os.environ["http_proxy"]
+if "https_proxy" in os.environ:
+    del os.environ["https_proxy"]
+
+requests_ca = "%s/ca-bundle.trust.crt" % SF_BOOTSTRAP_DATA
+if "REQUESTS_CA_BUNDLE" not in os.environ and os.path.isfile(requests_ca):
+    os.environ["REQUESTS_CA_BUNDLE"] = requests_ca
+
 sfconfig_filename = "%s/hiera/sfconfig.yaml" % SF_BOOTSTRAP_DATA
 sfcreds_filename = "%s/hiera/sfcreds.yaml" % SF_BOOTSTRAP_DATA
 

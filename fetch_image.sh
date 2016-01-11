@@ -18,7 +18,7 @@
 . ./role_configrc
 [ -n "$DEBUG" ] && set -x
 
-trap "rm -f /tmp/swift_hash-*" EXIT
+trap "rm -f /tmp/swift_description-*" EXIT
 
 function die {
     echo "[ERROR]: $1"
@@ -28,31 +28,40 @@ function die {
 function fetch_prebuilt {
     echo "Fetch prebuilt ${IMG} to ${UPSTREAM}/${IMG}"
     # Check if already synced
-    if [ -f "${UPSTREAM}/${IMG}.hash" ]; then
-        TMP_FILE=$(mktemp /tmp/swift_hash-${IMG}-XXXXXX)
-        curl -o ${TMP_FILE} ${SWIFT_SF_URL}/${IMG}.hash
+    desc_ext="description"
+    if [ "${SF_VER}" == "C7.0-2.0.4" ] || [ "${SF_VER}" == "C7.0-2.1.2" ]; then
+        desc_ext="hash"
+    fi
+    if [ -f "${UPSTREAM}/${IMG}.${desc_ext}" ]; then
+        TMP_FILE=$(mktemp /tmp/swift_description-${IMG}-XXXXXX)
+        curl -o ${TMP_FILE} ${SWIFT_SF_URL}/${IMG}.${desc_ext}
         # Swift does not return 404 but 'Not Found'
         grep -q 'Not Found' $TMP_FILE && die "$IMG does not exist upstream"
-        diff ${TMP_FILE} ${UPSTREAM}/${IMG}.hash 2> /dev/null && {
+        diff ${TMP_FILE} ${UPSTREAM}/${IMG}.${desc_ext} 2> /dev/null && {
             echo "Already synced"
             return
         }
     fi
     rm -f ${TMP_FILE}
     echo "Fetching ${SWIFT_SF_URL}/${IMG}.tgz"
-    sudo curl -o ${UPSTREAM}/${IMG}.tgz ${SWIFT_SF_URL}/${IMG}.tgz || exit -1
+    sudo curl -o ${UPSTREAM}/${IMG}.tgz ${SWIFT_SF_URL}/${IMG}.tgz
     echo "Fetching ${SWIFT_SF_URL}/${IMG}.img.qcow2"
     sudo curl -o ${UPSTREAM}/${IMG}.img.qcow2 ${SWIFT_SF_URL}/${IMG}.img.qcow2
-    echo "Fetching ${SWIFT_SF_URL}/${IMG}.{pip,rpm,digest,hash,hot}"
+    echo "Fetching ${SWIFT_SF_URL}/${IMG}.{digest,description,hot,hash}"
     sudo curl -o ${UPSTREAM}/${IMG}.hot ${SWIFT_SF_URL}/${IMG}.hot
-    sudo curl -o ${UPSTREAM}/${IMG}.pip ${SWIFT_SF_URL}/${IMG}.pip
-    sudo curl -o ${UPSTREAM}/${IMG}.rpm ${SWIFT_SF_URL}/${IMG}.rpm
     sudo curl -o ${UPSTREAM}/${IMG}.digest ${SWIFT_SF_URL}/${IMG}.digest
-    sudo curl -o ${UPSTREAM}/${IMG}.hash ${SWIFT_SF_URL}/${IMG}.hash || exit -1
+    sudo curl -o ${UPSTREAM}/${IMG}.hash ${SWIFT_SF_URL}/${IMG}.hash
+    sudo curl -o ${UPSTREAM}/${IMG}.description ${SWIFT_SF_URL}/${IMG}.description
     echo "Digests..."
     if [ -z "${SKIP_GPG}" ] && [ "${IMG}" == "softwarefactory-${SF_PREVIOUS_VER}" ]; then
         gpg --list-sigs ${RELEASE_GPG_FINGERPRINT} &> /dev/null || gpg --keyserver keys.gnupg.net --recv-key ${RELEASE_GPG_FINGERPRINT}
         gpg --verify ${UPSTREAM}/${IMG}.digest || exit -1
+    fi
+    if [ "${SF_VER}" == "C7.0-2.0.4" ] || [ "${SF_VER}" == "C7.0-2.1.2" ]; then
+        # Remove pip and rpm file
+        sudo sed -i "s/.*\.\(pip\|rpm\)//" ${UPSTREAM}/${IMG}.digest
+        # Fetch hash file
+        sudo curl -o ${UPSTREAM}/${IMG}.hash ${SWIFT_SF_URL}/${IMG}.hash
     fi
     (cd ${UPSTREAM}; exec sha256sum -c ./${IMG}.digest) || exit -1
 }
@@ -65,7 +74,7 @@ function sync_and_deflate {
     fetch_prebuilt
     SRC=${UPSTREAM}/$2.tgz
     echo "Extracting ${SRC} to ${DST}"
-    diff ${UPSTREAM}/${IMG}.hash ${DST}/../${IMG}.hash 2> /dev/null && {
+    diff ${UPSTREAM}/${IMG}.description ${DST}/../${IMG}.description 2> /dev/null && {
         echo "Already extracted"
         return
     }
@@ -73,9 +82,7 @@ function sync_and_deflate {
     sudo mkdir -p ${DST}
     sudo tar -xzf ${SRC} -C "${DST}" || exit -1
     echo "[+] Copy metadata"
-    sudo cp ${UPSTREAM}/${IMG}.hash ${DST}/../${IMG}.hash
-    sudo cp ${UPSTREAM}/${IMG}.pip ${DST}/../${IMG}.pip
-    sudo cp ${UPSTREAM}/${IMG}.rpm ${DST}/../${IMG}.rpm
+    sudo cp ${UPSTREAM}/${IMG}.description ${DST}/../${IMG}.description
     sudo cp ${UPSTREAM}/${IMG}.digest ${DST}/../${IMG}.digest
 }
 

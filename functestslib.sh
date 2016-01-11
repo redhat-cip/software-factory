@@ -16,6 +16,12 @@ ARTIFACTS_DIR="/var/lib/sf/artifacts"
 
 CONFDIR=/var/lib/lxc-conf
 
+# Make sure .local/bin is in PATH for --user install
+echo ${PATH} | grep -q "\.local/bin" || {
+    echo "Adding ${HOME}/.local/bin to PATH"
+    export PATH="${PATH}:${HOME}/.local/bin"
+}
+
 function prepare_artifacts {
     [ -d ${ARTIFACTS_DIR} ] && sudo rm -Rf ${ARTIFACTS_DIR}
     sudo mkdir -p ${ARTIFACTS_DIR}
@@ -38,6 +44,11 @@ function lxc_stop {
 
 function lxc_init {
     ver=${1:-${SF_VER}}
+    if [ ! -f "/usr/lib64/libvirt/connection-driver/libvirt_driver_lxc.so" ]; then
+        echo "(+) Installing libvirt-daemon-lxc..."
+        sudo yum install -y libvirt-daemon-lxc libvirt
+        sudo systemctl restart libvirtd
+    fi
     (cd deploy/lxc; sudo ./deploy.py init --workspace ${SF_WORKSPACE} --refarch $REFARCH --version ${ver}) || fail "LXC start FAILED"
     checkpoint "lxc-start"
 }
@@ -65,14 +76,18 @@ function heat_stop {
 }
 
 function clean_nodepool_tenant {
-    export OS_USERNAME="sfnodepool"; export OS_TENANT_NAME="${OS_USERNAME}"
+    local temp_os_username=${OS_USERNAME}
+    export OS_USERNAME="sfnodepool";
+    export OS_TENANT_NAME="${OS_USERNAME}"
+    echo "[+] Cleaning nodepool tenant"
     for srv in $(openstack  server list -f json | awk '{ print $2 }' | tr ',' ' ' | sed 's/"//g'); do
         openstack server delete $srv
     done
     for image in $(nova image-list | grep template | awk '{ print $2 }'); do
         nova image-delete $image
     done
-    export OS_USERNAME="sfmain"; export OS_TENANT_NAME="${OS_USERNAME}"
+    export OS_USERNAME="${temp_os_username}";
+    export OS_TENANT_NAME="${OS_USERNAME}"
     checkpoint "clean nodepool tenant"
 }
 
@@ -81,16 +96,26 @@ function run_it_jenkins_ci {
         # skip
         return
     fi
-    ./tests/integration/run.py || fail "Basic integration test failed"
+    ./tests/integration/run.py > ${ARTIFACTS_DIR}/integration_tests.txt \
+        && echo "Basic integration test SUCCESS"                        \
+        || fail "Basic integration test failed" ${ARTIFACTS_DIR}/integration_tests.txt
     checkpoint "run_it_jenkins_ci"
 }
 
 function run_it_openstack {
     it_cmd="./tests/integration/run.py --password ${ADMIN_PASSWORD} --playbook"
-    ${it_cmd} zuul      || fail "Basic integration test failed"
-    ${it_cmd} nodepool --os_base_image "sf-${SF_VER}" --os_user sfnodepool || echo "(non-voting) Nodepool integration test failed"
-    ${it_cmd} swiftlogs || echo "(non-voting) Swift integration test failed"
-    ${it_cmd} alltogether || echo "(non-voting) Alltogether integration test failed"
+    ${it_cmd} zuul >> ${ARTIFACTS_DIR}/integration_tests.txt        \
+        && echo "Basic integration test SUCCESS"                    \
+        || fail "Basic integration test failed" ${ARTIFACTS_DIR}/integration_tests.txt
+    ${it_cmd} nodepool --os_base_image "sf-${SF_VER}" --os_user sfnodepool &>> ${ARTIFACTS_DIR}/integration_tests.txt \
+        && echo "(non-voting) Notepool integration test SUCCESS"    \
+        || echo "(non-voting) Nodepool integration test failed"
+    ${it_cmd} swiftlogs >> ${ARTIFACTS_DIR}/integration_tests.txt   \
+        && echo "(non-voting) Swift integration test SUCCESS"       \
+        || echo "(non-voting) Swift integration test failed"
+    ${it_cmd} alltogether >> ${ARTIFACTS_DIR}/integration_tests.txt \
+        && echo "(non-voting) Alltogether integration test SUCCESS" \
+        || echo "(non-voting) Alltogether integration test failed"
     checkpoint "run_it_openstack"
 }
 
@@ -156,12 +181,15 @@ function build_image {
     # Make sure subproject are available
     if [ ! -d "${CAUTH_CLONED_PATH}" ] || [ ! -d "${MANAGESF_CLONED_PATH}" ] || \
         [ ! -d "${PYSFLIB_CLONED_PATH}" ] || [ ! -d "${SFMANAGER_CLONED_PATH}" ]; then
+        echo "[+] Fetching subprocects"
         ./image/fetch_subprojects.sh
     fi
     if [ -z "${SKIP_BUILD}" ]; then
-        ./build_image.sh ${ARTIFACTS_DIR} || fail "Roles building FAILED"
+        echo "[+] Building image ${IMAGE_PATH}"
+        ./build_image.sh 2>&1 | tee ${ARTIFACTS_DIR}/image_build.log | grep '(STEP'
+        [ "${PIPESTATUS[0]}" == "0" ] || fail "Roles building FAILED" ${ARTIFACTS_DIR}/image_build.log
         checkpoint "build_image"
-        prepare_functional_tests_venv
+        prepare_functional_tests_utils
     else
         echo "SKIP_BUILD: Reusing previously built image, just update source code without re-installing"
         echo "            To update requirements and do a full installation, do not use SKIP_BUILD"
@@ -299,15 +327,15 @@ function fail {
 }
 
 function fetch_bootstraps_data {
-    echo "[+] Fetch ${SF_HOST} ssl cert"
-    scp -r ${SF_HOST}:/etc/pki/ca-trust/extracted/openssl/ca-bundle.trust.crt /var/lib/sf/venv/lib/python2.7/site-packages/requests/cacert.pem
-    cp /var/lib/sf/venv/lib/python2.7/site-packages/requests/cacert.pem /var/lib/sf/venv/lib/python2.7/site-packages/pip/_vendor/requests/cacert.pem
-
     echo "[+] Fetch bootstrap data"
     rm -Rf sf-bootstrap-data
     scp -r ${SF_HOST}:sf-bootstrap-data .
-    checkpoint "fetch_bootstraps_data"
     ADMIN_PASSWORD=$(cat sf-bootstrap-data/hiera/sfconfig.yaml | grep 'admin_password:' | sed 's/^.*admin_password://' | awk '{ print $1 }' | sed 's/ //g')
+
+    echo "[+] Fetch ${SF_HOST} ssl cert"
+    scp -r ${SF_HOST}:/etc/pki/ca-trust/extracted/openssl/ca-bundle.trust.crt sf-bootstrap-data/ca-bundle.trust.crt
+    export REQUESTS_CA_BUNDLE="$(pwd)/sf-bootstrap-data/ca-bundle.trust.crt"
+    checkpoint "fetch_bootstraps_data"
 }
 
 function run_bootstraps {
@@ -354,25 +382,16 @@ function run_heat_bootstraps {
     fetch_bootstraps_data
 }
 
-function prepare_functional_tests_venv {
-    echo "$(date) ======= Prepare functional tests venv ======="
-    if [ ! -d /var/lib/sf/venv ]; then
-        sudo virtualenv /var/lib/sf/venv
-        sudo chown -R ${USER} /var/lib/sf/venv
-    fi
+function prepare_functional_tests_utils {
+    # TODO: replace this prepare_functional_tests_utils by a python-sfmanager package
+    cat ${PYSFLIB_CLONED_PATH}/requirements.txt ${SFMANAGER_CLONED_PATH}/requirements.txt | sort | uniq | grep -v '\(requests\|pysflib\)' > ${ARTIFACTS_DIR}/test-requirements.txt
     (
-        . /var/lib/sf/venv/bin/activate
-        pip install --upgrade pip
-        pip install 'requests[security]'
-        pip install -r ${PYSFLIB_CLONED_PATH}/requirements.txt
-        sed -i '/pysflib/d' ${SFMANAGER_CLONED_PATH}/requirements.txt
-        pip install -r ${SFMANAGER_CLONED_PATH}/requirements.txt
-        pip install --upgrade setuptools pbr pycrypto
-        pip install pyOpenSSL ndg-httpsclient pyasn1 nose git-review
-        cd ${PYSFLIB_CLONED_PATH}; python setup.py install
-        cd ${SFMANAGER_CLONED_PATH}; python setup.py install
-    ) > ${ARTIFACTS_DIR}/venv_prepartion.output
-    checkpoint "prepare_venv"
+        set -e
+        pip install --user -r ${ARTIFACTS_DIR}/test-requirements.txt || echo "Can't install test-requirements.txt $(cat ${ARTIFACTS_DIR}/test-requirements.txt)"
+        cd ${PYSFLIB_CLONED_PATH};   python setup.py install --user
+        cd ${SFMANAGER_CLONED_PATH}; python setup.py install --user
+    ) &> ${ARTIFACTS_DIR}/test-requirements.install.log || fail "Can't install test-requirements" ${ARTIFACTS_DIR}/test-requirements.install.log
+    checkpoint "prepare_utils"
 }
 
 function reset_etc_hosts_dns {
@@ -392,18 +411,14 @@ function reset_etc_hosts_dns {
 
 function run_provisioner {
     echo "$(date) ======= run_provisioner"
-    . /var/lib/sf/venv/bin/activate
     ./tests/functional/provisioner/provisioner.py 2>> ${ARTIFACTS_DIR}/provisioner.debug || fail "Provisioner failed" ${ARTIFACTS_DIR}/provisioner.debug
-    deactivate
     checkpoint "run_provisioner"
 }
 
 function run_backup_start {
     echo "$(date) ======= run_backup_start"
-    . /var/lib/sf/venv/bin/activate
     sfmanager --url "${MANAGESF_URL}" --auth "admin:${ADMIN_PASSWORD}" system backup_start || fail "Backup failed"
     sfmanager --url "${MANAGESF_URL}" --auth "admin:${ADMIN_PASSWORD}" system backup_get   || fail "Backup get failed"
-    deactivate
     scp sftests.com:/var/log/managesf/managesf.log ${ARTIFACTS_DIR}/backup_managesf.log
     tar tzvf sf_backup.tar.gz > ${ARTIFACTS_DIR}/backup_content.log
     grep -q '\.bup\/objects\/pack\/.*.pack$' ${ARTIFACTS_DIR}/backup_content.log || fail "Backup empty" ${ARTIFACTS_DIR}/backup_content.log
@@ -412,7 +427,6 @@ function run_backup_start {
 
 function run_backup_restore {
     echo "$(date) ======= run_backup_restore"
-    . /var/lib/sf/venv/bin/activate
     sfmanager --url "${MANAGESF_URL}" --auth "admin:${ADMIN_PASSWORD}" system restore --filename $(pwd)/sf_backup.tar.gz || fail "Backup resore failed"
     echo "[+] Waiting for gerrit to restart..."
     retry=0
@@ -425,7 +439,6 @@ function run_backup_restore {
     echo "=> Took ${retry} retries"
     # Give it some more time...
     sleep 5
-    deactivate
     checkpoint "run_backup_restore"
 }
 
@@ -444,17 +457,13 @@ function run_upgrade {
 
 function run_checker {
     echo "$(date) ======= run_checker"
-    . /var/lib/sf/venv/bin/activate
     ./tests/functional/provisioner/checker.py 2>> ${ARTIFACTS_DIR}/checker.debug || fail "Backup checker failed" ${ARTIFACTS_DIR}/checker.debug
-    deactivate
     checkpoint "run_checker"
 }
 
 function run_functional_tests {
     echo "$(date) ======= run_functional_tests"
-    . /var/lib/sf/venv/bin/activate
     nosetests --with-xunit -v tests/functional > ${ARTIFACTS_DIR}/functional-tests.debug || fail "Functional tests failed" ${ARTIFACTS_DIR}/functional-tests.debug
-    deactivate
     checkpoint "run_functional_tests"
 }
 

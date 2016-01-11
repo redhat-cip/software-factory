@@ -27,12 +27,7 @@ class zuul {
   $pub_html_path = '/var/www/zuul'
   $gitweb_path = '/usr/libexec/git-core'
 
-  file { '/var/www/zuul':
-    ensure => link,
-    target => '/srv/zuul/etc/status/public_html',
-  }
-
-  file {'/srv/zuul/etc/status/public_html/index.html':
+  file {'/var/www/zuul/index.html':
     ensure => file,
     mode   => '0644',
     source => 'puppet:///modules/zuul/index.html',

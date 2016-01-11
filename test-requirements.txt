@@ -1,0 +1,6 @@
+ansible
+flake8
+bash8
+tox
+nose
+git-review

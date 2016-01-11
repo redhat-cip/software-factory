@@ -29,6 +29,7 @@ CODENAME_MAJOR=7
 export LC_ALL=C
 
 ROLE=softwarefactory
+export HOME=/root
 
 PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin
 
@@ -50,10 +51,12 @@ fi
 BUNDLE_RETRIES=3
 
 bootstrap() {
-    local target=$1
-    rm -rf $target
+    local target=$dir
 
     mount_fs
+    if [ -f "${target}/etc/sysctl.conf" ]; then
+        return 0
+    fi
 
     local release_rpm_url=$(add_main_repository)
 
@@ -112,47 +115,65 @@ bootstrap() {
 NETWORKING=yes
 NOZEROCONF=yes
 EOF
-    chmod 644 ${target}/etc/sysconfig/network
+    chmod 0644 ${target}/etc/sysconfig/network
+
+    # Adds sane default sysctl
+    cat > ${target}/etc/sysctl.conf <<EOF
+net.ipv4.ip_forward = 1
+net.ipv4.ip_dynaddr = 0
+net.ipv4.tcp_ecn = 0
+net.ipv4.conf.default.rp_filter = 1
+net.ipv4.conf.all.rp_filter = 1
+net.ipv4.tcp_syncookies = 1
+net.ipv4.conf.all.accept_source_route = 0
+net.ipv4.conf.default.accept_source_route = 0
+net.ipv4.conf.all.accept_redirects = 0
+net.ipv4.conf.default.accept_redirects = 0
+net.ipv4.conf.all.secure_redirects = 0
+net.ipv4.conf.default.secure_redirects = 0
+net.ipv4.icmp_echo_ignore_broadcasts = 1
+kernel.sysrq = 0
+EOF
+    chmod 0400 ${target}/etc/sysctl.conf
 }
 
 install_sf_packages() {
-    install_packages ${dir} ${PUPPET_REPO_URL}
-    add_epel_repository
+    [ -f "${dir}/etc/yum.repos.d/puppetlabs.repo" ] || install_packages ${dir} ${PUPPET_REPO_URL}
+    [ -f "${dir}/etc/yum.repos.d/epel.repo" ] || install_packages $dir epel-release
+    [ -f "${dir}/etc/yum.repos.d/rdo-release.repo" ] || install_packages $dir https://www.rdoproject.org/repos/rdo-release.rpm
     http_fetch https://oss-binaries.phusionpassenger.com/yum/definitions/el-passenger.repo ${dir}/etc/yum.repos.d/passenger.repo
 
-    # (TEMP TRY to remove that later) Force the right selinux-policy version for passenger (10/12/2015)
-    install_packages ${dir} http://buildlogs.centos.org/c7.1511.00/selinux-policy/20151120104451/3.13.1-60.el7.x86_64/selinux-policy-3.13.1-60.el7.noarch.rpm
-    install_packages ${dir} http://buildlogs.centos.org/c7.1511.00/selinux-policy/20151120104451/3.13.1-60.el7.x86_64/selinux-policy-targeted-3.13.1-60.el7.noarch.rpm
+    install_packages ${dir} $BASE_PKGS
+    install_packages ${dir} $PKGS
+    install_packages ${dir} $DEV_PKGS
+    install_packages ${dir} $RDO_PKGS
+    install_packages ${dir} --enablerepo=epel-testing ${BASE_TESTING_PKGS}
 
-    install_packages ${dir} $BASE_PKGS $PKGS $DEV_PKGS
-    remove_epel_repository
+    retry do_chroot ${dir} pip install --upgrade pip
+    retry do_chroot ${dir} pip install ${PIP_PKGS}
 
     # don't rename net ifaces
-    rm ${target}/etc/udev/rules.d/80-net-name-slot.rules
+    rm -f ${target}/etc/udev/rules.d/80-net-name-slot.rules
     ln -s /dev/null ${target}/etc/udev/rules.d/80-net-name-slot.rules
 
     # tune sshd conf
-    echo UseDNS no >> ${target}/etc/ssh/sshd_config
+    grep -q "^UseDNS no" ${target}/etc/ssh/sshd_config || echo UseDNS no >> ${target}/etc/ssh/sshd_config
 }
 
-upgrade_pip() {
-    retry do_chroot ${dir} pip install -U pip
-}
-
-function install_jenkins() {
-
-    wget -O $dir/etc/yum.repos.d/jenkins.repo http://pkg.jenkins-ci.org/redhat-stable/jenkins.repo
+function install_jenkins {
+    http_fetch http://pkg.jenkins-ci.org/redhat-stable/jenkins.repo ${dir}/etc/yum.repos.d/jenkins.repo
     chroot $dir rpm --import http://pkg.jenkins-ci.org/redhat-stable/jenkins-ci.org.key
 
     [ -n "$JENKINS_VERSION" ] && JENKINS_VERSION="-${JENKINS_VERSION}"
     install_packages $dir jenkins${JENKINS_VERSION}
 
-    mkdir -p ${dir}/var/lib/jenkins/plugins
+    [ -d ${dir}/var/lib/jenkins/plugins ] || mkdir -p ${dir}/var/lib/jenkins/plugins
     do_chroot $dir chown jenkins /var/lib/jenkins /var/lib/jenkins/plugins
 
     # Jenkins Swarm client
     swarm_client=$(basename $JENKINS_SWARM_CLIENT_URL)
     http_fetch $JENKINS_SWARM_CLIENT_URL ${dir}/var/lib/jenkins/${swarm_client}
+    rm -f ${dir}/var/lib/jenkins/swarm-client-latest.jar
     ln -sf ${swarm_client} ${dir}/var/lib/jenkins/swarm-client-latest.jar
 
     # Jenkins ssh-agent plugin
@@ -168,8 +189,6 @@ function install_jenkins() {
 
     # Jenkins credentials plugin
     http_fetch $JENKINS_CREDENTIALS_BINDING_URL ${dir}/var/lib/jenkins/plugins/$(basename $JENKINS_CREDENTIALS_BINDING_URL)
-
-    # http_fetch $JENKINS_CREDENTIALS_URL ${dir}/var/lib/jenkins/plugins/$(basename $JENKINS_CREDENTIALS_URL)
     http_fetch $JENKINS_WORKFLOW_STEP_API_URL ${dir}/var/lib/jenkins/plugins/$(basename $JENKINS_WORKFLOW_STEP_API_URL)
     http_fetch $JENKINS_PLAIN_CREDENTIALS_URL ${dir}/var/lib/jenkins/plugins/$(basename $JENKINS_PLAIN_CREDENTIALS_URL)
     http_fetch $JENKINS_REVERSE_AUTH_PROXY_PLUGIN_URL ${dir}/var/lib/jenkins/plugins/$(basename $JENKINS_REVERSE_AUTH_PROXY_PLUGIN_URL)
@@ -189,35 +208,48 @@ function install_jenkins() {
     # Jenkins AnsiColor plugin
     http_fetch $JENKINS_ANSI_COLOR_PLUGIN_URL ${dir}/var/lib/jenkins/plugins/$(basename $JENKINS_ANSI_COLOR_PLUGIN_URL)
 
-    do_chroot ${dir} bash -c "for x in {0..6}; do ls /etc/rc\${x}.d/*jenkins | xargs rm -f ; done"
-
-    # install JJB
-    retry do_chroot ${dir} pip install jenkins-job-builder
+    # JJB directory
     mkdir -p ${dir}/etc/jenkins_jobs
 
-    retry do_chroot ${dir} pip install nose flake8
+    # install zuul_swift_upload.py
+    http_fetch $ZUUL_SWIFT_UPLOAD_URL ${dir}/usr/local/bin/zuul_swift_upload.py
+    chmod +x ${dir}/usr/local/bin/zuul_swift_upload.py
+
+    # make sure jenkins is disabled by default
+    rm -Rf ${dir}/etc/rc.d/*/*jenkins*
 }
 
 function install_gerrit {
     # Gerrit
-    mkdir ${dir}/root/gerrit_data_source/
+    [ -d "${dir}/root/gerrit_data_source/" ] || mkdir ${dir}/root/gerrit_data_source/
     http_fetch $GERRIT_URL ${dir}/root/gerrit_data_source/gerrit.war
     http_fetch $MYSQLJAVA_URL ${dir}/root/gerrit_data_source/mysql-connector-java.jar
     http_fetch $BCPROVJAVA_URL ${dir}/root/gerrit_data_source/bcprov.jar
     http_fetch $BCPKIXJAVA_URL ${dir}/root/gerrit_data_source/bcpkix.jar
 }
 
-function install_redmine {
-    mkdir -p ${dir}/var/www/html
-    mkdir -p ${dir}/var/log/httpd
-    # Install Redmine
-    http_fetch $REDMINE_RHEL_URL ${dir}/usr/share/redmine.tar.gz
-    do_chroot ${dir} bash -c "cd /usr/share && tar -xzpf redmine.tar.gz && mv redmine-${REDMINE_VERSION} redmine && chown -R root:root redmine"
+function install_pygerrit {
+    # Pygerrit
+    if [ ! -d "${dir}/usr/lib/python2.7/site-packages/pygerrit" ]; then
+        retry do_chroot ${dir} git clone https://github.com/morucci/pygerrit.git /srv/pygerrit
+        do_chroot ${dir} bash -c 'cd /srv/pygerrit && python setup.py install'
+        rm -Rf ${dir}/srv/pygerrit
+    fi
+}
 
-    HOME=/root do_chroot ${dir} gem install bundler
-    # We install this fake database file in order to force the bundle to activate the mysql2 lib
-    # Redmine puppet manifest will overwrite it
-    cat > ${dir}/usr/share/redmine/config/database.yml <<EOF
+function install_redmine {
+    [ -d ${dir}/var/www/html ] || mkdir -p ${dir}/var/www/html
+    [ -d ${dir}/var/log/httpd ] || mkdir -p ${dir}/var/log/httpd
+    # Install Redmine
+    if [ ! -d ${dir}/usr/share/redmine ]; then
+        http_fetch $REDMINE_RHEL_URL ${dir}/usr/share/redmine.tar.gz
+        do_chroot ${dir} bash -c "cd /usr/share && tar -xzpf redmine.tar.gz && mv redmine-${REDMINE_VERSION} redmine && chown -R root:root redmine"
+        rm ${dir}/usr/share/redmine.tar.gz
+        do_chroot ${dir} gem install bundler
+
+        # We install this fake database file in order to force the bundle to activate the mysql2 lib
+        # Redmine puppet manifest will overwrite it
+        cat > ${dir}/usr/share/redmine/config/database.yml <<EOF
 production:
   adapter: mysql2
   database: redmine
@@ -226,29 +258,23 @@ production:
   password: ""
   encoding: utf8
 EOF
-    HOME=/root do_chroot ${dir} bash -c "cd /usr/share/redmine && bundle install" # --retry $BUNDLE_RETRIES"
+        do_chroot ${dir} bash -c "cd /usr/share/redmine && bundle install" # --retry $BUNDLE_RETRIES"
+    fi
     # Install Redmine backlog plugin
-    do_chroot ${dir} mkdir -p /usr/share/redmine/plugins
-    retry do_chroot ${dir} git clone $REDMINE_BACKLOG_URL /usr/share/redmine/plugins/redmine_backlogs
-    # An update of holidays gem 10/12/2014 to 1.0.7 leads to unable to deploy the backlog plugin
-    # Check later if we can safely remove that :
-    cd ${dir}/usr/share/redmine/plugins/redmine_backlogs
-    sed -i 's/gem \"holidays\", \"~>1.0.3\"/gem \"holidays\", \"=1.0.6\"/' Gemfile
-    cd -
-    HOME=/root do_chroot ${dir} bash -c "cd /usr/share/redmine/plugins/redmine_backlogs && bundle install" # --retry $BUNDLE_RETRIES"
-    HOME=/root do_chroot ${dir} bash -c 'cd /usr/share/redmine && bundle update'
+    [ -d ${dir}/usr/share/redmine/plugins ] || mkdir -p ${dir}/usr/share/redmine/plugins
+    if [ ! -d ${dir}/usr/share/redmine/plugins/redmine_backlogs ]; then
+        retry do_chroot ${dir} git clone --depth 1 $REDMINE_BACKLOG_URL /usr/share/redmine/plugins/redmine_backlogs
+        do_chroot ${dir} bash -c "cd /usr/share/redmine/plugins/redmine_backlogs && bundle install" # --retry $BUNDLE_RETRIES"
+        do_chroot ${dir} bash -c 'cd /usr/share/redmine && bundle update'
+    fi
 
     # Install Redmine http plugin
-    retry do_chroot ${dir} git clone $REDMINE_HTTP_PLUGIN_URL /usr/share/redmine/plugins/redmine_http_auth
-
-    # Rails 3.2.19 installed by Redmine Gemfile require bundler > 1.0
-    # 14/12/2015 1.11.0 version of Bundler conflict with psych so force to stay on 1.10.6
-    HOME=/root do_chroot ${dir} bash -c 'cd /usr/share/redmine && installed=$(bundle list | grep bundler | sed "s/.*(\(.*\)).*/\1/") && gem install bundler -v 1.10.6 && gem uninstall bundler -v $installed'
+    if [ ! -d ${dir}/usr/share/redmine/plugins/redmine_http_auth ]; then
+        retry do_chroot ${dir} git clone --depth 1 $REDMINE_HTTP_PLUGIN_URL /usr/share/redmine/plugins/redmine_http_auth
+    fi
 }
 
 install_edeploy() {
-    mkdir -p /var/lib/debootstrap/install /var/lib/debootstrap/metadata /var/lib/edeploy
-
     cat > ${dir}/etc/rsyncd.conf << EOF
 uid = root
 gid = root
@@ -271,139 +297,122 @@ EOF
 }
 
 function install_bup {
-    local dir=$1
-    if [ -d "${dir}/etc/apt/" ]; then
-        # This is only usage on yum based dist
-        return
+    if [ ! -d ${dir}/opt/bup ]; then
+        do_chroot ${dir} mkdir -p /opt/bup
+        do_chroot ${dir} git clone --depth 1 ${BUP_URL} /opt/bup/
+        do_chroot ${dir} bash -c 'cd /opt/bup && git checkout ${BUP_VERSION}'
+        do_chroot ${dir} bash -c 'cd /opt/bup && ./configure && make && make install'
     fi
-    do_chroot ${dir} mkdir -p /opt/bup
-    do_chroot ${dir} git clone --depth 1 ${BUP_URL} /opt/bup/
-    do_chroot ${dir} bash -c 'cd /opt/bup && git checkout ${BUP_VERSION}'
-    do_chroot ${dir} bash -c 'cd /opt/bup && ./configure && make && make install'
 }
 
 install_serverspec() {
-    HOME=/root retry do_chroot ${dir} gem install serverspec -v ${SERVERSPEC_VERSION}
-}
-
-function fix_insecure_plateform {
-    # get rid of SSL warnings, needs gcc
-    retry do_chroot ${dir} pip install pyopenssl
-    retry do_chroot ${dir} pip install ndg-httpsclient
-    retry do_chroot ${dir} pip install pyasn1
+    retry do_chroot ${dir} gem install serverspec -v ${SERVERSPEC_VERSION}
 }
 
 function install_mod_authpub_tkt {
     # Install mod authpub tkt for apache (SSO)
-    http_fetch $MOD_AUTH_PUBTKT_URL ${dir}/tmp/mod_auth_pubtkt-${MOD_AUTH_PUBTKT_VERSION}.tar.gz
-    do_chroot ${dir} bash -c "cd /tmp && tar -xvzf mod_auth_pubtkt-${MOD_AUTH_PUBTKT_VERSION}.tar.gz"
-    do_chroot ${dir} bash -c "cd /tmp/mod_auth_pubtkt-${MOD_AUTH_PUBTKT_VERSION} && unset DEBUG && ./configure --apxs=/usr/bin/apxs && make && make install"
-    do_chroot ${dir} rm -Rf /tmp/mod_auth_pubtkt-${MOD_AUTH_PUBTKT_VERSION}
+    if [ ! -f ${dir}/usr/lib64/httpd/modules/mod_auth_pubtkt.so ]; then
+        http_fetch $MOD_AUTH_PUBTKT_URL ${dir}/tmp/mod_auth_pubtkt-${MOD_AUTH_PUBTKT_VERSION}.tar.gz
+        do_chroot ${dir} bash -c "cd /tmp && tar -xvzf mod_auth_pubtkt-${MOD_AUTH_PUBTKT_VERSION}.tar.gz"
+        do_chroot ${dir} bash -c "cd /tmp/mod_auth_pubtkt-${MOD_AUTH_PUBTKT_VERSION} && unset DEBUG && ./configure --apxs=/usr/bin/apxs && make && make install"
+        do_chroot ${dir} rm -Rf /tmp/mod_auth_pubtkt-${MOD_AUTH_PUBTKT_VERSION}
+    fi
 }
 
 function install_fonts {
     # Twitter Bootstrap - http://getbootstrap.com/
-    http_fetch $BOOTSTRAP_URL ${dir}/tmp/bootstrap.zip
-    do_chroot ${dir} unzip -q -o /tmp/bootstrap.zip -d /var/www/static/
-    do_chroot ${dir} mv /var/www/static/bootstrap-${BOOTSTRAP_VERSION}-dist /var/www/static/bootstrap
-    do_chroot ${dir} rm /tmp/bootstrap.zip
+    if [ ! -d ${dir}/var/www/static/bootstrap ]; then
+        http_fetch $BOOTSTRAP_URL ${dir}/tmp/bootstrap.zip
+        do_chroot ${dir} unzip -q -o /tmp/bootstrap.zip -d /var/www/static/
+        do_chroot ${dir} mv /var/www/static/bootstrap-${BOOTSTRAP_VERSION}-dist /var/www/static/bootstrap
+        do_chroot ${dir} rm /tmp/bootstrap.zip
+    fi
 
     # Font Awesome - http://fortawesome.github.io/Font-Awesome/
-    http_fetch $FONTAWESOME_URL ${dir}/tmp/font-awesome.zip
-    do_chroot ${dir} unzip -q -o /tmp/font-awesome.zip -d /var/www/static/
-    do_chroot ${dir} mv /var/www/static/Font-Awesome-${FONTAWESOME_VERSION} /var/www/static/font-awesome
-    do_chroot ${dir} rm /tmp/font-awesome.zip
+    if [ ! -d ${dir}/var/www/static/font-awesome ]; then
+        http_fetch $FONTAWESOME_URL ${dir}/tmp/font-awesome.zip
+        do_chroot ${dir} unzip -q -o /tmp/font-awesome.zip -d /var/www/static/
+        do_chroot ${dir} mv /var/www/static/Font-Awesome-${FONTAWESOME_VERSION} /var/www/static/font-awesome
+        do_chroot ${dir} rm /tmp/font-awesome.zip
+    fi
 
-    do_chroot ${dir} mkdir /var/www/static/js
+    [ -d ${dir}/var/www/static/js ] || do_chroot ${dir} mkdir /var/www/static/js
     # JQuery - http://jquery.com/
     http_fetch $JQUERY_URL ${dir}/var/www/static/js/jquery.min.js
     # AngularJS
     http_fetch $ANGULARJS_URL ${dir}/var/www/static/js/angular.min.js
 }
 
-function install_zuul {
-    # zuul
-    retry do_chroot ${dir} git clone ${ZUUL_URL} /srv/zuul
-    do_chroot ${dir} bash -c "cd /srv/zuul && git checkout -b working ${ZUUL_VERSION}"
-    # Install dependencies first
-    retry do_chroot ${dir} bash -c "cd /srv/zuul && pip install -U -r requirements.txt"
-    do_chroot ${dir} bash -c "cd /srv/zuul && python /srv/zuul/setup.py install"
-    do_chroot ${dir} ln -s /var/www/static/bootstrap /srv/zuul/etc/status/public_html/bootstrap
-    http_fetch $JQUERY_VISIBILITY_URL ${dir}/srv/zuul/etc/status/public_html/jquery-visibility.min.js
-    http_fetch $JQUERY_GRAPHITE_URL ${dir}/srv/zuul/etc/status/public_html/jquery.graphite.js
-    do_chroot ${dir} cp /var/www/static/js/jquery.min.js /srv/zuul/etc/status/public_html/jquery.min.js
-}
-
-function install_nodepool {
-    # nodepool
-    retry do_chroot ${dir} pip install nodepool==${NODEPOOL_VERSION}
-}
-
 function install_etherpad {
     # Etherpad_lite
-    http_fetch $ETHERPAD_LITE_URL ${dir}/tmp/etherpad_lite.tar.gz
-    http_fetch $NODEJS_NPM ${dir}/tmp/npm-install.sh
-    ## Try to avoid the failure in jenkins
-    do_chroot ${dir} sed -i "s#</dev/tty##" /tmp/npm-install.sh
-    [ ! -d "${dir}/var/www/etherpad-lite" ] && mkdir -p ${dir}/var/www/etherpad-lite
-    do_chroot ${dir} tar -xzf /tmp/etherpad_lite.tar.gz --strip-components=1 -C /var/www/etherpad-lite
-    # /bin/installDeps.sh is looking for /usr/bin/node
-    [ ! -e "${dir}/usr/bin/node" ] && do_chroot ${dir} ln -s /usr/bin/nodejs /usr/bin/node
-    # Node or npm seems to deals with SUDO_UID and SUDO_GID that for results set new created
-    # files as user id/gid referenced by sudo. So force id/gid to 0 (root)
-    SUDO_UID=0 SUDO_GID=0 HOME=/root npm_install=$NPM_INSTALL do_chroot ${dir} sh /tmp/npm-install.sh
-    ## Use a mirror
-    do_chroot ${dir} sed -i "s|npm install|npm --registry ${NPM_MIRROR_URL} install|" /var/www/etherpad-lite/bin/installDeps.sh
-    SUDO_UID=0 SUDO_GID=0 HOME=/root retry do_chroot ${dir} sh /var/www/etherpad-lite/bin/installDeps.sh
-    # Include topmenu in Etherpad
-    cat << EOF | patch ${dir}/var/www/etherpad-lite/src/templates/index.html || true
+    if [ ! -d "${dir}/var/www/etherpad-lite" ]; then
+        http_fetch $ETHERPAD_LITE_URL ${dir}/tmp/etherpad_lite.tar.gz
+        http_fetch $NODEJS_NPM ${dir}/tmp/npm-install.sh
+        ## Try to avoid the failure in jenkins
+        do_chroot ${dir} sed -i "s#</dev/tty##" /tmp/npm-install.sh
+        [ ! -d "${dir}/var/www/etherpad-lite" ] && mkdir -p ${dir}/var/www/etherpad-lite
+        do_chroot ${dir} tar -xzf /tmp/etherpad_lite.tar.gz --strip-components=1 -C /var/www/etherpad-lite
+        # /bin/installDeps.sh is looking for /usr/bin/node
+        [ ! -e "${dir}/usr/bin/node" ] && do_chroot ${dir} ln -s /usr/bin/nodejs /usr/bin/node
+        # Node or npm seems to deals with SUDO_UID and SUDO_GID that for results set new created
+        # files as user id/gid referenced by sudo. So force id/gid to 0 (root)
+        SUDO_UID=0 SUDO_GID=0 npm_install=$NPM_INSTALL do_chroot ${dir} sh /tmp/npm-install.sh
+        ## Use a mirror
+        do_chroot ${dir} sed -i "s|npm install|npm --registry ${NPM_MIRROR_URL} install|" /var/www/etherpad-lite/bin/installDeps.sh
+        SUDO_UID=0 SUDO_GID=0 retry do_chroot ${dir} sh /var/www/etherpad-lite/bin/installDeps.sh
+        # Include topmenu in Etherpad
+        cat << EOF | patch ${dir}/var/www/etherpad-lite/src/templates/index.html
 38a39
 >         <script type="text/javascript" src="/static/js/topmenu.js"></script>
 53d53
 <               border-top: 8px solid rgba(51,51,51,.8);
 EOF
-    cat << EOF | patch ${dir}/var/www/etherpad-lite/src/templates/pad.html || true
+        cat << EOF | patch ${dir}/var/www/etherpad-lite/src/templates/pad.html
 50a51
 >         <script type="text/javascript" src="/static/js/topmenu.js"></script>
 EOF
+    fi
 }
 
 function install_paste {
     # Paste (Lodgeit)
-    do_chroot ${dir} mkdir -p /srv/lodgeit
-    retry do_chroot ${dir} git clone ${PASTE_URL} /srv/lodgeit/lodgeit
-    do_chroot ${dir} bash -c "cd /srv/lodgeit/lodgeit && git checkout ${PASTE_VERSION}"
-    do_chroot ${dir} chown -R apache:apache /srv/lodgeit
+    if [ ! -d "${dir}/srv/lodgeit" ]; then
+        do_chroot ${dir} mkdir -p /srv/lodgeit
+        retry do_chroot ${dir} git clone ${PASTE_URL} /srv/lodgeit/lodgeit
+        do_chroot ${dir} bash -c "cd /srv/lodgeit/lodgeit && git checkout ${PASTE_VERSION}"
+        do_chroot ${dir} chown -R apache:apache /srv/lodgeit
 
-    # Replace absolute URLs beginning with /static/
-    do_chroot ${dir} sed -i -e 's#/static/#/static/lodgeit/#g' /srv/lodgeit/lodgeit/lodgeit/views/layout.html
-    do_chroot ${dir} sed -i -e 's#/static/#/static/lodgeit/#g' /srv/lodgeit/lodgeit/lodgeit/views/help/advanced.html
-    do_chroot ${dir} sed -i -e 's#/static/#/static/lodgeit/#g' /srv/lodgeit/lodgeit/lodgeit/views/help/pasting.html
-    # Include topmenu in Paste
-    cat << EOF | patch ${dir}/srv/lodgeit/lodgeit/lodgeit/views/layout.html || true
+        # Replace absolute URLs beginning with /static/
+        do_chroot ${dir} sed -i -e 's#/static/#/static/lodgeit/#g' /srv/lodgeit/lodgeit/lodgeit/views/layout.html
+        do_chroot ${dir} sed -i -e 's#/static/#/static/lodgeit/#g' /srv/lodgeit/lodgeit/lodgeit/views/help/advanced.html
+        do_chroot ${dir} sed -i -e 's#/static/#/static/lodgeit/#g' /srv/lodgeit/lodgeit/lodgeit/views/help/pasting.html
+        # Include topmenu in Paste
+        cat << EOF | patch ${dir}/srv/lodgeit/lodgeit/lodgeit/views/layout.html
 11a12
 >     <script type="text/javascript" src="/static/js/topmenu.js"></script>
 EOF
+    fi
 }
 
 install_misc() {
-    # Install swift client for the backup script
-    retry do_chroot ${dir} pip install python-swiftclient
-
     # install third party puppet modules
     retry do_chroot $dir puppet module install puppetlabs-ntp --environment=sf
 
-    # Pin Balel to 2.0 especially for the version of lodgeit we use
-    retry do_chroot ${dir} pip install -U Babel==2.0
-
-    install_packages ${dir} ${GRAFANA_URL}
+    [ -d ${dir}/var/lib/grafana ] || install_packages ${dir} ${GRAFANA_URL}
 }
 
+image_clean() {
+    rm -Rf ${dir}/usr/share/doc
+    rm -Rf ${dir}/usr/share/info
+}
 
-BASE_PKGS="coreutils dhclient e2fsprogs man-db grub2 grubby initscripts iproute kernel net-tools passwd redhat-lsb-core crontabs openssh-clients bind-utils kexec-tools selinux-policy-targeted setroubleshoot-server acpid bash curl kbd lvm2 openssh-server pciutils rsync rsyslog sudo wget ntpdate logrotate ethtool hdparm iptables git-review tmux"
-
-DEV_PKGS="openssl-devel openldap-devel python-devel libffi-devel gcc swig zlib-devel libcurl-devel httpd-devel apr-devel apr-util-devel mariadb-devel gcc-c++ ruby-devel ImageMagick-devel cpp libxml2-devel libxslt-devel"
-PKGS="vim-enhanced openssl postfix bc ansible sshpass mod_passenger puppet rubygem-rake git python-pip pyxattr pylibacl httpd mod_ssl ntp monit postfix nodejs httpd java-1.7.0-openjdk mariadb-server python-werkzeug python-babel python-jinja2 MySQL-python socat mod_wsgi m2crypto mariadb gitweb debootstrap unzip pigz openssl cloud-init cloud-utils-growpart memcached graphite-web statsd python-carbon mutt python-testrepository"
+final_image_clean() {
+    rm -Rf ${dir}/root/.cache
+    rm -Rf ${dir}/root/.npm
+    rm -Rf ${dir}/root/.gem
+    rm -Rf ${dir}/share/
+    rm -Rf ${dir}/var/lib/yum/yumdb/*
+}
 
 trap cleanup 0
 
@@ -415,25 +424,24 @@ check_binary yum
 check_binary rpm
 
 if [ "$STEP" == 1 ]; then
-    bootstrap $dir
+    bootstrap
     install_sf_packages
     disable_selinux
 
-    upgrade_pip
-    fix_insecure_plateform
     install_jenkins
     install_redmine
     install_gerrit
+    install_pygerrit
     install_fonts
     install_edeploy
     install_serverspec
-    install_zuul
-    install_nodepool
     install_etherpad
     install_paste
     install_misc
-    install_bup ${dir}
+    install_bup
     install_mod_authpub_tkt
+    image_clean
+    check_rpm_packages ${dir} "${RPM_PKGS}"
     put_git_mark ${dir}
     do_chroot ${dir} passwd -l root
 fi
@@ -442,4 +450,6 @@ if [ "$STEP" == 2 ]; then
     mount_fs
     . sf.install
     install_sf
+    image_clean
+    final_image_clean
 fi

@@ -7,7 +7,7 @@ set -e
 
 . ./role_configrc
 
-trap "rm -f /tmp/swift_hash-*" EXIT
+trap "rm -f /tmp/swift_description-*" EXIT
 
 function publish {
     SRC=$1
@@ -15,9 +15,9 @@ function publish {
     IMG_NAME=$2
     cd $(dirname $SRC)
     echo "[+] Check if $IMG have changed"
-    TMP_FILE=$(mktemp /tmp/swift_hash-${IMG_NAME}-XXXXXX)
-    curl -o ${TMP_FILE} ${SWIFT_SF_URL}/${IMG_NAME}.hash
-    diff ${TMP_FILE} ${IMG_NAME}.hash 2> /dev/null && return
+    TMP_FILE=$(mktemp /tmp/swift_description-${IMG_NAME}-XXXXXX)
+    curl -o ${TMP_FILE} ${SWIFT_SF_URL}/${IMG_NAME}.description
+    diff ${TMP_FILE} ${IMG_NAME}.description 2> /dev/null && return
     rm -f ${TMP_FILE}
     echo "[+] Upstream is out dated"
     if [ ! -f "${IMG_NAME}.tgz" ]; then
@@ -28,7 +28,7 @@ function publish {
         sudo cp $hot $(basename $hot | sed "s/\.hot/-${SF_VER}.hot/")
     done
     echo "[+] Creating manifest"
-    OBJ="$(/bin/ls ${IMG_NAME}.{tgz,hash,pip,rpm,img.qcow2,hot} 2> /dev/null || true)"
+    OBJ="$(/bin/ls ${IMG_NAME}.{tgz,description,img.qcow2,hot} 2> /dev/null || true)"
     sha256sum $OBJ | sudo tee ${IMG_NAME}.digest
     for OBJECT in $OBJ ${IMG_NAME}.digest; do
         [ -f ${OBJECT} ] || continue
