@@ -1,2 +1,2 @@
 #!/bin/sh
-tar --absolute-names -cf - /var/lib/jenkins/jobs | bup split -r root@managesf.<%= @fqdn %>: -n jenkins
+tar --absolute-names -cf - /var/lib/jenkins/jobs | /usr/local/bin/bup split -r root@managesf.<%= @fqdn %>: -n jenkins
