@@ -20,12 +20,13 @@ you need access to a CentOS 7 and execute:
 
 .. code-block:: bash
 
- $ sudo yum install -y epel-release
- $ sudo yum install -y libvirt libvirt-daemon-lxc git vim-enhanced tmux curl python-devel wget python-pip mariadb-devel python-virtualenv python-devel gcc libffi-devel openldap-devel openssl-devel python-sphinx python-tox python-flake8
- $ sudo service libvirtd start
- $ git clone http://softwarefactory-project.io/r/software-factory
- $ cd software-factory
- $ ./fetch_image.sh
+ sudo yum install -y epel-release
+ sudo yum install -y libvirt libvirt-daemon-lxc git git-review vim-enhanced tmux curl python-devel wget python-pip mariadb-devel python-virtualenv python-devel gcc libffi-devel openldap-devel openssl-devel python-sphinx python-tox python-flake8 ansible
+ sudo systemctl enable libvirtd
+ sudo systemctl start libvirtd
+ git clone http://softwarefactory-project.io/r/software-factory
+ cd software-factory
+ ./fetch_image.sh
 
 
 How to run the tests locally
@@ -43,22 +44,29 @@ to run functional and unit tests locally first:
 
 .. code-block:: bash
 
-  $ ./run_tests.sh               # unittests
-  $ ./run_functional-tests.sh    # functional tests
+  ./run_tests.sh               # unittests
+  ./run_functional-tests.sh    # functional tests
 
 Two reference architectures are currently supported and tested with functional,
 backup and restore tests: 1node-allinone and 2nodes-jenkins
 
 .. code-block:: bash
 
-  $ ./run_functional-tests.sh 1node-allinone          # functional tests
-  $ ./run_functional-tests.sh 2nodes-jenkins upgrade  # upgrade tests
-  $ ./run_functional-tests.sh 1node-allinone backup   # backup tests
+  ./run_functional-tests.sh 1node-allinone          # functional tests
+  ./run_functional-tests.sh 2nodes-jenkins upgrade  # upgrade tests
+  ./run_functional-tests.sh 1node-allinone backup   # backup tests
 
 The functional tests will start LXC container(s) on the local VM to simulate
 as close as possible a real deployment. Setting the DEBUG=1 environment variable
-tells the script to keep the deployment running. If not set the deployment
-will be destroyed (LXC containers will be stopped).
+tells the script to keep the deployment running; this is especially useful if
+you want to ssh into the container afterwards for debugging. If not set the
+deployment will be destroyed (LXC containers will be stopped).
+
+
+.. code-block:: bash
+
+  DEBUG=1 ./run_functional-tests.sh    # run functional tests, do not stop container
+  ssh -l root sftests.com              # /etc/hosts entry is automatically added
 
 
 How to develop and/or run a specific functional tests
@@ -69,8 +77,8 @@ First you need to copy the sf-bootstrap-data/ from the managesf node.
 
 .. code-block:: bash
 
-  $ rsync -a root@sftests.com:sf-bootstrap-data/ sf-bootstrap-data/
-  $ nosetests --no-byte-compile -s -v tests/functional
+  rsync -a root@sftests.com:sf-bootstrap-data/ sf-bootstrap-data/
+  nosetests --no-byte-compile -s -v tests/functional
 
 Tips: ::
 
@@ -98,11 +106,11 @@ How to contribute
 
 .. code-block:: bash
 
-  $ cd /srv/software-factory
-  $ git-review -s # only relevant the first time to init the git remote
-  $ git checkout -b"my-branch"
-  $ # Hack the code, create a commit on top of HEAD ! and ...
-  $ git review # Summit your proposal on softwarefactory-project.io
+  cd /srv/software-factory
+  git-review -s # only relevant the first time to init the git remote
+  git checkout -b"my-branch"
+  # Hack the code, create a commit on top of HEAD ! and ...
+  git review # Summit your proposal on softwarefactory-project.io
 
 Have a look to http://softwarefactory-project.io/r/ where you will find the patch
 you have just submitted. Automatic tests are run against it and Jenkins/Zuul will
