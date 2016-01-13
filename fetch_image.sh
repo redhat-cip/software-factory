@@ -50,7 +50,6 @@ function fetch_prebuilt {
     echo "Fetching ${SWIFT_SF_URL}/${IMG}.{digest,description,hot,hash}"
     sudo curl -o ${UPSTREAM}/${IMG}.hot ${SWIFT_SF_URL}/${IMG}.hot
     sudo curl -o ${UPSTREAM}/${IMG}.digest ${SWIFT_SF_URL}/${IMG}.digest
-    sudo curl -o ${UPSTREAM}/${IMG}.hash ${SWIFT_SF_URL}/${IMG}.hash
     sudo curl -o ${UPSTREAM}/${IMG}.description ${SWIFT_SF_URL}/${IMG}.description
     echo "Digests..."
     if [ -z "${SKIP_GPG}" ] && [ "${IMG}" == "softwarefactory-${SF_PREVIOUS_VER}" ]; then

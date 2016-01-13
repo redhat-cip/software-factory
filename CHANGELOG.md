@@ -1,6 +1,33 @@
 # Change Log
 
-## 2.1.3 [unreleased]
+## 2.1.3 2016-01-14
+
+### Added
+
+- Integration tests with ansible for swift artifacts export, nodepool and zuul
+- Rdo repository to install openstack python clients and gnocchi
+
+### Changed
+
+- Default heat template network and disk size to avoid conflict with integration tests
+- Functional tests run zuul integration playbook
+- Subprocess call in functional tests now print output
+- Many requirements are now installed with rpm instead of pip
+- All pip packages are now listed in third_party_tools as a global-requirements list
+
+### Fixed
+
+- Top-menu in etherpad and paste services was missing
+- Redmine gateway.common configuration (contained two //)
+- Monit monitoring of gerrit
+- Backup command bup PATH was incorrect
+- Skip gracefully if a project already exists in a service at project creation
+
+### Removed
+
+- Many image build left-overs that are unused
+- Functional tests venv is now replaced by packages install in --user
+
 
 ## 2.1.2 2016-01-08
 
