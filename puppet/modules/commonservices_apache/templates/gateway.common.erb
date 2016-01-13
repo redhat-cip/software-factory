@@ -24,7 +24,7 @@
 	RewriteRule ^(.*)$ /r/logout [R,NC,L]
     </LocationMatch>
 
-    <LocationMatch "/r/(login|a)">
+    <LocationMatch "/r/(login|a)(/|$)">
         Order Allow,Deny
         Allow from all
 

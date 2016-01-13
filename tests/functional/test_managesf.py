@@ -249,7 +249,7 @@ class TestManageSF(Base):
     def test_create_public_project_as_admin_clone_as_admin(self):
         """ Clone public project as admin and check content
         """
-        pname = 'p_%s' % create_random_str()
+        pname = 'a_%s' % create_random_str()
         self.create_project(pname, config.ADMIN_USER)
         ggu = GerritGitUtils(config.ADMIN_USER,
                              config.ADMIN_PRIV_KEY_PATH,
