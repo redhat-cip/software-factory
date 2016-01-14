@@ -23,7 +23,7 @@ from sfmigration.common import base
 
 def json_to_object(j):
     j_ = json.dumps(j)
-    hook = lambda d: namedtuple('Whatevs', d.keys())(*d.values())
+    hook = lambda d: namedtuple('Whatevs', d.keys())(*d.values())  # flake8: noqa
     return json.loads(j_,
                       object_hook=hook)
 

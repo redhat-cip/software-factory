@@ -18,8 +18,8 @@ import os
 import sys
 import yaml
 
-pwd = os.path.dirname(os.path.abspath(__file__))
-sys.path.append(os.path.dirname(pwd))
+pwd = os.path.dirname(os.path.abspath(__file__))  # flake8: noqa
+sys.path.append(os.path.dirname(pwd))             # flake8: noqa
 import config
 
 from utils import get_cookie

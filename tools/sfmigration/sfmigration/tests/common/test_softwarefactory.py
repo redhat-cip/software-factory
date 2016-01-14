@@ -19,7 +19,7 @@ from mock import patch
 from unittest import TestCase
 # initialize the log capture before loading the module's logger
 from testfixtures import LogCapture
-l = LogCapture()
+l = LogCapture()  # flake8: noqa
 
 from redmine.managers import ResourceBadMethodError
 
