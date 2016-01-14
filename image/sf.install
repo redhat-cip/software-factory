@@ -1,47 +1,39 @@
 #!/bin/sh
 
 # STEP2 only extra-packages (to avoid cache rebuild)
-STAGING_PKGS=""
+STAGING_PKGS="python-virtualenv"
 
-# Zuul requirement
-STAGING_PIP="${STAGING_PIP}
-argparse
-Paste
-ordereddict
-"
-
-# Nodepool requirement
-STAGING_PIP="${STAGING_PIP}
-pbr>=0.6,!=0.7,<1.0
-python-daemon>=2.0.4
-extras
-statsd>=1.0.0,<3.0
-apscheduler>=2.1.1,<3.0
-sqlalchemy>=0.8.2,<0.9.0
-pyzmq>=13.1.0,<14.0.0
-PrettyTable>=0.6,<0.8
-six>=1.7.0
-"
+# Without this, managesf fails with ResourceNotFoundError: Requested resource doesn't exist
+STAGING_PIP="python-redmine==1.2.0"
 
 function install_nodepool {
     # nodepool
     if [ ! -f ${dir}/usr/bin/nodepool ]; then
-        [ -d ${dir}/srv/nodepool ] || retry do_chroot ${dir} git clone ${NODEPOOL_URL} /srv/nodepool
-        do_chroot ${dir} bash -c "cd /srv/nodepool && git checkout -b working ${NODEPOOL_VERSION}"
-        do_chroot ${dir} bash -c "cd /srv/nodepool && python setup.py install"
-        rm -Rf ${dir}/srv/nodepool
+        do_chroot ${dir} virtualenv /srv/nodepool
+        do_chroot ${dir} /srv/nodepool/bin/pip install --upgrade 'pbr<1.0'
+        # g++ is needed by pyzmq when built from pip
+        do_chroot ${dir} yum install -y gcc-c++
+        do_chroot ${dir} /srv/nodepool/bin/pip install git+git://github.com/openstack-infra/nodepool@3c635ec9c202c99e24fcb9315fef806cb000542f
+        do_chroot ${dir} yum remove -y gcc-c++
+        for bin in nodepool nodepoold; do
+            ln -sf /srv/nodepool/bin/${bin} ${dir}/usr/bin/${bin}
+        done
     fi
 }
 
 function install_zuul {
     # zuul
     if [ ! -f ${dir}/usr/bin/zuul ]; then
-        [ -d ${dir}/srv/zuul ] || retry do_chroot ${dir} git clone ${ZUUL_URL} /srv/zuul
-        do_chroot ${dir} bash -c "cd /srv/zuul && git checkout -b working ${ZUUL_VERSION}"
-        # Install dependencies first
-        do_chroot ${dir} bash -c "cd /srv/zuul && python setup.py install"
-        mv ${dir}/srv/zuul/etc/status/public_html/ ${dir}/var/www/zuul
-        rm -Rf ${dir}/srv/zuul
+        do_chroot ${dir} virtualenv /srv/zuul
+        do_chroot ${dir} /srv/zuul/bin/pip install --upgrade 'pbr<1.0'
+        [ -d ${dir}/tmp/zuul ] || retry do_chroot ${dir} git clone ${ZUUL_URL} /tmp/zuul
+        do_chroot ${dir} bash -c "cd /tmp/zuul && git checkout -b working ${ZUUL_VERSION}"
+        do_chroot ${dir} /srv/zuul/bin/pip install file:///tmp/zuul
+        mv ${dir}/tmp/zuul/etc/status/public_html/ ${dir}/var/www/zuul
+        rm -Rf ${dir}/tmp/zuul
+        for bin in zuul zuul-cloner zuul-merger zuul-server; do
+            ln -sf /srv/zuul/bin/${bin} ${dir}/usr/bin/${bin}
+        done
     fi
     [ -h ${dir}/var/www/zuul/bootstrap ] || ln -s /var/www/static/bootstrap ${dir}/var/www/zuul/bootstrap
     http_fetch $JQUERY_VISIBILITY_URL ${dir}/var/www/zuul/jquery-visibility.min.js
@@ -58,7 +50,7 @@ function install_sf {
     cp -f /etc/resolv.conf "${dir}/etc/"
 
     if [ ! -z "${STAGING_PKGS}" ]; then
-        install_packages ${dir} ${STATING_PKGS}
+        install_packages ${dir} ${STAGING_PKGS}
         check_rpm_packages ${dir} "${STAGING_PKGS}"
     fi
     if [ ! -z "${STAGING_PIP}" ]; then
