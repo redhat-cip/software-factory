@@ -147,7 +147,6 @@ install_sf_packages() {
     install_packages ${dir} $PKGS
     install_packages ${dir} $DEV_PKGS
     install_packages ${dir} $RDO_PKGS
-    install_packages ${dir} --enablerepo=epel-testing ${BASE_TESTING_PKGS}
 
     retry do_chroot ${dir} pip install --upgrade pip
     retry do_chroot ${dir} pip install ${PIP_PKGS}
