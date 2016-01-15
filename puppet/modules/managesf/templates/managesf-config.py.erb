@@ -17,6 +17,7 @@ import os
 
 # Pecan Application Configurations
 app = {
+    'guess_content_type_from_ext': False,
     'root': 'managesf.controllers.root.RootController',
     'modules': ['managesf'],
     'template_path': '%(confdir)s/managesf/templates',
