@@ -17,7 +17,7 @@
 # -----------------
 # Functions
 # -----------------
-[ -z "${DEBUG}" ] && DISABLE_SETX=1 || set -x
+[ -z "${DEBUG}" ] || set -x
 
 # Defaults
 DOMAIN=$(cat /etc/puppet/hiera/sf/sfconfig.yaml | grep "^fqdn:" | cut -d: -f2 | sed 's/ //g')

@@ -1,7 +1,6 @@
 #!/bin/bash
 
-DISABLE_SETX=0
-[ -z "${DEBUG}" ] && DISABLE_SETX=1 || set -x
+[ -z "${DEBUG}" ] || set -x
 
 export SF_HOST=${SF_HOST:-sftests.com}
 export SKIP_CLEAN_ROLES="y"
@@ -29,7 +28,7 @@ function prepare_artifacts {
     sudo chown -R $USER:$USER ${ARTIFACTS_DIR}
     sudo chmod -R 755 ${ARTIFACTS_DIR}
     set +x
-    if [ -n ${SWIFT_artifacts_URL} ]; then
+    if [ -n "${SWIFT_artifacts_URL}" ]; then
         echo "Logs will be available here: $SWIFT_artifacts_URL"
     else
         echo "Logs will be available here: ${ARTIFACTS_DIR}"
@@ -108,7 +107,7 @@ function run_it_openstack {
         && echo "Basic integration test SUCCESS"                    \
         || fail "Basic integration test failed" ${ARTIFACTS_DIR}/integration_tests.txt
     ${it_cmd} nodepool --os_base_image "sf-${SF_VER}" --os_user sfnodepool &>> ${ARTIFACTS_DIR}/integration_tests.txt \
-        && echo "(non-voting) Notepool integration test SUCCESS"    \
+        && echo "(non-voting) Nodepool integration test SUCCESS"    \
         || echo "(non-voting) Nodepool integration test failed"
     ${it_cmd} swiftlogs >> ${ARTIFACTS_DIR}/integration_tests.txt   \
         && echo "(non-voting) Swift integration test SUCCESS"       \
@@ -130,12 +129,12 @@ function heat_init {
     if [ ! -n "${GLANCE_ID}" ]; then
         echo "[+] ${IMAGE_PATH}-${SF_VER}.img.qcow2: Uploading glance image..."
         glance image-create --is-public=true --progress --disk-format qcow2 --container-format bare --name sf-${SF_VER} --file ${IMAGE_PATH}-${SF_VER}.img.qcow2
-        GLANCE_ID=$(glance image-list | grep "sf-${SF_VER}" | awk '{ print $2 }' | head)
+        GLANCE_ID=$(glance image-list | grep "sf-${SF_VER}" | awk '{ print $2 }' | head -n 1)
     else
         echo "[+] Going to re-use glance image uuid ${GLANCE_ID}"
     fi
     export OS_USERNAME="sfmain"; export OS_TENANT_NAME="${OS_USERNAME}"
-    NET_ID=$(neutron net-list | grep 'external_network' | awk '{ print $2 }' | head)
+    NET_ID=$(neutron net-list | grep 'external_network' | awk '{ print $2 }' | head -n 1)
     echo "[+] Starting the stack..."
     heat stack-create --template-file ./deploy/heat/softwarefactory.hot -P \
         "sf_root_size=5;key_name=id_rsa;domain=${SF_HOST};image_id=${GLANCE_ID};ext_net_uuid=${NET_ID};flavor=m1.medium" \
@@ -188,6 +187,7 @@ function build_image {
         echo "[+] Building image ${IMAGE_PATH}"
         ./build_image.sh 2>&1 | tee ${ARTIFACTS_DIR}/image_build.log | grep '(STEP'
         [ "${PIPESTATUS[0]}" == "0" ] || fail "Roles building FAILED" ${ARTIFACTS_DIR}/image_build.log
+        [ -f "${IMAGE_PATH}.description_diff" ] && head ${IMAGE_PATH}.description_diff
         checkpoint "build_image"
         prepare_functional_tests_utils
     else
@@ -208,7 +208,7 @@ function build_image {
         PYSFLIB_LOC=${IMAGE_PATH}/$(sudo chroot ${IMAGE_PATH} pip show pysflib | grep '^Location:' | awk '{ print $2 }')
         echo "SKIP_BUILD: direct copy of ${PYSFLIB_CLONED_PATH}/pysflib/ to ${PYSFLIB_LOC}/pysflib/"
         sudo rsync -a --delete ${PYSFLIB_CLONED_PATH}/pysflib/ ${PYSFLIB_LOC}/pysflib/
-        sudo cp image/edeploy ${IMAGE_PATH}/usr/sbin/edeploy
+        sudo cp image/edeploy/edeploy ${IMAGE_PATH}/usr/sbin/edeploy
         set +e
     fi
 }
@@ -235,7 +235,7 @@ function configure_network {
     done
     [ $RETRIES -eq 40 ] && fail "Can't connect to $ip"
     echo "[+] Avoid ssh error"
-    cat << EOF > ~/.ssh/config
+    cat << EOF > ${HOME}/.ssh/config
 Host ${SF_HOST}
     Hostname ${ip}
     User root
@@ -252,7 +252,8 @@ function get_logs {
     #in order to not avoid so important logs that can appears some seconds
     #after a failure.
     set +e
-    sudo cp ${IMAGE_PATH}.{rpm,pip} ${ARTIFACTS_DIR}/ &> /dev/null
+    sudo cp ${IMAGE_PATH}.description ${ARTIFACTS_DIR}/image.description &> /dev/null
+    sudo cp ${IMAGE_PATH}.description_diff ${ARTIFACTS_DIR}/image.description_diff &> /dev/null
     ssh sftests.com hostname > /dev/null && {
         echo "Collecting log from test instance"
         sleep 1
@@ -294,21 +295,21 @@ function host_debug {
     sudo df -h | tee -a ${ARTIFACTS_DIR}/host_debug/df
     cat /etc/hosts > ${ARTIFACTS_DIR}/host_debug/hosts
     checkpoint "host_debug"
-    [ ${DISABLE_SETX} -eq 0 ] && set -x
+    [ -z "${DEBUG}" ] || set -x
 }
 
 function display_head {
     echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
-    git log -n 1
+    git log -n 1 | cat
     echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
     echo
 }
 
 function fail {
     set +x
+    unset DEBUG
     msg=$1
     log_file=$2
-    DISABLE_SETX=1
     echo -e "\n\n-----8<-------8<------\n  END OF TEST, FAIL: "
     if [ ! -z "$log_file" ] && [ -f "$log_file" ]; then
         echo "=> Log file $log_file --["
@@ -387,7 +388,10 @@ function prepare_functional_tests_utils {
     cat ${PYSFLIB_CLONED_PATH}/requirements.txt ${SFMANAGER_CLONED_PATH}/requirements.txt | sort | uniq | grep -v '\(requests\|pysflib\)' > ${ARTIFACTS_DIR}/test-requirements.txt
     (
         set -e
-        pip install --user -r ${ARTIFACTS_DIR}/test-requirements.txt || echo "Can't install test-requirements.txt $(cat ${ARTIFACTS_DIR}/test-requirements.txt)"
+        cd ${PYSFLIB_CLONED_PATH}; pip install --user -r ${ARTIFACTS_DIR}/test-requirements.txt || {
+            echo "Can't install test-requirements.txt $(cat ${ARTIFACTS_DIR}/test-requirements.txt)"
+            exit 1
+        }
         cd ${PYSFLIB_CLONED_PATH};   python setup.py install --user
         cd ${SFMANAGER_CLONED_PATH}; python setup.py install --user
     ) &> ${ARTIFACTS_DIR}/test-requirements.install.log || fail "Can't install test-requirements" ${ARTIFACTS_DIR}/test-requirements.install.log
@@ -489,5 +493,5 @@ function checkpoint {
     echo "$ELAPSED - $* ($(date))" | sudo tee -a ${ARTIFACTS_DIR}/tests_profiling
     echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
     START=$(date '+%s')
-    [ ${DISABLE_SETX} -eq 0 ] && set -x
+    [ -z "${DEBUG}" ] || set -x
 }

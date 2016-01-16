@@ -35,7 +35,7 @@ wait_for_lock
 put_lock
 
 . ./role_configrc
-[ -n "$DEBUG" ] && set -x
+[ -z "$DEBUG" ] || set -x
 
 if [ ! -z "${1}" ]; then
     ARTIFACTS_DIR=${1}/image_build
@@ -43,6 +43,13 @@ if [ ! -z "${1}" ]; then
     USER=$(whoami)
     sudo chown -R $USER:$USER ${ARTIFACTS_DIR}
 fi
+
+function description_diff {
+    sudo curl -o ${IMAGE_PATH}.old_description ${SWIFT_SF_URL}/softwarefactory-${SF_VER}.description
+    grep -q "Not Found" ${IMAGE_PATH}.old_description && sudo curl -o ${IMAGE_PATH}.old_description ${SWIFT_SF_URL}/softwarefactory-${SF_PREVIOUS_VER}.description
+    grep -q "Not Found" ${IMAGE_PATH}.old_description && echo "(E) Couldn't find previous description"
+    diff -up ${IMAGE_PATH}.old_description ${IMAGE_PATH}-${SF_VER}.description | sudo tee ${IMAGE_PATH}.description_diff
+}
 
 function build_qcow {
     IMAGE_FILE="${IMAGE_PATH}-${SF_VER}.img"
@@ -55,16 +62,21 @@ function build_qcow {
 
 function build_cache {
     [ -z "${SKIP_BUILD}" ] || return
-    CACHE_HASH="SF: $(git log --format=oneline -n 1 $CACHE_DEPS)"
+    CACHE_HASH="$(git log --format=oneline -n 1 $CACHE_DEPS)"
     LOCAL_HASH="$(head -n 1 ${CACHE_PATH}.description 2> /dev/null)"
 
-    echo "(STEP1) ${CACHE_HASH}"
+    echo "(STEP1) Cache: ${CACHE_HASH}"
     if [ "${LOCAL_HASH}" == "${CACHE_HASH}" ]; then
         echo "(STEP1) Already built, remove ${CACHE_PATH}.description to force rebuild"
         return
     fi
     echo "(STEP1) The local cache needs update (was: [${LOCAL_HASH}])"
-    sudo rm -Rf ${CACHE_PATH}*
+    if [ "${USER}" == "jenkins" ] || [ -z "$(grep 'polkitd:x:895:' ${CACHE_PATH}/etc/passwd)" ]; then
+        echo "(STEP1) Removing ${CACHE_PATH}"
+        sudo umount ${CACHE_PATH}/proc &> /dev/null
+        sudo umount ${CACHE_PATH}/dev &> /dev/null
+        sudo rm -Rf ${CACHE_PATH}*
+    fi
     sudo mkdir -p ${CACHE_PATH}
     (
         set -e
@@ -76,7 +88,7 @@ function build_cache {
     if [ "$?" != "0" ]; then
         echo "(STEP1) FAILED"; sudo rm -Rf ${CACHE_PATH}.description; exit 1;
     fi
-    echo "(STEP1) SUCCESS: ${CACHE_HASH}"
+    echo "(STEP1) SUCCESS ${CACHE_PATH} : ${CACHE_HASH}"
 }
 
 function build_image {
@@ -85,14 +97,13 @@ function build_image {
 
     LOCAL_HASH=$(head -n 1 ${IMAGE_PATH}-${SF_VER}.description 2> /dev/null)
 
-    echo "(STEP2) ${IMAGE_HASH}"
+    echo "(STEP2) Image: ${IMAGE_HASH}" | sed 's/||.*//g'
     if [ "${LOCAL_HASH}" == "${IMAGE_HASH}" ]; then
         echo "(STEP2) Already built, remove ${IMAGE_PATH}-${SF_VER}.description to force rebuild"
         return
     fi
     echo "(STEP2) The local image needs update (was: [${LOCAL_HASH}])"
-    sudo rm -Rf ${IMAGE_PATH}*
-    sudo mkdir -p ${IMAGE_PATH}
+    [ -d ${IMAGE_PATH} ] || sudo mkdir -p ${IMAGE_PATH}
 
     # Make sure image tree is not mounted
     grep -q "${CACHE_PATH}\/proc" /proc/mounts && {
@@ -102,7 +113,8 @@ function build_image {
     }
 
     # Copy the cache
-    sudo rsync -a --delete "${CACHE_PATH}/" "${IMAGE_PATH}/"
+    echo "(STEP2) rsync -a --delete '${CACHE_PATH}/' '${IMAGE_PATH}/'"
+    time sudo rsync -a --delete "${CACHE_PATH}/" "${IMAGE_PATH}/"
 
     (
         set -e
@@ -118,13 +130,15 @@ function build_image {
     if [ "$?" != "0" ]; then
         echo "(STEP2) FAILED"; sudo rm -Rf ${IMAGE_PATH}-${SF_VER}.description; exit 1;
     fi
-    echo "(STEP2) SUCCESS: ${IMAGE_HASH}"
+    echo "(STEP2) SUCCESS ${IMAGE_PATH} : ${IMAGE_HASH}"
+    description_diff | head
 }
 
 prepare_buildenv
-build_cache
 # Make sure subproject are available
+echo "(STEP0) Fetch subprojects..."
 ./image/fetch_subprojects.sh || exit 1
+build_cache
 build_image
 if [ -n "$BUILD_QCOW" ]; then
     echo "(STEP3) Building qcow, please wait..."

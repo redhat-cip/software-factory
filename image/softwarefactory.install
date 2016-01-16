@@ -16,8 +16,9 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-set -ex
+set -e
 
+[ -z "$DEBUG" ] || set -x
 # Target dir where the centos images will be built
 dir="$1"
 # Version is SF_VER
@@ -25,13 +26,10 @@ version="$2"
 
 dist="centos"
 CODENAME_MAJOR=7
-
-export LC_ALL=C
-
 ROLE=softwarefactory
+export LC_ALL=C
 export HOME=/root
-
-PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin
+export PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin
 
 ORIG=$(cd $(dirname $0); pwd)
 
@@ -48,15 +46,10 @@ fi
 . ${ORIG}/third_party_tools
 . ${ORIG}/functions
 
-BUNDLE_RETRIES=3
-
 bootstrap() {
     local target=$dir
 
     mount_fs
-    if [ -f "${target}/etc/sysctl.conf" ]; then
-        return 0
-    fi
 
     local release_rpm_url=$(add_main_repository)
 
@@ -73,39 +66,35 @@ bootstrap() {
         # of requests are not missed at the cache
         sed -i 's/^#baseurl/baseurl/g' ${target}/etc/yum.repos.d/*
         sed -i 's/^mirrorlist/#mirrorlist/g' ${target}/etc/yum.repos.d/*
-
-        echo -e "[main]\nproxy=${http_proxy}" >> ${target}/etc/yum.conf
-
+        grep -q "^proxy=" ${target}/etc/yum.conf || echo -e "[main]\nproxy=" >> ${target}/etc/yum.conf
+        sed -i "s#^proxy=.*#proxy=${http_proxy}#" ${target}/etc/yum.conf
     fi
 
     cp -f /etc/resolv.conf "$target/etc/"
 
-    rpm --root="$target" --import $(ls $target/etc/pki/rpm-gpg/RPM-GPG-KEY-* | fgrep -v Debug)
-    # We cannot use install_packages since the basesystem isn't yet setup
-    yum --disableplugin=* --installroot $target install -y basesystem yum
+    if [ ! -f "${target}/usr/bin/yum" ]; then
+        rpm --root="$target" --import $(ls $target/etc/pki/rpm-gpg/RPM-GPG-KEY-* | fgrep -v Debug)
+        # We cannot use install_packages since the basesystem isn't yet setup
+        yum --disableplugin=* --installroot $target install -y basesystem yum shadow-utils
+        checkpoint "bootstrap"
+    elif [ -f "${target}/usr/bin/yum-complete-transaction" ]; then
+        do_chroot ${dir} yum-complete-transaction --cleanup-only
+    fi
 
     if [ -f  "$target"/root/.rpmdb/Packages ]; then
         mv -f "$target"/root/.rpmdb/*  "$target"/root/.rpmdb/.??* "$target"/var/lib/rpm/
         rmdir "$target"/root/.rpmdb
     fi
+    cp -p ${ORIG}/edeploy/* ${target}/usr/sbin/
+    cp ${ORIG}/C7.0-ids.tables ${dir}/etc/ids.tables
+    fake_shadow_utils
 
-    if [ -f ${target}/usr/sbin/useradd ]; then
-        fake_shadow_utils
-    fi
-
-    mkdir -p "$target/var/lib/edeploy/${version}"
+    [ -d "$target/var/lib/edeploy/${version}" ] || mkdir -p "$target/var/lib/edeploy/${version}"
 
     rebuild_db $target
 
     cp ${target}/etc/skel/.bashrc ${target}/root
     cp ${target}/etc/skel/.bash_profile ${target}/root
-    cp -p ${ORIG}/check-ug.py ${target}/usr/sbin/
-    cp -p ${ORIG}/mngids.py ${target}/usr/sbin/
-    cp -p ${ORIG}/edeploy ${target}/usr/sbin/
-    chmod +x ${target}/usr/sbin/check-ug.py
-    chmod +x ${target}/usr/sbin/mngids.py
-    chmod +x ${target}/usr/sbin/edeploy
-    cp ${ORIG}/C7.0-ids.tables ${dir}/etc/ids.tables
 
     mkdir -p ${target}/usr/share/edeploy
 
@@ -138,33 +127,60 @@ EOF
 }
 
 install_sf_packages() {
-    [ -f "${dir}/etc/yum.repos.d/puppetlabs.repo" ] || install_packages ${dir} ${PUPPET_REPO_URL}
-    [ -f "${dir}/etc/yum.repos.d/epel.repo" ] || install_packages $dir epel-release
-    [ -f "${dir}/etc/yum.repos.d/rdo-release.repo" ] || install_packages $dir https://www.rdoproject.org/repos/rdo-release.rpm
-    http_fetch https://oss-binaries.phusionpassenger.com/yum/definitions/el-passenger.repo ${dir}/etc/yum.repos.d/passenger.repo
+    install_packages ${dir} $CENTOS_PKGS
+    checkpoint "centos rpms installed"
 
-    install_packages ${dir} $BASE_PKGS
-    install_packages ${dir} $PKGS
-    install_packages ${dir} $DEV_PKGS
-    install_packages ${dir} $RDO_PKGS
+    [ -f "${dir}/etc/yum.repos.d/epel.repo" ] || install_packages ${dir} epel-release
+    [ -f "${dir}/etc/yum.repos.d/rdo-release.repo" ] || install_packages ${dir} ${RDO_REPO}
+    install_packages ${dir} ${EPEL_PKGS} ${RDO_PKGS}
+    checkpoint "epel+rdo rpms installed"
+
+    if [ ! -f "${dir}/usr/lib64/httpd/modules/mod_passenger.so" ]; then
+        http_fetch ${PASSENGER_REPO} ${dir}/etc/yum.repos.d/passenger.repo
+        install_packages ${dir} ${PASSENGER_PKGS}
+        rm -f ${dir}/etc/yum.repos.d/passenger.repo
+        checkpoint "passenger installed"
+    fi
 
     retry do_chroot ${dir} pip install --upgrade pip
     retry do_chroot ${dir} pip install ${PIP_PKGS}
+    checkpoint "pip packages installed"
+
+    # JJB directory
+    mkdir -p ${dir}/etc/jenkins_jobs
+
+    # install zuul_swift_upload.py
+    http_fetch $ZUUL_SWIFT_UPLOAD_URL ${dir}/usr/local/bin/zuul_swift_upload.py
+    chmod +x ${dir}/usr/local/bin/zuul_swift_upload.py
 
     # don't rename net ifaces
-    rm -f ${target}/etc/udev/rules.d/80-net-name-slot.rules
-    ln -s /dev/null ${target}/etc/udev/rules.d/80-net-name-slot.rules
+    net_rules="${target}/etc/udev/rules.d/80-net-name-slot.rules"
+    if [ "$(readlink ${net_rules} 2> /dev/null)" != "/dev/null" ]; then
+        rm -f ${net_rules}
+        ln -s /dev/null ${net_rules}
+    fi
 
-    # tune sshd conf
+    # install third party puppet modules
+    if [ ! -d "${dir}/etc/puppet/modules/ntp/" ]; then
+        retry do_chroot $dir puppet module install puppetlabs-ntp --environment=sf
+    fi
+
+    [ -d ${dir}/var/lib/grafana ] || install_packages ${dir} ${GRAFANA_URL}
+
+    # tune ssh conf
     grep -q "^UseDNS no" ${target}/etc/ssh/sshd_config || echo UseDNS no >> ${target}/etc/ssh/sshd_config
+    grep -q "^UseRoaming no" ${target}/etc/ssh/ssh_config || echo UseRoaming no >> ${target}/etc/ssh/ssh_config
 }
 
 function install_jenkins {
-    http_fetch http://pkg.jenkins-ci.org/redhat-stable/jenkins.repo ${dir}/etc/yum.repos.d/jenkins.repo
-    chroot $dir rpm --import http://pkg.jenkins-ci.org/redhat-stable/jenkins-ci.org.key
-
     [ -n "$JENKINS_VERSION" ] && JENKINS_VERSION="-${JENKINS_VERSION}"
-    install_packages $dir jenkins${JENKINS_VERSION}
+    chroot ${dir} rpm -q jenkins | grep "jenkins${JENKINS_VERSION}" || {
+        http_fetch http://pkg.jenkins-ci.org/redhat-stable/jenkins.repo ${dir}/etc/yum.repos.d/jenkins.repo
+        chroot $dir rpm --import http://pkg.jenkins-ci.org/redhat-stable/jenkins-ci.org.key
+
+        install_packages $dir jenkins${JENKINS_VERSION}
+        rm ${dir}/etc/yum.repos.d/jenkins.repo
+    }
 
     [ -d ${dir}/var/lib/jenkins/plugins ] || mkdir -p ${dir}/var/lib/jenkins/plugins
     do_chroot $dir chown jenkins /var/lib/jenkins /var/lib/jenkins/plugins
@@ -207,13 +223,6 @@ function install_jenkins {
     # Jenkins AnsiColor plugin
     http_fetch $JENKINS_ANSI_COLOR_PLUGIN_URL ${dir}/var/lib/jenkins/plugins/$(basename $JENKINS_ANSI_COLOR_PLUGIN_URL)
 
-    # JJB directory
-    mkdir -p ${dir}/etc/jenkins_jobs
-
-    # install zuul_swift_upload.py
-    http_fetch $ZUUL_SWIFT_UPLOAD_URL ${dir}/usr/local/bin/zuul_swift_upload.py
-    chmod +x ${dir}/usr/local/bin/zuul_swift_upload.py
-
     # make sure jenkins is disabled by default
     rm -Rf ${dir}/etc/rc.d/*/*jenkins*
 }
@@ -240,15 +249,22 @@ function install_redmine {
     [ -d ${dir}/var/www/html ] || mkdir -p ${dir}/var/www/html
     [ -d ${dir}/var/log/httpd ] || mkdir -p ${dir}/var/log/httpd
     # Install Redmine
+    [ -h ${dir}/usr/share/redmine ] && rm ${dir}/usr/share/redmine
+    if [ -d ${dir}/usr/share/redmine ]; then
+        grep ${REDMINE_VERSION} ${dir}/usr/share/redmine/doc/CHANGELOG || {
+            echo "Redmine version is outdated..."
+            rm -Rf ${dir}/usr/share/redmine
+        }
+    fi
     if [ ! -d ${dir}/usr/share/redmine ]; then
         http_fetch $REDMINE_RHEL_URL ${dir}/usr/share/redmine.tar.gz
-        do_chroot ${dir} bash -c "cd /usr/share && tar -xzpf redmine.tar.gz && mv redmine-${REDMINE_VERSION} redmine && chown -R root:root redmine"
-        rm ${dir}/usr/share/redmine.tar.gz
+        do_chroot ${dir} tar -xzpf /usr/share/redmine.tar.gz -C /usr/share
+
         do_chroot ${dir} gem install bundler
 
         # We install this fake database file in order to force the bundle to activate the mysql2 lib
         # Redmine puppet manifest will overwrite it
-        cat > ${dir}/usr/share/redmine/config/database.yml <<EOF
+        cat > ${dir}/usr/share/redmine-${REDMINE_VERSION}/config/database.yml <<EOF
 production:
   adapter: mysql2
   database: redmine
@@ -257,13 +273,15 @@ production:
   password: ""
   encoding: utf8
 EOF
-        do_chroot ${dir} bash -c "cd /usr/share/redmine && bundle install" # --retry $BUNDLE_RETRIES"
+        do_chroot ${dir} bash -c "cd /usr/share/redmine-${REDMINE_VERSION} && bundle install"
+        rm ${dir}/usr/share/redmine.tar.gz
+        mv ${dir}/usr/share/redmine-${REDMINE_VERSION} ${dir}/usr/share/redmine
     fi
     # Install Redmine backlog plugin
     [ -d ${dir}/usr/share/redmine/plugins ] || mkdir -p ${dir}/usr/share/redmine/plugins
     if [ ! -d ${dir}/usr/share/redmine/plugins/redmine_backlogs ]; then
         retry do_chroot ${dir} git clone --depth 1 $REDMINE_BACKLOG_URL /usr/share/redmine/plugins/redmine_backlogs
-        do_chroot ${dir} bash -c "cd /usr/share/redmine/plugins/redmine_backlogs && bundle install" # --retry $BUNDLE_RETRIES"
+        do_chroot ${dir} bash -c "cd /usr/share/redmine/plugins/redmine_backlogs && bundle install"
         do_chroot ${dir} bash -c 'cd /usr/share/redmine && bundle update'
     fi
 
@@ -302,6 +320,7 @@ function install_bup {
         do_chroot ${dir} bash -c 'cd /opt/bup && git checkout ${BUP_VERSION}'
         do_chroot ${dir} bash -c 'cd /opt/bup && ./configure && make && make install'
     fi
+    rm -Rf ${dir}/opt/bup/{t,.git,Documentation}/
 }
 
 install_serverspec() {
@@ -391,26 +410,33 @@ function install_paste {
 >     <script type="text/javascript" src="/static/js/topmenu.js"></script>
 EOF
     fi
-}
-
-install_misc() {
-    # install third party puppet modules
-    retry do_chroot $dir puppet module install puppetlabs-ntp --environment=sf
-
-    [ -d ${dir}/var/lib/grafana ] || install_packages ${dir} ${GRAFANA_URL}
+    rm -Rf ${dir}/srv/lodgeit/lodgeit/.git
 }
 
 image_clean() {
-    rm -Rf ${dir}/usr/share/doc
-    rm -Rf ${dir}/usr/share/info
+    rm -Rf ${dir}/usr/share/doc ${dir}/usr/share/info
+    rm -Rf ${dir}/share ${dir}/usr/share/backgrounds
+    rm -Rf ${dir}/usr/local/share/gems/cache ${dir}/usr/local/share/gems/doc
+    rm -Rf ${dir}/var/lib/yum/yumdb/*
+    put_git_mark ${dir}
 }
 
 final_image_clean() {
+    # Remove build-requirements package
+    do_chroot ${dir} yum remove -y gcc gcc-c++ libxml2-devel libstdc++-devel libX11-devel libtiff-devel &> /dev/null
     rm -Rf ${dir}/root/.cache
     rm -Rf ${dir}/root/.npm
     rm -Rf ${dir}/root/.gem
-    rm -Rf ${dir}/share/
-    rm -Rf ${dir}/var/lib/yum/yumdb/*
+}
+
+START=$(date '+%s')
+function checkpoint {
+    set +x
+    NOW=$(date '+%s')
+    ELAPSED=$(python -c "print('%03.2fmin' % (($NOW - $START) / 60.0))")
+    echo "(STEP${STEP}) $ELAPSED - $*"
+    START=$(date '+%s')
+    [ -z "${DEBUG}" ] || set -x
 }
 
 trap cleanup 0
@@ -424,31 +450,39 @@ check_binary rpm
 
 if [ "$STEP" == 1 ]; then
     bootstrap
+    checkpoint "bootstrapped"
     install_sf_packages
     disable_selinux
-
     install_jenkins
+    checkpoint "jenkins installed"
     install_redmine
+    checkpoint "redmine installed"
     install_gerrit
+    checkpoint "gerrit installed"
     install_pygerrit
     install_fonts
     install_edeploy
     install_serverspec
+    checkpoint "pygerrit, fonts, edeploy, serverspect installed"
     install_etherpad
     install_paste
-    install_misc
     install_bup
     install_mod_authpub_tkt
+    checkpoint "etherpad, paste, bup, mod_authpub_tkt installed"
     image_clean
+    set +x
     check_rpm_packages ${dir} "${RPM_PKGS}"
-    put_git_mark ${dir}
+    [ -z "$DEBUG" ] || set -x
     do_chroot ${dir} passwd -l root
+    checkpoint "image cleaned"
 fi
 
 if [ "$STEP" == 2 ]; then
     mount_fs
     . sf.install
     install_sf
+    checkpoint "sf installed"
     image_clean
     final_image_clean
+    checkpoint "image cleaned"
 fi

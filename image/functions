@@ -189,7 +189,7 @@ fatal_error() {
 }
 
 check_binary() {
-    type -p $1 || fatal_error "$1 is missing"
+    type -p $1 > /dev/null || fatal_error "$1 is missing"
 }
 
 do_chroot() {
@@ -288,9 +288,6 @@ cleanup() {
             mkdir -p "$dir/var/lib/edeploy/${version}"
 
             echo > "${dir}"/etc/resolv.conf
-
-            # Remove development packages, they are no longer needed
-            remove_packages ${dir} ${DEV_PKGS}
         fi
 
         # clear package cache before removing the pkg manager

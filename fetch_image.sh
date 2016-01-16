@@ -37,7 +37,7 @@ function fetch_prebuilt {
         curl -o ${TMP_FILE} ${SWIFT_SF_URL}/${IMG}.${desc_ext}
         # Swift does not return 404 but 'Not Found'
         grep -q 'Not Found' $TMP_FILE && die "$IMG does not exist upstream"
-        diff ${TMP_FILE} ${UPSTREAM}/${IMG}.${desc_ext} 2> /dev/null && {
+        diff -up ${TMP_FILE} ${UPSTREAM}/${IMG}.${desc_ext} 2> /dev/null && {
             echo "Already synced"
             return
         }
@@ -52,9 +52,12 @@ function fetch_prebuilt {
     sudo curl -o ${UPSTREAM}/${IMG}.digest ${SWIFT_SF_URL}/${IMG}.digest
     sudo curl -o ${UPSTREAM}/${IMG}.description ${SWIFT_SF_URL}/${IMG}.description
     echo "Digests..."
-    if [ -z "${SKIP_GPG}" ] && [ "${IMG}" == "softwarefactory-${SF_PREVIOUS_VER}" ]; then
+    if [ -z "${SKIP_GPG}" ]; then
         gpg --list-sigs ${RELEASE_GPG_FINGERPRINT} &> /dev/null || gpg --keyserver keys.gnupg.net --recv-key ${RELEASE_GPG_FINGERPRINT}
-        gpg --verify ${UPSTREAM}/${IMG}.digest || exit -1
+        gpg --verify ${UPSTREAM}/${IMG}.digest || {
+            echo "GPG check failed, to avoid error: export SKIP_GPG=1"
+            exit -1
+        }
     fi
     if [ "${SF_VER}" == "C7.0-2.0.4" ] || [ "${SF_VER}" == "C7.0-2.1.2" ]; then
         # Remove pip and rpm file
@@ -73,7 +76,7 @@ function sync_and_deflate {
     fetch_prebuilt
     SRC=${UPSTREAM}/$2.tgz
     echo "Extracting ${SRC} to ${DST}"
-    diff ${UPSTREAM}/${IMG}.description ${DST}/../${IMG}.description 2> /dev/null && {
+    diff -up ${UPSTREAM}/${IMG}.description ${DST}/../${IMG}.description 2> /dev/null && {
         echo "Already extracted"
         return
     }

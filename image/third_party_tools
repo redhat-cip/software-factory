@@ -1,24 +1,26 @@
 # -*- shell-script -*-
 
-# puppet
-PUPPET_CODENAME_MAJOR=7
-PUPPET_REPO_VERSION="${PUPPET_CODENAME_MAJOR}-11"
-PUPPET_REPO_URL="http://yum.puppetlabs.com/el/${PUPPET_CODENAME_MAJOR}/products/x86_64/puppetlabs-release-${PUPPET_REPO_VERSION}.noarch.rpm"
+set +x
 
-URL_LIST="$URL_LIST $PUPPET_REPO_URL"
+# yum
+RDO_REPO="https://www.rdoproject.org/repos/rdo-release.rpm"
+RDO_PKGS="$(grep '^[a-zA-Z]' ${ORIG}/packages/rpm_rdo.txt)"
+
+EPEL_REPO="epel-release"
+EPEL_PKGS="$(grep '^[a-zA-Z]' ${ORIG}/packages/rpm_epel.txt)"
+
+CENTOS_PKGS="$(grep '^[a-zA-Z]' ${ORIG}/packages/rpm_centos.txt)"
+
+PASSENGER_REPO="https://oss-binaries.phusionpassenger.com/yum/definitions/el-passenger.repo"
+PASSENGER_PKGS="$(grep '^[a-zA-Z]' ${ORIG}/packages/rpm_passenger.txt)"
+
+RPM_PKGS="${PASSENGER_PKGS} ${EPEL_PKGS} ${RDO_PKGS} ${CENTOS_PKGS} jenkins grafana"
+URL_LIST="$URL_LIST $PASSENGER_REPO $RDO_REPO"
+
 
 # pip
+PIP_PKGS="$(grep '^[a-zA-Z]' ${ORIG}/packages/pip_pkgs.txt)"
 export PIP_USE_MIRRORS=True
-#PIP_MIRROR_URL=http://your/pip/mirror/here
-#export PIP_EXTRA_INDEX_URL=$PIP_MIRROR_URL
-
-#URL_LIST="$URL_LIST $PIP_MIRROR_URL"
-
-# rubygem
-#RUBY_MIRROR_URL=http://your/rubygems/mirror/here
-#gem source -a $RUBY_MIRROR_URL
-
-#URL_LIST="$URL_LIST $RUBY_MIRROR_URL"
 
 # Serverspec gem versions
 SERVERSPEC_VERSION=2.25.0
@@ -66,7 +68,6 @@ URL_LIST="$URL_LIST $BOOTSTRAP_URL"
 
 # jenkins
 export JENKINS_VERSION=1.580.3-1.1 # LTS
-#export JENKINS_VERSION=1.609.1 # LTS 2015/05/29
 
 # plugins
 JENKINS_SWARM_VERSION=1.22
@@ -142,12 +143,9 @@ URL_LIST="$URL_LIST $ANGULARJS_URL"
 
 # zuul
 ZUUL_URL="https://github.com/openstack-infra/zuul"
-ZUUL_VERSION=fd463c84bfb342701061fe383c6d17e7a1bd4786
-
 NODEPOOL_URL="https://github.com/openstack-infra/nodepool"
-NODEPOOL_VERSION=0.1.1
 
-URL_LIST="$URL_LIST $ZUUL_URL"
+URL_LIST="$URL_LIST $ZUUL_URL $NODEPOOL_URL"
 
 # paste (lodgeit)
 PASTE_URL="https://git.openstack.org/openstack-infra/lodgeit"
@@ -160,7 +158,6 @@ GRAFANA_URL="https://grafanarel.s3.amazonaws.com/builds/grafana-2.5.0-1.x86_64.r
 URL_LIST="$URL_LIST $GRAFANA_URL"
 
 #---- URL health check -------
-
 function test_url {
   local e=0
   for url in $URL_LIST; do
@@ -187,54 +184,4 @@ function test_url {
   exit $e
 }
 
-# Packages (use image/sf.install STAGING_PKGS first to adds new packages without full cache rebuild)
-#
-BASE_PKGS="coreutils dhclient e2fsprogs man-db grub2 grubby initscripts iproute kernel"
-BASE_PKGS="${BASE_PKGS} passwd redhat-lsb-core crontabs openssh-clients bind-utils kexec-tools"
-BASE_PKGS="${BASE_PKGS} selinux-policy-targeted setroubleshoot-server acpid bash curl kbd lvm2"
-BASE_PKGS="${BASE_PKGS} openssh-server pciutils rsync rsyslog sudo wget ntpdate logrotate"
-BASE_PKGS="${BASE_PKGS} ethtool hdparm iptables git-review tmux net-tools"
-
-DEV_PKGS="openssl-devel openldap-devel python-devel libffi-devel gcc swig zlib-devel libcurl-devel"
-DEV_PKGS="${DEV_PKGS} httpd-devel apr-devel apr-util-devel mariadb-devel gcc-c++ ruby-devel"
-DEV_PKGS="${DEV_PKGS} ImageMagick-devel cpp libxml2-devel libxslt-devel"
-
-PKGS="vim-enhanced openssl postfix bc ansible sshpass mod_passenger puppet rubygem-rake git"
-PKGS="${PKGS} python-pip pyxattr pylibacl httpd mod_ssl ntp monit postfix nodejs httpd"
-PKGS="${PKGS} java-1.7.0-openjdk mariadb-server python-werkzeug python-babel python-jinja2"
-PKGS="${PKGS} MySQL-python socat mod_wsgi m2crypto mariadb gitweb debootstrap unzip pigz openssl"
-PKGS="${PKGS} cloud-init cloud-utils-growpart memcached graphite-web statsd python-carbon mutt"
-PKGS="${PKGS} python-testrepository PyYAML python-paramiko python-gear python-babel python-daemon"
-PKGS="${PKGS} python-magic python-jenkins python-setuptools python-pyasn1 python-crypto"
-PKGS="${PKGS} python-ndg_httpsclient"
-
-RDO_PKGS="${RDO_PKGS} python-swiftclient diskimage-builder python2-PyMySQL python-glanceclient"
-RDO_PKGS="${RDO_PKGS} python-novaclient python-keystoneclient GitPython python-webob"
-RDO_PKGS="${RDO_PKGS} openstack-gnocchi-api openstack-gnocchi-statsd openstack-gnocchi-metricd"
-RDO_PKGS="${RDO_PKGS} python-ldap python2-passlib python-sqlalchemy python-urllib3"
-RDO_PKGS="${RDO_PKGS} python-stevedore MySQL-python python-m2ext python-sphinx"
-RDO_PKGS="${RDO_PKGS} python-ecdsa python2-pecan pyOpenSSL python-nose python-flake8"
-RDO_PKGS="${RDO_PKGS} python2-jenkins-job-builder"
-
-RPM_PKGS="${BASE_PKGS} ${BASE_TESTING_PKGS} ${DEV_PKGS} ${PKGS} ${RDO_PKGS} jenkins grafana"
-
-
-# Pip Packages (use image/sf.install STAGING_PIP first to adds new packages without full cache rebuild)
-#
-# Pin Balel to 2.0 especially for the version of lodgeit we use
-PIP_PKGS="Babel==2.0 requests[security] glob2"
-
-# Graphite
-PIP_PKGS="${PIP_PKGS}
-django<1.8
-django-tagging
-"
-
-# Sf requirement
-PIP_PKGS="${PIP_PKGS}
-python-redmine
-gerritlib==0.4.0
-basicauth==0.3
-htpasswd
-wsgiref==0.1.2
-"
+[ -z "$DEBUG" ] || set -x

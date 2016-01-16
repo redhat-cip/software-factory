@@ -47,7 +47,7 @@ ARGS_OPTS = ['-g', '--gid',
 
 def debug(output):
     if _DEBUG:
-        sys.stderr.write(output + '\n')
+        sys.stderr.write('MNGIDS_DEBUG: ' + output + '\n')
 
 
 def parse(content, assoc, is_group=False):
@@ -93,7 +93,7 @@ def parse_cmdline(args, uids, gids, first=100, last=999, last_user=29999):
         else:
             # we try to create a user/group not in ids.tables, we fail.
             raise KeyError('mngids.py: %s not found (%s) in %s' %
-                           (key, opt, str(ids.values())))
+                           (key, opt, str(ids.items())))
 
         debug('mngids.py: found %s at %s for val[%s]=%s' %
               (opt, str(index), key, val))

@@ -63,7 +63,7 @@ DOCDIR="${PWD}/docs"
 HOT_TEMPLATES="${PWD}/deploy/heat"
 
 # Rebuild cache if these files changed
-CACHE_DEPS="./image/softwarefactory.install ./image/third_party_tools"
+CACHE_DEPS="./image/softwarefactory.install ./image/third_party_tools ./image/packages"
 
 function prepare_buildenv {
     if [ ! -d "${SF_WORKSPACE}" ]; then
