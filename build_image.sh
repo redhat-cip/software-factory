@@ -46,9 +46,10 @@ fi
 
 function description_diff {
     sudo curl -o ${IMAGE_PATH}.old_description ${SWIFT_SF_URL}/softwarefactory-${SF_VER}.description
+    # Can't find current version description, tries previous_ver
     grep -q "Not Found" ${IMAGE_PATH}.old_description && sudo curl -o ${IMAGE_PATH}.old_description ${SWIFT_SF_URL}/softwarefactory-${SF_PREVIOUS_VER}.description
     grep -q "Not Found" ${IMAGE_PATH}.old_description && echo "(E) Couldn't find previous description"
-    diff -up ${IMAGE_PATH}.old_description ${IMAGE_PATH}-${SF_VER}.description | sudo tee ${IMAGE_PATH}.description_diff
+    diff ${IMAGE_PATH}.old_description ${IMAGE_PATH}-${SF_VER}.description | sudo tee ${IMAGE_PATH}.description_diff
 }
 
 function build_qcow {
@@ -114,7 +115,7 @@ function build_image {
 
     # Copy the cache
     echo "(STEP2) rsync -a --delete '${CACHE_PATH}/' '${IMAGE_PATH}/'"
-    time sudo rsync -a --delete "${CACHE_PATH}/" "${IMAGE_PATH}/"
+    time sudo rsync -a --exclude '/usr/local/share/gems/cache' --exclude '/usr/local/share/gems/doc' --delete "${CACHE_PATH}/" "${IMAGE_PATH}/"
 
     (
         set -e
@@ -131,7 +132,7 @@ function build_image {
         echo "(STEP2) FAILED"; sudo rm -Rf ${IMAGE_PATH}-${SF_VER}.description; exit 1;
     fi
     echo "(STEP2) SUCCESS ${IMAGE_PATH} : ${IMAGE_HASH}"
-    description_diff | head
+    description_diff
 }
 
 prepare_buildenv

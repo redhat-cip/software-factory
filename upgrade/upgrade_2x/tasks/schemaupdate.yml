@@ -21,13 +21,13 @@
   service: name=httpd state=stopped
 
 - name: Migrate Redmine DB
-  shell: /usr/local/bin/bundle exec rake db:migrate --trace RAILS_ENV=production chdir=/usr/share/redmine
+  shell: /usr/bin/bundle exec rake db:migrate --trace RAILS_ENV=production chdir=/var/www/redmine
 
 - name: Migrate Redmine plugins
-  shell: /usr/local/bin/bundle exec rake redmine:plugins --trace RAILS_ENV=production chdir=/usr/share/redmine
+  shell: /usr/bin/bundle exec rake redmine:plugins --trace RAILS_ENV=production chdir=/var/www/redmine
 
 - name: Clear Redmine cache and sessions
-  shell: /usr/local/bin/bundle exec rake tmp:cache:clear tmp:sessions:clear --trace RAILS_ENV=production chdir=/usr/share/redmine
+  shell: /usr/bin/bundle exec rake tmp:cache:clear tmp:sessions:clear --trace RAILS_ENV=production chdir=/var/www/redmine
 
 - name: Start Apache service
   service: name=httpd state=started

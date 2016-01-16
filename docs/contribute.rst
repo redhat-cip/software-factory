@@ -57,16 +57,13 @@ backup and restore tests: 1node-allinone and 2nodes-jenkins
   ./run_functional-tests.sh 1node-allinone backup   # backup tests
 
 The functional tests will start LXC container(s) on the local VM to simulate
-as close as possible a real deployment. Setting the DEBUG=1 environment variable
-tells the script to keep the deployment running; this is especially useful if
-you want to ssh into the container afterwards for debugging. If not set the
-deployment will be destroyed (LXC containers will be stopped).
+as close as possible a real deployment.
 
 
 .. code-block:: bash
 
-  DEBUG=1 ./run_functional-tests.sh    # run functional tests, do not stop container
-  ssh -l root sftests.com              # /etc/hosts entry is automatically added
+  ./run_functional-tests.sh    # run functional tests
+  ssh -l root sftests.com      # /etc/hosts entry is automatically added
 
 
 How to develop and/or run a specific functional tests

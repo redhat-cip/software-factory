@@ -9,12 +9,13 @@ RDO_PKGS="$(grep '^[a-zA-Z]' ${ORIG}/packages/rpm_rdo.txt)"
 EPEL_REPO="epel-release"
 EPEL_PKGS="$(grep '^[a-zA-Z]' ${ORIG}/packages/rpm_epel.txt)"
 
+BUILD_PKGS="$(grep '^[a-zA-Z]' ${ORIG}/packages/rpm_build_requirements.txt)"
 CENTOS_PKGS="$(grep '^[a-zA-Z]' ${ORIG}/packages/rpm_centos.txt)"
 
 PASSENGER_REPO="https://oss-binaries.phusionpassenger.com/yum/definitions/el-passenger.repo"
 PASSENGER_PKGS="$(grep '^[a-zA-Z]' ${ORIG}/packages/rpm_passenger.txt)"
 
-RPM_PKGS="${PASSENGER_PKGS} ${EPEL_PKGS} ${RDO_PKGS} ${CENTOS_PKGS} jenkins grafana"
+RPM_PKGS="${PASSENGER_PKGS} ${EPEL_PKGS} ${RDO_PKGS} ${CENTOS_PKGS} ${BUILD_PKGS} jenkins grafana"
 URL_LIST="$URL_LIST $PASSENGER_REPO $RDO_REPO"
 
 
@@ -35,7 +36,9 @@ URL_LIST="$URL_LIST $MOD_AUTH_PUBTKT_URL"
 REDMINE_VERSION=2.6.9
 REDMINE_RHEL_URL="http://www.redmine.org/releases/redmine-${REDMINE_VERSION}.tar.gz"
 REDMINE_BACKLOG_URL="git://github.com/backlogs/redmine_backlogs.git"
+REDMINE_BACKLOG_VERSION="v1.0.6"
 REDMINE_HTTP_PLUGIN_URL="git://github.com/kevinfoote/redmine_http_auth.git"
+REDMINE_HTTP_PLUGIN_VERSION="259fb633ac27737d8b0f6a02230e7fa8f619b852"
 
 URL_LIST="$URL_LIST $REDMINE_RHEL_URL"
 GIT_REPO_LIST="$GIT_REPO_LIST $REDMINE_BACKLOG_URL $REDMINE_HTTP_PLUGIN_URL"
@@ -120,13 +123,6 @@ FONTAWESOME_URL="https://codeload.github.com/FortAwesome/Font-Awesome/zip/v${FON
 
 URL_LIST="$URL_LIST $FONTAWESOME_URL"
 
-# nodejs
-NODEJS_NPM="https://www.npmjs.com/install.sh"
-NPM_INSTALL=1.4.21
-NPM_MIRROR_URL=http://registry.npmjs.org/
-
-URL_LIST="$URL_LIST $NPM_MIRROR_URL $NODEJS_NPM"
-
 # JQuery
 JQUERY_VERSION=2.1.1
 JQUERY_URL="http://code.jquery.com/jquery-${JQUERY_VERSION}.min.js"
@@ -143,7 +139,9 @@ URL_LIST="$URL_LIST $ANGULARJS_URL"
 
 # zuul
 ZUUL_URL="https://github.com/openstack-infra/zuul"
+ZUUL_VERSION=fd463c84bfb342701061fe383c6d17e7a1bd4786
 NODEPOOL_URL="https://github.com/openstack-infra/nodepool"
+NODEPOOL_VERSION=3c635ec9c202c99e24fcb9315fef806cb000542f # tag 0.1.1
 
 URL_LIST="$URL_LIST $ZUUL_URL $NODEPOOL_URL"
 

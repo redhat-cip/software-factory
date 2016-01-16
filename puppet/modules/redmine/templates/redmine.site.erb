@@ -5,10 +5,10 @@ NameVirtualHost *:8083
 
 LogLevel warn
 RailsBaseURI /redmine
-Alias /redmine/plugin_assets/ /usr/share/redmine/plugins/redmine_backlogs/assets/
-PassengerAppRoot /usr/share/redmine
+Alias /redmine/plugin_assets/ /var/www/redmine/plugins/redmine_backlogs/assets/
+PassengerAppRoot /var/www/redmine
 
-Alias /redmine/ /usr/share/redmine/public/
+Alias /redmine/ /var/www/redmine/public/
 
 RewriteEngine On
 RewriteCond %{REQUEST_URI} ^/redmine/logout$
@@ -21,7 +21,7 @@ RewriteCond %{QUERY_STRING} ^services=(.*)$
 RewriteCond %1 !^$
 RewriteRule logout <%= @cauth["signout_url"] %>?services=%1 [R,L,CO=_redmine_default:;:;:0:/redmine]
 
-<Directory /usr/share/redmine/public>
+<Directory /var/www/redmine/public>
   AllowOverride all
   Options -MultiViews
   <If "%{HTTP_COOKIE} =~ /auth_pubtkt=.*/">
@@ -36,7 +36,7 @@ RewriteRule logout <%= @cauth["signout_url"] %>?services=%1 [R,L,CO=_redmine_def
  </Else>
 </Directory>
 
-<Directory /usr/share/redmine/plugins/redmine_backlogs/assets/>
+<Directory /var/www/redmine/plugins/redmine_backlogs/assets/>
   AllowOverride all
   Options -MultiViews
   require all granted

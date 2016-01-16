@@ -30,7 +30,7 @@ echo
 
 echo "BASH8 tests"
 echo "~~~~~~~~~~~"
-find . -name "*.sh" | grep -v '\.tox' | xargs bash8
+find . -name "*.sh" -or -name "*.install" | grep -v '\.tox' | xargs bash8
 BASH8_ERRORS=$?
 echo
 

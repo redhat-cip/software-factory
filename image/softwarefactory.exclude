@@ -58,8 +58,8 @@
 /var/www/managesf/gerrit_admin_rsa
 /var/www/managesf/users.db
 /var/www/cauth/keys/
-/usr/share/redmine/log
-/usr/share/redmine/public/plugin_assets
+/var/www/redmine/log
+/var/www/redmine/public/plugin_assets
 /usr/share/config.init.done
 
 # Sf data
@@ -69,9 +69,9 @@
 + /home/gerrit/site_path/plugins/
 - /home/gerrit/*
 /home/zuul/
-/usr/share/redmine/config
-/usr/share/redmine/log
-/usr/share/redmine/public/plugin_assets/
+/var/www/redmine/config
+/var/www/redmine/log
+/var/www/redmine/public/plugin_assets/
 /usr/share/config.init.done
 /srv/cauth_keys/
 

@@ -1,17 +1,8 @@
 #!/bin/bash
 
+. sf_slave_setup.sh
+
 [ -n "${RDO_RELEASE}" ] || RDO_RELEASE=https://www.rdoproject.org/repos/rdo-release.rpm
-
-. base.sh
-
-# Create swap
-sudo dd if=/dev/zero of=/srv/swap count=4000 bs=1M
-sudo chmod 600 /srv/swap
-sudo mkswap /srv/swap
-grep swap /etc/fstab || echo "/srv/swap none swap sw 0 0" | sudo tee -a /etc/fstab
-
-# TODO: support selinux activated...
-sudo sed -i 's/^.*SELINUX=.*$/SELINUX=disabled/' /etc/selinux/config
 
 sudo yum install -y ${RDO_RELEASE}
 
@@ -23,7 +14,8 @@ sudo yum install -y openstack-packstack puppet libvirt qemu libguestfs erlang-sd
     openstack-packstack-puppet openstack-puppet-modules openstack-selinux openstack-utils           \
     python2-django-openstack-auth openstack-swift python-oslo-cache openstack-heat-api              \
     pm-utils xinetd openstack-swift-account openstack-swift-container openstack-swift-object        \
-    openstack-swift-plugin-swift3 openstack-swift-proxy openstack-heat-engine
+    openstack-swift-plugin-swift3 openstack-swift-proxy openstack-heat-engine > /dev/null || :
+# '|| true' because sometime: "Error unpacking rpm package python-crypto-2.6.1-1.el7.centos.x86_64"
 
 sudo yum install -y memcached mariadb-galera-server numpy-f2py tcl tk xorg-x11-font-utils nmap-ncat \
     perl-macros perl-Time-HiRes device-mapper-event device-mapper-event-libs usbredir wxGTK         \
@@ -37,7 +29,7 @@ sudo yum install -y memcached mariadb-galera-server numpy-f2py tcl tk xorg-x11-f
     bridge-utils bootswatch-fonts bootswatch-common blas avahi-libs attr alsa-lib apr apr-util      \
     sos python2-appdirs python2-os-client-config python-tablib python-cliff-tablib                  \
     python-openstackclient libnl python-ethtool python-configshell targetcli selinux-policy         \
-    selinux-policy-targeted
+    selinux-policy-targeted > /dev/null || :
 
 sudo yum install -y erlang-appmon-R16B erlang-asn1-R16B erlang-common_test-R16B erlang-compiler-R16B        \
     erlang-compiler-R16B erlang-cosEventDomain-R16B erlang-cosEvent-R16B erlang-cosFileTransfer-R16B        \
@@ -52,20 +44,7 @@ sudo yum install -y erlang-appmon-R16B erlang-asn1-R16B erlang-common_test-R16B 
     erlang-sasl-R16B erlang-sd_notify erlang-snmp-R16B erlang-ssh-R16B erlang-ssl-R16B erlang-stdlib-R16B   \
     erlang-stdlib-R16B erlang-syntax_tools-R16B erlang-syntax_tools-R16B erlang-test_server-R16B            \
     erlang-toolbar-R16B erlang-tools-R16B erlang-tv-R16B erlang-typer-R16B erlang-webtool-R16B              \
-    erlang-wx-R16B erlang-xmerl-R16B
-
-# Install sf requirements
-sudo yum install -y git python-augeas bridge-utils curl lxc wget swig python-devel python-pip graphviz python-yaml openssl-devel libffi-devel pigz mysql-devel openldap-devel qemu-img libvirt-daemon-lxc git-review
-
-sudo pip install flake8 bash8 ansible
-sudo pip install -U tox==1.6.1 Sphinx oslosphinx virtualenv restructuredtext_lint python-swiftclient
-# Temporary DNS fix
-echo "216.58.213.16 gerrit-releases.storage.googleapis.com" | sudo tee -a /etc/hosts
-sudo mkdir -p /var/lib/sf
-sudo mkdir -p /var/lib/sf/artifacts/logs
-sudo chown -R jenkins:jenkins /var/lib/sf/
-
-
+    erlang-wx-R16B erlang-xmerl-R16B > /dev/null || :
 
 # sync FS, otherwise there are 0-byte sized files from the yum/pip installations
 sudo sync

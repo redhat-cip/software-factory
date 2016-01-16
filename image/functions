@@ -268,9 +268,12 @@ cleanup() {
 
     if [ "$ret" = "0" ]; then
 
+        # clear package cache before removing the pkg manager
+        clear_packages_cache $dir
+
         # The step 2 is the last one - so perform here last actions
         if [ "$STEP" = 2 ]; then
-            # Let's disable apt-get and yum for normal usage
+            # Let's disable yum for normal usage
             if [ -z "$KEEP_PKGMNGR" -a -x ${dir}/usr/sbin/edeploy ]; then
                 do_chroot ${dir} /usr/sbin/edeploy deactivate-pkgmngr
             fi
@@ -289,9 +292,6 @@ cleanup() {
 
             echo > "${dir}"/etc/resolv.conf
         fi
-
-        # clear package cache before removing the pkg manager
-        clear_packages_cache $dir
 
         clean_chroot
         clean_mount_points

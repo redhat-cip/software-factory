@@ -1,6 +1,8 @@
 #!/bin/bash
 # SF environment requirements
 
+bash ./rpm-requirements.sh
+
 if [ ! -f "/etc/yum.repos.d/epel.repo" ]; then
     echo "(+) Adds epel-release..."
     sudo yum install -y epel-release

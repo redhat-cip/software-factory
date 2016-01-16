@@ -4,6 +4,7 @@
   tasks:
   - include: tasks/fetchupstream.yml
   - include: tasks/stopsfservices.yml
+  - include: tasks/fix_redmine.yml
   - include: tasks/edeploysync.yml
   - include: tasks/graphite.yml
   - include: tasks/SFServiceUser.yml

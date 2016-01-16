@@ -76,9 +76,10 @@ bootstrap() {
         rpm --root="$target" --import $(ls $target/etc/pki/rpm-gpg/RPM-GPG-KEY-* | fgrep -v Debug)
         # We cannot use install_packages since the basesystem isn't yet setup
         yum --disableplugin=* --installroot $target install -y basesystem yum shadow-utils
-        checkpoint "bootstrap"
+        checkpoint "first bootstrap"
     elif [ -f "${target}/usr/bin/yum-complete-transaction" ]; then
         do_chroot ${dir} yum-complete-transaction --cleanup-only
+        do_chroot ${dir} yum update -y
     fi
 
     if [ -f  "$target"/root/.rpmdb/Packages ]; then
@@ -127,7 +128,7 @@ EOF
 }
 
 install_sf_packages() {
-    install_packages ${dir} $CENTOS_PKGS
+    install_packages ${dir} $CENTOS_PKGS $BUILD_PKGS
     checkpoint "centos rpms installed"
 
     [ -f "${dir}/etc/yum.repos.d/epel.repo" ] || install_packages ${dir} epel-release
@@ -246,25 +247,29 @@ function install_pygerrit {
 }
 
 function install_redmine {
+    # Disable gem rdoc installation
+    echo gem: --no-rdoc --no-ri > ${dir}/root/.gemrc
+
+    # Ensure basic directories
     [ -d ${dir}/var/www/html ] || mkdir -p ${dir}/var/www/html
     [ -d ${dir}/var/log/httpd ] || mkdir -p ${dir}/var/log/httpd
+
     # Install Redmine
-    [ -h ${dir}/usr/share/redmine ] && rm ${dir}/usr/share/redmine
-    if [ -d ${dir}/usr/share/redmine ]; then
-        grep ${REDMINE_VERSION} ${dir}/usr/share/redmine/doc/CHANGELOG || {
-            echo "Redmine version is outdated..."
-            rm -Rf ${dir}/usr/share/redmine
+    if [ -d ${dir}/var/www/redmine ]; then
+        head ${dir}/var/www/redmine/doc/CHANGELOG | grep "${REDMINE_VERSION}$" || {
+            rm -Rf ${dir}/var/www/redmine
+            checkpoint "Removed outdated redmine version..."
         }
     fi
-    if [ ! -d ${dir}/usr/share/redmine ]; then
-        http_fetch $REDMINE_RHEL_URL ${dir}/usr/share/redmine.tar.gz
-        do_chroot ${dir} tar -xzpf /usr/share/redmine.tar.gz -C /usr/share
 
-        do_chroot ${dir} gem install bundler
+    # Remove old install directory
+    rm -Rf ${dir}/usr/share/redmine
 
-        # We install this fake database file in order to force the bundle to activate the mysql2 lib
-        # Redmine puppet manifest will overwrite it
-        cat > ${dir}/usr/share/redmine-${REDMINE_VERSION}/config/database.yml <<EOF
+    # Install Redmine
+    if [ ! -d ${dir}/var/www/redmine ]; then
+        http_fetch $REDMINE_RHEL_URL ${dir}/var/www/redmine.tar.gz
+        do_chroot ${dir} tar -xzpf /var/www/redmine.tar.gz -C /var/www
+        cat > ${dir}/var/www/redmine-${REDMINE_VERSION}/config/database.yml <<EOF
 production:
   adapter: mysql2
   database: redmine
@@ -273,22 +278,31 @@ production:
   password: ""
   encoding: utf8
 EOF
-        do_chroot ${dir} bash -c "cd /usr/share/redmine-${REDMINE_VERSION} && bundle install"
-        rm ${dir}/usr/share/redmine.tar.gz
-        mv ${dir}/usr/share/redmine-${REDMINE_VERSION} ${dir}/usr/share/redmine
+        SUDO_UID=0 SUDO_GID=0 do_chroot ${dir} bash -c "cd /var/www/redmine-${REDMINE_VERSION} && bundle install --without development test"
+        mv ${dir}/var/www/redmine-${REDMINE_VERSION} ${dir}/var/www/redmine
+        rm ${dir}/var/www/redmine.tar.gz
     fi
+
     # Install Redmine backlog plugin
-    [ -d ${dir}/usr/share/redmine/plugins ] || mkdir -p ${dir}/usr/share/redmine/plugins
-    if [ ! -d ${dir}/usr/share/redmine/plugins/redmine_backlogs ]; then
-        retry do_chroot ${dir} git clone --depth 1 $REDMINE_BACKLOG_URL /usr/share/redmine/plugins/redmine_backlogs
-        do_chroot ${dir} bash -c "cd /usr/share/redmine/plugins/redmine_backlogs && bundle install"
-        do_chroot ${dir} bash -c 'cd /usr/share/redmine && bundle update'
+    [ -d ${dir}/var/www/redmine/plugins ] || mkdir -p ${dir}/var/www/redmine/plugins
+    if [ ! -d ${dir}/var/www/redmine/plugins/redmine_backlogs ]; then
+        retry do_chroot ${dir} git clone --depth 1 -b ${REDMINE_BACKLOG_VERSION} $REDMINE_BACKLOG_URL /var/www/redmine/plugins/redmine_backlogs
+        SUDO_UID=0 SUDO_GID=0 do_chroot ${dir} bash -c "cd /var/www/redmine/plugins/redmine_backlogs && bundle install --without development test"
     fi
 
     # Install Redmine http plugin
-    if [ ! -d ${dir}/usr/share/redmine/plugins/redmine_http_auth ]; then
-        retry do_chroot ${dir} git clone --depth 1 $REDMINE_HTTP_PLUGIN_URL /usr/share/redmine/plugins/redmine_http_auth
+    if [ ! -d ${dir}/var/www/redmine/plugins/redmine_http_auth ]; then
+        retry do_chroot ${dir} git clone $REDMINE_HTTP_PLUGIN_URL /var/www/redmine/plugins/redmine_http_auth
+        do_chroot ${dir} bash -c "cd /var/www/redmine/plugins/redmine_http_auth; git checkout -b sf_pinned ${REDMINE_HTTP_PLUGIN_VERSION}"
     fi
+
+    # Update bundle
+    SUDO_UID=0 SUDO_GID=0 do_chroot ${dir} bash -c "cd /var/www/redmine/ && bundle update"
+
+    # Set files permissions (according to: http://www.redmine.org/projects/redmine/wiki/redmineinstall )
+    mkdir -p ${dir}/var/www/redmine/{tmp,tmp/pdf,public/plugin_assets}
+    do_chroot ${dir} chown -R apache:apache /var/www/redmine/{files,log,tmp,public/plugin_assets}
+    do_chroot ${dir} chmod -R 755 /var/www/redmine/{files,log,tmp,public/plugin_assets}
 }
 
 install_edeploy() {
@@ -365,18 +379,10 @@ function install_etherpad {
     # Etherpad_lite
     if [ ! -d "${dir}/var/www/etherpad-lite" ]; then
         http_fetch $ETHERPAD_LITE_URL ${dir}/tmp/etherpad_lite.tar.gz
-        http_fetch $NODEJS_NPM ${dir}/tmp/npm-install.sh
-        ## Try to avoid the failure in jenkins
-        do_chroot ${dir} sed -i "s#</dev/tty##" /tmp/npm-install.sh
-        [ ! -d "${dir}/var/www/etherpad-lite" ] && mkdir -p ${dir}/var/www/etherpad-lite
+        mkdir -p ${dir}/var/www/etherpad-lite
         do_chroot ${dir} tar -xzf /tmp/etherpad_lite.tar.gz --strip-components=1 -C /var/www/etherpad-lite
         # /bin/installDeps.sh is looking for /usr/bin/node
         [ ! -e "${dir}/usr/bin/node" ] && do_chroot ${dir} ln -s /usr/bin/nodejs /usr/bin/node
-        # Node or npm seems to deals with SUDO_UID and SUDO_GID that for results set new created
-        # files as user id/gid referenced by sudo. So force id/gid to 0 (root)
-        SUDO_UID=0 SUDO_GID=0 npm_install=$NPM_INSTALL do_chroot ${dir} sh /tmp/npm-install.sh
-        ## Use a mirror
-        do_chroot ${dir} sed -i "s|npm install|npm --registry ${NPM_MIRROR_URL} install|" /var/www/etherpad-lite/bin/installDeps.sh
         SUDO_UID=0 SUDO_GID=0 retry do_chroot ${dir} sh /var/www/etherpad-lite/bin/installDeps.sh
         # Include topmenu in Etherpad
         cat << EOF | patch ${dir}/var/www/etherpad-lite/src/templates/index.html
@@ -416,14 +422,14 @@ EOF
 image_clean() {
     rm -Rf ${dir}/usr/share/doc ${dir}/usr/share/info
     rm -Rf ${dir}/share ${dir}/usr/share/backgrounds
-    rm -Rf ${dir}/usr/local/share/gems/cache ${dir}/usr/local/share/gems/doc
-    rm -Rf ${dir}/var/lib/yum/yumdb/*
     put_git_mark ${dir}
 }
 
 final_image_clean() {
     # Remove build-requirements package
-    do_chroot ${dir} yum remove -y gcc gcc-c++ libxml2-devel libstdc++-devel libX11-devel libtiff-devel &> /dev/null
+    do_chroot ${dir} yum remove -y ${BUILD_PKGS} &> /dev/null
+    rm -Rf ${dir}/usr/local/share/gems/cache ${dir}/usr/local/share/gems/doc
+    rm -Rf ${dir}/var/lib/yum/yumdb/*
     rm -Rf ${dir}/root/.cache
     rm -Rf ${dir}/root/.npm
     rm -Rf ${dir}/root/.gem

@@ -32,7 +32,7 @@ class redmine {
 
     file { 'conf_yml':
       ensure  => file,
-      path    => '/usr/share/redmine/config/configuration.yml',
+      path    => '/var/www/redmine/config/configuration.yml',
       mode    => '0640',
       owner   => $::httpd_user,
       group   => $::httpd_user,
@@ -41,7 +41,7 @@ class redmine {
 
     file { 'dbconf_yml':
       ensure  => file,
-      path    => '/usr/share/redmine/config/database.yml',
+      path    => '/var/www/redmine/config/database.yml',
       mode    => '0640',
       owner   => $::httpd_user,
       group   => $::httpd_user,
@@ -59,8 +59,8 @@ class redmine {
 
     exec { 'chown_redmine':
       path    => '/usr/bin/:/bin/',
-      command => "chown -R ${::httpd_user}:${::httpd_user} /usr/share/redmine",
-      unless  => 'stat -c %U /usr/share/redmine | grep apache',
+      command => "chown -R ${::httpd_user}:${::httpd_user} /var/www/redmine",
+      unless  => 'stat -c %U /var/www/redmine | grep apache',
     }
 
     file { '/root/post-conf-in-mysql.sql':
@@ -74,10 +74,10 @@ class redmine {
         environment => ['HOME=/root'],
         command     => 'bundle exec rake generate_secret_token',
         path        => '/usr/bin/:/bin/:/usr/local/bin',
-        cwd         => '/usr/share/redmine',
+        cwd         => '/var/www/redmine',
         require     => [File['dbconf_yml'],
                         File['conf_yml']],
-        creates     => '/usr/share/redmine/config/initializers/secret_token.rb',
+        creates     => '/var/www/redmine/config/initializers/secret_token.rb',
         notify      => Exec['chown_redmine'],
     }
 
@@ -85,7 +85,7 @@ class redmine {
         environment => ['RAILS_ENV=production', 'HOME=/root'],
         command     => 'bundle exec rake db:migrate --trace',
         path        => '/usr/bin/:/bin/:/usr/local/bin',
-        cwd         => '/usr/share/redmine',
+        cwd         => '/var/www/redmine',
         require     => [Exec['create_secret_token']],
         unless      => 'bundle exec rake db:migrate:status | grep up',
         notify      => Exec['chown_redmine'],
@@ -93,11 +93,11 @@ class redmine {
 
     exec {'default_data':
         environment => ['RAILS_ENV=production', 'REDMINE_LANG=en', 'HOME=/root'],
-        command     => 'bundle exec rake redmine:load_default_data --trace > /usr/share/redmine/defautl_data.log',
+        command     => 'bundle exec rake redmine:load_default_data --trace > /var/www/redmine/defautl_data.log',
         path        => '/usr/bin/:/bin/:/usr/local/bin',
-        cwd         => '/usr/share/redmine',
+        cwd         => '/var/www/redmine',
         require     => [Exec['create_db']],
-        creates     => '/usr/share/redmine/defautl_data.log',
+        creates     => '/var/www/redmine/defautl_data.log',
         notify      => Exec['chown_redmine'],
     }
 
@@ -120,29 +120,29 @@ class redmine {
 
     exec {'plugin_install':
       environment => ['RAILS_ENV=production', 'REDMINE_LANG=en', 'HOME=/root'],
-      command     => 'bundle exec rake redmine:plugins:migrate > /usr/share/redmine/redmine_plugin_install.log',
-      cwd         => '/usr/share/redmine',
+      command     => 'bundle exec rake redmine:plugins:migrate > /var/www/redmine/redmine_plugin_install.log',
+      cwd         => '/var/www/redmine',
       path        => ['/bin', '/usr/bin', '/usr/local/bin'],
       require     => Exec['post-conf-in-mysql'],
-      creates     => '/usr/share/redmine/redmine_plugin_install.log',
+      creates     => '/var/www/redmine/redmine_plugin_install.log',
       notify      => Exec['chown_redmine'],
     }
 
     exec {'redmine_backlog_install':
       environment =>  ['labels=false', 'story_trackers=Bug', 'task_tracker=Task', 'HOME=/root'],
       command     =>  'bundle exec rake redmine:backlogs:install RAILS_ENV=production',
-      cwd         =>  '/usr/share/redmine/',
+      cwd         =>  '/var/www/redmine/',
       path        =>  ['/bin', '/usr/bin', '/usr/local/bin'],
       require     =>  Exec['create_db'],
-      creates     => '/usr/share/redmine/redmine_backlogs_install.log',
+      creates     => '/var/www/redmine/redmine_backlogs_install.log',
       notify      => Exec['chown_redmine'],
     }
 
     exec {'set_url_root':
-      command => "sed -i '/^.*::relative_url_root =.*/d' /usr/share/redmine/config/environment.rb && echo -e 'Redmine::Utils::relative_url_root = \"/redmine\"\nActionController::Base.relative_url_root = \"/redmine\"' >> /usr/share/redmine/config/environment.rb",
+      command => "sed -i '/^.*::relative_url_root =.*/d' /var/www/redmine/config/environment.rb && echo -e 'Redmine::Utils::relative_url_root = \"/redmine\"\nActionController::Base.relative_url_root = \"/redmine\"' >> /var/www/redmine/config/environment.rb",
       path    => '/usr/sbin/:/usr/bin/:/bin/',
       require => Exec['default_data'],
-      unless  => '/usr/bin/grep "relative_url_root = \"/redmine\"" /usr/share/redmine/config/environment.rb',
+      unless  => '/usr/bin/grep "relative_url_root = \"/redmine\"" /var/www/redmine/config/environment.rb',
       notify  => [Exec['chown_redmine'],
                   Service['webserver']],
     }
@@ -161,7 +161,7 @@ class redmine {
       group  => $::httpd_user,
     }
 
-    file {'/usr/share/redmine/public/themes/classic/javascripts/':
+    file {'/var/www/redmine/public/themes/classic/javascripts/':
       ensure => directory,
       mode   => '0644',
       owner  => $::httpd_user,
@@ -170,19 +170,19 @@ class redmine {
 
     file {'topmenu.js':
       ensure  => file,
-      path    => '/usr/share/redmine/public/themes/classic/javascripts/theme.js',
+      path    => '/var/www/redmine/public/themes/classic/javascripts/theme.js',
       mode    => '0644',
       owner   => $::httpd_user,
       group   => $::httpd_user,
       content => template('commonservices_apache/topmenu.js.erb'),
-      require => File['/usr/share/redmine/public/themes/classic/javascripts/'],
+      require => File['/var/www/redmine/public/themes/classic/javascripts/'],
     }
 
     exec {'backlog_topmenu':
-      command => "sed -i '/<head>/a <script src=\"/redmine/themes/classic/javascripts/theme.js\" type=\"text/javascript\"></script>' /usr/share/redmine/plugins/redmine_backlogs/app/views/layouts/rb.html.erb",
+      command => "sed -i '/<head>/a <script src=\"/redmine/themes/classic/javascripts/theme.js\" type=\"text/javascript\"></script>' /var/www/redmine/plugins/redmine_backlogs/app/views/layouts/rb.html.erb",
       path    => '/usr/sbin/:/usr/bin/:/bin/',
       require => File['topmenu.js'],
-      unless  => '/usr/bin/grep "javascripts/theme.js" /usr/share/redmine/plugins/redmine_backlogs/app/views/layouts/rb.html.erb',
+      unless  => '/usr/bin/grep "javascripts/theme.js" /var/www/redmine/plugins/redmine_backlogs/app/views/layouts/rb.html.erb',
     }
 
   bup::scripts{ 'redmine_scripts':

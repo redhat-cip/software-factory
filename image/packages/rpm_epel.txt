@@ -4,10 +4,15 @@ hiera
 http-parser
 monit
 ruby-augeas
-rubygem-rack
 sshpass
 ssmtp
 statsd
+
+# Redmine
+rubygem-rack
+rubygem-rgen
+rubygem-builder
+rubygem-bundler
 
 # Python stuff
 ansible
@@ -68,6 +73,7 @@ python-wrapt
 # Nodejs stuff
 v8
 nodejs
+npm
 
 # Shell Utilities
 htop

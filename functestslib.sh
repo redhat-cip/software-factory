@@ -187,7 +187,7 @@ function build_image {
         echo "[+] Building image ${IMAGE_PATH}"
         ./build_image.sh 2>&1 | tee ${ARTIFACTS_DIR}/image_build.log | grep '(STEP'
         [ "${PIPESTATUS[0]}" == "0" ] || fail "Roles building FAILED" ${ARTIFACTS_DIR}/image_build.log
-        [ -f "${IMAGE_PATH}.description_diff" ] && head ${IMAGE_PATH}.description_diff
+        [ -f "${IMAGE_PATH}.description_diff" ] && grep "^[><]" ${IMAGE_PATH}.description_diff | grep -v '[><] SF:'
         checkpoint "build_image"
         prepare_functional_tests_utils
     else
@@ -467,7 +467,7 @@ function run_checker {
 
 function run_functional_tests {
     echo "$(date) ======= run_functional_tests"
-    nosetests --with-xunit -v tests/functional > ${ARTIFACTS_DIR}/functional-tests.debug || fail "Functional tests failed" ${ARTIFACTS_DIR}/functional-tests.debug
+    nosetests -s --with-xunit -v tests/functional > ${ARTIFACTS_DIR}/functional-tests.debug || fail "Functional tests failed" ${ARTIFACTS_DIR}/functional-tests.debug
     checkpoint "run_functional_tests"
 }
 

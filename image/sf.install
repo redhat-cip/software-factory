@@ -6,15 +6,12 @@ STAGING_PKGS=""
 # Without this, managesf fails with ResourceNotFoundError: Requested resource doesn't exist
 STAGING_PIP=""
 
-ZUUL_VERSION=fd463c84bfb342701061fe383c6d17e7a1bd4786
-NODEPOOL_VERSION=0.1.1
-
 function install_nodepool {
     # nodepool
     if [ ! -f ${dir}/usr/bin/nodepool ]; then
         do_chroot ${dir} virtualenv /srv/nodepool
         do_chroot ${dir} /srv/nodepool/bin/pip install --upgrade 'pbr<1.0'
-        do_chroot ${dir} /srv/nodepool/bin/pip install git+git://github.com/openstack-infra/nodepool@3c635ec9c202c99e24fcb9315fef806cb000542f
+        do_chroot ${dir} /srv/nodepool/bin/pip install git+git://github.com/openstack-infra/nodepool@${NODEPOOL_VERSION}
         for bin in nodepool nodepoold; do
             ln -sf /srv/nodepool/bin/${bin} ${dir}/usr/bin/${bin}
         done

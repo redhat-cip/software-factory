@@ -1,0 +1,6 @@
+gcc
+gcc-c++
+libxml2-devel
+libstdc++-devel
+libX11-devel
+libtiff-devel

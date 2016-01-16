@@ -1,8 +1,14 @@
 #!/bin/bash
 
-set -x
+set -xe
 
-sudo yum update -y
+sudo yum update -y > /dev/null
+
+# Base requirements
+sudo yum install -y epel-release > /dev/null
+sudo yum install -y python-pip git wget curl patch iproute > /dev/null
+sudo pip install --upgrade pip
+sudo pip install tox
 
 # The jenkins user. Must be able to use sudo without password
 sudo useradd -m jenkins
@@ -26,22 +32,21 @@ sudo restorecon -R -v /home/jenkins/.ssh/authorized_keys
 cloud_user=$(egrep " name:" /etc/cloud/cloud.cfg | awk '{print $2}')
 cat /opt/nodepool-scripts/authorized_keys | sudo tee -a /home/$cloud_user/.ssh/authorized_keys
 
-# Required by Jenkins
+# Install java (required by Jenkins)
 sudo yum install -y java
 
-# zuul-cloner is needed as well
-sudo yum install -y epel-release
-sudo yum install -y python-pip git python-devel gcc patch wget
-sudo pip install zuul gitdb requests glob2 python-magic argparse python-swiftclient python-keystoneclient
-
+# Install zuul_swift_upload and zuul-cloner
+# TODO: replace this section by zuul package
+sudo yum install -y python-requests gcc python-devel
+sudo pip install zuul glob2 python-magic
 sudo curl -o /usr/local/bin/zuul_swift_upload.py \
     https://raw.githubusercontent.com/openstack-infra/project-config/master/jenkins/scripts/zuul_swift_upload.py
 sudo chmod +x /usr/local/bin/zuul_swift_upload.py
 
 # sync FS, otherwise there are 0-byte sized files from the yum/pip installations
 sudo sync
+sudo sync
 
 sudo cat /home/jenkins/.ssh/authorized_keys
-sudo cat /home/centos/.ssh/authorized_keys
 
 echo "Base setup done."

@@ -4,6 +4,7 @@
   tasks:
   - include: tasks/fetchupstream.yml
   - include: tasks/SFServiceUser.yml
+  - include: tasks/fix_redmine.yml
 - hosts: instances
   gather_facts: no
   tasks:
