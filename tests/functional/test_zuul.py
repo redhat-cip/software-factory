@@ -97,7 +97,7 @@ class TestZuulOps(Base):
         gitu.add_commit_and_publish(clone_dir, "master", "Test commit")
 
         change_ids = gu.get_my_changes_for_project(pname)
-        self.assertEqual(len(change_ids), 1)
+        self.assertGreater(len(change_ids), 0)
         change_id = change_ids[0]
 
         # Give some time for jenkins to work

@@ -27,6 +27,7 @@ from utils import ManageSfUtils
 from utils import GerritGitUtils
 from utils import JenkinsUtils
 from utils import copytree
+from utils import create_random_str
 
 from pysflib.sfgerrit import GerritUtils
 
@@ -139,7 +140,7 @@ class TestProjectTestsWorkflow(Base):
         # updated about the test results
         # We use the sample-project (that already exists)
 
-        pname = 'sample_project'
+        pname = 'test_workflow_%s' % create_random_str()
         # Be sure the project does not exist
         self.msu.deleteProject(pname,
                                config.ADMIN_USER)
@@ -147,23 +148,24 @@ class TestProjectTestsWorkflow(Base):
         self.create_project(pname, config.ADMIN_USER)
 
         # Add the sample-project to the empty repository
-        clone_dir = self.clone_as_admin("sample_project")
+        clone_dir = self.clone_as_admin(pname)
         copytree(self.sample_project_dir, clone_dir)
         self.commit_direct_push_as_admin(clone_dir, "Add the sample project")
 
         # Change to config/zuul/layout.yaml and jobs/projects.yaml
-        # in order to test the new sample_project
+        # in order to test the new project
         ycontent = file(os.path.join(
             self.config_clone_dir, "zuul/projects.yaml")).read()
         file(os.path.join(
             self.config_clone_dir, "zuul/projects.yaml"), 'w').write(
-            ycontent.replace("zuul-demo", "sample_project")
+            ycontent.replace("zuul-demo", pname),
         )
         ycontent2 = load(file(os.path.join(
             self.config_clone_dir, "jobs/projects.yaml")).read())
         sp2 = copy.deepcopy(
-            [p for p in ycontent2 if p['project']['name'] == 'zuul-demo'][0])
-        sp2['project']['name'] = "sample_project"
+            [p for p in ycontent2 if 'project' in p and
+                p['project']['name'] == 'zuul-demo'][0])
+        sp2['project']['name'] = pname
         ycontent2.append(sp2)
         file(os.path.join(
             self.config_clone_dir, "jobs/projects.yaml"), 'w').write(
@@ -181,7 +183,7 @@ class TestProjectTestsWorkflow(Base):
         # Send review (config-check) will be triggered
         self.push_review_as_admin(
             self.config_clone_dir,
-            "Add config definition in Zuul/JJB config for sample_project")
+            "Add config definition in Zuul/JJB config for %s" % pname)
 
         # Wait for config-check to finish and verify the success
         self.ju.wait_till_job_completes("config-check",
@@ -272,48 +274,48 @@ class TestProjectTestsWorkflow(Base):
                                           "lastSuccessfulBuild")
         self.assertEqual(last_build_num_cu, last_success_build_num_cu)
 
-        # Retrieve the prev build number for sample_project-unit-tests
-        # Retrieve the prev build number for sample_project-functional-tests
+        # Retrieve the prev build number for pname-unit-tests
+        # Retrieve the prev build number for pname-functional-tests
         last_success_build_num_sp_ut = \
-            self.ju.get_last_build_number("sample_project-unit-tests",
+            self.ju.get_last_build_number("%s-unit-tests" % pname,
                                           "lastSuccessfulBuild")
         last_success_build_num_sp_ft = \
-            self.ju.get_last_build_number("sample_project-functional-tests",
+            self.ju.get_last_build_number("%s-functional-tests" % pname,
                                           "lastSuccessfulBuild")
         # Test config-update
-        # config-update should have created jobs for sample_project
-        # Trigger tests on sample_project
+        # config-update should have created jobs for pname
+        # Trigger tests on pname
         # Send a review and check tests has been run
         self.gitu_admin.add_commit_and_publish(
             clone_dir, 'master', "Add useless file",
             self.un)
-        # Wait for sample_project-unit-tests to finish and verify the success
-        self.ju.wait_till_job_completes("sample_project-unit-tests",
+        # Wait for pname-unit-tests to finish and verify the success
+        self.ju.wait_till_job_completes("%s-unit-tests" % pname,
                                         last_success_build_num_sp_ut,
                                         "lastSuccessfulBuild")
-        # Wait for sample_project-functional-tests to end and check the success
-        self.ju.wait_till_job_completes("sample_project-functional-tests",
+        # Wait for pname-functional-tests to end and check the success
+        self.ju.wait_till_job_completes("%s-functional-tests" % pname,
                                         last_success_build_num_sp_ft,
                                         "lastSuccessfulBuild")
         # Check the unit tests succeed
         last_build_num_sp_ut = \
-            self.ju.get_last_build_number("sample_project-unit-tests",
+            self.ju.get_last_build_number("%s-unit-tests" % pname,
                                           "lastBuild")
         last_success_build_num_sp_ut = \
-            self.ju.get_last_build_number("sample_project-unit-tests",
+            self.ju.get_last_build_number("%s-unit-tests" % pname,
                                           "lastSuccessfulBuild")
         self.assertEqual(last_build_num_sp_ut, last_success_build_num_sp_ut)
         # Check the functional tests succeed
         last_build_num_sp_ft = \
-            self.ju.get_last_build_number("sample_project-functional-tests",
+            self.ju.get_last_build_number("%s-functional-tests" % pname,
                                           "lastBuild")
         last_success_build_num_sp_ft = \
-            self.ju.get_last_build_number("sample_project-functional-tests",
+            self.ju.get_last_build_number("%s-functional-tests" % pname,
                                           "lastSuccessfulBuild")
         self.assertEqual(last_build_num_sp_ft, last_success_build_num_sp_ft)
 
         # Get the change id
-        change_ids = self.gu.get_my_changes_for_project("sample_project")
+        change_ids = self.gu.get_my_changes_for_project(pname)
         self.assertGreater(len(change_ids), 0)
         change_id = change_ids[0]
 

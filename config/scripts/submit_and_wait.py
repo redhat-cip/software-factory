@@ -47,6 +47,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--repository", default=os.getcwd())
     parser.add_argument("--delay", type=int, default=60)
+    parser.add_argument("--abandon", action="store_const", const=True)
     parser.add_argument("--approve", action="store_const", const=True)
     parser.add_argument("--failure", action="store_const", const=True)
     args = parser.parse_args()
@@ -64,15 +65,18 @@ def main():
 
     # Submit change
     if "Change-Id:" in execute("git log -n 1"):
-        print execute("git review")
+        print execute("git review -y")
     else:
-        print execute("git review -i")
+        print execute("git review -yi")
     sha = open(".git/refs/heads/master").read()
 
     # Give Jenkins some time to start test
     time.sleep(2)
 
     cmd = "ssh -p 29418 %s gerrit" % ghost
+    if args.abandon:
+        return execute("%s review --abandon %s" % (cmd, sha))
+
     if args.approve:
         execute("%s review --code-review +2 --workflow +1 %s" % (cmd, sha))
 

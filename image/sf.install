@@ -8,33 +8,32 @@ STAGING_PIP=""
 
 function install_nodepool {
     # nodepool
-    if [ ! -f ${dir}/usr/bin/nodepool ]; then
-        do_chroot ${dir} virtualenv /srv/nodepool
-        do_chroot ${dir} /srv/nodepool/bin/pip install --upgrade 'pbr<1.0'
-        do_chroot ${dir} /srv/nodepool/bin/pip install git+git://github.com/openstack-infra/nodepool@${NODEPOOL_VERSION}
-        for bin in nodepool nodepoold; do
-            ln -sf /srv/nodepool/bin/${bin} ${dir}/usr/bin/${bin}
-        done
-    fi
+    do_chroot ${dir} virtualenv /srv/nodepool
+    do_chroot ${dir} /srv/nodepool/bin/pip install --upgrade 'pbr<1.0'
+    do_chroot ${dir} /srv/nodepool/bin/pip install git+git://github.com/openstack-infra/nodepool@${NODEPOOL_VERSION}
+    # Install symlink to venv to set correct python path
+    for bin in nodepool nodepoold; do
+        ln -sf /srv/nodepool/bin/${bin} ${dir}/usr/bin/${bin}
+    done
 }
 
 function install_zuul {
     # zuul
-    if [ ! -f ${dir}/usr/bin/zuul ]; then
-        do_chroot ${dir} virtualenv /srv/zuul
-        do_chroot ${dir} /srv/zuul/bin/pip install --upgrade 'pbr<1.0'
-        [ -d ${dir}/tmp/zuul ] || retry do_chroot ${dir} git clone ${ZUUL_URL} /tmp/zuul
-        do_chroot ${dir} bash -c "cd /tmp/zuul && git checkout -b working ${ZUUL_VERSION}"
-        do_chroot ${dir} /srv/zuul/bin/pip install file:///tmp/zuul
-        mv ${dir}/tmp/zuul/etc/status/public_html/ ${dir}/var/www/zuul
-        rm -Rf ${dir}/tmp/zuul
-        for bin in zuul zuul-cloner zuul-merger zuul-server; do
-            ln -sf /srv/zuul/bin/${bin} ${dir}/usr/bin/${bin}
-        done
-    fi
-    [ -h ${dir}/var/www/zuul/bootstrap ] || ln -s /var/www/static/bootstrap ${dir}/var/www/zuul/bootstrap
-    http_fetch $JQUERY_VISIBILITY_URL ${dir}/var/www/zuul/jquery-visibility.min.js
-    http_fetch $JQUERY_GRAPHITE_URL ${dir}/var/www/zuul/jquery.graphite.js
+    do_chroot ${dir} virtualenv /srv/zuul
+    do_chroot ${dir} /srv/zuul/bin/pip install --upgrade 'pbr<1.0'
+    [ -d ${dir}/tmp/zuul ] || retry do_chroot ${dir} git clone ${ZUUL_URL} /tmp/zuul
+    do_chroot ${dir} bash -c "cd /tmp/zuul && git checkout -b working ${ZUUL_VERSION}"
+    do_chroot ${dir} /srv/zuul/bin/pip install file:///tmp/zuul
+    # Manually install swift and keystone client
+    do_chroot ${dir} /srv/zuul/bin/pip install python-swiftclient python-keystoneclient
+    mv ${dir}/tmp/zuul/etc/status/public_html/ ${dir}/var/www/zuul
+    rm -Rf ${dir}/tmp/zuul
+    # Install symlink to venv to set correct python path
+    for bin in zuul zuul-cloner zuul-merger zuul-server; do
+        ln -sf /srv/zuul/bin/${bin} ${dir}/usr/bin/${bin}
+    done
+    http_fetch $JQUERY_VISIBILITY_URL ${dir}/var/www/static/js/jquery-visibility.min.js
+    http_fetch $JQUERY_GRAPHITE_URL   ${dir}/var/www/static/js/jquery.graphite.js
 }
 
 function install_sf {

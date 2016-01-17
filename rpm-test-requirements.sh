@@ -3,19 +3,19 @@
 
 bash ./rpm-requirements.sh
 
-if [ ! -f "/etc/yum.repos.d/epel.repo" ]; then
-    echo "(+) Adds epel-release..."
-    sudo yum install -y epel-release
+PKGS=""
+which ansible &> /dev/null    || PKGS="${PKGS} ansible"
+which git-review &> /dev/null || PKGS="${PKGS} git-review"
+which flake8 &> /dev/null     || PKGS="${PKGS} python-flake8"
+if [ ! -z "${PKGS}" ]; then
+    echo "(+) Installing test requirement..."
+    sudo yum install -y $PKGS
 fi
-function test_which {
-    which $1 &> /dev/null && return 0 || return 1
-}
-test_which pip || {
-    echo "(+) Installing python-pip..."
-    sudo yum install -y python-pip
-    sudo pip install --upgrade pip
-}
-test_which git-review && test_which tox && test_which ansible && test_which nosetests || {
+# Check if test-requirements are already installed
+which tox &> /dev/null &&       \
+which nosetests &> /dev/null && \
+which bash8 &> /dev/null &&     \
+test -d /usr/lib/python2.7/site-packages/nosetimer || {
     echo "(+) Installing test-requirements..."
     sudo pip install -r test-requirements.txt
 }

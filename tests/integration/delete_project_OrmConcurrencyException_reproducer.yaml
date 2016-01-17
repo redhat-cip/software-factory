@@ -1,0 +1,55 @@
+---
+#
+# Create a new project, submit and abandon a review, delete the project
+# Re-create the project, submit and abandon a review
+# Tries to delete the project (should fail here)
+# Check for exception in gerrit logs
+#
+- hosts: managesf
+  gather_facts: no
+  vars:
+    project: "{{ lookup('env', 'SF_PROJECT') }}"
+    admin_password: "{{ lookup('env', 'SF_PASSWORD') }}"
+    fqdn: "{{ lookup('env', 'SF_FQDN') }}"
+    testname: "unit-tests"
+    node_label: "master"
+  tasks:
+    - include: tasks/project_create.yaml
+
+    - name: Commit and abandon a change
+      command: chdir=build-{{ project }} {{ item }}
+      with_items:
+        - 'bash -c "(echo exit 1; date) > run_tests.sh"' # Add date to prevent (no new changes reject)
+        - 'chmod +x run_tests.sh'
+        - 'git add run_tests.sh'
+        - 'git commit -m "Test {{ project }} repo"'
+        - 'submit_and_wait.py --abandon'
+      environment: {'EDITOR':'test'}
+
+    - name: Delete project
+      command: chdir=/root {{ item }}
+      with_items:
+        - "sfmanager --auth admin:{{ admin_password }} --url http://{{ fqdn }} project delete --name {{ project }}"
+        - "rm -Rf /root/build-{{ project }}"
+
+
+    - include: tasks/project_create.yaml
+
+    - name: Commit and abandon a change
+      command: chdir=build-{{ project }} {{ item }}
+      with_items:
+        - 'bash -c "(echo exit 1; date) > run_tests.sh"' # Add date to prevent (no new changes reject)
+        - 'chmod +x run_tests.sh'
+        - 'git add run_tests.sh'
+        - 'git commit -m "Test {{ project }} repo"'
+        - 'submit_and_wait.py --abandon'
+      environment: {'EDITOR':'test'}
+
+    - name: Delete project
+      command: chdir=/root {{ item }}
+      with_items:
+        - "sfmanager --auth admin:{{ admin_password }} --url http://{{ fqdn }} project delete --name {{ project }}"
+        - "rm -Rf /root/*{{ project }}"
+
+    - name: Check for error
+      command: 'grep -v "OrmConcurrencyException. Concurrent modification detected" /home/gerrit/site_path/logs/error_log'

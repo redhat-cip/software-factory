@@ -1,10 +1,10 @@
 - name: Check if publisher already defined
-  command: "grep -q '--name {{ testname }}' config/jobs/projects.yaml"
+  command: "grep -q -- '--name {{ testname }}' config/jobs/projects.yaml"
   register: sfconfiged
   failed_when: False
 
 - name: Add publisher job
-  when: "sfconfiged.rc"
+  when: sfconfiged.rc
   command: >
     hieraedit.py --yaml config/jobs/projects.yaml --eval --append 0 \
         "{'job-template': {
@@ -21,12 +21,12 @@
          }}"
 
 - name: Add swift name for job matching template
-  when: "sfconfiged.rc"
+  when: sfconfiged.rc
   command: >
       hieraedit.py --yaml config/zuul/projects.yaml --eval --append jobs \
         '{"name": "^.*-{{ testname }}$", "swift": [{"name": "{{ container }}"}]}'
 
 - name: Update change
-  when: "sfconfiged.rc"
+  when: sfconfiged.rc
   command: chdir=config  git commit -a --amend
   environment: {'EDITOR':'test'}

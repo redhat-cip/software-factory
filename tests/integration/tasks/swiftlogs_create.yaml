@@ -11,3 +11,7 @@
     - "swift post {{ container }} -r '.r:*' -m 'web-listing: true'"
     - "swift stat {{ container }}"
   environment: "{{os_env}}"
+
+- name: Set temp url key
+  command: "swift post -m 'Temp-URL-Key: sf4ever'"
+  environment: "{{os_env}}"

@@ -4,7 +4,7 @@
   failed_when: False
 
 - name: Update sfconfig
-  when: "provider_config.rc != 0"
+  when: provider_config.rc != 0
   command: >
     hieraedit.py --yaml /etc/puppet/hiera/sf/sfconfig.yaml --eval nodepool "{ 'disabled': False,
     'providers': [{
@@ -20,7 +20,7 @@
       }]}"
 
 - name: Restart sfconfig
-  when: "provider_config.rc != 0"
+  when: provider_config.rc != 0
   command: sfconfig.sh
 
 - name: Check configuration got updated
@@ -32,4 +32,4 @@
 
 - name: Check for errors
   fail: msg='Nodepool service is not happy'
-  when: "'fail' in daemon.stdout.lower()"
+  when: daemon.stdout.lower().find("fail") != -1

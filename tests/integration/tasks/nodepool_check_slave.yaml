@@ -1,7 +1,7 @@
 - name: "Check slave is present"
   shell: nodepool list | grep "{{ node_label }}" | head -n 1 | awk '{ print $2 }'
   register: node_id
-  failed_when: "node_id.stdout == ''"
+  failed_when: node_id.stdout == \'\'
 
 - name: "Wait for node to be ready"
   wait_for: path=/var/log/nodepool/nodepool.log search_regex="Node id. {{ node_id.stdout }} is ready"

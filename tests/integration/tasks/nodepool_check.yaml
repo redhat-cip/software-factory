@@ -4,7 +4,7 @@
 - name: "Check image is building"
   command: nodepool image-list
   register: imagelist
-  failed_when: "'{{ image_name }}' not in imagelist.stdout"
+  failed_when: imagelist.stdout.find("{{ image_name }}") == -1
 
 - name: "Wait for server to be ACTIVE"
   wait_for: path=/var/log/nodepool/debug.log timeout=900 search_regex="Status of server in default .* ACTIVE"

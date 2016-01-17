@@ -4,10 +4,9 @@
   register: usr_share_redmine
 
 - name: Move files from /usr/share/redmine to /var/www/redmine
-  when: "usr_share_redmine.stat.isdir is defined and usr_share_redmine.isdir"
+  when: usr_share_redmine.stat.isdir == True
   command: "{{ item }}"
   with_items:
       - mkdir -p /var/www/redmine/log /var/www/redmine/public/plugin_assets
-      - mv /usr/share/redmine/log/* /var/www/redmine/log/
-      - mv /usr/share/redmine/public/plugin_assets /var/www/redmine/log/
-      - chown -R apache:apache /var/www/redmine
+      - rsync -av /usr/share/redmine/log/ /var/www/redmine/log/
+      - rsync -av /usr/share/redmine/public/plugin_assets/ /var/www/redmine/public/plugin_assets/

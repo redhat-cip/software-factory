@@ -143,7 +143,7 @@ install_sf_packages() {
         checkpoint "passenger installed"
     fi
 
-    retry do_chroot ${dir} pip install --upgrade pip
+    retry do_chroot ${dir} pip install --upgrade 'pip<8'
     retry do_chroot ${dir} pip install ${PIP_PKGS}
     checkpoint "pip packages installed"
 

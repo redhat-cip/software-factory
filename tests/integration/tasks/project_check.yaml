@@ -14,4 +14,4 @@
 - name: "Check artifact is published"
   command: "curl {{ logsurl.stdout }}artifacts/test_log.txt"
   register: test_log
-  failed_when: "'TEST EXPORT' not in test_log.stdout"
+  failed_when: \'TEST EXPORT\' not in test_log.stdout

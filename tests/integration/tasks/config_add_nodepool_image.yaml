@@ -5,7 +5,7 @@
   failed_when: False
 
 - name: Adds nodepool image
-  when: "sfconfiged.rc"
+  when: sfconfiged.rc
   command: >
     hieraedit.py --yaml config/nodepool/images.yaml --eval 0 "{
         'provider': 'default',
@@ -20,7 +20,7 @@
     }"
 
 - name: Adds nodepool label
-  when: "sfconfiged.rc"
+  when: sfconfiged.rc
   command: >
     hieraedit.py --yaml config/nodepool/labels.yaml --eval labels "[{
         'name': '{{ node_label }}',
@@ -30,11 +30,11 @@
     }]"
 
 - name: Copy nodepool-demo image script
-  when: "sfconfiged.rc"
+  when: sfconfiged.rc
   copy: src=files/nodepool_demo.sh dest=config/nodepool/nodepool_demo.sh mode="u=rwx,g=rx,o=rx"
 
 - name: Update change
-  when: "sfconfiged.rc"
+  when: sfconfiged.rc
   command: chdir=config  {{ item }}
   with_items:
       - 'git add nodepool/nodepool_demo.sh'

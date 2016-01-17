@@ -19,23 +19,22 @@ under the License.
 <html dir="ltr" lang="en">
 <head>
     <title>Zuul Status</title>
-    <link rel="stylesheet" href="bootstrap/css/bootstrap.min.css">
-    <link rel="stylesheet" href="bootstrap/css/bootstrap-responsive.min.css">
+    <link rel="stylesheet" href="/static/bootstrap/css/bootstrap.min.css">
     <link rel="stylesheet" href="styles/zuul.css" />
     <script type="text/javascript" src="/static/js/topmenu.js"></script>
-</head>
-<body>
-
-    <div id="zuul_container"></div>
-
-    <script src="jquery.min.js"></script>
-    <script src="jquery-visibility.min.js"></script>
-    <script src="jquery.graphite.js"></script>
+    <script src="/static/js/jquery.min.js"></script>
+    <script src="/static/js/jquery-visibility.min.js"></script>
+    <script src="/static/js/jquery.graphite.js"></script>
     <script src="jquery.zuul.js"></script>
     <script src="zuul.app.js"></script>
     <script>
         zuul_build_dom(jQuery, '#zuul_container');
         zuul_start(jQuery);
     </script>
+</head>
+<body>
+
+    <div id="zuul_container"></div>
+
 </body>
 </html>

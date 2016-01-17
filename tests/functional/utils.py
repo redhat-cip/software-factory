@@ -27,7 +27,6 @@ import random
 import config
 import requests
 import time
-import sys
 import yaml
 
 import logging
@@ -36,6 +35,7 @@ import pkg_resources
 logging.getLogger("requests").setLevel(logging.WARNING)
 logging.captureWarnings(True)
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
 
 # Empty job for jenkins
 EMPTY_JOB_XML = """<?xml version='1.0' encoding='UTF-8'?>
@@ -108,24 +108,24 @@ class Base(unittest.TestCase):
 
 class Tool:
     def __init__(self):
-        self.debug = None
-        if "DEBUG" in os.environ:
-            self.debug = sys.stdout
         self.env = os.environ.copy()
 
     def exe(self, cmd, cwd=None):
-        logger.debug('Process Command %s' % cmd)
+        logger.debug('Starting Process "%s"' % cmd)
         cmd = shlex.split(cmd)
         ocwd = os.getcwd()
         output = ''
         if cwd:
             os.chdir(cwd)
         try:
-            output = subprocess.check_output(cmd, env=self.env)
-            logger.debug('Process Output %s' % output)
+            output = subprocess.check_output(
+                        cmd, stderr=subprocess.STDOUT, env=self.env)
+            if output:
+                logger.debug('Process Output [%s]' % output.strip())
         except subprocess.CalledProcessError as err:
             if err.output:
-                logger.exception("%s: Output %s" % (err, err.output))
+                logger.exception("Process Exception: %s: [%s]" %
+                                 (err, err.output))
             else:
                 logger.exception(err)
         finally:
