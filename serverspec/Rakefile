@@ -17,7 +17,6 @@ namespace :spec do
     desc "Run serverspec tests to #{original_target}"
     RSpec::Core::RakeTask.new(target.to_sym) do |t|
       ENV['TARGET_HOST'] = original_target
-      ENV['ROLEVERSION'] = hosts[target][:roleversion]
       t.pattern = 'spec/{' + hosts[target][:roles].join(',') + '}/*_spec.rb'
       t.rspec_opts = "-t ~host:#{hosts[target][:hostname]}"
     end

@@ -1,5 +1,44 @@
 # Change Log
 
+## 2.1.4 2016-01-21
+
+### Added
+
+- Nosetimer to functional tests
+- Packages list used in image build
+- Gerrit backend user deletion
+- Swift temp url key setting for zuul artifact upload
+- Project creation can now import branch
+- rpm-requirements and rpm-test-requirements script to install required package to build or use software-factory
+
+### Changed
+
+- Project owner can now push tags
+- More pip and gems packages have been replaced by rpm
+- Zuul and nodepool requirements are isolated using venv
+- Move redmine installation to /var/www
+- Pip installation is now capped at 'pip<8'
+- Hide create project button if user isn't allowed
+
+### Fixed
+
+- Error when adding users with specific domain endings like .org
+- Project creation failing when starting with the letter 'a'
+- New flake8 errors related to recent version
+- Monit monitoring of postfix
+- Zuul was missing swift and keystone client
+- Edeploy useradd/groupadd replacement was missing
+- Gpg check condition was incorrect
+- Functional tests are now re-entrant and can be run multiple time
+- Number of open issues in dashboard was capped by redmine page limit
+
+### Removed
+
+- Ruby gem doc rdoc
+- Build requirements from image (such as gcc, -devel, ...)
+- Puppetlab repos since rdo also provide puppet
+
+
 ## 2.1.3 2016-01-14
 
 ### Added

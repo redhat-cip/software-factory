@@ -1,10 +1,10 @@
 #!/bin/sh
 #
 
-VER=2.1.4
+VER=2.1.5
 
 # Version string
-SF_PREVIOUS_VER=C7.0-2.1.3
+SF_PREVIOUS_VER=C7.0-2.1.4
 
 # Set this variable to 1 if we tag and set it back to 0 the commit after the tag
 TAGGED_RELEASE=0
@@ -16,9 +16,9 @@ if [ ! -z "${REL_VER}" ]; then
     echo "Testing upgrade from ${SF_PREVIOUS_VER}"
     TAGGED_RELEASE=1
     # Pinned versions of the subprojects to go with the current release
-    PYSFLIB_PINNED_VERSION=308f7d9756078797431f8ca9ea85b34fd08157e2
-    MANAGESF_PINNED_VERSION=68910440dcbe0138fccf364bccfaa7bad815c3a8
-    CAUTH_PINNED_VERSION=cba83596b3ad366f02c3529ffbe6e7846ee92c88
+    PYSFLIB_PINNED_VERSION=423d9cb0938087b6ed6d38a475a2cc8070430ed3
+    MANAGESF_PINNED_VERSION=3552409fcf8ade408868db3eec7d1910f1bd5180
+    CAUTH_PINNED_VERSION=29188b1d50dbc462c10f68be345d658e4abb8e5f
     SFMANAGER_PINNED_VERSION=3fcad5cbd64f5da044d94a4fc2bd32224def5d03
 fi
 

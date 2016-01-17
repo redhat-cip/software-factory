@@ -3,53 +3,42 @@ redmine:
     - base
     - redmine
     - postfix
-    - roleversion
     - ntp
   :username: root
   :hostname: redmine
-  :roleversion: C7.0-2.1.4
 
 mysql:
   :roles:
     - base
     - mysql
     - postfix
-    - roleversion
     - ntp
   :username: root
   :hostname: mysql
-  :roleversion: C7.0-2.1.4
 
 gerrit:
   :roles:
     - base
     - gerrit
     - postfix
-    - roleversion
     - ntp
   :username: root
   :hostname: gerrit
-  :roleversion: C7.0-2.1.4
 
 jenkins:
   :roles:
     - base
     - jenkins
     - postfix
-    - roleversion
     - ntp
   :username: root
   :hostname: jenkins
-  :roleversion: C7.0-2.1.4
 
 managesf:
   :roles:
     - base
     - managesf
     - commonservices
-    - roleversion
     - ntp
   :username: root
   :hostname: managesf
-  :roleversion: C7.0-2.1.4
-  :sfversion: 2.1.4
