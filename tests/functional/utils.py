@@ -119,7 +119,7 @@ class Tool:
             os.chdir(cwd)
         try:
             output = subprocess.check_output(
-                        cmd, stderr=subprocess.STDOUT, env=self.env)
+                cmd, stderr=subprocess.STDOUT, env=self.env)
             if output:
                 logger.debug('Process Output [%s]' % output.strip())
         except subprocess.CalledProcessError as err:

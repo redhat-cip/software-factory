@@ -5,8 +5,7 @@ set -e
 
 echo "[+] Install dependencies"
 sudo yum update -y
-bash rpm-requirements.txt
-bash rpm-test-requirements.txt
+bash rpm-test-requirements.sh
 
 echo "[+] Fetch image"
 SKIP_GPG=1 ./fetch_image.sh
