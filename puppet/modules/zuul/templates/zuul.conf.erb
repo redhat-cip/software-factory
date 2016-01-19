@@ -39,6 +39,8 @@ user=<%= @logs['swift_logsexport_username'] %>
 tenant_name=<%= @logs['swift_logsexport_tenantname'] %>
 key=<%= @logs['swift_logsexport_password'] %>
 auth_version=<%= @logs['swift_logsexport_authversion'] %>
+X-Account-Meta-Temp-Url-Key=<%= @logs['swift_logsexport_x_tempurl_key'] %>
+Send-Temp-Url-Key=<%= @logs['swift_logsexport_send_tempurl_key'] %>
 <% end %>
 
 [smtp]

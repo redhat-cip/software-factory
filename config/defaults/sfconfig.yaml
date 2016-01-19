@@ -105,3 +105,8 @@ logs:
     # Use 1 for using the tempauth of Swift or use 2
     # if you rely on a keystone authentication
     swift_logsexport_authversion: 1
+    swift_logsexport_x_tempurl_key: tempurlkey
+    # Do not create a new tempurl key, but use the above defined key instead.
+    # Zuul will create a random key if not set, that might break other scripts
+    # using a tempurl key
+    swift_logsexport_send_tempurl_key: False
