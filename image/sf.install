@@ -23,6 +23,9 @@ function install_zuul {
     do_chroot ${dir} /srv/zuul/bin/pip install --upgrade 'pbr<1.0'
     [ -d ${dir}/tmp/zuul ] || retry do_chroot ${dir} git clone ${ZUUL_URL} /tmp/zuul
     do_chroot ${dir} bash -c "cd /tmp/zuul && git checkout -b working ${ZUUL_VERSION}"
+    # Apply temp_url_key fix
+    http_fetch "https://review.openstack.org/changes/270338/revisions/2cb6df61f35a7a80209fd873d7f1113040c9afb8/patch?download" ${dir}/tmp/zuul.patch
+    cat ${dir}/tmp/zuul.patch | base64 -d | do_chroot ${dir} bash -c "cd /tmp/zuul; patch -p1"
     do_chroot ${dir} /srv/zuul/bin/pip install file:///tmp/zuul
     # Manually install swift and keystone client
     do_chroot ${dir} /srv/zuul/bin/pip install python-swiftclient python-keystoneclient

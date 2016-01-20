@@ -1,5 +1,5 @@
 - name: Check if publisher already defined
-  command: "grep -q -- '--name {{ testname }}' config/jobs/projects.yaml"
+  command: grep -q "name. '{name}-{{ testname }}'" config/jobs/projects.yaml
   register: sfconfiged
   failed_when: False
 

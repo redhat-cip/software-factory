@@ -43,6 +43,7 @@ openssh-server
 openssh
 openssl
 passwd
+patch
 pciutils
 pigz
 postfix

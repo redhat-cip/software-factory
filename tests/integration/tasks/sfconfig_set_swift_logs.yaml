@@ -8,8 +8,6 @@
   command: >
     hieraedit.py --yaml /etc/puppet/hiera/sf/sfconfig.yaml --eval logs "{ 'disabled': False,
         'swift_logsexport_container': '{{ container }}',
-        'swift_logsexport_authurl': '{{ os_env.OS_AUTH_URL }}',
-        'swift_logsexport_tenantname': '{{ os_env.OS_TENANT_NAME }}',
         'swift_logsexport_logserver_prefix': '{{ swifturl }}/{{ container }}',
         'swift_logsexport_x_storage_url': '{{ swifturl }}',
         'swift_logsexport_x_tempurl_key': 'sf4ever',
