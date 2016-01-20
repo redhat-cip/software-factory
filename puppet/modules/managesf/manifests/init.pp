@@ -29,6 +29,7 @@ class managesf ($gerrit = hiera('gerrit'), $hosts = hiera('hosts'), $cauth = hie
   $gerrit_mysql_username = 'gerrit'
   $gerrit_mysql_password = hiera('creds_gerrit_sql_pwd')
   $admin_password = $auth['admin_password']
+  $services = hiera('services')
 
   file {'/etc/httpd/conf.d/managesf.conf':
     ensure  => file,

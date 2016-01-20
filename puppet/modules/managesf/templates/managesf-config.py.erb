@@ -54,12 +54,24 @@ auth = {
 }
 
 services = [
+<% if @services.include?('SFRedmine') %>
     'SFRedmine',
+<% end %>
+<% if @services.include?('SFGerrit') %>
     'SFGerrit',
+<% end %>
+<% if @services.include?('jenkins') %>
     'jenkins',
+<% end %>
+<% if @services.include?('etherpad') %>
     'etherpad',
+<% end %>
+<% if @services.include?('lodgeit') %>
     'lodgeit',
+<% end %>
+<% if @services.include?('nodepool') %>
     'nodepool',
+<% end %>
 ]
 
 mysql = {
