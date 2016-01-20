@@ -15,6 +15,7 @@
 # under the License.
 import config
 import requests
+import time
 import urllib2
 
 from utils import Base
@@ -23,6 +24,7 @@ from utils import skip
 
 from pysflib.sfredmine import RedmineUtils
 from pysflib.sfgerrit import GerritUtils
+from pysflib.sfauth import get_cookie
 
 
 class TestUserdata(Base):
@@ -143,3 +145,111 @@ class TestUserdata(Base):
             self.skipTest("Could not fetch non-member permissions")
         self.assertTrue('view_master_backlog' in non_member_role.permissions)
         self.assertTrue('create_stories' in non_member_role.permissions)
+
+    def test_delete_user_in_backends_by_username(self):
+        """ Delete a user previously registered user by username
+        """
+        # first, create a user and register it with services
+        try:
+            self.msu.create_user('bootsy', 'collins', 'funk@mothership.com')
+        except NotImplementedError:
+            skip("user management not supported in this version of managesf")
+        self.logout()
+        self.login('bootsy', 'collins', config.GATEWAY_URL)
+        # make sure user is in redmine and gerrit
+        self.assertEqual('funk@mothership.com',
+                         self.gu.get_account('bootsy').get('email'))
+        users = self.rm.r.user.filter(limit=20)
+        users = [u for u in users if u.firstname == 'bootsy']
+        self.assertEqual(1, len(users))
+        user = users[0]
+        self.assertEqual('funk@mothership.com',
+                         user.mail)
+        # now suppress it
+        del_url = config.GATEWAY_URL + 'manage/services_users/?username=bootsy'
+        # try with a a non-admin user, it should not work ...
+        auth_cookie = get_cookie(config.GATEWAY_HOST,
+                                 'user5', config.ADMIN_PASSWORD)
+        d = requests.delete(del_url,
+                            cookies={'auth_pubtkt': auth_cookie})
+        self.assertEqual(401,
+                         int(d.status_code))
+        # try with an admin ...
+        auth_cookie = config.USERS[config.ADMIN_USER]['auth_cookie']
+        d = requests.delete(del_url,
+                            cookies={'auth_pubtkt': auth_cookie})
+        self.assertTrue(int(d.status_code) < 400, d.status_code)
+        # make sure the user does not exist anymore
+        self.assertEqual(False,
+                         self.gu.get_account('bootsy'))
+        users = self.rm.r.user.filter(limit=20)
+        self.assertEqual(0,
+                         len([u for u in users if u.firstname == 'bootsy']))
+
+    def test_delete_user_in_backends_by_email(self):
+        """ Delete a user previously registered user by email
+        """
+        # first, create a user and register it with services
+        try:
+            self.msu.create_user('josh', 'homme', 'queen@stoneage.com')
+        except NotImplementedError:
+            skip("user management not supported in this version of managesf")
+        self.logout()
+        self.login('josh', 'homme', config.GATEWAY_URL)
+        # make sure user is in redmine and gerrit
+        self.assertEqual('queen@stoneage.com',
+                         self.gu.get_account('josh').get('email'))
+        users = self.rm.r.user.filter(limit=20)
+        users = [u for u in users if u.firstname == 'josh']
+        self.assertEqual(1, len(users))
+        user = users[0]
+        self.assertEqual('queen@stoneage.com',
+                         user.mail)
+        # now suppress it
+        del_url = config.GATEWAY_URL +\
+            'manage/services_users/?email=queen@stoneage.com'
+        auth_cookie = config.USERS[config.ADMIN_USER]['auth_cookie']
+        d = requests.delete(del_url,
+                            cookies={'auth_pubtkt': auth_cookie})
+        self.assertTrue(int(d.status_code) < 400, d.status_code)
+        # make sure the user does not exist anymore
+        self.assertEqual(False,
+                         self.gu.get_account('josh'))
+        users = self.rm.r.user.filter(limit=20)
+        self.assertEqual(0,
+                         len([u for u in users if u.firstname == 'josh']))
+
+    def test_delete_in_backend_and_recreate(self):
+        """Make sure we can recreate a user but as a different one"""
+        # first, create a user and register it with services
+        try:
+            self.msu.create_user('freddie', 'mercury', 'mrbadguy@queen.com')
+        except NotImplementedError:
+            skip("user management not supported in this version of managesf")
+        self.logout()
+        self.login('freddie', 'mercury', config.GATEWAY_URL)
+        gerrit_id = self.gu.get_account('freddie').get('_account_id')
+        users = self.rm.r.user.filter(limit=20)
+        user = [u for u in users if u.firstname == 'freddie'][0]
+        redmine_id = user.id
+        del_url = config.GATEWAY_URL +\
+            'manage/services_users/?email=mrbadguy@queen.com'
+        auth_cookie = config.USERS[config.ADMIN_USER]['auth_cookie']
+        d = requests.delete(del_url,
+                            cookies={'auth_pubtkt': auth_cookie})
+        self.assertTrue(int(d.status_code) < 400, d.status_code)
+        self.assertEqual(False,
+                         self.gu.get_account('freddie'))
+        users = self.rm.r.user.filter(limit=20)
+        self.assertEqual(0,
+                         len([u for u in users if u.firstname == 'freddie']))
+        # recreate the user in the backends
+        time.sleep(5)
+        self.logout()
+        self.login('freddie', 'mercury', config.GATEWAY_URL)
+        new_gerrit_id = self.gu.get_account('freddie').get('_account_id')
+        self.assertTrue(gerrit_id != new_gerrit_id)
+        users = self.rm.r.user.filter(limit=20)
+        user = [u for u in users if u.firstname == 'freddie'][0]
+        new_redmine_id = user.id
+        self.assertTrue(redmine_id != new_redmine_id)
