@@ -31,6 +31,7 @@ authentication:
         - "sftests.com"
 
     ldap:
+        disabled: True
         ldap_url: ldap://sftests.com
         ldap_account_base: ou=Users,dc=sftests,dc=com
         ldap_account_username_attribute: cn
