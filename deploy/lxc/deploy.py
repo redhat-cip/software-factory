@@ -136,9 +136,6 @@ def init(base):
 
 def start():
     print "[deploy] Start"
-    if execute(["which", "virsh"], silent=True):
-        execute(["yum", "install", "-y", "libvirt-daemon-lxc"])
-        execute(["systemctl", "restart", "libvirtd"])
     virsh(["net-create", "libvirt-network.xml"])
     virsh(["create", "libvirt-managesf.xml"])
     if args.refarch == "2nodes-jenkins":

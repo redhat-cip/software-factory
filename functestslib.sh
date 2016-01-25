@@ -43,11 +43,6 @@ function lxc_stop {
 
 function lxc_init {
     ver=${1:-${SF_VER}}
-    if [ ! -f "/usr/lib64/libvirt/connection-driver/libvirt_driver_lxc.so" ]; then
-        echo "(+) Installing libvirt-daemon-lxc..."
-        sudo yum install -y libvirt-daemon-lxc libvirt
-        sudo systemctl restart libvirtd
-    fi
     (cd deploy/lxc; sudo ./deploy.py init --workspace ${SF_WORKSPACE} --refarch $REFARCH --version ${ver}) || fail "LXC start FAILED"
     checkpoint "lxc-start"
 }
