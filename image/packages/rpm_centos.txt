@@ -68,7 +68,7 @@ httpd
 ImageMagick
 MySQL-python
 python
-python-crypto
+python2-crypto
 python-ecdsa
 python-jinja2
 python-ldap
