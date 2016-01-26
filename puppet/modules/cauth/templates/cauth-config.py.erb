@@ -51,14 +51,15 @@ logging = {
 
 # Authorization configurations
 auth = {
-<% if not @ldap['disabled'] %>
+    <% if not @ldap['disabled'] %>
     'ldap': {
         'host': '<%= @ldap['ldap_url'] %>',
         'dn': '<%= @ldap['ldap_account_username_attribute'] %>=%(username)s,' + '<%= @ldap['ldap_account_base'] %>',
         'sn': '<%= @ldap['ldap_account_surname_attribute'] %>',
         'mail': '<%= @ldap['ldap_account_mail_attribute'] %>',
     },
-<% end %>
+    <% end %>
+    <% if not @github['disabled'] %>
     'github': {
         'top_domain': '<%= @fqdn %>',
         'auth_url':  'https://github.com/login/oauth/authorize',
@@ -71,13 +72,16 @@ auth = {
         'client_secret': '<%= @github['github_app_secret'] %>',
         'allowed_organizations': '<%= @github['allowed_organizations'] %>'
     },
+    <% end %>
     'localdb': {
         'managesf_url': 'http://managesf.<%= @fqdn %>',
     },
+    <% if not @launchpad['disabled'] %>
     'openid': {
         'auth_url': 'https://login.launchpad.net/+openid',
         'redirect_uri': '/auth/login/openid/callback'
     },
+    <% end %>
     'users': {
         "admin": {
             "lastname": "Software Factory Administrator",

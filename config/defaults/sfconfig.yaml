@@ -39,9 +39,13 @@ authentication:
         ldap_account_surname_attribute: sn
 
     github:
+        disabled: False
         github_app_id:
         github_app_secret:
         github_allowed_organizations:
+
+    launchpad:
+        disabled: False
 
 
 theme:

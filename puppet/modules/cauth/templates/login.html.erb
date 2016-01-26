@@ -2,7 +2,7 @@
 <html>
     <head>
         <meta charset="utf-8">
-        <link rel="stylesheet" type="text/css" href="/static/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+        <link rel="stylesheet" type="text/css" href="/static/bootstrap/css/bootstrap.min.css">
         <link rel="stylesheet" type="text/css" href="/static/font-awesome/css/font-awesome.min.css">
         <script type="text/javascript" src="/static/js/topmenu.js"></script>
     </head>
@@ -20,6 +20,7 @@
                           <span>${message}</span>
                         </div>
                     % endif
+                        <% if not @github["disabled"] %>
                         <form method="post" action="/auth/login/" target="_top">
                         <input type="hidden" name="back" value="${back}">
                         <input type="hidden" name="method" value="Github">
@@ -31,7 +32,9 @@
                        </form>
                        <br />
                        <hr />
-                        <form method="post" action="/auth/login/" target="_top">
+                       <% end %>
+                       <% if not @launchpad["disabled"] %>
+                       <form method="post" action="/auth/login/" target="_top">
                         <input type="hidden" name="back" value="${back}">
                         <input type="hidden" name="method" value="OpenID">
                             <button type="submit" class="btn btn-warning col-md-12">
@@ -42,6 +45,7 @@
                        </form>
                        <br />
                        <hr />
+                       <% end %>
                         <form method="post" action="/auth/login/" class="form-signin" target="_top">
                             % if message:
                             <div class="form-group has-error">

@@ -24,6 +24,7 @@ class cauth ($cauth = hiera('cauth'), $gerrit = hiera('gerrit')) {
   $admin_password = $auth['admin_password']
   $ldap = $auth['ldap']
   $github = $auth['github']
+  $launchpad = $auth['launchpad']
   $issues_tracker_api_key = hiera('creds_issues_tracker_api_key')
   $gerrit_mysql_host = "mysql.${fqdn}"
   $gerrit_mysql_db = 'gerrit'

@@ -102,6 +102,16 @@ if "disabled" not in ldap:
     else:
         ldap['disabled'] = True
 
+github = d['authentication']['github']
+if "disabled" not in github:
+    if github['github_app_id']:
+        github['disabled'] = True
+    else:
+        github['disabled'] = False
+
+if not d['authentication'].get('launchpad'):
+    d['authentication']['launchpad'] = {'disabled': False}
+
 # Make sure backup has os_auth_version (2.0.4 -> 2.1.0)
 if "os_auth_version" not in d["backup"]:
     d["backup"]["os_auth_version"] = 1
