@@ -476,9 +476,6 @@ if [ "$STEP" == 1 ]; then
     install_mod_authpub_tkt
     checkpoint "etherpad, paste, bup, mod_authpub_tkt installed"
     image_clean
-    set +x
-    check_rpm_packages ${dir} "${RPM_PKGS}"
-    [ -z "$DEBUG" ] || set -x
     do_chroot ${dir} passwd -l root
     checkpoint "image cleaned"
 fi

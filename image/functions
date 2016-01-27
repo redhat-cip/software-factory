@@ -135,27 +135,6 @@ install_packages() {
     shift
     local packages=$@
     do_chroot $chroot yum $INSTALL_OPTIONS install -y $packages
-    # YUM does not fail when a package in the list is not available.
-    # That means we have to detect that all packages of our list are
-    # really installed.
-}
-
-check_rpm_packages() {
-    local chroot=$1
-    shift
-    local packages=$@
-    PKG_MISSING=
-    for pkg in $packages; do
-        # Some packages are passed with a full URL (ie. hpacucli)
-        # We need to retrieve the package name to be able to pass
-        # it through rpm -q
-        package_name=$(basename $pkg)
-        package_stripname="${package_name%.rpm}"
-        do_chroot $dir rpm -q $package_stripname &>/dev/null || PKG_MISSING="$PKG_MISSING $package_stripname"
-    done
-    if [ -n "${PKG_MISSING}" ];then
-        fatal_error "The following packages are missing: ${PKG_MISSING}"
-    fi
 }
 
 remove_packages() {
