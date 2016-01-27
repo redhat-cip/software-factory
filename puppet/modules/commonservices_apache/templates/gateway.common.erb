@@ -162,6 +162,11 @@
         allow from all
     </Directory>
 
+    <Directory /var/www/managesf>
+        Order allow,deny
+        Deny from all
+    </Directory>
+
     <% if @authenticated_only %>
     # Make sure static files, docs, git and the topmenu are accessible even if
     # anonymous access is disabled. Git itself is protected by Gerrit

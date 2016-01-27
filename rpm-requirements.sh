@@ -25,3 +25,5 @@ if [ ! -z "${PKGS}" ]; then
     echo "(+) Installing build requirement..."
     sudo yum install -y $PKGS
 fi
+
+which reno &> /dev/null || sudo pip install 'pip<8' 'reno'
