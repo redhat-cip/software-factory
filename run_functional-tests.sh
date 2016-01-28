@@ -65,11 +65,6 @@ case "${TEST_TYPE}" in
         run_bootstraps
         run_serverspec_tests
         run_functional_tests
-        ;;
-    "backup")
-        lxc_init
-        run_bootstraps
-        run_serverspec_tests
         run_provisioner
         run_backup_start
         lxc_stop
