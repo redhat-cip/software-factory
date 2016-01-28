@@ -224,7 +224,7 @@
           sudo jenkins-jobs -l debug --ignore-cache update --delete-old jobs/
           # concat of layout.yaml and projects.yaml to /etc/zuul/layout.yaml
           /usr/local/bin/yaml-merger.py zuul | sudo tee /etc/zuul/layout.yaml
-          sudo service zuul reload
+          sudo systemctl reload zuul
           # Merge nodepool.yaml configuration
           /usr/local/bin/sf-nodepool-conf-update.sh apply
     triggers:

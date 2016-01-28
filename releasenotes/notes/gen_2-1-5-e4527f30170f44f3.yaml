@@ -2,11 +2,14 @@
 prelude: >
     This is a minor release with mostly fix and sane
     enhancements.
+issues:
+  - Fix zuul to not run as root
 features:
   - Two new options in sfconfig.yaml to enable/disable
     Github and Launchpad authentication
   - Use managesf for user registration
 upgrade:
   - Update nodepool to last version (git master)
+  - Update zuul to a more recent version
 other:
   - Prevent pip to upgrade to pip-8

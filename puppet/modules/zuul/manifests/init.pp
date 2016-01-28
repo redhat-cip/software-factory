@@ -48,7 +48,7 @@ class zuul {
     mode   => '0555',
     owner  => 'root',
     group  => 'root',
-    content => template('zuul/zuul.systemd.service.erb'),
+    source => 'puppet:///modules/zuul/zuul.service',
   }
 
   file {'zuul_merger_init':
@@ -57,7 +57,7 @@ class zuul {
     mode   => '0555',
     group  => 'root',
     owner  => 'root',
-    source => 'puppet:///modules/zuul/zuul-merger.systemd.service',
+    source => 'puppet:///modules/zuul/zuul-merger.service',
   }
 
   group { 'zuul':
@@ -79,6 +79,10 @@ class zuul {
     owner   => 'zuul',
     group   => 'zuul',
     require => [User['zuul'], Group['zuul']],
+  }
+
+  file {'/etc/sysconfig/zuul':
+    content => template('graphite/statsd.environment.erb'),
   }
 
   file {'/etc/zuul':
