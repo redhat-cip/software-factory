@@ -38,7 +38,7 @@ class nodepool {
   file { 'nodepool_service':
     path    => '/lib/systemd/system/nodepool.service',
     owner   => 'jenkins',
-    content => template('nodepool/nodepool.service.erb'),
+    source  => 'puppet:///modules/nodepool/nodepool.service',
   }
 
   file { '/var/run/nodepool':
@@ -47,6 +47,15 @@ class nodepool {
   }
 
   file { '/var/log/nodepool/':
+    ensure => directory,
+    owner  => 'jenkins',
+  }
+
+  file {'/etc/sysconfig/nodepool':
+    content => template('graphite/statsd.environment.erb'),
+  }
+
+  file {'/opt/nodepool':
     ensure => directory,
     owner  => 'jenkins',
   }
@@ -82,6 +91,19 @@ class nodepool {
     require => [File['/etc/nodepool']],
   }
 
+  file { '/etc/nodepool/secure.conf':
+    owner   => 'jenkins',
+    mode   => '0400',
+    content => template('nodepool/secure.conf.erb'),
+    require => [File['/etc/nodepool']],
+  }
+
+  file {'/etc/nodepool/logging.conf':
+    source => 'puppet:///modules/nodepool/logging.conf',
+    require => [File['/etc/nodepool/']],
+  }
+
+
   file { '/usr/local/bin/sf-nodepool-conf-update.sh':
     ensure => file,
     mode   => '0755',
@@ -100,6 +122,7 @@ class nodepool {
                     File['/etc/nodepool/_nodepool.yaml'],
                     File['/etc/nodepool/nodepool.logging.conf'],
                     File['/etc/nodepool/scripts'],
+                    File['/etc/nodepool/logging.conf'],
                     ],
   }
 

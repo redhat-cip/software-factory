@@ -6,5 +6,7 @@ features:
   - Two new options in sfconfig.yaml to enable/disable
     Github and Launchpad authentication
   - Use managesf for user registration
+upgrade:
+  - Update nodepool to last version (git master)
 other:
   - Prevent pip to upgrade to pip-8

@@ -1,5 +1,5 @@
 script-dir: /etc/nodepool/scripts
-dburi: 'mysql+pymysql://nodepool:<%= @nodepool_sql_password %>@<%= @nodepool_mysql_address %>/nodepool'
+images-dir: /opt/nodepool
 
 zmq-publishers:
  - tcp://<%= @jenkins_host %>:8888
@@ -13,21 +13,17 @@ cron:
   check: '*/15 * * * *'
 
 targets:
-  - name: jenkins
-    jenkins:
-      url: '<%= @url["jenkins_jjb_url"] %>'
-      user: 'jenkins'
-      apikey: '<%= @jenkins_password %>'
-      credentials-id: '4f98191e-efbb-4ac4-8131-0e4a8bb2ce14'
+  - name: default
 
 providers:
 <% @nodepool['providers'].each do | provider | -%>
   - name: <%= provider['name'] %>
+    image-api-use-tasks: False
 <% if provider['auth-url'] -%>
     auth-url: <%= provider['auth-url'] %>
 <% end -%>
 <% if provider['project-id'] -%>
-    project-id: <%= provider['project-id'] %>
+    project-name: <%= provider['project-id'] %>
 <% end -%>
 <% if provider['username'] -%>
     username: <%= provider['username'] %>

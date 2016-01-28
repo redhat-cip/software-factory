@@ -6,15 +6,30 @@ STAGING_PKGS=""
 # Without this, managesf fails with ResourceNotFoundError: Requested resource doesn't exist
 STAGING_PIP=""
 
+# Latest version of nodepool/zuul as of Jan24 2016
+NODEPOOL_VERSION=37cdfdd43b1c1866d477361f23041db04e7d5617
+
 function install_nodepool {
-    # nodepool
+    # Checkout VERSION in /tmp
     do_chroot ${dir} virtualenv /srv/nodepool
-    do_chroot ${dir} /srv/nodepool/bin/pip install --upgrade 'pip<8' 'pbr<1.0'
-    do_chroot ${dir} /srv/nodepool/bin/pip install git+git://github.com/openstack-infra/nodepool@${NODEPOOL_VERSION} 'pip<8'
+    [ -d ${dir}/tmp/nodepool ] || retry do_chroot ${dir} git clone ${NODEPOOL_URL} /tmp/nodepool
+    do_chroot ${dir} bash -c "cd /tmp/nodepool && git checkout -b sf_stable ${NODEPOOL_VERSION}"
+
+    # Apply validator fix
+    http_fetch "https://review.openstack.org/changes/272097/revisions/b946015432aa557cb480b40153da475e7491b286/patch?download" ${dir}/tmp/nodepool.patch
+    cat ${dir}/tmp/nodepool.patch | base64 -d | do_chroot ${dir} bash -c "cd /tmp/nodepool; patch -p1"
+
+    # Install
+    do_chroot ${dir} /srv/nodepool/bin/pip install --upgrade 'pbr>=1.3' 'pip<8'
+    do_chroot ${dir} /srv/nodepool/bin/pip install 'pip<8' 'funcsigs' file:///tmp/nodepool
+
     # Install symlink to venv to set correct python path
     for bin in nodepool nodepoold; do
         ln -sf /srv/nodepool/bin/${bin} ${dir}/usr/bin/${bin}
     done
+
+    # Cleanup left-overs
+    rm -Rf ${dir}/tmp/nodepool*
 }
 
 function install_zuul {

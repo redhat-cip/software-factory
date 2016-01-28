@@ -1,0 +1,13 @@
+[Unit]
+Description=Nodepool Service
+After=syslog.target network.target
+
+[Service]
+Type=simple
+User=jenkins
+Group=jenkins
+EnvironmentFile=-/etc/sysconfig/nodepool
+ExecStart=/usr/bin/nodepoold -d -l /etc/nodepool/logging.conf
+
+[Install]
+WantedBy=multi-user.target
