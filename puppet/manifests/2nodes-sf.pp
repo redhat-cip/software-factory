@@ -32,8 +32,7 @@ node default {
   include ::managesf
   include ::cauth
   include ::cauth_client
-  include ::commonservices_apache
-  include ::commonservices_socat
+  include ::gateway
   include ::etherpad
   include ::lodgeit
   include ::replication

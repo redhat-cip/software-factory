@@ -17,7 +17,6 @@
 /etc/hostname
 /etc/hosts
 /etc/ld.so.cache
-/etc/mailname
 /etc/mtab
 /etc/network/
 /etc/passwd
@@ -33,7 +32,6 @@
 /etc/systemd/system/multi-user.target.wants
 /etc/udev/rules.d/*persistent*
 /etc/puppet/environments/production
-/etc/puppet/puppet.conf
 /root/.ssh
 /root/.ansible
 
@@ -69,9 +67,6 @@
 + /home/gerrit/site_path/plugins/
 - /home/gerrit/*
 /home/zuul/
-/var/www/redmine/config
-/var/www/redmine/log
-/var/www/redmine/public/plugin_assets/
 /usr/share/config.init.done
 /srv/cauth_keys/
 

@@ -174,7 +174,7 @@ class redmine {
       mode    => '0644',
       owner   => $::httpd_user,
       group   => $::httpd_user,
-      content => template('commonservices_apache/topmenu.js.erb'),
+      content => template('gateway/topmenu.js.erb'),
       require => File['/var/www/redmine/public/themes/classic/javascripts/'],
     }
 
