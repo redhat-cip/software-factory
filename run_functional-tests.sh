@@ -18,7 +18,7 @@
 # Then will start the SF in LXC containers
 # Then will run the serverspecs and functional tests
 
-if [ "${USER}" == "root" ]; then
+if [ "$(id -un)" == "root" ]; then
     echo "Can't run tests as root, use centos user instead"
     exit 1
 fi
