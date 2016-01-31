@@ -56,12 +56,9 @@ resources:
 
   router:
     type: OS::Neutron::Router
-
-  router_gateway:
-    type: OS::Neutron::RouterGateway
     properties:
-      router_id: { get_resource: router }
-      network_id: { get_param: ext_net_uuid }
+      external_gateway_info:
+        network: { get_param: ext_net_uuid }
 
   router_interface:
     type: OS::Neutron::RouterInterface
@@ -176,6 +173,30 @@ resources:
             domain: {get_param: domain}
             adminpwd: {get_attr: [admin_password, value]}
 
+  slave_net:
+    type: OS::Neutron::Net
+
+  slave_subnet:
+    type: OS::Neutron::Subnet
+    properties:
+      network_id: { get_resource: slave_net }
+      cidr: "10.8.1.0/24"
+      dns_nameservers: [ "8.8.8.8", "8.8.4.4" ]
+      ip_version: 4
+
+  slave_router:
+    type: OS::Neutron::Router
+    properties:
+      external_gateway_info:
+        network: { get_param: ext_net_uuid }
+
+  slave_interface:
+    type: OS::Neutron::RouterInterface
+    properties:
+      router_id: { get_resource: slave_router }
+      subnet: { get_resource: slave_subnet }
+
+
 outputs:
   sf_public_address:
     description: Public address of SF
@@ -191,3 +212,10 @@ outputs:
         template: "Administrator password for SF services: passwd"
         params:
           passwd: {get_attr: [admin_password, value]}
+  slave_network:
+    description: slave network
+    value:
+      str_replace:
+        template: "Nodepool slave network: netname"
+        params:
+          netname: { get_attr: [slave_net, name] }

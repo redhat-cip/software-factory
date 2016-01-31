@@ -28,6 +28,10 @@ providers:
 <% if provider['username'] -%>
     username: <%= provider['username'] %>
 <% end -%>
+<% if provider['network'] %>
+    networks:
+      - name: <%= provider['network'] %>
+<% end -%>
 <% if provider['password'] -%>
     password: <%= provider['password'] %>
 <% end -%>

@@ -106,7 +106,7 @@ function run_it_openstack {
     ${it_cmd} zuul >> ${ARTIFACTS_DIR}/integration_tests.txt        \
         && echo "Basic integration test SUCCESS"                    \
         || fail "Basic integration test failed" ${ARTIFACTS_DIR}/integration_tests.txt
-    ${it_cmd} nodepool --os_base_image "sf-${SF_VER}" --os_user sfnodepool &>> ${ARTIFACTS_DIR}/integration_tests.txt \
+    ${it_cmd} nodepool --os_base_image "sf-${SF_VER}" --os_network ${HEAT_SLAVE_NETWORK} >> ${ARTIFACTS_DIR}/integration_tests.txt \
         && echo "(non-voting) Nodepool integration test SUCCESS"    \
         || echo "(non-voting) Nodepool integration test failed"
     ${it_cmd} swiftlogs >> ${ARTIFACTS_DIR}/integration_tests.txt   \
@@ -158,8 +158,10 @@ function heat_wait {
     fi
     echo "ok."
     checkpoint "heat-stack-created"
-    export HEAT_IP=$(heat stack-show sf_stack | grep "Public address of the SF instance" | sed 's/.*: //' | awk '{ print $1 }' | sed 's/..$//')
-    export HEAT_PASSWORD=$(heat stack-show sf_stack | grep "Administrator password for SF services" | sed 's/.*: //' | awk '{ print $1 }' | sed 's/..$//')
+    STACK_INFO=$(heat stack-show sf_stack)
+    export HEAT_IP=$(echo ${STACK_INFO} | sed 's/.*"Public address of the SF instance: \([^"]*\)".*/\1/')
+    export HEAT_PASSWORD=$(echo ${STACK_INFO} | sed 's/.*"Administrator password for SF services: \([^"]*\)".*/\1/')
+    export HEAT_SLAVE_NETWORK=$(echo ${STACK_INFO} | sed 's/.*"Nodepool slave network: \([^"]*\)".*/\1/')
     if [ ! -n "${HEAT_IP}" ] || [ ! -n "${HEAT_PASSWORD}" ]; then
         fail "Couldn't retrieve stack paramters..."
     fi

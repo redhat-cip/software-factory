@@ -13,6 +13,7 @@
         'password':   '{{ os_env.OS_PASSWORD }}',
         'project-id': '{{ os_env.OS_TENANT_NAME }}',
         'username':   '{{ os_env.OS_USERNAME }}',
+        'network':    '{{ slave_net }}',
         'pool':       '{{ pool }}',
         'boot-timeout': 120,
         'max-servers': 2,

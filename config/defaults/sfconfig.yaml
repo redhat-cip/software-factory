@@ -81,6 +81,8 @@ nodepool:
         project-id: tenantname
         username: username
         password: secret
+        # Optional nodepool network uuid (required by heat based tenant when multiple network are available)
+        network:
         # Compute availability zone
         pool: nova
         # Max amount of Slaves that can be started

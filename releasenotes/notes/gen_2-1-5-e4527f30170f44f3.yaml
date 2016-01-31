@@ -1,15 +1,19 @@
 ---
 prelude: >
-    This is a minor release with mostly fix and sane
-    enhancements.
+    This release feature a more recent nodepool version
+    (upstream git master) to benefit from python-shade.
 issues:
   - Fix zuul to not run as root
+  - Fix broken Depends-On zuul logic
 features:
   - Two new options in sfconfig.yaml to enable/disable
     Github and Launchpad authentication
   - Use managesf for user registration
+  - Heat template creates a network for nodepool slaves
+  - Nodepool cloud providers support setting a network
+    which is required when multiple network are available
 upgrade:
-  - Update nodepool to last version (git master)
-  - Update zuul to a more recent version
+  - Update nodepool and zuul to last version (git master)
 other:
   - Prevent pip to upgrade to pip-8
+  - Openstack integration tests now only need one tenant

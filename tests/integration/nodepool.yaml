@@ -10,6 +10,7 @@
     fqdn: "{{ lookup('env', 'SF_FQDN') }}"
     base_image_name: "{{ lookup('env', 'OS_NODEPOOL_BASE_IMAGE') }}"
     pool: "{{ lookup('env', 'OS_POOL') }}"
+    slave_net: "{{ lookup('env', 'OS_NETWORK') }}"
     image_name: "sfcentos"
     node_label: "base_centos"
     testname: "unit-tests"

@@ -53,8 +53,7 @@ def main():
                         metavar='name')
     parser.add_argument("--os_pool", help="floating ip pool",
                         metavar='name', default="external_network")
-    parser.add_argument("--os_user", help="Change username and project name",
-                        metavar='name')
+    parser.add_argument("--os_network", metavar='name')
 
     args = parser.parse_args()
 
@@ -74,9 +73,8 @@ def main():
     os.environ["OS_CONTAINER"] = args.container
     os.environ["OS_POOL"] = args.os_pool
 
-    if args.os_user:
-        os.environ["OS_USERNAME"] = args.os_user
-        os.environ["OS_TENANT_NAME"] = args.os_user
+    if args.os_network:
+        os.environ["OS_NETWORK"] = args.os_network
 
     if pbname in ("nodepool", "swiftlogs", "alltogether"):
         for key in OS_ENV:
