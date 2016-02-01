@@ -39,6 +39,21 @@ class TestGateway(Base):
             resp = requests.get(url)
             self.assertNotEquals(resp.status_code, 404)
 
+    def _url_is_not_world_readable(self, url):
+        """Utility function to make sure a url is not accessible"""
+        resp = requests.get(url)
+        self.assertTrue(resp.status_code > 399, resp.status_code)
+
+    def test_managesf_is_secure(self):
+        """Test if managesf config.py file is not world readable"""
+        url = "%s/managesf/config.py" % config.GATEWAY_URL
+        self._url_is_not_world_readable(url)
+
+    def test_cauth_is_secure(self):
+        """Test if managesf config.py file is not world readable"""
+        url = "%s/cauth/config.py" % config.GATEWAY_URL
+        self._url_is_not_world_readable(url)
+
     def test_topmenu_links_shown(self):
         """ Test if all service links are shown in topmenu
         """
