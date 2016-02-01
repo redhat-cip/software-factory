@@ -1,0 +1,7 @@
+---
+security:
+  - Managesf and cauth directory was exposing gerrit admin access through
+    http because of missing ACLs. Admin user password, Redmine API key,
+    github client_secret and mysql local access may have leaked through
+    non authenticated access to config.py. Please follow documentation instructions
+    to regenerate thoses secrets, http://softwarefactory-project.io/docs/auths.html.

@@ -1,4 +1,0 @@
----
-security:
-  - Managesf directory was exposing gerrit admin access through
-    http because of the lack of ACL
