@@ -36,7 +36,11 @@ function install_nodepool {
 function install_zuul {
     # Checkout VERSION in /tmp
     do_chroot ${dir} virtualenv /srv/zuul
-    [ -d ${dir}/tmp/zuul ] || retry do_chroot ${dir} git clone ${ZUUL_URL} /tmp/zuul
+
+    # Cleanup left-overs
+    rm -Rf ${dir}/tmp/zuul*
+
+    retry do_chroot ${dir} git clone ${ZUUL_URL} /tmp/zuul
     do_chroot ${dir} bash -c "cd /tmp/zuul && git checkout -b working ${ZUUL_VERSION}"
 
     # Apply temp_url_key fix
@@ -60,7 +64,9 @@ function install_zuul {
     done
 
     # Install zuul web virtualhost
+    rm -Rf ${dir}/var/www/zuul
     mv ${dir}/tmp/zuul/etc/status/public_html/ ${dir}/var/www/zuul
+    mkdir -p ${dir}/var/www/static/js
     http_fetch $JQUERY_VISIBILITY_URL ${dir}/var/www/static/js/jquery-visibility.min.js
     http_fetch $JQUERY_GRAPHITE_URL   ${dir}/var/www/static/js/jquery.graphite.js
 
@@ -143,7 +149,8 @@ function install_sf {
 
     # Documentation
     DOCBUILDDIR=$(mktemp -d /tmp/sfdocs_buildXXXXXXX)
-    [ ! -d "${dir}/var/www/docs" ] && mkdir ${dir}/var/www/docs
+    rm -Rf ${dir}/var/www/docs
+    mkdir ${dir}/var/www/docs
     cd ${DOCDIR} && make BUILDDIR=$DOCBUILDDIR CAUTH_CLONED_PATH=${CAUTH_CLONED_PATH} SFMANAGER_CLONED_PATH=${dir}/tmp/python-sfmanager html ; cd -
     mv $DOCBUILDDIR/html/* ${dir}/var/www/docs/
     rm -rf $DOCBUILDDIR
