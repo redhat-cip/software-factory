@@ -217,7 +217,7 @@
           zuul-cloner http://<%= @fqdn %>/r config
           cd config
           echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
-          git log -n 1
+          git log --simplify-merges -n 1
           echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
           echo
           sudo rm -Rf /var/lib/jenkins/.cache/jenkins_jobs

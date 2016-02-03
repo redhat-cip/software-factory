@@ -302,7 +302,7 @@ function host_debug {
 
 function display_head {
     echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
-    git log -n 1 | cat
+    git log --simplify-merges -n 1 | cat
     echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
     echo
 }

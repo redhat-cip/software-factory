@@ -5,6 +5,9 @@ prelude: >
 issues:
   - Fix zuul to not run as root
   - Fix broken Depends-On zuul logic
+  - Removed buggy check_rpm packages
+  - Fix wrong data type when creating account
+  - Various little fixes related to deletion of users on services
 features:
   - Two new options in sfconfig.yaml to enable/disable
     Github and Launchpad authentication
@@ -12,6 +15,9 @@ features:
   - Heat template creates a network for nodepool slaves
   - Nodepool cloud providers support setting a network
     which is required when multiple network are available
+  - Add CI toggle button to Gerrit
+  - Enable ansicolor plugin for jenkins
+  - Add reno support
 upgrade:
   - Update nodepool and zuul to last version (git master)
 other:

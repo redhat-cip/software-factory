@@ -63,7 +63,7 @@ function build_qcow {
 
 function build_cache {
     [ -z "${SKIP_BUILD}" ] || return
-    CACHE_HASH="$(git log --format=oneline -n 1 $CACHE_DEPS)"
+    CACHE_HASH="$(git log --simplify-merges --format=oneline -n 1 $CACHE_DEPS)"
     LOCAL_HASH="$(head -n 1 ${CACHE_PATH}.description 2> /dev/null)"
 
     echo "(STEP1) Cache: ${CACHE_HASH}"
@@ -94,7 +94,11 @@ function build_cache {
 
 function build_image {
     # Image description is last commit of DEPS and the one that changed content of the image (bootstraps/ docs/ gerrit-hooks/ image/ puppet/)
-    IMAGE_HASH="SF: $(git log --format=oneline -n 1 config/ docs/ image/ puppet/) || CAUTH: $(cd ${CAUTH_CLONED_PATH}; git log --format=oneline -n 1) || PYSFLIB: $(cd ${PYSFLIB_CLONED_PATH}; git log --format=oneline -n 1) || MANAGESF: $(cd ${MANAGESF_CLONED_PATH}; git log --format=oneline -n 1) || SFMANAGER: $(cd ${SFMANAGER_CLONED_PATH}; git log --format=oneline -n 1)"
+    IMAGE_HASH="SF: $(git log --simplify-merges --format=oneline -n 1 config/ docs/ image/ puppet/)"
+    IMAGE_HASH="${IMAGE_HASH} || CAUTH: $(cd ${CAUTH_CLONED_PATH}; git log --simplify-merges --format=oneline -n 1)"
+    IMAGE_HASH="${IMAGE_HASH} || PYSFLIB: $(cd ${PYSFLIB_CLONED_PATH}; git log --simplify-merges --format=oneline -n 1)"
+    IMAGE_HASH="${IMAGE_HASH} || MANAGESF: $(cd ${MANAGESF_CLONED_PATH}; git log --simplify-merges --format=oneline -n 1)"
+    IMAGE_HASH="${IMAGE_HASH} || SFMANAGER: $(cd ${SFMANAGER_CLONED_PATH}; git log --format=oneline -n 1)"
 
     LOCAL_HASH=$(head -n 1 ${IMAGE_PATH}-${SF_VER}.description 2> /dev/null)
 

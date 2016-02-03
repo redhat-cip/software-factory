@@ -1,4 +1,54 @@
-# Change Log
+2.1.4-23  2016-02-06
+====================
+
+This release feature a more recent nodepool version (upstream git master) to benefit from python-shade.
+
+
+New Features
+------------
+
+- Two new options in sfconfig.yaml to enable/disable Github and Launchpad authentication
+- Use managesf for user registration
+- Heat template creates a network for nodepool slaves
+- Nodepool cloud providers support setting a network which is required when multiple network are available
+- Add CI toggle button to Gerrit
+- Enable ansicolor plugin for jenkins
+- Add reno support
+
+
+Known Issues
+------------
+
+- Fix zuul to not run as root
+- Fix broken Depends-On zuul logic
+- Removed buggy check_rpm packages
+- Fix wrong data type when creating account
+- Various little fixes related to deletion of users on services
+
+
+Upgrade Notes
+-------------
+
+- Update nodepool and zuul to last version (git master)
+
+
+Security Issues
+---------------
+
+- Managesf and cauth directory was exposing gerrit admin access through http because of missing ACLs.
+  Admin user password, Redmine API key, github client_secret and mysql local access may have leaked
+  through non authenticated access to config.py. Please follow documentation instructions to
+  regenerate thoses secrets, http://softwarefactory-project.io/docs/auths.html.
+
+
+Other Notes
+-----------
+
+- Prevent pip to upgrade to pip-8
+- Openstack integration tests now only need one tenant
+
+
+# Legacy Change Log
 
 ## 2.1.4 2016-01-21
 
