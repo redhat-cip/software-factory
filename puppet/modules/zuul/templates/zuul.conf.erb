@@ -16,8 +16,8 @@ report_times=true
 
 [merger]
 git_dir=/var/lib/zuul/git
-;git_user_email=zuul@example.com
-;git_user_name=zuul
+git_user_email=zuul@<%= @fqdn %>
+git_user_name=zuul
 zuul_url=http://<%= @fqdn %>/zuul/p
 log_config=/etc/zuul/merger-logging.conf
 
