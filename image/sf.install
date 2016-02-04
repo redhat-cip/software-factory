@@ -124,6 +124,10 @@ function install_sf {
     sudo cp -Rv ./../config/defaults/* ${dir}/etc/puppet/hiera/sf/
     sudo cp -Rv ./../config/ansible/ ${dir}/usr/local/share/sf-ansible
     sudo cp -Rv ./../config/config-repo/ ${dir}/usr/local/share/sf-config-repo
+    sudo cp -Rv ./../tools/slaves/ ${dir}/usr/local/share/sf-jenkins-slave-tools
+    # Also copy tool in image PATH so that sf image could
+    # be used as slave base image
+    sudo cp -Rv ./../tools/slaves/* ${dir}/usr/local/bin/
 
     # Install cauth
     [ ! -d "${dir}/var/www/cauth" ] && sudo mkdir ${dir}/var/www/cauth

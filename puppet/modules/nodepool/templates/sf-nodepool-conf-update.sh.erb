@@ -24,6 +24,8 @@ if [ "$1" = "apply" ]; then
     # No need to reload nodepool service - it re-read its conf files.
     # copy nodepool script-dir in /etc/nodepool/scripts
     cp -Rvf nodepool/* /etc/nodepool/scripts/
+    # Copy slave scripts
+    sudo rsync -avi --delete /usr/local/share/sf-jenkins-slave-tools/ /etc/nodepool/scripts/tools/
 fi
 
 rm -Rf ${toclean}

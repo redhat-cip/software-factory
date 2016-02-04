@@ -39,9 +39,9 @@ sudo yum install -y java
 # TODO: replace this section by zuul package
 sudo yum install -y python-requests gcc python-devel
 sudo pip install zuul glob2 python-magic
-sudo curl -o /usr/local/bin/zuul_swift_upload.py \
-    https://raw.githubusercontent.com/openstack-infra/project-config/master/jenkins/scripts/zuul_swift_upload.py
-sudo chmod +x /usr/local/bin/zuul_swift_upload.py
+
+# Copy slave tools
+sudo cp -v /opt/nodepool-scripts/tools/* /usr/local/bin/
 
 # sync FS, otherwise there are 0-byte sized files from the yum/pip installations
 sudo sync
