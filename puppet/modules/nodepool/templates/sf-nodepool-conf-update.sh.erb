@@ -22,10 +22,10 @@ nodepool -c ${workdir}/merged config-validate
 if [ "$1" = "apply" ]; then
     sudo cp ${workdir}/merged /etc/nodepool/nodepool.yaml
     # No need to reload nodepool service - it re-read its conf files.
-    # copy nodepool script-dir in /etc/nodepool/scripts
-    cp -Rvf nodepool/* /etc/nodepool/scripts/
-    # Copy slave scripts
-    sudo rsync -avi --delete /usr/local/share/sf-jenkins-slave-tools/ /etc/nodepool/scripts/tools/
+    # copy nodepool and slave scripts in /etc/nodepool/scripts
+    cp /usr/local/share/sf-jenkins-slave-tools/*.py nodepool/
+    # Exclude authorized_keys file installed by puppet
+    sudo rsync -avi --delete --exclude authorized_keys nodepool/ /etc/nodepool/scripts/
 fi
 
 rm -Rf ${toclean}

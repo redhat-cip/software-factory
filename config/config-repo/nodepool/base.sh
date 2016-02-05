@@ -41,7 +41,7 @@ sudo yum install -y python-requests gcc python-devel
 sudo pip install zuul glob2 python-magic
 
 # Copy slave tools
-sudo cp -v /opt/nodepool-scripts/tools/* /usr/local/bin/
+sudo cp -v /opt/nodepool-scripts/*.py /usr/local/bin/
 
 # sync FS, otherwise there are 0-byte sized files from the yum/pip installations
 sudo sync
