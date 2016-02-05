@@ -6,12 +6,15 @@ GRANT ALL PRIVILEGES ON gerrit.* TO 'gerrit'@'managesf.<%= @fqdn %>' IDENTIFIED 
 GRANT ALL PRIVILEGES ON gerrit.* TO 'gerrit'@'gerrit.<%= @fqdn %>' IDENTIFIED BY "<%= @creds_gerrit_sql_pwd %>" WITH GRANT OPTION;
 CREATE DATABASE IF NOT EXISTS nodepool CHARACTER SET utf8 COLLATE utf8_general_ci;
 GRANT ALL PRIVILEGES ON nodepool.* TO 'nodepool'@'managesf.<%= @fqdn %>' IDENTIFIED BY "<%= @creds_nodepool_sql_pwd %>";
+GRANT ALL PRIVILEGES ON nodepool.* TO 'nodepool'@'nodepool.<%= @fqdn %>' IDENTIFIED BY "<%= @creds_nodepool_sql_pwd %>";
 CREATE DATABASE IF NOT EXISTS etherpad CHARACTER SET utf8 COLLATE utf8_general_ci;
 GRANT ALL PRIVILEGES ON etherpad.* TO 'etherpad'@'managesf.<%= @fqdn %>' IDENTIFIED BY "<%= @creds_etherpad_sql_pwd %>";
 CREATE DATABASE IF NOT EXISTS lodgeit CHARACTER SET utf8 COLLATE utf8_general_ci;
 GRANT ALL PRIVILEGES ON lodgeit.* TO 'lodgeit'@'managesf.<%= @fqdn %>' IDENTIFIED BY "<%= @creds_lodgeit_sql_pwd %>";
 CREATE DATABASE IF NOT EXISTS grafana CHARACTER SET utf8 COLLATE utf8_general_ci;
 GRANT ALL PRIVILEGES ON grafana.* TO 'grafana'@'managesf.<%= @fqdn %>' IDENTIFIED BY "<%= @creds_grafana_sql_pwd %>";
+GRANT ALL PRIVILEGES ON grafana.* TO 'grafana'@'statsd.<%= @fqdn %>' IDENTIFIED BY "<%= @creds_grafana_sql_pwd %>";
 CREATE DATABASE IF NOT EXISTS gnocchi CHARACTER SET utf8 COLLATE utf8_general_ci;
 GRANT ALL PRIVILEGES ON gnocchi.* TO 'gnocchi'@'managesf.<%= @fqdn %>' IDENTIFIED BY "<%= @creds_gnocchi_sql_pwd %>";
+GRANT ALL PRIVILEGES ON gnocchi.* TO 'gnocchi'@'statsd.<%= @fqdn %>' IDENTIFIED BY "<%= @creds_gnocchi_sql_pwd %>";
 FLUSH PRIVILEGES;

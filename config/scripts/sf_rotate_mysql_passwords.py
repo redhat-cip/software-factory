@@ -42,6 +42,8 @@ fqdn = yaml.load(open("/etc/puppet/hiera/sf/sfconfig.yaml").read())['fqdn']
 for user in ('redmine', 'gerrit', 'nodepool', 'etherpad', 'lodgeit', 'graphite', 'grafana'):
     key = "creds_%s_sql_pwd" % user
     pwd = str(uuid.uuid4())
+
+    # Allow connection from remote services
     if user == 'redmine':
         sqls.append("SET PASSWORD FOR '%s'@'redmine.%s' = PASSWORD('%s');" % (
             user, fqdn, pwd
@@ -51,9 +53,15 @@ for user in ('redmine', 'gerrit', 'nodepool', 'etherpad', 'lodgeit', 'graphite',
             user, fqdn, pwd
         ))
     elif user == 'nodepool':
-        sqls.append("SET PASSWORD FOR '%s'@'jenkins.%s' = PASSWORD('%s');" % (
+        sqls.append("SET PASSWORD FOR '%s'@'nodepool.%s' = PASSWORD('%s');" % (
             user, fqdn, pwd
         ))
+    elif user in ('grafana', 'gnocchi'):
+        sqls.append("SET PASSWORD FOR '%s'@'statsd.%s' = PASSWORD('%s');" % (
+            user, fqdn, pwd
+        ))
+
+    # Always allow connection from managesf for all-in-one compatibility
     sqls.append("SET PASSWORD FOR '%s'@'managesf.%s' = PASSWORD('%s');" % (
         user, fqdn, pwd
     ))

@@ -1,0 +1,14 @@
+---
+- stat: path=/root/config
+  register: config
+
+- git: repo=http://{{ fqdn }}/r/config dest=/root/config force=yes
+  when: config.stat.isdir is not defined
+
+- name: Update jenkins jobs
+  when: config.stat.isdir is defined and config.stat.isdir
+  command: chdir=/root/config {{ item }}
+  with_items:
+    - git fetch --all
+    - git reset --hard origin/master --
+    - git clean -f -x -d

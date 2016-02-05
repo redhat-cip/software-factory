@@ -48,10 +48,9 @@ class TestProjectReplication(Base):
         self.gitu_admin = GerritGitUtils(self.un,
                                          priv_key_path,
                                          config.USERS[self.un]['email'])
-        # Configuration to access mirror repo present in mysql
-        self.msql_repo_path = "ssh://%s@%s/%s" \
-                              % (config.GERRIT_USER, config.GATEWAY_HOST,
-                                 'home/gerrit/site_path/git/')
+        # Configuration to access mirror repo present in managesf
+        self.managesf_repo_path = "ssh://%s@%s/home/gerrit/git/" % (
+            config.GERRIT_USER, config.GATEWAY_HOST)
         # prepare environment for git clone on mirror repo
         self.mt = Tool()
         self.mt_tempdir = tempfile.mkdtemp()
@@ -59,8 +58,8 @@ class TestProjectReplication(Base):
         priv_key_path = os.path.join(self.mt_tempdir, 'user.priv')
         file(priv_key_path, 'w').write(priv_key)
         os.chmod(priv_key_path, stat.S_IREAD | stat.S_IWRITE)
-        ssh_wrapper = "ssh -o StrictHostKeyChecking=no -i " \
-                      "%s \"$@\"" % priv_key_path
+        ssh_wrapper = "ssh -o StrictHostKeyChecking=no -i %s \"$@\"" % (
+            priv_key_path)
         wrapper_path = os.path.join(self.mt_tempdir, 'ssh_wrapper.sh')
         file(wrapper_path, 'w').write(ssh_wrapper)
         os.chmod(wrapper_path, stat.S_IRWXU)
@@ -73,8 +72,8 @@ class TestProjectReplication(Base):
         self.msu.deleteProject(self.pname, self.un)
         self.gu2.del_pubkey(self.k_idx)
 
-    # Can't use GerritGitUtils.clone as not sure when source uri repo in mysql
-    # be ready.(i.e gerrit is taking time to create the mirror repo in mysql
+    # Can't use GerritGitUtils.clone as not sure when source uri repo
+    # be ready.(i.e gerrit is taking time to create the mirror repo in managesf
     # node) So this clone may succeed or fail, we don't need 'git review -s'
     # and other review commands in clone method
     def clone(self, uri, target):
@@ -102,15 +101,15 @@ class TestProjectReplication(Base):
         sshkey_priv_path = config.GERRIT_SERVICE_PRIV_KEY_PATH
         user = 'gerrit'
         host = config.GATEWAY_HOST
-        mirror_path = '/home/gerrit/site_path/git/%s.git' % name
+        mirror_path = '/home/gerrit/git/%s.git' % name
         cmd = ['rm', '-rf', mirror_path]
         self.ssh_run_cmd(sshkey_priv_path, user, host, cmd)
 
     def createConfigSection(self, user, project):
         # Section name will be node name and the project
-        section = 'mysql_%s' % project
+        section = 'managesf_%s' % project
         host = '%s@%s' % (config.GERRIT_USER, config.GATEWAY_HOST)
-        mirror_repo_path = '/home/gerrit/site_path/git/\${name}.git'
+        mirror_repo_path = '/home/gerrit/git/\${name}.git'
         url = '%s:%s' % (host, mirror_repo_path)
         self.msu.replicationModifyConfig(user, 'add', section,
                                          'projects', project)
@@ -170,9 +169,10 @@ class TestProjectReplication(Base):
         # is discovered.
         # This may take some time (gerrit in some condition take long
         # to be fully up)
-        call("ssh %s systemctl restart gerrit" % config.GATEWAY_HOST,
-             shell=True)
-        call("ssh %s /root/wait4gerrit.sh" % config.GATEWAY_HOST, shell=True)
+        call("ssh %s ssh gerrit systemctl restart gerrit" %
+             config.GATEWAY_HOST, shell=True)
+        call("ssh %s ssh gerrit /root/wait4gerrit.sh" %
+             config.GATEWAY_HOST, shell=True)
 
         # Clone the project and submit it for review
         priv_key_path = set_private_key(config.USERS[self.un]["privkey"])
@@ -210,7 +210,5 @@ class TestProjectReplication(Base):
         shutil.rmtree(clone_dir)
 
         # Verify if gerrit automatically triggered replication
-        # Mirror repo(in mysql node) should have these latest changes
-        # Clone the mirror repo(from mysql) and check for the 2 files
-        msql_repo_url = self.msql_repo_path + '%s.git' % self.pname
-        self.mirror_clone_and_check_files(msql_repo_url, self.pname, us_files)
+        repo_url = self.managesf_repo_path + '%s.git' % self.pname
+        self.mirror_clone_and_check_files(repo_url, self.pname, us_files)

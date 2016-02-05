@@ -1,10 +1,7 @@
 ---
-- git: repo=http://{{ fqdn }}/r/config dest=/root/config force=yes
+- include: update_configrepo.yaml
 
 - name: Update nodepool configuration
   command: chdir=config {{ item }}
   with_items:
-    - git fetch --all
-    - git reset --hard origin/master --
-    - git clean -f -x -d
     - /usr/local/bin/sf-nodepool-conf-update.sh apply

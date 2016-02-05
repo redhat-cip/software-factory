@@ -12,3 +12,7 @@
   gather_facts: no
   tasks:
     - include: tasks/nodepool_update.yaml
+- hosts: managesf
+  gather_facts: no
+  tasks:
+    - include: tasks/update_configrepo.yaml

@@ -34,6 +34,7 @@
 /etc/puppet/environments/production
 /root/.ssh
 /root/.ansible
+/root/.gitconfig
 
 # System var stuff
 /var/cache/

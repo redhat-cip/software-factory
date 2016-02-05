@@ -19,30 +19,23 @@ set -e
 
 [ "$1" = "upgrade" ] && upgrade=true || upgrade=false
 
-gerrit_host=gerrit.<%= @fqdn %>
-gerrit_ssh_port=<%= @gerrit['gerrit_sshd_port'] %>
-gh="$gerrit_host:$gerrit_ssh_port"
-
 gateway_host="<%= @fqdn %>"
 gateway_url="<%= @url['gateway_url'] %>"
 
-admin="admin"
-admin_http_password="<%= @auth['admin_password'] %>"
-auth=$admin:$admin_http_password
+auth="admin:<%= @auth['admin_password'] %>"
 
-admin_email="admin@<%= @fqdn %>"
-
-gerrit_ssh_key="/root/gerrit_admin_rsa"
-jenkins_kick_script="/usr/local/jenkins/slave_scripts/kick.sh"
+gerrit_ssh_key="/root/sf-bootstrap-data/ssh_keys/gerrit_admin_rsa"
 
 if [ "$upgrade" = "false" ]; then
     # Create config project (managesf must be up)
     if [ ! -f '/usr/share/config.init.done' ]; then
+        # TEMP FIX for gerrit known host
+        ssh gerrit.sftests.com ln -s /home/gerrit/.ssh/known_hosts_gerrit /home/gerrit/.ssh/known_hosts
         sfmanager --url $gateway_url --auth $auth project create --name config --description "Config repository (Do not delete it)"
-        sfmanager --url $gateway_url --auth $auth replication configure add --section mysql_config projects config
-        sfmanager --url $gateway_url --auth $auth replication configure add --section mysql_config url gerrit@$gateway_host:/home/gerrit/site_path/git/\${name}.git
-        sfmanager --url $gateway_url --auth $auth replication configure add --section mysql_config push +refs/heads/*:refs/heads/*
-        sfmanager --url $gateway_url --auth $auth replication configure add --section mysql_config push +refs/tags/*:refs/tags/*
+        sfmanager --url $gateway_url --auth $auth replication configure add --section managesf_config projects config
+        sfmanager --url $gateway_url --auth $auth replication configure add --section managesf_config url gerrit@$gateway_host:/home/gerrit/git/\${name}.git
+        sfmanager --url $gateway_url --auth $auth replication configure add --section managesf_config push +refs/heads/*:refs/heads/*
+        sfmanager --url $gateway_url --auth $auth replication configure add --section managesf_config push +refs/tags/*:refs/tags/*
         sfmanager --url $gateway_url --auth $auth replication trigger --project config || true
         touch /usr/share/config.init.done
     fi
@@ -52,10 +45,8 @@ fi
 echo "ssh -o StrictHostKeyChecking=no -i $gerrit_ssh_key \$@" > /root/ssh_wrapper.sh
 chmod +x /root/ssh_wrapper.sh
 export GIT_SSH="/root/ssh_wrapper.sh"
-export GIT_COMMITTER_NAME=$admin
-export GIT_COMMITTER_EMAIL=$admin_email
 CONF_TMP=$(mktemp -d)
-git clone ssh://$admin@$gh/config ${CONF_TMP}
+git clone ssh://admin@${gateway_host}:29418/config ${CONF_TMP}
 
 if [ "$upgrade" = "false" ]; then
     if [ -d "${CONF_TMP}/jobs" ]; then
@@ -70,7 +61,7 @@ if [ "$upgrade" = "false" ]; then
     # Commit the changes
     cd ${CONF_TMP}
     git add .
-    git commit -a --author "$admin <$admin_email>" -m "JJB/Zuul files"
+    git commit -a -m "JJB/Zuul files"
     git push origin master
 fi
 
@@ -78,10 +69,9 @@ if [ "$upgrade" = "true" ]; then
     rsync --exclude jobs/projects.yaml --exclude zuul/projects.yaml --exclude nodepool/images.yaml --exclude nodepool/labels.yaml \
           -av /usr/local/share/sf-config-repo/ ${CONF_TMP}/
     cd ${CONF_TMP}
-    git config --add gitreview.username "$admin"
     # Only perform the commit/review if the upgrade bring new modifications
     if [ -n "$(git ls-files -o -m --exclude-standard)" ]; then
-        git commit -a --author "$admin <$admin_email>" -m "Upgrade of base JJB/Zuul/Nodepool files"
+        git commit -a -m "Upgrade of base JJB/Zuul/Nodepool files"
         (eval $(ssh-agent) && ssh-add $gerrit_ssh_key && git review -s)
         git review -i
     fi
