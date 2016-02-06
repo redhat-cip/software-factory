@@ -21,3 +21,4 @@ Welcome to software-factory's documentation!
    jenkinsslaves
    contribute
    tools
+   faqs
