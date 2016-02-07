@@ -17,8 +17,7 @@ function install_nodepool {
     do_chroot ${dir} bash -c "cd /tmp/nodepool && git checkout -b sf_stable ${NODEPOOL_VERSION}"
 
     # Apply validator fix
-    http_fetch "https://review.openstack.org/changes/272097/revisions/b946015432aa557cb480b40153da475e7491b286/patch?download" ${dir}/tmp/nodepool.patch
-    cat ${dir}/tmp/nodepool.patch | base64 -d | do_chroot ${dir} bash -c "cd /tmp/nodepool; patch -p1"
+    do_chroot ${dir} bash -c "cd /tmp/nodepool; patch -p1" < ./patches/nodepool_image-api-use-tasks_272097.patch
 
     # Install
     do_chroot ${dir} /srv/nodepool/bin/pip install --upgrade 'pbr>=1.3' 'pip<8'
@@ -44,11 +43,9 @@ function install_zuul {
     do_chroot ${dir} bash -c "cd /tmp/zuul && git checkout -b working ${ZUUL_VERSION}"
 
     # Apply temp_url_key fix
-    http_fetch "https://review.openstack.org/changes/270338/revisions/2cb6df61f35a7a80209fd873d7f1113040c9afb8/patch?download" ${dir}/tmp/zuul.patch
-    cat ${dir}/tmp/zuul.patch | base64 -d | do_chroot ${dir} bash -c "cd /tmp/zuul; patch -p1"
+    do_chroot ${dir} bash -c "cd /tmp/zuul; patch -p1" < ./patches/zuul_temp-url-key_270338.patch
     # Apply poll fix
-    http_fetch "https://review.openstack.org/changes/274445/revisions/e8cfcd9705d5a59c3f662ec52de063478b1774ed/patch?download" ${dir}/tmp/zuul-poll.patch
-    cat ${dir}/tmp/zuul-poll.patch | base64 -d | do_chroot ${dir} bash -c "cd /tmp/zuul; patch -p1"
+    do_chroot ${dir} bash -c "cd /tmp/zuul; patch -p1" < ./patches/zuul_poll-timeout_274445.patch
 
     # Install
     sudo sed -i 's/^pbr.*//' ${dir}/tmp/zuul/requirements.txt

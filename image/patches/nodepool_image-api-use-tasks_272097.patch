@@ -1,0 +1,23 @@
+From b946015432aa557cb480b40153da475e7491b286 Mon Sep 17 00:00:00 2001
+From: Tristan Cacqueray <tdecacqu@redhat.com>
+Date: Mon, 25 Jan 2016 08:38:33 -0500
+Subject: [PATCH] Add 'image-api-use-tasks' provider entry for shade
+
+Shade v1.4.0 requires image-api-use-tasks to be defined for providers,
+else it throws a KeyError in shade/openstackcloud.py line 127
+
+Change-Id: I32c73e1bca66587d3e8d8a84f9447cc2aa103539
+---
+
+diff --git a/nodepool/cmd/config_validator.py b/nodepool/cmd/config_validator.py
+index dd4880e..c431100 100644
+--- a/nodepool/cmd/config_validator.py
++++ b/nodepool/cmd/config_validator.py
+@@ -69,6 +69,7 @@
+             'max-servers': int,
+             'pool': str,
+             'image-type': str,
++            'image-api-use-tasks': bool,
+             'networks': [v.Any(old_network, network)],
+             'boot-timeout': int,
+             'api-timeout': int,
