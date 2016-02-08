@@ -7,7 +7,7 @@ url:
   # jenkins-job update needs this else it fails with
   # "jenkins.NotFoundException: Requested item could not be found"
   jenkins_jjb_url: "http://jenkins.%{hiera('fqdn')}:8080/jenkins/"
-  zuul_url: "http://jenkins.%{hiera('fqdn')}:8084/"
+  zuul_url: "http://zuul.%{hiera('fqdn')}:8084/"
   gerrit_url: "http://gerrit.%{hiera('fqdn')}:8000/r/"
   redmine_pub_url: "http://%{hiera('fqdn')}/redmine/"
   jenkins_pub_url: "http://%{hiera('fqdn')}/jenkins/"

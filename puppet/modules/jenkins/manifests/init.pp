@@ -128,7 +128,7 @@ class jenkins {
     mode    => '0644',
     owner   => 'jenkins',
     group   => 'jenkins',
-    source  => 'puppet:///modules/jenkins/gearman_config.xml',
+    content => template('jenkins/gearman_config.xml.erb'),
     require => User['jenkins'],
   }
   file {'/var/lib/jenkins/hudson.tasks.Mailer.xml':

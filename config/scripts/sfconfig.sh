@@ -30,7 +30,7 @@ function update_sfconfig {
     OUTPUT=${BUILD}/hiera
     # get public ip of managesf
     local localip=$(ip route get 8.8.8.8 | awk '{ print $7 }')
-    local localalias="${DOMAIN}, mysql.${DOMAIN}, mysql, redmine.${DOMAIN}, redmine, api-redmine.${DOMAIN}, api-redmine, gerrit.${DOMAIN}, gerrit, managesf, auth.${DOMAIN}, auth, statsd.${DOMAIN}, statsd"
+    local localalias="${DOMAIN}, mysql.${DOMAIN}, mysql, redmine.${DOMAIN}, redmine, api-redmine.${DOMAIN}, api-redmine, gerrit.${DOMAIN}, gerrit, managesf, auth.${DOMAIN}, auth, statsd.${DOMAIN}, statsd, zuul.${DOMAIN}, nodepool.${DOMAIN}"
     if [ -n "${IP_JENKINS}" ]; then
         local jenkins_host="  jenkins.${DOMAIN}:      {ip: ${IP_JENKINS}, host_aliases: [jenkins, nodepool.${DOMAIN}]}"
     else
@@ -54,6 +54,12 @@ managesf.${DOMAIN}
 
 [jenkins]
 jenkins.${DOMAIN}
+
+[zuul]
+zuul.${DOMAIN}
+
+[nodepool]
+nodepool.${DOMAIN}
 EOF
 
     # update .ssh/config
