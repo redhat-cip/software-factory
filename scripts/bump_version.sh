@@ -10,6 +10,7 @@
 #  3/ Run this script to update references
 #  4/ Check subproject history + sf history to update changelog
 #  5/ Generate changelog with "reno report ." and copy the output to the CHANGELOG file
+#     reno use a tag to compute the release version, remember to update version acording 'TaggedRelease' number in the CHANGELOG file.
 #  6/ Commit --amend with all changes and new symlinks
 #  7/ Wait for change to be merged (ask for review, recheck gate)
 #  8/ Test new releases (either deploy or upgrade), in particular the changelog

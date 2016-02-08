@@ -1,4 +1,4 @@
-2.1.4-23  2016-02-06
+2.1.5-23  2016-02-06
 ====================
 
 This release feature a more recent nodepool version (upstream git master) to benefit from python-shade.
