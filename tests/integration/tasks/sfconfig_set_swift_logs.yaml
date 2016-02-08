@@ -11,7 +11,7 @@
         'swift_logsexport_logserver_prefix': '{{ swifturl }}/{{ container }}',
         'swift_logsexport_x_storage_url': '{{ swifturl }}',
         'swift_logsexport_x_tempurl_key': 'sf4ever',
-        'swift_logsexport_send_tempurl_key': False,
+        'swift_logsexport_send_tempurl_key': 'false',
       }"
 
 - name: Restart sfconfig
