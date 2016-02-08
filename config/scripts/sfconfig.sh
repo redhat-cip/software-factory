@@ -144,6 +144,7 @@ function generate_yaml {
     hieraedit.py --yaml ${OUTPUT}/sfcreds.yaml -f ${BUILD}/certs/gateway.key gateway_key
     hieraedit.py --yaml ${OUTPUT}/sfcreds.yaml -f ${BUILD}/certs/gateway.crt gateway_crt
 
+    ln -sf ${OUTPUT}/sfarch.yaml /etc/puppet/hiera/sf/sfarch.yaml
     ln -sf ${OUTPUT}/sfconfig.yaml /etc/puppet/hiera/sf/sfconfig.yaml
     ln -sf ${OUTPUT}/sfcreds.yaml /etc/puppet/hiera/sf/sfcreds.yaml
     ln -sf ${OUTPUT}/hosts.yaml /etc/puppet/hiera/sf/hosts.yaml
