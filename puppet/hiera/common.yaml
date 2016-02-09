@@ -1,4 +1,3 @@
----
 url:
   gateway_url: "http://%{hiera('fqdn')}/"
   redmine_url: "http://redmine.%{hiera('fqdn')}:8083/redmine/"

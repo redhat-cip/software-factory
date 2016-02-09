@@ -1,9 +1,3 @@
 ---
-- name: Configure zuul ssh knownhost for gerrit access
-  command: ssh -o StrictHostKeyChecking=no jenkins@gerrit.{{ fqdn }} -p 29418 -i /var/lib/zuul/.ssh/id_rsa
-  register: zuul_gerrit_connection
-  failed_when: zuul_gerrit_connection.rc != 127
-  sudo_user: zuul
-  sudo: yes
 - name: Run kick script
   command: /usr/local/jenkins/slave_scripts/kick.sh

@@ -1,4 +1,0 @@
----
-- name: Configure {{ fqdn }}:29418
-  command: ssh -o StrictHostKeyChecking=no -p 29418 {{ fqdn }}
-  ignore_errors: yes

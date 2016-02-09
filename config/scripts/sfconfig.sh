@@ -306,8 +306,13 @@ fi
 
 update_sfconfig
 puppet_apply_host
-wait_for_ssh "managesf.${DOMAIN}"
-wait_for_ssh "jenkins.${DOMAIN}"
+
+# Configure ssh access to inventory
+HOSTS=$(grep "\.${DOMAIN}" /etc/ansible/hosts | sort | uniq)
+for host in $HOSTS; do
+    wait_for_ssh $host
+done
+
 echo "[sfconfig] Boostrapping $REFARCH"
 # Apply puppet stuff with good old shell scrips
 case "${REFARCH}" in
@@ -332,11 +337,11 @@ case "${REFARCH}" in
 esac
 
 echo "[sfconfig] Ansible configuration"
+[ -d /var/lib/ansible ] || mkdir -p /var/lib/ansible
 cd /usr/local/share/sf-ansible
-[ -d group_vars ] || {
-    mkdir group_vars
-    ln -s /etc/puppet/hiera/sf/sfconfig.yaml group_vars/all.yaml
-}
+[ -d group_vars ] || mkdir group_vars
+cat /etc/puppet/hiera/sf/*.yaml > group_vars/all.yaml
+
 ansible-playbook sfmain.yaml || {
     echo "[sfconfig] Ansible playbook failed"
     exit 1
