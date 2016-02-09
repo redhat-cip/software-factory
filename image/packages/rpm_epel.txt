@@ -13,6 +13,7 @@ rubygem-rack
 rubygem-rgen
 rubygem-builder
 rubygem-bundler
+mod_proxy_html
 
 # Python stuff
 ansible

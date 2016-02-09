@@ -10,6 +10,43 @@
 	RewriteRule ^(.*)$ <%= @cauth['signin_url'] %> [R,NC,L]
     </LocationMatch>
 
+    <Location /redmine/>
+        ProxyPassReverse <%= @url["redmine_url"] %>
+
+        SetOutputFilter INFLATE;proxy-html;DEFLATE
+
+        ProxyHTMLMeta On
+        ProxyHTMLExtended On
+        ProxyHTMLEnable On
+
+        ProxyHTMLURLMap /           /redmine/
+        ProxyHTMLURLMap /redmine    /redmine
+
+        # Included example from /usr/share/doc/httpd-2.4.6/proxy-html.conf
+        ProxyHTMLLinks	a		    href
+        ProxyHTMLLinks	area		href
+        ProxyHTMLLinks	link		href
+        ProxyHTMLLinks	img		    src longdesc usemap
+        ProxyHTMLLinks	object		classid codebase data usemap
+        ProxyHTMLLinks	q		    cite
+        ProxyHTMLLinks	blockquote	cite
+        ProxyHTMLLinks	ins		    cite
+        ProxyHTMLLinks	del		    cite
+        ProxyHTMLLinks	form		action
+        ProxyHTMLLinks	input		src usemap
+        ProxyHTMLLinks	head		profile
+        ProxyHTMLLinks	base		href
+        ProxyHTMLLinks	script		src for
+
+        ProxyHTMLEvents	onclick ondblclick onmousedown onmouseup \
+                onmouseover onmousemove onmouseout onkeypress \
+                onkeydown onkeyup onfocus onblur onload \
+                onunload onsubmit onreset onselect onchange
+
+        # Non-default addition for Redmine
+        ProxyHTMLLinks  option      value
+    </Location>
+
     <LocationMatch "/r/(?!(login|logout|a))">
 	RewriteEngine On
 
@@ -79,7 +116,7 @@
         ProxyPassReverse /zuul/ <%= @url["zuul_url"] %>
 
         ProxyPass /redmine/ <%= @url["redmine_url"] %> nocanon retry=0
-        ProxyPassReverse /redmine/ <%= @url["redmine_url"] %>
+        ProxyHTMLURLMap <%= @url["redmine_url"] %> /redmine
 
         ProxyPass /etherpad/ http://127.0.0.1:9001/ retry=0
         ProxyPassReverse /etherpad/ http://127.0.0.1:9001/

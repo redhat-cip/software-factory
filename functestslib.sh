@@ -196,6 +196,7 @@ function build_image {
         sudo rsync -a --delete puppet/hiera/ ${IMAGE_PATH}/etc/puppet/hiera/sf/
         sudo rsync -a --delete config/ansible/ ${IMAGE_PATH}/usr/local/share/sf-ansible/
         sudo rsync -a --delete config/config-repo/ ${IMAGE_PATH}/usr/local/share/sf-config-repo/
+        sudo rsync -a --delete serverspec/ ${IMAGE_PATH}/etc/serverspec/
         sudo cp -Rv config/scripts/* ${IMAGE_PATH}/usr/local/bin/
         sudo cp -Rv config/defaults/* ${IMAGE_PATH}/etc/puppet/hiera/sf/
         echo "SKIP_BUILD: direct copy of ${MANAGESF_CLONED_PATH}/ to ${IMAGE_PATH}/var/www/managesf/"
