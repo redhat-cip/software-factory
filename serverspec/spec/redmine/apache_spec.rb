@@ -19,7 +19,7 @@ describe package('httpd') do
 end
 describe file('/etc/httpd/conf.d/redmine.conf') do
   it { should be_file }
-  it { should contain "Alias /redmine/ /var/www/redmine/public/" }
+  it { should contain "Alias / /var/www/redmine/public/" }
 end
 describe service('httpd') do
   it { should be_enabled }

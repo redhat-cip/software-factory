@@ -1,7 +1,7 @@
 url:
   gateway_url: "http://%{hiera('fqdn')}/"
-  redmine_url: "http://redmine.%{hiera('fqdn')}:8083/redmine/"
-  api_redmine_url: "http://api-redmine.%{hiera('fqdn')}:8083/redmine/"
+  redmine_url: "http://redmine.%{hiera('fqdn')}:8083/"
+  api_redmine_url: "http://api-redmine.%{hiera('fqdn')}:8083/"
   jenkins_url: "http://jenkins.%{hiera('fqdn')}:8081/jenkins/"
   # jenkins-job update needs this else it fails with
   # "jenkins.NotFoundException: Requested item could not be found"
