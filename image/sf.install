@@ -7,8 +7,8 @@ STAGING_PKGS=""
 STAGING_PIP=""
 
 # Latest version of nodepool/zuul as of Jan24 2016
-NODEPOOL_VERSION=37cdfdd43b1c1866d477361f23041db04e7d5617
-ZUUL_VERSION=514db293af344e15d7a1f1585c2ac84c3694eb0f
+NODEPOOL_VERSION=1fa3ee77791f7c5dd4faa38a2a8012662f6e88a8
+ZUUL_VERSION=f760f0e49f0d45291afc6e5bee0041e87b17e865
 
 function install_nodepool {
     # Checkout VERSION in /tmp
