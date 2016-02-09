@@ -31,9 +31,9 @@ function update_sfconfig {
     # get public ip of managesf
     local localip=$(ip route get 8.8.8.8 | awk '{ print $7 }')
     local localalias="${DOMAIN}, mysql.${DOMAIN}, redmine.${DOMAIN}, api-redmine.${DOMAIN}, gerrit.${DOMAIN}, auth.${DOMAIN}, statsd.${DOMAIN}"
-    localalias="${localalias}, zuul.${DOMAIN}, nodepool.${DOMAIN}"
+    localalias="${localalias}, zuul.${DOMAIN}, nodepool.${DOMAIN}, elasticsearch.${DOMAIN}"
     # Add shortname for serverspec tests
-    localalias="${localalias}, mysql, redmine, gerrit, zuul, nodepool"
+    localalias="${localalias}, mysql, redmine, gerrit, zuul, nodepool, elasticsearch"
     if [ -n "${IP_JENKINS}" ]; then
         local jenkins_host="  jenkins.${DOMAIN}:      {ip: ${IP_JENKINS}, host_aliases: [jenkins], }"
     else
@@ -80,6 +80,9 @@ mysql.${DOMAIN}
 
 [statsd]
 statsd.${DOMAIN}
+
+[elasticsearch]
+elasticsearch.${DOMAIN}
 EOF
 
     # update .ssh/config

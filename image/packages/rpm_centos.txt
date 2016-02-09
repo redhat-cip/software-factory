@@ -20,7 +20,7 @@ hdparm
 initscripts
 iproute
 iptables
-java-1.7.0-openjdk
+java-1.8.0-openjdk
 kbd
 kernel
 kexec-tools
@@ -35,6 +35,7 @@ m2crypto
 mod_ssl
 mod_wsgi
 net-tools
+nginx
 nss
 ntp
 ntpdate
@@ -63,6 +64,7 @@ zlib
 apr
 apr-util
 httpd
+httpd-tools
 
 # Python
 ImageMagick
