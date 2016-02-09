@@ -64,6 +64,7 @@ case "${TEST_TYPE}" in
         lxc_init
         run_bootstraps
         run_serverspec_tests
+        run_it_jenkins_ci
         run_functional_tests
         run_provisioner
         run_backup_start

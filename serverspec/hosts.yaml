@@ -34,6 +34,20 @@ jenkins:
   :username: root
   :hostname: jenkins
 
+zuul:
+  :roles:
+    - base
+    - zuul
+  :username: root
+  :hostname: zuul
+
+nodepool:
+  :roles:
+    - base
+    - nodepool
+  :username: root
+  :hostname: nodepool
+
 managesf:
   :roles:
     - base

@@ -1,0 +1,14 @@
+---
+# This playbook reconfigure service based on config repo.
+- hosts: jenkins
+  gather_facts: no
+  tasks:
+    - include: tasks/jenkins_update.yaml
+- hosts: zuul
+  gather_facts: no
+  tasks:
+    - include: tasks/zuul_update.yaml
+- hosts: nodepool
+  gather_facts: no
+  tasks:
+    - include: tasks/nodepool_update.yaml

@@ -42,9 +42,9 @@ node default {
 
   # Jenkins
   class {'::ssh_keys_jenkins': stage => last }
-  class {'::nodepool': stage => last }
   class {'::jenkins': stage => last }
-  # jjb also deploys zuul and nodepool
+  class {'::nodepool': stage => last }
+  class {'::zuul': stage => last }
   class {'::jjb': stage => last }
 
   # graphite, statsd and grafana

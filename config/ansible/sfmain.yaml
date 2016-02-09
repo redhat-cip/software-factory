@@ -1,4 +1,5 @@
 ---
+# This is main configuration playbook, called by sfconfig.sh
 - hosts: all
   tasks:
     - template: src=templates/global_known_hosts.j2 dest=/etc/ssh/ssh_known_hosts owner=root group=root mode=0644
@@ -6,7 +7,6 @@
 - hosts: managesf
   tasks:
     - include: tasks/create_config_repository.yaml
-- hosts: jenkins
-  tasks:
-    - include: tasks/jenkins_kick.yaml
-    - include: tasks/config_nodepool.yaml
+    - include: tasks/managesf_authorized_keys.yaml
+
+- include: sf_configrepo_update.yaml

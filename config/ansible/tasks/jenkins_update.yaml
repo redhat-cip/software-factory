@@ -1,0 +1,11 @@
+---
+- git: repo=http://{{ fqdn }}/r/config dest=/root/config force=yes
+
+- name: Update jenkins jobs
+  command: chdir=/root/config {{ item }}
+  with_items:
+    - git fetch --all
+    - git reset --hard origin/master --
+    - git clean -f -x -d
+    - rm -Rf /var/lib/jenkins/.cache/jenkins_jobs
+    - jenkins-jobs -l debug --ignore-cache update --delete-old jobs/

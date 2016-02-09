@@ -16,13 +16,13 @@ require 'spec_helper'
 
 describe user('zuul') do
     it {
-        should exist 
+        should exist
     }
 end
 
 describe group('zuul') do
     it {
-        should exist 
+        should exist
     }
 end
 
@@ -50,10 +50,6 @@ end
 
 describe service('zuul-merger') do
   it { should be_running }
-end
-
-describe port(80) do
-  it { should be_listening }
 end
 
 describe port(4730) do # gearman server port

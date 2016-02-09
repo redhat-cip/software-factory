@@ -35,20 +35,34 @@ class nodepool {
     $enabled = true
   }
 
+  group { 'nodepool':
+    ensure => present,
+  }
+
+  user { 'nodepool':
+    ensure     => present,
+    home       => '/var/lib/nodepool',
+    shell      => '/bin/bash',
+    gid        => 'nodepool',
+    require    => Group['nodepool'],
+  }
+
+
   file { 'nodepool_service':
     path    => '/lib/systemd/system/nodepool.service',
-    owner   => 'jenkins',
+    owner   => 'nodepool',
     source  => 'puppet:///modules/nodepool/nodepool.service',
   }
 
   file { '/var/run/nodepool':
     ensure => directory,
-    owner  => 'jenkins',
+    owner  => 'nodepool',
   }
 
   file { '/var/log/nodepool/':
     ensure => directory,
-    owner  => 'jenkins',
+    owner  => 'nodepool',
+    mode   => '0700',
   }
 
   file {'/etc/sysconfig/nodepool':
@@ -57,42 +71,42 @@ class nodepool {
 
   file {'/opt/nodepool':
     ensure => directory,
-    owner  => 'jenkins',
+    owner  => 'nodepool',
   }
 
   file { '/etc/nodepool':
     ensure => directory,
-    owner  => 'jenkins',
+    owner  => 'nodepool',
   }
 
   file { '/etc/nodepool/scripts':
     ensure  => directory,
-    owner   => 'jenkins',
+    owner   => 'nodepool',
     require => [File['/etc/nodepool']],
   }
 
   file { '/etc/nodepool/scripts/authorized_keys':
-    owner   => 'jenkins',
+    owner   => 'nodepool',
     mode    => '0600',
     content => inline_template('<%= @jenkins_rsa_pub %>'),
     require => [File['/etc/nodepool/scripts']],
   }
 
   file { '/etc/nodepool/nodepool.logging.conf':
-    owner   => 'jenkins',
+    owner   => 'nodepool',
     source  => 'puppet:///modules/nodepool/nodepool.logging.conf',
     require => [File['/etc/nodepool']],
   }
 
   # This file will be used by the conf merger
   file { '/etc/nodepool/_nodepool.yaml':
-    owner   => 'jenkins',
+    owner   => 'nodepool',
     content => template('nodepool/nodepool.yaml.erb'),
     require => [File['/etc/nodepool']],
   }
 
   file { '/etc/nodepool/secure.conf':
-    owner   => 'jenkins',
+    owner   => 'nodepool',
     mode   => '0400',
     content => template('nodepool/secure.conf.erb'),
     require => [File['/etc/nodepool']],

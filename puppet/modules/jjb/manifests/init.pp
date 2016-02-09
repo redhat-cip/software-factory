@@ -15,10 +15,6 @@
 
 class jjb ($gerrit = hiera('gerrit')) {
 
-  require hosts
-  require jenkins
-  require zuul
-
   $fqdn = hiera('fqdn')
   $auth = hiera('authentication')
   $url = hiera('url')
@@ -30,15 +26,9 @@ class jjb ($gerrit = hiera('gerrit')) {
   file {'/etc/jenkins_jobs/jenkins_jobs.ini':
     ensure  => file,
     mode    => '0400',
-    owner   => 'jenkins',
-    group   => 'jenkins',
+    owner   => 'root',
+    group   => 'root',
     content => template('jjb/jenkins_jobs.ini.erb'),
-    require => User['jenkins'],
-  }
-
-  file {'/usr/bin/sfmanager':
-    ensure => file,
-    mode   => '0755',
   }
 
   file {'/usr/local/jenkins':

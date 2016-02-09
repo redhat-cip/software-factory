@@ -6,7 +6,6 @@ GRANT ALL PRIVILEGES ON gerrit.* TO 'gerrit'@'managesf.<%= @fqdn %>' IDENTIFIED 
 GRANT ALL PRIVILEGES ON gerrit.* TO 'gerrit'@'gerrit.<%= @fqdn %>' IDENTIFIED BY "<%= @creds_gerrit_sql_pwd %>" WITH GRANT OPTION;
 CREATE DATABASE IF NOT EXISTS nodepool CHARACTER SET utf8 COLLATE utf8_general_ci;
 GRANT ALL PRIVILEGES ON nodepool.* TO 'nodepool'@'managesf.<%= @fqdn %>' IDENTIFIED BY "<%= @creds_nodepool_sql_pwd %>";
-GRANT ALL PRIVILEGES ON nodepool.* TO 'nodepool'@'jenkins.<%= @fqdn %>' IDENTIFIED BY "<%= @creds_nodepool_sql_pwd %>";
 CREATE DATABASE IF NOT EXISTS etherpad CHARACTER SET utf8 COLLATE utf8_general_ci;
 GRANT ALL PRIVILEGES ON etherpad.* TO 'etherpad'@'managesf.<%= @fqdn %>' IDENTIFIED BY "<%= @creds_etherpad_sql_pwd %>";
 CREATE DATABASE IF NOT EXISTS lodgeit CHARACTER SET utf8 COLLATE utf8_general_ci;

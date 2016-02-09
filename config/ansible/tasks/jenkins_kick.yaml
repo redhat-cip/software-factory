@@ -1,3 +1,0 @@
----
-- name: Run kick script
-  command: /usr/local/jenkins/slave_scripts/kick.sh

@@ -33,13 +33,17 @@ class zuul {
     source => 'puppet:///modules/zuul/index.html',
   }
 
+  exec { 'virtualhost_reload':
+    command => '/usr/bin/systemctl reload httpd'
+  }
+
   file {'/etc/httpd/conf.d/zuul.conf':
     ensure  => file,
     mode    => '0640',
     owner   => $::httpd_user,
     group   => $::httpd_user,
     content => template('zuul/zuul.site.erb'),
-    notify  => Exec['webserver_restart'],
+    notify  => Exec['virtualhost_reload'],
   }
 
   file {'zuul_init':
@@ -170,23 +174,5 @@ class zuul {
     owner   => 'zuul',
     group   => 'zuul',
     require => [File['/etc/zuul']],
-  }
-
-  service {'zuul':
-    ensure  => running,
-    enable  => true,
-    require => [File['/lib/systemd/system/zuul.service'],
-                File['/etc/zuul/zuul.conf'],
-                File['/etc/zuul/layout.yaml'],
-                File['/var/log/zuul/'],
-                File['/var/run/zuul/']],
-  }
-
-  service {'zuul-merger':
-    ensure  => running,
-    enable  => true,
-    require => [File['/lib/systemd/system/zuul-merger.service'],
-                File['/var/lib/zuul'],
-                Service['zuul']],
   }
 }

@@ -189,15 +189,42 @@
       - shell: |
           set -e
           rm -Rf config build
-          mkdir build
           zuul-cloner http://<%= @fqdn %>/r config
+          # Prepare a default configuration for zuul and nodepool
+          mkdir -p build/nodepool
+          (
+            echo "[zuul]"
+            echo
+            echo "[connection gerrit]"
+            echo "driver=gerrit"
+            echo "server=localhost"
+            echo "user=jenkins"
+            echo ""
+            echo "[connection smtp]"
+            echo "driver=smtp"
+            echo "server=localhost"
+          ) > build/zuul.conf
+          (
+            echo "script-dir: /etc/nodepool/scripts"
+            echo "images-dir: /opt/nodepool"
+            echo "gearman-servers:"
+            echo "  - host: 127.0.0.1"
+            echo "targets:"
+            echo "  - name: default"
+            echo "providers:"
+            echo "  - name: default"
+          ) > build/nodepool/nodepool.yaml
           cd config
+          echo "[+] Checking jobs"
+          # JJB needs access to jenkins to test (validate) jobs
           sudo jenkins-jobs test jobs/ -o ../build/
-          # concat of layout.yaml and projects.yaml to /etc/zuul/layout.yaml
+          echo "[+] Checking zuul"
           /usr/local/bin/yaml-merger.py zuul | tee ../build/layout.yaml
-          sudo zuul-server -t -l ../build/layout.yaml
-          # Check nodepool configuration
-          /usr/local/bin/sf-nodepool-conf-update.sh
+          zuul-server -c ../build/zuul.conf -l ../build/layout.yaml -t
+          echo "[+] Checking nodepool"
+          cp nodepool/*.yaml ../build/nodepool/
+          WORKDIR=../build/nodepool/ /usr/local/bin/sf-nodepool-conf-merger.py merged.yaml
+          nodepool -c ../build/nodepool/merged.yaml config-validate
     triggers:
       - zuul
     node: master
@@ -207,26 +234,8 @@
     defaults: global
     builders:
       - shell: |
-          echo "Use default for ZUUL_BRANCH and ZUUL_REF if needed"
-          export ZUUL_BRANCH=${ZUUL_BRANCH:-master}
-          export ZUUL_REF=${ZUUL_REF:-None}
-          # In the post pipeline ZUUL_REF is master but does not behave as we want
-          # So fall back on None
-          [ "$ZUUL_REF" = "master" ] && ZUUL_REF=None
-          rm -Rf config
-          zuul-cloner http://<%= @fqdn %>/r config
-          cd config
-          echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
-          git log --simplify-merges -n 1
-          echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
-          echo
-          sudo rm -Rf /var/lib/jenkins/.cache/jenkins_jobs
-          sudo jenkins-jobs -l debug --ignore-cache update --delete-old jobs/
-          # concat of layout.yaml and projects.yaml to /etc/zuul/layout.yaml
-          /usr/local/bin/yaml-merger.py zuul | sudo tee /etc/zuul/layout.yaml
-          sudo systemctl reload zuul
-          # Merge nodepool.yaml configuration
-          /usr/local/bin/sf-nodepool-conf-update.sh apply
+          echo "Updating configuration using $ZUUL_COMMIT"
+          ssh root@managesf.<%= @fqdn %> /usr/local/bin/sf-config-update.sh
     triggers:
       - zuul
     node: master

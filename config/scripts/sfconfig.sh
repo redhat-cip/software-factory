@@ -30,11 +30,14 @@ function update_sfconfig {
     OUTPUT=${BUILD}/hiera
     # get public ip of managesf
     local localip=$(ip route get 8.8.8.8 | awk '{ print $7 }')
-    local localalias="${DOMAIN}, mysql.${DOMAIN}, mysql, redmine.${DOMAIN}, redmine, api-redmine.${DOMAIN}, api-redmine, gerrit.${DOMAIN}, gerrit, managesf, auth.${DOMAIN}, auth, statsd.${DOMAIN}, statsd, zuul.${DOMAIN}, nodepool.${DOMAIN}"
+    local localalias="${DOMAIN}, mysql.${DOMAIN}, redmine.${DOMAIN}, api-redmine.${DOMAIN}, gerrit.${DOMAIN}, auth.${DOMAIN}, statsd.${DOMAIN}"
+    localalias="${localalias}, zuul.${DOMAIN}, nodepool.${DOMAIN}"
+    # Add shortname for serverspec tests
+    localalias="${localalias}, mysql, redmine, gerrit, zuul, nodepool"
     if [ -n "${IP_JENKINS}" ]; then
-        local jenkins_host="  jenkins.${DOMAIN}:      {ip: ${IP_JENKINS}, host_aliases: [jenkins, nodepool.${DOMAIN}]}"
+        local jenkins_host="  jenkins.${DOMAIN}:      {ip: ${IP_JENKINS}, host_aliases: [jenkins], }"
     else
-        localalias="${localalias}, jenkins.${DOMAIN}, jenkins, nodepool.${DOMAIN}"
+        localalias="${localalias}, jenkins.${DOMAIN}, jenkins"
     fi
     cat << EOF > ${OUTPUT}/hosts.yaml
 hosts:
@@ -341,6 +344,7 @@ echo "[sfconfig] Ansible configuration"
 cd /usr/local/share/sf-ansible
 [ -d group_vars ] || mkdir group_vars
 cat /etc/puppet/hiera/sf/*.yaml > group_vars/all.yaml
+chmod 0700 group_vars
 
 ansible-playbook sfmain.yaml || {
     echo "[sfconfig] Ansible playbook failed"

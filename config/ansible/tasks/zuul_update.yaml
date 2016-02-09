@@ -1,0 +1,15 @@
+---
+- git: repo=http://{{ fqdn }}/r/config dest=/root/config force=yes
+
+- name: Update zuul layout
+  command: chdir=config {{ item }}
+  with_items:
+    - git fetch --all
+    - git reset --hard origin/master --
+    - git clean -f -x -d
+    - bash -c "/usr/local/bin/yaml-merger.py zuul | tee /etc/zuul/layout.yaml"
+    - bash -c "systemctl status zuul && systemctl reload zuul || systemctl start zuul"
+
+# Reload doesn't start service see: https://github.com/ansible/ansible/issues/4448
+- service: name=zuul state=started enabled=yes
+- service: name=zuul-merger state=started enabled=yes
