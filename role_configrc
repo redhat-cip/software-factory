@@ -1,10 +1,10 @@
 #!/bin/sh
 #
 
-VER=2.1.6
+VER=2.2.0
 
 # Version string
-SF_PREVIOUS_VER=C7.0-2.1.5
+SF_PREVIOUS_VER=C7.0-2.1.6
 
 # Set this variable to 1 if we tag and set it back to 0 the commit after the tag
 TAGGED_RELEASE=0
