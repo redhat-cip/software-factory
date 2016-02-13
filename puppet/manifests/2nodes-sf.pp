@@ -40,6 +40,9 @@ node default {
   include ::edeploy_server
   include ::auto_backup
 
+  # gerritbot
+  include ::gerritbot
+
   class {'::nodepool': stage => last }
   class {'::zuul': stage => last }
 }

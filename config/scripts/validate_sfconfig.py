@@ -125,5 +125,15 @@ if 'services' not in d:
                      'lodgeit',
                      'nodepool']
 
+# Make sure gerritbot is in the conf (2.1.6 -> 2.2.0)
+if 'gerritbot' not in d:
+    d['gerritbot'] = {
+        'disabled': True,
+        'ircserver': 'irc.freenode.net',
+        'ircport': 6667,
+        'botname': 'sfbot',
+        'password': None,
+    }
+
 yaml.dump(d, open(argv[1], "w"), default_flow_style=False)
 exit(0)

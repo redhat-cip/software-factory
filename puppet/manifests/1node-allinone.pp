@@ -50,4 +50,7 @@ node default {
   # gnocchi and grafana
   include ::sfgnocchi
   include ::grafana
+
+  # gerritbot
+  include ::gerritbot
 }

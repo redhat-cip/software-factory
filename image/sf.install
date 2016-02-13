@@ -13,6 +13,11 @@ ZUUL_VERSION=f760f0e49f0d45291afc6e5bee0041e87b17e865
 PUPPET_GNOCCHI_URL="https://github.com/openstack/puppet-gnocchi/archive/stable/liberty.tar.gz"
 GNOCCHI_PLUGINS_URL="https://github.com/sileht/grafana-plugins-gnocchi"
 
+# gerritbot
+GERRITBOT_URL="https://github.com/openstack-infra/gerritbot"
+GERRITBOT_VERSION=d48b1bc41717291e43425ff437d6214b6934f60f
+
+
 function install_nodepool {
     # Checkout VERSION in /tmp
     do_chroot ${dir} virtualenv /srv/nodepool
@@ -83,6 +88,19 @@ function install_gnocchi {
     retry do_chroot ${dir} puppet module install /root/puppet-gnocchi.tgz
 }
 
+function install_gerritbot {
+    # Checkout VERSION in /tmp
+    rm -Rf ${dir}/tmp/gerritbot
+
+    retry do_chroot ${dir} git clone --depth 1 ${GERRITBOT_URL} /tmp/gerritbot
+    do_chroot ${dir} bash -c "cd /tmp/gerritbot && git checkout -b working ${GERRITBOT_VERSION}"
+
+    # Install
+    do_chroot ${dir} bash -c "cd /tmp/gerritbot && python setup.py install"
+
+    # Cleanup left-overs
+    rm -Rf ${dir}/tmp/gerritbot
+}
 
 function install_sf {
     set -e
@@ -113,6 +131,8 @@ function install_sf {
     checkpoint "zuul installed"
     install_nodepool
     checkpoint "nodepool installed"
+    install_gerritbot
+    checkpoint "gerritbot installed"
 
     # Finish gnocchi install
     install_gnocchi

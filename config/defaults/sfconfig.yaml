@@ -131,3 +131,10 @@ logs:
     # Zuul will create a random key if not set, that might break other scripts
     # using a tempurl key
     swift_logsexport_send_tempurl_key: False
+
+gerritbot:
+    disabled: True
+    ircserver: irc.freenode.net
+    ircport: 6667
+    botname: sfbot
+    password: null
