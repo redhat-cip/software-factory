@@ -43,4 +43,7 @@ node default {
   # graphite, statsd and grafana
   include ::graphite
   include ::grafana
+
+  # gerritbot
+  include ::gerritbot
 }

@@ -10,6 +10,10 @@ STAGING_PIP=""
 NODEPOOL_VERSION=1fa3ee77791f7c5dd4faa38a2a8012662f6e88a8
 ZUUL_VERSION=f760f0e49f0d45291afc6e5bee0041e87b17e865
 
+# gerritbot
+GERRITBOT_URL="https://github.com/openstack-infra/gerritbot"
+GERRITBOT_VERSION=d48b1bc41717291e43425ff437d6214b6934f60f
+
 function install_nodepool {
     # Checkout VERSION in /tmp
     do_chroot ${dir} virtualenv /srv/nodepool
@@ -72,6 +76,20 @@ function install_zuul {
     rm -Rf ${dir}/tmp/zuul*
 }
 
+function install_gerritbot {
+    # Checkout VERSION in /tmp
+    rm -Rf ${dir}/tmp/gerritbot
+
+    retry do_chroot ${dir} git clone --depth 1 ${GERRITBOT_URL} /tmp/gerritbot
+    do_chroot ${dir} bash -c "cd /tmp/gerritbot && git checkout -b working ${GERRITBOT_VERSION}"
+
+    # Install
+    do_chroot ${dir} bash -c "cd /tmp/gerritbot && python setup.py install"
+
+    # Cleanup left-overs
+    rm -Rf ${dir}/tmp/gerritbot
+}
+
 function install_sf {
     set -e
     test -n "${CAUTH_CLONED_PATH}"
@@ -101,6 +119,8 @@ function install_sf {
     checkpoint "zuul installed"
     install_nodepool
     checkpoint "nodepool installed"
+    install_gerritbot
+    checkpoint "gerritbot installed"
 
     # Disable postfix and remove configuration to reduce puppet noise
     do_chroot ${dir} systemctl disable postfix

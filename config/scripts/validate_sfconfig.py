@@ -116,5 +116,15 @@ if not d['authentication'].get('launchpad'):
 if "os_auth_version" not in d["backup"]:
     d["backup"]["os_auth_version"] = 1
 
+# Make sure gerritbot is in the conf (2.1.6 -> 2.1.7)
+if 'gerritbot' not in d:
+    d['gerritbot'] = {
+        'disabled': True,
+        'ircserver': 'irc.freenode.net',
+        'ircport': 6667,
+        'botname': 'sfbot',
+        'password': None,
+    }
+
 yaml.dump(d, open(argv[1], "w"), default_flow_style=False)
 exit(0)
