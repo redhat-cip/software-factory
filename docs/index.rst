@@ -20,5 +20,6 @@ Welcome to software-factory's documentation!
    testing
    jenkinsslaves
    contribute
+   deepdive
    tools
    faqs
