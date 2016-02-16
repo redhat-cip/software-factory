@@ -1,0 +1,11 @@
+---
+features:
+  - Add gerritbot
+  - Upgrade etherpad to 1.5.7
+issues:
+  - Remove redmine base_root_url to fix random 404
+  - Pin github3.py to avoid missing requirement error
+security:
+  - Rebuild image to include CVE-2015-7547 fix
+  - Remove default etherpad admin credentials that may be
+    used to reveal internal mysql password and sesion key.
