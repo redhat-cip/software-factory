@@ -53,6 +53,7 @@ function install_zuul {
     do_chroot ${dir} /srv/zuul/bin/pip install 'pip<8' file:///tmp/zuul
 
     # Manually install swift and keystone client
+    do_chroot ${dir} /srv/zuul/bin/pip install --upgrade 'pbr>=1.8' 'pip<8'
     do_chroot ${dir} /srv/zuul/bin/pip install 'pip<8' python-swiftclient python-keystoneclient
 
     # Install symlink to venv to set correct python path
