@@ -3,7 +3,6 @@
   "favicon": "favicon.ico",
   "ip": "127.0.0.1",
   "port" : 9001,
-  "sessionKey" : "<%= @session_key %>",
   "dbType" : "mysql",
   "dbSettings" : {
                   "user"    : "<%= @mysql_db_username %>",
@@ -12,11 +11,28 @@
                   "database": "<%= @mysql_db %>"
                  },
   "defaultPadText" : "Welcome to Etherpad!\n\nThis pad text is synchronized as you type, so that everyone viewing this page sees the same text. This allows you to collaborate seamlessly on documents!\n\nGet involved with Etherpad at http:\/\/etherpad.org\n",
+  "padOptions": {
+    "noColors": false,
+    "showControls": true,
+    "showChat": true,
+    "showLineNumbers": true,
+    "useMonospaceFont": true,
+    "userName": false,
+    "userColor": false,
+    "rtl": false,
+    "alwaysShowChat": false,
+    "chatAndUsers": false,
+    "lang": "en-gb"
+  },
+  "suppressErrorsInPadText" : true,
   "requireSession" : false,
   "editOnly" : false,
+  "sessionNoPassword" : false,
   "minify" : true,
   "maxAge" : 21600,
   "abiword" : null,
+  "tidyHtml" : null,
+  "allowUnknownFileEnds" : true,
   "requireAuthentication": false,
   "requireAuthorization": false,
   "trustProxy": false,
@@ -28,6 +44,7 @@
       }
   },
   "socketTransportProtocols" : ["xhr-polling", "jsonp-polling", "htmlfile"],
+  "loadTest": false,
   "loglevel": "INFO",
   "logconfig" :
     { "appenders": [

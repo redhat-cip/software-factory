@@ -155,9 +155,7 @@ function generate_yaml {
     JENKINS_USER_PASSWORD="$(generate_random_pswd 32)"
     sed -i "s#JENKINS_USER_PASSWORD#${JENKINS_USER_PASSWORD}#" ${OUTPUT}/sfcreds.yaml
     # Etherpad part
-    ETHERPAD_SESSION_KEY=$(generate_random_pswd 32)
     ETHERPAD_ADMIN_KEY=$(generate_random_pswd 32)
-    sed -i "s#ETHERPAD_SESSION_KEY#${ETHERPAD_SESSION_KEY}#" ${OUTPUT}/sfcreds.yaml
     sed -i "s#ETHERPAD_ADMIN_KEY#${ETHERPAD_ADMIN_KEY}#" ${OUTPUT}/sfcreds.yaml
     # Lodgeit/Paste part
     LODGEIT_SESSION_KEY=$(generate_random_pswd 32)
