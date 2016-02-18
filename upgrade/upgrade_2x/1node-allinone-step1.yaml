@@ -8,3 +8,4 @@
   - include: tasks/edeploysync.yml
   - include: tasks/gnocchi.yml
   - include: tasks/SFServiceUser.yml
+  - include: tasks/etherpad.yml
