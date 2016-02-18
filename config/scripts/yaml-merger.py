@@ -27,13 +27,6 @@ def loadConfig(config_path):
     final_data = {}
     for path in paths:
         data = yaml.load(open(path))
-        # fix include relative paths
-        for include in data.get('includes', []):
-            for key, fn in include.items():
-                if not os.path.isabs(fn):
-                    base = os.path.dirname(os.path.realpath(path))
-                    fn = os.path.join(base, fn)
-                include[key] = os.path.expanduser(fn)
         # Merge document
         for key in data:
             if key in final_data:

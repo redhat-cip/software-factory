@@ -26,6 +26,7 @@ done
 # Zuul
 # concat of layout.yaml and projects.yaml to /etc/zuul/layout.yaml
 /usr/local/bin/yaml-merger.py /root/config/zuul | tee /etc/zuul/layout.yaml
+cp /root/config/zuul/*.py /etc/zuul/ || true
 zuul-server -t -l /etc/zuul/layout.yaml || exit -1
 pkill -9 -f "zuul*"
 service zuul restart
