@@ -10,4 +10,6 @@ projects:
     periodic:
       - periodic-zuul-demo
 
-jobs: []
+jobs:
+  - name: ^.*$
+    parameter-function: set_node_options

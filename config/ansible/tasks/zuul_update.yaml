@@ -5,7 +5,14 @@
   command: chdir=config {{ item }}
   with_items:
     - bash -c "/usr/local/bin/yaml-merger.py zuul | tee /etc/zuul/layout.yaml"
-    - bash -c "systemctl status zuul && systemctl reload zuul || systemctl start zuul"
+    - bash -c "cp zuul/*.py /etc/zuul/ || true"
+
+- name: Enable slave reuse when nodepool is not enabled
+  when: nodepool.disabled
+  command: sed -i /etc/zuul/layout.yaml -e 's/set_node_options/set_node_reuse/g'
+
+- name: Start or reload zuul service
+  shell: systemctl status zuul && systemctl reload zuul || systemctl start zuul
 
 # Reload doesn't start service see: https://github.com/ansible/ansible/issues/4448
 - service: name=zuul state=started enabled=yes

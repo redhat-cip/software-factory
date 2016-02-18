@@ -191,7 +191,7 @@
           rm -Rf config build
           zuul-cloner http://<%= @fqdn %>/r config
           # Prepare a default configuration for zuul and nodepool
-          mkdir -p build/nodepool
+          mkdir -p build/nodepool build/zuul
           (
             echo "[zuul]"
             echo
@@ -203,7 +203,7 @@
             echo "[connection smtp]"
             echo "driver=smtp"
             echo "server=localhost"
-          ) > build/zuul.conf
+          ) > build/zuul/zuul.conf
           (
             echo "script-dir: /etc/nodepool/scripts"
             echo "images-dir: /opt/nodepool"
@@ -219,8 +219,9 @@
           # JJB needs access to jenkins to test (validate) jobs
           sudo jenkins-jobs test jobs/ -o ../build/
           echo "[+] Checking zuul"
-          /usr/local/bin/yaml-merger.py zuul | tee ../build/layout.yaml
-          zuul-server -c ../build/zuul.conf -l ../build/layout.yaml -t
+          /usr/local/bin/yaml-merger.py zuul | tee ../build/zuul/layout.yaml
+          cp zuul/*.py ../build/zuul/ || true
+          zuul-server -c ../build/zuul/zuul.conf -l ../build/zuul/layout.yaml -t
           echo "[+] Checking nodepool"
           cp nodepool/*.yaml ../build/nodepool/
           WORKDIR=../build/nodepool/ /usr/local/bin/sf-nodepool-conf-merger.py merged.yaml
