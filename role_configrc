@@ -41,7 +41,7 @@ SF_WORKSPACE="${SF_WORKSPACE:-/var/lib/sf}"
 BUILD_DIR="${SF_WORKSPACE}/roles"
 
 UPSTREAM="${BUILD_DIR}/upstream"
-CACHE_PATH="${BUILD_DIR}/cache/sf-centos7"
+CACHE_PATH="${BUILD_DIR}/cache/sf-2.1.x-centos7"
 IMAGE_PATH="${BUILD_DIR}/install/${SF_VER}/softwarefactory"
 
 # If this script is run in CI job runner the
@@ -63,7 +63,7 @@ DOCDIR="${PWD}/docs"
 HOT_TEMPLATES="${PWD}/deploy/heat"
 
 # Rebuild cache if these files changed
-CACHE_DEPS="./image/softwarefactory.install ./image/third_party_tools ./image/packages"
+CACHE_DEPS="./image/softwarefactory.install ./image/third_party_tools ./image/packages ./image/C7.0-ids.tables"
 
 function prepare_buildenv {
     if [ ! -d "${SF_WORKSPACE}" ]; then

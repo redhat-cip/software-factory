@@ -46,7 +46,7 @@ function fetch_prebuilt {
     echo "Fetching ${SWIFT_SF_URL}/${IMG}.tgz"
     sudo curl -o ${UPSTREAM}/${IMG}.tgz ${SWIFT_SF_URL}/${IMG}.tgz
     echo "Fetching ${SWIFT_SF_URL}/${IMG}.img.qcow2"
-    sudo curl -o ${UPSTREAM}/${IMG}.img.qcow2 ${SWIFT_SF_URL}/${IMG}.img.qcow2
+    [ "${IMG}" == "sf-2.1.x-centos7" ] || sudo curl -o ${UPSTREAM}/${IMG}.img.qcow2 ${SWIFT_SF_URL}/${IMG}.img.qcow2
     echo "Fetching ${SWIFT_SF_URL}/${IMG}.{digest,description,hot,hash}"
     sudo curl -o ${UPSTREAM}/${IMG}.hot ${SWIFT_SF_URL}/${IMG}.hot
     sudo curl -o ${UPSTREAM}/${IMG}.digest ${SWIFT_SF_URL}/${IMG}.digest
@@ -62,6 +62,7 @@ function fetch_prebuilt {
     if [ "${SF_VER}" == "C7.0-2.0.4" ] || [ "${SF_VER}" == "C7.0-2.1.2" ]; then
         # Remove pip and rpm file
         sudo sed -i "s/.*\.\(pip\|rpm\)//" ${UPSTREAM}/${IMG}.digest
+        [ "${IMG}" == "sf-2.1.x-centos7" ] && sudo sed -i "s/.*\.img\.qcow2//" ${UPSTREAM}/${IMG}.digest
         # Fetch hash file
         sudo curl -o ${UPSTREAM}/${IMG}.hash ${SWIFT_SF_URL}/${IMG}.hash
     fi
@@ -93,5 +94,5 @@ prepare_buildenv
 if [ -z "$FETCH_CACHE" ]; then
     sync_and_deflate ${IMAGE_PATH} "softwarefactory-${SF_VER}"
 else
-    sync_and_deflate ${CACHE_PATH} "sf-centos7"
+    sync_and_deflate ${CACHE_PATH} "sf-2.1.x-centos7"
 fi

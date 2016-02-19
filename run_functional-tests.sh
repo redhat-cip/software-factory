@@ -52,6 +52,8 @@ else
     lxc_stop
 fi
 
+# Stable branch needs to update cache before start
+SKIP_GPG=1 FETCH_CACHE=1 ./fetch_image.sh
 [ -z "${KEEP_GLANCE_IMAGE}" ] && build_image
 
 # nosetests should run without a proxy, otherwise REST APIs on the LXC env might

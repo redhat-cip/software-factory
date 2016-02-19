@@ -45,4 +45,4 @@ function publish {
 echo "=== Publish image ${IMAGE_PATH} ==="
 publish ${IMAGE_PATH} softwarefactory-${SF_VER}
 echo "=== Publish cache ${CACHE_PATH} ==="
-publish ${CACHE_PATH} sf-centos7
+publish ${CACHE_PATH} sf-2.1.x-centos7
