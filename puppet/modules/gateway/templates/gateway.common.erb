@@ -86,7 +86,7 @@
         RequestHeader unset X-Forwarded-User
         <If "%{HTTP_COOKIE} =~ /auth_pubtkt=.*/">
             AuthType mod_auth_pubtkt
-            TKTAuthLoginURL /auth/login
+            TKTAuthLoginURL <%= @cauth['signin_url'] %>
             TKTAuthFakeBasicAuth on
             TKTAuthDebug 1
             AuthName "Grafana"
@@ -149,7 +149,7 @@
 
         AuthType mod_auth_pubtkt
         TKTAuthFakeBasicAuth on
-        TKTAuthLoginURL /auth/login
+        TKTAuthLoginURL <%= @cauth['signin_url'] %>
         TKTAuthDebug 1
         require valid-user
     </LocationMatch>
@@ -159,10 +159,8 @@
     RewriteEngine On
     RewriteRule ^/$ /dashboard [R]
 
-    <LocationMatch "/dashboard">
-        Order Allow,Deny
-        Allow from all
-
+    <LocationMatch "dashboard">
+        Header set Cache-Control "no-cache, must-revalidate"
         AuthType mod_auth_pubtkt
         TKTAuthFakeBasicAuth on
         TKTAuthLoginURL <%= @cauth['signin_url'] %>
