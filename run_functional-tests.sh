@@ -65,6 +65,8 @@ unset https_proxy
 
 case "${TEST_TYPE}" in
     "functional")
+        # temporary adds elasticsearch until it's fully integrated
+        sed -i ${REFARCH_FILE} -e "s#      - murmur#      - murmur\n      - elasticsearch#"
         lxc_init
         run_bootstraps
         run_serverspec_tests
