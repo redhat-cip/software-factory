@@ -75,6 +75,7 @@
 /etc/puppet/hiera/sf/sfconfig.yaml
 /etc/puppet/hiera/sf/hosts.yaml
 /etc/httpd/htpasswd
+/etc/gerritbot/channels.yaml
 
 # REMOVEME?
 /usr/lib/systemd/system/etherpad.service
