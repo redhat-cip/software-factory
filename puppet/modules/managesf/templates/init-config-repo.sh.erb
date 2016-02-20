@@ -69,6 +69,8 @@ if [ "$upgrade" = "true" ]; then
     rsync --exclude jobs/projects.yaml --exclude zuul/projects.yaml --exclude nodepool/images.yaml --exclude nodepool/labels.yaml \
           -av /usr/local/share/sf-config-repo/ ${CONF_TMP}/
     cd ${CONF_TMP}
+    # Replace nodepool private ssh key
+    sed -i 's#private-key: /var/lib/jenkins/.ssh/id_rsa#private-key: /var/lib/nodepool/.ssh/id_rsa#' nodepool/images.yaml
     # Only perform the commit/review if the upgrade bring new modifications
     if [ -n "$(git ls-files -o -m --exclude-standard)" ]; then
         git commit -a -m "Upgrade of base JJB/Zuul/Nodepool files"

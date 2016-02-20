@@ -17,6 +17,7 @@ class nodepool {
 
   $jenkins_rsa_pub = hiera('jenkins_rsa_pub')
   $nodepool = hiera('nodepool')
+  $nodepool_rsa = hiera('jenkins_rsa')
   $fqdn = hiera('fqdn')
   $url = hiera('url')
 
@@ -42,11 +43,28 @@ class nodepool {
   user { 'nodepool':
     ensure     => present,
     home       => '/var/lib/nodepool',
-    shell      => '/bin/bash',
+    shell      => '/sbin/nologin',
     gid        => 'nodepool',
+    managehome => true,
     require    => Group['nodepool'],
   }
 
+  file { '/var/lib/nodepool/.ssh':
+    require    => User['nodepool'],
+    ensure     => directory,
+    owner      => 'nodepool',
+    group      => 'nodepool',
+    mode       => '0700',
+  }
+
+  file { '/var/lib/nodepool/.ssh/id_rsa':
+    require => File['/var/lib/nodepool/.ssh'],
+    ensure  => file,
+    owner   => 'nodepool',
+    group   => 'nodepool',
+    mode    => '0400',
+    content => inline_template('<%= @nodepool_rsa %>'),
+  }
 
   file { 'nodepool_service':
     path    => '/lib/systemd/system/nodepool.service',

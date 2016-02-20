@@ -13,7 +13,7 @@
             'name': '{{ image_name }}',
             'base-image': '{{ base_image_name }}',
             'username': 'centos',
-            'private-key': '/var/lib/jenkins/.ssh/id_rsa',
+            'private-key': '/var/lib/nodepool/.ssh/id_rsa',
             'setup': 'nodepool_demo.sh',
             'min-ram': 2048,
         }]
