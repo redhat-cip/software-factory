@@ -1,17 +1,5 @@
 ---
-- include_vars: /etc/puppet/hiera/sf/sfcreds.yaml
-- include_vars: /etc/puppet/hiera/sf/arch.yaml
-- template: src=/etc/ansible/templates/etc-hosts.j2 dest=/etc/hosts mode=0644
-- known_hosts: name='[192.168.135.101]:29418' state=absent
-- known_hosts: name='[localhost]:29418' state=absent
-- name: Set /etc/ssh/ssh_known_hosts for all inventory
-  template: src=global_known_hosts.j2 dest=/etc/ssh/ssh_known_hosts owner=root group=root mode=0644
-# Allow apache to connect database
-- seboolean: name={{ item }} state=yes persistent=yes
-  with_items: [httpd_can_network_connect, httpd_can_network_connect_db]
-  when: selinuxenabled
-- include: /etc/ansible/tasks/puppet.yml puppet_statement="include ::sfbase, ::postfix"
-- template: src=mail-ssh-login.j2 dest=/etc/rsyslog.d/mail-ssh-login.conf
-  register: rsyslog_config
-- service: name=rsyslog state=restarted
-  when: rsyslog_config|changed
+- include: install.yml
+  when: action is defined and action == "install"
+- include: setup.yml
+  when: action is not defined or action != "install"

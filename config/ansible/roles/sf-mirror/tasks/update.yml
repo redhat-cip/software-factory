@@ -1,0 +1,14 @@
+---
+- name: "Template mirror2swift config file"
+  command: /usr/local/libexec/software-factory/mirror2swift-config-merger.py /root/config/mirrors/ /var/lib/mirror2swift/config.yaml
+
+- name: "Inject swift url and tempurl key"
+  replace: dest=/var/lib/mirror2swift/config.yaml regexp='{{item.regexp}}' replace='{{item.replace}}'
+  with_items:
+    - {regexp: "MIRROR2SWIFT_URL", replace: "'{{mirrors.swift_mirror_url}}'"}
+    - {regexp: "MIRROR2SWIFT_TEMPURL_KEY", replace: "'{{mirrors.swift_mirror_tempurl_key}}'"}
+
+- name: "Update mirrors"
+  become: true
+  become_user: mirror2swift
+  command: mirror2swift /var/lib/mirror2swift/config.yaml

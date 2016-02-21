@@ -642,8 +642,10 @@ if [ "$STEP" == 1 ]; then
     install_gitweb_theme
     checkpoint "gitweb theme installed"
     copy_sf_ansible_roles
+    ansible_install sf-base
     ansible_install sf-storyboard "storyboard_commit: \"${STORYBOARD_COMMIT}\", storyboard_client_commit: \"${STORYBOARD_CLIENT_COMMIT}\""
     ansible_install sf-storyboard-webclient "storyboard_webclient_commit: \"${STORYBOARD_WEBCLIENT_COMMIT}\""
+    ansible_install sf-mirror
     image_clean
     do_chroot ${dir} passwd -l root
     checkpoint "image cleaned"

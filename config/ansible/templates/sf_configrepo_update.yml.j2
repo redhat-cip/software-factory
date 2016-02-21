@@ -25,3 +25,11 @@
   gather_facts: no
   tasks:
     - include: tasks/update_configrepo.yaml
+{% if 'mirror' in roles %}
+- hosts: mirror
+  gather_facts: no
+  pre_tasks:
+    - include: tasks/update_configrepo.yaml
+  roles:
+    - {role: 'sf-mirror', action: 'update'}
+{% endif %}

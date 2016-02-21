@@ -35,6 +35,14 @@ def update_sfconfig(data):
             'nodepool'
         ]
         dirty = True
+
+    # Make sure mirrors is in the conf
+    if 'mirrors' not in data:
+        data['mirrors'] = {
+            'swift_mirror_url': 'http://swift:8080/v1/AUTH_uuid/repomirror/',
+            'swift_mirror_tempurl_key': 'CHANGEME',
+        }
+        dirty = True
     return dirty
 
 
