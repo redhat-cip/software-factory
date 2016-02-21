@@ -82,7 +82,7 @@ function sync_and_deflate {
     }
     sudo rm -Rf ${DST}
     sudo mkdir -p ${DST}
-    sudo tar -xzf ${SRC} -C "${DST}" || exit -1
+    sudo tar -x -p --use-compress-program=pigz --numeric-owner --xattrs --selinux -f ${SRC} -C "${DST}" || exit -1
     echo "[+] Copy metadata"
     sudo cp ${UPSTREAM}/${IMG}.description ${DST}/../${IMG}.description
     sudo cp ${UPSTREAM}/${IMG}.digest ${DST}/../${IMG}.digest

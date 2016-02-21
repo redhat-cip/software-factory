@@ -8,7 +8,7 @@
 - hosts: managesf
   gather_facts: no
   vars:
-    container: "{{ lookup('env', 'OS_CONTAINER') }}"
+    container: "{{ lookup('env', 'OS_CONTAINER') }}"
     swifturl: "{{ lookup('env', 'OS_SWIFTURL') }}"
     project: "{{ lookup('env', 'SF_PROJECT') }}"
     admin_password: "{{ lookup('env', 'SF_PASSWORD') }}"
@@ -16,10 +16,10 @@
     testname: "unit-test-export"
     node_label: "master"
     os_env:
-      OS_USERNAME: "{{ lookup('env', 'OS_USERNAME') }}"
-      OS_AUTH_URL: "{{ lookup('env', 'OS_AUTH_URL') }}"
-      OS_TENANT_NAME: "{{ lookup('env', 'OS_TENANT_NAME') }}"
-      OS_PASSWORD: "{{ lookup('env', 'OS_PASSWORD') }}"
+      OS_USERNAME: "{{ lookup('env', 'OS_USERNAME') }}"
+      OS_AUTH_URL: "{{ lookup('env', 'OS_AUTH_URL') }}"
+      OS_TENANT_NAME: "{{ lookup('env', 'OS_TENANT_NAME') }}"
+      OS_PASSWORD: "{{ lookup('env', 'OS_PASSWORD') }}"
   tasks:
     - include: tasks/swiftlogs_create.yaml
     - include: tasks/sfconfig_set_swift_logs.yaml

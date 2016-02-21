@@ -24,7 +24,7 @@ function publish {
         rm -f "${IMG_NAME}.tgz"
     fi
     echo "[+] Creating edeploy file of ${SRC}"
-    (cd $IMG; sudo tar -c -p --use-compress-program=pigz -f ../${IMG_NAME}.tgz .)
+    (cd $IMG; sudo tar -c -p --use-compress-program=pigz --numeric-owner --xattrs --selinux -f ../${IMG_NAME}.tgz .)
     for hot in $(ls ${HOT_TEMPLATES}/*.hot); do
         sudo cp $hot $(basename $hot | sed "s/\.hot/-${SF_VER}.hot/")
     done

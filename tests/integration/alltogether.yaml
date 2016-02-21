@@ -9,14 +9,14 @@
     admin_password: "{{ lookup('env', 'SF_PASSWORD') }}"
     fqdn: "{{ lookup('env', 'SF_FQDN') }}"
     sf_version: "{{ lookup('env', 'SF_VER') }}"
-    container: "{{ lookup('env', 'OS_CONTAINER') }}"
+    container: "{{ lookup('env', 'OS_CONTAINER') }}"
     node_label: "base_centos"
     testname: "unit-tests-slave"
     os_env:
-      OS_USERNAME: "{{ lookup('env', 'OS_USERNAME') }}"
-      OS_AUTH_URL: "{{ lookup('env', 'OS_AUTH_URL') }}"
-      OS_TENANT_NAME: "{{ lookup('env', 'OS_TENANT_NAME') }}"
-      OS_PASSWORD: "{{ lookup('env', 'OS_PASSWORD') }}"
+      OS_USERNAME: "{{ lookup('env', 'OS_USERNAME') }}"
+      OS_AUTH_URL: "{{ lookup('env', 'OS_AUTH_URL') }}"
+      OS_TENANT_NAME: "{{ lookup('env', 'OS_TENANT_NAME') }}"
+      OS_PASSWORD: "{{ lookup('env', 'OS_PASSWORD') }}"
   tasks:
     - include: tasks/nodepool_check_slave.yaml
     - include: tasks/project_create.yaml

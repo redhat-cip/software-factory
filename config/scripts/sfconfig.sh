@@ -267,7 +267,7 @@ function puppet_apply {
     [ "$host" == "managesf.${DOMAIN}" ] && ssh="" || ssh="ssh -tt root@$host"
     $ssh puppet apply --test --environment sf --modulepath=/etc/puppet/environments/sf/modules/:/etc/puppet/modules/ $manifest 2>&1 \
         | tee -a /var/log/puppet_apply.log | grep '\(Info:\|Warning:\|Error:\|Notice: Compiled\|Notice: Finished\)' \
-        | grep -v 'Info: Loading facts in'
+        | grep -v '\(Info: Loading facts in\|Gnocchi.*Scheduling refresh\|Warning: You cannot collect exported resources without storeconfigs\)' # Hide some puppet verbose outputs
     res=$?
     if [ "$res" != 2 ] && [ "$res" != 0 ]; then
         echo "[sfconfig][$host] Failed ($res) to apply $manifest"

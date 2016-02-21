@@ -7,8 +7,8 @@
   when: swiftlog_config.rc != 0
   command: >
     hieraedit.py --yaml /etc/puppet/hiera/sf/sfconfig.yaml --eval logs "{ 'disabled': False,
-        'swift_logsexport_container': '{{ container }}',
-        'swift_logsexport_logserver_prefix': '{{ swifturl }}/{{ container }}',
+        'swift_logsexport_container': '{{ container }}',
+        'swift_logsexport_logserver_prefix': '{{ swifturl }}/{{ container }}',
         'swift_logsexport_x_storage_url': '{{ swifturl }}',
         'swift_logsexport_x_tempurl_key': 'sf4ever',
         'swift_logsexport_send_tempurl_key': 'false',
@@ -17,3 +17,7 @@
 - name: Restart sfconfig
   when: swiftlog_config.rc != 0
   command: sfconfig.sh
+
+- name: Restart zuul to make sure it got swift settings (probably a bug...)
+  when: swiftlog_config.rc != 0
+  command: systemctl restart zuul

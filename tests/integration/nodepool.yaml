@@ -15,10 +15,10 @@
     node_label: "base_centos"
     testname: "unit-tests"
     os_env:
-      OS_USERNAME: "{{ lookup('env', 'OS_USERNAME') }}"
-      OS_AUTH_URL: "{{ lookup('env', 'OS_AUTH_URL') }}"
-      OS_TENANT_NAME: "{{ lookup('env', 'OS_TENANT_NAME') }}"
-      OS_PASSWORD: "{{ lookup('env', 'OS_PASSWORD') }}"
+      OS_USERNAME: "{{ lookup('env', 'OS_USERNAME') }}"
+      OS_AUTH_URL: "{{ lookup('env', 'OS_AUTH_URL') }}"
+      OS_TENANT_NAME: "{{ lookup('env', 'OS_TENANT_NAME') }}"
+      OS_PASSWORD: "{{ lookup('env', 'OS_PASSWORD') }}"
 
   tasks:
     - include: tasks/sfconfig_set_nodepool_provider.yaml

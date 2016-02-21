@@ -12,7 +12,7 @@
             'defaults': 'global',
             'builders': ['prepare-workspace', {'shell': 'mkdir artifacts; cd $ZUUL_PROJECT && ./run_tests.sh'}],
             'publishers': [{'postbuildscript': {
-                'builders': [{'shell': '/usr/local/bin/zuul_swift_upload.py --name {{ container }} --delete-after 0 artifacts'}],
+                'builders': [{'shell': '/usr/local/bin/zuul_swift_upload.py --name {{ container }} --delete-after 0 artifacts'}],
                 'script-only-if-succeeded': False,
                 'script-only-if-failed': False,
             }}],
