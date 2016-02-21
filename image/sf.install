@@ -2,83 +2,10 @@
 
 # STEP2 only extra-packages (to avoid cache rebuild)
 STAGING_PKGS=""
-
-# Without this, managesf fails with ResourceNotFoundError: Requested resource doesn't exist
 STAGING_PIP=""
-
-# Latest version of nodepool/zuul as of Jan24 2016
-NODEPOOL_VERSION=1fa3ee77791f7c5dd4faa38a2a8012662f6e88a8
-ZUUL_VERSION=f760f0e49f0d45291afc6e5bee0041e87b17e865
 
 PUPPET_GNOCCHI_URL="https://github.com/openstack/puppet-gnocchi/archive/stable/liberty.tar.gz"
 GNOCCHI_PLUGINS_URL="https://github.com/sileht/grafana-plugins-gnocchi"
-
-# gerritbot
-GERRITBOT_URL="https://github.com/openstack-infra/gerritbot"
-GERRITBOT_VERSION=d48b1bc41717291e43425ff437d6214b6934f60f
-
-
-function install_nodepool {
-    # Checkout VERSION in /tmp
-    do_chroot ${dir} virtualenv /srv/nodepool
-    [ -d ${dir}/tmp/nodepool ] || retry do_chroot ${dir} git clone ${NODEPOOL_URL} /tmp/nodepool
-    do_chroot ${dir} bash -c "cd /tmp/nodepool && git checkout -b sf_stable ${NODEPOOL_VERSION}"
-
-    # Apply validator fix
-    do_chroot ${dir} bash -c "cd /tmp/nodepool; patch -p1" < ./patches/nodepool_image-api-use-tasks_272097.patch
-
-    # Install
-    do_chroot ${dir} /srv/nodepool/bin/pip install --upgrade 'pbr>=1.3' 'pip<8'
-    do_chroot ${dir} /srv/nodepool/bin/pip install 'pip<8' 'funcsigs' file:///tmp/nodepool
-
-    # Install symlink to venv to set correct python path
-    for bin in nodepool nodepoold; do
-        ln -sf /srv/nodepool/bin/${bin} ${dir}/usr/bin/${bin}
-    done
-
-    # Cleanup left-overs
-    rm -Rf ${dir}/tmp/nodepool*
-}
-
-function install_zuul {
-    # Checkout VERSION in /tmp
-    do_chroot ${dir} virtualenv /srv/zuul
-
-    # Cleanup left-overs
-    rm -Rf ${dir}/tmp/zuul*
-
-    retry do_chroot ${dir} git clone ${ZUUL_URL} /tmp/zuul
-    do_chroot ${dir} bash -c "cd /tmp/zuul && git checkout -b working ${ZUUL_VERSION}"
-
-    # Apply temp_url_key fix
-    do_chroot ${dir} bash -c "cd /tmp/zuul; patch -p1" < ./patches/zuul_temp-url-key_270338.patch
-    # Apply poll fix
-    do_chroot ${dir} bash -c "cd /tmp/zuul; patch -p1" < ./patches/zuul_poll-timeout_274445.patch
-
-    # Install
-    sudo sed -i 's/^pbr.*//' ${dir}/tmp/zuul/requirements.txt
-    do_chroot ${dir} /srv/zuul/bin/pip install --upgrade 'pbr' 'pip<8'
-    do_chroot ${dir} /srv/zuul/bin/pip install 'pip<8' file:///tmp/zuul
-
-    # Manually install swift and keystone client
-    do_chroot ${dir} /srv/zuul/bin/pip install --upgrade 'pbr>=1.8' 'pip<8'
-    do_chroot ${dir} /srv/zuul/bin/pip install 'pip<8' python-swiftclient python-keystoneclient
-
-    # Install symlink to venv to set correct python path
-    for bin in zuul zuul-cloner zuul-merger zuul-server; do
-        ln -sf /srv/zuul/bin/${bin} ${dir}/usr/bin/${bin}
-    done
-
-    # Install zuul web virtualhost
-    rm -Rf ${dir}/var/www/zuul
-    mv ${dir}/tmp/zuul/etc/status/public_html/ ${dir}/var/www/zuul
-    mkdir -p ${dir}/var/www/static/js
-    http_fetch $JQUERY_VISIBILITY_URL ${dir}/var/www/static/js/jquery-visibility.min.js
-    http_fetch $JQUERY_GRAPHITE_URL   ${dir}/var/www/static/js/jquery.graphite.js
-
-    # Cleanup left-overs
-    rm -Rf ${dir}/tmp/zuul*
-}
 
 function install_gnocchi {
     do_chroot ${dir} git clone $GNOCCHI_PLUGINS_URL /tmp/gnocchi-plugins
@@ -86,20 +13,6 @@ function install_gnocchi {
 
     http_fetch ${PUPPET_GNOCCHI_URL} ${dir}/root/puppet-gnocchi.tgz
     retry do_chroot ${dir} puppet module install /root/puppet-gnocchi.tgz
-}
-
-function install_gerritbot {
-    # Checkout VERSION in /tmp
-    rm -Rf ${dir}/tmp/gerritbot
-
-    retry do_chroot ${dir} git clone --depth 1 ${GERRITBOT_URL} /tmp/gerritbot
-    do_chroot ${dir} bash -c "cd /tmp/gerritbot && git checkout -b working ${GERRITBOT_VERSION}"
-
-    # Install
-    do_chroot ${dir} bash -c "cd /tmp/gerritbot && python setup.py install"
-
-    # Cleanup left-overs
-    rm -Rf ${dir}/tmp/gerritbot
 }
 
 function install_sf {
@@ -125,14 +38,6 @@ function install_sf {
         echo "Run ./image/fetch_subprojects.sh first"
         exit -1
     fi
-
-    # Install zuul && nodepool
-    install_zuul
-    checkpoint "zuul installed"
-    install_nodepool
-    checkpoint "nodepool installed"
-    install_gerritbot
-    checkpoint "gerritbot installed"
 
     # Finish gnocchi install
     install_gnocchi
