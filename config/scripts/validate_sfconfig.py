@@ -2,6 +2,7 @@
 
 from sys import argv
 import yaml
+import uuid
 
 try:
     d = yaml.load(open(argv[1]))
@@ -134,6 +135,18 @@ if 'gerritbot' not in d:
         'botname': 'sfbot',
         'password': None,
     }
+
+# Make sure murmur is in the conf (2.1.7 -> 2.2.0)
+if 'mumble' not in d:
+    d['mumble'] = {
+        'disabled': False,
+        'password': False,
+        'super_user_password': str(uuid.uuid4()),
+    }
+
+# Make sure murmur password is changed
+if d['mumble']['super_user_password'] == 'CHANGEME':
+    d['mumble']['super_user_password'] = str(uuid.uuid4())
 
 yaml.dump(d, open(argv[1], "w"), default_flow_style=False)
 exit(0)

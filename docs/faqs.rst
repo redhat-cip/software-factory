@@ -95,3 +95,18 @@ If nothing works, this is how to reset the service:
 * Start nodepoold process
 * Follow the logs and wait for servers to be created.
 * Check zuul log to verify it is submitting job request.
+
+
+How-to create channels in Mumble ?
+..................................
+
+You need to log-in as SuperUser using the super_user_password
+from the sfconfig.yaml configuration. If no password was set,
+then you need to read it's value using:
+
+  awk '/super_user_password:/ { print $2 }' /etc/puppet/hiera/sf/sfconfig.yaml
+
+Then you can follow this documentation to create channels and
+set custom ACL:
+
+  https://wiki.mumble.info/wiki/Murmurguide#Becoming_Administrator_and_Registering_a_User

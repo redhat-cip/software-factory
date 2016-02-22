@@ -116,11 +116,27 @@ resources:
          port_range_max: 29418},
         ]
 
+  sf_ext_secgroup_murmur:
+    type: OS::Neutron::SecurityGroup
+    properties:
+      rules: [
+        {remote_ip_prefix: { get_param: sg_user_cidr },
+         protocol: tcp,
+         port_range_min: 64738,
+         port_range_max: 64738},
+        {remote_ip_prefix: { get_param: sg_user_cidr },
+         protocol: udp,
+         port_range_min: 64738,
+         port_range_max: 64738},
+        ]
+
+
   sf_neutron_port:
     type: OS::Neutron::Port
     properties:
       network_id: { get_resource: sf_net }
       security_groups: [ { get_resource: sf_ext_secgroup_gerrit_ssh },
+                         { get_resource: sf_ext_secgroup_murmur },
                          { get_resource: sf_ext_secgroup_http },
                          { get_resource: sf_ext_secgroup_swarm_slave },
                          { get_resource: sf_ext_secgroup_admin },

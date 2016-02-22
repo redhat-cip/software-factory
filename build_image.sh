@@ -72,7 +72,7 @@ function build_cache {
         return
     fi
     echo "(STEP1) The local cache needs update (was: [${LOCAL_HASH}])"
-    if [ "${USER}" == "jenkins" ] || [ -z "$(grep 'polkitd:x:895:' ${CACHE_PATH}/etc/passwd)" ]; then
+    if [ "${USER}" == "jenkins" ]; then
         echo "(STEP1) Removing ${CACHE_PATH}"
         sudo umount ${CACHE_PATH}/proc &> /dev/null
         sudo umount ${CACHE_PATH}/dev &> /dev/null

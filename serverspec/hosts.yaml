@@ -56,3 +56,10 @@ managesf:
     - ntp
   :username: root
   :hostname: managesf
+
+murmur:
+  :roles:
+    - base
+    - murmur
+  :username: root
+  :hostname: murmur

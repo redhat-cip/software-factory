@@ -31,9 +31,9 @@ function update_sfconfig {
     # get public ip of managesf
     local localip=$(ip route get 8.8.8.8 | awk '{ print $7 }')
     local localalias="${DOMAIN}, mysql.${DOMAIN}, redmine.${DOMAIN}, api-redmine.${DOMAIN}, gerrit.${DOMAIN}, auth.${DOMAIN}, statsd.${DOMAIN}"
-    localalias="${localalias}, zuul.${DOMAIN}, nodepool.${DOMAIN}, elasticsearch.${DOMAIN}"
+    localalias="${localalias}, zuul.${DOMAIN}, nodepool.${DOMAIN}, elasticsearch.${DOMAIN}, murmur.${DOMAIN}"
     # Add shortname for serverspec tests
-    localalias="${localalias}, mysql, redmine, gerrit, zuul, nodepool, elasticsearch"
+    localalias="${localalias}, mysql, redmine, gerrit, zuul, nodepool, elasticsearch, murmur"
     if [ -n "${IP_JENKINS}" ]; then
         local jenkins_host="  jenkins.${DOMAIN}:      {ip: ${IP_JENKINS}, host_aliases: [jenkins], }"
     else
@@ -49,6 +49,7 @@ EOF
     hieraedit.py --yaml ${OUTPUT}/sfarch.yaml   refarch    "${REFARCH}"
     hieraedit.py --yaml ${OUTPUT}/sfarch.yaml   ip_jenkins "${IP_JENKINS}"
     echo "sf_version: $(grep ^VERS= /var/lib/edeploy/conf | cut -d"=" -f2 | cut -d'-' -f2)" > /etc/puppet/hiera/sf/sf_version.yaml
+    /usr/local/bin/validate_sfconfig.py ${OUTPUT}/sfconfig.yaml
 
     # set managesf gitconfig
     git config --global user.name "SF initial configurator"
@@ -83,6 +84,9 @@ statsd.${DOMAIN}
 
 [elasticsearch]
 elasticsearch.${DOMAIN}
+
+[murmur]
+murmur.${DOMAIN}
 EOF
 
     # update .ssh/config
@@ -125,6 +129,7 @@ function generate_yaml {
     GRAFANA_MYSQL_SECRET=$(generate_random_pswd 32)
     GNOCCHI_MYSQL_SECRET=$(generate_random_pswd 32)
     SF_SERVICE_USER_SECRET=$(generate_random_pswd 32)
+    MUMBLE_ICE_SECRET=$(generate_random_pswd 32)
     sed -i "s#MYSQL_ROOT_PWD#${MYSQL_ROOT_SECRET}#" ${OUTPUT}/sfcreds.yaml
     sed -i "s#REDMINE_SQL_PWD#${REDMINE_MYSQL_SECRET}#" ${OUTPUT}/sfcreds.yaml
     sed -i "s#GERRIT_SQL_PWD#${GERRIT_MYSQL_SECRET}#" ${OUTPUT}/sfcreds.yaml
@@ -134,6 +139,7 @@ function generate_yaml {
     sed -i "s#GRAFANA_SQL_PWD#${GRAFANA_MYSQL_SECRET}#" ${OUTPUT}/sfcreds.yaml
     sed -i "s#GNOCCHI_SQL_PWD#${GNOCCHI_MYSQL_SECRET}#" ${OUTPUT}/sfcreds.yaml
     sed -i "s#SF_SERVICE_USER_PWD#${SF_SERVICE_USER_SECRET}#" ${OUTPUT}/sfcreds.yaml
+    sed -i "s#MUMBLE_ICE_SECRET#${MUMBLE_ICE_SECRET}#" ${OUTPUT}/sfcreds.yaml
     # Default authorized ssh keys on each node
     JENKINS_PUB="$(cat ${BUILD}/ssh_keys/jenkins_rsa.pub | cut -d' ' -f2)"
     SERVICE_PUB="$(cat ${BUILD}/ssh_keys/service_rsa.pub | cut -d' ' -f2)"
