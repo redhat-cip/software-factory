@@ -31,6 +31,9 @@
                 <% if not @theme["topmenu_hide_paste"] %>
                 <li><a href="/paste/" target="_top">Paste</a></li>
                 <% end %>
+                <% if not @murmur["disabled"] %>
+                <li><a href="mumble://<%= @fqdn %>/?version=1.2.0">Mumble</a></li>
+                <% end %>
             </ul>
             <ul class="nav navbar-nav pull-right">
                 <%= @theme["topmenu_custom_entry"] %>

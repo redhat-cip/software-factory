@@ -12,3 +12,7 @@
   tasks:
     - include: tasks/jenkins_kick.yaml
     - include: tasks/config_nodepool.yaml
+
+- hosts: murmur
+  roles:
+    - sf-murmur

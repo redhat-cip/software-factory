@@ -43,6 +43,10 @@ REDMINE_HTTP_PLUGIN_VERSION="259fb633ac27737d8b0f6a02230e7fa8f619b852"
 URL_LIST="$URL_LIST $REDMINE_RHEL_URL"
 GIT_REPO_LIST="$GIT_REPO_LIST $REDMINE_BACKLOG_URL $REDMINE_HTTP_PLUGIN_URL"
 
+# murmur
+MURMUR_VERSION=1.2.13
+MURMUR_URL="https://github.com/mumble-voip/mumble/releases/download/${MURMUR_VERSION}/murmur-static_x86-${MURMUR_VERSION}.tar.bz2"
+
 # bup
 BUP_URL="https://github.com/bup/bup.git"
 BUP_VERSION=0.26

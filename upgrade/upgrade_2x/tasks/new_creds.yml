@@ -1,0 +1,12 @@
+---
+- name: Generate secret for {{ sf_secret_name }}
+  shell: dd if=/dev/urandom bs=1 count=32 2>/dev/null | base64 -w 32 | head -n1
+  register: secret_cred
+
+- name: Adds {{ sf_secret_name }} to sfcreds.yaml
+  lineinfile:
+    dest: /etc/puppet/hiera/sf/sfcreds.yaml
+    create: yes
+    state: present
+    regexp: "^creds_{{ sf_secret_name }}.*"
+    line: "creds_{{ sf_secret_name }}: {{ secret_cred.stdout }}"

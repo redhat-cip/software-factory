@@ -327,6 +327,28 @@ RSERV=managesf
 EOF
 }
 
+install_murmurd() {
+    if [ ! -d ${dir}/usr/local/murmur ]; then
+        http_fetch $MURMUR_URL ${dir}/tmp/murmur.tar.bz2
+        tar -xjf ${dir}/tmp/murmur.tar.bz2 -C ${dir}/tmp/
+        mv ${dir}/tmp/murmur-static_x86-${MURMUR_VERSION} ${dir}/usr/local/murmur
+    fi
+    cat << EOF > ${dir}/lib/systemd/system/murmurd.service
+[Unit]
+Description=Mumble Server (Murmur)
+Requires=network-online.target
+After=network-online.target mariadb.service time-sync.target
+
+[Service]
+User=murmur
+Type=simple
+ExecStart=/usr/local/murmur/murmur.x86 -ini /etc/murmur.ini -fg
+
+[Install]
+WantedBy=multi-user.target
+EOF
+}
+
 function install_bup {
     if [ ! -d ${dir}/opt/bup ]; then
         do_chroot ${dir} mkdir -p /opt/bup
@@ -465,6 +487,7 @@ if [ "$STEP" == 1 ]; then
     checkpoint "redmine installed"
     install_gerrit
     checkpoint "gerrit installed"
+    install_murmurd
     install_pygerrit
     install_fonts
     install_edeploy

@@ -1,0 +1,26 @@
+database=/var/lib/murmur/murmur.sqlite
+logfile=/var/log/murmur/murmur.log
+pidfile=/var/run/murmur.pid
+port=64738
+welcometext=SF mumble server hosted at {{ fqdn }}
+suggestPushToTalk=true
+
+# Security
+bandwidth=72000
+sendversion=false
+legacyPasswordHash=false
+allowping=false
+users=100
+channelname=[ \\-=\\w\\#\\[\\]\\{\\}\\(\\)\\@\\|]+
+username=[-=\\w\\[\\]\\{\\}\\(\\)\\@\\|\\.]+
+{% if mumble['password'] %}
+serverpassword={{ mumble['password'] }}
+{% endif %}
+
+# Ice access
+ice="tcp -h murmur.{{ fqdn }} -p 6502"
+icesecretwrite={{ creds_mumble_ice_secret }}
+
+[Ice]
+Ice.Warn.UnknownProperties=1
+Ice.MessageSizeMax=65536

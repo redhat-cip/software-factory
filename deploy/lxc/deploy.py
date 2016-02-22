@@ -47,10 +47,15 @@ def port_redirection(mode):
 
     execute(["iptables", mode_arg, "FORWARD", "-i", ext_interface,
              "-d", "192.168.135.101", "-j", "ACCEPT"], silent=silent)
-    for port in (80, 443, 8080, 29418, 45452):
+    for port in (80, 443, 8080, 29418, 45452, 64738):
         execute(["iptables", mode_arg, "PREROUTING", "-t", "nat",
                  "-i", ext_interface, "-p", "tcp", "--dport", str(port),
                  "-j", "DNAT", "--to-destination", "192.168.135.101:%d" % port
+                 ], silent=silent)
+    for uport in (64738,):
+        execute(["iptables", mode_arg, "PREROUTING", "-t", "nat",
+                 "-i", ext_interface, "-p", "udp", "--dport", str(uport),
+                 "-j", "DNAT", "--to-destination", "192.168.135.101:%d" % uport
                  ], silent=silent)
 
 
