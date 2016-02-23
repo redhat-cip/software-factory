@@ -19,6 +19,7 @@ import config
 from utils import Base
 from utils import ManageSfUtils
 from utils import create_random_str
+from utils import is_present
 
 from pysflib.sfredmine import RedmineUtils
 from pysflib.sfgerrit import GerritUtils
@@ -75,10 +76,13 @@ class TestProjectMembership(Base):
         self.assertTrue(self.gu.member_in_group(config.USER_2,
                                                 '%s-core' % pname))
         # Redmine part
-        self.assertTrue(self.rm.check_user_role(pname,
-                                                config.USER_2, 'Manager'))
-        self.assertTrue(self.rm.check_user_role(pname,
-                                                config.USER_2, 'Developer'))
+        if is_present("SFRedmine"):
+            self.assertTrue(self.rm.check_user_role(pname,
+                                                    config.USER_2,
+                                                    'Manager'))
+            self.assertTrue(self.rm.check_user_role(pname,
+                                                    config.USER_2,
+                                                    'Developer'))
 
         # Delete user2 from project groups
         self.msu.deleteUserFromProjectGroups(config.ADMIN_USER, pname,
@@ -89,10 +93,13 @@ class TestProjectMembership(Base):
         self.assertFalse(self.gu.member_in_group(config.USER_2,
                                                  '%s-core' % pname))
         # Redmine part
-        self.assertFalse(self.rm.check_user_role(pname,
-                                                 config.USER_2, 'Manager'))
-        self.assertFalse(self.rm.check_user_role(pname,
-                                                 config.USER_2, 'Developer'))
+        if is_present("SFRedmine"):
+            self.assertFalse(self.rm.check_user_role(pname,
+                                                     config.USER_2,
+                                                     'Manager'))
+            self.assertFalse(self.rm.check_user_role(pname,
+                                                     config.USER_2,
+                                                     'Developer'))
 
     def test_ptl_manage_project_members(self):
         """ Test ptl can add and delete users from all project groups
@@ -116,10 +123,13 @@ class TestProjectMembership(Base):
         self.assertTrue(self.gu.member_in_group(config.USER_3,
                                                 '%s-core' % pname))
         # Redmine part
-        self.assertTrue(self.rm.check_user_role(pname,
-                                                config.USER_3, 'Manager'))
-        self.assertTrue(self.rm.check_user_role(pname,
-                                                config.USER_3, 'Developer'))
+        if is_present("SFRedmine"):
+            self.assertTrue(self.rm.check_user_role(pname,
+                                                    config.USER_3,
+                                                    'Manager'))
+            self.assertTrue(self.rm.check_user_role(pname,
+                                                    config.USER_3,
+                                                    'Developer'))
 
         # ptl should be able to remove users from all groups
         self.msu.deleteUserFromProjectGroups(config.USER_2, pname,
@@ -130,10 +140,13 @@ class TestProjectMembership(Base):
         self.assertFalse(self.gu.member_in_group(config.USER_3,
                                                  '%s-core' % pname))
         # Redmine part
-        self.assertFalse(self.rm.check_user_role(pname,
-                                                 config.USER_3, 'Manager'))
-        self.assertFalse(self.rm.check_user_role(pname,
-                                                 config.USER_3, 'Developer'))
+        if is_present("SFRedmine"):
+            self.assertFalse(self.rm.check_user_role(pname,
+                                                     config.USER_3,
+                                                     'Manager'))
+            self.assertFalse(self.rm.check_user_role(pname,
+                                                     config.USER_3,
+                                                     'Developer'))
 
     def test_core_manage_project_members(self):
         """ Test core can add and delete users to core group
@@ -154,8 +167,10 @@ class TestProjectMembership(Base):
         self.assertTrue(self.gu.member_in_group(config.USER_2,
                                                 '%s-core' % pname))
         # Redmine part
-        self.assertTrue(self.rm.check_user_role(pname,
-                                                config.USER_2, 'Developer'))
+        if is_present("SFRedmine"):
+            self.assertTrue(self.rm.check_user_role(pname,
+                                                    config.USER_2,
+                                                    'Developer'))
 
         groups = 'core-group'
         # core should be ale to add users to only core group and not ptl group
@@ -167,8 +182,10 @@ class TestProjectMembership(Base):
         self.assertTrue(self.gu.member_in_group(config.USER_3,
                                                 '%s-core' % pname))
         # Redmine part
-        self.assertTrue(self.rm.check_user_role(pname,
-                                                config.USER_3, 'Developer'))
+        if is_present("SFRedmine"):
+            self.assertTrue(self.rm.check_user_role(pname,
+                                                    config.USER_3,
+                                                    'Developer'))
 
         groups = 'ptl-group'
         # core should not be allowed to add users to ptl group
@@ -179,8 +196,10 @@ class TestProjectMembership(Base):
         self.assertFalse(self.gu.member_in_group(config.USER_3,
                                                  '%s-ptl' % pname))
         # Redmine part
-        self.assertFalse(self.rm.check_user_role(pname,
-                                                 config.USER_3, 'Manager'))
+        if is_present("SFRedmine"):
+            self.assertFalse(self.rm.check_user_role(pname,
+                                                     config.USER_3,
+                                                     'Manager'))
 
         # core should be able to remove users from core group
         group = 'core-group'
@@ -190,8 +209,10 @@ class TestProjectMembership(Base):
         self.assertFalse(self.gu.member_in_group(config.USER_3,
                                                  '%s-core' % pname))
         # Redmine part
-        self.assertFalse(self.rm.check_user_role(pname,
-                                                 config.USER_3, 'Developer'))
+        if is_present("SFRedmine"):
+            self.assertFalse(self.rm.check_user_role(pname,
+                                                     config.USER_3,
+                                                     'Developer'))
 
     def test_non_member_manage_project_members(self):
         """ Test non project members can add and delete users to core group
@@ -213,8 +234,10 @@ class TestProjectMembership(Base):
         self.assertFalse(self.gu.member_in_group(config.USER_3,
                                                  '%s-core' % pname))
         # Redmine part
-        self.assertFalse(self.rm.check_user_role(pname,
-                                                 config.USER_3, 'Developer'))
+        if is_present("SFRedmine"):
+            self.assertFalse(self.rm.check_user_role(pname,
+                                                     config.USER_3,
+                                                     'Developer'))
 
         groups = 'ptl-group'
         # non project meber can't add usr to ptl group
@@ -244,10 +267,13 @@ class TestProjectMembership(Base):
         self.assertTrue(self.gu.member_in_group(config.USER_3,
                                                 '%s-core' % pname))
         # Redmine part
-        self.assertTrue(self.rm.check_user_role(pname,
-                                                config.USER_3, 'Manager'))
-        self.assertTrue(self.rm.check_user_role(pname,
-                                                config.USER_3, 'Developer'))
+        if is_present("SFRedmine"):
+            self.assertTrue(self.rm.check_user_role(pname,
+                                                    config.USER_3,
+                                                    'Manager'))
+            self.assertTrue(self.rm.check_user_role(pname,
+                                                    config.USER_3,
+                                                    'Developer'))
 
     def test_manage_project_members_for_dev_group(self):
         """ Add and Delete users from dev group by admin, ptl, core,
@@ -265,10 +291,11 @@ class TestProjectMembership(Base):
         self.assertTrue(self.gu.member_in_group(config.ADMIN_USER,
                                                 '%s-dev' % pname))
         # Redmine part
-        self.assertTrue(self.rm.project_exists(pname))
-        self.assertTrue(self.rm.check_user_role(pname,
-                                                config.ADMIN_USER,
-                                                'Developer'))
+        if is_present("SFRedmine"):
+            self.assertTrue(self.rm.project_exists(pname))
+            self.assertTrue(self.rm.check_user_role(pname,
+                                                    config.ADMIN_USER,
+                                                    'Developer'))
 
         # Admin should add user to dev group
         groups = 'dev-group'
@@ -278,8 +305,10 @@ class TestProjectMembership(Base):
         self.assertTrue(self.gu.member_in_group(config.USER_3,
                                                 '%s-dev' % pname))
         # Redmine part
-        self.assertTrue(self.rm.check_user_role(pname,
-                                                config.USER_3, 'Developer'))
+        if is_present("SFRedmine"):
+            self.assertTrue(self.rm.check_user_role(pname,
+                                                    config.USER_3,
+                                                    'Developer'))
 
         # admin should be able to remove users from dev group
         self.msu.deleteUserFromProjectGroups(config.ADMIN_USER, pname,
@@ -288,8 +317,10 @@ class TestProjectMembership(Base):
         self.assertFalse(self.gu.member_in_group(config.USER_3,
                                                  '%s-dev' % pname))
         # Redmine part
-        self.assertFalse(self.rm.check_user_role(pname,
-                                                 config.USER_3, 'Developer'))
+        if is_present("SFRedmine"):
+            self.assertFalse(self.rm.check_user_role(pname,
+                                                     config.USER_3,
+                                                     'Developer'))
 
         # ptl should add user to dev group
         # let admin add user2 as ptl
@@ -303,8 +334,10 @@ class TestProjectMembership(Base):
         self.assertTrue(self.gu.member_in_group(config.USER_3,
                                                 '%s-dev' % pname))
         # Redmine part
-        self.assertTrue(self.rm.check_user_role(pname,
-                                                config.USER_3, 'Developer'))
+        if is_present("SFRedmine"):
+            self.assertTrue(self.rm.check_user_role(pname,
+                                                    config.USER_3,
+                                                    'Developer'))
 
         # ptl should be able to remove users from dev group
         self.msu.deleteUserFromProjectGroups(config.USER_2, pname,
@@ -313,8 +346,10 @@ class TestProjectMembership(Base):
         self.assertFalse(self.gu.member_in_group(config.USER_3,
                                                  '%s-dev' % pname))
         # Redmine part
-        self.assertFalse(self.rm.check_user_role(pname,
-                                                 config.USER_3, 'Developer'))
+        if is_present("SFRedmine"):
+            self.assertFalse(self.rm.check_user_role(pname,
+                                                     config.USER_3,
+                                                     'Developer'))
         # Remove user2 as ptl
         self.msu.deleteUserFromProjectGroups(config.ADMIN_USER, pname,
                                              config.USER_2)
@@ -331,8 +366,10 @@ class TestProjectMembership(Base):
         self.assertTrue(self.gu.member_in_group(config.USER_3,
                                                 '%s-dev' % pname))
         # Redmine part
-        self.assertTrue(self.rm.check_user_role(pname,
-                                                config.USER_3, 'Developer'))
+        if is_present("SFRedmine"):
+            self.assertTrue(self.rm.check_user_role(pname,
+                                                    config.USER_3,
+                                                    'Developer'))
 
         # core should be able to remove users from dev group
         group = 'dev-group'
@@ -342,8 +379,10 @@ class TestProjectMembership(Base):
         self.assertFalse(self.gu.member_in_group(config.USER_3,
                                                  '%s-dev' % pname))
         # Redmine part
-        self.assertFalse(self.rm.check_user_role(pname,
-                                                 config.USER_3, 'Developer'))
+        if is_present("SFRedmine"):
+            self.assertFalse(self.rm.check_user_role(pname,
+                                                     config.USER_3,
+                                                     'Developer'))
         # Remove user2 as core
         self.msu.deleteUserFromProjectGroups(config.ADMIN_USER, pname,
                                              config.USER_2)
@@ -360,8 +399,10 @@ class TestProjectMembership(Base):
         self.assertTrue(self.gu.member_in_group(config.USER_3,
                                                 '%s-dev' % pname))
         # Redmine part
-        self.assertTrue(self.rm.check_user_role(pname,
-                                                config.USER_3, 'Developer'))
+        if is_present("SFRedmine"):
+            self.assertTrue(self.rm.check_user_role(pname,
+                                                    config.USER_3,
+                                                    'Developer'))
 
         # developer should be able to remove users from dev group
         group = 'dev-group'
@@ -371,8 +412,10 @@ class TestProjectMembership(Base):
         self.assertFalse(self.gu.member_in_group(config.USER_3,
                                                  '%s-dev' % pname))
         # Redmine part
-        self.assertFalse(self.rm.check_user_role(pname,
-                                                 config.USER_3, 'Developer'))
+        if is_present("SFRedmine"):
+            self.assertFalse(self.rm.check_user_role(pname,
+                                                     config.USER_3,
+                                                     'Developer'))
         # Remove user2 ifrom dev group
         self.msu.deleteUserFromProjectGroups(config.ADMIN_USER, pname,
                                              config.USER_2)

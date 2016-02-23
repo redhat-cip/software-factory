@@ -23,6 +23,7 @@ from utils import ManageSfUtils
 from utils import GerritGitUtils
 from utils import create_random_str
 from utils import set_private_key
+from utils import skipIfServiceMissing
 
 from pysflib.sfredmine import RedmineUtils
 from pysflib.sfgerrit import GerritUtils
@@ -145,6 +146,7 @@ class TestGerritHooks(Base):
             attempt += 1
         self.assertTrue(self.rm.test_issue_status(issue_id, status))
 
+    @skipIfServiceMissing('SFRedmine')
     def test_gerrit_hook(self):
         """test various commit messages triggering a hook"""
         for template, final_status in TEST_MSGS:

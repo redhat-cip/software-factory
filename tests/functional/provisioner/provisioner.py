@@ -15,6 +15,7 @@
 # under the License.
 
 import os
+import random
 import sys
 import yaml
 
@@ -27,6 +28,7 @@ from utils import GerritGitUtils
 from pysflib.sfredmine import RedmineUtils
 from utils import JenkinsUtils
 from utils import get_cookie
+from utils import is_present
 
 # TODO: Create pads and pasties.
 
@@ -74,7 +76,10 @@ class SFProvisioner(object):
     def create_issues_on_project(self, name, issues):
         print " Create %s issue(s) for that project ..." % len(issues)
         for i in issues:
-            issue = self.rm.create_issue(name, i['name'])
+            if is_present('SFRedmine'):
+                issue = self.rm.create_issue(name, i['name'])
+            else:
+                issue = random.randint(1,100)
             yield issue, i['review']
 
     def create_jenkins_jobs(self, name, jobnames):

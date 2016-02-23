@@ -59,6 +59,46 @@ skipIf = unittest.skipIf
 skip = unittest.skip
 
 
+# test decorators and utilities related to running services
+def _get_services():
+    cookie = get_cookie(config.ADMIN_USER,
+                        config.USERS[config.ADMIN_USER]['password'])
+    about = requests.get(config.GATEWAY_URL + '/manage/about/',
+                         headers={'Accept': 'application/json'},
+                         cookies={'auth_pubtkt': cookie})
+    if about.status_code > 399:
+        return []
+    try:
+        return about.json()['service']['services']
+    except ValueError:
+        raise Exception("Cannot get services from %s" % (config.GATEWAY_URL +
+                                                         '/manage/about/'))
+
+
+def is_present(service):
+    return service in _get_services()
+
+
+def skipIfServiceMissing(service):
+    services = _get_services()
+    if not services:
+        logger.warning('Introspection endpoint not available, you are '
+                       'probably testing a old version of SF, skipping test')
+        return skip
+    return skipIf(service not in services,
+                  'This instance of SF is not running %s' % service)
+
+
+def skipIfServicePresent(service):
+    services = _get_services()
+    if not services:
+        logger.warning('Introspection endpoint not available, you are '
+                       'probably testing a old version of SF, skipping test')
+        return skip
+    return skipIf(service in services,
+                  'This instance of SF is running %s' % service)
+
+
 def get_module_version(module):
     m = module
     if not isinstance(m, basestring):

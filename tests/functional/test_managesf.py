@@ -25,9 +25,24 @@ from utils import ManageSfUtils
 from utils import GerritGitUtils
 from utils import create_random_str
 from utils import set_private_key
+from utils import is_present, skipIfServiceMissing, skipIfServicePresent
 
 from pysflib.sfredmine import RedmineUtils
 from pysflib.sfgerrit import GerritUtils
+
+
+class TestConditionalTesting(Base):
+    """Functional tests validating the service decorators. If the tests
+    are not skipped as expected, fail the tests.
+    """
+    @skipIfServiceMissing('SomeLameFantasyServiceThatDoesNotExist')
+    def test_skip_if_service_missing(self):
+        self.fail('Failure to detect that a service is missing')
+
+    # assuming gerrit will always be there ...
+    @skipIfServicePresent('SFGerrit')
+    def test_skip_if_service_present(self):
+        self.fail('Failure to detect that a service is present')
 
 
 class TestManageSF(Base):
@@ -90,12 +105,13 @@ class TestManageSF(Base):
         self.assertTrue(
             self.gu.member_in_group(config.ADMIN_USER, '%s-core' % pname))
         # Redmine part
-        self.assertTrue(self.rm.project_exists(pname))
-        self.assertTrue(
-            self.rm.check_user_role(pname, config.ADMIN_USER, 'Manager'))
-        self.assertTrue(
-            self.rm.check_user_role(pname, config.ADMIN_USER, 'Developer'))
-        self.assertTrue(self.project_exists_ex(pname, config.USER_2))
+        if is_present("SFRedmine"):
+            self.assertTrue(self.rm.project_exists(pname))
+            self.assertTrue(
+                self.rm.check_user_role(pname, config.ADMIN_USER, 'Manager'))
+            self.assertTrue(
+                self.rm.check_user_role(pname, config.ADMIN_USER, 'Developer'))
+            self.assertTrue(self.project_exists_ex(pname, config.USER_2))
 
     def test_create_private_project_as_admin(self):
         """ Create private project on redmine and gerrit as admin
@@ -117,12 +133,13 @@ class TestManageSF(Base):
         self.assertTrue(
             self.gu.member_in_group(config.ADMIN_USER, '%s-dev' % pname))
         # Redmine part
-        self.assertTrue(self.rm.project_exists(pname))
-        self.assertTrue(
-            self.rm.check_user_role(pname, config.ADMIN_USER, 'Manager'))
-        self.assertTrue(
-            self.rm.check_user_role(pname, config.ADMIN_USER, 'Developer'))
-        self.assertFalse(self.project_exists_ex(pname, config.USER_2))
+        if is_present("SFRedmine"):
+            self.assertTrue(self.rm.project_exists(pname))
+            self.assertTrue(
+                self.rm.check_user_role(pname, config.ADMIN_USER, 'Manager'))
+            self.assertTrue(
+                self.rm.check_user_role(pname, config.ADMIN_USER, 'Developer'))
+            self.assertFalse(self.project_exists_ex(pname, config.USER_2))
 
     def test_delete_public_project_as_admin(self):
         """ Delete public project on redmine and gerrit as admin
@@ -130,11 +147,13 @@ class TestManageSF(Base):
         pname = 'p_%s' % create_random_str()
         self.create_project(pname, config.ADMIN_USER)
         self.assertTrue(self.gu.project_exists(pname))
-        self.assertTrue(self.rm.project_exists(pname))
+        if is_present("SFRedmine"):
+            self.assertTrue(self.rm.project_exists(pname))
         self.msu.deleteProject(pname, config.ADMIN_USER)
         self.assertFalse(self.gu.project_exists(pname))
         self.assertFalse(self.gu.group_exists('%s-ptl' % pname))
-        self.assertFalse(self.rm.project_exists(pname))
+        if is_present("SFRedmine"):
+            self.assertFalse(self.rm.project_exists(pname))
         self.assertFalse(self.gu.group_exists('%s-core' % pname))
         self.projects.remove(pname)
 
@@ -153,13 +172,14 @@ class TestManageSF(Base):
         self.assertTrue(
             self.gu.member_in_group(config.ADMIN_USER, '%s-core' % pname))
         # Redmine part
-        self.assertTrue(self.rm.project_exists(pname))
-        self.assertTrue(self.project_exists_ex(pname, config.USER_2))
-        self.assertTrue(
-            self.rm.check_user_role(pname, config.USER_2, 'Manager'))
-        self.assertTrue(
-            self.rm.check_user_role(pname, config.USER_2, 'Developer'))
-        self.assertTrue(self.project_exists_ex(pname, config.USER_3))
+        if is_present("SFRedmine"):
+            self.assertTrue(self.rm.project_exists(pname))
+            self.assertTrue(self.project_exists_ex(pname, config.USER_2))
+            self.assertTrue(
+                self.rm.check_user_role(pname, config.USER_2, 'Manager'))
+            self.assertTrue(
+                self.rm.check_user_role(pname, config.USER_2, 'Developer'))
+            self.assertTrue(self.project_exists_ex(pname, config.USER_3))
 
     def test_create_private_project_as_user(self):
         """ Create private project on redmine and gerrit as user
@@ -181,13 +201,14 @@ class TestManageSF(Base):
         self.assertTrue(
             self.gu.member_in_group(config.USER_2, '%s-dev' % pname))
         # Redmine part
-        self.assertTrue(self.rm.project_exists(pname))
-        self.assertTrue(self.project_exists_ex(pname, config.USER_2))
-        self.assertTrue(
-            self.rm.check_user_role(pname, config.USER_2, 'Manager'))
-        self.assertTrue(
-            self.rm.check_user_role(pname, config.USER_2, 'Developer'))
-        self.assertFalse(self.project_exists_ex(pname, config.USER_3))
+        if is_present("SFRedmine"):
+            self.assertTrue(self.rm.project_exists(pname))
+            self.assertTrue(self.project_exists_ex(pname, config.USER_2))
+            self.assertTrue(
+                self.rm.check_user_role(pname, config.USER_2, 'Manager'))
+            self.assertTrue(
+                self.rm.check_user_role(pname, config.USER_2, 'Developer'))
+            self.assertFalse(self.project_exists_ex(pname, config.USER_3))
 
     def test_create_public_project_with_users_in_group(self):
         """ Create public project on redmine and gerrit with users in groups
@@ -207,12 +228,14 @@ class TestManageSF(Base):
             self.gu.member_in_group(config.ADMIN_USER, '%s-ptl' % pname))
         for user in (config.ADMIN_USER, config.USER_2, config.USER_3):
             self.assertTrue(self.gu.member_in_group(user, '%s-core' % pname))
-        # Redmine part
-        self.assertTrue(self.rm.project_exists(pname))
-        self.assertTrue(
-            self.rm.check_user_role(pname, config.ADMIN_USER, 'Manager'))
-        for user in (config.ADMIN_USER, config.USER_2, config.USER_3):
-            self.assertTrue(self.rm.check_user_role(pname, user, 'Developer'))
+        if is_present("SFRedmine"):
+            self.assertTrue(self.rm.project_exists(pname))
+            self.assertTrue(
+                self.rm.check_user_role(pname, config.ADMIN_USER, 'Manager'))
+            for user in (config.ADMIN_USER, config.USER_2, config.USER_3):
+                self.assertTrue(self.rm.check_user_role(pname,
+                                                        user,
+                                                        'Developer'))
 
     def test_create_private_project_with_users_in_group(self):
         """ Create private project on redmine and gerrit with users in groups
@@ -238,13 +261,15 @@ class TestManageSF(Base):
         self.assertTrue(
             self.gu.member_in_group(config.USER_4, '%s-dev' % pname))
         # Redmine part
-        # it should be visible to admin
-        self.assertTrue(self.rm.project_exists(pname))
-        self.assertTrue(
-            self.rm.check_user_role(pname, config.ADMIN_USER, 'Manager'))
-        for user in (config.ADMIN_USER, config.USER_2,
-                     config.USER_3, config.USER_4):
-            self.assertTrue(self.rm.check_user_role(pname, user, 'Developer'))
+        if is_present("SFRedmine"):
+            # it should be visible to admin
+            self.assertTrue(self.rm.project_exists(pname))
+            self.assertTrue(
+                self.rm.check_user_role(pname, config.ADMIN_USER, 'Manager'))
+            for user in (config.ADMIN_USER, config.USER_2,
+                         config.USER_3, config.USER_4):
+                self.assertTrue(self.rm.check_user_role(pname, user,
+                                                        'Developer'))
 
     def test_create_public_project_as_admin_clone_as_admin(self):
         """ Clone public project as admin and check content
@@ -431,14 +456,18 @@ class TestManageSF(Base):
         pname = 'p_%s' % create_random_str()
         self.create_project(pname, config.USER_2)
         self.assertTrue(self.gu.project_exists(pname))
-        self.assertTrue(self.rm.project_exists(pname))
+        if is_present("SFRedmine"):
+            self.assertTrue(self.rm.project_exists(pname))
         self.msu.deleteProject(pname, config.ADMIN_USER)
         self.assertFalse(self.gu.project_exists(pname))
         self.assertFalse(self.gu.group_exists('%s-ptl' % pname))
-        self.assertFalse(self.rm.project_exists(pname))
+        if is_present("SFRedmine"):
+            self.assertFalse(self.rm.project_exists(pname))
         self.assertFalse(self.gu.group_exists('%s-core' % pname))
         self.projects.remove(pname)
 
+    # For now listing users comes from Redmine
+    @skipIfServiceMissing('SFRedmine')
     def test_list_active_members(self):
         """ Check the list of members as a list of tuples of emails and names
         """

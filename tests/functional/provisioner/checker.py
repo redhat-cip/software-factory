@@ -27,6 +27,7 @@ from pysflib.sfredmine import RedmineUtils
 from pysflib.sfgerrit import GerritUtils
 from utils import GerritGitUtils
 from utils import JenkinsUtils
+from utils import is_present
 
 
 class SFchecker:
@@ -55,7 +56,7 @@ class SFchecker:
     def check_project(self, name):
         print " Check project %s exists ..." % name,
         if not self.gu.project_exists(name) or \
-           not self.rm.project_exists(name):
+           (is_present('SFRedmine') and not self.rm.project_exists(name)):
             print "FAIL"
             exit(1)
         print "OK"
@@ -111,7 +112,9 @@ class SFchecker:
             self.check_project(project['name'])
             self.check_files_in_project(project['name'],
                                         [f['name'] for f in project['files']])
-            self.check_issues_on_project(project['name'], project['issues'])
+            if is_present('SFRedmine'):
+                self.check_issues_on_project(project['name'],
+                                             project['issues'])
             self.check_reviews_on_project(project['name'], project['issues'])
             self.check_jenkins_jobs(project['name'],
                                     [j['name'] for j in project['jobnames']])

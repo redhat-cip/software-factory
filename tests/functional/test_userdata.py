@@ -21,6 +21,7 @@ import urllib2
 from utils import Base
 from utils import ManageSfUtils
 from utils import skip
+from utils import skipIfServiceMissing, is_present
 
 from pysflib.sfredmine import RedmineUtils
 from pysflib.sfgerrit import GerritUtils
@@ -90,8 +91,10 @@ class TestUserdata(Base):
         self.assertEqual(url, response.url)
         # verify if user is created in gerrit and redmine
         self.verify_userdata_gerrit('user5')
-        self.verify_userdata_redmine('user5')
+        if is_present("SFRedmine"):
+            self.verify_userdata_redmine('user5')
 
+    @skipIfServiceMissing('SFRedmine')
     def test_login_redirect_to_redmine(self):
         """ Verify the redirect to redmine project page
         """
@@ -129,11 +132,12 @@ class TestUserdata(Base):
         except NotImplementedError:
             skip("user management not supported in this version of managesf")
         self.logout()
-        url = config.GATEWAY_URL + "redmine/projects"
+        url = config.GATEWAY_URL + "/dashboard/"
         quoted_url = urllib2.quote(url, safe='')
         response = self.login('Flea', 'RHCP', quoted_url)
         self.assertEqual(url, response.url)
 
+    @skipIfServiceMissing('SFRedmine')
     def test_nonmember_backlog_permissions(self):
         """Make sure project non members can see the backlog and add
         stories"""
@@ -159,12 +163,13 @@ class TestUserdata(Base):
         # make sure user is in redmine and gerrit
         self.assertEqual('funk@mothership.com',
                          self.gu.get_account('bootsy').get('email'))
-        users = self.rm.r.user.filter(limit=20)
-        users = [u for u in users if u.firstname == 'bootsy']
-        self.assertEqual(1, len(users))
-        user = users[0]
-        self.assertEqual('funk@mothership.com',
-                         user.mail)
+        if is_present("SFRedmine"):
+            users = self.rm.r.user.filter(limit=20)
+            users = [u for u in users if u.firstname == 'bootsy']
+            self.assertEqual(1, len(users))
+            user = users[0]
+            self.assertEqual('funk@mothership.com',
+                             user.mail)
         # now suppress it
         del_url = config.GATEWAY_URL + 'manage/services_users/?username=bootsy'
         # try with a a non-admin user, it should not work ...
@@ -182,9 +187,11 @@ class TestUserdata(Base):
         # make sure the user does not exist anymore
         self.assertEqual(False,
                          self.gu.get_account('bootsy'))
-        users = self.rm.r.user.filter(limit=20)
-        self.assertEqual(0,
-                         len([u for u in users if u.firstname == 'bootsy']))
+        if is_present("SFRedmine"):
+            users = self.rm.r.user.filter(limit=20)
+            self.assertEqual(0,
+                             len([u for u in users
+                                  if u.firstname == 'bootsy']))
 
     def test_delete_user_in_backends_by_email(self):
         """ Delete a user previously registered user by email
@@ -199,12 +206,13 @@ class TestUserdata(Base):
         # make sure user is in redmine and gerrit
         self.assertEqual('queen@stoneage.com',
                          self.gu.get_account('josh').get('email'))
-        users = self.rm.r.user.filter(limit=20)
-        users = [u for u in users if u.firstname == 'josh']
-        self.assertEqual(1, len(users))
-        user = users[0]
-        self.assertEqual('queen@stoneage.com',
-                         user.mail)
+        if is_present("SFRedmine"):
+            users = self.rm.r.user.filter(limit=20)
+            users = [u for u in users if u.firstname == 'josh']
+            self.assertEqual(1, len(users))
+            user = users[0]
+            self.assertEqual('queen@stoneage.com',
+                             user.mail)
         # now suppress it
         del_url = config.GATEWAY_URL +\
             'manage/services_users/?email=queen@stoneage.com'
@@ -215,9 +223,10 @@ class TestUserdata(Base):
         # make sure the user does not exist anymore
         self.assertEqual(False,
                          self.gu.get_account('josh'))
-        users = self.rm.r.user.filter(limit=20)
-        self.assertEqual(0,
-                         len([u for u in users if u.firstname == 'josh']))
+        if is_present("SFRedmine"):
+            users = self.rm.r.user.filter(limit=20)
+            self.assertEqual(0,
+                             len([u for u in users if u.firstname == 'josh']))
 
     def test_delete_in_backend_and_recreate(self):
         """Make sure we can recreate a user but as a different one"""
@@ -229,9 +238,10 @@ class TestUserdata(Base):
         self.logout()
         self.login('freddie', 'mercury', config.GATEWAY_URL)
         gerrit_id = self.gu.get_account('freddie').get('_account_id')
-        users = self.rm.r.user.filter(limit=20)
-        user = [u for u in users if u.firstname == 'freddie'][0]
-        redmine_id = user.id
+        if is_present("SFRedmine"):
+            users = self.rm.r.user.filter(limit=20)
+            user = [u for u in users if u.firstname == 'freddie'][0]
+            redmine_id = user.id
         del_url = config.GATEWAY_URL +\
             'manage/services_users/?email=mrbadguy@queen.com'
         auth_cookie = config.USERS[config.ADMIN_USER]['auth_cookie']
@@ -240,16 +250,19 @@ class TestUserdata(Base):
         self.assertTrue(int(d.status_code) < 400, d.status_code)
         self.assertEqual(False,
                          self.gu.get_account('freddie'))
-        users = self.rm.r.user.filter(limit=20)
-        self.assertEqual(0,
-                         len([u for u in users if u.firstname == 'freddie']))
+        if is_present("SFRedmine"):
+            users = self.rm.r.user.filter(limit=20)
+            self.assertEqual(0,
+                             len([u for u in users
+                                  if u.firstname == 'freddie']))
         # recreate the user in the backends
         time.sleep(5)
         self.logout()
         self.login('freddie', 'mercury', config.GATEWAY_URL)
         new_gerrit_id = self.gu.get_account('freddie').get('_account_id')
         self.assertTrue(gerrit_id != new_gerrit_id)
-        users = self.rm.r.user.filter(limit=20)
-        user = [u for u in users if u.firstname == 'freddie'][0]
-        new_redmine_id = user.id
-        self.assertTrue(redmine_id != new_redmine_id)
+        if is_present("SFRedmine"):
+            users = self.rm.r.user.filter(limit=20)
+            user = [u for u in users if u.firstname == 'freddie'][0]
+            new_redmine_id = user.id
+            self.assertTrue(redmine_id != new_redmine_id)
