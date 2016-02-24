@@ -1,0 +1,63 @@
+From 340adaf6b73911d71e4876e2b53a6de60749c1c0 Mon Sep 17 00:00:00 2001
+From: Christian Schwede <cschwede@redhat.com>
+Date: Thu, 15 Oct 2015 14:13:35 +0000
+Subject: [PATCH] Cleanup floating ips even if server unavailable
+
+cleanupServer() should handle deletion of floating IPs, keypairs and finally the
+server itself. However, currently it works only if the server itself is still
+running and thus included in the servers list.
+If the server is no longer listed, the floating IP and keypair are never deleted,
+because an exception is raised before these tasks.
+
+This patch tries to delete a floating IP even if the server itself has not been
+found. Also, if the server has been found and an error occurs when deleting the
+floating IP or keypair, the server will still be deleted finally.
+
+Change-Id: Ic11be567e5e8857abf4a37f4b13f9e4f33495b5c
+---
+
+diff --git a/nodepool/provider_manager.py b/nodepool/provider_manager.py
+index bd08c6f..1bd90af 100644
+--- a/nodepool/provider_manager.py
++++ b/nodepool/provider_manager.py
+@@ -629,15 +629,22 @@
+                 else:
+                     done = True
+ 
+-        # This will either get the server or raise an exception
+-        server = self.getServerFromList(server_id)
++        # Make sure the floating IP is deleted even if the server
++        # itself is no longer running and thus not listed
++        try:
++            server = self.getServerFromList(server_id)
++        except NotFound:
++            server = {}
+ 
+         if self.hasExtension('os-floating-ips'):
+             for ip in self.listFloatingIPs():
+                 if ip['instance_id'] == server_id:
+                     self.log.debug('Deleting floating ip for server %s' %
+                                    server_id)
+-                    self.deleteFloatingIP(ip['id'])
++                    try:
++                        self.deleteFloatingIP(ip['id'])
++                    except Exception:
++                        self.log.exception('Deleting floating IP failed')
+ 
+         if (self.hasExtension('os-keypairs') and
+                 server['key_name'] != self.provider.keypair):
+@@ -645,7 +652,11 @@
+                 if kp['name'] == server['key_name']:
+                     self.log.debug('Deleting keypair for server %s' %
+                                    server_id)
+-                    self.deleteKeypair(kp['name'])
++                    try:
++                        self.deleteKeypair(kp['name'])
++                    except Exception:
++                        self.log.exception('Deleting keypair failed')
+ 
+-        self.log.debug('Deleting server %s' % server_id)
+-        self.deleteServer(server_id)
++        if server:
++            self.log.debug('Deleting server %s' % server_id)
++            self.deleteServer(server_id)

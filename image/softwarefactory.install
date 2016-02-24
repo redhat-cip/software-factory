@@ -482,8 +482,10 @@ function install_nodepool {
     [ -d ${dir}/tmp/nodepool ] || retry do_chroot ${dir} git clone ${NODEPOOL_URL} /tmp/nodepool
     do_chroot ${dir} bash -c "cd /tmp/nodepool && git checkout -b sf_stable ${NODEPOOL_VERSION}"
 
-    # Apply validator fix
-    do_chroot ${dir} bash -c "cd /tmp/nodepool; patch -p1" < ./patches/nodepool_image-api-use-tasks_272097.patch
+    # Apply not-merged fixes
+    for patch in ./patches/nodepool_*; do
+        do_chroot ${dir} bash -c "cd /tmp/nodepool; patch -p1" < ${patch}
+    done
 
     # Install
     do_chroot ${dir} /srv/nodepool/bin/pip install --upgrade 'pbr>=1.3' 'pip<8'
@@ -509,9 +511,10 @@ function install_zuul {
     do_chroot ${dir} bash -c "cd /tmp/zuul && git checkout -b working ${ZUUL_VERSION}"
 
     # Apply temp_url_key fix
-    do_chroot ${dir} bash -c "cd /tmp/zuul; patch -p1" < ./patches/zuul_temp-url-key_270338.patch
-    # Apply poll fix
-    do_chroot ${dir} bash -c "cd /tmp/zuul; patch -p1" < ./patches/zuul_poll-timeout_274445.patch
+    # Apply not-merged fixes
+    for patch in ./patches/zuul_*; do
+        do_chroot ${dir} bash -c "cd /tmp/zuul; patch -p1" < ${patch}
+    done
 
     # Install
     sudo sed -i 's/^pbr.*//' ${dir}/tmp/zuul/requirements.txt
