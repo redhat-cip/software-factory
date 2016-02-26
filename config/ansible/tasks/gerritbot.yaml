@@ -1,0 +1,6 @@
+---
+- group: name=gerritbot
+
+- user: name=gerritbot group=gerritbot shell=/sbin/nologin home=/var/lib/gerritbot
+
+- file: path=/var/lib/gerritbot state=directory mode=0750 owner=gerritbot group=gerritbot

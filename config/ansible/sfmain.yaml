@@ -8,6 +8,7 @@
   tasks:
     - include: tasks/create_config_repository.yaml
     - include: tasks/managesf_authorized_keys.yaml
+    - include: tasks/gerritbot.yaml
 
 - include: sf_configrepo_update.yaml
 
