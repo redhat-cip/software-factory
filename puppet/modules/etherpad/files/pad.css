@@ -1,11 +1,4 @@
-#editorcontainer {top: 87px;}
+#editorcontainer {position: absolute; top: 1px !important; }
+#editorcontainerbox {position: absolute; top: 87px;}
 .toolbar {padding-top: 54px;}
 iframe {z-index: 1;}
-/*
-  custom css files are loaded after core css files. Simply use the same selector to override a style.
-  Example:
-      #editbar LI {border:1px solid #000;}
-    overrides
-      #editbar LI {border:1px solid #d5d5d5;}
-    from pad.css
-*/
