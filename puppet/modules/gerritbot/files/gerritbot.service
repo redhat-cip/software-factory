@@ -6,7 +6,7 @@ After=syslog.target network.target
 Type=simple
 User=gerritbot
 Group=gerritbot
-PIDFile=/var/run/gerritbot.pid
+PIDFile=/var/run/gerritbot/gerritbot.pid
 ExecStart=/usr/bin/gerritbot /etc/gerritbot/gerritbot.conf
 ExecStop=/usr/bin/kill -9 $MAINPID
 

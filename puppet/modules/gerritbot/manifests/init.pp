@@ -53,26 +53,40 @@ class gerritbot {
     group   => 'gerritbot',
   }
 
+  file { '/var/run/gerritbot':
+    ensure  => directory,
+    owner   => 'gerritbot',
+    group   => 'gerritbot',
+  }
+
   file { '/etc/gerritbot':
     ensure  => directory,
+    owner   => 'gerritbot',
+    group   => 'gerritbot',
   }
 
   file { '/etc/gerritbot/gerritbot.conf':
     require => File['/etc/gerritbot'],
     ensure  => file,
     mode    => '0600',
+    owner   => 'gerritbot',
+    group   => 'gerritbot',
     content => template('gerritbot/gerritbot.conf.erb'),
   }
 
   file { '/etc/gerritbot/logging.conf':
     require => File['/etc/gerritbot'],
     ensure  => file,
+    owner   => 'gerritbot',
+    group   => 'gerritbot',
     source  => 'puppet:///modules/gerritbot/logging.conf',
   }
 
   file { '/etc/gerritbot/channels.yaml':
     require => File['/etc/gerritbot'],
     ensure  => file,
+    owner   => 'gerritbot',
+    group   => 'gerritbot',
     source  => 'puppet:///modules/gerritbot/channels.yaml',
     replace => false,
   }
@@ -98,6 +112,7 @@ class gerritbot {
     require    => File['/lib/systemd/system/gerritbot.service'],
     subscribe  => [File['/etc/gerritbot/gerritbot.conf'],
                    File['/etc/gerritbot/channels.yaml'],
-                   File['/etc/gerritbot/logging.conf']],
+                   File['/etc/gerritbot/logging.conf'],
+                   File['/var/run/gerritbot']],
   }
 }

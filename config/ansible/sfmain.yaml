@@ -6,6 +6,8 @@
 - hosts: managesf
   tasks:
     - include: tasks/create_config_repository.yaml
+    - include: tasks/gerritbot.yaml
+
 - hosts: jenkins
   tasks:
     - include: tasks/jenkins_kick.yaml
