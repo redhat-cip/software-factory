@@ -1,5 +1,33 @@
-2.1.6-9  2016-02-21
-==================
+2.1.8-7  2016-03-07
+===================
+
+This release fix the last errors observed in 2.1.7 and it may be the last 2.1.x release.
+
+
+New Features
+------------
+
+- A new mumble service is activated by default.
+
+
+Known Issues
+------------
+
+- Gerritbot service couldn't start because of /var/run permissions
+- Etherpadd CSS was off by a few pixels
+- Redmine redirection was broken after creating an issue
+- Managesf was missing a setting to enable upload of replication ssh keys
+
+
+Upgrade Notes
+-------------
+
+- System user/group id are now correctly updated according to ids.table definition. This is due to support upgrade from version prior 2.1.7 when image uid/gid were not consistent.
+
+
+
+2.1.7-9  2016-02-21
+===================
 
 New Features
 ------------

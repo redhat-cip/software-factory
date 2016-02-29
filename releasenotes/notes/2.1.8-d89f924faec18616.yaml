@@ -1,0 +1,9 @@
+---
+prelude: >
+    This release fix the last errors observed in 2.1.7 and
+    it may be the last 2.1.x release.
+issues:
+  - Gerritbot service couldn't start because of /var/run permissions
+  - Etherpadd CSS was off by a few pixels
+  - Redmine redirection was broken after creating an issue
+  - Managesf was missing a setting to enable upload of replication ssh keys

@@ -1,10 +1,10 @@
 #!/bin/sh
 #
 
-VER=2.1.8
+VER=2.1.9
 
 # Version string
-SF_PREVIOUS_VER=C7.0-2.1.7
+SF_PREVIOUS_VER=C7.0-2.1.8
 
 # Set this variable to 1 if we tag and set it back to 0 the commit after the tag
 TAGGED_RELEASE=0
@@ -12,7 +12,7 @@ REL_VER=$(git log --simplify-merges -n 1 | grep -i 'TaggedRelease:' | awk '{ pri
 if [ ! -z "${REL_VER}" ]; then
     echo "This is release: ${REL_VER}."
     VER=${REL_VER}
-    SF_PREVIOUS_VER=C7.0-2.1.6
+    SF_PREVIOUS_VER=C7.0-2.1.7
     echo "Testing upgrade from ${SF_PREVIOUS_VER}"
     TAGGED_RELEASE=1
     # Pinned versions of the subprojects to go with the current release

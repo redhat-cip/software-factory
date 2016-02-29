@@ -17,10 +17,10 @@ Live instance: http://softwarefactory-project.io
 
 # Get Last releases
 
-The last stable release is 2.1.7 grab the image here:
+The last stable release is 2.1.8 grab the image here:
 
-* Qcow2 image: http://46.231.133.241:8080/v1/AUTH_sf/sf-images/softwarefactory-C7.0-2.1.7.img.qcow2
-* Signed digest: http://46.231.133.241:8080/v1/AUTH_sf/sf-images/softwarefactory-C7.0-2.1.7.digest
+* Qcow2 image: http://46.231.133.241:8080/v1/AUTH_sf/sf-images/softwarefactory-C7.0-2.1.8.img.qcow2
+* Signed digest: http://46.231.133.241:8080/v1/AUTH_sf/sf-images/softwarefactory-C7.0-2.1.8.digest
 
 Previous stable release is 2.0.4:
 
