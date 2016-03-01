@@ -27,5 +27,3 @@ if [ ! -z "${PKGS}" ]; then
     sudo yum install -y $PKGS
     [ -n "$(echo ${PKGS} | grep 'libvirt-daemon-lxc')" ] && sudo systemctl restart libvirtd
 fi
-
-which reno &> /dev/null || sudo pip install 'pip<8' 'reno'

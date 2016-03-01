@@ -1,3 +1,55 @@
+2.1.8-7  2016-03-07
+===================
+
+This release fix the last errors observed in 2.1.7 and it may be the last 2.1.x release.
+
+
+New Features
+------------
+
+- A new mumble service is activated by default.
+
+
+Known Issues
+------------
+
+- Gerritbot service couldn't start because of /var/run permissions
+- Etherpadd CSS was off by a few pixels
+- Redmine redirection was broken after creating an issue
+- Managesf was missing a setting to enable upload of replication ssh keys
+
+
+Upgrade Notes
+-------------
+
+- System user/group id are now correctly updated according to ids.table definition. This is due to support upgrade from version prior 2.1.7 when image uid/gid were not consistent.
+
+
+
+2.1.7-9  2016-02-21
+===================
+
+New Features
+------------
+
+- Add gerritbot
+- Upgrade etherpad to 1.5.7
+
+
+Known Issues
+------------
+
+- Remove redmine base_root_url to fix random 404
+- Pin github3.py to avoid missing requirement error
+- Fix dashboard if no longer authenticated
+
+Security Issues
+---------------
+
+- Rebuild image to include CVE-2015-7547 fix
+- Remove default etherpad admin credentials that may be used to reveal internal mysql password and sesion key.
+
+
 2.1.6-8  2016-02-10
 ===================
 
