@@ -429,6 +429,8 @@ class gerrit {
     owner   => 'gerrit',
     group   => 'gerrit',
     mode    => '0644',
+    source  => 'puppet:///modules/gerrit/replication.config',
+    replace => false,
     require => File['/home/gerrit/site_path/etc'],
   }
 
