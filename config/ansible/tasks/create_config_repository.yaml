@@ -4,5 +4,3 @@
 
 - name: Run init-config-repo.sh
   command: /usr/local/bin/init-config-repo.sh init {{ fqdn }} {{ authentication.admin_password }}
-
-- include: update_configrepo.yaml

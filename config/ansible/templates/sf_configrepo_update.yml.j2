@@ -1,37 +1,46 @@
 ---
 # This playbook reconfigure service based on config repo.
+#
+
+# Check config repo HEAD and update /root/config copy for each services
+- hosts: localhost
+  tasks:
+    - name: Get config sha1
+      command: git ls-remote -h http://{{ '{{' }} fqdn {{ '}}' }}/r/config.git
+      register: configsha
+- hosts: jenkins:zuul:nodepool:managesf{% if 'gerritbot' in roles %}:gerritbot{% endif %}{% if 'mirror' in roles %}:mirror{% endif %}
+
+  tasks:
+    - include: tasks/update_configrepo.yaml
+
 - hosts: jenkins
-  gather_facts: no
-  tasks:
-    - include: tasks/jenkins_update.yaml
+  roles:
+    - {role: 'sf-jenkins', action: 'update'}
+
 - hosts: zuul
-  gather_facts: no
-  tasks:
-    - include: tasks/zuul_update.yaml
+  roles:
+    - {role: 'sf-zuul', action: 'update'}
+
 {% if 'gerritbot' in roles %}
 - hosts: gerritbot
-  tasks:
-    - include: tasks/gerritbot_update.yaml
+  roles:
+    - {role: 'sf-gerritbot', action: 'update'}
 {% endif %}
+
 - hosts: nodepool
-  gather_facts: no
-  tasks:
-    - include: tasks/nodepool_update.yaml
+  roles:
+    - {role: 'sf-nodepool', action: 'update'}
+
 - hosts: gerrit
-  gather_facts: no
   tasks:
     - include: tasks/gerrit_replication_update.yaml
+
 - hosts: managesf
-  gather_facts: no
-  pre_tasks:
-    - include: tasks/update_configrepo.yaml
   roles:
     - {role: 'sf-managesf', action: 'update'}
+
 {% if 'mirror' in roles %}
 - hosts: mirror
-  gather_facts: no
-  pre_tasks:
-    - include: tasks/update_configrepo.yaml
   roles:
     - {role: 'sf-mirror', action: 'update'}
 {% endif %}

@@ -2,6 +2,15 @@
 - include_vars: /etc/puppet/hiera/sf/sfcreds.yaml
 - include_vars: /etc/puppet/hiera/sf/_arch.yaml
 
+- name: "sf: create basic directories"
+  file: path={{ item }} state=directory mode=0755
+  with_items:
+    - /var/lib/software-factory
+    - /etc/software-factory
+    - /usr/share/software-factory
+    - /usr/libexec/software-factory
+    - /usr/share/software-factory
+
 - name: "system: manage /etc/hosts"
   template: src=/etc/ansible/templates/etc-hosts.j2 dest=/etc/hosts mode=0644
 

@@ -1,0 +1,33 @@
+---
+- name: Update zuul layout
+  command: chdir=/root/config {{ item }}
+  with_items:
+    - bash -c "/usr/local/bin/yaml-merger.py zuul | tee /etc/zuul/layout.yaml"
+    - bash -c "cp zuul/*.py /etc/zuul/ || true"
+
+- name: Enable slave reuse when nodepool is not enabled
+  when: nodepool.disabled
+  replace: dest=/etc/zuul/layout.yaml regexp='set_node_options' replace='set_node_reuse'
+
+- file: path=/var/lib/software-factory/zuul_config state=touch
+
+- name: Check local config
+  command: cat /var/lib/software-factory/zuul_config
+  register: localconfig
+
+- name: Check upstream config
+  command: chdir=/root/config git log --oneline zuul/
+  register: upstreamconfig
+
+- name: Reload zuul service
+  service: name=zuul state=reloaded
+  when: localconfig.stdout != upstreamconfig.stdout
+
+# Reload doesn't start service see: https://github.com/ansible/ansible/issues/4448
+- name: Ensure zuul services are running
+  service: name={{ item }} state=started enabled=yes
+  with_items: [zuul, zuul-merger]
+
+- name: Write config repo sha1 matching current configuration
+  copy: content="{{ upstreamconfig.stdout }}" dest=/var/lib/software-factory/zuul_config
+  when: localconfig.stdout != upstreamconfig.stdout

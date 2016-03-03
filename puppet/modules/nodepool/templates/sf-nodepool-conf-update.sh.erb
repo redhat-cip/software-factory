@@ -14,7 +14,7 @@ if [ ! -d .git ]; then
     toclean="${toclean} ${clonedir}"
 fi
 
-mv nodepool/*.yaml ${workdir}/
+cp nodepool/*.yaml ${workdir}/
 cp /etc/nodepool/_nodepool.yaml ${workdir}/nodepool.yaml
 WORKDIR=$workdir /usr/local/bin/sf-nodepool-conf-merger.py merged
 nodepool -c ${workdir}/merged config-validate

@@ -1,0 +1,20 @@
+---
+- file: path=/var/lib/software-factory/nodepool_config state=touch
+
+- name: Check local config
+  command: cat /var/lib/software-factory/nodepool_config
+  register: localconfig
+
+- name: Check upstream config
+  command: chdir=/root/config git log --oneline nodepool/
+  register: upstreamconfig
+
+- name: Update nodepool configuration
+  command: chdir=/root/config {{ item }}
+  when: localconfig.stdout != upstreamconfig.stdout
+  with_items:
+    - /usr/local/bin/sf-nodepool-conf-update.sh apply
+
+- name: Write config repo sha1 matching current configuration
+  copy: content="{{ upstreamconfig.stdout }}" dest=/var/lib/software-factory/nodepool_config
+  when: localconfig.stdout != upstreamconfig.stdout

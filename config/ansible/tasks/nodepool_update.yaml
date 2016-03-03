@@ -1,7 +1,0 @@
----
-- include: update_configrepo.yaml
-
-- name: Update nodepool configuration
-  command: chdir=/root/config {{ item }}
-  with_items:
-    - /usr/local/bin/sf-nodepool-conf-update.sh apply

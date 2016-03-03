@@ -1,8 +1,0 @@
----
-- include: update_configrepo.yaml
-
-- name: Update jenkins jobs
-  command: chdir=/root/config {{ item }}
-  with_items:
-    - rm -Rf /var/lib/jenkins/.cache/jenkins_jobs
-    - jenkins-jobs -l debug --ignore-cache update --delete-old jobs/

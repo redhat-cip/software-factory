@@ -5,8 +5,12 @@
 - git: repo=http://{{ fqdn }}/r/config dest=/root/config force=yes
   when: config.stat.isdir is not defined
 
-- name: Reset config repo local copy
-  when: config.stat.isdir is defined and config.stat.isdir
+- name: Get local config sha1
+  command: git ls-remote -h file:///root/config
+  register: localsha
+
+- name: Update config repository
+  when: localsha.stdout != hostvars["localhost"].configsha.stdout
   command: chdir=/root/config {{ item }}
   with_items:
     # The git config replaces the http address in remote.origin.url.

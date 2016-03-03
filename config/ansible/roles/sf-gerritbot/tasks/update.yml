@@ -1,6 +1,4 @@
 ---
-- include: update_configrepo.yaml
-
 - name: Check gerritbot configuration
   stat: path=/etc/gerritbot/channels.yaml
   register: dst_channels
