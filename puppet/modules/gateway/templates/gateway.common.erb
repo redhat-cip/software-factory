@@ -10,17 +10,27 @@
 	RewriteRule ^(.*)$ <%= @cauth['signin_url'] %> [R,NC,L]
     </LocationMatch>
 
+    <Location "/rb/">
+        RewriteEngine On
+        RewriteRule "/rb/(.*$)" "<%= @url["redmine_url"] %>/rb/$1" [P]
+    </Location>
+
+    <Location "/issues/">
+        RewriteEngine On
+        RewriteRule "/issues(.*$)" "/redmine/issues/$1" [R]
+    </Location>
+
     <Location /redmine/>
-        ProxyPassReverse <%= @url["redmine_url"] %>
+        ProxyPassReverse /
+
+        ProxyHTMLURLMap <%= @url["redmine_url"] %> /redmine/
+        ProxyHTMLURLMap /           /redmine/
+        ProxyHTMLURLMap /redmine/   /redmine/
 
         SetOutputFilter INFLATE;proxy-html;DEFLATE
 
         ProxyHTMLMeta On
-        ProxyHTMLExtended On
         ProxyHTMLEnable On
-
-        ProxyHTMLURLMap /           /redmine/
-        ProxyHTMLURLMap /redmine    /redmine
 
         # Included example from /usr/share/doc/httpd-2.4.6/proxy-html.conf
         ProxyHTMLLinks	a		    href
@@ -116,7 +126,8 @@
         ProxyPassReverse /zuul/ <%= @url["zuul_url"] %>
 
         ProxyPass /redmine/ <%= @url["redmine_url"] %> nocanon retry=0
-        ProxyHTMLURLMap <%= @url["redmine_url"] %> /redmine
+        ProxyPassReverse /redmine/ <%= @url["redmine_url"] %>
+        ProxyHTMLURLMap <%= @url["redmine_url"] %> /redmine/
 
         ProxyPass /etherpad/ http://127.0.0.1:9001/ retry=0
         ProxyPassReverse /etherpad/ http://127.0.0.1:9001/
