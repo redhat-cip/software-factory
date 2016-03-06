@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2014 eNovance SAS <licensing@enovance.com>
+# Copyright (C) 2016 Red Hat
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -14,7 +14,8 @@
 # under the License.
 
 class managesf ($gerrit = hiera('gerrit'), $hosts = hiera('hosts'), $cauth = hiera('cauth')) {
-  require hosts
+  include ::apache
+  include ::cauth_client
 
   $fqdn = hiera('fqdn')
   $url = hiera('url')
@@ -34,8 +35,8 @@ class managesf ($gerrit = hiera('gerrit'), $hosts = hiera('hosts'), $cauth = hie
   file {'/etc/httpd/conf.d/managesf.conf':
     ensure  => file,
     mode    => '0640',
-    owner   => $::httpd_user,
-    group   => $::httpd_user,
+    owner   => 'apache',
+    group   => 'apache',
     content => template('managesf/managesf.site.erb'),
     notify  => Service['webserver'],
   }
@@ -44,15 +45,15 @@ class managesf ($gerrit = hiera('gerrit'), $hosts = hiera('hosts'), $cauth = hie
 # access keys from /var/www/.ssh, so creating keys here
   file { '/usr/share/httpd/.ssh':
     ensure => directory,
-    owner  => $::httpd_user,
-    group  => $::httpd_user,
+    owner  => 'apache',
+    group  => 'apache',
     mode   => '0755',
   }
 
   file { '/usr/share/httpd/.ssh/id_rsa':
     ensure  => file,
-    owner   => $::httpd_user,
-    group   => $::httpd_user,
+    owner   => 'apache',
+    group   => 'apache',
     mode    => '0600',
     content => inline_template('<%= @service_rsa %>'),
     require => File['/usr/share/httpd/.ssh'],
@@ -60,29 +61,29 @@ class managesf ($gerrit = hiera('gerrit'), $hosts = hiera('hosts'), $cauth = hie
 
   file { '/var/log/managesf/':
     ensure => directory,
-    owner  => $::httpd_user,
-    group  => $::httpd_user,
+    owner  => 'apache',
+    group  => 'apache',
     mode   => '0750',
   }
 
   file { '/var/lib/managesf/':
     ensure => directory,
-    owner  => $::httpd_user,
-    group  => $::httpd_user,
+    owner  => 'apache',
+    group  => 'apache',
     mode   => '0750',
   }
 
   file { '/var/www/managesf/':
     ensure => directory,
-    owner  => $::httpd_user,
-    group  => $::httpd_user,
+    owner  => 'apache',
+    group  => 'apache',
     mode   => '0640',
   }
 
   file { '/var/www/managesf/config.py':
     ensure  => file,
-    owner   => $::httpd_user,
-    group   => $::httpd_user,
+    owner   => 'apache',
+    group   => 'apache',
     mode    => '0640',
     content => template('managesf/managesf-config.py.erb'),
     require => File['/var/www/managesf/'],
@@ -91,8 +92,8 @@ class managesf ($gerrit = hiera('gerrit'), $hosts = hiera('hosts'), $cauth = hie
 
   file { '/var/www/managesf/gerrit_admin_rsa':
     ensure  => file,
-    owner   => $::httpd_user,
-    group   => $::httpd_user,
+    owner   => 'apache',
+    group   => 'apache',
     mode    => '0400',
     content => inline_template('<%= @gerrit_admin_rsa %>'),
     require => File['/var/www/managesf/'],
@@ -100,8 +101,8 @@ class managesf ($gerrit = hiera('gerrit'), $hosts = hiera('hosts'), $cauth = hie
 
   file { '/var/www/managesf/sshconfig':
     ensure  => directory,
-    owner   => $::httpd_user,
-    group   => $::httpd_user,
+    owner   => 'apache',
+    group   => 'apache',
     mode    => '0640',
     require => File['/var/www/managesf/'],
   }

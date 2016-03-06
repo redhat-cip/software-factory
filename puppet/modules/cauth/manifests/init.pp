@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2014 eNovance SAS <licensing@enovance.com>
+# Copyright (C) 2016 Red Hat
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -14,6 +14,7 @@
 # under the License.
 
 class cauth ($cauth = hiera('cauth'), $gerrit = hiera('gerrit')) {
+  include ::apache
 
   $auth = hiera('authentication')
   $fqdn = hiera('fqdn')
@@ -38,31 +39,31 @@ class cauth ($cauth = hiera('cauth'), $gerrit = hiera('gerrit')) {
   file {'/etc/httpd/conf.d/cauth.conf':
     ensure => file,
     mode   => '0640',
-    owner  => $::httpd_user,
-    group  => $::httpd_user,
+    owner  => 'apache',
+    group  => 'apache',
     source => 'puppet:///modules/cauth/cauth.site',
     notify => Service['webserver'],
   }
 
   file { '/var/www/cauth/':
     ensure => directory,
-    owner  => $::httpd_user,
-    group  => $::httpd_user,
+    owner  => 'apache',
+    group  => 'apache',
     mode   => '0640',
   }
 
   file { '/var/www/cauth/cauth/':
     ensure  => directory,
-    owner   => $::httpd_user,
-    group   => $::httpd_user,
+    owner   => 'apache',
+    group   => 'apache',
     mode    => '0640',
     require => File['/var/www/cauth/'],
   }
 
   file { '/var/lib/cauth/':
     ensure => directory,
-    owner  => $::httpd_user,
-    group  => $::httpd_user,
+    owner  => 'apache',
+    group  => 'apache',
     mode   => '0750',
   }
 
@@ -76,8 +77,8 @@ class cauth ($cauth = hiera('cauth'), $gerrit = hiera('gerrit')) {
 
   file { '/var/log/cauth/':
     ensure => directory,
-    owner  => $::httpd_user,
-    group  => $::httpd_user,
+    owner  => 'apache',
+    group  => 'apache',
     mode   => '0750',
   }
 
@@ -91,8 +92,8 @@ class cauth ($cauth = hiera('cauth'), $gerrit = hiera('gerrit')) {
 
   file { '/var/www/cauth/config.py':
     ensure  => file,
-    owner   => $::httpd_user,
-    group   => $::httpd_user,
+    owner   => 'apache',
+    group   => 'apache',
     mode    => '0640',
     content => template('cauth/cauth-config.py.erb'),
     require => File['/var/www/cauth/'],
@@ -102,8 +103,8 @@ class cauth ($cauth = hiera('cauth'), $gerrit = hiera('gerrit')) {
 
   file { '/var/www/cauth/cauth/templates':
     ensure  => directory,
-    owner   => $::httpd_user,
-    group   => $::httpd_user,
+    owner   => 'apache',
+    group   => 'apache',
     mode    => '0750',
     require => File['/var/www/cauth/cauth/'],
   }
@@ -111,8 +112,8 @@ class cauth ($cauth = hiera('cauth'), $gerrit = hiera('gerrit')) {
   file {'/var/www/cauth/cauth/templates/login.html':
     ensure  => file,
     mode    => '0640',
-    owner   => $::httpd_user,
-    group   => $::httpd_user,
+    owner   => 'apache',
+    group   => 'apache',
     content => template('cauth/login.html.erb'),
     require => File['/var/www/cauth/cauth/templates'],
   }

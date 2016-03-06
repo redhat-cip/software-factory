@@ -187,14 +187,12 @@ function build_image {
         echo "SKIP_BUILD: Reusing previously built image, just update source code without re-installing"
         echo "            To update requirements and do a full installation, do not use SKIP_BUILD"
         set -e
-        sudo rsync -a --delete puppet/manifests/ ${IMAGE_PATH}/etc/puppet/environments/sf/manifests/
-        sudo rsync -a --delete puppet/modules/ ${IMAGE_PATH}/etc/puppet/environments/sf/modules/
-        sudo rsync -a --delete puppet/hiera/ ${IMAGE_PATH}/etc/puppet/hiera/sf/
-        sudo rsync -a --delete config/ansible/ ${IMAGE_PATH}/usr/local/share/sf-ansible/
-        sudo rsync -a --delete config/config-repo/ ${IMAGE_PATH}/usr/local/share/sf-config-repo/
-        sudo rsync -a --delete serverspec/ ${IMAGE_PATH}/etc/serverspec/
+        sudo rsync -a --delete --no-owner puppet/ ${IMAGE_PATH}/etc/puppet/environments/sf/
+        sudo rsync -a --delete --no-owner config/defaults/ ${IMAGE_PATH}/etc/puppet/hiera/sf/
+        sudo rsync -a --delete --no-owner config/ansible/ ${IMAGE_PATH}/usr/local/share/sf-ansible/
+        sudo rsync -a --delete --no-owner config/config-repo/ ${IMAGE_PATH}/usr/local/share/sf-config-repo/
+        sudo rsync -a --delete --no-owner serverspec/ ${IMAGE_PATH}/etc/serverspec/
         sudo rsync -a config/scripts/ ${IMAGE_PATH}/usr/local/bin/
-        sudo rsync -a config/defaults/ ${IMAGE_PATH}/etc/puppet/hiera/sf/
         echo "SKIP_BUILD: direct copy of ${MANAGESF_CLONED_PATH}/ to ${IMAGE_PATH}/var/www/managesf/"
         sudo rsync -a --delete ${MANAGESF_CLONED_PATH}/ ${IMAGE_PATH}/var/www/managesf/
         echo "SKIP_BUILD: direct copy of ${CAUTH_CLONED_PATH}/ to ${IMAGE_PATH}/var/www/cauth/"

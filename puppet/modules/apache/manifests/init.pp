@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2015 Red Hat
+# Copyright (C) 2016 Red Hat
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -13,13 +13,10 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-class apache () {
-
-  require hosts
+class apache {
 
   $provider = 'systemd'
   $http = 'httpd'
-  $httpd_user = 'apache'
 
   file {'00-ssl.conf':
     path    => '/etc/httpd/conf.modules.d/00-ssl.conf',
@@ -31,8 +28,8 @@ class apache () {
     path   => '/etc/httpd/conf.d/ssl.conf',
     source => 'puppet:///modules/apache/ssl.conf',
     mode   => '0640',
-    owner  => $httpd_user,
-    group  => $httpd_user,
+    owner  => 'apache',
+    group  => 'apache',
   }
 
   package { $http:
@@ -47,5 +44,4 @@ class apache () {
     hasstatus  => true,
     provider   => $provider,
   }
-
 }

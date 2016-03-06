@@ -1,4 +1,5 @@
-# Copyright (C) 2014 eNovance SAS <licensing@enovance.com>
+#
+# Copyright (C) 2016 Red Hat
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -13,8 +14,7 @@
 # under the License.
 
 class postfix {
-
-  require hosts
+  include ::monit
 
   $network = hiera('network')
   $auth = hiera('authentication')

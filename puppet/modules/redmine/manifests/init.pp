@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2014 eNovance SAS <licensing@enovance.com>
+# Copyright (C) 2016 Red Hat
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -14,6 +14,9 @@
 # under the License.
 
 class redmine {
+    include ::monit
+    include ::cauth_client
+    include ::apache
 
     $cauth = hiera_hash('cauth')
     $theme = hiera('theme')
@@ -26,16 +29,12 @@ class redmine {
     $mysql_password = hiera('creds_redmine_sql_pwd')
     $mysql_root_pwd = hiera('creds_mysql_root_pwd')
 
-    require cauth_client
-    require hosts
-    include ::apache
-
     file { 'conf_yml':
       ensure  => file,
       path    => '/var/www/redmine/config/configuration.yml',
       mode    => '0640',
-      owner   => $::httpd_user,
-      group   => $::httpd_user,
+      owner   => 'apache',
+      group   => 'apache',
       source  => 'puppet:///modules/redmine/configuration.yml',
     }
 
@@ -43,23 +42,23 @@ class redmine {
       ensure  => file,
       path    => '/var/www/redmine/config/database.yml',
       mode    => '0640',
-      owner   => $::httpd_user,
-      group   => $::httpd_user,
+      owner   => 'apache',
+      group   => 'apache',
       content => template('redmine/database.erb'),
     }
 
     file {'/etc/httpd/conf.d/redmine.conf':
       ensure  => file,
       mode    => '0640',
-      owner   => $::httpd_user,
-      group   => $::httpd_user,
+      owner   => 'apache',
+      group   => 'apache',
       content => template('redmine/redmine.site.erb'),
       notify  => Service['webserver'],
     }
 
     exec { 'chown_redmine':
       path    => '/usr/bin/:/bin/',
-      command => "chown -R ${::httpd_user}:${::httpd_user} /var/www/redmine",
+      command => "chown -R apache:apache /var/www/redmine",
       unless  => 'stat -c %U /var/www/redmine | grep apache',
     }
 
@@ -141,30 +140,30 @@ class redmine {
     file {'/var/run/passenger':
       ensure => directory,
       mode   => '0644',
-      owner  => $::httpd_user,
-      group  => $::httpd_user,
+      owner  => 'apache',
+      group  => 'apache',
     }
 
     file {'/var/run/passenger-instreg':
       ensure => directory,
       mode   => '0644',
-      owner  => $::httpd_user,
-      group  => $::httpd_user,
+      owner  => 'apache',
+      group  => 'apache',
     }
 
     file {'/var/www/redmine/public/themes/classic/javascripts/':
       ensure => directory,
       mode   => '0644',
-      owner  => $::httpd_user,
-      group  => $::httpd_user,
+      owner  => 'apache',
+      group  => 'apache',
     }
 
     file {'topmenu.js':
       ensure  => file,
       path    => '/var/www/redmine/public/themes/classic/javascripts/theme.js',
       mode    => '0644',
-      owner   => $::httpd_user,
-      group   => $::httpd_user,
+      owner   => 'apache',
+      group   => 'apache',
       content => template('gateway/topmenu.js.erb'),
       require => File['/var/www/redmine/public/themes/classic/javascripts/'],
     }
@@ -181,5 +180,4 @@ class redmine {
     backup_script  => 'redmine/backup.sh.erb',
     restore_script => 'redmine/restore.sh.erb',
   }
-
 }

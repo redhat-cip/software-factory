@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2014 eNovance SAS <licensing@enovance.com>
+# Copyright (C) 2016 Red Hat
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -14,8 +14,6 @@
 # under the License.
 
 class etherpad {
-
-  require hosts
 
   $fqdn = hiera('fqdn')
   $admin_key = hiera('creds_etherpad_admin_key')
@@ -120,5 +118,4 @@ class etherpad {
     backup_script  => 'etherpad/backup.sh.erb',
     restore_script => 'etherpad/restore.sh.erb',
   }
-
 }

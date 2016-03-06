@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2015 Red Hat
+# Copyright (C) 2016 Red Hat
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -50,9 +50,8 @@ class grafana {
     command     => "/usr/bin/mysql -u ${mysql_user} -p${mysql_password} -h ${mysql_host} ${mysql_db} < /root/grafana-init.sql",
     logoutput   => true,
     require     => [
-	    File['/root/grafana-init.sql'],
+        File['/root/grafana-init.sql'],
         Service['grafana-server']],
     refreshonly => true,
   }
-
 }

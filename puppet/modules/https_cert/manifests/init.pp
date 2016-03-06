@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2015 eNovance SAS <licensing@enovance.com>
+# Copyright (C) 2016 Red Hat
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -13,7 +13,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-class https_cert () {
+class https_cert {
 
   $gateway_crt = hiera('gateway_crt')
 
@@ -37,5 +37,4 @@ class https_cert () {
     command => 'cp /etc/pki/ca-trust/extracted/openssl/ca-bundle.trust.crt /usr/lib/python2.7/site-packages/requests/cacert.pem',
     require => File['gateway_cert'],
   }
-
 }

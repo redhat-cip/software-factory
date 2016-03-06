@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2014 eNovance SAS <licensing@enovance.com>
+# Copyright (C) 2016 Red Hat
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -14,8 +14,10 @@
 # under the License.
 
 class jenkins {
-
-  require hosts
+  include ::apache
+  include ::ssh_keys_jenkins
+  include ::cauth_client
+  include ::jjb
 
   $fqdn = hiera('fqdn')
   $auth = hiera('authentication')
@@ -27,25 +29,20 @@ class jenkins {
   file {'/etc/httpd/conf.d/ports.conf':
     ensure => file,
     mode   => '0640',
-    owner  => $::httpd_user,
-    group  => $::httpd_user,
+    owner  => 'apache',
+    group  => 'apache',
     source =>'puppet:///modules/jenkins/ports.conf',
   }
 
   file {'/etc/httpd/conf.d/jenkins.conf':
     ensure  => file,
     mode    => '0640',
-    owner   => $::httpd_user,
-    group   => $::httpd_user,
+    owner   => 'apache',
+    group   => 'apache',
     source  => 'puppet:///modules/jenkins/jenkins.site',
     require => [File['/etc/httpd/conf.d/ports.conf'],
         ],
-    notify  => Exec['webserver_restart'],
-  }
-
-  exec { 'webserver_restart':
-    command => '/usr/sbin/apachectl restart',
-    require => File['/etc/httpd/conf.d/jenkins.conf'],
+    notify  => Service['webserver'],
   }
 
   file {'/etc/init.d/jenkins':

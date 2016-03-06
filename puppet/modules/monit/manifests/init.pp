@@ -1,4 +1,5 @@
-# Copyright (C) 2014 eNovance SAS <licensing@enovance.com>
+#
+# Copyright (C) 2016 Red Hat
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -13,8 +14,6 @@
 # under the License.
 
 class monit {
-
-  require hosts
 
   $fqdn = hiera('fqdn')
   $mail_from = "monit@${fqdn}"
@@ -35,6 +34,7 @@ class monit {
     ensure  => directory,
     require => Package['monit'],
   }
+
   file { '/etc/monitrc':
     ensure  => file,
     mode    => '0600',
@@ -65,5 +65,4 @@ class monit {
     require => [Package['monit'], File['/etc/monit.d']],
     notify  => Service['monit'],
   }
-
 }

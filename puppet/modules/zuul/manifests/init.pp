@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2014 eNovance SAS <licensing@enovance.com>
+# Copyright (C) 2016 Red Hat
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -14,8 +14,8 @@
 # under the License.
 
 class zuul {
-
-  require hosts
+  include ::apache
+  include ::cauth_client
 
   $fqdn = hiera('fqdn')
   $url = hiera('url')
@@ -33,17 +33,13 @@ class zuul {
     source => 'puppet:///modules/zuul/index.html',
   }
 
-  exec { 'virtualhost_reload':
-    command => '/usr/bin/systemctl reload httpd'
-  }
-
   file {'/etc/httpd/conf.d/zuul.conf':
     ensure  => file,
     mode    => '0640',
-    owner   => $::httpd_user,
-    group   => $::httpd_user,
+    owner   => 'apache',
+    group   => 'apache',
     content => template('zuul/zuul.site.erb'),
-    notify  => Exec['virtualhost_reload'],
+    notify  => Service['webserver'],
   }
 
   file {'zuul_init':

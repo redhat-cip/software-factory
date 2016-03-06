@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2014 eNovance SAS <licensing@enovance.com>
+# Copyright (C) 2016 Red Hat
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -14,7 +14,6 @@
 # under the License.
 
 class gateway ($cauth = hiera_hash('cauth', '')) {
-  require hosts
   include ::apache
 
   $auth = hiera('authentication')
@@ -35,8 +34,8 @@ class gateway ($cauth = hiera_hash('cauth', '')) {
     path    => '/etc/httpd/conf.d/gateway.crt',
     content => inline_template('<%= @gateway_crt %>'),
     mode    => '0640',
-    owner   => $::httpd_user,
-    group   => $::httpd_user,
+    owner   => 'apache',
+    group   => 'apache',
   }
 
   file {'gateway_key':
@@ -44,16 +43,16 @@ class gateway ($cauth = hiera_hash('cauth', '')) {
     path    => '/etc/httpd/conf.d/gateway.key',
     content => inline_template('<%= @gateway_key %>'),
     mode    => '0640',
-    owner   => $::httpd_user,
-    group   => $::httpd_user,
+    owner   => 'apache',
+    group   => 'apache',
   }
 
   file {'gateway_common':
     ensure  => file,
     path    => '/etc/httpd/conf.d/gateway.common',
     mode    => '0640',
-    owner   => $::httpd_user,
-    group   => $::httpd_user,
+    owner   => 'apache',
+    group   => 'apache',
     content => template('gateway/gateway.common.erb'),
   }
 
@@ -61,8 +60,8 @@ class gateway ($cauth = hiera_hash('cauth', '')) {
     ensure  => file,
     path    => '/etc/httpd/pages.txt',
     mode    => '0640',
-    owner   => $::httpd_user,
-    group   => $::httpd_user,
+    owner   => 'apache',
+    group   => 'apache',
     content => "",
     replace => false,
   }
@@ -71,8 +70,8 @@ class gateway ($cauth = hiera_hash('cauth', '')) {
     ensure  => file,
     path    => '/etc/httpd/conf.d/gateway.conf',
     mode    => '0640',
-    owner   => $::httpd_user,
-    group   => $::httpd_user,
+    owner   => 'apache',
+    group   => 'apache',
     content => template('gateway/gateway.conf.erb'),
     notify  => Service['webserver'],
     require => [File['gateway_crt'],
@@ -85,32 +84,32 @@ class gateway ($cauth = hiera_hash('cauth', '')) {
   file {'/var/www/static/js/topmenu.js':
     ensure  => file,
     mode    => '0640',
-    owner   => $::httpd_user,
-    group   => $::httpd_user,
+    owner   => 'apache',
+    group   => 'apache',
     content => template('gateway/topmenu.js.erb'),
   }
 
   file {'/var/www/static/js/menu.js':
     ensure => file,
     mode   => '0640',
-    owner  => $::httpd_user,
-    group  => $::httpd_user,
+    owner  => 'apache',
+    group  => 'apache',
     source => 'puppet:///modules/gateway/menu.js',
   }
 
   file {'/var/www/static/js/hideci.js':
     ensure => file,
     mode   => '0640',
-    owner  => $::httpd_user,
-    group  => $::httpd_user,
+    owner  => 'apache',
+    group  => 'apache',
     content => template('gateway/hideci.js.erb'),
   }
 
   file {'/var/www/topmenu.html':
     ensure  => file,
     mode    => '0640',
-    owner   => $::httpd_user,
-    group   => $::httpd_user,
+    owner   => 'apache',
+    group   => 'apache',
     content => template('gateway/topmenu.html.erb'),
   }
 
@@ -118,15 +117,15 @@ class gateway ($cauth = hiera_hash('cauth', '')) {
     ensure  => directory,
     recurse => true,
     mode    => '0644',
-    owner   => $::httpd_user,
-    group   => $::httpd_user,
+    owner   => 'apache',
+    group   => 'apache',
   }
 
   file {'/var/www/dashboard/index.html':
     ensure  => file,
     mode    => '0640',
-    owner   => $::httpd_user,
-    group   => $::httpd_user,
+    owner   => 'apache',
+    group   => 'apache',
     source  => 'puppet:///modules/gateway/dashboard.html',
     require => File['/var/www/dashboard'],
   }
@@ -134,8 +133,8 @@ class gateway ($cauth = hiera_hash('cauth', '')) {
   file {'/var/www/dashboard/dashboard.js':
     ensure  => file,
     mode    => '0640',
-    owner   => $::httpd_user,
-    group   => $::httpd_user,
+    owner   => 'apache',
+    group   => 'apache',
     source  => 'puppet:///modules/gateway/dashboard.js',
     require => File['/var/www/dashboard'],
   }
@@ -143,8 +142,8 @@ class gateway ($cauth = hiera_hash('cauth', '')) {
   file {'/var/www/pages-404.html':
     ensure  => file,
     mode    => '0640',
-    owner   => $::httpd_user,
-    group   => $::httpd_user,
+    owner   => 'apache',
+    group   => 'apache',
     source  => 'puppet:///modules/gateway/pages-404.html',
   }
 
@@ -152,8 +151,8 @@ class gateway ($cauth = hiera_hash('cauth', '')) {
     ensure => file,
     path   => '/etc/httpd/managesf_htpasswd',
     mode   => '0640',
-    owner  => $::httpd_user,
-    group  => $::httpd_user,
+    owner  => 'apache',
+    group  => 'apache',
   }
 
   file {'base64helper':
@@ -161,8 +160,8 @@ class gateway ($cauth = hiera_hash('cauth', '')) {
     path    => '/usr/local/sbin/base64helper',
     source  => 'puppet:///modules/gateway/base64helper',
     mode    => '0755',
-    owner   => $::httpd_user,
-    group   => $::httpd_user,
+    owner   => 'apache',
+    group   => 'apache',
   }
 
   file {'/etc/httpd/conf.d/autoindex.conf':
@@ -176,5 +175,4 @@ class gateway ($cauth = hiera_hash('cauth', '')) {
   file {'/etc/httpd/conf.d/welcome.conf':
     ensure  => absent,
   }
-
 }

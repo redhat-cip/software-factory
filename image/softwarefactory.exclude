@@ -72,9 +72,7 @@
 /srv/cauth_keys/
 
 # Sf configuration
-/etc/puppet/hiera/sf/sfcreds.yaml
-/etc/puppet/hiera/sf/sfconfig.yaml
-/etc/puppet/hiera/sf/hosts.yaml
+/etc/puppet/hiera/sf/
 /etc/httpd/htpasswd
 /etc/httpd/pages.txt
 /etc/gerritbot/channels.yaml
