@@ -27,8 +27,12 @@ source functestslib.sh
 . role_configrc
 bash ./rpm-test-requirements.sh
 
-REFARCH="${1:-1node-allinone}"
-TEST_TYPE="${2:-functional}"
+TEST_TYPE="${1:-functional}"
+
+# Backward compatibility with jjb jobs
+[ ${TEST_TYPE} == "1node-allinone" ] && TEST_TYPE=$2
+
+REFARCH_FILE=${SF_ARCH:-$(pwd)/config/refarch/allinone.yaml}
 
 if [ ${TEST_TYPE} == "openstack" ] && [ ! -n "${OS_AUTH_URL}" ]; then
     echo "Source openrc first"

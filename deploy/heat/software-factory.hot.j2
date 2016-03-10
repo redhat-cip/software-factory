@@ -1,43 +1,42 @@
 heat_template_version: 2013-05-23
 
 description: >
-  Heat SoftwareFactory AIO (All In One) template.
+  {{ description }}
 
 parameters:
   key_name:
     type: string
     description:  Name of the KeyPair to enable SSH access to the SF instance
+    default: id_rsa
   domain:
     type: string
-    description: Hostname of the SF instance
+    description: Domain name of deployment
     default: sftests.com
-  flavor:
-    type: string
-    description: Flavor of the instance
   image_id:
     type: string
     description: Glance image ID of the SF image
-  sf_root_size:
-    type: string
-    description: Root disk size of the instance
-    default: 80
-  nameservers:
-    type: comma_delimited_list
-    description: Nameserver IPs used by VMs
-    default: "8.8.8.8,8.8.4.4"
   ext_net_uuid:
     type: string
     description: The UUID of the external net
   sg_admin_cidr:
     type: string
-    description: From Ip range to access the instance by ssh
+    description: Ip range authorized for shell access
     default: 0.0.0.0/0
   sg_user_cidr:
     type: string
-    description: From Ip range to access user services of SF
+    description: Ip range authorized for SF service access
     default: 0.0.0.0/0
+  nameservers:
+    type: comma_delimited_list
+    description: Nameserver IPs used by VMs
+    default: "8.8.8.8"
 
 resources:
+  admin_password:
+    type: OS::Heat::RandomString
+    properties:
+      length: 16
+
   sf_net:
     type: OS::Neutron::Net
 
@@ -48,11 +47,6 @@ resources:
       cidr: 192.168.240.0/24
       enable_dhcp: true
       dns_nameservers: { get_param: nameservers }
-
-  admin_password:
-    type: OS::Heat::RandomString
-    properties:
-      length: 16
 
   router:
     type: OS::Neutron::Router
@@ -66,7 +60,7 @@ resources:
       router_id: { get_resource: router }
       subnet_id: { get_resource: sf_subnet }
 
-  sf_ext_secgroup_admin:
+  sf_secgroup_admin:
     type: OS::Neutron::SecurityGroup
     properties:
       rules: [
@@ -78,95 +72,61 @@ resources:
          protocol: icmp,}
         ]
 
-  sf_ext_secgroup_http:
+{% for service, ports in (
+    ('gateway', (('tcp', 80), ('tcp', 443))),
+    ('swarm', (('tcp', 8080), ('tcp', 45452))),
+    ('gerrit', (('tcp', 29418),)),
+    ('murmur', (('tcp', 64738), ('udp', 64738)))
+    ) %}
+  sf_secgroup_{{ service }}:
     type: OS::Neutron::SecurityGroup
     properties:
       rules: [
+{% for port in ports %}
         {remote_ip_prefix: { get_param: sg_user_cidr },
-         protocol: tcp,
-         port_range_min: 80,
-         port_range_max: 80},
-        {remote_ip_prefix: { get_param: sg_user_cidr },
-         protocol: tcp,
-         port_range_min: 443,
-         port_range_max: 443},
+         protocol: {{ port[0] }},
+         port_range_min: {{ port[1] }},
+         port_range_max: {{ port[1] }},},
+{% endfor %}
         ]
 
-  sf_ext_secgroup_swarm_slave:
-    type: OS::Neutron::SecurityGroup
-    properties:
-      rules: [
-        {remote_ip_prefix: { get_param: sg_user_cidr },
-         protocol: tcp,
-         port_range_min: 8080,
-         port_range_max: 8080},
-        {remote_ip_prefix: { get_param: sg_user_cidr },
-         protocol: tcp,
-         port_range_min: 45452,
-         port_range_max: 45452},
-        ]
-
-  sf_ext_secgroup_gerrit_ssh:
-    type: OS::Neutron::SecurityGroup
-    properties:
-      rules: [
-        {remote_ip_prefix: { get_param: sg_user_cidr },
-         protocol: tcp,
-         port_range_min: 29418,
-         port_range_max: 29418},
-        ]
-
-  sf_ext_secgroup_murmur:
-    type: OS::Neutron::SecurityGroup
-    properties:
-      rules: [
-        {remote_ip_prefix: { get_param: sg_user_cidr },
-         protocol: tcp,
-         port_range_min: 64738,
-         port_range_max: 64738},
-        {remote_ip_prefix: { get_param: sg_user_cidr },
-         protocol: udp,
-         port_range_min: 64738,
-         port_range_max: 64738},
-        ]
-
-
-  sf_neutron_port:
+{% endfor %}
+{% for host in inventory %}
+  sf_{{ host['name'] }}_port:
     type: OS::Neutron::Port
     properties:
       network_id: { get_resource: sf_net }
-      security_groups: [ { get_resource: sf_ext_secgroup_gerrit_ssh },
-                         { get_resource: sf_ext_secgroup_murmur },
-                         { get_resource: sf_ext_secgroup_http },
-                         { get_resource: sf_ext_secgroup_swarm_slave },
-                         { get_resource: sf_ext_secgroup_admin },
+      security_groups: [ { get_resource: sf_secgroup_gerrit },
+                         { get_resource: sf_secgroup_murmur },
+                         { get_resource: sf_secgroup_gateway },
+                         { get_resource: sf_secgroup_swarm },
+                         { get_resource: sf_secgroup_admin },
                          ]
 
-  sf_floating_ip:
+  sf_{{ host['name'] }}_floating_ip:
     type: OS::Neutron::FloatingIP
     properties:
-      port_id: { get_resource: sf_neutron_port }
+      port_id: { get_resource: sf_{{ host['name'] }}_port }
       floating_network_id: { get_param: ext_net_uuid }
 
-  sf_volume:
+  sf_{{ host['name'] }}_volume:
     type: OS::Cinder::Volume
     properties:
-      name  : "sf"
       image : { get_param: image_id }
-      size  : { get_param: sf_root_size }
+      size  : {{ host['disk'] }}
 
-  sf_instance:
+  sf_{{ host['name'] }}_instance:
     type: OS::Nova::Server
     properties:
       name:
         str_replace:
-          template: managesf.domain
+          template: {{ host['name'] }}.domain
           params: {domain: {get_param: domain}}
-      block_device_mapping: [{ device_name: "vda", volume_id : { get_resource : sf_volume } }]
-      flavor: { get_param: flavor }
+      block_device_mapping: [{ device_name: "vda", volume_id : { get_resource : sf_{{ host['name'] }}_volume } }]
+      flavor: {{ host['flavor'] }}
       key_name: { get_param: key_name }
       networks:
-        - port: { get_resource: sf_neutron_port }
+        - port: { get_resource: sf_{{ host['name'] }}_port }
       user_data_format: RAW
       user_data:
         str_replace:
@@ -177,9 +137,27 @@ resources:
             - content: |
                #!/bin/bash
                set -x
+               HOME=/root
+{% if 'install-server' in host['roles'] %}
                sed -i 's/admin_password:.*/admin_password: adminpwd/' /etc/puppet/hiera/sf/sfconfig.yaml
                sed -i 's/^fqdn:.*/fqdn: domain/' /etc/puppet/hiera/sf/sfconfig.yaml
+               rm -f /etc/puppet/hiera/sf/arch.yaml
+               cat << EOF > /etc/puppet/hiera/sf/arch.yaml
+               {{ arch_raw.replace('\n', '\n               ') }}
+               EOF
+               localip=$(ip route get 8.8.8.8 | awk '{ print $7 }')
+               cat << EOF > /etc/puppet/hiera/sf/hosts.yaml
+               hosts:
+                 localhost:
+                   ip: 127.0.0.1
+{% for ip, names in hosts_file.items() %}
+                 {{ names[0] }}:
+                   ip: $localip
+                   host_aliases: {{ names[1:] }}
+{% endfor %}
+               EOF
                sfconfig.sh
+{% endif %}
               path: /root/startup.sh
             runcmd:
               - chmod +x /root/startup.sh
@@ -187,8 +165,13 @@ resources:
               - rm -f /root/startup.sh
           params:
             domain: {get_param: domain}
+{% if 'install-server' in host['roles'] %}{% for host in inventory %}
             adminpwd: {get_attr: [admin_password, value]}
 
+{% endfor %}{% endif %}
+
+
+{% endfor %}
   slave_net:
     type: OS::Neutron::Net
 
@@ -196,8 +179,8 @@ resources:
     type: OS::Neutron::Subnet
     properties:
       network_id: { get_resource: slave_net }
-      cidr: "10.8.1.0/24"
-      dns_nameservers: [ "8.8.8.8", "8.8.4.4" ]
+      cidr: "192.168.254.0/24"
+      dns_nameservers: { get_param: nameservers }
       ip_version: 4
 
   slave_router:
@@ -220,7 +203,7 @@ outputs:
       str_replace:
         template: "Public address of the SF instance: host"
         params:
-          host: { get_attr: [sf_floating_ip, floating_ip_address] }
+          host: { get_attr: [sf_{% for host in inventory %}{% if 'gateway' in host['roles'] %}{{ host['name'] }}{% endif %}{% endfor %}_floating_ip, floating_ip_address] }
   administrator_password:
     description: SF administrator password
     value:

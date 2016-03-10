@@ -1,11 +1,11 @@
 <domain type='lxc'>
-  <name>sf-jenkins</name>
-  <memory unit='MB'>4096</memory>
+  <name>sf-{{ hostname }}</name>
+  <memory unit='GB'>{{ mem }}</memory>
   <os>
     <type>exe</type>
     <init>/sbin/init</init>
   </os>
-  <vcpu>4</vcpu>
+  <vcpu>{{ cpu }}</vcpu>
   <clock offset='utc'/>
   <on_poweroff>destroy</on_poweroff>
   <on_reboot>restart</on_reboot>
@@ -13,14 +13,14 @@
   <devices>
     <emulator>/usr/libexec/libvirt_lxc</emulator>
     <filesystem type='mount'>
-      <source dir='/var/lib/lxc/jenkins/rootfs/' />
+      <source dir='/var/lib/lxc/{{ hostname }}/rootfs/' />
       <target dir='/'/>
     </filesystem>
     <interface type='network'>
-      <source network='sf-net'/>
-      <target dev='sf-vnet02'/>
-      <mac address="00:11:22:33:44:56"/>
-      <ip address="192.168.135.102" netmask="255.255.255.0" />
+      <source network='{{ ".".join(hostname.split(".")[1:]) }}'/>
+      <target dev="vnet{{ hostid }}" />
+      <mac address="00:11:22:33:44:{{ hostid }}" />
+      <ip address="{{ ip }}" netmask="255.255.255.0" />
     </interface>
     <console type='pty' />
   </devices>

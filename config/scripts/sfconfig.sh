@@ -21,33 +21,13 @@
 
 # Defaults
 DOMAIN=$(cat /etc/puppet/hiera/sf/sfconfig.yaml | grep "^fqdn:" | cut -d: -f2 | sed 's/ //g')
-REFARCH=1node-allinone
 BUILD=/root/sf-bootstrap-data
 HOME=/root
 
 
 function update_sfconfig {
     OUTPUT=${BUILD}/hiera
-    # get public ip of managesf
-    local localip=$(ip route get 8.8.8.8 | awk '{ print $7 }')
-    local localalias="${DOMAIN}, mysql.${DOMAIN}, redmine.${DOMAIN}, api-redmine.${DOMAIN}, gerrit.${DOMAIN}, auth.${DOMAIN}, statsd.${DOMAIN}"
-    localalias="${localalias}, zuul.${DOMAIN}, nodepool.${DOMAIN}, elasticsearch.${DOMAIN}, murmur.${DOMAIN}"
-    # Add shortname for serverspec tests
-    localalias="${localalias}, mysql, redmine, gerrit, zuul, nodepool, elasticsearch, murmur"
-    if [ -n "${IP_JENKINS}" ]; then
-        local jenkins_host="  jenkins.${DOMAIN}:      {ip: ${IP_JENKINS}, host_aliases: [jenkins], }"
-    else
-        localalias="${localalias}, jenkins.${DOMAIN}, jenkins"
-    fi
-    cat << EOF > ${OUTPUT}/hosts.yaml
-hosts:
-  localhost:              {ip: 127.0.0.1}
-  managesf.${DOMAIN}:     {ip: ${localip}, host_aliases: [$localalias]}
-EOF
-    [ -n "${jenkins_host}" ] && echo "${jenkins_host}" >> ${OUTPUT}/hosts.yaml
     hieraedit.py --yaml ${OUTPUT}/sfconfig.yaml fqdn       "${DOMAIN}"
-    hieraedit.py --yaml ${OUTPUT}/sfarch.yaml   refarch    "${REFARCH}"
-    hieraedit.py --yaml ${OUTPUT}/sfarch.yaml   ip_jenkins "${IP_JENKINS}"
     echo "sf_version: $(grep ^VERS= /var/lib/edeploy/conf | cut -d"=" -f2 | cut -d'-' -f2)" > /etc/puppet/hiera/sf/sf_version.yaml
     /usr/local/bin/validate_sfconfig.py ${OUTPUT}/sfconfig.yaml
 
@@ -81,9 +61,6 @@ mysql.${DOMAIN}
 
 [statsd]
 statsd.${DOMAIN}
-
-[elasticsearch]
-elasticsearch.${DOMAIN}
 
 [murmur]
 murmur.${DOMAIN}
@@ -181,7 +158,6 @@ function generate_yaml {
     ln -sf ${OUTPUT}/sfarch.yaml /etc/puppet/hiera/sf/sfarch.yaml
     ln -sf ${OUTPUT}/sfconfig.yaml /etc/puppet/hiera/sf/sfconfig.yaml
     ln -sf ${OUTPUT}/sfcreds.yaml /etc/puppet/hiera/sf/sfcreds.yaml
-    ln -sf ${OUTPUT}/hosts.yaml /etc/puppet/hiera/sf/hosts.yaml
 
     chown -R root:puppet /etc/puppet/hiera/sf
     chmod -R 0750 /etc/puppet/hiera/sf
@@ -293,50 +269,6 @@ function puppet_copy {
 # End of functions
 # -----------------
 
-while getopts ":a:i:h" opt; do
-    case $opt in
-        a)
-            REFARCH=$OPTARG
-            [ $REFARCH != "1node-allinone" -a $REFARCH != "2nodes-jenkins" ] && {
-                    echo "Available REFARCH are: 1node-allinone or 2nodes-jenkins"
-                    exit 1
-            }
-            ;;
-        i)
-            IP_JENKINS=$OPTARG
-            ;;
-        h)
-            echo ""
-            echo "Usage:"
-            echo ""
-            echo "If run without any options sfconfig script will use defaults:"
-            echo "REFARCH=1node-allinone"
-            echo ""
-            echo "Use the -a option to specify the REFARCH."
-            echo ""
-            echo "If REFARCH is 2nodes-jenkins then is is expected you pass"
-            echo "the ip of the node where the CI system will be installed"
-            echo "via the -i option."
-            echo ""
-            exit 0
-            ;;
-        \?)
-            echo "Invalid option: -$OPTARG" >&2
-            exit 1
-            ;;
-        :)
-            echo "Option -$OPTARG requires an argument." >&2
-            exit 1
-            ;;
-    esac
-done
-
-# Make sure hostname is correct
-if [ "$(hostname -f)" != "managesf.${DOMAIN}" ]; then
-    echo "[sfconfig][$(hostname -f)] Changing hostname to managesf.${DOMAIN}"
-    hostnamectl set-hostname "managesf.${DOMAIN}"
-fi
-
 # Generate site specifics configuration
 # Make sure sf-bootstrap-data sub-directories exist
 for i in hiera ssh_keys certs; do
@@ -347,10 +279,6 @@ if [ ! -f "${BUILD}/generate.done" ]; then
     generate_apache_cert
     generate_yaml
     touch "${BUILD}/generate.done"
-else
-    # During upgrade or another sfconfig run, reuse the same refarch and jenkins ip
-    REFARCH=$(cat ${BUILD}/hiera/sfarch.yaml | sed 's/ //g' | grep "^refarch:" | cut -d: -f2)
-    IP_JENKINS=$(cat ${BUILD}/hiera/sfarch.yaml | sed 's/ //g' | grep "^jenkins_ip:" | cut -d: -f2)
 fi
 
 update_sfconfig
@@ -365,26 +293,9 @@ for host in $HOSTS; do
     puppet_copy $host
 done
 
-echo "[sfconfig] Boostrapping $REFARCH"
+echo "[sfconfig] Boostrapping"
 # Apply puppet stuff with good old shell scrips
-case "${REFARCH}" in
-    "1node-allinone")
-        puppet_apply "managesf.${DOMAIN}" /etc/puppet/environments/sf/manifests/1node-allinone.pp
-        ;;
-    "2nodes-jenkins")
-        [ "$IP_JENKINS" == "127.0.0.1" ] && {
-            echo "[sfconfig] Please select another IP_JENKINS than 127.0.0.1 for this REFARCH"
-            exit 1
-        }
-        # Run puppet apply
-        puppet_apply "managesf.${DOMAIN}" /etc/puppet/environments/sf/manifests/2nodes-sf.pp
-        puppet_apply "jenkins.${DOMAIN}" /etc/puppet/environments/sf/manifests/2nodes-jenkins.pp
-        ;;
-    *)
-        echo "Unknown refarch ${REFARCH}"
-        exit 1
-        ;;
-esac
+puppet_apply "managesf.${DOMAIN}" /etc/puppet/environments/sf/manifests/1node-allinone.pp
 
 echo "[sfconfig] Ansible configuration"
 [ -d /var/lib/ansible ] || mkdir -p /var/lib/ansible
@@ -398,5 +309,5 @@ ansible-playbook sfmain.yaml || {
     exit 1
 }
 
-echo "SUCCESS ${REFARCH}"
+echo "${DOMAIN}: SUCCESS"
 exit 0

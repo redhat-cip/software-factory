@@ -13,8 +13,6 @@ ARTIFACTS_DIR="/var/lib/sf/artifacts"
 # The artifacts directory is then at the root of workspace
 [ -n "$SWIFT_artifacts_URL" ] && ARTIFACTS_DIR="$(pwd)/../artifacts"
 
-CONFDIR=/var/lib/lxc-conf
-
 # Make sure .local/bin is in PATH for --user install
 echo ${PATH} | grep -q "\.local/bin" || {
     echo "Adding ${HOME}/.local/bin to PATH"
@@ -43,12 +41,12 @@ function lxc_stop {
 
 function lxc_init {
     ver=${1:-${SF_VER}}
-    (cd deploy/lxc; sudo ./deploy.py init --workspace ${SF_WORKSPACE} --refarch $REFARCH --version ${ver}) || fail "LXC start FAILED"
+    (cd deploy/lxc; sudo ./deploy.py init --workspace ${SF_WORKSPACE} --arch ${REFARCH_FILE} --version ${ver}) || fail "LXC start FAILED"
     checkpoint "lxc-start"
 }
 
 function lxc_start {
-    (cd deploy/lxc; sudo ./deploy.py start --workspace ${SF_WORKSPACE} --refarch $REFARCH) || fail "LXC start FAILED"
+    (cd deploy/lxc; sudo ./deploy.py start --workspace ${SF_WORKSPACE} --arch ${REFARCH_FILE}) || fail "LXC start FAILED"
     checkpoint "lxc-start"
 }
 
@@ -72,7 +70,7 @@ function heat_stop {
 function clean_nodepool_tenant {
     echo "[+] Cleaning nodepool tenant"
     openstack server delete managesf.sftests.com &> /dev/null
-    for srv in $(openstack  server list -f json | awk '{ print $2 }' | tr ',' ' ' | sed 's/"//g'); do
+    for srv in $(openstack  server list -f json | grep base_centos | awk '{ print $2 }' | tr ',' ' ' | sed 's/"//g'); do
         openstack server delete $srv
     done
     for image in $(nova image-list | grep 'template\|base_centos-default' | awk '{ print $2 }'); do
@@ -82,10 +80,6 @@ function clean_nodepool_tenant {
 }
 
 function run_it_jenkins_ci {
-    if [ "${REFARCH}" != "1node-allinone" ]; then
-        # skip
-        return
-    fi
     ./tests/integration/run.py > ${ARTIFACTS_DIR}/integration_tests.txt \
         && echo "Basic integration test SUCCESS"                        \
         || fail "Basic integration test failed" ${ARTIFACTS_DIR}/integration_tests.txt
@@ -110,7 +104,6 @@ function run_it_openstack {
 }
 
 function heat_init {
-    export OS_USERNAME="admin"; export OS_TENANT_NAME="${OS_USERNAME}"
     GLANCE_ID=$(glance image-list | grep "sf-${SF_VER}" | awk '{ print $2 }')
     if [ -n "${GLANCE_ID}" ] && [ ! -n "${KEEP_GLANCE_IMAGE}" ]; then
         echo "[+] Removing old image..."
@@ -119,17 +112,16 @@ function heat_init {
     fi
     if [ ! -n "${GLANCE_ID}" ]; then
         echo "[+] ${IMAGE_PATH}-${SF_VER}.img.qcow2: Uploading glance image..."
-        glance image-create --is-public=true --progress --disk-format qcow2 --container-format bare --name sf-${SF_VER} --file ${IMAGE_PATH}-${SF_VER}.img.qcow2
+        glance image-create --progress --disk-format qcow2 --container-format bare --name sf-${SF_VER} --file ${IMAGE_PATH}-${SF_VER}.img.qcow2
         GLANCE_ID=$(glance image-list | grep "sf-${SF_VER}" | awk '{ print $2 }' | head -n 1)
     else
         echo "[+] Going to re-use glance image uuid ${GLANCE_ID}"
     fi
-    export OS_USERNAME="sfmain"; export OS_TENANT_NAME="${OS_USERNAME}"
-    NET_ID=$(neutron net-list | grep 'external_network' | awk '{ print $2 }' | head -n 1)
+    NET_ID=$(neutron net-list | grep '\(public\|external_network\)' | awk '{ print $2 }' | head -n 1)
     echo "[+] Starting the stack..."
-    heat stack-create --template-file ./deploy/heat/softwarefactory.hot -P \
-        "sf_root_size=5;key_name=id_rsa;domain=${SF_HOST};image_id=${GLANCE_ID};ext_net_uuid=${NET_ID};flavor=m1.medium" \
-        sf_stack || fail "Heat stack-create failed"
+    (cd deploy/heat; ./deploy.py --arch ${REFARCH_FILE} render)
+    heat stack-create --template-file ./deploy/heat/sf-$(basename ${REFARCH_FILE} .yaml).hot \
+        -P "image_id=${GLANCE_ID};ext_net_uuid=${NET_ID}" sf_stack || fail "Heat stack-create failed"
     checkpoint "heat-init"
 }
 
@@ -188,7 +180,7 @@ function build_image {
         echo "            To update requirements and do a full installation, do not use SKIP_BUILD"
         set -e
         sudo rsync -a --delete --no-owner puppet/ ${IMAGE_PATH}/etc/puppet/environments/sf/
-        sudo rsync -a --delete --no-owner config/defaults/ ${IMAGE_PATH}/etc/puppet/hiera/sf/
+        sudo rsync -a --delete --no-owner -L config/defaults/ ${IMAGE_PATH}/etc/puppet/hiera/sf/
         sudo rsync -a --delete --no-owner config/ansible/ ${IMAGE_PATH}/usr/local/share/sf-ansible/
         sudo rsync -a --delete --no-owner config/config-repo/ ${IMAGE_PATH}/usr/local/share/sf-config-repo/
         sudo rsync -a --delete --no-owner serverspec/ ${IMAGE_PATH}/etc/serverspec/
@@ -316,7 +308,7 @@ function fail {
     [ -z "$SWIFT_artifacts_URL" ] && {
         get_logs
     }
-    echo "$0 ${REFARCH} ${TEST_TYPE}: FAILED"
+    echo "$0 ${TEST_TYPE}: FAILED (${REFARCH_FILE})"
     exit 1
 }
 
@@ -338,8 +330,7 @@ function run_bootstraps {
     eval $(ssh-agent)
     ssh-add ~/.ssh/id_rsa
     echo "$(date) ======= run_bootstraps" | tee -a ${ARTIFACTS_DIR}/bootstraps.log
-    [ "${REFARCH}" = "2nodes-jenkins" ] && OPTIONS="-i 192.168.135.102"
-    ssh -A -tt ${SF_HOST} sfconfig.sh -a ${REFARCH} ${OPTIONS} 2>&1 | tee ${ARTIFACTS_DIR}/sfconfig.log
+    ssh -A -tt ${SF_HOST} sfconfig.sh 2>&1 | tee ${ARTIFACTS_DIR}/sfconfig.log
     res=${PIPESTATUS[0]}
     kill -9 $SSH_AGENT_PID
     [ "$res" != "0" ] && fail "Bootstrap fails" ${ARTIFACTS_DIR}/bootstraps.log
@@ -441,14 +432,15 @@ function run_backup_restore {
 
 function run_upgrade {
     echo "$(date) ======= run_upgrade"
-    sudo git clone file://$(pwd) /var/lib/lxc/managesf/rootfs/root/software-factory  --depth 1 || fail "Could not clone sf in managesf instance"
-    echo "[+] Copying new version (${IMAGE_PATH}/ -> /var/lib/lxc/managesf/rootfs/${IMAGE_PATH})"
-    sudo mkdir -p /var/lib/lxc/managesf/rootfs/${IMAGE_PATH}/ || fail "Could not copy ${SF_VER}"
-    sudo rsync -a --delete ${IMAGE_PATH}/ /var/lib/lxc/managesf/rootfs/${IMAGE_PATH}/ || fail "Could not copy ${SF_VER}"
+    INSTALL_SERVER=managesf.sftests.com
+    sudo git clone file://$(pwd) /var/lib/lxc/${INSTALL_SERVER}/rootfs/root/software-factory  --depth 1 || fail "Could not clone sf in managesf instance"
+    echo "[+] Copying new version (${IMAGE_PATH}/ -> /var/lib/lxc/${INSTALL_SERVER}/rootfs/${IMAGE_PATH})"
+    sudo mkdir -p /var/lib/lxc/${INSTALL_SERVER}/rootfs/${IMAGE_PATH}/ || fail "Could not copy ${SF_VER}"
+    sudo rsync -a --delete ${IMAGE_PATH}/ /var/lib/lxc/${INSTALL_SERVER}/rootfs/${IMAGE_PATH}/ || fail "Could not copy ${SF_VER}"
     echo "[+] Running upgrade"
-    ssh ${SF_HOST} "cd software-factory; ./upgrade.sh ${REFARCH}" || fail "Upgrade failed" "/var/lib/lxc/managesf/rootfs/var/log/upgrade-bootstrap.log"
-    # copy changes to sfcreds.yaml back to original to account for new service user (unneeded after 2.0.4)
-    scp ${SF_HOST}:sf-bootstrap-data/hiera/sfcreds.yaml sf-bootstrap-data/hiera/
+    ssh ${SF_HOST} "cd software-factory; ./upgrade.sh" || fail "Upgrade failed" "/var/lib/lxc/${INSTALL_SERVER}/rootfs/var/log/upgrade-bootstrap.log"
+    echo "[+] Update sf-bootstrap-data"
+    rsync -a -v ${SF_HOST}:sf-bootstrap-data/ ./sf-bootstrap-data/
     checkpoint "run_upgrade"
 }
 

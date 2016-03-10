@@ -15,6 +15,7 @@ which pip &> /dev/null          || PKGS="${PKGS} python-pip"
 [ -f "/usr/include/ffi.h" ]     || PKGS="${PKGS} libffi-devel mariadb-devel openldap-devel openssl-devel"
 [ -f "/usr/include/python2.7/Python.h" ] || PKGS="${PKGS} python-devel"
 [ -d "/usr/lib64/python2.7/site-packages/Crypto/" ] || PKGS="${PKGS} python2-crypto"
+[ -d "/usr/lib/python2.7/site-packages/jinja2/" ] || PKGS="${PKGS} python-jinja2"
 [ -f "/usr/lib64/libvirt/connection-driver/libvirt_driver_lxc.so" ] || PKGS="${PKGS} libvirt-daemon-driver-lxc libvirt-daemon-lxc libvirt"
 
 if [ ! -f "/etc/yum.repos.d/epel.repo" ]; then

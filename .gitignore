@@ -52,6 +52,9 @@ edeploy/post
 # docs
 docs/_build
 
+# generated heat template
+deploy/heat/*.hot
+
 # Artifacts generated after a functional test run
 sf-bootstrap-data
 sfmanager.log

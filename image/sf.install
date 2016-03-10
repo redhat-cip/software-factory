@@ -56,7 +56,7 @@ function install_sf {
 
     # Sf-config
     sudo rsync -a --no-owner ./../config/scripts/ ${dir}/usr/local/bin/
-    sudo rsync --delete -a --no-owner ./../config/defaults/ ${dir}/etc/puppet/hiera/sf/
+    sudo rsync --delete -a -L --no-owner ./../config/defaults/ ${dir}/etc/puppet/hiera/sf/
     sudo rsync --delete -a --no-owner ./../config/ansible/ ${dir}/usr/local/share/sf-ansible/
     sudo mkdir -p ${dir}/etc/software-factory ${dir}/etc/ansible/group_vars ${dir}/var/lib/ansible
 

@@ -3,6 +3,11 @@
 import argparse
 import os
 import subprocess
+import yaml
+
+from utils_refarch import load_refarch
+from utils_refarch import render_jinja2_template
+
 
 DEBUG = False
 
@@ -31,7 +36,7 @@ def virsh(argv, silent=False):
     execute(["virsh", "-c", "lxc:///"] + argv, silent)
 
 
-def port_redirection(mode):
+def port_redirection(arch, mode):
     if mode == "up":
         mode_arg = "-I"
         silent = False
@@ -46,24 +51,21 @@ def port_redirection(mode):
         raise RuntimeError("No default route available")
 
     execute(["iptables", mode_arg, "FORWARD", "-i", ext_interface,
-             "-d", "192.168.135.101", "-j", "ACCEPT"], silent=silent)
+             "-d", arch["gateway_ip"], "-j", "ACCEPT"], silent=silent)
     for port in (80, 443, 8080, 29418, 45452, 64738):
         execute(["iptables", mode_arg, "PREROUTING", "-t", "nat",
                  "-i", ext_interface, "-p", "tcp", "--dport", str(port),
-                 "-j", "DNAT", "--to-destination", "192.168.135.101:%d" % port
-                 ], silent=silent)
+                 "-j", "DNAT", "--to-destination", "%s:%s" % (
+                     arch["gateway_ip"], port)], silent=silent)
     for uport in (64738,):
         execute(["iptables", mode_arg, "PREROUTING", "-t", "nat",
                  "-i", ext_interface, "-p", "udp", "--dport", str(uport),
-                 "-j", "DNAT", "--to-destination", "192.168.135.101:%d" % uport
-                 ], silent=silent)
+                 "-j", "DNAT", "--to-destination", "%s:%d" % (
+                     arch["gateway_ip"], uport)], silent=silent)
 
 
-def prepare_role(base_path, name, ip,
-                 netmask="255.255.255.0", gateway="192.168.135.1"):
+def prepare_role(base_path, name, ip, gateway, netmask="255.255.255.0"):
     print "[deploy] Prepare role %s (%s)" % (name, ip)
-    if not os.path.isdir("/var/lib/lxc"):
-        os.mkdir("/var/lib/lxc", 0755)
     if not os.path.isdir("/var/lib/lxc/%s" % name):
         os.mkdir("/var/lib/lxc/%s" % name, 0755)
     root = "/var/lib/lxc/%s/rootfs" % name
@@ -85,11 +87,10 @@ def prepare_role(base_path, name, ip,
     )
     open("%s/etc/sysconfig/network" % root, "w").write(
         "NETWORKING=yes\n" +
-        "HOSTNAME=%s.%s" % (name, args.domain)
+        "HOSTNAME=%s\n" % name
     )
     open("%s/etc/hostname" % root, "w").write("%s\n" % (name))
-    open("%s/etc/hosts" % root, "w").write("127.0.0.1 %s.%s %s localhost\n"
-                                           % (name, args.domain, name))
+    open("%s/etc/hosts" % root, "w").write("127.0.0.1 %s localhost\n" % name)
     if not os.path.isdir("%s/root/.ssh" % root):
         os.mkdir("%s/root/.ssh" % root, 0755)
 
@@ -116,42 +117,79 @@ def prepare_role(base_path, name, ip,
                 os.unlink(s)
 
 
-def stop():
+def stop(arch):
     print "[deploy] Stop"
-    port_redirection("down")
+    port_redirection(arch, "down")
+    # Remove legacy name
     execute(["virsh", "net-destroy", "sf-net"], silent=True)
+    execute(["virsh", "net-destroy", args.domain], silent=True)
     for instance in pread([
         "virsh", "-c", "lxc:///", "list", "--all", "--name"
     ], silent=True).split():
+        if arch["domain"] not in instance:
+            continue
         virsh(["destroy", instance], silent=True)
         virsh(["undefine", instance], silent=True)
     # Make sure no systemd-machinectl domain leaked
     for machine in pread(['machinectl', 'list'], silent=True).split('\n'):
-        if 'libvirt-lxc' not in machine:
+        if arch["domain"] not in machine:
             continue
         execute(['machinectl', 'terminate', machine.split()[0]], silent=True)
 
 
-def init(base):
+def init(arch, base):
     print "[deploy] Init"
-    prepare_role(base, "managesf", "192.168.135.101")
-    if args.refarch == "2nodes-jenkins":
-        prepare_role(base, "jenkins",  "192.168.135.102")
+    if not os.path.isdir("/var/lib/lxc"):
+        os.mkdir("/var/lib/lxc", 0755)
+
+    # Generate network
+    render_jinja2_template("/var/lib/lxc/%s-network.xml" % args.domain,
+                           "./libvirt-network.xml.j2", {
+                               "domain": args.domain,
+                               "ip_prefix": arch["ip_prefix"],
+                           })
+
+    for host in arch["inventory"]:
+        # Prepare host rootfs
+        prepare_role(base, host["hostname"], host["ip"],
+                     gateway="%s.1" % arch["ip_prefix"])
+
+    # "cloud-init": copy sfarch and hosts.yaml file
+    root = "/var/lib/lxc/%s/rootfs" % arch["install"]
+    open("%s/etc/puppet/hiera/sf/arch.yaml" % root, "w").write(
+        yaml.dump(arch, default_flow_style=False)
+    )
+    hosts = {'localhost': {'ip': '127.0.0.1'}}
+    for ip, names in arch['hosts_file'].items():
+        hosts[names[0]] = {'ip': ip, 'host_aliases': names[1:]}
+    open("%s/etc/puppet/hiera/sf/hosts.yaml" % root, "w").write(
+        yaml.dump({'hosts': hosts}, default_flow_style=False)
+    )
+
+    # Generate libvirt domains
+    for host in arch["inventory"]:
+        render_jinja2_template("/var/lib/lxc/%s.xml" % host["hostname"],
+                               "./libvirt-hosts.xml.j2",
+                               host)
+
+    # Clean known_hosts
+    execute(["sed", "-i",
+             "/home/%s/.ssh/known_hosts" % os.environ["SUDO_USER"], "-e",
+             "s/^%s\.[0-9].*$//" % arch["ip_prefix"]])
 
 
-def start():
+def start(arch):
     print "[deploy] Start"
-    virsh(["net-create", "libvirt-network.xml"])
-    virsh(["create", "libvirt-managesf.xml"])
-    if args.refarch == "2nodes-jenkins":
-        virsh(["create", "libvirt-jenkins.xml"])
-    port_redirection("up")
+    virsh(["net-create", "/var/lib/lxc/%s-network.xml" % args.domain])
+    for host in arch["inventory"]:
+        virsh(["create", "/var/lib/lxc/%s.xml" % host["hostname"]])
+    port_redirection(arch, "up")
     virsh(["list"])
 
 
-def destroy():
+def destroy(arch):
     print "[deploy] Destroy"
-    stop()
+    stop(arch)
     # execute(["rm", "-Rf", "/var/lib/lxc/"])
 
 
@@ -163,27 +201,31 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--domain", default="sftests.com")
 parser.add_argument("--version")
 parser.add_argument("--workspace", default="/var/lib/sf")
-parser.add_argument("--refarch", choices=[
-    "1node-allinone", "2nodes-jenkins"],
-    default="1node-allinone")
+parser.add_argument("--arch", default="../../config/refarch/allinone.yaml")
 parser.add_argument("action", choices=[
     "start", "stop", "restart", "init", "destroy"])
 args = parser.parse_args()
 
+try:
+    arch = load_refarch(args.arch, args.domain)
+except IOError:
+    print "Invalid arch: %s" % args.arch
+    exit(1)
+
 if args.action == "start":
-    start()
+    start(arch)
 elif args.action == "stop":
-    stop()
+    stop(arch)
 elif args.action == "restart":
-    stop()
-    start()
+    stop(arch)
+    start(arch)
 elif args.action == "destroy":
-    destroy()
+    destroy(arch)
 elif args.action == "init":
     if args.version is None:
         # Extracts version from role_configrc... needs bash evaluation here
         args.version = pread([
             "bash", "-c", ". ../../role_configrc; echo $SF_VER"],
             silent=True).strip()
-    init("%s/roles/install/%s" % (args.workspace, args.version))
-    start()
+    init(arch, "%s/roles/install/%s" % (args.workspace, args.version))
+    start(arch)

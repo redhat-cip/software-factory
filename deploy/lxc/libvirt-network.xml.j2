@@ -1,0 +1,6 @@
+<network>
+    <name>{{ domain }}</name>
+    <bridge name="{{ domain.replace('.', '-') }}-br" />
+    <forward mode="nat"/>
+    <ip address="{{ ip_prefix }}.1" netmask="255.255.255.0" />
+</network>

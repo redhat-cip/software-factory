@@ -1,0 +1,23 @@
+description: "Multi jenkins master sample deployment"
+inventory:
+  - name: node01
+    ip: 192.168.135.101
+    roles:
+      - install-server
+      - mysql
+      - auth
+      - gateway
+      - managesf
+      - statsd
+      - redmine
+      - zuul
+      - nodepool
+      - gerrit
+  - name: jenkins01
+    ip: 192.168.135.102
+    roles:
+      - jenkins
+  - name: jenkins02
+    ip: 192.168.135.103
+    roles:
+      - jenkins
