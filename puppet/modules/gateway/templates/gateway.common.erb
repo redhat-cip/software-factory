@@ -197,7 +197,7 @@
         RequestHeader set Authorization "Basic %{B64}e"
 
         # Requests from localhost get admin permission
-        RewriteCond %{REMOTE_HOST} ^managesf.<%= @fqdn %>$
+        RewriteCond %{REMOTE_HOST} ^.*.<%= @fqdn %>$
         RewriteRule .* - [E=B64:${base64helper:admin},NE]
         RequestHeader set Authorization "Basic %{B64}e"
     </LocationMatch>

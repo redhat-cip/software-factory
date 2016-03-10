@@ -18,11 +18,6 @@ fi
 # set PATH
 export PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin
 
-DST=/etc/puppet/hiera/sf/sfconfig.yaml
-cp ${DST} ${DST}.orig
-
-./config/scripts/validate_sfconfig.py ${DST} || exit -1
-
 # fix rsyncd install dir
 [ -d /var/lib/debootstrap ] || mkdir /var/lib/debootstrap
 [ -e /var/lib/debootstrap/install ] && rm -Rf /var/lib/debootstrap/install

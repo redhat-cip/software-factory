@@ -2,7 +2,7 @@
 - include: update_configrepo.yaml
 
 - name: Update zuul layout
-  command: chdir=config {{ item }}
+  command: chdir=/root/config {{ item }}
   with_items:
     - bash -c "/usr/local/bin/yaml-merger.py zuul | tee /etc/zuul/layout.yaml"
     - bash -c "cp zuul/*.py /etc/zuul/ || true"

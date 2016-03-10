@@ -1,0 +1,10 @@
+# This file is managed by sfconfig.sh, don't edit.
+# It's the list of host sort by roles group.
+{% for role in roles %}
+
+[{{ role }}]
+{% for host in roles[role] %}
+{{ host['hostname'] }}{% if 'install-server' in host['roles'] %} ansible_connection=local{% endif %}
+{% endfor %}
+
+{% endfor %}

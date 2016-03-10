@@ -1,3 +1,4 @@
+- include_vars: /etc/puppet/hiera/sf/sfcreds.yaml
 - name: "Set authorized key to allow config update from jenkins"
   authorized_key:
     user: root

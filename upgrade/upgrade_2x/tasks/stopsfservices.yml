@@ -1,32 +1,18 @@
 ---
 # Stop all service mariadb, gerrit, ...
-- name: Stop Monit
-  service: name=monit state=stopped
+- name: Stop services
+  service: name={{ item }} state=stopped
   ignore_errors: yes
-- name: Stop httpd
-  service: name=httpd state=stopped
-  ignore_errors: yes
-- name: Stop Jenkins
-  service: name=jenkins state=stopped
-  ignore_errors: yes
-- name: Stop Zuul
-  service: name=zuul state=stopped
-  ignore_errors: yes
-- name: Stop Zuul merger
-  service: name=zuul-merger state=stopped
-  ignore_errors: yes
-- name: Stop Gerrit
-  service: name=gerrit state=stopped
-  ignore_errors: yes
-- name: Stop Etherpad
-  service: name=etherpad state=stopped
-  ignore_errors: yes
-- name: Stop Lodgeit
-  service: name=lodgeit state=stopped
-  ignore_errors: yes
-- name: Stop Mariadb
-  service: name=mariadb state=stopped
-  ignore_errors: yes
-- name: Stop Postfix
-  service: name=postfix state=stopped
-  ignore_errors: yes
+  with_items:
+    - monit
+    - httpd
+    - jenkins
+    - zuul
+    - zuul-server
+    - gerrit
+    - etherpad
+    - loedgeit
+    - mariadb
+    - gerritbot
+    - grafana-server
+    - postfix

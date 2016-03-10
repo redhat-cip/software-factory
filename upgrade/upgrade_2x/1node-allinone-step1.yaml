@@ -4,10 +4,12 @@
   tasks:
   - include: tasks/fetchupstream.yml
   - include: tasks/stopsfservices.yml
-  - include: tasks/fix_redmine.yml
   - include: tasks/edeploysync.yml
   - shell: /usr/local/bin/sf-update-uid-gid.py 2>&1 | tee -a /var/log/sf_ids_update.log
-  - include: tasks/gnocchi.yml
-  - include: tasks/SFServiceUser.yml
-  - include: tasks/etherpad.yml
-  - include: tasks/new_creds.yml sf_secret_name=mumble_ice_secret
+  # gnocchi
+  - include: tasks/new_creds.yml sf_secret_name=grafana_sql_pwd
+  - include: tasks/new_creds.yml sf_secret_name=gnocchi_sql_pwd
+  # SFService user
+  - include: tasks/new_creds.yml sf_secret_name=service_user_pwd
+  # Etherpad
+  - include: tasks/new_creds.yml sf_secret_name=etherpad_admin_key

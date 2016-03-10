@@ -1,0 +1,4 @@
+puppet_modules:
+  - gateway
+  - cauth_client
+  - replication

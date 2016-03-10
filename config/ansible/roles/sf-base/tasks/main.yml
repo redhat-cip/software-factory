@@ -1,0 +1,6 @@
+---
+- include_vars: /etc/puppet/hiera/sf/sfcreds.yaml
+- include_vars: /etc/puppet/hiera/sf/arch.yaml
+- name: Set /etc/ssh/ssh_known_hosts for all inventory
+  template: src=global_known_hosts.j2 dest=/etc/ssh/ssh_known_hosts owner=root group=root mode=0644
+- include: /etc/ansible/tasks/puppet.yml puppet_statement="include ::sfbase, ::postfix"

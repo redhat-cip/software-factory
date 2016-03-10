@@ -47,7 +47,8 @@ class grafana {
   }
 
   exec { 'grafana-init':
-    command     => "/usr/bin/mysql -u ${mysql_user} -p${mysql_password} -h ${mysql_host} ${mysql_db} < /root/grafana-init.sql",
+    # || true is a temp fix, after upgrade 'grafana-init' seems to be called again and fails because of DUPLICATE_KEY
+    command     => "/bin/bash -c '/usr/bin/mysql -u ${mysql_user} -p${mysql_password} -h ${mysql_host} ${mysql_db} < /root/grafana-init.sql || true'",
     logoutput   => true,
     require     => [
         File['/root/grafana-init.sql'],

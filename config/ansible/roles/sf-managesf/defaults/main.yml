@@ -1,0 +1,3 @@
+puppet_modules:
+  - managesf
+  - auto_backup

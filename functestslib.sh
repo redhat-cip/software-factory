@@ -181,7 +181,8 @@ function build_image {
         set -e
         sudo rsync -a --delete --no-owner puppet/ ${IMAGE_PATH}/etc/puppet/environments/sf/
         sudo rsync -a --delete --no-owner -L config/defaults/ ${IMAGE_PATH}/etc/puppet/hiera/sf/
-        sudo rsync -a --delete --no-owner config/ansible/ ${IMAGE_PATH}/usr/local/share/sf-ansible/
+        sudo rsync -a --delete --no-owner -L config/defaults/ ${IMAGE_PATH}/usr/local/share/sf-default-config/
+        sudo rsync -a --delete --no-owner config/ansible/ ${IMAGE_PATH}/etc/ansible/
         sudo rsync -a --delete --no-owner config/config-repo/ ${IMAGE_PATH}/usr/local/share/sf-config-repo/
         sudo rsync -a --delete --no-owner serverspec/ ${IMAGE_PATH}/etc/serverspec/
         sudo rsync -a config/scripts/ ${IMAGE_PATH}/usr/local/bin/
@@ -263,8 +264,8 @@ function get_logs {
         scp sftests.com:/var/lib/jenkins/*.xml ${ARTIFACTS_DIR}/jenkins/
         scp -r sftests.com:/root/config/ ${ARTIFACTS_DIR}/config-project
         scp -r sftests.com:/etc/puppet/hiera/sf/ ${ARTIFACTS_DIR}/hiera
-        scp -r sftests.com:/root/sf-bootstrap-data/hiera/ ${ARTIFACTS_DIR}/sf-bootstrap-data-hiera
         scp -r sftests.com:/var/log/mariadb/ ${ARTIFACTS_DIR}/mariadb
+        scp -r sftests.com:/root/sf-bootstrap-data/hiera/ ${ARTIFACTS_DIR}/sf-bootstrap-data-hiera
         ) &> /dev/null
     } || echo "Skip fetching logs..."
     sudo chown -R ${USER} ${ARTIFACTS_DIR}
@@ -316,6 +317,7 @@ function fetch_bootstraps_data {
     echo "[+] Fetch bootstrap data"
     rm -Rf sf-bootstrap-data
     scp -r ${SF_HOST}:sf-bootstrap-data .
+    rsync -a -L ${SF_HOST}:/etc/puppet/hiera/sf/ sf-bootstrap-data/hiera/
     ADMIN_PASSWORD=$(cat sf-bootstrap-data/hiera/sfconfig.yaml | grep 'admin_password:' | sed 's/^.*admin_password://' | awk '{ print $1 }' | sed 's/ //g')
 
     echo "[+] Fetch ${SF_HOST} ssl cert"

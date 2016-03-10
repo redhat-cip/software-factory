@@ -1,0 +1,28 @@
+---
+# This file is managed by sfconfig.sh, don't edit.
+# This playbook applies puppet and ansible roles.
+{% for host in inventory %}{% if 'install-server' not in host['roles'] %}
+
+- hosts: {{ host['hostname'] }}
+  tasks:
+    - name: Copy hiera configuration
+      synchronize: src=/etc/puppet/hiera/ dest=/etc/puppet/hiera/ delete=yes
+{% endif %}{% endfor %}
+
+- hosts: all
+  roles:
+    - sf-base
+
+- hosts: mysql
+  roles:
+    - sf-mysql
+
+{% for host in inventory %}
+- hosts: {{ host['hostname'] }}
+  roles:
+{% for role in host['rolesname'] %}{% if role != 'sf-mysql' %}    - {{ role }}
+{% endif %}{% endfor %}
+  post_tasks:
+    - include: /etc/ansible/tasks/puppet.yml puppet_statement="{{ host['puppet_statement'] }}"
+
+{% endfor %}

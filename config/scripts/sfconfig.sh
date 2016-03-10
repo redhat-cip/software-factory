@@ -25,46 +25,16 @@ BUILD=/root/sf-bootstrap-data
 HOME=/root
 
 
-function update_sfconfig {
-    OUTPUT=${BUILD}/hiera
-    hieraedit.py --yaml ${OUTPUT}/sfconfig.yaml fqdn       "${DOMAIN}"
+function update_config {
+    hieraedit.py --yaml /etc/puppet/hiera/sf/sfconfig.yaml fqdn       "${DOMAIN}"
     echo "sf_version: $(grep ^VERS= /var/lib/edeploy/conf | cut -d"=" -f2 | cut -d'-' -f2)" > /etc/puppet/hiera/sf/sf_version.yaml
-    /usr/local/bin/validate_sfconfig.py ${OUTPUT}/sfconfig.yaml
+    /usr/local/bin/sf-update-hiera-config.py
+    /usr/local/bin/sf-ansible-generate-inventory.py   /etc/puppet/hiera/sf/arch.yaml
 
     # set managesf gitconfig
     git config --global user.name "SF initial configurator"
     git config --global user.email admin@$DOMAIN
     git config --global gitreview.username "admin"
-
-    # update inventory
-    cat << EOF > /etc/ansible/hosts
-[managesf]
-managesf.${DOMAIN}
-
-[gerrit]
-gerrit.${DOMAIN}
-
-[jenkins]
-jenkins.${DOMAIN}
-
-[zuul]
-zuul.${DOMAIN}
-
-[nodepool]
-nodepool.${DOMAIN}
-
-[redmine]
-redmine.${DOMAIN}
-
-[mysql]
-mysql.${DOMAIN}
-
-[statsd]
-statsd.${DOMAIN}
-
-[murmur]
-murmur.${DOMAIN}
-EOF
 
     # update .ssh/config
     cat << EOF > /root/.ssh/config
@@ -91,11 +61,8 @@ function generate_api_key {
 }
 
 function generate_yaml {
-    OUTPUT=${BUILD}/hiera
+    OUTPUT=/etc/puppet/hiera/sf/
     echo "[sfconfig] copy defaults hiera to ${OUTPUT}"
-    mv /etc/puppet/hiera/sf/sfconfig.yaml ${OUTPUT}/ || exit -1
-    mv /etc/puppet/hiera/sf/sfcreds.yaml ${OUTPUT}/
-    mv /etc/puppet/hiera/sf/sfarch.yaml ${OUTPUT}/
     # MySQL password for services + service user
     MYSQL_ROOT_SECRET=$(generate_random_pswd 32)
     REDMINE_MYSQL_SECRET=$(generate_random_pswd 32)
@@ -155,10 +122,6 @@ function generate_yaml {
     hieraedit.py --yaml ${OUTPUT}/sfcreds.yaml -f ${BUILD}/certs/gateway.key gateway_key
     hieraedit.py --yaml ${OUTPUT}/sfcreds.yaml -f ${BUILD}/certs/gateway.crt gateway_crt
 
-    ln -sf ${OUTPUT}/sfarch.yaml /etc/puppet/hiera/sf/sfarch.yaml
-    ln -sf ${OUTPUT}/sfconfig.yaml /etc/puppet/hiera/sf/sfconfig.yaml
-    ln -sf ${OUTPUT}/sfcreds.yaml /etc/puppet/hiera/sf/sfcreds.yaml
-
     chown -R root:puppet /etc/puppet/hiera/sf
     chmod -R 0750 /etc/puppet/hiera/sf
 }
@@ -177,6 +140,9 @@ function generate_keys {
     OUTPUT=${BUILD}/certs
     [ -f ${OUTPUT}/privkey.pem ]        || openssl genrsa -out ${OUTPUT}/privkey.pem 1024
     [ -f ${OUTPUT}/pubkey.pem ]         || openssl rsa -in ${OUTPUT}/privkey.pem -out ${OUTPUT}/pubkey.pem -pubout
+
+    [ -d "${HOME}/.ssh" ] || mkdir -m 0700 "${HOME}/.ssh"
+    [ -f "${HOME}/.ssh/known_hosts" ] || touch "${HOME}/.ssh/known_hosts"
 }
 
 function generate_apache_cert {
@@ -200,28 +166,12 @@ EOF
     openssl req -x509 -nodes -days 365 -newkey rsa:2048 -subj "/C=FR/O=SoftwareFactory/CN=${DOMAIN}" -keyout ${OUTPUT}/gateway.key -out ${OUTPUT}/gateway.crt -extensions v3_req -config openssl.cnf
 }
 
-function add_key_known_hosts {
-    local host=$1
-    local key=$2
-    [ -d "${HOME}/.ssh" ] || mkdir -m 0700 "${HOME}/.ssh"
-    [ -f "${HOME}/.ssh/known_hosts" ] || touch "${HOME}/.ssh/known_hosts"
-
-    grep -q ${host} ${HOME}/.ssh/known_hosts && return 0
-    echo $key >> $HOME/.ssh/known_hosts
-}
-
 function wait_for_ssh {
     local host=$1
-    local host_ip=$(resolveip -s $host)
-    if [ "$(resolveip -s ${host_ip})" == "managesf.${DOMAIN}" ]; then
-        # Virtual domain hosted on localhost, no need to wait_for_ssh
-        add_key_known_hosts "${host}" "$(grep managesf.${DOMAIN} ~/.ssh/known_hosts | sed "s/managesf.${DOMAIN}/${host}/")"
-        return 0
-    fi
     while true; do
         KEY=$(ssh-keyscan -p 22 $host 2> /dev/null | grep ssh-rsa)
         if [ "$KEY" != ""  ]; then
-            add_key_known_hosts "${host}" "${KEY}"
+            grep -q ${host} ${HOME}/.ssh/known_hosts || (echo $KEY >> $HOME/.ssh/known_hosts)
             echo "  -> $host:22 is up!"
             return 0
         fi
@@ -242,28 +192,6 @@ function puppet_apply_host {
         | grep -v 'Info: Loading facts in'
 }
 
-function puppet_apply {
-    host=$1
-    manifest=$2
-    echo "[sfconfig][$host] Applying $manifest (full log: /var/log/puppet_apply.log)" | tee -a /var/log/puppet_apply.log
-    [ "$host" == "managesf.${DOMAIN}" ] && ssh="" || ssh="ssh -tt root@$host"
-    $ssh puppet apply --test --environment sf --modulepath=/etc/puppet/environments/sf/modules/:/etc/puppet/modules/ $manifest 2>&1 \
-        | tee -a /var/log/puppet_apply.log | grep '\(Info:\|Warning:\|Error:\|Notice: Compiled\|Notice: Finished\)' \
-        | grep -v '\(Info: Loading facts in\|Gnocchi.*Scheduling refresh\|Warning: You cannot collect exported resources without storeconfigs\)' # Hide some puppet verbose outputs
-    res=$?
-    if [ "$res" != 2 ] && [ "$res" != 0 ]; then
-        echo "[sfconfig][$host] Failed ($res) to apply $manifest"
-        exit 1
-    fi
-}
-
-function puppet_copy {
-    host=$1
-    host_ip=$(resolveip -s $host)
-    [ "$(resolveip -s ${host_ip})" == "managesf.${DOMAIN}" ] && return 0
-    echo "[sfconfig][$host] Copy puppet configuration"
-    rsync -a -L --delete /etc/puppet/hiera/ ${host}:/etc/puppet/hiera/
-}
 
 # -----------------
 # End of functions
@@ -281,31 +209,23 @@ if [ ! -f "${BUILD}/generate.done" ]; then
     touch "${BUILD}/generate.done"
 fi
 
-update_sfconfig
+update_config
 puppet_apply_host
 
-# Make sure managesf.${DOMAIN} known_host is set
-add_key_known_hosts "managesf.${DOMAIN}" "$(ssh-keyscan -p 22 managesf.${DOMAIN} 2> /dev/null | grep ssh-rsa)"
 # Configure ssh access to inventory and copy puppet configuration
-HOSTS=$(grep "\.${DOMAIN}" /etc/ansible/hosts | sort | uniq)
+HOSTS=$(awk "/${DOMAIN}/ { print \$1 }" /etc/ansible/hosts | sort | uniq)
 for host in $HOSTS; do
     wait_for_ssh $host
-    puppet_copy $host
 done
 
-echo "[sfconfig] Boostrapping"
-# Apply puppet stuff with good old shell scrips
-puppet_apply "managesf.${DOMAIN}" /etc/puppet/environments/sf/manifests/1node-allinone.pp
+echo "[sfconfig] Starting configuration"
+time ansible-playbook /etc/ansible/sf_main.yml || {
+    echo "[sfconfig] sfpuppet playbook failed"
+    exit 1
+}
 
-echo "[sfconfig] Ansible configuration"
-[ -d /var/lib/ansible ] || mkdir -p /var/lib/ansible
-cd /usr/local/share/sf-ansible
-[ -d group_vars ] || mkdir group_vars
-cat /etc/puppet/hiera/sf/*.yaml > group_vars/all.yaml
-chmod 0700 group_vars
-
-ansible-playbook sfmain.yaml || {
-    echo "[sfconfig] Ansible playbook failed"
+time ansible-playbook /etc/ansible/sf_initialize.yml || {
+    echo "[sfconfig] sfmain playbook failed"
     exit 1
 }
 

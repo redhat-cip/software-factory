@@ -1,0 +1,6 @@
+---
+- include: /etc/ansible/tasks/puppet.yml puppet_statement="include ::socat_gerrit"
+  when: groups['gerrit'] != groups['gateway']
+
+- service: name=socat_gerrit enabled=no state=stopped
+  when: groups['gerrit'] == groups['gateway']
