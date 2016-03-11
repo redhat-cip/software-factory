@@ -23,6 +23,7 @@ class gateway ($cauth = hiera_hash('cauth', '')) {
   $allowed_proxy_prefixes = $auth['allowed_proxy_prefixes']
   $gateway_crt = hiera('gateway_crt')
   $gateway_key = hiera('gateway_key')
+  $gateway_chain = hiera('gateway_chain')
   $network = hiera('network')
   $fqdn = hiera('fqdn')
   $theme = hiera('theme')
@@ -33,6 +34,15 @@ class gateway ($cauth = hiera_hash('cauth', '')) {
     ensure  => file,
     path    => '/etc/httpd/conf.d/gateway.crt',
     content => inline_template('<%= @gateway_crt %>'),
+    mode    => '0640',
+    owner   => 'apache',
+    group   => 'apache',
+  }
+
+  file {'gateway_chain':
+    ensure  => file,
+    path    => '/etc/httpd/conf.d/gateway-chain.crt',
+    content => inline_template('<%= @gateway_chain %>'),
     mode    => '0640',
     owner   => 'apache',
     group   => 'apache',

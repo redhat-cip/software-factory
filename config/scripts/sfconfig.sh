@@ -123,8 +123,6 @@ function generate_yaml {
     hieraedit.py --yaml ${OUTPUT}/sfcreds.yaml -f ${BUILD}/ssh_keys/gerrit_service_rsa.pub gerrit_service_rsa_pub
     hieraedit.py --yaml ${OUTPUT}/sfcreds.yaml -f ${BUILD}/certs/privkey.pem privkey_pem
     hieraedit.py --yaml ${OUTPUT}/sfcreds.yaml -f ${BUILD}/certs/pubkey.pem  pubkey_pem
-    hieraedit.py --yaml ${OUTPUT}/sfcreds.yaml -f ${BUILD}/certs/gateway.key gateway_key
-    hieraedit.py --yaml ${OUTPUT}/sfcreds.yaml -f ${BUILD}/certs/gateway.crt gateway_crt
 
     chown -R root:puppet /etc/puppet/hiera/sf
     chmod -R 0750 /etc/puppet/hiera/sf
@@ -147,12 +145,11 @@ function generate_keys {
 
     [ -d "${HOME}/.ssh" ] || mkdir -m 0700 "${HOME}/.ssh"
     [ -f "${HOME}/.ssh/known_hosts" ] || touch "${HOME}/.ssh/known_hosts"
-}
 
-function generate_apache_cert {
+    # SSL certificate
     OUTPUT=${BUILD}/certs
     # Generate self-signed Apache certificate
-    cat > openssl.cnf << EOF
+    [ -f openssl.cnf ] || cat > openssl.cnf << EOF
 [req]
 req_extensions = v3_req
 distinguished_name = req_distinguished_name
@@ -167,7 +164,16 @@ subjectAltName=@alt_names
 DNS.1 = ${DOMAIN}
 DNS.2 = auth.${DOMAIN}
 EOF
-    openssl req -x509 -nodes -days 365 -newkey rsa:2048 -subj "/C=FR/O=SoftwareFactory/CN=${DOMAIN}" -keyout ${OUTPUT}/gateway.key -out ${OUTPUT}/gateway.crt -extensions v3_req -config openssl.cnf
+    [ -f ${OUTPUT}/gateway.key ] || {
+        openssl req -x509 -nodes -days 365 -newkey rsa:2048 -subj "/C=FR/O=SoftwareFactory/CN=${DOMAIN}" \
+            -keyout ${OUTPUT}/gateway.key -out ${OUTPUT}/gateway.crt -extensions v3_req -config openssl.cnf
+        hieraedit.py --yaml /etc/puppet/hiera/sf/sfcreds.yaml -f ${OUTPUT}/gateway.key gateway_key
+        hieraedit.py --yaml /etc/puppet/hiera/sf/sfcreds.yaml -f ${OUTPUT}/gateway.crt gateway_crt
+        hieraedit.py --yaml /etc/puppet/hiera/sf/sfcreds.yaml -f ${OUTPUT}/gateway.crt gateway_chain
+    }
+    # Update missing chain configuration (TODO: move this to global config updater (coming soon))
+    grep -q '^gateway_chain:' /etc/puppet/hiera/sf/sfcreds.yaml || \
+        hieraedit.py --yaml /etc/puppet/hiera/sf/sfcreds.yaml -f ${OUTPUT}/gateway.crt gateway_chain
 }
 
 function wait_for_ssh {
@@ -198,7 +204,6 @@ for i in hiera ssh_keys certs; do
 done
 generate_keys
 if [ ! -f "${BUILD}/generate.done" ]; then
-    generate_apache_cert
     generate_yaml
     touch "${BUILD}/generate.done"
 fi

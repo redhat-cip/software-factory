@@ -204,6 +204,22 @@ access goes through TCP ports:
 Note that Heat deployment and LXC deployment automatically configure
 security group rules to allow these connections to managesf.
 
+
+SSL Certificates
+----------------
+
+By default, SF creates a self-signed certificate. To use another certificate,
+such as letsencrypt, you need to update the configuration:
+
+.. code-block:: bash
+
+  hieraedit.py --yaml /etc/puppet/hiera/sf/sfcreds.yaml -f cert.pem    gateway_crt
+  hieraedit.py --yaml /etc/puppet/hiera/sf/sfcreds.yaml -f privkey.pem gateway_key
+  hieraedit.py --yaml /etc/puppet/hiera/sf/sfcreds.yaml -f chain.pem   gateway_chain
+  # apply configuration change
+  sfconfig.sh
+
+
 Access Software Factory
 -----------------------
 
