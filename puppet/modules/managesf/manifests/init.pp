@@ -13,7 +13,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-class managesf ($gerrit = hiera('gerrit'), $hosts = hiera('hosts'), $cauth = hiera('cauth')) {
+class managesf ($gerrit = hiera('gerrit'), $cauth = hiera('cauth')) {
   include ::apache
   include ::cauth_client
 

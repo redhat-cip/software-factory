@@ -22,7 +22,7 @@ def fail(msg):
     exit(1)
 
 
-def load_refarch(filename, domain="sftests.com"):
+def load_refarch(filename, domain=None):
     arch = yaml.load(open(filename).read())
     # Update domain
     if domain:

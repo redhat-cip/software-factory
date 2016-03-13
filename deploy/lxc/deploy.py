@@ -154,16 +154,10 @@ def init(arch, base):
         prepare_role(base, host["hostname"], host["ip"],
                      gateway="%s.1" % arch["ip_prefix"])
 
-    # "cloud-init": copy sfarch and hosts.yaml file
+    # "cloud-init": copy sfarch file
     root = "/var/lib/lxc/%s/rootfs" % arch["install"]
     open("%s/etc/puppet/hiera/sf/arch.yaml" % root, "w").write(
         yaml.dump(arch, default_flow_style=False)
-    )
-    hosts = {'localhost': {'ip': '127.0.0.1'}}
-    for ip, names in arch['hosts_file'].items():
-        hosts[names[0]] = {'ip': ip, 'host_aliases': names[1:]}
-    open("%s/etc/puppet/hiera/sf/hosts.yaml" % root, "w").write(
-        yaml.dump({'hosts': hosts}, default_flow_style=False)
     )
 
     # Generate libvirt domains

@@ -186,16 +186,6 @@ function wait_for_ssh {
     done
 }
 
-function puppet_apply_host {
-    echo "[sfconfig] Applying hosts.pp"
-    # Set /etc/hosts to a known state...
-    grep -q localdomain /etc/hosts && echo "127.0.0.1       localhost" > /etc/hosts
-    # Update local /etc/hosts
-    puppet apply --test --environment sf --modulepath=/etc/puppet/environments/sf/modules/:/etc/puppet/modules/ -e "include hosts" 2>&1 \
-        | tee -a /var/log/puppet_apply.log | grep '\(Info:\|Warning:\|Error:\|Notice: Compiled\|Notice: Finished\)' \
-        | grep -v 'Info: Loading facts in'
-}
-
 
 # -----------------
 # End of functions
@@ -214,7 +204,6 @@ if [ ! -f "${BUILD}/generate.done" ]; then
 fi
 
 update_config
-puppet_apply_host
 
 # Configure ssh access to inventory and copy puppet configuration
 HOSTS=$(awk "/${DOMAIN}/ { print \$1 }" /etc/ansible/hosts | sort | uniq)

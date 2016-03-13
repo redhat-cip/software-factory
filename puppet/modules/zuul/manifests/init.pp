@@ -20,7 +20,6 @@ class zuul {
   $fqdn = hiera('fqdn')
   $url = hiera('url')
   $logs = hiera('logs')
-  $hosts = hiera('hosts')
   $jenkins_rsa = hiera('jenkins_rsa')
   $gerrit_host = "gerrit.${fqdn}"
 

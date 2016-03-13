@@ -72,6 +72,16 @@ def generate_inventory():
                            "%s/templates/serverspec.yml.j2" % ansible_root,
                            arch)
 
+    if not args.verify and args.arch == "/etc/puppet/hiera/sf/arch.yaml":
+        # Write updated version of refarch
+        open(args.arch, "w").write(yaml.dump(arch, default_flow_style=False))
+
+        # Update /etc/hosts
+        render_jinja2_template("/etc/hosts",
+                               "%s/templates/etc-hosts.j2" % ansible_root,
+                               arch)
+
+
 parser = argparse.ArgumentParser()
 parser.add_argument("--domain", default="sftests.com")
 parser.add_argument("--ansible_root", default="/etc/ansible")
