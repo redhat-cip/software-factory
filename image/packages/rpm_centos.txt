@@ -14,6 +14,7 @@ dhclient
 e2fsprogs
 ed
 ethtool
+gnupg2
 grub2
 grubby
 hdparm

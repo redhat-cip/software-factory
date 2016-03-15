@@ -11,6 +11,7 @@ node default {
   class {'::sfbase': stage => first }
   class {'::sfmysql': stage => first }
   include ::postfix
+  include ::backup
 
   # Gerrit
   include ::gerrit

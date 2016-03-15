@@ -3,4 +3,12 @@ mysqldump -u root -p<%= @mysql_root_pwd %> \
     --databases gerrit | \
         gzip -9 | \
         ssh root@managesf.<%= @fqdn %> tee /root/gerritdb.sql.gz > /dev/null
-tar --absolute-names -cf - /home/gerrit/site_path/git | /usr/local/bin/bup split -r root@managesf.<%= @fqdn %>: -n gerrit
+tar --absolute-names -cf - \
+    /home/gerrit/site_path/git \
+    /home/gerrit/site_path/etc/replication.config \
+    /home/gerrit/site_path/etc/ssh_host_rsa_key.pub \
+    /home/gerrit/site_path/etc/ssh_host_rsa_key \
+    /home/gerrit/.ssh/config \
+    /home/gerrit/.ssh/id_rsa_* \
+    /etc/httpd/managesf_htpasswd \
+    | /usr/local/bin/bup split -r root@managesf.<%= @fqdn %>: -n gerrit

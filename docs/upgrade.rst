@@ -50,7 +50,7 @@ How I upgrade my SF instance
 ----------------------------
 
 Before each upgrade you should perform a backup of all user data using the backup system
-of Software Factory. (:ref:`CreateBackupCli`)
+of Software Factory. (:ref:`managesf_backup`)
 
 Here are the steps to upgrade:
 

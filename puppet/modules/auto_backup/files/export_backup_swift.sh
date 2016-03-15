@@ -77,8 +77,10 @@ done
 sfmanager --url http://$HOST --auth $ADMIN:$ADMIN_PASSWORD system backup_start
 sfmanager --url http://$HOST --auth $ADMIN:$ADMIN_PASSWORD system backup_get
 mv sf_backup.tar.gz /tmp/sf_backup.tar.gz
+# Encrypt backup
+gpg --homedir /root/.gnupg/ -e -r sfadmin /tmp/sf_backup.tar.gz
 # Upload backup
-swift upload $SWIFT_CONTAINER /tmp/sf_backup.tar.gz --object-name sf_backup_${epoch}.tar.gz &> /dev/null
+swift upload $SWIFT_CONTAINER /tmp/sf_backup.tar.gz.gpg --object-name sf_backup_${epoch}.tar.gz.gpg &> /dev/null
 if [ "$?" != "0" ]; then
     echo "Error when uploading the backup sf_backup_${epoch}.tar.gz in container $SWIFT_CONTAINER ! exit."
     exit 1
