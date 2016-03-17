@@ -76,7 +76,7 @@
                 <tr ng-repeat="(project, entry) in projects">
                     <td><a href="/r/gitweb?p={{ project }}.git;a=summary">{{ project }}</a></td>
                     <td class="text-center"><a href="/r/#/q/status:open+project:{{ project }},n,z">{{ entry.open_reviews }}</a></td>
-                    <td class="text-center"><a href="/redmine/projects/{{ project }}/issues">{{ entry.open_issues }}</a></td>
+                    <td class="text-center"><a href="/redmine/projects/{{ entry.alt_name }}/issues">{{ entry.open_issues }}</a></td>
                     <td class="text-right">
                         <button class="btn btn-primary btn-xs" ng-click="membershipForm(project, entry)"
                             ng-if="entry.admin == 1" data-toggle="modal"

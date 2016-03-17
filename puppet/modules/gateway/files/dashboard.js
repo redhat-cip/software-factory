@@ -54,6 +54,9 @@ function mainController($scope, $http) {
 
         $http.get('/manage/project/')
             .success(function(data) {
+                for(project in data) {
+                    data[project]['alt_name'] = project.replace("/", "_");
+                }
                 $scope.projects = data;
             })
             .error(function(data) {
@@ -131,8 +134,9 @@ function mainController($scope, $http) {
     $scope.createProject = function() {
         $scope.errors = false;
         $scope.loading = true;
+        var name = '===' + btoa($scope.data.name);
 
-        $http.put('/manage/project/' + $scope.data.name , $scope.data)
+        $http.put('/manage/project/' + name + '/', $scope.data)
             .success(function(data) {
                 $scope.data = {};
                 initProjects();
@@ -148,7 +152,9 @@ function mainController($scope, $http) {
         if (window.confirm('Delete project ' + name + '?') ) {
             $scope.errors = false;
             $scope.loading = true;
-            $http.delete('/manage/project/' + name)
+            name = '===' + btoa(name);
+
+            $http.delete('/manage/project/' + name + '/')
                 .success(function(data) {
                     $scope.data = {};
                     initProjects();
@@ -218,9 +224,9 @@ function mainController($scope, $http) {
             var groups = compareGroups($scope.originalMembers[x].groups,
                                        $scope.selectedMembers[x].groups);
             var selectedMember = $scope.selectedMembers[x];
-            var url = '/manage/project/membership/' +
-                $scope.selectedProjectName + '/' +
-                selectedMember.email + '/';
+            var projectName = '===' + btoa($scope.selectedProjectName);
+            var url = '/manage/project/membership/' + projectName + '/' +
+                    selectedMember.email + '/';
 
             for ( key in groups ) {
                 groupName = key + '-group';
