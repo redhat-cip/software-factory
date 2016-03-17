@@ -1,0 +1,51 @@
+#!/usr/bin/env python
+import re
+import telnetlib
+import yaml
+
+layoutfile = 'layout.yaml'
+
+# Read the zuul config
+f = open(layoutfile)
+layout_yaml = yaml.safe_load(f)
+f. close()
+
+# Get a list of configured projects
+configured_jobs = []
+projects = layout_yaml.get('projects')
+for project in projects:
+    configured_jobs.extend(project.get('check'))
+    configured_jobs.extend(project.get('gate', []))
+    configured_jobs.extend(project.get('post', []))
+
+# Connect to gearman, and get list of active jobs
+active_jobs = []
+
+tn = telnetlib.Telnet("127.0.0.1", 4730)
+tn.write("status\n")
+response = tn.read_until(".\n", 10)
+tn.close()
+
+for line in response.splitlines():
+    if line == ".":  # last line of gearman output
+        break
+
+    task, entry = line.split(':', 1)
+    if task == "build":
+        # Remove some junk that we're not interested in
+        entry = re.sub('\t.*', '', entry)
+        entry = re.sub(':.*', '', entry)
+
+        if entry not in active_jobs:
+            active_jobs.append(entry)
+
+# Compute difference between these two lists
+surplus = set(active_jobs) - set(configured_jobs)
+missing = set(configured_jobs) - set(active_jobs)
+
+print "The following %s jobs are missing in gearman:" % len(missing)
+print ', '.join(missing)
+print
+print "The following %s jobs are known to gearman, but not defined in %s:" % (
+    len(surplus), layoutfile)
+print ', '.join(surplus)

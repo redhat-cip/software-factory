@@ -170,4 +170,22 @@ class zuul {
     group   => 'zuul',
     require => [File['/etc/zuul']],
   }
+
+  file {'gearman-check':
+    ensure => file,
+    path   => '/usr/local/bin/gearman-check',
+    mode   => '0755',
+    owner  => 'root',
+    group  => 'root',
+    source => 'puppet:///modules/zuul/gearman-check',
+  }
+
+  cron {'gearman-check-cron':
+    command => '/usr/local/bin/gearman-check',
+    ensure  => present,
+    user    => root,
+    hour    => 0,
+    minute  => 0,
+    require => [File['gearman-check']],
+  }
 }
