@@ -15,6 +15,7 @@
 # under the License.
 
 import os
+import requests
 import sys
 import yaml
 
@@ -110,7 +111,22 @@ class SFchecker:
         """log as user"""
         return get_cookie(user, password)
 
+    def check_users_list(self):
+        print "Check that users are listable ...",
+        users = [u['name'] for u in self.resources['users']]
+        c = {'auth_pubtkt': config.USERS[config.ADMIN_USER]['auth_cookie']}
+        url = 'http://%s/manage/project/membership/' % config.GATEWAY_HOST
+        registered = requests.get(url,
+                                  cookies=c).json()
+        # usernames are in first position
+        r_users = [u[0] for u in registered]
+        if not set(users).issubset(set(r_users)):
+            print "FAIL"
+            exit(1)
+        print "OK"
+
     def checker(self):
+        self.check_users_list()
         for project in self.resources['projects']:
             print "Check user datas for %s" % project['name']
             self.check_project(project['name'])

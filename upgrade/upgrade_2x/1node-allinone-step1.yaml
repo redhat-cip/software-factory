@@ -2,6 +2,8 @@
 - hosts: managesf
   gather_facts: no
   tasks:
+  - name: dump users base
+    command: "{{ install_path }}/softwarefactory/usr/local/bin/reprovision_users.py dump /etc/puppet/hiera/sf/sfconfig.yaml"
   - include: tasks/fetchupstream.yml
   - include: tasks/stopsfservices.yml
   - include: tasks/edeploysync.yml

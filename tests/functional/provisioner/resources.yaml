@@ -30,3 +30,7 @@ projects:
 etherpads:
  - name: pad1
  - name: pad2
+users:
+ - name: admin
+ - name: user2
+ - name: user3
