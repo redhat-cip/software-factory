@@ -30,6 +30,10 @@ class cauth ($cauth = hiera('cauth'), $gerrit = hiera('gerrit')) {
   $gerrit_mysql_host = "mysql.${fqdn}"
   $gerrit_mysql_db = 'gerrit'
   $gerrit_mysql_username = 'gerrit'
+  $cauth_mysql_host = "mysql.${fqdn}"
+  $cauth_mysql_db = 'cauth'
+  $cauth_mysql_username = 'cauth'
+  $cauth_mysql_password = hiera('creds_cauth_sql_pwd')
   $gerrit_mysql_password = hiera('creds_gerrit_sql_pwd')
   $service_user_password = hiera('creds_sf_service_user_pwd')
 

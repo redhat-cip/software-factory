@@ -106,6 +106,10 @@ class SFchecker:
     def check_pasties(self, amount):
         pass
 
+    def simple_login(self, user, password):
+        """log as user"""
+        return get_cookie(user, password)
+
     def checker(self):
         for project in self.resources['projects']:
             print "Check user datas for %s" % project['name']
@@ -120,7 +124,14 @@ class SFchecker:
                                     [j['name'] for j in project['jobnames']])
         self.check_pads(2)
         self.check_pasties(2)
-
+        for user in self.resources['local_users']:
+            print "Check user %s can log in ..." % user['username'],
+            if self.simple_login(user['username'],
+                                 user['password']):
+                print "OK"
+            else:
+                print "FAIL"
+                exit(1)
 
 c = SFchecker()
 c.checker()

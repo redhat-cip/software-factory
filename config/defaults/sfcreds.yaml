@@ -6,6 +6,8 @@ creds_etherpad_sql_pwd: ETHERPAD_SQL_PWD
 creds_lodgeit_sql_pwd: LODGEIT_SQL_PWD
 creds_grafana_sql_pwd: GRAFANA_SQL_PWD
 creds_gnocchi_sql_pwd: GNOCCHI_SQL_PWD
+creds_cauth_sql_pwd: CAUTH_SQL_PWD
+creds_managesf_sql_pwd: MANAGESF_SQL_PWD
 creds_issues_tracker_api_key: REDMINE_API_KEY
 creds_gerrit_email_pk: GERRIT_EMAIL_PK
 creds_gerrit_token_pk: GERRIT_TOKEN_PK

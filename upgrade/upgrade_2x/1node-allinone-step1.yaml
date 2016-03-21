@@ -13,3 +13,6 @@
   - include: tasks/new_creds.yml sf_secret_name=service_user_pwd
   # Etherpad
   - include: tasks/new_creds.yml sf_secret_name=etherpad_admin_key
+  # Cauth and managesf database access
+  - include: tasks/new_creds.yml sf_secret_name=cauth_sql_pwd
+  - include: tasks/new_creds.yml sf_secret_name=managesf_sql_pwd

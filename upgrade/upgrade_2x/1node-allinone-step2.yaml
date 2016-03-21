@@ -7,6 +7,8 @@
     shell: sfconfig.sh > /var/log/upgrade-bootstrap.log
   - name: Restart grafana-server
     shell: systemctl restart grafana-server
+  - name: migrate data from sqlite to mariadb
+    shell: /usr/local/bin/migrate_sqlite_to_mariadb.py
 - hosts: jenkins
   gather_facts: no
   tasks:

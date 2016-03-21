@@ -39,7 +39,7 @@ creds = yaml.load(open("/etc/puppet/hiera/sf/sfcreds.yaml").read())
 sqls = []
 fqdn = yaml.load(open("/etc/puppet/hiera/sf/sfconfig.yaml").read())['fqdn']
 
-for user in ('redmine', 'gerrit', 'nodepool', 'etherpad', 'lodgeit', 'graphite', 'grafana'):
+for user in ('redmine', 'gerrit', 'nodepool', 'etherpad', 'lodgeit', 'graphite', 'grafana', 'cauth', 'managesf'):
     key = "creds_%s_sql_pwd" % user
     pwd = str(uuid.uuid4())
 

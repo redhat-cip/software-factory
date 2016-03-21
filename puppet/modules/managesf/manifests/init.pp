@@ -31,6 +31,12 @@ class managesf ($gerrit = hiera('gerrit'), $hosts = hiera('hosts'), $cauth = hie
   $gerrit_mysql_password = hiera('creds_gerrit_sql_pwd')
   $admin_password = $auth['admin_password']
   $services = hiera('services')
+  $managesf_mysql_host = "mysql.${fqdn}"
+  $managesf_mysql_db = 'managesf'
+  $managesf_mysql_username = 'managesf'
+  $managesf_mysql_password = hiera('creds_managesf_sql_pwd')
+  $redmine_mysql_host = "mysql.${fqdn}"
+  $redmine_mysql_db = 'redmine'
 
   file {'/etc/httpd/conf.d/managesf.conf':
     ensure  => file,

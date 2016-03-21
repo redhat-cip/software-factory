@@ -121,7 +121,7 @@ auth = {
 services = ['managesf', ]
 
 sqlalchemy = {
-    'url'           : 'sqlite:////var/lib/cauth/state_mapping.db',
+    'url'           : 'mysql://<%= @cauth_mysql_username %>:<%= @cauth_mysql_password %>@<%= @cauth_mysql_host %>/<%= @cauth_mysql_db %>',
     'echo'          : True,
     'encoding'      : 'utf-8'
 }

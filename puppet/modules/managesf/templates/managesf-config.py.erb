@@ -123,11 +123,11 @@ gerrit = {
 redmine = {
     'host': 'api-redmine.<%= @fqdn %>',
     'url': '<%= @issues_tracker_api_url %>',
-    'api_key': '<%= @issues_tracker_api_key %>',
+    'db_url': 'mysql://<%= @managesf_mysql_username %>:<%= @managesf_mysql_password %>@<%= @redmine_mysql_host %>/<%= @redmine_mysql_db %>',
 }
 
 sqlalchemy = {
-    'url': 'sqlite:////var/lib/managesf/users.db',
+    'url': 'mysql://<%= @managesf_mysql_username %>:<%= @managesf_mysql_password %>@<%= @managesf_mysql_host %>/<%= @managesf_mysql_db %>',
     'encoding': 'utf-8',
 }
 
