@@ -1,3 +1,7 @@
+local_users:
+ - username: finn
+   password: mathematical
+   email: finn@candykingdom.ooo
 projects:
  - name: dummy_project1
    issues:

@@ -104,7 +104,15 @@ class SFProvisioner(object):
                                       commit='test\n\nBug: %s' % issue)
         self.ggu.review_push_branch(self.clone_dir, 'branch_' + issue)
 
+    def create_local_user(self, username, password, email):
+        self.msu.create_user(username, password, email)
+
     def provision(self):
+        for user in self.resources['local_users']:
+            print "Create local user %s" % user['username']
+            self.create_local_user(user['username'],
+                                   user['password'],
+                                   user['email'])
         for project in self.resources['projects']:
             print "Create user datas for %s" % project['name']
             self.create_project(project['name'])
