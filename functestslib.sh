@@ -272,6 +272,7 @@ function get_logs {
         scp -r sftests.com:/root/config/ ${ARTIFACTS_DIR}/config-project
         scp -r sftests.com:/etc/puppet/hiera/sf/ ${ARTIFACTS_DIR}/hiera
         scp -r sftests.com:/root/sf-bootstrap-data/hiera/ ${ARTIFACTS_DIR}/sf-bootstrap-data-hiera
+        scp -r sftests.com:/var/log/mariadb/ ${ARTIFACTS_DIR}/mariadb
         ) &> /dev/null
     } || echo "Skip fetching logs..."
     sudo chown -R ${USER} ${ARTIFACTS_DIR}
