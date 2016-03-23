@@ -466,6 +466,25 @@ class TestManageSF(Base):
         self.assertFalse(self.gu.group_exists('%s-core' % pname))
         self.projects.remove(pname)
 
+    def test_basic_ops_project_namespace(self):
+        """ Check if a project named with a / (namespace) is handled
+        correclty by managesf
+        """
+        pname = 'skydive/%s' % create_random_str()
+        self.create_project(pname, config.USER_2)
+        self.assertTrue(self.gu.project_exists(pname))
+        if is_present("SFRedmine"):
+            rname = '_'.join(pname.split('/'))
+            self.assertTrue(self.rm.project_exists(rname))
+        self.msu.deleteProject(pname, config.ADMIN_USER)
+        self.assertFalse(self.gu.project_exists(pname))
+        self.assertFalse(self.gu.group_exists('%s-ptl' % pname))
+        if is_present("SFRedmine"):
+            rname = '_'.join(pname.split('/'))
+            self.assertFalse(self.rm.project_exists(rname))
+        self.assertFalse(self.gu.group_exists('%s-core' % pname))
+        self.projects.remove(pname)
+
     # For now listing users comes from Redmine
     @skipIfServiceMissing('SFRedmine')
     def test_list_active_members(self):
