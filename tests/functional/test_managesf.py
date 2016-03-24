@@ -567,6 +567,17 @@ class TestManageSF(Base):
         self.assertTrue('config' in resp.json())
         resp = requests.get(url, cookies=user2_cookies)
 
+        # Validate the same behavior with project including a '/'
+        project = 'p/%s' % create_random_str()
+        self.create_project(project, config.USER_2)
+        url = "http://%s%s" % (config.GATEWAY_HOST, "/manage/project/")
+        # Wait 15 seconds for managesf cache invalidation
+        import time
+        time.sleep(15)
+        resp = requests.get(url, cookies=user2_cookies)
+        self.assertEqual(200, resp.status_code)
+        self.assertTrue(project in resp.json())
+
     def test_project_pages_config(self):
         """ Check if managesf allow us to configure pages for a project
         """
