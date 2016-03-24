@@ -39,11 +39,63 @@ class TestZuulOps(Base):
     def tearDownClass(cls):
         pass
 
+    def clone_as_admin(self, pname):
+        url = "ssh://%s@%s:29418/%s" % (config.ADMIN_USER,
+                                        config.GATEWAY_HOST,
+                                        pname)
+        clone_dir = self.gitu_admin.clone(url, pname)
+        if os.path.dirname(clone_dir) not in self.dirs_to_delete:
+            self.dirs_to_delete.append(os.path.dirname(clone_dir))
+        return clone_dir
+
+    def restore_config_repo(self, zuul):
+        file(os.path.join(
+            self.config_clone_dir, "zuul/projects.yaml"), 'w').write(
+            zuul)
+        self.commit_direct_push_as_admin(
+            self.config_clone_dir,
+            "Restore zuul/projects.yaml")
+
+    def commit_direct_push_as_admin(self, clone_dir, msg):
+        # Stage, commit and direct push the additions on master
+        self.gitu_admin.add_commit_for_all_new_additions(clone_dir, msg)
+        self.gitu_admin.direct_push_branch(clone_dir, 'master')
+
     def setUp(self):
         self.projects = []
         self.dirs_to_delete = []
+        self.ju = JenkinsUtils()
+        priv_key_path = set_private_key(
+            config.USERS[config.ADMIN_USER]["privkey"])
+        self.gitu_admin = GerritGitUtils(
+            config.ADMIN_USER,
+            priv_key_path,
+            config.USERS[config.ADMIN_USER]['email'])
+
+        # Change to zuul/projects.yaml in order to test a with different name
+        self.config_clone_dir = self.clone_as_admin("config")
+        self.original_zuul_projects = file(os.path.join(
+            self.config_clone_dir, "zuul/projects.yaml")).read()
+        ycontent = file(os.path.join(
+            self.config_clone_dir, "zuul/projects.yaml")).read()
+        file(os.path.join(
+            self.config_clone_dir, "zuul/projects.yaml"), 'w').write(
+            ycontent.replace("name: zuul-demo", "name: demo/zuul-demo"),
+        )
+        last_success_build_num_cu = \
+            self.ju.get_last_build_number("config-update",
+                                          "lastSuccessfulBuild")
+        self.commit_direct_push_as_admin(
+            self.config_clone_dir,
+            "Set zuul/projects.yaml")
+
+        self.ju.wait_till_job_completes("config-update",
+                                        last_success_build_num_cu,
+                                        "lastSuccessfulBuild",
+                                        max_retries=60)
 
     def tearDown(self):
+        self.restore_config_repo(self.original_zuul_projects)
         for name in self.projects:
             self.msu.deleteProject(name,
                                    config.ADMIN_USER)
@@ -62,7 +114,9 @@ class TestZuulOps(Base):
         # zuul-demo - test project used exclusively to test zuul installation
         # The necessary project descriptions are already declared in Jenkins
         # and zuul
-        pname = 'zuul-demo'
+
+        pname = 'demo/zuul-demo'
+
         self.create_project(pname, config.ADMIN_USER)
         un = config.ADMIN_USER
         gu = GerritUtils(

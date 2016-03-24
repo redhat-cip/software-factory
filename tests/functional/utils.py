@@ -482,13 +482,13 @@ class JenkinsUtils:
         except:
             return 0
 
-    def wait_till_job_completes(self, job_name, last, type):
+    def wait_till_job_completes(self, job_name, last, type, max_retries=30):
         retries = 0
         while True:
             cur = self.get_last_build_number(job_name, type)
             if cur > last:
                 break
-            elif retries > 30:
+            elif retries > max_retries:
                 break
             else:
                 time.sleep(1)
