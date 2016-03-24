@@ -64,7 +64,7 @@ class TestProjectReplication(Base):
         file(wrapper_path, 'w').write(ssh_wrapper)
         os.chmod(wrapper_path, stat.S_IRWXU)
         self.mt.env['GIT_SSH'] = wrapper_path
-        self.pname = 'test-replication'
+        self.pname = 'test/replication'
 
     def tearDown(self):
         self.deleteConfigSection(self.un, self.pname)
@@ -107,7 +107,8 @@ class TestProjectReplication(Base):
 
     def createConfigSection(self, user, project):
         # Section name will be node name and the project
-        section = 'managesf_%s' % project
+        # project with a slash is not supported as section name
+        section = 'managesf_%s' % project.replace('/', '_')
         host = '%s@%s' % (config.GERRIT_USER, config.GATEWAY_HOST)
         mirror_repo_path = '/home/gerrit/git/\${name}.git'
         url = '%s:%s' % (host, mirror_repo_path)
