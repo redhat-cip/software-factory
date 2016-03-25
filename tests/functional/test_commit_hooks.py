@@ -89,11 +89,10 @@ class TestGerritHooks(Base):
                                options)
         self.projects.append(name)
 
-    def _test_update_issue_hooks(self, comment_template, status):
+    def _test_update_issue_hooks(self, comment_template, status,
+                                 pname):
         """ A referenced issue in commit msg triggers the hook
         """
-        pname = 'p_%s' % create_random_str()
-
         # Be sure the project does not exist
         self.msu.deleteProject(pname, self.u)
 
@@ -150,4 +149,12 @@ class TestGerritHooks(Base):
     def test_gerrit_hook(self):
         """test various commit messages triggering a hook"""
         for template, final_status in TEST_MSGS:
-            self._test_update_issue_hooks(template, final_status)
+            pname = 'p_%s' % create_random_str()
+            self._test_update_issue_hooks(template, final_status, pname)
+
+    @skipIfServiceMissing('SFRedmine')
+    def test_gerrit_hook_namespace(self):
+        """test various commit messages triggering a hook (with namespace)"""
+        for template, final_status in TEST_MSGS:
+            pname = 'my_namespace/%s' % create_random_str()
+            self._test_update_issue_hooks(template, final_status, pname)
