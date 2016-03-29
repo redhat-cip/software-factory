@@ -1,0 +1,192 @@
+---
+- hosts: managesf
+  gather_facts: False
+  remote_user: root
+  tasks:
+  - include_vars: rename-rules.yaml
+    tags:
+      - test_triggers_rename
+      - project_rename
+      - replication_project_rename
+  - name: "Copy rename-groups.sh script"
+    copy: src=rename-groups.sh dest=/tmp/rename-groups.sh mode=755
+    tags:
+      - project_rename
+  - name: "Stop zuul"
+    shell: systemctl stop zuul
+    tags:
+      - project_rename
+  - name: "Stop zuul-merger"
+    shell: systemctl stop zuul-merger
+    tags:
+      - project_rename
+  - name: "Stop gerrit"
+    shell: systemctl stop gerrit
+    tags:
+      - project_rename
+  - wait_for: port=29418 state=absent
+    tags:
+      - project_rename
+
+  - name: "Copy Gerrit SQL commands"
+    template:
+      src: gerrit.j2
+      dest: /tmp/gerrit.sql
+      mode: 755
+    tags:
+      - project_rename
+
+  - name: "Copy Redmine SQL commands"
+    template:
+      src: redmine.j2
+      dest: /tmp/redmine.sql
+      mode: 755
+    tags:
+      - project_rename
+
+  - name: "Rename project in DB"
+    mysql_db: state=import name={{ item}} target=/tmp/{{ item }}.sql
+    with_items:
+      - gerrit
+      - redmine
+    tags:
+      - project_rename
+
+  - file: path=/home/gerrit/site_path/git/ state=directory mode=0755 owner=gerrit recurse=yes
+    tags:
+      - project_rename
+
+  - name: Check if old git directory exists
+    stat: path=/home/gerrit/site_path/git/{{ item.old }}.git
+    with_items: repos
+    register: gitdir
+    tags:
+      - project_rename
+
+  - name: Ensure new git directory (needed if namespace used) exists
+    file: path=/home/gerrit/site_path/git/{{ item.new | dirname }} state=directory
+    with_items: repos
+    tags:
+      - project_rename
+
+  - name: Rename git directory
+    command: mv /home/gerrit/site_path/git/{{ item.old }}.git /home/gerrit/site_path/git/{{ item.new }}.git
+    with_items: repos
+    when: gitdir.results[0].stat.exists is defined and gitdir.results[0].stat.exists == true
+    tags:
+      - project_rename
+
+  # Section name can't have '/' to be managed by managesf
+  - name: Update section name in /home/gerrit/site_path/etc/replication.config
+    replace:
+      dest=/home/gerrit/site_path/etc/replication.config
+      regexp='(\[remote .){{ item.old | regex_replace('/', '_') }}(.*)'
+      replace='\1{{ item.new | regex_replace('/', '_') }}\2'
+      backup=yes
+    with_items: repos
+    tags:
+      - replication_project_rename
+
+  # Alias name can't have '/' as the alias name is used as a path for the private key
+  - name: Update alias name in url /home/gerrit/site_path/etc/replication.config
+    replace:
+      dest=/home/gerrit/site_path/etc/replication.config
+      regexp='(url = git@alias_gh_){{ item.old | regex_replace('/', '_') }}(.*)'
+      replace='\1{{ item.new | regex_replace('/', '_') }}\2'
+      backup=yes
+    with_items: repos
+    tags:
+      - replication_project_rename
+
+  - name: Update project name in /home/gerrit/site_path/etc/replication.config
+    replace:
+      dest=/home/gerrit/site_path/etc/replication.config
+      regexp='(projects = ){{ item.old }}(.*)'
+      replace='\1{{ item.new }}\2'
+      backup=yes
+    with_items: repos
+    tags:
+      - replication_project_rename
+
+  - name: Check if .ssh/config exists
+    stat: path=/home/gerrit/.ssh/config
+    register: sshconfig
+  - name: Update projectname in /home/gerrit/.ssh/config
+    replace:
+      dest=/home/gerrit/.ssh/config
+      regexp='(.*alias_gh_){{ item.old | regex_replace('/', '_') }}(.*)'
+      replace='\1{{ item.new | regex_replace('/', '_') }}\2'
+      backup=yes
+    with_items: repos
+    when: sshconfig.stat.exists == true 
+    tags:
+      - replication_project_rename
+
+  - name: Check if there is a SSH replication key to rename
+    stat: path=/home/gerrit/.ssh/alias_gh_{{ item.old | regex_replace('/', '_') }}.key
+    with_items: repos
+    register: sshkeyfile
+    tags:
+      - replication_project_rename
+
+  - name: Rename replication SSH key
+    command: mv /home/gerrit/.ssh/alias_gh_{{ item.old | regex_replace('/', '_') }}.key /home/gerrit/.ssh/alias_gh_{{ item.new | regex_replace('/', '_') }}.key
+    with_items: repos
+    when: sshkeyfile.results[0].stat.exists is defined and sshkeyfile.results[0].stat.exists == true
+    tags:
+      - replication_project_rename
+
+  - name: "Start re-index"
+    shell: java -jar /home/gerrit/site_path/bin/gerrit.war reindex -d /home/gerrit/site_path
+    tags:
+      - project_rename
+
+  - name: "Start gerrit"
+    shell: systemctl start gerrit
+    tags:
+      - project_rename
+  - wait_for: port=29418 state=present
+    tags:
+      - project_rename
+
+  - name: "Start rename project groups for {{ item.new }}"
+    shell: "/tmp/rename-groups.sh {{ item.old }} {{ item.new }}"
+    with_items: repos
+    tags:
+      - project_rename
+  - name: "Start zuul"
+    shell: systemctl start zuul
+    tags:
+      - project_rename
+  - name: "Start zuul merger"
+    shell: systemctl start zuul-merger
+    tags:
+      - project_rename
+  # Wait for Zuul status port open
+  - wait_for: port=8001 state=present
+    tags:
+      - project_rename
+
+  - name: Get hostname
+    shell: "grep fqdn /etc/puppet/hiera/sf/sfconfig.yaml | awk -F ': ' '{ print $2 }'"
+    register: fqdn
+    tags:
+      - test_triggers_rename
+  - name: Clone config repo
+    git: repo=ssh://admin@{{ fqdn.stdout }}:29418/config.git
+         dest=/tmp/config
+         key_file=/root/sf-bootstrap-data/ssh_keys/gerrit_service_rsa
+    tags:
+      - test_triggers_rename
+  - name: Rename Zuul triggers
+    replace: "dest=/tmp/config/zuul/projects.yaml regexp='name: {{ item.old }}' replace='name: {{ item.new }}'"
+    with_items: repos
+    tags:
+      - test_triggers_rename
+  - name: Commit and push changes
+    shell: chdir=/tmp/config {{ item }}
+    with_items:
+      - "test -n \"$(git ls-files -o -m --exclude-standard)\" && git add -A . && git commit -m 'Rename project in Zuul test triggers' || true"
+      - git push origin master
+    tags:
+      - test_triggers_rename

@@ -1,0 +1,3 @@
+{% for item in repos %}
+update projects set name = "{{ item.new | regex_replace('/', '_') }}", identifier = "{{ item.new | regex_replace('/', '_') }}" where name = "{{ item.old | regex_replace('/', '_') }}";
+{% endfor %}
