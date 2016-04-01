@@ -1,5 +1,3 @@
-Contents:
-
 .. toctree::
 
 Frequently Asked Questions
@@ -110,3 +108,106 @@ Then you can follow this documentation to create channels and
 set custom ACL:
 
   https://wiki.mumble.info/wiki/Murmurguide#Becoming_Administrator_and_Registering_a_User
+
+How can I use the Gerrit REST API?
+..................................
+
+You can use the Gerrit REST API to enhance the functionality based on
+your needs. There is an extensive documentation available online:
+
+  https://gerrit-review.googlesource.com/Documentation/rest-api.html
+
+To use the Gerrit REST API in Software Factory, you have to create an API
+password first. To do so, click the lock button on the upper right corner of the
+dashboard. A popup will show you a random password that you have to use to
+access Gerrit.
+Next, you need to use a different URL to access the Gerrit API. For example, if
+you want to query the list of changes, you would normally execute a request like
+this (as described in
+https://gerrit-review.googlesource.com/Documentation/rest-api-changes.html#list-changes):
+
+  GET /changes/?q=status:open+is:watched&n=2 HTTP/1.0
+
+The full URL for Software Factory would look like this:
+
+  http://sftests.com/api/changes/?q=status:open+is:watched&n=2
+
+Please note the /api/ here. Authenticated requests (as described in the Gerrit
+documentation) would simply use /api/a/ and the generated API password from
+above.
+A full example to automate some tasks (in this case deleting a specific branch
+on a list of projects) is given below.
+
+.. code-block:: python
+
+  #!/usr/bin/env python
+  import argparse
+  import json
+  import requests
+  import sys
+
+
+  def status(ok, last=False):
+      if ok:
+          sys.stdout.write('+')
+      else:
+          sys.stdout.write('-')
+      if last:
+          print ""
+
+
+  def main():
+      parser = argparse.ArgumentParser(description='Delete branches')
+      parser.add_argument('-u', '--user', type=str, required=True,
+                          help='Gerrit username')
+      parser.add_argument('-p', '--password', type=str, required=True,
+                          help='Gerrit HTTP password')
+      parser.add_argument('-b', '--branch', type=str, required=True,
+                          help='Branch to delete')
+      parser.add_argument('-d', '--default-branch', type=str, required=False,
+                          help='New default branch')
+      parser.add_argument('-f', '--filter', type=str, required=True,
+                          help='Projectname filter, for example "-distgit"')
+      parser.add_argument('--host', type=str, required=True,
+                          help='Gerrit host, for example sftests.com')
+      parser.add_argument('-n', '--no-op', action='store_true', required=False,
+                          help='Do not delete repos, only print actions')
+
+      args = parser.parse_args()
+
+      if args.branch == "master" and not args.default_branch:
+          raise parser.error(
+              "Need a new default branch if master will be deleted")
+
+      url = "http://%s:%s@%s/api/a/projects/" % (
+          args.user, args.password, args.host)
+      resp = requests.get(url)
+      projects = json.loads(resp.content[4:])
+
+      for project_name in projects.keys():
+          if project_name.endswith(args.filter):
+              if not args.no_op:
+                  print "Deleting branch %s on project %s: " % (
+                      args.branch, project_name),
+
+                  if args.default_branch:
+                      headers = {'Authorization': 'token %s' % args.token,
+                                 'Content-Type': 'application/json'}
+                      data = json.dumps({"ref": "refs/heads/%s" % args.default_branch })
+                      gerrit_url = "http://%s:%s@%s/api/a/projects/%s/HEAD" % (
+                          args.user, args.password, args.host, project_name)
+                      resp = requests.put(gerrit_url, headers=headers, data=data)
+                      status(resp.ok)
+
+                  headers = {'Authorization': 'token %s' % args.token}
+                  gerrit_url = "http://%s:%s@%s/api/a/projects/%s/branches/%s" % (
+                      args.user, args.password, args.host, project_name, args.branch)
+                  resp = requests.delete(gerrit_url, headers=headers)
+                  status(resp.ok)
+              else:
+                  print "Would delete branch %s on project %s" % (
+                      args.branch, project_name)
+
+
+  if __name__ == '__main__':
+      main()
