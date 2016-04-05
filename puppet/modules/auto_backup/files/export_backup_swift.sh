@@ -69,7 +69,9 @@ for backup in $backups; do
     upload_date=$(echo $upload_date | cut -d"." -f 1)
     if [ $((epoch - upload_date)) -gt $RETENTION_SECS ]; then
         echo "Backup $backup is too old according to the retention value. Delete it."
-        swift delete $SWIFT_CONTAINER $backup &> /dev/null
+        swift delete $SWIFT_CONTAINER $backup &> /dev/null || {
+            echo "Deleting backup $backup from $SWIFT_CONTAINER failed."
+        }
     fi
 done
 
