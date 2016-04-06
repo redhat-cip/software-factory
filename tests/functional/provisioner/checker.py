@@ -15,6 +15,7 @@
 # under the License.
 
 import os
+import shlex
 import requests
 import sys
 import yaml
@@ -29,6 +30,7 @@ from pysflib.sfgerrit import GerritUtils
 from utils import GerritGitUtils
 from utils import JenkinsUtils
 from utils import is_present
+from utils import ssh_run_cmd
 
 
 class SFchecker:
@@ -107,6 +109,16 @@ class SFchecker:
     def check_pasties(self, amount):
         pass
 
+    def command(self, cmd):
+        return ssh_run_cmd(os.path.expanduser("~/.ssh/id_rsa"),
+                           "root",
+                           config.GATEWAY_HOST, shlex.split(cmd))
+
+    def compute_checksum(self, f):
+        out = self.command("md5sum %s" % f)[0]
+        if out:
+            return out.split()[0]
+
     def simple_login(self, user, password):
         """log as user"""
         return get_cookie(user, password)
@@ -125,7 +137,21 @@ class SFchecker:
             exit(1)
         print "OK"
 
+    def check_checksums(self):
+        print "Check that expected file are there"
+        checksum_list = yaml.load(file('/tmp/pc_checksums.yaml'))
+        for f, checksum in checksum_list.items():
+            c = self.compute_checksum(f)
+            if c == checksum:
+                print "Expected checksum (%s) for %s is OK." % (
+                    checksum, f)
+            else:
+                print "Expected checksum (%s) for %s is WRONG (%s)." % (
+                    checksum, f, c)
+                sys.exit(1)
+
     def checker(self):
+        self.check_checksums()
         self.check_users_list()
         for project in self.resources['projects']:
             print "Check user datas for %s" % project['name']

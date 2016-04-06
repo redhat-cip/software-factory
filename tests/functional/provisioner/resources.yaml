@@ -34,3 +34,7 @@ users:
  - name: admin
  - name: user2
  - name: user3
+commands:
+  - cmd: hostname -f
+checksum:
+  - file: /etc/hostname

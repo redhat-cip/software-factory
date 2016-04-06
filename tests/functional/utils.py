@@ -32,6 +32,8 @@ import yaml
 import logging
 import pkg_resources
 
+from subprocess import Popen, PIPE
+
 logging.getLogger("requests").setLevel(logging.WARNING)
 logging.captureWarnings(True)
 logger = logging.getLogger(__name__)
@@ -140,6 +142,18 @@ def get_cookie(username, password):
                                       'back': '/'},
                          allow_redirects=False)
     return resp.cookies.get('auth_pubtkt', '')
+
+
+def ssh_run_cmd(sshkey_priv_path, user, host, subcmd):
+    host = '%s@%s' % (user, host)
+    sshcmd = ['ssh', '-o', 'LogLevel=ERROR',
+              '-o', 'StrictHostKeyChecking=no',
+              '-o', 'UserKnownHostsFile=/dev/null', '-i',
+              sshkey_priv_path, host]
+    cmd = sshcmd + subcmd
+
+    p = Popen(cmd, stdout=PIPE)
+    return p.communicate()
 
 
 class Base(unittest.TestCase):

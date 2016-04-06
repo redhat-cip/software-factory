@@ -15,6 +15,7 @@
 # under the License.
 
 import os
+import shlex
 import random
 import sys
 import yaml
@@ -29,6 +30,7 @@ from pysflib.sfredmine import RedmineUtils
 from utils import JenkinsUtils
 from utils import get_cookie
 from utils import is_present
+from utils import ssh_run_cmd
 
 # TODO: Create pads and pasties.
 
@@ -113,7 +115,26 @@ class SFProvisioner(object):
     def create_local_user(self, username, password, email):
         self.msu.create_user(username, password, email)
 
+    def command(self, cmd):
+        return ssh_run_cmd(os.path.expanduser("~/.ssh/id_rsa"),
+                           "root",
+                           config.GATEWAY_HOST, shlex.split(cmd))
+
+    def compute_checksum(self, f):
+        out = self.command("md5sum %s" % f)[0]
+        if out:
+            return out.split()[0]
+
     def provision(self):
+        for cmd in self.resources['commands']:
+            print "Execute command %s" % cmd['cmd']
+            print self.command(cmd['cmd'])
+        checksum_list = {}
+        for checksum in self.resources['checksum'] :
+            print "Compute checksum for file %s" % checksum['file']
+            checksum_list[checksum['file']] = self.compute_checksum(
+                checksum['file'])
+        yaml.dump(checksum_list, file('/tmp/pc_checksums.yaml', 'w'))
         for user in self.resources['local_users']:
             print "Create local user %s" % user['username']
             self.create_local_user(user['username'],
