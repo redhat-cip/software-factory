@@ -1,0 +1,2 @@
+- name: "Configure tmpfiles.d to recreate /var/run/gerritbot after reboot"
+  lineinfile: dest=/lib/tmpfiles.d/gerritbot.conf state=present create=yes line='d /var/run/gerritbot 0755 gerritbot gerritbot -'
