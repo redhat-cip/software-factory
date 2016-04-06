@@ -74,6 +74,7 @@
 # Sf configuration
 /etc/puppet/hiera/sf/
 /etc/httpd/htpasswd
+/etc/httpd/managesf_htpasswd
 /etc/httpd/pages.txt
 /etc/gerritbot/channels.yaml
 

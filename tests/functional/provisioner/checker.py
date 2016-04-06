@@ -140,6 +140,7 @@ class SFchecker:
     def check_checksums(self):
         print "Check that expected file are there"
         checksum_list = yaml.load(file('/tmp/pc_checksums.yaml'))
+        mismatch = False
         for f, checksum in checksum_list.items():
             c = self.compute_checksum(f)
             if c == checksum:
@@ -148,7 +149,9 @@ class SFchecker:
             else:
                 print "Expected checksum (%s) for %s is WRONG (%s)." % (
                     checksum, f, c)
-                sys.exit(1)
+                mismatch = True
+        if "checksum_warn_only" not in sys.argv and mismatch:
+            sys.exit(1)
 
     def checker(self):
         self.check_checksums()

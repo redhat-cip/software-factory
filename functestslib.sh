@@ -448,7 +448,7 @@ function run_upgrade {
 
 function run_checker {
     echo "$(date) ======= run_checker"
-    ./tests/functional/provisioner/checker.py 2>> ${ARTIFACTS_DIR}/checker.debug || fail "Backup checker failed" ${ARTIFACTS_DIR}/checker.debug
+    ./tests/functional/provisioner/checker.py $1 2>> ${ARTIFACTS_DIR}/checker.debug || fail "Backup checker failed" ${ARTIFACTS_DIR}/checker.debug
     checkpoint "run_checker"
 }
 

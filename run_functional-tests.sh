@@ -84,7 +84,7 @@ case "${TEST_TYPE}" in
         run_bootstraps
         run_provisioner
         run_upgrade
-        run_checker
+        run_checker "checksum_warn_only"
         run_serverspec_tests
         run_functional_tests
         ;;
