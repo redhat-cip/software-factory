@@ -3,7 +3,7 @@
 set +x
 
 # yum
-RDO_REPO="https://www.rdoproject.org/repos/rdo-release.rpm"
+RDO_REPO="https://repos.fedorapeople.org/repos/openstack/openstack-liberty/rdo-release-liberty-2.noarch.rpm"
 RDO_PKGS="$(grep '^[a-zA-Z]' ${ORIG}/packages/rpm_rdo.txt)"
 
 EPEL_REPO="epel-release"

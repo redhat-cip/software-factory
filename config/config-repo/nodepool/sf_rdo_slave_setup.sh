@@ -2,7 +2,7 @@
 
 . sf_slave_setup.sh
 
-[ -n "${RDO_RELEASE}" ] || RDO_RELEASE=https://www.rdoproject.org/repos/rdo-release.rpm
+[ -n "${RDO_RELEASE}" ] || RDO_RELEASE=https://repos.fedorapeople.org/repos/openstack/openstack-liberty/rdo-release-liberty-2.noarch.rpm
 
 sudo yum install -y ${RDO_RELEASE}
 
