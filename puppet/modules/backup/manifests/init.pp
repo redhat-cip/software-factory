@@ -16,6 +16,8 @@
 class backup () {
   include ::bup
 
+  $fqdn = hiera('fqdn')
+
   bup::scripts{ 'backup_scripts':
     name           => 'backup',
     backup_script  => 'backup/backup.sh.erb',
