@@ -31,6 +31,32 @@ you need access to a CentOS 7 and execute:
 There is an included Vagrantfile in the tools directory to automate these tasks
 and deploy a usable CentOS 7 instance that can be used for testing.
 
+Optional: use a local http cache
+--------------------------------
+
+If you're rebuilding images frequently, it might make sense to cache some
+dependency downloads locally. The easiest way to do this is to use a local Squid
+instance.
+
+.. code-block:: bash
+
+ sudo yum install -y squid
+ sudo sed -ie 's/^http_port.*/http_port 127.0.0.1:3128/g' /etc/squid/squid.conf
+ echo "maximum_object_size 100 MB" | sudo tee --append /etc/squid/squid.conf
+ echo "cache_dir ufs /var/spool/squid 2000 16 256" | sudo tee --append /etc/squid/squid.conf
+ sudo systemctl enable squid
+ sudo systemctl start squid
+
+Before you rebuild an image or run functional tests the next time, set the
+following environment variables to use the cache. Once dependencies are cached,
+it should significantly speed up image building.
+
+.. code-block:: bash
+
+ export http_proxy=http://127.0.0.1:3128
+ export https_proxy=http://127.0.0.1:3128
+
+
 How to run the tests locally
 ----------------------------
 
