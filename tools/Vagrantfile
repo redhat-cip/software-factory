@@ -1,0 +1,41 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+# http://softwarefactory-project.io/docs/contribute.html#prepare-a-development-environment
+
+Vagrant.configure(2) do |config|
+  config.vm.box = "http://cloud.centos.org/centos/7/vagrant/x86_64/images/CentOS-7.box"
+
+  config.vm.network "forwarded_port", guest: 80, host: 8080
+  config.vm.network "forwarded_port", guest: 29418, host: 29418
+
+  config.ssh.forward_agent = true
+
+  config.vm.provider "virtualbox" do |vb|
+    vb.memory = "3072"
+    vb.cpus = 2
+  end
+
+  config.vm.provision "shell", privileged: false, inline: <<-SHELL
+    # Install prerequisites
+    sudo yum install -y epel-release
+    sudo yum install -y libvirt libvirt-daemon-lxc git git-review vim-enhanced tmux curl python-devel wget python-pip mariadb-devel python-virtualenv python-devel gcc libffi-devel openldap-devel openssl-devel python-sphinx python-tox python-flake8 ansible squid
+    sudo systemctl enable libvirtd
+    sudo systemctl start libvirtd
+
+    # Add a local proxy
+    sudo sed -ie 's/^http_port.*/http_port 127.0.0.1:3128/g' /etc/squid/squid.conf
+    sudo sed -ie 's#.*cache_dir.*#cache_dir ufs /var/spool/squid 2000 16 256 max-size=100000000#g' /etc/squid/squid.conf
+    sudo systemctl enable squid
+    sudo systemctl start squid
+
+    echo 'export http_proxy="http://127.0.0.1:3128/"' >> ~/.bashrc
+    echo 'export https_proxy="http://127.0.0.1:3128/"' >> ~/.bashrc
+
+    git clone http://softwarefactory-project.io/r/software-factory
+    cd software-factory
+    SKIP_GPG=1 ./fetch_image.sh
+  SHELL
+
+  config.vm.provision "file", source: "~/.gitconfig", destination: "~/.gitconfig"
+  config.vm.provision "file", source: "~/.vimrc", destination: "~/.vimrc"
+end

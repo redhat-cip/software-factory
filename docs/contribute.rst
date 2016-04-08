@@ -28,6 +28,8 @@ you need access to a CentOS 7 and execute:
  cd software-factory
  ./fetch_image.sh
 
+There is an included Vagrantfile in the tools directory to automate these tasks
+and deploy a usable CentOS 7 instance that can be used for testing.
 
 How to run the tests locally
 ----------------------------
