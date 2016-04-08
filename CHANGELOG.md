@@ -1,5 +1,62 @@
-2.1.8-7  2016-03-07
-===================
+2.2.0  2016-04-08
+=================
+
+This is release 2.2.0
+
+New Features
+------------
+
+- Document how to use custom certificate such as letsencrypt.
+- Break down jenkins, jjb, zuul and nodepool role to be usable independently.
+- Config-update is now an ansible playbook that updates each service remotely.
+- Service extra configuration is now done with ansible to perform operation based on the host inventory.
+- A new mumble service is activated by default.
+- When nodepool is enabled, slaves are now put offline by default to avoid reuse. To keep a slave alive, jobs needs to explicitly use the "set_node_reuse" option.
+- Add gearman-check tool
+- Add playbook to rename seamlessly projects on SF
+- Extend backup to include more data and add mechanism to encrypt backup before being exported
+- Add doc example how to use Gerrit API
+- Add doc how to use encrypted backups
+- Project with namespace support such as skydive/server
+- Add fundations for dynamic architecture based on Ansible
+- Local users are now stored in Mariadb and now part of the backup
+- Add fundations for sf pages feature
+- Add fundations for jobs log exploration via ELK
+- Add fundations to keep track of users comming from the SSO to avoid inconsistencies in the services DB
+- Improve dashboard delay to display project listing
+- Add Github repositories utils in sfmanager (create/delete/fork repo and add replication key)
+- Break down jenkins, jjb, zuul and nodepool role to be usable independently.
+- Config-update is now an ansible playbook that updates each service remotely.
+- Service extra configuration is now done with ansible to perform operation based on the host inventory.
+- A new mumble service is activated by default.
+- When nodepool is enabled, slaves are now put offline by default to avoid reuse. To keep a slave alive, jobs needs to explicitly use the "set_node_reuse" option.
+
+
+Known Issues
+------------
+
+- Nodepool now has its own copy of jenkins ssh key for slave management. Images private key needs to be updated to use /var/lib/nodepool/.ssh instead of jenkins.
+
+
+Upgrade Notes
+-------------
+
+- System user/group id are now correctly updated according to ids.table definition. This is due to support upgrade from version prior 2.1.7 when image uid/gid were not consistent.
+
+
+Bug Fixes
+---------
+
+- Backup operation was missing ssh key to succeed in multi-node environment.
+- Continue Swift backup even if retention delete failed
+- Fix gerritbot missing /var/run directory after reboot
+- Some backup operations was allowed to normal user
+- Better handling of Mariadb connections in ManageSF
+- Backup operation was missing ssh key to succeed in multi-node environment.
+
+
+2.1.8  2016-03-07
+=================
 
 This release fix the last errors observed in 2.1.7 and it may be the last 2.1.x release.
 
@@ -26,8 +83,8 @@ Upgrade Notes
 
 
 
-2.1.7-9  2016-02-21
-===================
+2.1.7  2016-02-21
+=================
 
 New Features
 ------------
@@ -50,8 +107,8 @@ Security Issues
 - Remove default etherpad admin credentials that may be used to reveal internal mysql password and sesion key.
 
 
-2.1.6-8  2016-02-10
-===================
+2.1.6  2016-02-10
+=================
 
 This is a minor release to fix incorrect 2.1.5 build release (the .tgz file is actually from 2.1.4)
 
@@ -70,8 +127,8 @@ Known Issues
 - Include zuul memory leak fix, see https://review.openstack.org/275483
 
 
-2.1.5-23  2016-02-06
-====================
+2.1.5  2016-02-06
+=================
 
 This release feature a more recent nodepool version (upstream git master) to benefit from python-shade.
 

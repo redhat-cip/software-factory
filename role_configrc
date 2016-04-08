@@ -1,25 +1,25 @@
 #!/bin/sh
 #
 
-VER=2.2.0
+VER=2.2.1
 
 # Version string
-SF_PREVIOUS_VER=C7.0-2.1.8
+SF_PREVIOUS_VER=C7.0-2.2.0
 
 # Set this variable to 1 if we tag and set it back to 0 the commit after the tag
-TAGGED_RELEASE=0
+TAGGED_RELEASE=1
 REL_VER=$(git log --simplify-merges -n 1 | grep -i 'TaggedRelease:' | awk '{ print $2 }')
 if [ ! -z "${REL_VER}" ]; then
     echo "This is release: ${REL_VER}."
     VER=${REL_VER}
-    SF_PREVIOUS_VER=C7.0-2.1.2
+    SF_PREVIOUS_VER=C7.0-2.1.8
     echo "Testing upgrade from ${SF_PREVIOUS_VER}"
     TAGGED_RELEASE=1
     # Pinned versions of the subprojects to go with the current release
-    PYSFLIB_PINNED_VERSION=028f7121feadd72d761d11f372caf19cfc324925
-    MANAGESF_PINNED_VERSION=b6779999f955509d941ffce853b62eb03b1cb2f7
-    CAUTH_PINNED_VERSION=29188b1d50dbc462c10f68be345d658e4abb8e5f
-    SFMANAGER_PINNED_VERSION=3fcad5cbd64f5da044d94a4fc2bd32224def5d03
+    PYSFLIB_PINNED_VERSION=d31e370cb5ba1ea0081d8420abfa00c260a39cbf
+    MANAGESF_PINNED_VERSION=68bb9c18669ab23223254697efdefd7faeb8ec98
+    CAUTH_PINNED_VERSION=2e02e80601056656487669f335b11757c1cbf5a3
+    SFMANAGER_PINNED_VERSION=fa236e0e92c10c71dc2e948bca1d2ae50299c9b4
 fi
 
 SF_VER=${SF_VER:-C7.0-${VER}}

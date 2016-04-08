@@ -1,6 +1,0 @@
----
-issues:
-  - Nodepool now has its own copy of jenkins ssh key for
-    slave management. Images private key needs to be
-    updated to use /var/lib/nodepool/.ssh instead of
-    jenkins.
