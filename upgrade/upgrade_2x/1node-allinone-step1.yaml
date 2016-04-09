@@ -2,9 +2,9 @@
 - hosts: managesf
   gather_facts: no
   tasks:
+  - include: tasks/fetchupstream.yml
   - name: dump users base
     command: "{{ install_path }}/softwarefactory/usr/local/bin/reprovision_users.py dump /etc/puppet/hiera/sf/sfconfig.yaml"
-  - include: tasks/fetchupstream.yml
   - include: tasks/stopsfservices.yml
   - include: tasks/edeploysync.yml
   - shell: /usr/local/bin/sf-update-uid-gid.py 2>&1 | tee -a /var/log/sf_ids_update.log

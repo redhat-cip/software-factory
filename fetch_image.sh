@@ -48,7 +48,9 @@ function fetch_prebuilt {
     echo "Fetching ${SWIFT_SF_URL}/${IMG}.img.qcow2"
     sudo curl -o ${UPSTREAM}/${IMG}.img.qcow2 ${SWIFT_SF_URL}/${IMG}.img.qcow2
     echo "Fetching ${SWIFT_SF_URL}/${IMG}.{digest,description,hot,hash}"
+    # Fetch ${IMG}.hot for 2.1.8 digest
     sudo curl -o ${UPSTREAM}/${IMG}.hot ${SWIFT_SF_URL}/${IMG}.hot
+    sudo curl -o ${UPSTREAM}/${IMG}-allinone.hot ${SWIFT_SF_URL}/${IMG}-allinone.hot
     sudo curl -o ${UPSTREAM}/${IMG}.digest ${SWIFT_SF_URL}/${IMG}.digest
     sudo curl -o ${UPSTREAM}/${IMG}.description ${SWIFT_SF_URL}/${IMG}.description
     echo "Digests..."
@@ -58,12 +60,6 @@ function fetch_prebuilt {
             echo "GPG check failed, to avoid error: export SKIP_GPG=1"
             exit -1
         }
-    fi
-    if [ "${SF_VER}" == "C7.0-2.0.4" ] || [ "${SF_VER}" == "C7.0-2.1.2" ]; then
-        # Remove pip and rpm file
-        sudo sed -i "s/.*\.\(pip\|rpm\)//" ${UPSTREAM}/${IMG}.digest
-        # Fetch hash file
-        sudo curl -o ${UPSTREAM}/${IMG}.hash ${SWIFT_SF_URL}/${IMG}.hash
     fi
     (cd ${UPSTREAM}; exec sha256sum -c ./${IMG}.digest) || exit -1
 }

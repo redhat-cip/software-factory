@@ -33,7 +33,7 @@ def get_puppet_modules(role):
 
 
 def generate_inventory():
-    arch = load_refarch(args.arch, args.domain)
+    arch = load_refarch(args.arch, args.domain, args.install_server_ip)
 
     # Adds puppet module to architecture
     for host in arch["inventory"]:
@@ -86,6 +86,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--domain", default="sftests.com")
 parser.add_argument("--ansible_root", default="/etc/ansible")
 parser.add_argument("--verify", action='store_const', const=True)
+parser.add_argument("--install_server_ip")
 parser.add_argument("arch", help="refarch file")
 args = parser.parse_args()
 
@@ -94,6 +95,8 @@ ansible_root = None
 for path in (args.ansible_root, "../ansible", "config/ansible"):
     if os.path.isfile("%s/templates/inventory.j2" % path):
         ansible_root = path
+        # Directory found, stop looking
+        break
 if not ansible_root:
     print "Can't find ansible directory, use --ansible_root"
     exit(1)

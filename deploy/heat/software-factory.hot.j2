@@ -145,10 +145,6 @@ resources:
                cat << EOF > /etc/puppet/hiera/sf/arch.yaml
                {{ arch_raw.replace('\n', '\n               ') }}
                EOF
-               # heat yield circular dep error when trying to get local instance ip for cloud-init template
-               # auto discover install-server ip during boot
-               localip=$(ip route get 8.8.8.8 | awk '{ print $7 }')
-               sed -i /etc/puppet/hiera/sf/arch.yaml -e "s/{{ host['ip'] }}/$localip/"
                sfconfig.sh
 {% endif %}
               path: /root/startup.sh

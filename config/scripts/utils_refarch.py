@@ -22,7 +22,7 @@ def fail(msg):
     exit(1)
 
 
-def load_refarch(filename, domain=None):
+def load_refarch(filename, domain=None, install_server_ip=None):
     arch = yaml.load(open(filename).read())
     # Update domain
     if domain:
@@ -35,8 +35,11 @@ def load_refarch(filename, domain=None):
     ip_prefix = None
     hostid = 10
     for host in arch["inventory"]:
-        if "ip" not in host:
+        if install_server_ip and "install-server" in host["roles"]:
+            host["ip"] = install_server_ip
+        elif "ip" not in host:
             host["ip"] = "192.168.135.1%d" % hostid
+
         if not ip_prefix:
             ip_prefix = '.'.join(host["ip"].split('.')[0:3])
         elif ip_prefix != '.'.join(host["ip"].split('.')[0:3]):

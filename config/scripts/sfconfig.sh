@@ -26,10 +26,10 @@ HOME=/root
 
 
 function update_config {
-    hieraedit.py --yaml /etc/puppet/hiera/sf/sfconfig.yaml fqdn       "${DOMAIN}"
     echo "sf_version: $(grep ^VERS= /var/lib/edeploy/conf | cut -d"=" -f2 | cut -d'-' -f2)" > /etc/puppet/hiera/sf/sf_version.yaml
     /usr/local/bin/sf-update-hiera-config.py
-    /usr/local/bin/sf-ansible-generate-inventory.py   /etc/puppet/hiera/sf/arch.yaml
+    /usr/local/bin/sf-ansible-generate-inventory.py --domain ${DOMAIN} --install_server_ip $(ip route get 8.8.8.8 | awk '{ print $7 }') \
+        /etc/puppet/hiera/sf/arch.yaml
 
     # set managesf gitconfig
     git config --global user.name "SF initial configurator"

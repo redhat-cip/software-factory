@@ -31,9 +31,9 @@ function publish {
         done
     fi
     echo "[+] Creating manifest"
-    OBJ="$(/bin/ls ${IMG_NAME}.{tgz,description,img.qcow2} ${IMG_NAME}*.hot 2> /dev/null || true)"
+    OBJ="$(/bin/ls ${IMG_NAME}.{tgz,description,img.qcow2} ${IMG_NAME}-allinone.hot 2> /dev/null || true)"
     sha256sum $OBJ | sudo tee ${IMG_NAME}.digest
-    for OBJECT in $OBJ ${IMG_NAME}.digest; do
+    for OBJECT in $OBJ ${IMG_NAME}.digest ${IMG_NAME}*.hot; do
         [ -f ${OBJECT} ] || continue
         echo "[+] Uploading ${OBJECT} to ${SWIFT_BASE_URL}/v1/AUTH_${SWIFT_ACCOUNT}/${SWIFT_IMAGE_CONTAINER}/"
         SWIFT_PATH="/v1/AUTH_${SWIFT_ACCOUNT}/${SWIFT_IMAGE_CONTAINER}/${OBJECT}"

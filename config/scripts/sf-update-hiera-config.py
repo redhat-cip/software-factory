@@ -10,22 +10,16 @@ DEFAULT_ARCH = "/usr/local/share/sf-default-config/arch.yaml"
 
 def save(name, data):
     filename = "%s/%s.yaml" % (hiera_dir, name)
-    os.rename(filename, "%s.orig" % filename)
+    if os.path.isfile(filename):
+        os.rename(filename, "%s.orig" % filename)
     yaml.dump(data, open(filename, "w"), default_flow_style=False)
     print "Updated %s (old version saved to %s)" % (filename,
                                                     "%s.orig" % filename)
 
 
-def load(name, default=None):
+def load(name):
     filename = "%s/%s.yaml" % (hiera_dir, name)
-    try:
-        return yaml.load(open(filename).read())
-    except IOError:
-        if default:
-            return yaml.load(open(default).read())
-        else:
-            print "%s: can't load" % filename
-            raise
+    return yaml.load(open(filename).read())
 
 
 def update_sfconfig(data):
@@ -54,9 +48,11 @@ if not os.path.isdir(hiera_dir):
     exit(1)
 
 # arch.yaml
-arch = load("arch", default=DEFAULT_ARCH)
-# 2.1.x -> 2.2.x: arch is missing, force update
-if "inventory" not in arch:
+try:
+    arch = load("arch")
+except IOError:
+    # 2.1.x -> 2.2.x: arch is missing, force update
+    arch = yaml.load(open(DEFAULT_ARCH).read())
     save("arch", arch)
 
 # sfconfig.yaml

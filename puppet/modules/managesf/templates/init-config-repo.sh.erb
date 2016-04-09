@@ -29,8 +29,7 @@ gerrit_ssh_key="/root/sf-bootstrap-data/ssh_keys/gerrit_admin_rsa"
 if [ "$upgrade" = "false" ]; then
     # Create config project (managesf must be up)
     if [ ! -f '/usr/share/config.init.done' ]; then
-        # TEMP FIX for gerrit known host
-        ssh gerrit.sftests.com ln -s /home/gerrit/.ssh/known_hosts_gerrit /home/gerrit/.ssh/known_hosts
+        ssh gerrit.${gateway_host} ln -s /home/gerrit/.ssh/known_hosts_gerrit /home/gerrit/.ssh/known_hosts
         sfmanager --url $gateway_url --auth $auth project create --name config --description "Config repository (Do not delete it)"
         sfmanager --url $gateway_url --auth $auth replication configure add --section managesf_config projects config
         sfmanager --url $gateway_url --auth $auth replication configure add --section managesf_config url gerrit@$gateway_host:/home/gerrit/git/\${name}.git
