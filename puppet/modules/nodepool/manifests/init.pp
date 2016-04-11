@@ -36,21 +36,7 @@ class nodepool {
     $enabled = true
   }
 
-  group { 'nodepool':
-    ensure => present,
-  }
-
-  user { 'nodepool':
-    ensure     => present,
-    home       => '/var/lib/nodepool',
-    shell      => '/sbin/nologin',
-    gid        => 'nodepool',
-    managehome => true,
-    require    => Group['nodepool'],
-  }
-
   file { '/var/lib/nodepool/.ssh':
-    require    => User['nodepool'],
     ensure     => directory,
     owner      => 'nodepool',
     group      => 'nodepool',
