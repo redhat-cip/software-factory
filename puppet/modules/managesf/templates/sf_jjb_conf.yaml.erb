@@ -213,6 +213,9 @@
             echo "  - name: default"
             echo "providers:"
             echo "  - name: default"
+            for provider in $(awk '/provider: / { print $NF }' config/nodepool/images.yaml); do
+                echo "  - name: ${provider}"
+            done
           ) > build/nodepool/nodepool.yaml
           cd config
           echo "[+] Checking jobs"

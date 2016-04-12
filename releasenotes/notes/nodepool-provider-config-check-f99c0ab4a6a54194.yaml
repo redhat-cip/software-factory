@@ -1,0 +1,4 @@
+---
+issues:
+  - The config-check was unable to validate nodepool
+    configuration when multiple cloud provider are used.

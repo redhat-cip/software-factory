@@ -8,7 +8,7 @@
   when: sfconfiged.rc
   command: >
     hieraedit.py --yaml config/nodepool/images.yaml --eval 0 "{
-        'provider': 'default',
+        'provider': 'nested-cloud',
         'images': [{
             'name': '{{ image_name }}',
             'base-image': '{{ base_image_name }}',
@@ -26,7 +26,7 @@
         'name': '{{ node_label }}',
         'image': '{{ image_name }}',
         'min-ready': 1,
-        'providers': [{'name': 'default'}]
+        'providers': [{'name': 'nested-cloud'}]
     }]"
 
 - name: Copy nodepool-demo image script

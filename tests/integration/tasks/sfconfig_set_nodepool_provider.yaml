@@ -8,7 +8,7 @@
   command: >
     hieraedit.py --yaml /etc/puppet/hiera/sf/sfconfig.yaml --eval nodepool "{ 'disabled': False,
     'providers': [{
-        'name': 'default',
+        'name': 'nested-cloud',
         'auth-url':   '{{ os_env.OS_AUTH_URL }}',
         'password':   '{{ os_env.OS_PASSWORD }}',
         'project-id': '{{ os_env.OS_TENANT_NAME }}',
