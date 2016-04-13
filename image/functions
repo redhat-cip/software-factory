@@ -21,13 +21,6 @@ function _http_fetch {
     fi
 }
 
-function disable_selinux {
-    #touch ${dir}/.autorelabel
-    if [ -f "${dir}/etc/selinux/config" ]; then
-        sed -i "s/^SELINUX=.*/SELINUX=disabled/" "${dir}/etc/selinux/config"
-    fi
-}
-
 function retry {
     # This is a really dumb retry function
     local max_retries=3

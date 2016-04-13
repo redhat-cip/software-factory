@@ -127,6 +127,14 @@ EOF
     chmod 0400 ${target}/etc/sysctl.conf
 }
 
+enable_selinux() {
+    # Force SELinux relabel
+    touch ${dir}/.autorelabel
+
+    # TODO: replace "permissive" by "enforcing" once there are no more avc message
+    sed -i "s/^SELINUX=.*/SELINUX=permissive/" "${dir}/etc/selinux/config"
+}
+
 install_elk() {
     # Install Elasticsearch Logstash and Kibana combo
     do_chroot ${dir} rpm --import https://packages.elastic.co/GPG-KEY-elasticsearch
@@ -164,6 +172,9 @@ EOF
 
 install_sf_packages() {
     install_packages ${dir} $CENTOS_PKGS $BUILD_PKGS
+
+    # Make sure auditd is enabled by default
+    do_chroot ${dir} systemctl enable auditd
     checkpoint "centos rpms installed"
 
     [ -f "${dir}/etc/yum.repos.d/epel.repo" ] || install_packages ${dir} epel-release
@@ -596,7 +607,7 @@ if [ "$STEP" == 1 ]; then
     bootstrap
     checkpoint "bootstrapped"
     install_sf_packages
-    disable_selinux
+    enable_selinux
     install_jenkins
     checkpoint "jenkins installed"
     install_redmine

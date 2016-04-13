@@ -244,6 +244,8 @@ function get_logs {
         sleep 1
         (
         scp sftests.com:/var/log/messages ${ARTIFACTS_DIR}/
+        scp sftests.com:/var/log/audit/audit.log ${ARTIFACTS_DIR}/
+        ssh sftests.com ps auxZ | grep -i 'unconfin' > ${ARTIFACTS_DIR}/unconfined_process.txt
         scp sftests.com:/var/log/upgrade-bootstrap.log ${ARTIFACTS_DIR}/
         scp sftests.com:/var/log/cloud-init* ${ARTIFACTS_DIR}/
         scp sftests.com:/var/log/puppet_apply.log ${ARTIFACTS_DIR}/

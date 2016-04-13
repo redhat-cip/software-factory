@@ -1,6 +1,7 @@
 # Base system
 acl
 at
+audit
 bash
 bc
 bind-utils
