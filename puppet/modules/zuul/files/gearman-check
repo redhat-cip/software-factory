@@ -3,7 +3,7 @@ import re
 import telnetlib
 import yaml
 
-layoutfile = 'layout.yaml'
+layoutfile = '/etc/zuul/layout.yaml'
 
 # Read the zuul config
 f = open(layoutfile)
