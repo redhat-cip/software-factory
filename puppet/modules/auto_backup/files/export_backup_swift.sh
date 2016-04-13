@@ -80,6 +80,7 @@ sfmanager --url http://$HOST --auth $ADMIN:$ADMIN_PASSWORD system backup_start
 sfmanager --url http://$HOST --auth $ADMIN:$ADMIN_PASSWORD system backup_get
 mv sf_backup.tar.gz /tmp/sf_backup.tar.gz
 # Encrypt backup
+[ -e /tmp/sf_backup.tar.gz.gpg ] && rm /tmp/sf_backup.tar.gz.gpg
 gpg --homedir /root/.gnupg/ -e -r sfadmin /tmp/sf_backup.tar.gz
 # Upload backup
 swift upload $SWIFT_CONTAINER /tmp/sf_backup.tar.gz.gpg --object-name sf_backup_${epoch}.tar.gz.gpg &> /dev/null
