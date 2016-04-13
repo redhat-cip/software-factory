@@ -8,7 +8,6 @@ tar --absolute-names -cf - \
     /home/gerrit/site_path/etc/replication.config \
     /home/gerrit/site_path/etc/ssh_host_rsa_key.pub \
     /home/gerrit/site_path/etc/ssh_host_rsa_key \
-    /home/gerrit/.ssh/config \
-    /home/gerrit/.ssh/id_rsa_* \
+    /home/gerrit/.ssh \
     /etc/httpd/managesf_htpasswd \
     | /usr/local/bin/bup split -r root@managesf.<%= @fqdn %>: -n gerrit
