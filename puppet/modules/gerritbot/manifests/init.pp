@@ -18,21 +18,7 @@ class gerritbot {
   $gerritbot = hiera('gerritbot')
   $gerritbot_rsa = hiera('jenkins_rsa')
 
-  group { 'gerritbot':
-    ensure => present,
-  }
-
-  user { 'gerritbot':
-    ensure     => present,
-    home       => '/var/lib/gerritbot',
-    shell      => '/sbin/nologin',
-    gid        => 'gerritbot',
-    managehome => true,
-    require    => Group['gerritbot'],
-  }
-
   file { '/var/lib/gerritbot/.ssh':
-    require    => User['gerritbot'],
     ensure     => directory,
     owner      => 'gerritbot',
     group      => 'gerritbot',

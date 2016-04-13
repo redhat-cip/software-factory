@@ -1,2 +1,7 @@
+---
+- group: name=gerritbot
+- user: name=gerritbot group=gerritbot shell=/sbin/nologin home=/var/lib/gerritbot
+- file: path=/var/lib/gerritbot state=directory mode=0700 owner=gerritbot group=gerritbot
+
 - name: "Configure tmpfiles.d to recreate /var/run/gerritbot after reboot"
   lineinfile: dest=/lib/tmpfiles.d/gerritbot.conf state=present create=yes line='d /var/run/gerritbot 0755 gerritbot gerritbot -'
