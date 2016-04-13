@@ -96,6 +96,11 @@ case "${TEST_TYPE}" in
         #run_functional_tests  # disabled because it takes too long
         run_it_openstack
         ;;
+    "gui")
+        lxc_init
+        run_bootstraps
+        run_gui_tests
+        ;;
     *)
         echo "[+] Unknown test type ${TEST_TYPE}"
         exit 1

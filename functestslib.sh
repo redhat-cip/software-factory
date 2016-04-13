@@ -462,6 +462,14 @@ function run_functional_tests {
     checkpoint "run_functional_tests"
 }
 
+function run_gui_tests {
+    echo "$(date) ======= run_gui_tests"
+    nosetests --with-timer --with-xunit -v tests/gui \
+        && echo "GUI tests: SUCCESS" \
+        || fail "GUI tests failed" ${ARTIFACTS_DIR}/gui-tests.debug
+    checkpoint "run_gui_tests"
+}
+
 function run_serverspec_tests {
     echo "$(date) ======= run_serverspec_tests"
     # Wait a few seconds for zuul to start
