@@ -8,10 +8,10 @@
     - httpd
     - jenkins
     - zuul
-    - zuul-server
+    - zuul-merger
     - gerrit
     - etherpad
-    - loedgeit
+    - lodgeit
     - mariadb
     - gerritbot
     - grafana-server
