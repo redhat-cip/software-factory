@@ -17,7 +17,7 @@
 import config
 from utils import Base
 from utils import ManageSfUtils
-from utils import skipIfServiceMissing
+from utils import skipIfIssueTrackerMissing
 from pysflib.sfgerrit import GerritUtils
 
 from requests.auth import HTTPBasicAuth
@@ -32,7 +32,7 @@ class TestGateway(Base):
         self.assertEqual(resp.status_code, 307)
         self.assertTrue("/auth/login" in resp.headers['Location'])
 
-    @skipIfServiceMissing('SFRedmine')
+    @skipIfIssueTrackerMissing()
     def test_redmine_root_url_for_404(self):
         """ Test if redmine yield RoutingError
         """
@@ -56,7 +56,7 @@ class TestGateway(Base):
         url = "%s/cauth/config.py" % config.GATEWAY_URL
         self._url_is_not_world_readable(url)
 
-    @skipIfServiceMissing('SFRedmine')
+    @skipIfIssueTrackerMissing()
     # TODO(XXX) this is not up to date and can change with config
     def test_topmenu_links_shown(self):
         """ Test if all service links are shown in topmenu
@@ -153,7 +153,7 @@ class TestGateway(Base):
         self.assertEqual(resp.status_code, 200)
         self.assertTrue('<title>Zuul Status</title>' in resp.text)
 
-    @skipIfServiceMissing('SFRedmine')
+    @skipIfIssueTrackerMissing()
     def test_redmine_accessible(self):
         """ Test if Redmine is accessible on gateway host
         """

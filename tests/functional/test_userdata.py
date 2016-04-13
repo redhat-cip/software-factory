@@ -21,7 +21,7 @@ import urllib2
 from utils import Base
 from utils import ManageSfUtils
 from utils import skip
-from utils import skipIfServiceMissing, is_present
+from utils import skipIfIssueTrackerMissing, is_present
 
 from pysflib.sfredmine import RedmineUtils
 from pysflib.sfgerrit import GerritUtils
@@ -94,7 +94,7 @@ class TestUserdata(Base):
         if is_present("SFRedmine"):
             self.verify_userdata_redmine('user5')
 
-    @skipIfServiceMissing('SFRedmine')
+    @skipIfIssueTrackerMissing()
     def test_login_redirect_to_redmine(self):
         """ Verify the redirect to redmine project page
         """
@@ -137,7 +137,7 @@ class TestUserdata(Base):
         response = self.login('Flea', 'RHCP', quoted_url)
         self.assertEqual(url, response.url)
 
-    @skipIfServiceMissing('SFRedmine')
+    @skipIfIssueTrackerMissing()
     def test_nonmember_backlog_permissions(self):
         """Make sure project non members can see the backlog and add
         stories"""

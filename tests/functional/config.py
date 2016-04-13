@@ -216,3 +216,7 @@ USERS = {
              "lastname": "Demo user6",
              }
 }
+
+
+# List of potential issue tracker plugins supported by managesf
+ISSUE_TRACKERS = ['SFRedmine', ]

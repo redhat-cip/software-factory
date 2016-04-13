@@ -101,6 +101,28 @@ def skipIfServicePresent(service):
                   'This instance of SF is running %s' % service)
 
 
+def skipIfIssueTrackerMissing():
+    services = _get_services()
+    if not services:
+        logger.warning('Introspection endpoint not available, you are '
+                       'probably testing a old version of SF, skipping test')
+        return skip
+    return skipIf(not set(config.ISSUE_TRACKERS) & set(services),
+                  'This instance of SF is not running any issue tracker')
+
+
+def skipIfIssueTrackerPresent():
+    services = _get_services()
+    if not services:
+        logger.warning('Introspection endpoint not available, you are '
+                       'probably testing a old version of SF, skipping test')
+        return skip
+    tracker = list(set(config.ISSUE_TRACKERS) & set(services))
+    if tracker:
+        return skipIf(
+            'This instance of SF is running %s' % ', '.join(tracker))
+
+
 def get_module_version(module):
     m = module
     if not isinstance(m, basestring):

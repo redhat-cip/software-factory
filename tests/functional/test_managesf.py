@@ -26,6 +26,7 @@ from utils import GerritGitUtils
 from utils import create_random_str
 from utils import set_private_key
 from utils import is_present, skipIfServiceMissing, skipIfServicePresent
+from utils import skipIfIssueTrackerMissing
 
 from pysflib.sfredmine import RedmineUtils
 from pysflib.sfgerrit import GerritUtils
@@ -503,7 +504,7 @@ class TestManageSF(Base):
         self.projects.remove(pname)
 
     # For now listing users comes from Redmine
-    @skipIfServiceMissing('SFRedmine')
+    @skipIfIssueTrackerMissing()
     def test_list_active_members(self):
         """ Check the list of members as a list of tuples of emails and names
         """
