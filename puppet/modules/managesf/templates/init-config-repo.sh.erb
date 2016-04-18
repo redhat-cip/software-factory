@@ -29,13 +29,7 @@ gerrit_ssh_key="/root/sf-bootstrap-data/ssh_keys/gerrit_admin_rsa"
 if [ "$upgrade" = "false" ]; then
     # Create config project (managesf must be up)
     if [ ! -f '/usr/share/config.init.done' ]; then
-        ssh gerrit.${gateway_host} ln -s /home/gerrit/.ssh/known_hosts_gerrit /home/gerrit/.ssh/known_hosts
         sfmanager --url $gateway_url --auth $auth project create --name config --description "Config repository (Do not delete it)"
-        sfmanager --url $gateway_url --auth $auth replication configure add --section managesf_config projects config
-        sfmanager --url $gateway_url --auth $auth replication configure add --section managesf_config url gerrit@$gateway_host:/home/gerrit/git/\${name}.git
-        sfmanager --url $gateway_url --auth $auth replication configure add --section managesf_config push +refs/heads/*:refs/heads/*
-        sfmanager --url $gateway_url --auth $auth replication configure add --section managesf_config push +refs/tags/*:refs/tags/*
-        sfmanager --url $gateway_url --auth $auth replication trigger --project config || true
         touch /usr/share/config.init.done
     fi
 fi
@@ -60,19 +54,19 @@ if [ "$upgrade" = "false" ]; then
     # Commit the changes
     cd ${CONF_TMP}
     git add .
-    git commit -a -m "JJB/Zuul files"
+    git commit -a -m "Initialize config repository"
     git push origin master
 fi
 
 if [ "$upgrade" = "true" ]; then
     rsync --exclude jobs/projects.yaml --exclude zuul/projects.yaml --exclude nodepool/images.yaml --exclude nodepool/labels.yaml \
-          -av /usr/local/share/sf-config-repo/ ${CONF_TMP}/
+          --exclude gerrit/replication.config -av /usr/local/share/sf-config-repo/ ${CONF_TMP}/
     cd ${CONF_TMP}
     # Replace nodepool private ssh key
     sed -i 's#private-key: /var/lib/jenkins/.ssh/id_rsa#private-key: /var/lib/nodepool/.ssh/id_rsa#' nodepool/images.yaml
     # Only perform the commit/review if the upgrade bring new modifications
     if [ -n "$(git ls-files -o -m --exclude-standard)" ]; then
-        git commit -a -m "Upgrade of base JJB/Zuul/Nodepool files"
+        git commit -a -m "Upgrade of base config repository files"
         (eval $(ssh-agent) && ssh-add $gerrit_ssh_key && git review -s)
         git review -i
     fi

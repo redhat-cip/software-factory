@@ -7,7 +7,7 @@ import requests
 import json
 import sys
 
-search_string = "Upgrade of base JJB%2FZuul%2FNodepool files"
+search_string = sys.argv[2]
 
 r = requests.get(
     '%s/r/changes/?q=%s' % (sys.argv[1], search_string))

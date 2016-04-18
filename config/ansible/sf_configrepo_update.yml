@@ -12,6 +12,10 @@
   gather_facts: no
   tasks:
     - include: tasks/nodepool_update.yaml
+- hosts: gerrit
+  gather_facts: no
+  tasks:
+    - include: tasks/gerrit_replication_update.yaml
 - hosts: managesf
   gather_facts: no
   tasks:

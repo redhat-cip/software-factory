@@ -52,9 +52,16 @@ class TestZuulOps(Base):
         file(os.path.join(
             self.config_clone_dir, "zuul/projects.yaml"), 'w').write(
             zuul)
+        last_success_build_num_cu = \
+            self.ju.get_last_build_number("config-update",
+                                          "lastSuccessfulBuild")
         self.commit_direct_push_as_admin(
             self.config_clone_dir,
             "Restore zuul/projects.yaml")
+        self.ju.wait_till_job_completes("config-update",
+                                        last_success_build_num_cu,
+                                        "lastSuccessfulBuild",
+                                        max_retries=60)
 
     def commit_direct_push_as_admin(self, clone_dir, msg):
         # Stage, commit and direct push the additions on master

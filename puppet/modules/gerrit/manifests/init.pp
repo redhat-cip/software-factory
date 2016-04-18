@@ -424,17 +424,6 @@ class gerrit {
     notify  => Service['monit'],
   }
 
-  #Create an empty file, later this file is configured with init-config-repo
-  file { '/home/gerrit/site_path/etc/replication.config':
-    ensure  => file,
-    owner   => 'gerrit',
-    group   => 'gerrit',
-    mode    => '0644',
-    source  => 'puppet:///modules/gerrit/replication.config',
-    replace => false,
-    require => File['/home/gerrit/site_path/etc'],
-  }
-
   bup::scripts{ 'gerrit_scripts':
     name           => 'gerrit',
     backup_script  => 'gerrit/backup.sh.erb',
@@ -448,12 +437,4 @@ class gerrit {
     source => 'puppet:///modules/gerrit/GerritSiteHeader.html',
   }
 
-  file {'/etc/sudoers.d/gerrit':
-    ensure  => file,
-    mode    => '0440',
-    owner   => 'root',
-    group   => 'root',
-    source  => 'puppet:///modules/gerrit/sudoers_gerrit',
-    replace => true,
-  }
 }

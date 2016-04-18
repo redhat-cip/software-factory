@@ -1,0 +1,8 @@
+---
+- include: update_configrepo.yaml
+
+- stat: path=/root/config/gerrit/replication.config
+  register: rstat
+- name: Update Gerrit replication.config
+  command: cp /root/config/gerrit/replication.config /home/gerrit/site_path/etc/
+  when: rstat.stat.exists == True

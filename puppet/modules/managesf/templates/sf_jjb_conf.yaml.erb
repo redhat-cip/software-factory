@@ -229,6 +229,8 @@
           cp nodepool/*.yaml ../build/nodepool/
           WORKDIR=../build/nodepool/ /usr/local/bin/sf-nodepool-conf-merger.py merged.yaml
           nodepool -c ../build/nodepool/merged.yaml config-validate
+          echo "[+] Checking gerrit replication"
+          git config -f gerrit/replication.config -l > /dev/null
     triggers:
       - zuul
     node: master

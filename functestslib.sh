@@ -271,7 +271,7 @@ function get_logs {
         cp -r /var/log/selenium/ ${ARTIFACTS_DIR}/selenium
         cp -r /var/log/Xvfb/ ${ARTIFACTS_DIR}/Xvfb
         cp -r /tmp/gui/ ${ARTIFACTS_DIR}/screenshots
-        ) &> /dev/null
+        ) || true &> /dev/null
     } || echo "Skip fetching logs..."
     sudo chown -R ${USER} ${ARTIFACTS_DIR}
     checkpoint "get_logs"
@@ -448,14 +448,23 @@ function run_upgrade {
     ssh ${SF_HOST} "cd software-factory; ./upgrade.sh" || fail "Upgrade failed" "/var/lib/lxc/${INSTALL_SERVER}/rootfs/var/log/upgrade-bootstrap.log"
     echo "[+] Update sf-bootstrap-data"
     rsync -a -v ${SF_HOST}:sf-bootstrap-data/ ./sf-bootstrap-data/
-    # Find the id of the auto generated upgrade config review and approve it (wait for it to be merged too)
-    review_id=$(./tools/get_last_autogen_upgrade_config_review.py http://sftests.com)
+    echo "[+] Auto submit the auto generated config review after the upgrade"
+    review_id=$(./tools/get_last_autogen_upgrade_config_review.py http://sftests.com "Upgrade of base config repository files")
     [ "$review_id" != "0" ] && {
         (
             ssh sftests.com "cd config; submit_and_wait.py --review-id $review_id --recheck"
             ssh sftests.com "cd config; submit_and_wait.py --review-id $review_id --approve"
         ) || fail "Could not approve the auto generated config review"
-    }
+    } || echo "No config review found"
+    echo "[+] Auto submit the auto generated config (replication.config) upgrade"
+    review_id=$(./tools/get_last_autogen_upgrade_config_review.py http://sftests.com "Add gerrit%2Freplication.config in the config repository")
+    [ "$review_id" != "0" ] && {
+        (
+            ssh sftests.com "cd config; submit_and_wait.py --review-id $review_id --rebase"
+            sleep 45
+            ssh sftests.com "cd config; submit_and_wait.py --review-id $review_id --approve"
+        ) || fail "Could not approve the auto generated config review for replication.config"
+    } || echo "No config review found"
     checkpoint "run_upgrade"
 }
 
@@ -467,7 +476,7 @@ function run_checker {
 
 function run_functional_tests {
     echo "$(date) ======= run_functional_tests"
-    nosetests --with-timer --with-xunit -v tests/functional \
+    nosetests --with-timer --with-xunit -s -v tests/functional \
         && echo "Functional tests: SUCCESS" \
         || fail "Functional tests failed" ${ARTIFACTS_DIR}/functional-tests.debug
     checkpoint "run_functional_tests"

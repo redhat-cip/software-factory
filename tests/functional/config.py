@@ -38,6 +38,8 @@ GATEWAY_URL = 'https://%s/' % GATEWAY_HOST
 GERRIT_USER = 'gerrit'
 GERRIT_SERVICE_PRIV_KEY_PATH = '%s/ssh_keys/gerrit_service_rsa' \
                                % SF_BOOTSTRAP_DATA
+SERVICE_PRIV_KEY_PATH = '%s/ssh_keys/service_rsa' \
+                        % SF_BOOTSTRAP_DATA
 
 ADMIN_PASSWORD = sfconfig.get('authentication')['admin_password']
 USER_1 = "admin"
