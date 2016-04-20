@@ -268,6 +268,8 @@ function get_logs {
         scp -r sftests.com:/etc/puppet/hiera/sf/ ${ARTIFACTS_DIR}/hiera
         scp -r sftests.com:/var/log/mariadb/ ${ARTIFACTS_DIR}/mariadb
         scp -r sftests.com:/root/sf-bootstrap-data/hiera/ ${ARTIFACTS_DIR}/sf-bootstrap-data-hiera
+        ssh sftests.com '[ -d /var/log/selenium ]' && scp -r sftests.com:/var/log/selenium/ ${ARTIFACTS_DIR}/selenium
+        ssh sftests.com '[ -d /var/log/Xvfb ]' && scp -r sftests.com:/var/log/Xvfb/ ${ARTIFACTS_DIR}/Xvfb
         ) &> /dev/null
     } || echo "Skip fetching logs..."
     sudo chown -R ${USER} ${ARTIFACTS_DIR}
@@ -464,9 +466,22 @@ function run_functional_tests {
 
 function run_gui_tests {
     echo "$(date) ======= run_gui_tests"
+    echo "Starting Selenium server in background ..."
+    ( sudo sh -c '/usr/bin/java -jar /usr/lib/selenium/selenium-server.jar -host 127.0.0.1 >/var/log/selenium/selenium.log 2>/var/log/selenium/error.log' ) &
+    echo "Starting Xvfb in background ..."
+    ( sudo sh -c 'Xvfb :99 -ac -screen 0 1280x1024x24 -nolisten tcp >/var/log/Xvfb/Xvfb.log 2>/var/log/Xvfb/error.log' ) &
+    d=$DISPLAY
+    export DISPLAY=:99
     nosetests --with-timer --with-xunit -v tests/gui \
         && echo "GUI tests: SUCCESS" \
         || fail "GUI tests failed" ${ARTIFACTS_DIR}/gui-tests.debug
+    export DISPLAY=$d
+    echo "Stopping Xvfb ..."
+    sudo pkill Xvfb
+    echo "Stopping Selenium server ..."
+    for i in $(ps ax | grep selenium | awk '{print $1}'); do
+        sudo kill $i
+    done
     checkpoint "run_gui_tests"
 }
 
