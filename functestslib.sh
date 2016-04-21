@@ -268,9 +268,9 @@ function get_logs {
         scp -r sftests.com:/etc/puppet/hiera/sf/ ${ARTIFACTS_DIR}/hiera
         scp -r sftests.com:/var/log/mariadb/ ${ARTIFACTS_DIR}/mariadb
         scp -r sftests.com:/root/sf-bootstrap-data/hiera/ ${ARTIFACTS_DIR}/sf-bootstrap-data-hiera
-        ssh sftests.com '[ -d /var/log/selenium ]' && scp -r sftests.com:/var/log/selenium/ ${ARTIFACTS_DIR}/selenium
-        ssh sftests.com '[ -d /var/log/Xvfb ]' && scp -r sftests.com:/var/log/Xvfb/ ${ARTIFACTS_DIR}/Xvfb
-        ssh sftests.com '[ -d /tmp/gui ]' && scp -r sftests.com:/tmp/gui/ ${ARTIFACTS_DIR}/screenshots
+        cp -r /var/log/selenium/ ${ARTIFACTS_DIR}/selenium
+        cp -r /var/log/Xvfb/ ${ARTIFACTS_DIR}/Xvfb
+        cp -r /tmp/gui/ ${ARTIFACTS_DIR}/screenshots
         ) &> /dev/null
     } || echo "Skip fetching logs..."
     sudo chown -R ${USER} ${ARTIFACTS_DIR}
