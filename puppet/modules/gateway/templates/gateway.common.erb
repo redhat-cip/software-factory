@@ -170,7 +170,7 @@
     RewriteEngine On
     RewriteRule ^/$ /dashboard [R]
 
-    <LocationMatch "dashboard">
+    <LocationMatch "^/dashboard">
         Header set Cache-Control "no-cache, must-revalidate"
         AuthType mod_auth_pubtkt
         TKTAuthFakeBasicAuth on
