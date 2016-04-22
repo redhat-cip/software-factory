@@ -47,6 +47,7 @@ class TestSoftwareFactoryDashboard(unittest.TestCase):
         except AttributeError:
             pass
         self.driver = webdriver.Firefox()
+        self.driver.maximize_window()
 
     def _internal_login(self, driver, user, password):
         u = driver.find_element_by_id("username")
@@ -56,6 +57,13 @@ class TestSoftwareFactoryDashboard(unittest.TestCase):
         p.submit()
 
     @snapshot_if_failure
+    def test_login_page(self):
+        driver = self.driver
+        driver.get(config.GATEWAY_URL)
+        self.assertTrue("Log in with Github" in driver.page_source)
+        self.assertTrue("Internal Login" in driver.page_source)
+
+    @snapshot_if_failure
     def test_admin_login(self):
         driver = self.driver
         driver.get(config.GATEWAY_URL)
@@ -63,3 +71,18 @@ class TestSoftwareFactoryDashboard(unittest.TestCase):
         self._internal_login(driver, config.USER_1, config.USER_1_PASSWORD)
         self.assertTrue("Project" in driver.page_source)
         self.assertTrue("Open Reviews" in driver.page_source)
+
+    @snapshot_if_failure
+    def test_logout(self):
+        driver = self.driver
+        driver.get(config.GATEWAY_URL)
+        self.assertIn("SF", driver.title)
+        self._internal_login(driver, config.USER_1, config.USER_1_PASSWORD)
+        driver.set_window_size(1280, 800)
+        # switch to top menu iframe
+        driver.switch_to.frame(driver.find_element_by_tag_name("iframe"))
+        logout = driver.find_element_by_id("logout-btn")
+        logout.click()
+        driver.switch_to.default_content()
+        self.assertTrue("Log in with Github" in driver.page_source)
+        self.assertTrue("Internal Login" in driver.page_source)
