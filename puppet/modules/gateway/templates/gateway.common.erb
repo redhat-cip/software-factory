@@ -92,7 +92,7 @@
         RewriteRule /r/gitweb.*$ /r/#/admin/projects/%1,branches [QSD,R,L,NE]
     </LocationMatch>
 
-    <LocationMatch "/grafana/">
+    <LocationMatch "^/grafana/">
         RequestHeader unset X-Forwarded-User
         <If "%{HTTP_COOKIE} =~ /auth_pubtkt=.*/">
             AuthType mod_auth_pubtkt
@@ -154,7 +154,7 @@
 
     </IfModule>
 
-    <LocationMatch "/jenkinslogs/">
+    <LocationMatch "^/jenkinslogs/">
         Order Allow,Deny
         Allow from all
 

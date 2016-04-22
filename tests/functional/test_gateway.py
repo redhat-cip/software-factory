@@ -98,6 +98,18 @@ class TestGateway(Base):
         # /r/a/projects returns JSON list of projects
         self.assertTrue('All-Users' in resp.text)
 
+    def test_gerrit_projectnames(self):
+        """ Test if projectnames similar to LocationMatch settings work
+        """
+        # Unauthenticated calls, unknown projects. Must return 404, not 30x
+        urls = [config.GATEWAY_URL + "/r/dashboard",
+                config.GATEWAY_URL + "/r/grafana",
+                config.GATEWAY_URL + "/r/jenkinslogs"]
+
+        for url in urls:
+            resp = requests.get(url, allow_redirects=False)
+            self.assertEqual(resp.status_code, 404)
+
     def test_gerrit_api_accessible(self):
         """ Test if Gerrit API is accessible on gateway hosts
         """
