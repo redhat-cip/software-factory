@@ -17,15 +17,10 @@
 import functools
 import os
 import unittest
-from pyvirtualdisplay import Display
 from selenium import webdriver
 # from selenium.webdriver.common.keys import Keys
 
 import config
-
-
-display = Display(visible=0, size=(1280, 800))
-display.start()
 
 
 class TestSoftwareFactoryDashboard(unittest.TestCase):

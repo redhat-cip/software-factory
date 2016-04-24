@@ -469,15 +469,19 @@ function run_gui_tests {
     echo "$(date) ======= run_gui_tests"
     echo "Starting Selenium server in background ..."
     ( sudo sh -c '/usr/bin/java -jar /usr/lib/selenium/selenium-server.jar -host 127.0.0.1 >/var/log/selenium/selenium.log 2>/var/log/selenium/error.log' ) &
-    echo "Starting Xvfb in background ..."
-    ( sudo sh -c 'Xvfb :99 -ac -screen 0 1280x1024x24 -nolisten tcp >/var/log/Xvfb/Xvfb.log 2>/var/log/Xvfb/error.log' ) &
     d=$DISPLAY
-    export DISPLAY=:99
+    if [[ "$d" == "localhost"* ]]; then
+        echo "X Forwarding detected"
+    else
+        echo "Starting Xvfb in background ..."
+        ( sudo sh -c 'Xvfb :99 -ac -screen 0 1280x1024x24 -nolisten tcp >/var/log/Xvfb/Xvfb.log 2>/var/log/Xvfb/error.log' ) &
+        export DISPLAY=:99
+    fi
     nosetests --with-timer --with-xunit -v tests/gui \
         && echo "GUI tests: SUCCESS" \
         || fail "GUI tests failed" ${ARTIFACTS_DIR}/gui-tests.debug
     export DISPLAY=$d
-    echo "Stopping Xvfb ..."
+    echo "Stopping Xvfb if running ..."
     sudo pkill Xvfb
     echo "Stopping Selenium server ..."
     for i in $(ps ax | grep selenium | awk '{print $1}'); do

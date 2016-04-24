@@ -3,4 +3,3 @@ tox
 nose
 nose-timer
 selenium
-pyvirtualdisplay
