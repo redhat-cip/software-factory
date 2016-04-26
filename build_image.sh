@@ -67,7 +67,7 @@ function build_cache {
     LOCAL_HASH="$(head -n 1 ${CACHE_PATH}.description 2> /dev/null)"
 
     echo "(STEP1) Cache: ${CACHE_HASH}"
-    if [ "${LOCAL_HASH}" == "${CACHE_HASH}" ]; then
+    if [ "${LOCAL_HASH}" == "${CACHE_HASH}" ] && [ -z "${FORCE_REBUILD}" ] ; then
         echo "(STEP1) Already built, remove ${CACHE_PATH}.description to force rebuild"
         return
     fi
@@ -103,7 +103,7 @@ function build_image {
     LOCAL_HASH=$(head -n 1 ${IMAGE_PATH}-${SF_VER}.description 2> /dev/null)
 
     echo "(STEP2) Image: ${IMAGE_HASH}" | sed 's/||.*//g'
-    if [ "${LOCAL_HASH}" == "${IMAGE_HASH}" ]; then
+    if [ "${LOCAL_HASH}" == "${IMAGE_HASH}" ] && [ -z "${FORCE_REBUILD}" ] ; then
         echo "(STEP2) Already built, remove ${IMAGE_PATH}-${SF_VER}.description to force rebuild"
         return
     fi
