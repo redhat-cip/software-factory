@@ -21,9 +21,9 @@ import urllib2
 from utils import Base
 from utils import ManageSfUtils
 from utils import skip
-from utils import skipIfIssueTrackerMissing, is_present
+from utils import skipIfIssueTrackerMissing, has_issue_tracker
+from utils import get_issue_tracker_utils
 
-from pysflib.sfredmine import RedmineUtils
 from pysflib.sfgerrit import GerritUtils
 from pysflib.sfauth import get_cookie
 
@@ -39,8 +39,7 @@ class TestUserdata(Base):
 
     def setUp(self):
         self.projects = []
-        self.rm = RedmineUtils(
-            config.GATEWAY_URL + "/redmine/",
+        self.rm = get_issue_tracker_utils(
             auth_cookie=config.USERS[config.ADMIN_USER]['auth_cookie'])
         self.gu = GerritUtils(
             config.GATEWAY_URL,
@@ -63,11 +62,12 @@ class TestUserdata(Base):
         self.assertEqual(config.USERS[login]['lastname'], data.get('name'))
         self.assertEqual(config.USERS[login]['email'], data.get('email'))
 
-    def verify_userdata_redmine(self, login):
-        users = self.rm.r.user.filter(limit=10)
-        user = [u for u in users if u.firstname == login][0]
-        self.assertEqual(config.USERS[login]['lastname'], user.lastname)
-        self.assertEqual(config.USERS[login]['email'], user.mail)
+    def verify_userdata_issue_tracker(self, login):
+        users = self.rm.active_users()
+        user = [u for u in users if u[0] == login][0]
+        self.assertEqual(login + " " + config.USERS[login]['lastname'],
+                         user[2])
+        self.assertEqual(config.USERS[login]['email'], user[1])
 
     def logout(self):
         url = config.GATEWAY_URL + '/auth/logout/'
@@ -89,24 +89,24 @@ class TestUserdata(Base):
         response = self.login('user5', config.ADMIN_PASSWORD, quoted_url)
 
         self.assertEqual(url, response.url)
-        # verify if user is created in gerrit and redmine
+        # verify if user is created in gerrit and tracker
         self.verify_userdata_gerrit('user5')
-        if is_present("SFRedmine"):
-            self.verify_userdata_redmine('user5')
+        if has_issue_tracker():
+            self.verify_userdata_issue_tracker('user5')
 
     @skipIfIssueTrackerMissing()
-    def test_login_redirect_to_redmine(self):
-        """ Verify the redirect to redmine project page
+    def test_login_redirect_to_issue_tracker(self):
+        """ Verify the redirect to tracker project page
         """
         self.logout()
-        url = config.GATEWAY_URL + "redmine/projects"
+        url = self.rm.get_sf_projects_url()
         quoted_url = urllib2.quote(url, safe='')
         response = self.login('user5', config.ADMIN_PASSWORD, quoted_url)
 
         self.assertEqual(url, response.url)
-        # verify if user is created in gerrit and redmine
+        # verify if user is created in gerrit and issue tracker
         self.verify_userdata_gerrit('user5')
-        self.verify_userdata_redmine('user5')
+        self.verify_userdata_issue_tracker('user5')
 
     def test_invalid_user_login(self):
         """ Try to login with an invalid user
@@ -143,7 +143,7 @@ class TestUserdata(Base):
         stories"""
         # default value, skip gracefully if it cannot be found
         try:
-            non_member_role = self.rm.r.role.get(1)
+            non_member_role = self.rm.get_role(1)
             assert non_member_role.name == 'Non member'
         except:
             self.skipTest("Could not fetch non-member permissions")
@@ -163,13 +163,13 @@ class TestUserdata(Base):
         # make sure user is in redmine and gerrit
         self.assertEqual('funk@mothership.com',
                          self.gu.get_account('bootsy').get('email'))
-        if is_present("SFRedmine"):
-            users = self.rm.r.user.filter(limit=20)
-            users = [u for u in users if u.firstname == 'bootsy']
+        if has_issue_tracker():
+            users = self.rm.active_users()
+            users = [u for u in users if u[0] == 'bootsy']
             self.assertEqual(1, len(users))
             user = users[0]
             self.assertEqual('funk@mothership.com',
-                             user.mail)
+                             user[1])
         # now suppress it
         del_url = config.GATEWAY_URL + 'manage/services_users/?username=bootsy'
         # try with a a non-admin user, it should not work ...
@@ -187,11 +187,11 @@ class TestUserdata(Base):
         # make sure the user does not exist anymore
         self.assertEqual(False,
                          self.gu.get_account('bootsy'))
-        if is_present("SFRedmine"):
-            users = self.rm.r.user.filter(limit=20)
+        if has_issue_tracker():
+            users = self.rm.active_users()
             self.assertEqual(0,
                              len([u for u in users
-                                  if u.firstname == 'bootsy']))
+                                  if u[0] == 'bootsy']))
 
     def test_delete_user_in_backends_by_email(self):
         """ Delete a user previously registered user by email
@@ -206,13 +206,13 @@ class TestUserdata(Base):
         # make sure user is in redmine and gerrit
         self.assertEqual('queen@stoneage.com',
                          self.gu.get_account('josh').get('email'))
-        if is_present("SFRedmine"):
-            users = self.rm.r.user.filter(limit=20)
-            users = [u for u in users if u.firstname == 'josh']
+        if has_issue_tracker():
+            users = self.rm.active_users()
+            users = [u for u in users if u[0] == 'josh']
             self.assertEqual(1, len(users))
             user = users[0]
             self.assertEqual('queen@stoneage.com',
-                             user.mail)
+                             user[1])
         # now suppress it
         del_url = config.GATEWAY_URL +\
             'manage/services_users/?email=queen@stoneage.com'
@@ -223,10 +223,10 @@ class TestUserdata(Base):
         # make sure the user does not exist anymore
         self.assertEqual(False,
                          self.gu.get_account('josh'))
-        if is_present("SFRedmine"):
-            users = self.rm.r.user.filter(limit=20)
+        if has_issue_tracker():
+            users = self.rm.active_users()
             self.assertEqual(0,
-                             len([u for u in users if u.firstname == 'josh']))
+                             len([u for u in users if u[0] == 'josh']))
 
     def test_delete_in_backend_and_recreate(self):
         """Make sure we can recreate a user but as a different one"""
@@ -238,10 +238,8 @@ class TestUserdata(Base):
         self.logout()
         self.login('freddie', 'mercury', config.GATEWAY_URL)
         gerrit_id = self.gu.get_account('freddie').get('_account_id')
-        if is_present("SFRedmine"):
-            users = self.rm.r.user.filter(limit=20)
-            user = [u for u in users if u.firstname == 'freddie'][0]
-            redmine_id = user.id
+        if has_issue_tracker():
+            tracker_id = self.rm.get_user_id_by_username('freddie')
         del_url = config.GATEWAY_URL +\
             'manage/services_users/?email=mrbadguy@queen.com'
         auth_cookie = config.USERS[config.ADMIN_USER]['auth_cookie']
@@ -250,19 +248,17 @@ class TestUserdata(Base):
         self.assertTrue(int(d.status_code) < 400, d.status_code)
         self.assertEqual(False,
                          self.gu.get_account('freddie'))
-        if is_present("SFRedmine"):
-            users = self.rm.r.user.filter(limit=20)
+        if has_issue_tracker():
+            users = self.rm.active_users()
             self.assertEqual(0,
                              len([u for u in users
-                                  if u.firstname == 'freddie']))
+                                  if u[0] == 'freddie']))
         # recreate the user in the backends
         time.sleep(5)
         self.logout()
         self.login('freddie', 'mercury', config.GATEWAY_URL)
         new_gerrit_id = self.gu.get_account('freddie').get('_account_id')
         self.assertTrue(gerrit_id != new_gerrit_id)
-        if is_present("SFRedmine"):
-            users = self.rm.r.user.filter(limit=20)
-            user = [u for u in users if u.firstname == 'freddie'][0]
-            new_redmine_id = user.id
-            self.assertTrue(redmine_id != new_redmine_id)
+        if has_issue_tracker():
+            new_tracker_id = self.rm.get_user_id_by_username('freddie')
+            self.assertTrue(tracker_id != new_tracker_id)

@@ -26,9 +26,9 @@ from utils import GerritGitUtils
 from utils import create_random_str
 from utils import set_private_key
 from utils import is_present, skipIfServiceMissing, skipIfServicePresent
-from utils import skipIfIssueTrackerMissing
+from utils import skipIfIssueTrackerMissing, has_issue_tracker
+from utils import get_issue_tracker_utils
 
-from pysflib.sfredmine import RedmineUtils
 from pysflib.sfgerrit import GerritUtils
 
 
@@ -62,8 +62,7 @@ class TestManageSF(Base):
     def setUp(self):
         self.projects = []
         self.dirs_to_delete = []
-        self.rm = RedmineUtils(
-            config.GATEWAY_URL + "/redmine/",
+        self.rm = get_issue_tracker_utils(
             auth_cookie=config.USERS[config.ADMIN_USER]['auth_cookie'])
         self.gu = GerritUtils(
             config.GATEWAY_URL,
@@ -72,8 +71,7 @@ class TestManageSF(Base):
     def project_exists_ex(self, name, user):
         # Test here the project is "public"
         # ( Redmine API project detail does not return the private/public flag)
-        rm = RedmineUtils(
-            config.GATEWAY_URL + "/redmine/",
+        rm = get_issue_tracker_utils(
             auth_cookie=config.USERS[user]['auth_cookie'])
         try:
             return rm.project_exists(name)
@@ -105,8 +103,8 @@ class TestManageSF(Base):
             self.gu.member_in_group(config.ADMIN_USER, '%s-ptl' % pname))
         self.assertTrue(
             self.gu.member_in_group(config.ADMIN_USER, '%s-core' % pname))
-        # Redmine part
-        if is_present("SFRedmine"):
+        # tracker part
+        if has_issue_tracker():
             self.assertTrue(self.rm.project_exists(pname))
             self.assertTrue(
                 self.rm.check_user_role(pname, config.ADMIN_USER, 'Manager'))
@@ -133,8 +131,8 @@ class TestManageSF(Base):
             self.gu.member_in_group(config.ADMIN_USER, '%s-core' % pname))
         self.assertTrue(
             self.gu.member_in_group(config.ADMIN_USER, '%s-dev' % pname))
-        # Redmine part
-        if is_present("SFRedmine"):
+        # tracker part
+        if has_issue_tracker():
             self.assertTrue(self.rm.project_exists(pname))
             self.assertTrue(
                 self.rm.check_user_role(pname, config.ADMIN_USER, 'Manager'))
@@ -148,12 +146,12 @@ class TestManageSF(Base):
         pname = 'p_%s' % create_random_str()
         self.create_project(pname, config.ADMIN_USER)
         self.assertTrue(self.gu.project_exists(pname))
-        if is_present("SFRedmine"):
+        if has_issue_tracker():
             self.assertTrue(self.rm.project_exists(pname))
         self.msu.deleteProject(pname, config.ADMIN_USER)
         self.assertFalse(self.gu.project_exists(pname))
         self.assertFalse(self.gu.group_exists('%s-ptl' % pname))
-        if is_present("SFRedmine"):
+        if has_issue_tracker():
             self.assertFalse(self.rm.project_exists(pname))
         self.assertFalse(self.gu.group_exists('%s-core' % pname))
         self.projects.remove(pname)
@@ -172,8 +170,8 @@ class TestManageSF(Base):
             self.gu.member_in_group(config.ADMIN_USER, '%s-ptl' % pname))
         self.assertTrue(
             self.gu.member_in_group(config.ADMIN_USER, '%s-core' % pname))
-        # Redmine part
-        if is_present("SFRedmine"):
+        # tracker part
+        if has_issue_tracker():
             self.assertTrue(self.rm.project_exists(pname))
             self.assertTrue(self.project_exists_ex(pname, config.USER_2))
             self.assertTrue(
@@ -201,8 +199,8 @@ class TestManageSF(Base):
             self.gu.member_in_group(config.USER_2, '%s-core' % pname))
         self.assertTrue(
             self.gu.member_in_group(config.USER_2, '%s-dev' % pname))
-        # Redmine part
-        if is_present("SFRedmine"):
+        # tracker part
+        if has_issue_tracker():
             self.assertTrue(self.rm.project_exists(pname))
             self.assertTrue(self.project_exists_ex(pname, config.USER_2))
             self.assertTrue(
@@ -229,7 +227,7 @@ class TestManageSF(Base):
             self.gu.member_in_group(config.ADMIN_USER, '%s-ptl' % pname))
         for user in (config.ADMIN_USER, config.USER_2, config.USER_3):
             self.assertTrue(self.gu.member_in_group(user, '%s-core' % pname))
-        if is_present("SFRedmine"):
+        if has_issue_tracker():
             self.assertTrue(self.rm.project_exists(pname))
             self.assertTrue(
                 self.rm.check_user_role(pname, config.ADMIN_USER, 'Manager'))
@@ -261,8 +259,8 @@ class TestManageSF(Base):
             self.assertTrue(self.gu.member_in_group(user, '%s-core' % pname))
         self.assertTrue(
             self.gu.member_in_group(config.USER_4, '%s-dev' % pname))
-        # Redmine part
-        if is_present("SFRedmine"):
+        # tracker part
+        if has_issue_tracker():
             # it should be visible to admin
             self.assertTrue(self.rm.project_exists(pname))
             self.assertTrue(
@@ -417,7 +415,7 @@ class TestManageSF(Base):
         ggu_us.add_commit_in_branch(us_clone_dir, "branch1")
         ggu_us.direct_push_branch(us_clone_dir, "branch1")
 
-        # No create a test project with upstream pointing to the above
+        # Now create a test project with upstream pointing to the above
         upstream_url = "ssh://%s@%s:29418/%s" % (
             config.ADMIN_USER, config.GATEWAY_HOST, pname_us)
         pname = 'p_%s' % create_random_str()
@@ -457,12 +455,12 @@ class TestManageSF(Base):
         pname = 'p_%s' % create_random_str()
         self.create_project(pname, config.USER_2)
         self.assertTrue(self.gu.project_exists(pname))
-        if is_present("SFRedmine"):
+        if has_issue_tracker():
             self.assertTrue(self.rm.project_exists(pname))
         self.msu.deleteProject(pname, config.ADMIN_USER)
         self.assertFalse(self.gu.project_exists(pname))
         self.assertFalse(self.gu.group_exists('%s-ptl' % pname))
-        if is_present("SFRedmine"):
+        if has_issue_tracker():
             self.assertFalse(self.rm.project_exists(pname))
         self.assertFalse(self.gu.group_exists('%s-core' % pname))
         self.projects.remove(pname)
@@ -495,7 +493,7 @@ class TestManageSF(Base):
         self.msu.deleteProject(pname, config.ADMIN_USER)
         self.assertFalse(self.gu.project_exists(pname))
         self.assertFalse(self.gu.group_exists('%s-ptl' % pname))
-        if is_present("SFRedmine"):
+        if has_issue_tracker():
             rname = '_'.join(pname.split('/'))
             self.assertFalse(self.rm.project_exists(rname))
         self.assertFalse(self.gu.group_exists('%s-core' % pname))

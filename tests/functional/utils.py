@@ -32,7 +32,10 @@ import yaml
 import logging
 import pkg_resources
 
+from pysflib.sfredmine import RedmineUtils
+
 from subprocess import Popen, PIPE
+
 
 logging.getLogger("requests").setLevel(logging.WARNING)
 logging.captureWarnings(True)
@@ -81,6 +84,10 @@ def is_present(service):
     return service in _get_services()
 
 
+def has_issue_tracker():
+    return set(config.ISSUE_TRACKERS) & set(_get_services())
+
+
 def skipIfServiceMissing(service):
     services = _get_services()
     if not services:
@@ -121,6 +128,24 @@ def skipIfIssueTrackerPresent():
     if tracker:
         return skipIf(
             'This instance of SF is running %s' % ', '.join(tracker))
+
+
+def get_issue_tracker_utils(*args, **kwargs):
+    """Returns the correct utility instance depending on the issue tracker
+    being deployed with Software Factory"""
+    services = _get_services()
+    if not services:
+        logger.warning('Introspection endpoint not available, you are '
+                       'probably testing a old version of SF')
+        return RedmineUtils(config.GATEWAY_URL + "/redmine/",
+                            *args, **kwargs)
+    if 'SFRedmine' in services:
+        return RedmineUtils(config.GATEWAY_URL + "/redmine/",
+                            *args, **kwargs)
+    else:
+        from pysflib.interfaces.issuetracker import IssueTrackerUtils
+        return IssueTrackerUtils(config.GATEWAY_URL,
+                                 *args, **kwargs)
 
 
 def get_module_version(module):

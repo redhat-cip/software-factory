@@ -19,9 +19,9 @@ import config
 from utils import Base
 from utils import ManageSfUtils
 from utils import create_random_str
-from utils import is_present
+from utils import has_issue_tracker
+from utils import get_issue_tracker_utils
 
-from pysflib.sfredmine import RedmineUtils
 from pysflib.sfgerrit import GerritUtils
 
 
@@ -39,8 +39,7 @@ class TestProjectMembership(Base):
 
     def setUp(self):
         self.projects = []
-        self.rm = RedmineUtils(
-            config.GATEWAY_URL + "/redmine/",
+        self.rm = get_issue_tracker_utils(
             auth_cookie=config.USERS[config.ADMIN_USER]['auth_cookie'])
         self.gu = GerritUtils(
             config.GATEWAY_URL,
@@ -75,8 +74,8 @@ class TestProjectMembership(Base):
                                                 '%s-ptl' % pname))
         self.assertTrue(self.gu.member_in_group(config.USER_2,
                                                 '%s-core' % pname))
-        # Redmine part
-        if is_present("SFRedmine"):
+        # tracker part
+        if has_issue_tracker():
             rname = pname.replace('/', '_')
             self.assertTrue(self.rm.check_user_role(rname,
                                                     config.USER_2,
@@ -93,8 +92,8 @@ class TestProjectMembership(Base):
                                                  '%s-ptl' % pname))
         self.assertFalse(self.gu.member_in_group(config.USER_2,
                                                  '%s-core' % pname))
-        # Redmine part
-        if is_present("SFRedmine"):
+        # tracker part
+        if has_issue_tracker():
             rname = pname.replace('/', '_')
             self.assertFalse(self.rm.check_user_role(rname,
                                                      config.USER_2,
@@ -124,8 +123,8 @@ class TestProjectMembership(Base):
                                                 '%s-ptl' % pname))
         self.assertTrue(self.gu.member_in_group(config.USER_3,
                                                 '%s-core' % pname))
-        # Redmine part
-        if is_present("SFRedmine"):
+        # tracker part
+        if has_issue_tracker():
             self.assertTrue(self.rm.check_user_role(pname,
                                                     config.USER_3,
                                                     'Manager'))
@@ -141,8 +140,8 @@ class TestProjectMembership(Base):
                                                  '%s-ptl' % pname))
         self.assertFalse(self.gu.member_in_group(config.USER_3,
                                                  '%s-core' % pname))
-        # Redmine part
-        if is_present("SFRedmine"):
+        # tracker part
+        if has_issue_tracker():
             self.assertFalse(self.rm.check_user_role(pname,
                                                      config.USER_3,
                                                      'Manager'))
@@ -168,8 +167,8 @@ class TestProjectMembership(Base):
         # Test if user2 exists in core group
         self.assertTrue(self.gu.member_in_group(config.USER_2,
                                                 '%s-core' % pname))
-        # Redmine part
-        if is_present("SFRedmine"):
+        # tracker part
+        if has_issue_tracker():
             self.assertTrue(self.rm.check_user_role(pname,
                                                     config.USER_2,
                                                     'Developer'))
@@ -183,8 +182,8 @@ class TestProjectMembership(Base):
         # user3 should exist in core group
         self.assertTrue(self.gu.member_in_group(config.USER_3,
                                                 '%s-core' % pname))
-        # Redmine part
-        if is_present("SFRedmine"):
+        # tracker part
+        if has_issue_tracker():
             self.assertTrue(self.rm.check_user_role(pname,
                                                     config.USER_3,
                                                     'Developer'))
@@ -197,8 +196,8 @@ class TestProjectMembership(Base):
         # user3 shouldn't exist in ptl group
         self.assertFalse(self.gu.member_in_group(config.USER_3,
                                                  '%s-ptl' % pname))
-        # Redmine part
-        if is_present("SFRedmine"):
+        # tracker part
+        if has_issue_tracker():
             self.assertFalse(self.rm.check_user_role(pname,
                                                      config.USER_3,
                                                      'Manager'))
@@ -210,8 +209,8 @@ class TestProjectMembership(Base):
         # user3 shouldn't exist in core group
         self.assertFalse(self.gu.member_in_group(config.USER_3,
                                                  '%s-core' % pname))
-        # Redmine part
-        if is_present("SFRedmine"):
+        # tracker part
+        if has_issue_tracker():
             self.assertFalse(self.rm.check_user_role(pname,
                                                      config.USER_3,
                                                      'Developer'))
@@ -235,8 +234,8 @@ class TestProjectMembership(Base):
         # user3 shouldn't exist in core group
         self.assertFalse(self.gu.member_in_group(config.USER_3,
                                                  '%s-core' % pname))
-        # Redmine part
-        if is_present("SFRedmine"):
+        # tracker part
+        if has_issue_tracker():
             self.assertFalse(self.rm.check_user_role(pname,
                                                      config.USER_3,
                                                      'Developer'))
@@ -249,9 +248,11 @@ class TestProjectMembership(Base):
         # user3 shouldn't exist in ptl group
         self.assertFalse(self.gu.member_in_group(config.USER_3,
                                                  '%s-ptl' % pname))
-        # Redmine part
-        self.assertFalse(self.rm.check_user_role(pname,
-                                                 config.USER_3, 'Manager'))
+        # tracker part
+        if has_issue_tracker():
+            self.assertFalse(self.rm.check_user_role(pname,
+                                                     config.USER_3,
+                                                     'Manager'))
 
         # non project meber can't delete usr from any group.
         # Let admin add user3 to ptl and core groups,
@@ -268,8 +269,8 @@ class TestProjectMembership(Base):
                                                 '%s-ptl' % pname))
         self.assertTrue(self.gu.member_in_group(config.USER_3,
                                                 '%s-core' % pname))
-        # Redmine part
-        if is_present("SFRedmine"):
+        # tracker part
+        if has_issue_tracker():
             self.assertTrue(self.rm.check_user_role(pname,
                                                     config.USER_3,
                                                     'Manager'))
@@ -292,8 +293,8 @@ class TestProjectMembership(Base):
         self.assertTrue(self.gu.group_exists('%s-dev' % pname))
         self.assertTrue(self.gu.member_in_group(config.ADMIN_USER,
                                                 '%s-dev' % pname))
-        # Redmine part
-        if is_present("SFRedmine"):
+        # tracker part
+        if has_issue_tracker():
             self.assertTrue(self.rm.project_exists(pname))
             self.assertTrue(self.rm.check_user_role(pname,
                                                     config.ADMIN_USER,
@@ -306,8 +307,8 @@ class TestProjectMembership(Base):
         # Test if user3 exists in dev group
         self.assertTrue(self.gu.member_in_group(config.USER_3,
                                                 '%s-dev' % pname))
-        # Redmine part
-        if is_present("SFRedmine"):
+        # tracker part
+        if has_issue_tracker():
             self.assertTrue(self.rm.check_user_role(pname,
                                                     config.USER_3,
                                                     'Developer'))
@@ -318,8 +319,8 @@ class TestProjectMembership(Base):
         # user3 shouldn't exist in dev group
         self.assertFalse(self.gu.member_in_group(config.USER_3,
                                                  '%s-dev' % pname))
-        # Redmine part
-        if is_present("SFRedmine"):
+        # tracker part
+        if has_issue_tracker():
             self.assertFalse(self.rm.check_user_role(pname,
                                                      config.USER_3,
                                                      'Developer'))
@@ -335,8 +336,8 @@ class TestProjectMembership(Base):
         # Test if user3 exists in dev group
         self.assertTrue(self.gu.member_in_group(config.USER_3,
                                                 '%s-dev' % pname))
-        # Redmine part
-        if is_present("SFRedmine"):
+        # tracker part
+        if has_issue_tracker():
             self.assertTrue(self.rm.check_user_role(pname,
                                                     config.USER_3,
                                                     'Developer'))
@@ -347,8 +348,8 @@ class TestProjectMembership(Base):
         # user3 shouldn't exist in dev group
         self.assertFalse(self.gu.member_in_group(config.USER_3,
                                                  '%s-dev' % pname))
-        # Redmine part
-        if is_present("SFRedmine"):
+        # tracker part
+        if has_issue_tracker():
             self.assertFalse(self.rm.check_user_role(pname,
                                                      config.USER_3,
                                                      'Developer'))
@@ -367,8 +368,8 @@ class TestProjectMembership(Base):
         # Test if user3 exists in dev group
         self.assertTrue(self.gu.member_in_group(config.USER_3,
                                                 '%s-dev' % pname))
-        # Redmine part
-        if is_present("SFRedmine"):
+        # tracker part
+        if has_issue_tracker():
             self.assertTrue(self.rm.check_user_role(pname,
                                                     config.USER_3,
                                                     'Developer'))
@@ -380,8 +381,8 @@ class TestProjectMembership(Base):
         # user3 shouldn't exist in dev group
         self.assertFalse(self.gu.member_in_group(config.USER_3,
                                                  '%s-dev' % pname))
-        # Redmine part
-        if is_present("SFRedmine"):
+        # tracker part
+        if has_issue_tracker():
             self.assertFalse(self.rm.check_user_role(pname,
                                                      config.USER_3,
                                                      'Developer'))
@@ -400,8 +401,8 @@ class TestProjectMembership(Base):
         # Test if user3 exists in dev group
         self.assertTrue(self.gu.member_in_group(config.USER_3,
                                                 '%s-dev' % pname))
-        # Redmine part
-        if is_present("SFRedmine"):
+        # tracker part
+        if has_issue_tracker():
             self.assertTrue(self.rm.check_user_role(pname,
                                                     config.USER_3,
                                                     'Developer'))
@@ -414,7 +415,7 @@ class TestProjectMembership(Base):
         self.assertFalse(self.gu.member_in_group(config.USER_3,
                                                  '%s-dev' % pname))
         # Redmine part
-        if is_present("SFRedmine"):
+        if has_issue_tracker():
             self.assertFalse(self.rm.check_user_role(pname,
                                                      config.USER_3,
                                                      'Developer'))

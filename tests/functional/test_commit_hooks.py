@@ -24,8 +24,8 @@ from utils import GerritGitUtils
 from utils import create_random_str
 from utils import set_private_key
 from utils import skipIfIssueTrackerMissing
+from utils import get_issue_tracker_utils
 
-from pysflib.sfredmine import RedmineUtils
 from pysflib.sfgerrit import GerritUtils
 
 
@@ -60,8 +60,7 @@ class TestGerritHooks(Base):
         self.issues = []
         self.u = config.ADMIN_USER
         self.u2 = config.USER_2
-        self.rm = RedmineUtils(
-            config.GATEWAY_URL + "/redmine/",
+        self.rm = get_issue_tracker_utils(
             auth_cookie=config.USERS[config.ADMIN_USER]['auth_cookie'])
         self.gu = GerritUtils(
             config.GATEWAY_URL,

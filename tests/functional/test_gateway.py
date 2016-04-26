@@ -17,7 +17,8 @@
 import config
 from utils import Base
 from utils import ManageSfUtils
-from utils import skipIfIssueTrackerMissing
+from utils import skipIfIssueTrackerMissing, has_issue_tracker
+from utils import get_issue_tracker_utils
 from pysflib.sfgerrit import GerritUtils
 
 from requests.auth import HTTPBasicAuth
@@ -33,13 +34,17 @@ class TestGateway(Base):
         self.assertTrue("/auth/login" in resp.headers['Location'])
 
     @skipIfIssueTrackerMissing()
-    def test_redmine_root_url_for_404(self):
-        """ Test if redmine yield RoutingError
+    def test_tracker_root_url_for_404(self):
+        """ Test if tracker yield RoutingError
         """
-        url = "%s/redmine/" % config.GATEWAY_URL
+        tracker = get_issue_tracker_utils(
+            auth_cookie=config.USERS[config.ADMIN_USER]['auth_cookie'])
+        url = tracker.get_root_url()
         for i in xrange(11):
             resp = requests.get(url)
-            self.assertNotEquals(resp.status_code, 404)
+            self.assertNotEquals(resp.status_code, 404,
+                                 "%s returned status %s" % (url,
+                                                            resp.status_code))
 
     def _url_is_not_world_readable(self, url):
         """Utility function to make sure a url is not accessible"""
@@ -56,18 +61,23 @@ class TestGateway(Base):
         url = "%s/cauth/config.py" % config.GATEWAY_URL
         self._url_is_not_world_readable(url)
 
-    @skipIfIssueTrackerMissing()
     # TODO(XXX) this is not up to date and can change with config
     def test_topmenu_links_shown(self):
         """ Test if all service links are shown in topmenu
         """
-        subpaths = ["/r/", "/jenkins/", "/redmine/",
+        subpaths = ["/r/", "/jenkins/",
                     "/zuul/", "/etherpad/", "/paste/", "/docs/"]
+        if has_issue_tracker():
+            tracker = get_issue_tracker_utils(
+                auth_cookie=config.USERS[config.ADMIN_USER]['auth_cookie'])
+            if 'redmine' in tracker.get_root_url():
+                subpaths.append('/%s/' % 'redmine')
         url = config.GATEWAY_URL + "/topmenu.html"
         resp = requests.get(url)
         self.assertEqual(resp.status_code, 200)
         for subpath in subpaths:
-            self.assertTrue(('href="%s"' % subpath) in resp.text)
+            self.assertTrue(('href="%s"' % subpath) in resp.text,
+                            '%s not present as a link' % subpath)
 
     def test_gerrit_accessible(self):
         """ Test if Gerrit is accessible on gateway hosts
@@ -166,15 +176,17 @@ class TestGateway(Base):
         self.assertTrue('<title>Zuul Status</title>' in resp.text)
 
     @skipIfIssueTrackerMissing()
-    def test_redmine_accessible(self):
-        """ Test if Redmine is accessible on gateway host
+    def test_tracker_accessible(self):
+        """ Test if Issue Tracker is accessible on gateway host
         """
-        url = config.GATEWAY_URL + "/redmine/"
+        tracker = get_issue_tracker_utils(
+            auth_cookie=config.USERS[config.ADMIN_USER]['auth_cookie'])
+        url = tracker.get_root_url()
 
         # Without SSO cookie. Note that auth is no longer enforced
         resp = requests.get(url)
-        self.assertEqual(resp.status_code, 200)
-        self.assertTrue('<title>Redmine</title>' in resp.text)
+        self.assertEqual(resp.status_code, 200,
+                         "%s returned status %s" % (url, resp.status_code))
 
         # With SSO cookie
         resp = requests.get(
@@ -182,20 +194,18 @@ class TestGateway(Base):
             cookies=dict(
                 auth_pubtkt=config.USERS[config.USER_1]['auth_cookie']))
         self.assertEqual(resp.status_code, 200)
-        self.assertTrue('<title>Redmine</title>' in resp.text)
 
-        # User should be known in Redmine if logged in with SSO
+        # User should be known in tracker if logged in with SSO
         self.assertTrue(config.USER_1 in resp.text)
 
-        # Check one of the CSS files to ensure static files are accessible
-        css_file = "plugin_assets/redmine_backlogs/stylesheets/global.css"
-        url = config.GATEWAY_URL + "/redmine/%s" % css_file
+        # Check one of the static files is accessible
+        url = tracker.test_static_file()
         resp = requests.get(
             url,
             cookies=dict(
                 auth_pubtkt=config.USERS[config.USER_1]['auth_cookie']))
-        self.assertEqual(resp.status_code, 200)
-        self.assertTrue('GLOBAL' in resp.text)
+        self.assertEqual(resp.status_code, 200,
+                         "%s returned status %s" % (url, resp.status_code))
 
     def test_etherpad_accessible(self):
         """ Test if Etherpad is accessible on gateway host
