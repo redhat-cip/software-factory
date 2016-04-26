@@ -187,11 +187,6 @@ install_sf_packages() {
         ln -s /dev/null ${net_rules}
     fi
 
-    # install third party puppet modules
-    if [ ! -d "${dir}/etc/puppet/modules/ntp/" ]; then
-        retry do_chroot $dir puppet module install puppetlabs-ntp --environment=sf
-    fi
-
     [ -d ${dir}/var/lib/grafana ] || install_packages ${dir} ${GRAFANA_URL}
 
     # tune ssh conf

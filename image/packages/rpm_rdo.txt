@@ -5,6 +5,7 @@ openstack-gnocchi-common
 openstack-gnocchi-indexer-sqlalchemy
 openstack-gnocchi-metricd
 openstack-gnocchi-statsd
+openstack-puppet-modules
 puppet
 pyflakes
 pyOpenSSL

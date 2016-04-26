@@ -4,15 +4,11 @@
 STAGING_PKGS=""
 STAGING_PIP=""
 
-PUPPET_GNOCCHI_URL="https://github.com/openstack/puppet-gnocchi/archive/stable/liberty.tar.gz"
 GNOCCHI_PLUGINS_URL="https://github.com/sileht/grafana-plugins-gnocchi"
 
 function install_gnocchi {
     do_chroot ${dir} git clone $GNOCCHI_PLUGINS_URL /tmp/gnocchi-plugins
     do_chroot ${dir} mv /tmp/gnocchi-plugins/datasources/gnocchi /usr/share/grafana/public/app/plugins/datasource/.
-
-    http_fetch ${PUPPET_GNOCCHI_URL} ${dir}/root/puppet-gnocchi.tgz
-    retry do_chroot ${dir} puppet module install /root/puppet-gnocchi.tgz
 }
 
 function install_sf {
