@@ -119,6 +119,9 @@ class SFchecker:
         if out:
             return out.split()[0]
 
+    def read_file(self, f):
+        return self.command("cat %s" % f)[0]
+
     def simple_login(self, user, password):
         """log as user"""
         return get_cookie(user, password)
@@ -149,6 +152,8 @@ class SFchecker:
             else:
                 print "Expected checksum (%s) for %s is WRONG (%s)." % (
                     checksum, f, c)
+                print "New file is:"
+                print "    %s" % self.read_file(f).replace("\n", "\n    ")
                 mismatch = True
         if "checksum_warn_only" not in sys.argv and mismatch:
             sys.exit(1)
