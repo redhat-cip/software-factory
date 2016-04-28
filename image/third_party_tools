@@ -77,38 +77,39 @@ URL_LIST="$URL_LIST $BOOTSTRAP_URL"
 export JENKINS_VERSION=1.580.3-1.1 # LTS
 
 # plugins
+JENKINS_MIRROR_URL="http://mirrors.jenkins-ci.org"
 JENKINS_SWARM_VERSION=1.22
-JENKINS_SWARM_CLIENT_URL="http://maven.jenkins-ci.org/content/repositories/releases/org/jenkins-ci/plugins/swarm-client/${JENKINS_SWARM_VERSION}/swarm-client-${JENKINS_SWARM_VERSION}-jar-with-dependencies.jar"
-JENKINS_SWARM_PLUGIN_URL="http://repo.jenkins-ci.org/releases/org/jenkins-ci/plugins/swarm/${JENKINS_SWARM_VERSION}/swarm-${JENKINS_SWARM_VERSION}.hpi"
+JENKINS_SWARM_CLIENT_URL="${JENKINS_MIRROR_URL}/plugins/swarm-client/${JENKINS_SWARM_VERSION}/swarm-client-${JENKINS_SWARM_VERSION}-jar-with-dependencies.jar"
+JENKINS_SWARM_PLUGIN_URL="${JENKINS_MIRROR_URL}/plugins/swarm/${JENKINS_SWARM_VERSION}/swarm-${JENKINS_SWARM_VERSION}.hpi"
 
 JENKINS_CREDENTIALS_BINDING_VERSION=1.4
-JENKINS_CREDENTIALS_BINDING_URL="http://mirrors.jenkins-ci.org/plugins/credentials-binding/${JENKINS_CREDENTIALS_BINDING_VERSION}/credentials-binding.hpi"
+JENKINS_CREDENTIALS_BINDING_URL="${JENKINS_MIRROR_URL}/plugins/credentials-binding/${JENKINS_CREDENTIALS_BINDING_VERSION}/credentials-binding.hpi"
 
 JENKINS_WORKFLOW_STEP_API_VERSION=1.8
-JENKINS_WORKFLOW_STEP_API_URL="http://mirrors.jenkins-ci.org/plugins/workflow-step-api/${JENKINS_WORKFLOW_STEP_API_VERSION}/workflow-step-api.hpi"
+JENKINS_WORKFLOW_STEP_API_URL="${JENKINS_MIRROR_URL}/plugins/workflow-step-api/${JENKINS_WORKFLOW_STEP_API_VERSION}/workflow-step-api.hpi"
 
 JENKINS_PLAIN_CREDENTIALS_VERSION=1.0
-JENKINS_PLAIN_CREDENTIALS_URL="http://mirrors.jenkins-ci.org/plugins/plain-credentials/${JENKINS_PLAIN_CREDENTIALS_VERSION}/plain-credentials.hpi"
+JENKINS_PLAIN_CREDENTIALS_URL="${JENKINS_MIRROR_URL}/plugins/plain-credentials/${JENKINS_PLAIN_CREDENTIALS_VERSION}/plain-credentials.hpi"
 
 JENKINS_SSH_AGENT_PLUGIN_VERSION=1.4.1
-JENKINS_SSH_AGENT_PLUGIN_URL="http://updates.jenkins-ci.org/download/plugins/ssh-agent/${JENKINS_SSH_AGENT_PLUGIN_VERSION}/ssh-agent.hpi"
+JENKINS_SSH_AGENT_PLUGIN_URL="${JENKINS_MIRROR_URL}/plugins/ssh-agent/${JENKINS_SSH_AGENT_PLUGIN_VERSION}/ssh-agent.hpi"
 
 JENKINS_GEARMAN_PLUGIN_VERSION=0.1.1
-JENKINS_GEARMAN_PLUGIN_URL="http://updates.jenkins-ci.org/download/plugins/gearman-plugin/${JENKINS_GEARMAN_PLUGIN_VERSION}/gearman-plugin.hpi"
+JENKINS_GEARMAN_PLUGIN_URL="${JENKINS_MIRROR_URL}/plugins/gearman-plugin/${JENKINS_GEARMAN_PLUGIN_VERSION}/gearman-plugin.hpi"
 
 JENKINS_REVERSE_AUTH_PROXY_PLUGIN_VERSION=1.4.0
-JENKINS_REVERSE_AUTH_PROXY_PLUGIN_URL="https://updates.jenkins-ci.org/download/plugins/reverse-proxy-auth-plugin/${JENKINS_REVERSE_AUTH_PROXY_PLUGIN_VERSION}/reverse-proxy-auth-plugin.hpi"
+JENKINS_REVERSE_AUTH_PROXY_PLUGIN_URL="${JENKINS_MIRROR_URL}/plugins/reverse-proxy-auth-plugin/${JENKINS_REVERSE_AUTH_PROXY_PLUGIN_VERSION}/reverse-proxy-auth-plugin.hpi"
 
 JENKINS_POST_BUILDSCRIPT_PLUGIN_VERSION=0.17
-JENKINS_POST_BUILDSCRIPT_PLUGIN_URL="http://updates.jenkins-ci.org/download/plugins/postbuildscript/${JENKINS_POST_BUILDSCRIPT_PLUGIN_VERSION}/postbuildscript.hpi"
+JENKINS_POST_BUILDSCRIPT_PLUGIN_URL="${JENKINS_MIRROR_URL}/plugins/postbuildscript/${JENKINS_POST_BUILDSCRIPT_PLUGIN_VERSION}/postbuildscript.hpi"
 
 JENKINS_ANSI_COLOR_PLUGIN_VERSION=0.4.2
-JENKINS_ANSI_COLOR_PLUGIN_URL="http://updates.jenkins-ci.org/download/plugins/ansicolor/${JENKINS_ANSI_COLOR_PLUGIN_VERSION}/ansicolor.hpi"
+JENKINS_ANSI_COLOR_PLUGIN_URL="${JENKINS_MIRROR_URL}/plugins/ansicolor/${JENKINS_ANSI_COLOR_PLUGIN_VERSION}/ansicolor.hpi"
 
-JENKINS_THEME_PLUGIN_URL="http://updates.jenkins-ci.org/latest/simple-theme-plugin.hpi"
-JENKINS_ZMQ_PLUGIN_URL="http://mirrors.jenkins-ci.org/plugins/zmq-event-publisher/latest/zmq-event-publisher.hpi"
-JENKINS_DASHBOARD_PLUGIN_URL="http://updates.jenkins-ci.org/latest/dashboard-view.hpi"
-JENKINS_COBERTURA_URL="http://updates.jenkins-ci.org/latest/cobertura.hpi"
+JENKINS_THEME_PLUGIN_URL="${JENKINS_MIRROR_URL}/plugins/simple-theme-plugin/latest/simple-theme-plugin.hpi"
+JENKINS_ZMQ_PLUGIN_URL="${JENKINS_MIRROR_URL}/plugins/zmq-event-publisher/latest/zmq-event-publisher.hpi"
+JENKINS_DASHBOARD_PLUGIN_URL="${JENKINS_MIRROR_URL}/plugins/dashboard-view/latest/dashboard-view.hpi"
+JENKINS_COBERTURA_URL="${JENKINS_MIRROR_URL}/plugins/cobertura/latest/cobertura.hpi"
 
 ZUUL_SWIFT_UPLOAD_URL="https://raw.githubusercontent.com/openstack-infra/project-config/master/jenkins/scripts/zuul_swift_upload.py"
 URL_LIST="${URL_LIST} ${ZUUL_SWIFT_UPLOAD_URL}"
