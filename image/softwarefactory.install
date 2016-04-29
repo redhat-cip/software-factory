@@ -222,11 +222,9 @@ install_sf_packages() {
 function install_jenkins {
     [ -n "$JENKINS_VERSION" ] && JENKINS_VERSION="-${JENKINS_VERSION}"
     chroot ${dir} rpm -q jenkins | grep "jenkins${JENKINS_VERSION}" || {
-        http_fetch http://pkg.jenkins-ci.org/redhat-stable/jenkins.repo ${dir}/etc/yum.repos.d/jenkins.repo
-        chroot $dir rpm --import http://pkg.jenkins-ci.org/redhat-stable/jenkins-ci.org.key
-
-        install_packages $dir jenkins${JENKINS_VERSION}
-        rm ${dir}/etc/yum.repos.d/jenkins.repo
+        http_fetch http://46.231.133.241:8080/v1/AUTH_sf/rpms/jenkins${JENKINS_VERSION}.noarch.rpm ${dir}/tmp/jenkins${JENKINS_VERSION}.noarch.rpm
+        install_packages $dir /tmp/jenkins${JENKINS_VERSION}.noarch.rpm
+        rm ${dir}/tmp/jenkins${JENKINS_VERSION}.noarch.rpm
     }
 
     [ -d ${dir}/var/lib/jenkins/plugins ] || mkdir -p ${dir}/var/lib/jenkins/plugins
