@@ -161,7 +161,7 @@ PASTE_VERSION=beb3ff7e266 # latest commit as of 05 Jun 2015
 
 GIT_REPO_LIST="$GIT_REPO_LIST $PASTE_URL"
 
-GRAFANA_URL="https://grafanarel.s3.amazonaws.com/builds/grafana-2.5.0-1.x86_64.rpm"
+GRAFANA_URL="http://46.231.133.241:8080/v1/AUTH_sf/rpms/grafana-2.5.0-1.x86_64.rpm"
 
 URL_LIST="$URL_LIST $GRAFANA_URL"
 
