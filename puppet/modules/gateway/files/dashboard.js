@@ -114,13 +114,16 @@ function mainController($scope, $http) {
     };
 
     function initHtpasswd() {
-        $http.get('/manage/htpasswd/')
-            .success( function (data) {
-                $scope.htpasswd_set = true;
-            })
-            .error( function (data) {
-                $scope.htpasswd_set = false;
-            });
+      $http.get('/manage/htpasswd/')
+        .success( function (data) {
+          $scope.htpasswd_set = true;
+        })
+        .error( function (data) {
+          $scope.htpasswd_set = false;
+        })
+        .catch( function (data) {
+          $scope.htpasswd_set = false;
+        });
     };
 
     function init() {
