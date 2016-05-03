@@ -84,7 +84,7 @@ class TestUserdata(Base):
         """ Verify the user creation and the login
         """
         self.logout()
-        url = config.GATEWAY_URL + "jenkins/"
+        url = config.GATEWAY_URL + "/jenkins/"
         quoted_url = urllib2.quote(url, safe='')
         response = self.login('user5', config.ADMIN_PASSWORD, quoted_url)
 
@@ -171,7 +171,8 @@ class TestUserdata(Base):
             self.assertEqual('funk@mothership.com',
                              user[1])
         # now suppress it
-        del_url = config.GATEWAY_URL + 'manage/services_users/?username=bootsy'
+        del_url = config.GATEWAY_URL +\
+            '/manage/services_users/?username=bootsy'
         # try with a a non-admin user, it should not work ...
         auth_cookie = get_cookie(config.GATEWAY_HOST,
                                  'user5', config.ADMIN_PASSWORD)
@@ -214,7 +215,7 @@ class TestUserdata(Base):
                              user[1])
         # now suppress it
         del_url = config.GATEWAY_URL +\
-            'manage/services_users/?email=queen@stoneage.com'
+            '/manage/services_users/?email=queen@stoneage.com'
         auth_cookie = config.USERS[config.ADMIN_USER]['auth_cookie']
         d = requests.delete(del_url,
                             cookies={'auth_pubtkt': auth_cookie})
@@ -240,7 +241,7 @@ class TestUserdata(Base):
         if has_issue_tracker():
             tracker_id = self.rm.get_user_id_by_username('freddie')
         del_url = config.GATEWAY_URL +\
-            'manage/services_users/?email=mrbadguy@queen.com'
+            '/manage/services_users/?email=mrbadguy@queen.com'
         auth_cookie = config.USERS[config.ADMIN_USER]['auth_cookie']
         d = requests.delete(del_url,
                             cookies={'auth_pubtkt': auth_cookie})

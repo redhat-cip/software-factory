@@ -169,6 +169,7 @@
 
     RewriteEngine On
     RewriteRule ^/$ /dashboard [R]
+    RewriteRule ^/redmine/redmine/(.*)$ /redmine/$1 [R=301,L]
 
     <LocationMatch "^/dashboard">
         Header set Cache-Control "no-cache, must-revalidate"
