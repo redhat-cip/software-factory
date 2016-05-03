@@ -18,6 +18,7 @@ PASSENGER_PKGS="$(grep '^[a-zA-Z]' ${ORIG}/packages/rpm_passenger.txt)"
 RPM_PKGS="${PASSENGER_PKGS} ${EPEL_PKGS} ${RDO_PKGS} ${CENTOS_PKGS} ${BUILD_PKGS} jenkins grafana"
 URL_LIST="$URL_LIST $PASSENGER_REPO $RDO_REPO"
 
+SF_PKGS="$(grep '^[a-zA-Z]' ${ORIG}/packages/rpm_sf.txt)"
 
 # pip
 PIP_PKGS="$(grep '^[a-zA-Z]' ${ORIG}/packages/pip_pkgs.txt)"

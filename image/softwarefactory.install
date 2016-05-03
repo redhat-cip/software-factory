@@ -125,6 +125,16 @@ net.ipv4.icmp_echo_ignore_broadcasts = 1
 kernel.sysrq = 0
 EOF
     chmod 0400 ${target}/etc/sysctl.conf
+
+    # Add caching repo for various rpms
+    cat > ${target}/etc/yum.repos.d/sf.repo <<EOF
+[sf]
+name=SF repository for various packages
+baseurl=http://46.231.133.241:8080/v1/AUTH_sf/rpms
+gpgcheck=0
+enabled=1
+EOF
+
 }
 
 enable_selinux() {
@@ -136,31 +146,12 @@ enable_selinux() {
 }
 
 install_elk() {
-    # Install Elasticsearch Logstash and Kibana combo
-    chroot ${dir} rpm -q elasticsearch || {
-        http_fetch http://46.231.133.241:8080/v1/AUTH_sf/rpms/elasticsearch-2.3.2.rpm ${dir}/tmp/elasticsearch-2.3.2.rpm
-        install_packages ${dir} /tmp/elasticsearch-2.3.2.rpm
-        rm ${dir}/tmp/elasticsearch-2.3.2.rpm
-    }
-
-    chroot ${dir} rpm -q logstash || {
-        http_fetch http://46.231.133.241:8080/v1/AUTH_sf/rpms/logstash-2.2.4-1.noarch.rpm ${dir}/tmp/logstash-2.2.4-1.noarch.rpm
-        install_packages ${dir} /tmp/logstash-2.2.4-1.noarch.rpm
-        rm ${dir}/tmp/logstash-2.2.4-1.noarch.rpm
-    }
-
-    chroot ${dir} rpm -q kibana || {
-        http_fetch http://46.231.133.241:8080/v1/AUTH_sf/rpms/kibana-4.5.0-1.x86_64.rpm ${dir}/tmp/kibana-4.5.0-1.x86_64.rpm
-        install_packages ${dir} /tmp/kibana-4.5.0-1.x86_64.rpm
-        rm ${dir}/tmp/kibana-4.5.0-1.x86_64.rpm
-    }
-
     # Make sure nginx is disabled by default
     do_chroot ${dir} systemctl disable nginx
 }
 
 install_sf_packages() {
-    install_packages ${dir} $CENTOS_PKGS $BUILD_PKGS
+    install_packages ${dir} $CENTOS_PKGS $BUILD_PKGS $SF_PKGS
 
     # Make sure auditd is enabled by default
     do_chroot ${dir} systemctl enable auditd
@@ -210,12 +201,6 @@ install_sf_packages() {
 
 function install_jenkins {
     [ -n "$JENKINS_VERSION" ] && JENKINS_VERSION="-${JENKINS_VERSION}"
-    chroot ${dir} rpm -q jenkins | grep "jenkins${JENKINS_VERSION}" || {
-        http_fetch http://46.231.133.241:8080/v1/AUTH_sf/rpms/jenkins${JENKINS_VERSION}.noarch.rpm ${dir}/tmp/jenkins${JENKINS_VERSION}.noarch.rpm
-        install_packages $dir /tmp/jenkins${JENKINS_VERSION}.noarch.rpm
-        rm ${dir}/tmp/jenkins${JENKINS_VERSION}.noarch.rpm
-    }
-
     [ -d ${dir}/var/lib/jenkins/plugins ] || mkdir -p ${dir}/var/lib/jenkins/plugins
     do_chroot $dir chown jenkins /var/lib/jenkins /var/lib/jenkins/plugins
 
