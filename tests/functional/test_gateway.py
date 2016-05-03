@@ -334,3 +334,15 @@ class TestGateway(Base):
             cookies=dict(
                 auth_pubtkt=config.USERS[config.USER_1]['auth_cookie']))
         self.assertEqual(resp.status_code, 404)
+
+    def test_default_redirect(self):
+        """ Test if default redirect forwards user to Gerrit
+        """
+        url = "http://%s/" % config.GATEWAY_HOST
+        resp = requests.get(url)
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.url, "http://%s/r/" % config.GATEWAY_HOST)
+
+        self.assertEqual(resp.history[0].status_code, 302)
+        self.assertEqual(resp.history[0].url,
+                         "http://%s/" % config.GATEWAY_HOST)
