@@ -137,34 +137,23 @@ enable_selinux() {
 
 install_elk() {
     # Install Elasticsearch Logstash and Kibana combo
-    do_chroot ${dir} rpm --import https://packages.elastic.co/GPG-KEY-elasticsearch
-    [ -f "${dir}/etc/yum.repos.d/elasticsearch.repo" ] || cat <<EOF > ${dir}/etc/yum.repos.d/elasticsearch.repo
-[elasticsearch-2.x]
-name=Elasticsearch repository for 2.x packages
-baseurl=http://packages.elastic.co/elasticsearch/2.x/centos
-gpgcheck=1
-gpgkey=http://packages.elastic.co/GPG-KEY-elasticsearch
-enabled=1
-EOF
-    install_packages ${dir} elasticsearch
-    [ -f "${dir}/etc/yum.repos.d/logstash.repo" ] || cat <<EOF > ${dir}/etc/yum.repos.d/logstash.repo
-[logstash-2.2]
-name=logstash repository for 2.2 packages
-baseurl=http://packages.elasticsearch.org/logstash/2.2/centos
-gpgcheck=1
-gpgkey=http://packages.elasticsearch.org/GPG-KEY-elasticsearch
-enabled=1
-EOF
-    install_packages ${dir} logstash
-    [ -f "${dir}/etc/yum.repos.d/kibana.repo" ] || cat <<EOF > ${dir}/etc/yum.repos.d/kibana.repo
-[kibana-4.4]
-name=Kibana repository for 4.4.x packages
-baseurl=http://packages.elastic.co/kibana/4.4/centos
-gpgcheck=1
-gpgkey=http://packages.elastic.co/GPG-KEY-elasticsearch
-enabled=1
-EOF
-    install_packages ${dir} kibana
+    chroot ${dir} rpm -q elasticsearch || {
+        http_fetch http://46.231.133.241:8080/v1/AUTH_sf/rpms/elasticsearch-2.3.2.rpm ${dir}/tmp/elasticsearch-2.3.2.rpm
+        install_packages ${dir} /tmp/elasticsearch-2.3.2.rpm
+        rm ${dir}/tmp/elasticsearch-2.3.2.rpm
+    }
+
+    chroot ${dir} rpm -q logstash || {
+        http_fetch http://46.231.133.241:8080/v1/AUTH_sf/rpms/logstash-2.2.4-1.noarch.rpm ${dir}/tmp/logstash-2.2.4-1.noarch.rpm
+        install_packages ${dir} /tmp/logstash-2.2.4-1.noarch.rpm
+        rm ${dir}/tmp/logstash-2.2.4-1.noarch.rpm
+    }
+
+    chroot ${dir} rpm -q kibana || {
+        http_fetch http://46.231.133.241:8080/v1/AUTH_sf/rpms/kibana-4.5.0-1.x86_64.rpm ${dir}/tmp/kibana-4.5.0-1.x86_64.rpm
+        install_packages ${dir} /tmp/kibana-4.5.0-1.x86_64.rpm
+        rm ${dir}/tmp/kibana-4.5.0-1.x86_64.rpm
+    }
 
     # Make sure nginx is disabled by default
     do_chroot ${dir} systemctl disable nginx
