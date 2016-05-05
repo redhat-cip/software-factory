@@ -16,9 +16,10 @@
 class sfgnocchi {
 
   $creds_gnocchi_sql_pwd = hiera('creds_gnocchi_sql_pwd')
+  $fqdn = hiera('fqdn')
 
   class { 'gnocchi':
-    database_connection => "mysql://gnocchi:$creds_gnocchi_sql_pwd@$fqdn/gnocchi",
+    database_connection => "mysql://gnocchi:$creds_gnocchi_sql_pwd@mysql.$fqdn/gnocchi",
   }
 
   class { 'gnocchi::db::sync': }
