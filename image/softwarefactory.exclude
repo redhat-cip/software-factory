@@ -63,7 +63,8 @@
 
 # Sf data
 /var/lib/mysql/
-/var/lib/jenkins/
++ /var/lib/jenkins/plugins/
+- /var/lib/jenkins/*
 + /home/gerrit/site_path/lib/
 + /home/gerrit/site_path/plugins/
 - /home/gerrit/*
