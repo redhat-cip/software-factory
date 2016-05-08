@@ -1,4 +1,4 @@
-jenkins
+jenkins-1.580.3-1.1
 elasticsearch
 logstash
 kibana

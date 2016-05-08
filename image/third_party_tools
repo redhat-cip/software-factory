@@ -74,10 +74,7 @@ BOOTSTRAP_URL="https://github.com/twbs/bootstrap/releases/download/v${BOOTSTRAP_
 
 URL_LIST="$URL_LIST $BOOTSTRAP_URL"
 
-# jenkins
-export JENKINS_VERSION=1.580.3-1.1 # LTS
-
-# plugins
+# jenkins plugins
 JENKINS_MIRROR_URL="http://46.231.133.241:8080/v1/AUTH_sf/jenkins_plugins"
 JENKINS_SWARM_VERSION=1.22
 JENKINS_SWARM_CLIENT_URL="${JENKINS_MIRROR_URL}/plugins/swarm-client/${JENKINS_SWARM_VERSION}/swarm-client-${JENKINS_SWARM_VERSION}-jar-with-dependencies.jar"

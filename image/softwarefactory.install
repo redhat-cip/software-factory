@@ -195,7 +195,6 @@ install_sf_packages() {
 }
 
 function install_jenkins {
-    [ -n "$JENKINS_VERSION" ] && JENKINS_VERSION="-${JENKINS_VERSION}"
     [ -d ${dir}/var/lib/jenkins/plugins ] || mkdir -p ${dir}/var/lib/jenkins/plugins
     do_chroot $dir chown jenkins /var/lib/jenkins /var/lib/jenkins/plugins
 
