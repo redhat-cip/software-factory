@@ -309,8 +309,9 @@ EOF
         do_chroot ${dir} bash -c "cd /var/www/redmine/plugins/redmine_http_auth; git checkout -b sf_pinned ${REDMINE_HTTP_PLUGIN_VERSION}"
     fi
 
-    # Update bundle
-    SUDO_UID=0 SUDO_GID=0 do_chroot ${dir} bash -c "cd /var/www/redmine/ && bundle update"
+    # Update bundle; remove mysql2 gem because it might need to be rebuilt
+    # against newer mariadb server
+    SUDO_UID=0 SUDO_GID=0 do_chroot ${dir} bash -c "cd /var/www/redmine/ && gem uninstall mysql2 && bundle update"
 
     # Set files permissions (according to: http://www.redmine.org/projects/redmine/wiki/redmineinstall )
     mkdir -p ${dir}/var/www/redmine/{tmp,tmp/pdf,public/plugin_assets}
