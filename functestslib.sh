@@ -448,6 +448,14 @@ function run_upgrade {
     ssh ${SF_HOST} "cd software-factory; ./upgrade.sh" || fail "Upgrade failed" "/var/lib/lxc/${INSTALL_SERVER}/rootfs/var/log/upgrade-bootstrap.log"
     echo "[+] Update sf-bootstrap-data"
     rsync -a -v ${SF_HOST}:sf-bootstrap-data/ ./sf-bootstrap-data/
+    # Find the id of the auto generated upgrade config review and approve it (wait for it to be merged too)
+    review_id=$(./tools/get_last_autogen_upgrade_config_review.py http://sftests.com)
+    [ "$review_id" != "0" ] && {
+        (
+            ssh sftests.com "cd config; submit_and_wait.py --review-id $review_id --recheck"
+            ssh sftests.com "cd config; submit_and_wait.py --review-id $review_id --approve"
+        ) || fail "Could not approve the auto generated config review"
+    }
     checkpoint "run_upgrade"
 }
 
