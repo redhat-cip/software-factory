@@ -53,7 +53,7 @@ function lxc_start {
 function heat_stop {
     STOP_RETRY=3
     while [ $STOP_RETRY -gt 0 ]; do
-        heat stack-delete sf_stack &> /dev/null
+        heat stack-delete -y sf_stack &> /dev/null
         RETRY=40
         while [ $RETRY -gt 0 ]; do
             heat stack-show sf_stack &> /dev/null || break
