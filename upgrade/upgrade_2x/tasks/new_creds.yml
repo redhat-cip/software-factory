@@ -1,6 +1,6 @@
 ---
 - name: Generate secret for {{ sf_secret_name }}
-  shell: dd if=/dev/urandom bs=1 count=32 2>/dev/null | base64 -w 32 | head -n1
+  shell: base64 -w 32 < /dev/urandom | head -n1 | sed -e 's#/#_#g;s#\+#_#g'
   register: secret_cred
 
 - name: Adds {{ sf_secret_name }} to sfcreds.yaml

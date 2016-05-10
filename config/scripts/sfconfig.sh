@@ -47,7 +47,7 @@ EOF
 
 function generate_random_pswd {
     # The sed character replacement makes the base64-string URL safe; for example required by lodgeit
-    echo `dd if=/dev/urandom bs=1 count=$1 2>/dev/null | base64 -w $1 | head -n1 | sed -e 's#/#_#g;s#\+#_#g'`
+    echo `base64 -w $1 < /dev/urandom | head -n1 | sed -e 's#/#_#g;s#\+#_#g'`
 }
 
 function generate_api_key {
