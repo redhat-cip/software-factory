@@ -41,11 +41,6 @@ class sfgnocchi {
     policy_path => '/etc/gnocchi/policy.json',
   }
 
-  class { 'gnocchi::api':
-    keystone_password => "",  # Keystone is not used, but this setting must be a string, otherwise class import fails
-    keystone_identity_uri => False,
-  }
-
   class { 'gnocchi::statsd':
     resource_id => 'f66370ee-be2a-451e-bf5d-45b9a554ce03',
     user_id => "487cd2da-03e6-408a-8075-39f9df3f1707",
@@ -67,4 +62,10 @@ class sfgnocchi {
     mode    => '0755',
     source  => 'puppet:///modules/sfgnocchi/api-paste.ini',
   }
+
+  class { 'gnocchi::api':
+    keystone_password => "",  # Keystone is not used, but this setting must be a string, otherwise class import fails
+    require => File['/etc/gnocchi/api-paste.ini'],
+  }
+
 }
