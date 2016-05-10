@@ -15,6 +15,7 @@
 # under the License.
 import os
 import config
+import requests
 import shutil
 import time
 
@@ -222,3 +223,10 @@ class TestZuulOps(Base):
             gu.get_reviewer_approvals(change_id, 'jenkins')['Verified'], '+1')
 
         gu.del_pubkey(k_index)
+
+        # Now check if Zuul metrics are received by Gnocchi and displayed in
+        # Grafana
+        resp = requests.get(
+            'http://%s/grafana/api/dashboards/db/zuul' % config.GATEWAY_HOST)
+        self.assertTrue('zuul.pipeline' in resp.text)
+        self.assertTrue('gerrit.event' in resp.text)
