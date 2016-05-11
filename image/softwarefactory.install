@@ -467,8 +467,6 @@ function install_nodepool {
 
     # Install
     do_chroot ${dir} sed -i "s/^apscheduler>=3.0/apscheduler>=3.0,<3.1/" /tmp/nodepool/requirements.txt
-    # TODO: remove paramiko version cap
-    do_chroot ${dir} sed -i "s/^paramiko.*/paramiko<2.0.0/" /tmp/nodepool/requirements.txt
 
     do_chroot ${dir} /srv/nodepool/bin/pip install --upgrade 'pbr>=1.3' 'pip<8'
     do_chroot ${dir} /srv/nodepool/bin/pip install 'pip<8' 'funcsigs' file:///tmp/nodepool
@@ -501,8 +499,6 @@ function install_zuul {
     # Install
     do_chroot ${dir} sed -i "s/^apscheduler>=3.0/apscheduler>=3.0,<3.1/" /tmp/zuul/requirements.txt
     sudo sed -i 's/^pbr.*//' ${dir}/tmp/zuul/requirements.txt
-    # TODO: remove paramiko version cap
-    sudo sed -i 's/^paramiko.*/paramiko<2.0.0/' ${dir}/tmp/zuul/requirements.txt
 
     do_chroot ${dir} /srv/zuul/bin/pip install --upgrade 'pbr' 'pip<8'
     do_chroot ${dir} /srv/zuul/bin/pip install 'pip<8' file:///tmp/zuul
