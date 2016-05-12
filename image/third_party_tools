@@ -80,7 +80,7 @@ BOOTSTRAP_URL="https://github.com/twbs/bootstrap/releases/download/v${BOOTSTRAP_
 URL_LIST="$URL_LIST $BOOTSTRAP_URL"
 
 # jenkins plugins
-JENKINS_MIRROR_URL="http://46.231.133.241:8080/v1/AUTH_sf/jenkins_plugins"
+JENKINS_MIRROR_URL="http://46.231.132.68:8080/v1/AUTH_b50e80d3969f441a8b7b1fe831003e0a/jenkins_plugins"
 JENKINS_SWARM_VERSION=2.1
 JENKINS_SWARM_CLIENT_URL="${JENKINS_MIRROR_URL}/plugins/swarm-client/${JENKINS_SWARM_VERSION}/swarm-client-${JENKINS_SWARM_VERSION}-jar-with-dependencies.jar"
 JENKINS_SWARM_PLUGIN_URL="${JENKINS_MIRROR_URL}/plugins/swarm/${JENKINS_SWARM_VERSION}/swarm-${JENKINS_SWARM_VERSION}.hpi"
@@ -163,7 +163,7 @@ PASTE_VERSION=beb3ff7e266 # latest commit as of 05 Jun 2015
 
 GIT_REPO_LIST="$GIT_REPO_LIST $PASTE_URL"
 
-GRAFANA_URL="http://46.231.133.241:8080/v1/AUTH_sf/rpms/grafana-2.5.0-1.x86_64.rpm"
+GRAFANA_URL="http://46.231.132.68:8080/v1/AUTH_b50e80d3969f441a8b7b1fe831003e0a/rpms/grafana-2.5.0-1.x86_64.rpm"
 
 URL_LIST="$URL_LIST $GRAFANA_URL"
 
