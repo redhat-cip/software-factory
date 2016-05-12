@@ -194,21 +194,17 @@ class TestProjectReplication(Base):
         # Create the project
         self.create_project(self.pname, self.un)
 
-        # Create new section for this project in replication.config
-        self.create_config_section(self.pname)
-
-        # Force gerrit to read its .ssh/config and known_hosts file
+        # Be sure sftests.com host key is inside the known_hosts
         cmds = [['ssh', 'gerrit.%s' % config.GATEWAY_HOST,
-                 'systemctl', 'restart', 'gerrit'],
-                ['ssh', 'gerrit.%s' % config.GATEWAY_HOST,
-                 '/root/wait4gerrit.sh'],
-                ['ssh', 'gerrit.%s' % config.GATEWAY_HOST,
                  'ssh-keyscan', 'sftests.com', '>',
                  '/home/gerrit/.ssh/known_hosts']]
         for cmd in cmds:
             self.ssh_run_cmd(config.SERVICE_PRIV_KEY_PATH,
                              'root',
                              config.GATEWAY_HOST, cmd)
+
+        # Create new section for this project in replication.config
+        self.create_config_section(self.pname)
 
         # Verify if gerrit replicated the repo
         self.managesf_repo_path = "ssh://%s@%s/home/gerrit/git/" % (

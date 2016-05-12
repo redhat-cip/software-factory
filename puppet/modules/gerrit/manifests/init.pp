@@ -417,6 +417,17 @@ class gerrit {
     require => File['/home/gerrit/site_path'],
   }
 
+  # Install a default replication.config file
+  file { '/home/gerrit/site_path/etc/replication.config':
+    ensure  => file,
+    owner   => 'gerrit',
+    group   => 'gerrit',
+    mode    => '0644',
+    source  => 'puppet:///modules/gerrit/replication.config',
+    replace => false,
+    require => File['/home/gerrit/site_path/etc'],
+  }
+
   file { '/etc/monit.d/gerrit':
     ensure  => file,
     content => template('gerrit/monit.erb'),

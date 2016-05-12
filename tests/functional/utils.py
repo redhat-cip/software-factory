@@ -524,7 +524,7 @@ class JenkinsUtils:
         except:
             return 0
 
-    def wait_till_job_completes(self, job_name, last, type, max_retries=30):
+    def wait_till_job_completes(self, job_name, last, type, max_retries=120):
         retries = 0
         while True:
             cur = self.get_last_build_number(job_name, type)

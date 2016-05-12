@@ -3,6 +3,17 @@
 
 - stat: path=/root/config/gerrit/replication.config
   register: rstat
+- name: Check if replication.config changed
+  command: diff /root/config/gerrit/replication.config /home/gerrit/site_path/etc/replication.config
+  register: diffstat
+  no_log: True
+  ignore_errors: True
 - name: Update Gerrit replication.config
   command: cp /root/config/gerrit/replication.config /home/gerrit/site_path/etc/
-  when: rstat.stat.exists == True
+  when: rstat.stat.exists == True and diffstat.rc == 1
+- name: Reload the replication plugin
+  command: ssh -p 29418 admin@{{ fqdn }} gerrit plugin reload replication
+  when: rstat.stat.exists == True and diffstat.rc == 1
+- name: Restart the replication
+  command: ssh -p 29418 admin@{{ fqdn }} replication start --all
+  when: rstat.stat.exists == True and diffstat.rc == 1
