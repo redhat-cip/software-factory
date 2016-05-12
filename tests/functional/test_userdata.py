@@ -177,8 +177,7 @@ class TestUserdata(Base):
                                  'user5', config.ADMIN_PASSWORD)
         d = requests.delete(del_url,
                             cookies={'auth_pubtkt': auth_cookie})
-        self.assertEqual(401,
-                         int(d.status_code))
+        self.assertTrue(400 < int(d.status_code) < 500)
         # try with an admin ...
         auth_cookie = config.USERS[config.ADMIN_USER]['auth_cookie']
         d = requests.delete(del_url,
