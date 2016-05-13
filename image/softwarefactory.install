@@ -18,6 +18,8 @@
 
 set -e
 
+INSTALL_OPTIONS="--disablerepo=base,epel,extras,updates --enablerepo=sfbase,sfepel,sfextras,sfupdates"
+
 [ -z "$DEBUG" ] || set -x
 # Target dir where the centos images will be built
 dir="$1"
@@ -51,6 +53,33 @@ bootstrap() {
 
     mount_fs
 
+    # We need to enable the sf-mirror on the build host for bootstrapping
+    cat > /etc/yum.repos.d/sf-mirror.repo <<EOF
+[sfbase]
+name=CentOS-7 - Base
+baseurl=http://46.231.132.68:8080/v1/AUTH_b50e80d3969f441a8b7b1fe831003e0a/repomirror/base/
+gpgcheck=0
+enabled = 0
+
+[sfupdates]
+name=CentOS-7 - Updates
+baseurl=http://46.231.132.68:8080/v1/AUTH_b50e80d3969f441a8b7b1fe831003e0a/repomirror/updates/
+gpgcheck=0
+enabled = 0
+
+[sfextras]
+name=CentOS-7 - Extras
+baseurl=http://46.231.132.68:8080/v1/AUTH_b50e80d3969f441a8b7b1fe831003e0a/repomirror/extras/
+gpgcheck=0
+enabled = 0
+
+[sfepel]
+name=Extra Packages for Enterprise Linux 7
+baseurl=http://46.231.132.68:8080/v1/AUTH_b50e80d3969f441a8b7b1fe831003e0a/repomirror/epel/
+gpgcheck=0
+enabled = 0
+EOF
+
     local release_rpm_url=$(add_main_repository)
 
     if [ ! -f "${target}/etc/redhat-release" ]; then
@@ -60,26 +89,19 @@ bootstrap() {
 
     sed -i 's/$releasever/7/g' ${target}/etc/yum.repos.d/*
 
-    if [ ! -z "${http_proxy}" ]; then
-        echo "Using proxies ${http_proxy} and ${https_proxy}" 1>&2
-        # Do not use a mirror; these might change between builds and thus a lot
-        # of requests are not missed at the cache
-        sed -i 's/^#baseurl/baseurl/g' ${target}/etc/yum.repos.d/*
-        sed -i 's/^mirrorlist/#mirrorlist/g' ${target}/etc/yum.repos.d/*
-        grep -q "^proxy=" ${target}/etc/yum.conf || echo -e "[main]\nproxy=" >> ${target}/etc/yum.conf
-        sed -i "s#^proxy=.*#proxy=${http_proxy}#" ${target}/etc/yum.conf
-    fi
+    # Add the SF repo mirror
+    cp /etc/yum.repos.d/sf-mirror.repo ${target}/etc/yum.repos.d/.
 
     cp -f /etc/resolv.conf "$target/etc/"
 
     if [ ! -f "${target}/usr/bin/yum" ]; then
         rpm --root="$target" --import $(ls $target/etc/pki/rpm-gpg/RPM-GPG-KEY-* | fgrep -v Debug)
         # We cannot use install_packages since the basesystem isn't yet setup
-        yum --disableplugin=* --installroot $target install -y basesystem yum shadow-utils
+        yum --disableplugin=* --installroot $target $INSTALL_OPTIONS install -y basesystem yum shadow-utils
         checkpoint "first bootstrap"
     elif [ -f "${target}/usr/bin/yum-complete-transaction" ]; then
         do_chroot ${dir} yum-complete-transaction --cleanup-only
-        do_chroot ${dir} yum update -y
+        do_chroot ${dir} yum update -y $INSTALL_OPTIONS
     fi
 
     if [ -f  "$target"/root/.rpmdb/Packages ]; then
