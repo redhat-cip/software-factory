@@ -19,6 +19,7 @@ Welcome to software-factory's documentation!
    analytics
    testing
    jenkinsslaves
+   gerrit_replication
    contribute
    deepdive
    tools

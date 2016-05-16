@@ -94,7 +94,7 @@ In order to have tests running on a new patch change, you need to:
 
 .. code-block:: bash
 
- $ git clone http://[sf-gateway}/r/config
+ $ git clone http://{sf-gateway}/r/config
 
 You will find some yaml files related to JJB (Jenkins Job Build) and Zuul. There are two specific
 files that you can modify according to your needs:
