@@ -106,6 +106,7 @@ mariadb-server
 memcached
 openldap
 socat
+libguestfs
 
 # Build requirements
 apr-devel
