@@ -1,8 +1,11 @@
 ---
-- hosts: managesf
+- hosts: all
   tasks:
   - include: tasks/bootloader.yml
   - shell: /usr/local/bin/sf-update-uid-gid.py 2>&1 | tee -a /var/log/sf_ids_update.log
+
+- hosts: install-server
+  tasks:
   # gnocchi
   - include: tasks/new_creds.yml sf_secret_name=grafana_sql_pwd
   - include: tasks/new_creds.yml sf_secret_name=gnocchi_sql_pwd
@@ -16,18 +19,26 @@
   # 2.0.0: Remove hosts.yaml hiera
   - file: path=/etc/puppet/hiera/sf/hosts.yaml state=absent
 
+- hosts: all
+  tasks:
   - name: systemctl daemon-reload
     shell: systemctl daemon-reload
+
+- hosts: install-server
+  tasks:
   - name: Restart the configuration script
     shell: sfconfig.sh > /var/log/upgrade-bootstrap.log
+
+- hosts: statsd
+  tasks:
   - name: Restart grafana-server
     shell: systemctl restart grafana-server
+
 - hosts: jenkins
-  gather_facts: no
   tasks:
   - include: tasks/submitconfigreview.yml
+
 - hosts: gerrit
-  gather_facts: no
   tasks:
   - include: tasks/allprojectsupdate.yml
   - include: tasks/schemaupdate.yml

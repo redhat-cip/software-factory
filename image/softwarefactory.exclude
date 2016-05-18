@@ -49,6 +49,7 @@
 /var/tmp/
 
 # Sf state data
+/etc/ansible/hosts
 /root/sf-bootstrap-data/
 /root/software-factory/
 /var/lib/zuul/

@@ -32,14 +32,14 @@ sed -i "s/FROM/${current_version}/" group_vars/all
 sed -i "s/TO/${SF_VER}/" group_vars/all
 sed -i "s|CLONE_PATH|${cloned_path}|" group_vars/all
 
-echo "[+] Running ${REFARCH}-step1.yaml"
-ansible-playbook -i ${REFARCH}-hosts ${REFARCH}-step1.yaml
+echo "[+] Running step1.yaml"
+ansible-playbook step1.yaml
 STEP1_RETURN_CODE=$?
 echo "Ansible return code is : ${STEP1_RETURN_CODE}"
 [ ${STEP1_RETURN_CODE} != "0" ] && exit -1
 # Ansible package may change during the upgrade (FS rsync) so we do the update in two steps
-echo "[+] Running ${REFARCH}-step2.yaml"
-ansible-playbook -i ${REFARCH}-hosts ${REFARCH}-step2.yaml
+echo "[+] Running step2.yaml"
+ansible-playbook step2.yaml
 STEP2_RETURN_CODE=$?
 echo "Ansible return code is : ${STEP2_RETURN_CODE}"
 [ ${STEP2_RETURN_CODE} != "0" ] && exit -1
