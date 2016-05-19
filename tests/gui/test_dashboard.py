@@ -30,14 +30,14 @@ class TestSoftwareFactoryDashboard(unittest.TestCase):
         def f(self, *args, **kwargs):
             try:
                 func(self, *args, **kwargs)
-            except Exception as e:
+            except Exception:
                 path = '/tmp/gui/'
                 if not os.path.isdir(path):
                     os.makedirs(path)
                 screenshot = os.path.join(path,
                                           '%s.png' % func.__name__)
                 self.driver.save_screenshot(screenshot)
-                raise e
+                raise
         return f
 
     def setUp(self):
