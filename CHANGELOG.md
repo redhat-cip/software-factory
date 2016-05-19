@@ -1,7 +1,59 @@
-2.2.0  2016-04-08
+2.2.1  2016-05-23
 =================
 
-This is release 2.2.0
+New Features
+------------
+
+- Keep track of external authenticated user (via OAuth/OpenID) and enable autosync of the primary user email to SF
+- The config repository now owns a "gerrit/replication.config" that the main place to configure the replication on Gerrit. Merged changed on that file will be taken in account by Gerrit without any restart.
+- Documentation has been updated to reflect changes about the replication.
+
+
+Known Issues
+------------
+
+- The config-check was unable to validate nodepool configuration when multiple cloud provider are used.
+
+
+Upgrade Notes
+-------------
+
+- The replication.config file of gerrit will be proposed automatically to the config repository via Gerrit. This change must be approve as well as the change on the default JJB jobs against the config repository.
+- Some home directories were managed by puppet User statement, which didn't get recreated after upgrade when user already exists. This release fix by ensuring directory are present before running puppet.
+
+
+Deprecation Notes
+-----------------
+
+- Remove the replication management via the sfmanager CLI
+
+
+Security Issues
+---------------
+
+- Upgrade jenkins to version 1.651.2 to mitigate Jenkins Security Advisory 2016-05-11.
+
+
+Bug Fixes
+---------
+
+- Fix primary user email not fetched from Github
+- Wrong documentation version number in the doc
+- Fix some Redmine 404 errors
+
+
+Other Notes
+-----------
+
+- Redirect by default to Gerrit instead of the dashboard
+- Zuul upgraded to fdeb224824584dad355cbda207811a2105d1d2e2 (May 11 2016)
+- Nodepool upgrade to e0f65825b0a38f8370017a08dd6f6012704d8db6 (May 11 2016)
+- Set selinux labels when missing
+- Redirect by default to Gerrit instead of the dashboard
+
+
+2.2.0  2016-04-08
+=================
 
 New Features
 ------------
