@@ -73,8 +73,8 @@ host key to the known_hosts file.
 remote server (as long as a regular shell is available on the target). The
 replication plugin will create the repository if it does not exist.
 
-Recommandation for the replication on GitHub
---------------------------------------------
+Recommendations for the replication on GitHub
+---------------------------------------------
 
 There are two solutions you may use to replicate on Github:
 
@@ -171,8 +171,8 @@ reload and restart the replication with the following commands.
  $ ssh -p 29418 admin@sftests.com gerrit plugin reload replication
  $ ssh -p 29418 admin@sftests.com replication start --all
 
-General recomandations for the replication on GitHub
-....................................................
+General recommendations for the replication on GitHub
+.....................................................
 
 If some of your users plan to replicate GIT repositories on Github it
 can be useful to create a specific SF user on Github with the Gerrit
