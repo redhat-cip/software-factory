@@ -219,7 +219,7 @@ elif args.action == "init":
     if args.version is None:
         # Extracts version from role_configrc... needs bash evaluation here
         args.version = pread([
-            "bash", "-c", ". ../../role_configrc; echo $SF_VER"],
+            "bash", "-c", ". ../../role_configrc > /dev/null; echo $SF_VER"],
             silent=True).strip()
     init(arch, "%s/roles/install/%s" % (args.workspace, args.version))
     start(arch)
