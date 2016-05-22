@@ -107,6 +107,7 @@ memcached
 openldap
 socat
 libguestfs
+libguestfs-tools
 
 # Build requirements
 apr-devel
