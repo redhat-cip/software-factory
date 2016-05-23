@@ -3,7 +3,6 @@
   register: puppet_exec
   changed_when: puppet_exec.rc == 2
   failed_when: puppet_exec.rc != 2 and puppet_exec.rc != 0
-#  ignore_errors: yes
 
 #- name: "puppet output"
 #  debug: var=puppet_exec.stdout_lines
