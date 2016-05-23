@@ -1,3 +1,4 @@
 ---
 other:
-  - Redirect by default to Gerrit instead of the dashboard
+  - Top level http requests are now redirected by default to Gerrit instead
+    of the dashboard
