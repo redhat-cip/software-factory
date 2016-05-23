@@ -24,6 +24,7 @@ DOMAIN=$(cat /etc/puppet/hiera/sf/sfconfig.yaml | grep "^fqdn:" | cut -d: -f2 | 
 BUILD=/root/sf-bootstrap-data
 HOME=/root
 
+export PATH=/bin:/sbin:/usr/local/bin:/usr/local/sbin
 
 function update_config {
     echo "sf_version: $(grep ^VERS= /var/lib/edeploy/conf | cut -d"=" -f2 | cut -d'-' -f2)" > /etc/puppet/hiera/sf/sf_version.yaml
