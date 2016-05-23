@@ -140,7 +140,7 @@ by JJB and Zuul. Then the patch must be peer reviewed, accepted and pushed to ma
 the Gerrit UI. Once published to *config* master branch, the tests will be executed by Zuul/Jenkins
 for each patch on the *sfstack* project in this example.
 
-Define your own jobs 
+Define your own jobs
 --------------------
 
 Clone or pull the config repository:
@@ -158,7 +158,7 @@ Edit jobs/projects.yaml to define your new job:
      defaults: global
      builders:
        - prepare-workspace
-       - shell:
+       - shell: |
            cd $ZUUL_PROJECT
            set -e
            sloccount .
