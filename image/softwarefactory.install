@@ -276,15 +276,6 @@ function install_gerrit {
     http_fetch $BCPKIXJAVA_URL ${dir}/root/gerrit_data_source/bcpkix.jar
 }
 
-function install_pygerrit {
-    # Pygerrit
-    if [ ! -d "${dir}/usr/lib/python2.7/site-packages/pygerrit" ]; then
-        retry do_chroot ${dir} git clone https://github.com/morucci/pygerrit.git /srv/pygerrit
-        do_chroot ${dir} bash -c 'cd /srv/pygerrit && python setup.py install'
-        rm -Rf ${dir}/srv/pygerrit
-    fi
-}
-
 function install_redmine {
     # Disable gem rdoc installation
     echo gem: --no-rdoc --no-ri > ${dir}/root/.gemrc
@@ -619,7 +610,6 @@ if [ "$STEP" == 1 ]; then
     install_gerritbot
     checkpoint "gerritbot installed"
     install_murmurd
-    install_pygerrit
     install_fonts
     install_edeploy
     install_serverspec
