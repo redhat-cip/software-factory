@@ -59,23 +59,24 @@ class TestSoftwareFactoryDashboard(unittest.TestCase):
     @snapshot_if_failure
     def test_login_page(self):
         driver = self.driver
-        driver.get(config.GATEWAY_URL)
+        driver.get("%s/r/login" % config.GATEWAY_URL)
         self.assertTrue("Log in with Github" in driver.page_source)
         self.assertTrue("Internal Login" in driver.page_source)
 
     @snapshot_if_failure
     def test_admin_login(self):
         driver = self.driver
-        driver.get(config.GATEWAY_URL)
+        driver.get("%s/r/login" % config.GATEWAY_URL)
         self.assertIn("SF", driver.title)
         self._internal_login(driver, config.USER_1, config.USER_1_PASSWORD)
         self.assertTrue("Project" in driver.page_source)
-        self.assertTrue("Open Reviews" in driver.page_source)
+        self.assertTrue("Outgoing reviews" in driver.page_source)
+        self.assertTrue("Administrator" in driver.page_source)
 
     @snapshot_if_failure
     def test_logout(self):
         driver = self.driver
-        driver.get(config.GATEWAY_URL)
+        driver.get("%s/r/login" % config.GATEWAY_URL)
         self.assertIn("SF", driver.title)
         self._internal_login(driver, config.USER_1, config.USER_1_PASSWORD)
         driver.set_window_size(1280, 800)
@@ -86,3 +87,5 @@ class TestSoftwareFactoryDashboard(unittest.TestCase):
         driver.switch_to.default_content()
         self.assertTrue("Log in with Github" in driver.page_source)
         self.assertTrue("Internal Login" in driver.page_source)
+        self.assertTrue(
+            "successfully logged out" in driver.page_source)
