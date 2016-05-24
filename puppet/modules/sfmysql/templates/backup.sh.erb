@@ -1,7 +1,4 @@
 #!/bin/bash
-mysqldump -u root -p<%= @mysql_root_pwd %> \
-    --ignore-table mysql.event \
-    --ignore-table mysql.user  \
-    --databases mysql cauth managesf | \
-        gzip -9 | \
-        ssh root@managesf.<%= @fqdn %> tee /root/mysqldb.sql.gz > /dev/null
+exec mysqldump --ignore-table mysql.event --ignore-table mysql.user \
+    --databases mysql cauth managesf | gzip -9 | \
+    ssh root@managesf.<%= @fqdn %> tee /root/mysqldb.sql.gz > /dev/null

@@ -1,8 +1,6 @@
 #!/bin/sh
-mysqldump -u root -p<%= @mysql_root_pwd %> \
-    --databases gerrit | \
-        gzip -9 | \
-        ssh root@managesf.<%= @fqdn %> tee /root/gerritdb.sql.gz > /dev/null
+mysqldump --databases gerrit | gzip -9 | \
+    ssh root@managesf.<%= @fqdn %> tee /root/gerritdb.sql.gz > /dev/null
 tar --absolute-names -cf - \
     /home/gerrit/site_path/git \
     /home/gerrit/site_path/etc/replication.config \

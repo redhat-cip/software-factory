@@ -25,7 +25,6 @@ class nodepool {
   $jenkins_password = hiera('creds_jenkins_user_password')
   $nodepool_mysql_address = "mysql.${fqdn}"
   $nodepool_sql_password = hiera('creds_nodepool_sql_pwd')
-  $mysql_root_pwd = hiera('creds_mysql_root_pwd')
 
   if $nodepool['disabled'] {
     $running = false

@@ -68,7 +68,7 @@ for user in ('redmine', 'gerrit', 'nodepool', 'etherpad', 'lodgeit', 'graphite',
     creds[key] = pwd
 
 open("/etc/puppet/hiera/sf/sfcreds.yaml", "w").write(yaml.dump(creds, default_flow_style=False, Dumper=MyDumper))
-ret = subprocess.Popen(["mysql", "-uroot", "-p%s" % creds['creds_mysql_root_pwd'], "-e",  " ".join(sqls)]).wait()
+ret = subprocess.Popen(["mysql", "-e",  " ".join(sqls)]).wait()
 if ret:
     print "Error: Couldn't update database passwords... (rc: %d)" % ret
 exit(subprocess.Popen(["sfconfig.sh"]).wait())

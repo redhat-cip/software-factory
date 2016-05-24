@@ -27,7 +27,6 @@ class redmine {
     $api_key = hiera('creds_issues_tracker_api_key')
     $mysql_url = "mysql.${fqdn}"
     $mysql_password = hiera('creds_redmine_sql_pwd')
-    $mysql_root_pwd = hiera('creds_mysql_root_pwd')
 
     file { 'conf_yml':
       ensure  => file,

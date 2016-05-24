@@ -54,7 +54,6 @@ class gerrit {
   $mysql_user = 'gerrit'
   $mysql_password = hiera('creds_gerrit_sql_pwd')
   $mysql_db = 'gerrit'
-  $mysql_root_pwd = hiera('creds_mysql_root_pwd')
   $service_user_password = hiera('creds_sf_service_user_pwd')
 
   file { 'gerrit_init':

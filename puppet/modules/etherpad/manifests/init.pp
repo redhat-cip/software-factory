@@ -21,7 +21,6 @@ class etherpad {
   $mysql_db_secret = hiera('creds_etherpad_sql_pwd')
   $mysql_db_username = 'etherpad'
   $mysql_db = 'etherpad'
-  $mysql_root_pwd = hiera('creds_mysql_root_pwd')
 
   file { 'init_script':
     ensure => file,

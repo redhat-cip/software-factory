@@ -21,7 +21,6 @@ class lodgeit {
   $mysql_db_secret = hiera('creds_lodgeit_sql_pwd')
   $mysql_db_username = 'lodgeit'
   $mysql_db = 'lodgeit'
-  $mysql_root_pwd = hiera('creds_mysql_root_pwd')
 
   file {'init':
     ensure  => file,

@@ -3,4 +3,4 @@
 - template: src=client.cnf.j2 dest=/root/.my.cnf owner=root group=root mode=0400
 - include: /etc/ansible/tasks/puppet.yml puppet_statement="include ::sfmysql"
 - name: Create databases
-  shell: "mysql -u root -p{{ creds_mysql_root_pwd }} < /root/create_databases.sql"
+  shell: "mysql < /root/create_databases.sql"
