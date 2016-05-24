@@ -18,6 +18,7 @@ import functools
 import os
 import unittest
 from selenium import webdriver
+from selenium.common.exceptions import NoSuchElementException
 # from selenium.webdriver.common.keys import Keys
 
 import config
@@ -76,16 +77,29 @@ class TestSoftwareFactoryDashboard(unittest.TestCase):
     @snapshot_if_failure
     def test_logout(self):
         driver = self.driver
-        driver.get("%s/r/login" % config.GATEWAY_URL)
+        driver.get("%s/auth/logout" % config.GATEWAY_URL)
         self.assertIn("SF", driver.title)
-        self._internal_login(driver, config.USER_1, config.USER_1_PASSWORD)
-        driver.set_window_size(1280, 800)
-        # switch to top menu iframe
-        driver.switch_to.frame(driver.find_element_by_tag_name("iframe"))
-        logout = driver.find_element_by_id("logout-btn")
-        logout.click()
-        driver.switch_to.default_content()
         self.assertTrue("Log in with Github" in driver.page_source)
         self.assertTrue("Internal Login" in driver.page_source)
         self.assertTrue(
             "successfully logged out" in driver.page_source)
+
+    @snapshot_if_failure
+    def test_topmenu_links(self):
+        driver = self.driver
+        driver.get(config.GATEWAY_URL)
+        driver.set_window_size(1280, 800)
+        # switch to top menu iframe
+        driver.switch_to.frame(driver.find_element_by_tag_name("iframe"))
+        # The logout link is not shown if not logged in
+        self.assertRaises(NoSuchElementException,
+                          driver.find_element_by_link_text, "Logout")
+        driver.find_element_by_link_text("Login")
+        driver.find_element_by_link_text("Get started")
+        driver.find_element_by_link_text("Paste")
+        driver.find_element_by_link_text("Etherpad")
+        driver.find_element_by_link_text("Redmine")
+        driver.find_element_by_link_text("Zuul")
+        driver.find_element_by_link_text("Jenkins")
+        driver.find_element_by_link_text("Gerrit")
+        driver.find_element_by_link_text("Dashboard")
