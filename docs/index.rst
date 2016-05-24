@@ -20,6 +20,7 @@ Welcome to software-factory's documentation!
    testing
    jenkinsslaves
    gerrit_replication
+   gerritbot
    contribute
    deepdive
    tools

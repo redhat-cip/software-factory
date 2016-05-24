@@ -36,6 +36,7 @@ function update_config {
     git config --global user.name "SF initial configurator"
     git config --global user.email admin@$DOMAIN
     git config --global gitreview.username "admin"
+    git config --global push.default simple
 
     # update .ssh/config
     cat << EOF > /root/.ssh/config

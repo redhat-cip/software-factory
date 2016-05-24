@@ -8,6 +8,11 @@
   gather_facts: no
   tasks:
     - include: tasks/zuul_update.yaml
+{% if 'gerritbot' in roles %}
+- hosts: gerritbot
+  tasks:
+    - include: tasks/gerritbot_update.yaml
+{% endif %}
 - hosts: nodepool
   gather_facts: no
   tasks:

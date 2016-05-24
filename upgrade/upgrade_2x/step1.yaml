@@ -2,6 +2,7 @@
 - hosts: install-server
   tasks:
   - include: tasks/fetchupstream.yml
+  - include: tasks/gerritbot_configrepo_import.yml
 
 - hosts: all
   tasks:
