@@ -8,6 +8,7 @@ GNOCCHI_PLUGINS_URL="https://github.com/sileht/grafana-plugins-gnocchi"
 
 function install_gnocchi {
     do_chroot ${dir} git clone $GNOCCHI_PLUGINS_URL /tmp/gnocchi-plugins
+    do_chroot ${dir} bash -c "cd /tmp/gnocchi-plugins ; git checkout 2e6055c41eb30bfb6aefe15d0ad571347d28a3a7"
     do_chroot ${dir} mv /tmp/gnocchi-plugins/datasources/gnocchi /usr/share/grafana/public/app/plugins/datasource/.
 }
 
