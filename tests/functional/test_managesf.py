@@ -209,67 +209,6 @@ class TestManageSF(Base):
                 self.rm.check_user_role(pname, config.USER_2, 'Developer'))
             self.assertFalse(self.project_exists_ex(pname, config.USER_3))
 
-    def test_create_public_project_with_users_in_group(self):
-        """ Create public project on redmine and gerrit with users in groups
-        """
-        pname = 'p_%s' % create_random_str()
-        u2mail = config.USERS[config.USER_2]['email']
-        u3mail = config.USERS[config.USER_3]['email']
-        options = {"ptl-group": "",
-                   "core-group": "%s,%s" % (u2mail, u3mail),
-                   }
-        self.create_project(pname, config.ADMIN_USER,
-                            options=options)
-        # Gerrit part
-        self.assertTrue(self.gu.project_exists(pname))
-        # TODO(Project creator, as project owner, should only be in ptl group)
-        self.assertTrue(
-            self.gu.member_in_group(config.ADMIN_USER, '%s-ptl' % pname))
-        for user in (config.ADMIN_USER, config.USER_2, config.USER_3):
-            self.assertTrue(self.gu.member_in_group(user, '%s-core' % pname))
-        if has_issue_tracker():
-            self.assertTrue(self.rm.project_exists(pname))
-            self.assertTrue(
-                self.rm.check_user_role(pname, config.ADMIN_USER, 'Manager'))
-            for user in (config.ADMIN_USER, config.USER_2, config.USER_3):
-                self.assertTrue(self.rm.check_user_role(pname,
-                                                        user,
-                                                        'Developer'))
-
-    def test_create_private_project_with_users_in_group(self):
-        """ Create private project on redmine and gerrit with users in groups
-        """
-        pname = 'p_%s' % create_random_str()
-        u2mail = config.USERS[config.USER_2]['email']
-        u3mail = config.USERS[config.USER_3]['email']
-        u4mail = config.USERS[config.USER_4]['email']
-        options = {"private": "",
-                   "ptl-group": "",
-                   "core-group": "%s,%s" % (u2mail, u3mail),
-                   "dev-group": "%s" % u4mail,
-                   }
-        self.create_project(pname, config.ADMIN_USER,
-                            options=options)
-        # Gerrit part
-        self.assertTrue(self.gu.project_exists(pname))
-        # TODO(Project creator, as project owner, should only be in ptl group)
-        self.assertTrue(
-            self.gu.member_in_group(config.ADMIN_USER, '%s-ptl' % pname))
-        for user in (config.ADMIN_USER, config.USER_2, config.USER_3):
-            self.assertTrue(self.gu.member_in_group(user, '%s-core' % pname))
-        self.assertTrue(
-            self.gu.member_in_group(config.USER_4, '%s-dev' % pname))
-        # tracker part
-        if has_issue_tracker():
-            # it should be visible to admin
-            self.assertTrue(self.rm.project_exists(pname))
-            self.assertTrue(
-                self.rm.check_user_role(pname, config.ADMIN_USER, 'Manager'))
-            for user in (config.ADMIN_USER, config.USER_2,
-                         config.USER_3, config.USER_4):
-                self.assertTrue(self.rm.check_user_role(pname, user,
-                                                        'Developer'))
-
     def test_create_public_project_as_admin_clone_as_admin(self):
         """ Clone public project as admin and check content
         """
