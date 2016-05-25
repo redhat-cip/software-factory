@@ -85,6 +85,7 @@ Until this is provided as an automatic task, here is the manual process:
   nodepool image-update <provider_name> <image_name>
 
 If nothing works, this is how to reset the service:
+
 * Stop nodepoold process
 * Delete all OpenStack nodepool resources
 * Connect to mysql and delete from node, snapshot_image tables
@@ -93,6 +94,16 @@ If nothing works, this is how to reset the service:
 * Start nodepoold process
 * Follow the logs and wait for servers to be created.
 * Check zuul log to verify it is submitting job request.
+
+It might happen that some nodes are kept in the "delete" state for quite some
+time, while they are already deleted. This blocks spawning of new instances.
+The simplest way to fix this is to clean the stale entries in the nodepool DB
+using the following command (deleting all entries older than 24 hours and in
+state delete):
+
+.. code-block:: mysql
+
+     DELETE FROM node WHERE state_time < (UNIX_TIMESTAMP() - 86400) AND state = 4;
 
 
 How-to create channels in Mumble ?
