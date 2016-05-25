@@ -506,7 +506,7 @@ function run_gui_tests {
         echo "X Forwarding detected"
     else
         echo "Starting Xvfb in background ..."
-        ( sudo sh -c 'Xvfb :99 -ac -screen 0 1280x1024x24 -nolisten tcp >/var/log/Xvfb/Xvfb.log 2>/var/log/Xvfb/error.log' ) &
+        ( sudo sh -c 'Xvfb :99 -ac -screen 0 1280x1024x24 >/var/log/Xvfb/Xvfb.log 2>/var/log/Xvfb/error.log' ) &
         export DISPLAY=:99
     fi
     nosetests --with-timer --with-xunit -v tests/gui \
