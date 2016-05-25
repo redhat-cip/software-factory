@@ -35,7 +35,7 @@ digest are signed with gpg, install the key and verify content with:
 .. code-block:: bash
 
  $ gpg --keyserver keys.gnupg.net --recv-key 0xE46E04A2344803E5A808BDD7E8C203A71C3BAE4B
- $ gpg --verify softwarefactory-C7.0-2.0.0.digest && sha256sum -c softwarefactory-C7.0-2.0.0.digest
+ $ gpg --verify softwarefactory-C7.0-2.2.2.digest && sha256sum -c softwarefactory-C7.0-2.2.2.digest
 
 
 Architecture
@@ -73,8 +73,8 @@ SF image needs to be uploaded to Glance:
 
 .. code-block:: bash
 
- $ wget http://os.enocloud.com:8080/v1/AUTH_70aab03f69b549cead3cb5f463174a51/edeploy-roles/softwarefactory-C7.0-2.0.0.img.qcow2
- $ glance image-create --progress --disk-format qcow2 --container-format bare --name sf-2.0.0 --file softwarefactory-C7.0-2.0.0.img.qcow2
+ $ wget http://46.231.133.241:8080/v1/AUTH_sf/sf-images/softwarefactory-C7.0-2.2.2.img.qcow2
+ $ glance image-create --progress --disk-format qcow2 --container-format bare --name sf-2.2.2 --file softwarefactory-C7.0-2.2.2.img.qcow2
 
 Deploy with Heat
 ................
@@ -90,8 +90,8 @@ They all requires:
 
 .. code-block:: bash
 
- $ wget http://os.enocloud.com:8080/v1/AUTH_70aab03f69b549cead3cb5f463174a51/edeploy-roles/sf-allinone-C7.0-2.0.0.hot
- $ heat stack-create --template-file ./sf-allinone-C7.0-2.0.0.hot -P "key_name=SSH_KEY;domain=fqdn_of_deployment;image_id=GLANCE_UUID;ext_net_uuid=NETWORK_UUID;flavor=m1.large" sf_stack
+ $ wget http://46.231.133.241:8080/v1/AUTH_sf/sf-images/softwarefactory-C7.0-2.2.2-allinone.hot
+ $ heat stack-create --template-file ./softwarefactory-C7.0-2.2.2-allinone.hot -P "key_name=SSH_KEY;domain=fqdn_of_deployment;image_id=GLANCE_UUID;ext_net_uuid=NETWORK_UUID;flavor=m1.large" sf_stack
 
 Once the stack is created jump to the section `Configuration and reconfiguration`.
 
@@ -126,7 +126,7 @@ You need a CentOS 7 VM or physical machine. The libvirtd-lxc package is needed.
 
  $ git clone https://softwarefactory-project.io/r/software-factory
  $ cd software-factory
- $ git checkout 2.0.0
+ $ git checkout 2.2.2
  $ ./sfstack.sh
 
 This method of deployment is mostly useful for testing, it uses the default configuration
@@ -138,15 +138,15 @@ Using Virtualbox for testing SoftwareFactory
 
 You can also use Virtualbox if you want to try out Software Factory on your
 desktop.  First, you need to download one of our release images, for example
-2.1.5::
+2.2.2::
 
- curl -O http://46.231.133.241:8080/v1/AUTH_sf/sf-images/softwarefactory-C7.0-2.2.0.img.qcow2
+ curl -O http://46.231.133.241:8080/v1/AUTH_sf/sf-images/softwarefactory-C7.0-2.2.2.img.qcow2
 
 Next, increase the image size to ensure there is enough space is git and the
 database and convert the image to make it usable with Virtualbox::
 
- qemu-img resize softwarefactory-C7.0-2.2.0.img.qcow2 +20G
- qemu-img convert -O vdi softwarefactory-C7.0-2.2.0.img.qcow2 softwarefactory-C7.0-2.2.0.vdi
+ qemu-img resize softwarefactory-C7.0-2.2.2.img.qcow2 +20G
+ qemu-img convert -O vdi softwarefactory-C7.0-2.2.2.img.qcow2 softwarefactory-C7.0-2.2.2.vdi
 
 Now you need to create a new VM in Virtualbox, and use the created .vdi file as
 disk. Assign enough memory to it (2GB is a good starting point), and boot the
