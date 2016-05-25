@@ -9,6 +9,7 @@
     - jenkins
     - zuul
     - zuul-merger
+    - nodepool
     - gerrit
     - etherpad
     - lodgeit
@@ -16,3 +17,7 @@
     - gerritbot
     - grafana-server
     - postfix
+    - openstack-gnocchi-api
+    - openstack-gnocchi-metricd
+    - openstack-gnocchi-statsd
+    - murmurd
