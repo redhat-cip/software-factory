@@ -77,6 +77,7 @@ case "${TEST_TYPE}" in
         run_bootstraps
         run_backup_restore
         run_checker
+        run_sfconfig
         ;;
     "upgrade")
         ./fetch_image.sh ${SF_PREVIOUS_VER} || fail "Could not fetch ${SF_PREVIOUS_VER}"
