@@ -21,6 +21,12 @@ sudo chroot ${dir} pip freeze | sort | while read pkg; do echo "pip: ${pkg}"; do
 echo
 echo "# Gem packages versions"
 sudo chroot ${dir} gem list | grep '^[a-z]' | sort | while read pkg; do echo "gem: ${pkg}"; done
+echo
+echo "# Zuul venv"
+sudo chroot ${dir} /srv/zuul/bin/pip freeze | sort | while read pkg; do echo "pip: ${pkg}"; done
+echo
+echo "# Nodepool venv"
+sudo chroot ${dir} /srv/nodepool/bin/pip freeze | sort | while read pkg; do echo "pip: ${pkg}"; done
 
 # Nodejs package listing disable because npm stuck when system is not running
 #echo
