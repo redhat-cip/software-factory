@@ -209,6 +209,14 @@ if [ ! -f "${BUILD}/generate.done" ]; then
     touch "${BUILD}/generate.done"
 fi
 
+if [ -f "/etc/puppet/hiera/sf/sfcreds.yaml.orig" ]; then
+    # Most likely this is a sfconfig.sh run after restoring a backup.
+    # We need to update the mysql root password
+    oldpw=`grep -Po "(?<=creds_mysql_root_pwd: ).*" /etc/puppet/hiera/sf/sfcreds.yaml.orig`
+    newpw=`grep -Po "(?<=creds_mysql_root_pwd: ).*" /etc/puppet/hiera/sf/sfcreds.yaml`
+    mysqladmin -u root -p"$oldpw" password "$newpw" && rm /etc/puppet/hiera/sf/sfcreds.yaml.orig
+fi
+
 update_config
 
 # Configure ssh access to inventory and copy puppet configuration

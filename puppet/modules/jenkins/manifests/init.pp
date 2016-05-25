@@ -215,9 +215,14 @@ class jenkins {
     require => [File['wait4jenkins'],  Service['jenkins']],
   }
 
+  file { '/etc/httpd/htpasswd':
+    mode   => '0644',
+    ensure  => 'present',
+  }
+
   exec {'jenkins_user':
-    command => "/usr/bin/htpasswd -bc /etc/httpd/htpasswd jenkins ${jenkins_password}",
-    creates => '/etc/httpd/htpasswd',
+    command => "/usr/bin/htpasswd -b /etc/httpd/htpasswd jenkins ${jenkins_password}",
+    require => File['/etc/httpd/htpasswd'],
   }
 
   bup::scripts{ 'jenkins_scripts':

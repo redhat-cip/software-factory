@@ -24,6 +24,8 @@ class managesf ($gerrit = hiera('gerrit'), $cauth = hiera('cauth')) {
   $issues_tracker_api_url = $url["api_redmine_url"]
   $gerrit_host = "gerrit.${fqdn}"
   $gerrit_admin_rsa = hiera('gerrit_admin_rsa')
+  $gerrit_admin_sshkey_rsa = hiera('creds_gerrit_admin_sshkey')
+  $gerrit_admin_sshkey = "ssh-rsa ${gerrit_admin_sshkey_rsa}"
   $service_rsa = hiera('service_rsa')
   $gerrit_mysql_host = "mysql.${fqdn}"
   $gerrit_mysql_db = 'gerrit'
@@ -113,11 +115,29 @@ class managesf ($gerrit = hiera('gerrit'), $cauth = hiera('cauth')) {
     require => File['/var/www/managesf/'],
   }
 
+  file {'/root/sf-bootstrap-data/ssh_keys/gerrit_admin_rsa':
+    ensure  => file,
+    mode    => '0400',
+    owner   => 'root',
+    group   => 'root',
+    content => inline_template('<%= @gerrit_admin_rsa %>'),
+  }
+
+  file {'/root/sf-bootstrap-data/ssh_keys/gerrit_admin_rsa.pub':
+    ensure  => file,
+    mode    => '0400',
+    owner   => 'root',
+    group   => 'root',
+    content => inline_template('<%= @gerrit_admin_sshkey %>'),
+  }
+
   file {'/root/init-config-repo.sh':
     ensure  => file,
     mode    => '0540',
     owner   => 'root',
     group   => 'root',
+    require => [File['/root/sf-bootstrap-data/ssh_keys/gerrit_admin_rsa'],
+                File['/root/sf-bootstrap-data/ssh_keys/gerrit_admin_rsa.pub']],
     content => template('managesf/init-config-repo.sh.erb'),
   }
 

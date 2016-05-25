@@ -20,7 +20,7 @@ INSERT INTO users (id, login, hashed_password, firstname, lastname, mail, admin,
 DELETE FROM users WHERE id=1; # Autocreated Admin user
 DELETE FROM users WHERE id=2; # Autocreated Anonymous user
 SELECT id INTO @user_id FROM users WHERE login=@username;
-INSERT IGNORE INTO tokens (user_id, action, value, created_on) VALUES(@user_id, 'api', @api_key, CURRENT_TIMESTAMP());
+INSERT INTO tokens (user_id, action, value, created_on) VALUES(@user_id, 'api', @api_key, CURRENT_TIMESTAMP()) ON DUPLICATE KEY UPDATE value=@api_key, created_on=CURRENT_TIMESTAMP();
 
 DELETE FROM settings WHERE name='host_name';
 INSERT IGNORE INTO settings (name, value, updated_on) VALUES('host_name', @host, CURRENT_TIMESTAMP());

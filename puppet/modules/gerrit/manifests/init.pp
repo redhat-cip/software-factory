@@ -313,6 +313,7 @@ class gerrit {
     mode    => '0700',
     content => template('gerrit/gerrit-set-jenkins-user.sh.erb'),
     replace => true,
+    require => File['/root/gerrit_admin_rsa'],
   }
 
   file { 'wait4gerrit':
@@ -372,7 +373,10 @@ class gerrit {
     command     => '/root/gerrit-firstuser-init.sh',
     logoutput   => on_failure,
     subscribe   => Exec['gerrit-initial-init'],
-    require     => [Service['gerrit'], Exec['wait4gerrit']],
+    require     => [Service['gerrit'],
+                    Exec['wait4gerrit'],
+                    File['/root/gerrit-firstuser-init.sql'],
+                    File['/root/gerrit_admin_rsa']],
     refreshonly => true,
   }
   exec {'gerrit-init-acl':
