@@ -144,7 +144,7 @@ URL_LIST="$URL_LIST $ANGULARJS_URL"
 ZUUL_URL="https://github.com/openstack-infra/zuul"
 ZUUL_VERSION=fdeb224824584dad355cbda207811a2105d1d2e2
 NODEPOOL_URL="https://github.com/openstack-infra/nodepool"
-NODEPOOL_VERSION=e0f65825b0a38f8370017a08dd6f6012704d8db6
+NODEPOOL_VERSION=1fd2a14ab79d256419083e2b2d9c463af36e039a
 
 # gerritbot
 GERRITBOT_URL="https://github.com/openstack-infra/gerritbot"
