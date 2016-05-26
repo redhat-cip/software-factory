@@ -50,7 +50,7 @@ checkpoint "Running tests on $(hostname)"
 if [ ${TEST_TYPE} == "openstack" ]; then
     export BUILD_QCOW=1
     which ansible-playbook &> /dev/null || sudo pip install ansible
-    heat stack-delete sf_stack &> /dev/null
+    heat stack-delete -y sf_stack &> /dev/null
     clean_nodepool_tenant
 else
     lxc_stop
