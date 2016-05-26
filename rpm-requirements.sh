@@ -26,5 +26,7 @@ fi
 if [ ! -z "${PKGS}" ]; then
     echo "(+) Installing build requirements..."
     sudo yum install -y $PKGS
-    [ -n "$(echo ${PKGS} | grep 'libvirt-daemon-lxc')" ] && sudo systemctl restart libvirtd
+    if [ -n "$(echo ${PKGS} | grep 'libvirt-daemon-lxc')" ]; then
+        sudo systemctl restart libvirtd
+    fi
 fi
