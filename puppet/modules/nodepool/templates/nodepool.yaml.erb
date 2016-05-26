@@ -19,6 +19,7 @@ providers:
 <% @nodepool['providers'].each do | provider | -%>
   - name: <%= provider['name'] %>
     image-api-use-tasks: False
+    clean-floating-ips: true
 <% if provider['auth-url'] -%>
     auth-url: <%= provider['auth-url'] %>
 <% end -%>
