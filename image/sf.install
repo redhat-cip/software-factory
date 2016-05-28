@@ -57,6 +57,7 @@ function install_sf {
     sudo rsync --delete -a -L --no-owner ./../config/defaults/ ${dir}/usr/local/share/sf-default-config/
     sudo rsync --delete -a --no-owner ./../config/ansible/ ${dir}/etc/ansible/
     sudo mkdir -p ${dir}/etc/software-factory ${dir}/etc/ansible/group_vars ${dir}/var/lib/ansible
+    sudo rsync --delete -a --no-owner ./../health-check/ ${dir}/etc/ansible/health-check/
 
     sudo cp -Rv ./../config/config-repo/ ${dir}/usr/local/share/sf-config-repo
     sudo cp -Rv ./../tools/slaves/ ${dir}/usr/local/share/sf-jenkins-slave-tools

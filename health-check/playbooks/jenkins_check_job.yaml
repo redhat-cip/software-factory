@@ -1,0 +1,9 @@
+---
+# * Check if a jenkins jobs exists
+- hosts: jenkins
+  vars:
+    job_name: "{{ job|default ('config-update') }}"
+  tasks:
+    - name: "Check if check job is already created"
+      stat: path=/var/lib/jenkins/jobs/{{ job_name }}
+      register: job_created

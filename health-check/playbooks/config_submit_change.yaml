@@ -1,0 +1,25 @@
+---
+# * Submit and wait config repo change
+# * Check for SUCCESS in config-update post job log
+- hosts: install-server
+  tasks:
+    - name: Submit and approve config change
+      command: chdir=/root/config submit_and_wait.py --approve
+      register: submit_status
+      ignore_errors: true
+
+    - command: chdir=/root/config cat .git/refs/heads/master
+      register: commitsha
+
+- hosts: jenkins
+  tasks:
+    - name: Check for config-check failure
+      when: submit_status.rc != 0
+      command: "cat /var/lib/jenkins/jobs/config-check/builds/lastFailedBuild/log"
+      failed_when: true
+
+    - name: Check for config-update post job
+      wait_for: path=/var/lib/jenkins/jobs/config-update/builds/lastStableBuild/log search_regex={{ commitsha.stdout }}
+
+    - name: Check for SUCCESS config-update post job
+      wait_for: path=/var/lib/jenkins/jobs/config-update/builds/lastStableBuild/log search_regex="^Finished. SUCCESS$"

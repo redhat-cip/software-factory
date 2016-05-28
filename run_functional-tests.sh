@@ -68,7 +68,7 @@ case "${TEST_TYPE}" in
         lxc_init
         run_bootstraps
         run_serverspec_tests
-        run_it_jenkins_ci
+        run_health_base
         run_functional_tests
         run_provisioner
         run_backup_start
@@ -95,6 +95,7 @@ case "${TEST_TYPE}" in
         heat_wait
         run_heat_bootstraps
         #run_functional_tests  # disabled because it takes too long
+        run_health_openstack
         run_it_openstack
         ;;
     "gui")

@@ -1,0 +1,10 @@
+projects:
+  - name: {{ project }}
+    check:
+{% for job in check %}
+      - {{ job }}
+{% endfor %}
+    gate:
+{% for job in gate %}
+      - {{ job }}
+{% endfor %}

@@ -1,0 +1,12 @@
+---
+# * Check if a zuul job and project are defined
+- hosts: zuul
+  tasks:
+    #- name: "Check if layout is already created"
+    #  shell: echo status | nc zuul 4730
+    #  register: zuul_created
+    - name: "Check if project is defined in layout.yaml"
+      command: grep -r {{ project_name }} /etc/zuul/
+      register: zuul_created
+      ignore_errors: yes
+      no_log: true

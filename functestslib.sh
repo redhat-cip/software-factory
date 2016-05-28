@@ -79,27 +79,26 @@ function clean_nodepool_tenant {
     checkpoint "clean nodepool tenant"
 }
 
-function run_it_jenkins_ci {
-    ./tests/integration/run.py > ${ARTIFACTS_DIR}/integration_tests.txt \
+function run_health_base {
+    ssh ${SF_HOST} ansible-playbook /etc/ansible/health-check/zuul.yaml > ${ARTIFACTS_DIR}/integration_tests.txt \
         && echo "Basic integration test SUCCESS"                        \
         || fail "Basic integration test failed" ${ARTIFACTS_DIR}/integration_tests.txt
-    checkpoint "run_it_jenkins_ci"
+    checkpoint "run_health_base"
 }
 
-function run_it_openstack {
-    it_cmd="./tests/integration/run.py --password ${ADMIN_PASSWORD} --playbook"
-    ${it_cmd} zuul >> ${ARTIFACTS_DIR}/integration_tests.txt        \
-        && echo "Basic integration test SUCCESS"                    \
-        || fail "Basic integration test failed" ${ARTIFACTS_DIR}/integration_tests.txt
-    ${it_cmd} nodepool --os_base_image "sf-${SF_VER}" --os_network ${HEAT_SLAVE_NETWORK} >> ${ARTIFACTS_DIR}/integration_tests.txt \
+function run_health_openstack {
+    # FIXME: this should be dynamic...
+    export OS_AUTH_URL="http://192.168.42.1:5000/v2.0"
+    EXTRA_VARS="node=base_centos base_image_name=sf-${SF_VER} os_slave_network=${HEAT_SLAVE_NETWORK}"
+    EXTRA_VARS+=" os_auth_url=${OS_AUTH_URL} os_username=${OS_USERNAME} os_password=${OS_PASSWORD} os_tenant_name=${OS_TENANT_NAME}"
+    set -x
+    ssh ${SF_HOST} ansible-playbook "--extra-vars='${EXTRA_VARS}'" /etc/ansible/health-check/nodepool.yaml >> ${ARTIFACTS_DIR}/integration_tests.txt \
         && echo "(non-voting) Nodepool integration test SUCCESS"    \
-        || echo "(non-voting) Nodepool integration test failed"
-    ${it_cmd} swiftlogs >> ${ARTIFACTS_DIR}/integration_tests.txt   \
-        && echo "(non-voting) Swift integration test SUCCESS"       \
-        || echo "(non-voting) Swift integration test failed"
-    ${it_cmd} alltogether >> ${ARTIFACTS_DIR}/integration_tests.txt \
-        && echo "(non-voting) Alltogether integration test SUCCESS" \
-        || echo "(non-voting) Alltogether integration test failed"
+        || { EXTRA_VARS=''; echo "(non-voting) Nodepool integration test failed" ${ARTIFACTS_DIR}/integration_tests.txt; }
+    ssh ${SF_HOST} ansible-playbook "--extra-vars='${EXTRA_VARS}'" /etc/ansible/health-check/zuul.yaml >> ${ARTIFACTS_DIR}/integration_tests.txt \
+        && echo "(non-voting) Basic integration test SUCCESS"                        \
+        || fail "(non-voting) Basic integration test failed" ${ARTIFACTS_DIR}/integration_tests.txt
+    set +x
     checkpoint "run_it_openstack"
 }
 
@@ -183,6 +182,7 @@ function build_image {
         sudo rsync -a --delete --no-owner -L config/defaults/ ${IMAGE_PATH}/etc/puppet/hiera/sf/
         sudo rsync -a --delete --no-owner -L config/defaults/ ${IMAGE_PATH}/usr/local/share/sf-default-config/
         sudo rsync -a --delete --no-owner config/ansible/ ${IMAGE_PATH}/etc/ansible/
+        sudo rsync -a --delete --no-owner health-check/ ${IMAGE_PATH}/etc/ansible/health-check/
         sudo rsync -a --delete --no-owner config/config-repo/ ${IMAGE_PATH}/usr/local/share/sf-config-repo/
         sudo rsync -a --delete --no-owner serverspec/ ${IMAGE_PATH}/etc/serverspec/
         sudo rsync -a config/scripts/ ${IMAGE_PATH}/usr/local/bin/
@@ -337,10 +337,10 @@ function run_bootstraps {
     eval $(ssh-agent)
     ssh-add ~/.ssh/id_rsa
     echo "$(date) ======= run_bootstraps" | tee -a ${ARTIFACTS_DIR}/bootstraps.log
-    ssh -A -tt ${SF_HOST} sfconfig.sh 2>&1 | tee ${ARTIFACTS_DIR}/sfconfig.log
-    res=${PIPESTATUS[0]}
+    ssh -A -tt ${SF_HOST} sfconfig.sh &> ${ARTIFACTS_DIR}/sfconfig.log \
+        && echo "sfconfig.sh: SUCCESS"  \
+        || { kill -9 $SSH_AGENT_PID; fail "sfconfig.sh failed" ${ARTIFACTS_DIR}/sfconfig.log; }
     kill -9 $SSH_AGENT_PID
-    [ "$res" != "0" ] && fail "Bootstrap fails" ${ARTIFACTS_DIR}/bootstraps.log
     checkpoint "run_bootstraps"
     fetch_bootstraps_data
 }

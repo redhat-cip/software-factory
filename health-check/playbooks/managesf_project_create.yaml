@@ -1,0 +1,27 @@
+---
+# * Create project and checkout or update local clone
+- hosts: install-server
+  pre_tasks:
+    - name: Load sfconfig
+      include_vars: /etc/puppet/hiera/sf/sfconfig.yaml
+  tasks:
+    - debug: msg="Create or reset project {{ project }} to {{ project_path }}"
+
+    - name: Check if project exists
+      stat: path={{ project_path }}
+      register: p
+
+    - name: Reset project
+      command: chdir={{ project_path }} {{ item }}
+      with_items:
+        - "git fetch --all"
+        - "git reset --hard origin/master --"
+      when: p.stat.isdir is defined and p.stat.isdir == True
+
+    - name: Create project with managesf
+      command: "sfmanager --auth admin:{{ authentication.admin_password }} --url http://{{ fqdn }} project create --name {{ project }}"
+      when: p.stat.isdir is not defined
+
+    - name: Checkout project
+      git: repo=http://{{ fqdn }}/r/{{ project }} dest={{ project_path }}
+      when: p.stat.isdir is not defined

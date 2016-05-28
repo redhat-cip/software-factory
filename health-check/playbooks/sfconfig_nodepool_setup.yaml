@@ -1,0 +1,38 @@
+---
+# * Setup cloud provider
+- hosts: install-server
+  tasks:
+    - fail: msg='Node label and os_slave_network required'
+      when: node == 'master' or os_slave_network is undefined
+
+    - name: "Check configuration"
+      command: grep "project-id.*{{ os_tenant_name }}" /etc/puppet/hiera/sf/sfconfig.yaml
+      no_log: true
+      register: provider_config
+      ignore_errors: true
+
+    - name: Update sfconfig
+      when: provider_config.rc != 0
+      command: >
+        hieraedit.py --yaml /etc/puppet/hiera/sf/sfconfig.yaml --eval nodepool "{ 'disabled': False,
+        'providers': [{
+            'name': '{{ provider_name }}',
+            'auth-url':   '{{ os_auth_url }}',
+            'password':   '{{ os_password }}',
+            'project-id': '{{ os_tenant_name }}',
+            'username':   '{{ os_username }}',
+            'network':    '{{ os_slave_network }}',
+            'pool':       '{{ os_pool }}',
+            'boot-timeout': 120,
+            'max-servers': 2,
+            'rate': 10.0,
+          }]}"
+
+    - name: "Restart sfconfig"
+      when: provider_config.rc != 0
+      command: sfconfig.sh
+
+- hosts: nodepool
+  tasks:
+    - name: "Check configuration"
+      command: grep "project-name.*{{ os_tenant_name }}" /etc/nodepool/nodepool.yaml

@@ -1,0 +1,10 @@
+---
+# * Reset /root/config checkout and update to origin/master
+- hosts: install-server
+  tasks:
+    - name: Reset config
+      command: chdir=/root/config {{ item }}
+      with_items:
+        - git fetch --all
+        - git reset --hard origin/master --
+        - git clean -f -d
