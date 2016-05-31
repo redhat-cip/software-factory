@@ -279,7 +279,26 @@ class ManageSfUtils(Tool):
 
     def list_active_members(self, user):
         passwd = config.USERS[user]['password']
-        cmd = self.base_cmd % (user, passwd) + " membership list"
+        cmd = self.base_cmd % (user, passwd) + " sf_user list"
+        output = self.exe(cmd)
+        # TODO Dangerous ! but will have to do for now
+        return eval(output)
+
+    def register_user(self, auth_user, username, email):
+        passwd = config.USERS[auth_user]['password']
+        cmd = self.base_cmd % (auth_user, passwd) + " sf_user create "
+        cmd += "--username %s --email %s --fullname %s" % (username, email,
+                                                           username)
+        output = self.exe(cmd)
+        return output
+
+    def deregister_user(self, auth_user, username=None, email=None):
+        passwd = config.USERS[auth_user]['password']
+        cmd = self.base_cmd % (auth_user, passwd) + "sf_user delete"
+        if username:
+            cmd += " --username %s" % username
+        else:
+            cmd += " --email %s" % email
         output = self.exe(cmd)
         return output
 

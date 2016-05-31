@@ -26,7 +26,7 @@ from utils import GerritGitUtils
 from utils import create_random_str
 from utils import set_private_key
 from utils import is_present, skipIfServiceMissing, skipIfServicePresent
-from utils import skipIfIssueTrackerMissing, has_issue_tracker
+from utils import has_issue_tracker
 from utils import get_issue_tracker_utils
 
 from pysflib.sfgerrit import GerritUtils
@@ -440,12 +440,34 @@ class TestManageSF(Base):
         # Clean local clone directory
         self.projects.remove(pname)
 
-    # For now listing users comes from Redmine
-    @skipIfIssueTrackerMissing()
     def test_list_active_members(self):
         """ Check the list of members as a list of tuples of emails and names
         """
-        self.assertTrue(self.msu.list_active_members(config.USER_2))
+        active_users = self.msu.list_active_members(config.USER_2)
+        for user in active_users:
+            self.assertEqual(sorted(['username', 'fullname',
+                                     'email', 'cauth_id', 'id']),
+                             sorted(user.keys()),
+                             "Unexpected user %r" % user)
+        self.assertTrue(config.USER_2 in [u['username'] for u in active_users],
+                        active_users)
+
+    def test_register_user(self):
+        active_users = self.msu.list_active_members(config.ADMIN_USER)
+        self.msu.register_user(config.ADMIN_USER, "a", "b")
+        new_a_u = self.msu.list_active_members(config.ADMIN_USER)
+        self.assertEqual(len(active_users) + 1,
+                         len(new_a_u),
+                         "%i <-> %i" % (len(active_users), len(new_a_u)))
+        self.assertTrue('a' in [u['username'] for u in new_a_u])
+        self.assertTrue('b' in [u['email'] for u in new_a_u])
+        self.assertTrue('a' in [u['fullname'] for u in new_a_u])
+
+    def test_deregister_user(self):
+        self.msu.register_user(config.ADMIN_USER, "c", "d")
+        self.msu.deregister_user(config.ADMIN_USER, "c")
+        active_users = self.msu.list_active_members(config.ADMIN_USER)
+        self.assertTrue('c' not in [u['username'] for u in active_users])
 
     def test_init_user_tests(self):
         """ Check if a test init feature behave as expected
