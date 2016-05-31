@@ -555,6 +555,21 @@ function install_gerritbot {
     rm -Rf ${dir}/tmp/gerritbot
 }
 
+function install_gitweb_theme {
+    # Checkout VERSION in /tmp
+    rm -Rf ${dir}/tmp/kogakure
+
+    retry do_chroot ${dir} git clone --depth 1 ${KOGAKURE_URL} /tmp/kogakure
+    do_chroot ${dir} bash -c "cp /tmp/kogakure/gitweb.css /var/www/git/static/"
+
+    # tweak config for gravatars and syntax highlighting
+    do_chroot ${dir} bash -c "echo '\$feature{"'"'"'"avatar"'"'"'"}{"'"'"'"default"'"'"'"} = ["'"'"'"gravatar"'"'"'"];' >> /etc/gitweb.conf"
+    do_chroot ${dir} bash -c "echo '\$feature{"'"'"'"highlight"'"'"'"}{"'"'"'"default"'"'"'"} = [1];' >> /etc/gitweb.conf"
+
+    # Cleanup left-overs
+    rm -Rf ${dir}/tmp/kogakure
+}
+
 image_clean() {
     rm -Rf ${dir}/usr/share/doc ${dir}/usr/share/info
     rm -Rf ${dir}/share ${dir}/usr/share/backgrounds
@@ -619,6 +634,8 @@ if [ "$STEP" == 1 ]; then
     install_bup
     install_mod_authpub_tkt
     checkpoint "etherpad, paste, bup, mod_authpub_tkt installed"
+    install_gitweb_theme
+    checkpoint "gitweb theme installed"
     image_clean
     do_chroot ${dir} passwd -l root
     checkpoint "image cleaned"
