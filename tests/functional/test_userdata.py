@@ -1,4 +1,5 @@
 #!/bin/env python
+# -*- coding: utf-8 -*-
 #
 # Copyright (C) 2014 eNovance SAS <licensing@enovance.com>
 #
@@ -14,9 +15,11 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import config
+import json
 import requests
 import time
 import urllib2
+import warnings
 
 from utils import Base
 from utils import ManageSfUtils
@@ -262,3 +265,49 @@ class TestUserdata(Base):
         if has_issue_tracker():
             new_tracker_id = self.rm.get_user_id_by_username('freddie')
             self.assertTrue(tracker_id != new_tracker_id)
+
+    def test_unicode_user(self):
+        """ Try to create a local user with unicode charset, login, delete
+        """
+        # /!\ redmine does not support non-ASCII chars in usernames.
+        auth_cookie = config.USERS[config.ADMIN_USER]['auth_cookie']
+        try:
+            self.msu.create_user('naruto', 'rasengan', 'datte@bayo.org',
+                                 fullname=u'うずまきナルト')
+        except NotImplementedError:
+            skip("user management not supported in this version of managesf")
+        except UnicodeEncodeError:
+            # TODO the CLI works but I can't find what is wrong with
+            # python's handling of unicode in subprocess.
+            warnings.warn('Cannot run shell command with unicode chars for '
+                          'whatever reason, retrying with a direct REST '
+                          'API call ...',
+                          UnicodeWarning)
+            create_url = config.GATEWAY_URL + "/manage/user/naruto"
+            headers = {'Content-Type': 'application/json; charset=utf8'}
+            data = {'email': 'datte@bayo.org',
+                    'fullname': u'うずまきナルト'.encode('utf8'),
+                    'password': 'rasengan'}
+            create_user = requests.post(create_url,
+                                        headers=headers,
+                                        data=json.dumps(data),
+                                        cookies={'auth_pubtkt': auth_cookie})
+            self.assertEqual(201,
+                             int(create_user.status_code))
+        self.logout()
+        url = config.GATEWAY_URL + "/dashboard/"
+        quoted_url = urllib2.quote(url, safe='')
+        response = self.login('naruto',
+                              'rasengan', quoted_url)
+        self.assertEqual(url, response.url)
+        naru_gerrit = self.gu.get_account('naruto')
+        self.assertEqual(u'うずまきナルト',
+                         naru_gerrit.get('name'))
+        # TODO this should be tested in the tracker as well
+        del_url = config.GATEWAY_URL +\
+            '/manage/services_users/?email=datte@bayo.org'
+        d = requests.delete(del_url,
+                            cookies={'auth_pubtkt': auth_cookie})
+        self.assertTrue(int(d.status_code) < 400, d.status_code)
+        self.assertEqual(False,
+                         self.gu.get_account('naruto'))

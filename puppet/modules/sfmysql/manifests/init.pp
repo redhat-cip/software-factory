@@ -40,4 +40,9 @@ class sfmysql {
       backup_script  => 'sfmysql/backup.sh.erb',
       restore_script => 'sfmysql/restore.sh.erb',
     }
+
+    file_line{ 'utf8_clients':
+      path => '/etc/my.cnf',
+      line => 'character_set_server = utf8',
+    }
 }

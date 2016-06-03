@@ -8,6 +8,7 @@
     database = <%= @mysql_db %>
     username = <%= @mysql_user %>
     port = <%= @mysql_port %>
+    url = jdbc:mysql://<%= @mysql_host %>/<%= @mysql_db %>?useUnicode=yes&characterEncoding=UTF-8
 [auth]
     type = HTTP
     gitBasicAuth = true

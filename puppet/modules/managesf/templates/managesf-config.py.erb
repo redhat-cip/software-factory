@@ -128,7 +128,7 @@ redmine = {
 }
 
 sqlalchemy = {
-    'url': 'mysql://<%= @managesf_mysql_username %>:<%= @managesf_mysql_password %>@<%= @managesf_mysql_host %>/<%= @managesf_mysql_db %>',
+    'url': 'mysql://<%= @managesf_mysql_username %>:<%= @managesf_mysql_password %>@<%= @managesf_mysql_host %>/<%= @managesf_mysql_db %>?charset=utf8',
     'encoding': 'utf-8',
 }
 
