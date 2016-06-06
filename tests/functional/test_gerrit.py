@@ -281,3 +281,36 @@ class TestGerrit(Base):
             cookies=dict(
                 auth_pubtkt=config.USERS[config.USER_1]['auth_cookie']))
         self.assertTrue('"2.11.5"' in resp.text)
+
+    def test_gitweb_access(self):
+        """ Test if gitweb access works correctly
+        """
+        pub_pname = 'p_public_%s' % create_random_str()
+        self.create_project(pub_pname)
+
+        priv_pname = 'p_private_%s' % create_random_str()
+        self.create_project(priv_pname, options={"private": ""})
+
+        # Test access to a public repo first
+        url = "%s/r/gitweb?p=%s.git" % (config.GATEWAY_URL, pub_pname)
+        expected_title = "%s.git/summary" % pub_pname
+
+        resp = requests.get(url)
+        self.assertTrue(resp.url.endswith('/r/gitweb?p=%s.git' % pub_pname))
+        self.assertTrue(expected_title in resp.text)
+
+        # Test anonymous access to a private repo
+        url = "%s/r/gitweb?p=%s.git" % (config.GATEWAY_URL, priv_pname)
+        expected_title = "%s.git/summary" % priv_pname
+
+        resp = requests.get(url)
+        self.assertTrue("auth/login" in resp.url)
+        self.assertFalse(expected_title in resp.text)
+
+        # Test authenticated access to a private repo
+        resp = requests.get(
+            url,
+            cookies=dict(
+                auth_pubtkt=config.USERS[config.USER_1]['auth_cookie']))
+        self.assertTrue(resp.url.endswith('/r/gitweb?p=%s.git' % priv_pname))
+        self.assertTrue(expected_title in resp.text)

@@ -22,6 +22,9 @@ cmsg="Provide the default config"
 [ "$1" = "upgrade" ] && {
     [ -f rules.pl ] && git rm rules.pl
     cmsg="Auto upgrade default config"
+
+    git config -f project.config --replace-all access.refs/meta/config.read "group Registered Users" "group Registered Users"
+    git config -f project.config --replace-all access.refs/meta/config.read "group Anonymous Users" "group Anonymous Users"
 }
 # As this we be called by puppet if gerrit.war change then
 # be sure to not overwrite project.config if modified
