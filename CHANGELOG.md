@@ -1,3 +1,50 @@
+=============
+Release Notes
+=============
+
+2.2.2 2016-06-21
+================
+
+New Features
+------------
+
+- Add commands related to the services_users management. CRUD to deals with registered users on SF.
+- An automatic groovy scripts will remove offline jenkins slave daily.
+- Gerritbot channels configuration is now managed through the config-repo.
+
+
+Upgrade Notes
+-------------
+
+- Fix mumble upgrade to keep TLS certificates and room created.
+- Gerritbot channels.yaml configuration file will be automatically submitted to the configuration repo
+
+
+Critical Issues
+---------------
+
+- Fix backup restore to properly reset mysql service user credencials.
+- Fix nodepool paramiko incorrect version and logs of image-update command.
+
+
+Bug Fixes
+---------
+
+- Change to request the api.github.com/users/emails for fetching user emails
+- Support unicode full names in Gerrit and Redmine.
+- Fix zuul_swift_upload.py artifact export on Swift no working since SF 2.2.1.
+- Properly set postfix myhostname to the fqdn. To avoid Greylisting, operator needs to configure the reverse dns of public ip to the fqdn.
+- Allow Gitweb access for public projects anonymously
+
+
+Other Notes
+-----------
+
+- Removal of membership management for project/create endpoint in the CLI.
+- Add the Gitweb kogakure theme by default.
+- Nodepool upgrade to 1fd2a14ab79d256419083e2b2d9c463af36e039a (May 18, 2016 )
+
+
 2.2.1  2016-05-23
 =================
 
