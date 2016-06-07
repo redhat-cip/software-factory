@@ -24,7 +24,7 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-# from selenium.common.exceptions import NoSuchElementException
+from selenium.common.exceptions import ElementNotVisibleException
 
 
 BOOTSTRAP_CAPTION = '''
@@ -85,6 +85,16 @@ class BaseGuiTest(unittest.TestCase):
         self.driver.switch_to.frame(iframe)
         self.driver.find_element_by_id("login-btn").click()
         self.driver.switch_to.default_content()
+        switch = None
+        count = 0
+        while not switch and count < 10:
+            t = self.driver.find_element_by_id("toggle")
+            self.driver.implicitly_wait(1)
+            t.click()
+            try:
+                switch = self.driver.find_element_by_name('username')
+            except ElementNotVisibleException:
+                count += 1
         self.driver.find_element_by_name("username").send_keys(username)
         self.driver.find_element_by_name("password").send_keys(passwd)
         self.driver.find_element_by_name("password").submit()

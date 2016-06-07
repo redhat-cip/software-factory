@@ -5,6 +5,10 @@
         <link rel="stylesheet" type="text/css" href="/static/bootstrap/css/bootstrap.min.css">
         <link rel="stylesheet" type="text/css" href="/static/font-awesome/css/font-awesome.min.css">
         <script type="text/javascript" src="/static/js/topmenu.js"></script>
+        <script type="text/javascript" src="/static/js/jquery.min.js"></script>
+        <style type="text/css">
+         div.panel-body {background-color: #f8f8f8;}
+        </style>
     </head>
 
     <body>
@@ -30,6 +34,9 @@
                                 <i class="fa fa-sign-in fa-fw"></i>
                             </button>
                        </form>
+                       <% end %>
+                       <!-- If both are enabled set a sperator between them -->
+                       <% if not @launchpad["disabled"] and not @github["disabled"] %>
                        <br />
                        <hr />
                        <% end %>
@@ -43,10 +50,16 @@
                                 <i class="fa fa-sign-in fa-fw"></i>
                             </button>
                        </form>
+                       <% end %>
+                       <% if @github["disabled"] and @launchpad["disabled"] %>
+                       <div id="login-form">
+                       <% else %>
+                       <div id="login-form" class="hidden">
                        <br />
                        <hr />
                        <% end %>
-                        <form method="post" action="/auth/login/" class="form-signin" target="_top">
+                        <p><b>Please enter your credentials</b></p>
+                        <form method="post" action="/auth/login/" class="form-signin" target="_top"/>
                             % if message:
                             <div class="form-group has-error">
                             % else:
@@ -66,14 +79,27 @@
                             <input type="hidden" name="back" value="${back}">
                             <input type="hidden" name="method" value="Password">
 
-                            <button type="submit" class="btn btn-primary col-md-12">
-                                Internal Login
-                                <i class="fa fa-sign-in fa-fw"></i>
-                            </button>
+                            <button type="submit" class="btn btn-primary col-md-12">Log in<i class="fa fa-sign-in fa-fw"></i></button>
                         </form>
+                       </div>
+                       <% if not @github["disabled"] or not @launchpad["disabled"] %>
+                       <div id="login-form-toogling" style="padding-top: 50px;">
+                         <a id="toggle" title="Click here to log in as an administrator or if you were provided with specific credentials" href="#">Toggle login form</a>
+                       </div>
+                       <% end %>
                     </div>
                 </div>
             </div>
+        <script>
+          $( "#toggle" ).click(function(){
+            if ( $( "#login-form" ).hasClass( 'hidden' ) ) {
+              $( "#login-form" ).removeClass('hidden');
+            }
+            else {
+              $( "#login-form" ).addClass('hidden');
+            }
+          });
+        </script>
         <%= @theme["loginpage_custom_footer"] %>
     </body>
 </html>
