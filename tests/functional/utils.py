@@ -224,7 +224,11 @@ class ManageSfUtils(Tool):
 
     def addUsertoProjectGroups(self, auth_user, project, new_user, groups):
         passwd = config.USERS[auth_user]['password']
-        umail = config.USERS[new_user]['email']
+        if new_user in config.USERS:
+            umail = config.USERS[new_user]['email']
+        else:
+            # Likely we want to add a group not a user
+            umail = new_user
         cmd = self.base_cmd % (auth_user, passwd)
         cmd = cmd + " membership add --project %s " % project
         cmd = cmd + " --user %s --groups %s" % (umail, groups)

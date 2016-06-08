@@ -56,6 +56,27 @@ class TestProjectMembership(Base):
                                options)
         self.projects.append(name)
 
+    def test_standalone_group_as_member(self):
+        """ Test if a standalone group can be added/removed to project groups
+        """
+        pname = 'p/%s' % create_random_str()
+        groupname = 'grp/%s' % create_random_str()
+        self.create_project(pname, config.ADMIN_USER)
+        self.msu.create_or_delete_group("admin", groupname)
+        # Here we add the group (groupname) instead of a user
+        groups = 'ptl-group'
+        self.msu.addUsertoProjectGroups(config.ADMIN_USER, pname,
+                                        groupname, groups)
+        self.assertIn(groupname,
+                      [g['name'] for
+                       g in self.gu.get_group_group_members("%s-ptl" % pname)])
+        if has_issue_tracker():
+            gid = self.rm.get_group_id(groupname)
+            self.assertEqual(self.rm.get_project_roles_for_user(pname, gid)[0],
+                             'Manager')
+
+        self.msu.create_or_delete_group("admin", groupname, "delete")
+
     def test_admin_manage_project_members(self):
         """ Test admin can add and delete users from all project groups
         """
