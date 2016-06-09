@@ -105,6 +105,24 @@ state delete):
 
      DELETE FROM node WHERE state_time < (UNIX_TIMESTAMP() - 86400) AND state = 4;
 
+How can I change the hostname?
+..............................
+
+You can change the hostname after the deployment by setting the fqdn parameter
+in /etc/puppet/hiera/sf/sfconfig.yaml, removing the existing SSL certificates
+(only required if runninng functional tests and using the default self-signed
+certificates) and running sfconfig.sh again:
+
+.. code-block:: bash
+
+    sed -i -e 's/fqdn:.*/fqdn: mynewhostname.com/g' /etc/puppet/hiera/sf/sfconfig.yaml
+    sed -i -e 's/sftests.com/sftests2.com/g' /etc/puppet/hiera/sf/arch.yaml
+    rm /root/sf-bootstrap-data/certs/gateway.* /root/openssl.cnf
+    sfconfig.sh
+
+Please note that you might need to update URLs in other places as well, for
+example git remote urls in .gitreview and .git/config files in repositories
+hosted on Software Factory.
 
 How-to create channels in Mumble ?
 ..................................

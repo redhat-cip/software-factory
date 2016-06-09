@@ -45,6 +45,11 @@ Host ${DOMAIN}
     Port 29418
     IdentityFile /root/sf-bootstrap-data/ssh_keys/gerrit_admin_rsa
 EOF
+
+    # Make sure the keys in bootstrap are same as in sfcreds.yaml. This is only
+    # needed to run functional test because tests use this directory. A running
+    # SF only uses data from /etc/puppet/hiera/sf/sfcreds.yaml.
+    recreate_bootstrap_data
 }
 
 function generate_random_pswd {
@@ -176,11 +181,29 @@ EOF
         hieraedit.py --yaml /etc/puppet/hiera/sf/sfcreds.yaml -f ${OUTPUT}/gateway.key gateway_key
         hieraedit.py --yaml /etc/puppet/hiera/sf/sfcreds.yaml -f ${OUTPUT}/gateway.crt gateway_crt
         hieraedit.py --yaml /etc/puppet/hiera/sf/sfcreds.yaml -f ${OUTPUT}/gateway.crt gateway_chain
+        # Trust this certificate. This is mostly required for sfmanager
+        cat ${OUTPUT}/gateway.crt >> /etc/pki/tls/certs/ca-bundle.crt
     }
     # Update missing chain configuration (TODO: move this to global config updater (coming soon))
     grep -q '^gateway_chain:' /etc/puppet/hiera/sf/sfcreds.yaml || \
         hieraedit.py --yaml /etc/puppet/hiera/sf/sfcreds.yaml -f ${OUTPUT}/gateway.crt gateway_chain
 }
+
+function recreate_bootstrap_data {
+    python -c "import yaml;print yaml.load(open('/etc/puppet/hiera/sf/sfcreds.yaml')).get('service_rsa')" > ${BUILD}/ssh_keys/service_rsa
+    echo -n "ssh-rsa " > ${BUILD}/ssh_keys/service_rsa.pub
+    python -c "import yaml;print yaml.load(open('/etc/puppet/hiera/sf/sfcreds.yaml')).get('creds_service_pub_key')" >> ${BUILD}/ssh_keys/service_rsa.pub
+    python -c "import yaml;print yaml.load(open('/etc/puppet/hiera/sf/sfcreds.yaml')).get('jenkins_rsa')" > ${BUILD}/ssh_keys/jenkins_rsa
+    echo -n "ssh-rsa " > ${BUILD}/ssh_keys/jenkins_rsa.pub
+    python -c "import yaml;print yaml.load(open('/etc/puppet/hiera/sf/sfcreds.yaml')).get('jenkins_rsa_pub')" >> ${BUILD}/ssh_keys/jenkins_rsa.pub
+    python -c "import yaml;print yaml.load(open('/etc/puppet/hiera/sf/sfcreds.yaml')).get('gerrit_admin_rsa')" > ${BUILD}/ssh_keys/gerrit_admin_rsa
+    python -c "import yaml;print yaml.load(open('/etc/puppet/hiera/sf/sfcreds.yaml')).get('gerrit_service_rsa')" > ${BUILD}/ssh_keys/gerrit_service_rsa
+    echo -n "ssh-rsa " > ${BUILD}/ssh_keys/gerrit_service_rsa.pub
+    python -c "import yaml;print yaml.load(open('/etc/puppet/hiera/sf/sfcreds.yaml')).get('gerrit_service_rsa_pub')" >> ${BUILD}/ssh_keys/gerrit_service_rsa.pub
+    python -c "import yaml;print yaml.load(open('/etc/puppet/hiera/sf/sfcreds.yaml')).get('privkey_pem')" > ${BUILD}/certs/privkey_pem
+    python -c "import yaml;print yaml.load(open('/etc/puppet/hiera/sf/sfcreds.yaml')).get('pubkey_pem')" > ${BUILD}/certs/pubkey_pem
+}
+
 
 function wait_for_ssh {
     local host=$1

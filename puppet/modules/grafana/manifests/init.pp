@@ -42,6 +42,7 @@ class grafana {
     hasrestart => true,
     require    => [File['/etc/grafana/grafana.ini'],
                    Exec['systemctl_reload']],
+    subscribe   => File['/etc/grafana/grafana.ini'],
   }
 
   file { '/root/grafana-init.sql':

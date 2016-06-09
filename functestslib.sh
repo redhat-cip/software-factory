@@ -482,6 +482,18 @@ function run_upgrade {
     checkpoint "run_upgrade"
 }
 
+function change_fqdn {
+    echo "$(date) ======= change_fqdn"
+    ssh sftests.com "sed -i -e 's/fqdn: sftests.com/fqdn: sftests2.com/g' /etc/puppet/hiera/sf/sfconfig.yaml"
+    ssh sftests.com "sed -i -e 's/sftests.com/sftests2.com/g' /etc/puppet/hiera/sf/arch.yaml"
+    # This triggers cert recreating in sfconfig.sh. Should be done automatically
+    # in the Ansible task update_fqdn; but that is currently executed after cert
+    # creation.
+    ssh sftests.com "rm sf-bootstrap-data/certs/gateway.* openssl.cnf"
+
+    checkpoint "change_fqdn"
+}
+
 function run_sfconfig {
     echo "$(date) ======= run_sfconfig"
     ssh sftests.com sfconfig.sh &> ${ARTIFACTS_DIR}/last_sfconfig.sh || fail "sfconfig.sh failed" ${ARTIFACTS_DIR}/last_sfconfig.sh

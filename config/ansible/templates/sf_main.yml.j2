@@ -1,6 +1,12 @@
 ---
 # This file is managed by sfconfig.sh, don't edit.
 # This playbook applies puppet and ansible roles.
+
+- hosts: managesf
+  gather_facts: no
+  tasks:
+    - include: tasks/update_fqdn_step1.yaml
+
 {% for host in inventory %}{% if 'install-server' not in host['roles'] %}
 
 - hosts: {{ host['hostname'] }}
@@ -30,3 +36,8 @@
       when: selinuxenabled
 
 {% endfor %}
+
+- hosts: managesf
+  gather_facts: no
+  tasks:
+    - include: tasks/update_fqdn_step2.yaml

@@ -1,0 +1,21 @@
+---
+
+- name: Check if fqdn has been changed
+  shell: test `hostname -d` = "{{ fqdn }}"
+  register: fqdn_changed
+  failed_when: "fqdn_changed.rc > 1"
+  changed_when: "fqdn_changed.rc == 1"
+
+- hostname: name=managesf.{{ fqdn }}
+  when: fqdn_changed.rc == 1
+
+- name: Gather facts after hostname change again
+  action: setup
+
+- name: Restart mariadb service
+  when: fqdn_changed.rc == 1
+  service: name=mariadb state=restarted
+
+- name: Touch /root/fqdn_changed
+  when: fqdn_changed.rc == 1
+  file: path=/root/fqdn_changed state=touch
