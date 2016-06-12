@@ -558,3 +558,21 @@ class TestManageSF(Base):
         self.assertEqual(self.msu.get_project_page(config.USER_2,
                                                    project).strip(),
                          "")
+
+    def test_api_key_auth_with_sfmanager(self):
+        """Test the api key auth workflow"""
+        user2_cookies = dict(
+            auth_pubtkt=config.USERS[config.USER_2]['auth_cookie'])
+        url = "http://%s%s" % (config.GATEWAY_HOST, "/auth/apikey/")
+        create_key = requests.post(url, cookies=user2_cookies)
+        self.assertEqual(201,
+                         create_key.status_code)
+        key = create_key.json().get('api_key')
+        # call a simple command that needs authentication
+        cmd = "sfmanager --url %s --auth-server-url " \
+            "%s --api-key %s sf_user list" % (config.GATEWAY_URL,
+                                              config.GATEWAY_URL,
+                                              key)
+        users = self.msu.exe(cmd)
+        self.assertTrue(config.USER_2 in users,
+                        "'%s' returned %s" % (cmd, users))
