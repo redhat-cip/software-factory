@@ -152,6 +152,19 @@ class TestGerritHooks(Base):
             self._test_update_issue_hooks(template, final_status, pname)
 
     @skipIfIssueTrackerMissing()
+    def test_gerrit_hook_double_quotes(self):
+        """test commit messages with double quotes"""
+        for template, final_status in TEST_MSGS:
+            verbose_template = """Super fix
+
+This fix solves the Universe. Not just the "Universe", the Universe.
+"""
+            verbose_template += template
+            pname = 'p_%s' % create_random_str()
+            self._test_update_issue_hooks(verbose_template, final_status,
+                                          pname)
+
+    @skipIfIssueTrackerMissing()
     def test_gerrit_hook_namespace(self):
         """test various commit messages triggering a hook (with namespace)"""
         for template, final_status in TEST_MSGS:

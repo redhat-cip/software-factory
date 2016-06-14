@@ -35,54 +35,60 @@
 #                  --change-owner
 #                  --newrev
 
+QUOTE="\""
+ESCAPED="\\\""
+
+# TODO Find a better place to store these logs
+LOGFILE=/tmp/hook.log
+
 while [ $# -gt 1 ]
 do
 key="$1"
 
 case $key in
     --change)
-    CHANGE="$2"
+    CHANGE="${2//$QUOTE/$ESCAPED}"
     shift # past argument
     ;;
     --is-draft)
-    ISDRAFT="$2"
+    ISDRAFT="${2//$QUOTE/$ESCAPED}"
     shift # past argument
     ;;
     --change-url)
-    CHANGEURL="$2"
+    CHANGEURL="${2//$QUOTE/$ESCAPED}"
     shift # past argument
     ;;
     --project)
-    PROJECT="$2"
+    PROJECT="${2//$QUOTE/$ESCAPED}"
     shift # past argument
     ;;
     --branch)
-    BRANCH="$2"
+    BRANCH="${2//$QUOTE/$ESCAPED}"
     ;;
     --topic)
-    TOPIC="$2"
+    TOPIC="${2//$QUOTE/$ESCAPED}"
     shift # past argument
     ;;
     --uploader)
-    UPLOADER="$2"
+    UPLOADER="${2//$QUOTE/$ESCAPED}"
     shift # past argument
     ;;
     --commit)
-    COMMIT="$2"
+    COMMIT="${2//$QUOTE/$ESCAPED}"
     ;;
     --patchset)
-    PATCHSET="$2"
+    PATCHSET="${2//$QUOTE/$ESCAPED}"
     shift # past argument
     ;;
     --kind)
-    KIND="$2"
+    KIND="${2//$QUOTE/$ESCAPED}"
     shift # past argument
     ;;
     --change-owner)
-    CHANGEOWNER="$2"
+    CHANGEOWNER="${2//$QUOTE/$ESCAPED}"
     ;;
     --newrev)
-    NEWREV="$2"
+    NEWREV="${2//$QUOTE/$ESCAPED}"
     ;;
     *)
             # unknown option
@@ -91,7 +97,10 @@ esac
 shift # past argument or value
 done
 
+echo $(date +'%F %T') " - $0 called for change $CHANGE" | tee -a ${LOGFILE}
+
 COMMIT_MESSAGE=`git cat-file -p $COMMIT`
+COMMIT_MESSAGE="${COMMIT_MESSAGE//$QUOTE/$ESCAPED}"
 
 MANAGESF_BASE_URL=http://managesf.<%= @fqdn %>
 SF_SERVICE_PASSWORD=<%= @service_user_password %>
