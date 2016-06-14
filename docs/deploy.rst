@@ -189,6 +189,10 @@ First time: **Please read `Root password consideration`**.
  [root@managesf ~]# vim /etc/puppet/hiera/sf/sfconfig.yaml
  [root@managesf ~]# sfconfig.sh
 
+Notice that the configuration is versioned and it is recommended to use git diff and git commit
+command to check files modifications.
+
+
 Network Access
 --------------
 

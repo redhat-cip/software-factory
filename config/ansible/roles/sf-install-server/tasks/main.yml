@@ -1,0 +1,3 @@
+---
+- name: "Version hiera file"
+  shell: cd /etc/puppet/hiera/sf; [ -d .git ] || { git init .; git add *; git commit -m 'init'; }
