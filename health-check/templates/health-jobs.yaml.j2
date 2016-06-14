@@ -1,27 +1,19 @@
-- job:
-    name: "health-{{ node }}-unit-tests"
+- job-template:
+    name: "health-{node}-unit-tests"
     defaults: global
-    node: "{{ node }}"
+    node: "{node}"
     triggers:
       - zuul
     builders:
       - prepare-workspace
       - shell: cd $ZUUL_PROJECT && ./run_tests.sh
 
-- job:
-    name: "health-{{ node }}-functional-tests"
+- job-template:
+    name: "health-{node}-functional-tests"
     defaults: global
-    node: "{{ node }}"
+    node: "{node}"
     triggers:
       - zuul
     builders:
       - prepare-workspace
       - shell: cd $ZUUL_PROJECT && ./run_functional-tests.sh
-
-
-- project:
-    name: {{ node }}-health
-    node: {{ node }}
-    jobs:
-      - '{name}-unit-tests'
-      - '{name}-functional-tests'

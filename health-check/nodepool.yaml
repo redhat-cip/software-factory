@@ -20,7 +20,7 @@
 - hosts: install-server
   tasks:
     - name: "Check if image is already defined"
-      shell: "grey -q '{{ node }}' /root/config/nodepool/labels.yaml && grep -q '{{ base_image_name }}' /root/config/nodepool/images.yaml"
+      shell: "grep -q '{{ node }}' /root/config/nodepool/labels.yaml && grep -q '{{ base_image_name }}' /root/config/nodepool/images.yaml"
       register: sfconfiged
       failed_when: False
 
@@ -77,9 +77,6 @@
       register: imagelist
       failed_when: imagelist.stdout.find("{{ image_name }}") == -1
 
-#    - name: "Wait for server to be ACTIVE"
-#      wait_for: path=/var/log/nodepool/debug.log timeout=900 search_regex="Status of server.* ACTIVE"
-
     - name: "Wait for ssh connection to be okay for image build"
       wait_for: path=/var/log/nodepool/image.log timeout=900 search_regex="{{ image_name }}.* access okay"
 
@@ -88,3 +85,12 @@
 
     - name: "Wait for snapshot to be ready"
       wait_for: path=/var/log/nodepool/nodepool.log timeout=900 search_regex="SnapshotImageUpdater.* Image .*{{ image_name }}.* in {{ provider_name }} is ready"
+
+    - name: "Wait for the first slave node to connect on Jenkins"
+      wait_for: path=/var/log/nodepool/debug.log timeout=900 search_regex=".*Node .* ready in provider.*"
+
+    - name: "Wait for the first slave to appears in Jenkins"
+      shell: for i in {1..100}; do sleep 1; curl -Ls http://gateway/jenkins/computer/ | grep base_centos-nested-cloud- > /dev/null && exit 0; done; exit 1
+
+    - name: "Wait for the first slave to appears online in Jenkins"
+      shell: for i in {1..100}; do sleep 9; curl -Ls http://gateway/jenkins/computer/ | grep offline > /dev/null && continue || exit 0; done; exit 1

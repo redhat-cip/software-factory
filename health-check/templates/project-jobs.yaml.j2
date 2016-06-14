@@ -2,6 +2,6 @@
     name: {{ project }}
     node: {{ node }}
     jobs:
-{% for job in gate: %}
+{% for job in jobs %}
       - '{{ job }}'
 {% endfor %}
