@@ -3,6 +3,16 @@ They are designed to run from the install-server to use the dynamic inventory.
 
 Each playbook test a specific service:
 
+
+gerritbot.yaml
+---------
+* Start fake_ircd service
+* Setup gerritbot and start service
+* Check gerritbot connect to gerrit and irc
+* Check gerritbot send irc message
+* Test gerritbot config-update
+* Check gerritbot send irc message to correct channel
+
 nodepool.yaml
 ---------
 * Setup provider with sfconfig.sh
@@ -25,6 +35,10 @@ playbooks/config_submit_change.yaml
 ---------
 * Submit and wait config repo change
 * Check for SUCCESS in config-update post job log
+
+playbooks/gerritbot_fakeircd_check.yaml
+---------
+* Check for a pattern in fake_ircd logs
 
 playbooks/jenkins_check_job.yaml
 ---------

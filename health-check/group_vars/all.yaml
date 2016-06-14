@@ -21,3 +21,7 @@ image_name: sfcentos
 
 # Swift
 os_container: sflogs
+
+# Gerritbot
+bot_name: health-check-bot
+channel_name: "irc-channel-health-check{{ suffix }}"

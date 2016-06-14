@@ -2,6 +2,7 @@
 # support gerrit connection to managesf too
 [{{ fqdn }}]:29418 {{ gerrit_service_rsa_pub.split()[0] }} {{ gerrit_service_rsa_pub.split()[1] }}
 [localhost]:29418 {{ gerrit_service_rsa_pub.split()[0] }} {{ gerrit_service_rsa_pub.split()[1] }}
+[gerrit]:29418 {{ gerrit_service_rsa_pub.split()[0] }} {{ gerrit_service_rsa_pub.split()[1] }}
 {% for host in inventory %}
 
 # Host: {{ host['name'] }}.{{ fqdn }}

@@ -84,6 +84,9 @@ function run_health_base {
     ssh ${SF_HOST} ansible-playbook "--extra-vars='node=master'" /etc/ansible/health-check/zuul.yaml > ${ARTIFACTS_DIR}/integration_tests.txt \
         && echo "Basic integration test SUCCESS"                        \
         || fail "Basic integration test failed" ${ARTIFACTS_DIR}/integration_tests.txt
+    ssh ${SF_HOST} ansible-playbook /etc/ansible/health-check/gerritbot.yaml >> ${ARTIFACTS_DIR}/integration_tests.txt \
+        && echo "Gerritbot integration test SUCCESS"                        \
+        || fail "Gerritbot integration test failed" ${ARTIFACTS_DIR}/integration_tests.txt
     checkpoint "run_health_base"
 }
 

@@ -12,6 +12,7 @@ inventory:
       - etherpad
       - lodgeit
       - gerrit
+      - gerritbot
       - zuul
       - nodepool
       - jenkins

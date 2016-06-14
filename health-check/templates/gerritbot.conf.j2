@@ -1,0 +1,14 @@
+[ircbot]
+nick={{ bot_name }}
+pass=
+server=localhost
+port=6667
+channel_config=/etc/gerritbot/channels.yaml
+pid=/var/run/gerritbot/gerritbot.pid
+log_config=/etc/gerritbot/logging.conf
+
+[gerrit]
+user=jenkins
+key=/var/lib/gerritbot/.ssh/id_rsa
+host=gerrit
+port=29418

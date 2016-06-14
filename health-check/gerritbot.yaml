@@ -1,0 +1,89 @@
+---
+- hosts: gerritbot
+  tasks:
+# * Start fake_ircd service
+    - name: "Setup fake_ircd.py"
+      copy: src=files/fake_ircd.py dest=/usr/local/bin/fake_ircd.py mode=0755
+
+    - name: "Start fake irc server"
+      command: /usr/local/bin/fake_ircd.py --daemon
+
+# * Setup gerritbot and start service
+    - name: "Setup configuration"
+      template: src=templates/gerritbot.conf.j2 dest=/etc/gerritbot/gerritbot.conf
+
+    - name: "Setup channels"
+      copy: src=files/gerritbot-channels.yaml dest=/etc/gerritbot/channels.yaml
+
+    - name: "Restart service"
+      service: name=gerritbot state=restarted
+
+# * Check gerritbot connect to gerrit and irc
+    - name: "Wait for gerritbot to connect to gerrit"
+      wait_for: path=/var/log/gerritbot/gerritbot.log search_regex="INFO gerritbot{{':'}} Start watching Gerrit event stream."
+
+    - name: "Wait for gerritbot to connect to irc"
+      wait_for: path=/var/log/gerritbot/gerritbot.log search_regex="INFO gerritbot{{':'}} Identified with IRC server."
+
+    - name: "Wait for gerritbot to connect to channel"
+      wait_for: path=/var/log/gerritbot/gerritbot.log search_regex="INFO gerritbot{{':'}} Joined channel .irc-channel-health-check"
+
+- name: "Reset config repos"
+  include: playbooks/config_reset.yaml
+
+- hosts: install-server
+  tasks:
+    - name: "Create fake config change"
+      command: chdir=/root/config {{ item }}
+      with_items:
+        # Use 'date' dynamic content to make sure a new change is created
+        - bash -c "date '+%s' >> test_gerritbot_notif"
+        - git add test_gerritbot_notif
+        - git commit -m "Test gerritbot notif"
+        - git review
+
+# * Check gerritbot send irc message
+- name: "Check for 'proposed' notification"
+  include: playbooks/gerritbot_fakeircd_check.yaml ircd_logs_pattern="PRIVMSG .irc-channel-health-check .* proposed config. Test gerritbot notif .*http"
+
+# * Test gerritbot config-update
+- hosts: install-server
+  tasks:
+    - name: "Add gerritbot IRC channels with config-repo"
+      command: chdir=/root/config {{ item }}
+      with_items:
+        - git reset --hard HEAD^ # Remove test commit
+        - cp /etc/gerritbot/channels.yaml gerritbot/channels.yaml
+        - cp gerritbot/channels.yaml gerritbot/other-channels.yaml
+        - sed -i -e 's/irc-channel-health-check/{{ channel_name }}/' gerritbot/other-channels.yaml
+        # Use 'date' dynamic content to make sure a new change is created
+        - bash -c "date '+%s' >> test_gerritbot_notif"
+        - git add gerritbot/other-channels.yaml test_gerritbot_notif
+        - git commit -m "Change gerritbot channel" -a
+
+- name: "Submit config repos"
+  include: playbooks/config_submit_change.yaml
+
+- name: "Check for 'merged' notification"
+  include: playbooks/gerritbot_fakeircd_check.yaml ircd_logs_pattern="PRIVMSG .irc-channel-health-check .Merged config. Change gerritbot channel  http..."
+
+- hosts: install-server
+  tasks:
+    - name: "Create fake config change"
+      command: chdir=/root/config {{ item }}
+      with_items:
+        # Use 'date' dynamic content to make sure a new change is created
+        - bash -c "date '+%s' >> test_gerritbot_notif"
+        - git add test_gerritbot_notif
+        - git commit -m "Create new fake config change"
+        - git review
+
+# * Check gerritbot send irc message to correct channel
+- name: "Check for 'proposed' notification on new channel"
+  include: playbooks/gerritbot_fakeircd_check.yaml ircd_logs_pattern="PRIVMSG .{{ channel_name }} .* proposed config. Create new fake config change .*http"
+
+- hosts: gerritbot
+  tasks:
+    - name: "Kill fake_ircd daemon"
+      shell: kill -9 $(ps aux | awk '/\/usr\/local\/bin\/fake_ircd.py/ { print $2 }')
+      ignore_errors: true
