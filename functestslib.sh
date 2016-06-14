@@ -80,15 +80,16 @@ function clean_nodepool_tenant {
 }
 
 function run_health_base {
+    set -x
     ssh ${SF_HOST} ansible-playbook /etc/ansible/health-check/zuul.yaml > ${ARTIFACTS_DIR}/integration_tests.txt \
         && echo "Basic integration test SUCCESS"                        \
         || fail "Basic integration test failed" ${ARTIFACTS_DIR}/integration_tests.txt
+    set +x
     checkpoint "run_health_base"
 }
 
 function run_health_openstack {
-    # FIXME: this should be dynamic...
-    export OS_AUTH_URL="http://192.168.42.1:5000/v2.0"
+    export OS_AUTH_URL=${OS_AUTH_URL:-"http://192.168.42.1:5000/v2.0"}
     EXTRA_VARS="node=base_centos base_image_name=sf-${SF_VER} os_slave_network=${HEAT_SLAVE_NETWORK}"
     EXTRA_VARS+=" os_auth_url=${OS_AUTH_URL} os_username=${OS_USERNAME} os_password=${OS_PASSWORD} os_tenant_name=${OS_TENANT_NAME}"
     set -x
