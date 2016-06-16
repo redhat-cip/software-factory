@@ -1,0 +1,8 @@
+$ModLoad ommail
+$ActionMailSMTPServer localhost
+$ActionMailFrom root@localhost
+$ActionMailTo root@localhost
+$template mailSubject,"SSH Login to %hostname%"
+$template mailBody,"%msg%"
+$ActionMailSubject mailSubject
+if $msg contains 'Accepted publickey for' then :ommail:;mailBody
