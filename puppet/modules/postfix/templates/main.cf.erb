@@ -3,13 +3,12 @@ biff = no
 
 append_dot_mydomain = no
 
-myhostname = managesf.<%= @domain %>
+myhostname = <%= @domain %>
 mydomain = <%= @domain %>
 mydestination = $myhostname, localhost
 
 alias_maps = hash:/etc/aliases
 
-virtual_alias_domains = <%= @domain %>
 virtual_alias_maps = hash:/etc/postfix/virtual
 myorigin = <%= @domain %>
 <% if @smtp_relay %>
