@@ -49,6 +49,7 @@ class TestSoftwareFactoryDashboard(unittest.TestCase):
             pass
         self.driver = webdriver.Firefox()
         self.driver.maximize_window()
+        self.driver.implicitly_wait(15)
 
     def _internal_login(self, driver, user, password):
         u = driver.find_element_by_id("username")
