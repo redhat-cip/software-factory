@@ -7,6 +7,7 @@
   command: diff /root/config/gerrit/replication.config /home/gerrit/site_path/etc/replication.config
   register: diffstat
   no_log: True
+  when: rstat.stat.exists == True
   failed_when: diffstat.rc > 1
 - name: Update Gerrit replication.config
   command: cp /root/config/gerrit/replication.config /home/gerrit/site_path/etc/
