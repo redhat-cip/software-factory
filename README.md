@@ -27,6 +27,6 @@ Previous stable release is 2.2.0:
 * Qcow2 image: http://46.231.133.241:8080/v1/AUTH_sf/sf-images/softwarefactory-C7.0-2.2.0.img.qcow2
 * Signed digest: http://46.231.133.241:8080/v1/AUTH_sf/sf-images/softwarefactory-C7.0-2.2.0.digest
 
-Current dev version is 2.2.2:
+Current dev version is 2.2.3:
 
 * Qcow2 image: http://46.231.133.241:8080/v1/AUTH_sf/sf-images/softwarefactory-C7.0-2.2.3.img.qcow2
