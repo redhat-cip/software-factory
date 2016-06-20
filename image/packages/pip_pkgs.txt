@@ -19,3 +19,4 @@ basicauth==0.3
 htpasswd
 wsgiref==0.1.2
 pygerrit
+-e git+https://github.com/openstack-infra/python-storyboardclient.git#egg=python-storyboardclient

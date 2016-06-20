@@ -4,7 +4,7 @@ CREATE DATABASE IF NOT EXISTS cauth CHARACTER SET utf8 COLLATE utf8_general_ci;
 GRANT ALL PRIVILEGES ON cauth.* TO 'cauth'@'{{ host }}' IDENTIFIED BY "{{ hostvars[inventory_hostname]["creds_cauth_sql_pwd"] }}" WITH GRANT OPTION;
 {% endfor %}
 
-{% for service in ("redmine", "gerrit", "nodepool", "etherpad", "lodgeit", "gnocchi", "grafana", "managesf") %}
+{% for service in ("redmine", "gerrit", "nodepool", "etherpad", "lodgeit", "gnocchi", "grafana", "managesf", "storyboard") %}
   {% if service in groups %}
 CREATE DATABASE IF NOT EXISTS {{ service }} CHARACTER SET utf8 COLLATE utf8_general_ci;
 GRANT ALL PRIVILEGES ON {{ service }}.* TO '{{ service }}'@'localhost' IDENTIFIED BY "{{ hostvars[inventory_hostname]["creds_%s_sql_pwd" % service] }}" WITH GRANT OPTION;

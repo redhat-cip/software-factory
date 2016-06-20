@@ -1,0 +1,35 @@
+---
+- group: name=storyboard
+- user: name=storyboard group=storyboard shell=/sbin/nologin home=/var/lib/storyboard
+- file: path=/var/lib/storyboard state=directory mode=0700 owner=storyboard group=storyboard
+- file: path=/etc/storyboard state=directory mode=0700 owner=storyboard group=storyboard
+- include_vars: /etc/puppet/hiera/sf/sfcreds.yaml
+
+- name: "Fix pbr version issue"
+  copy: src=storyboard_pbr_version_fix.py dest=/src/python-storyboardclient/storyboardclient/__init__.py
+
+- name: "Install storyboard.conf"
+  template: src={{ item }}.j2 dest=/etc/storyboard/{{ item }} owner=storyboard group=storyboard mode=0400
+  with_items:
+    - storyboard.conf
+    - superuser.yaml
+    - projects.yaml
+    - service_token.sql
+
+- name: "Setup database"
+  command: storyboard-db-manage upgrade head
+- name: "Setup superusers"
+  command: storyboard-db-manage load_superusers /etc/storyboard/superuser.yaml
+- name: "Setup initial projects"
+  command: storyboard-db-manage load_projects /etc/storyboard/projects.yaml
+- name: "Setup service_token"
+  command: bash -c "mysql storyboard < /etc/storyboard/service_token.sql"
+
+- name: "Install storyboard service"
+  template: src=storyboard.service.j2 dest=/lib/systemd/system/storyboard.service
+  register: storyboard_service
+- name: "systemctl daemon-reload"
+  command: systemctl daemon-reload
+  when: storyboard_service|changed
+- name: "Start service"
+  service: name=storyboard state=started enabled=yes

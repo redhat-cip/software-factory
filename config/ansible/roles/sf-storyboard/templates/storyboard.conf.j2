@@ -1,0 +1,39 @@
+[DEFAULT]
+debug = True
+lock_path = $state_path/lock
+working_directory = /var/lib/storyboard
+
+log_format = %(asctime)s %(levelname)8s [%(name)s] %(message)s
+log_date_format = %Y-%m-%d %H:%M:%S
+
+use_stderr = True
+bind_host = 0.0.0.0
+bind_port = 20000
+
+[scheduler]
+enable = False
+
+[cors]
+allowed_origins = https://{{ fqdn }}
+max_age=3600
+
+[database]
+connection = mysql+pymysql://storyboard:{{ creds_storyboard_sql_pwd }}@mysql.{{ fqdn }}:3306/storyboard
+max_retries = 10
+retry_interval = 10
+
+min_pool_size = 5
+max_pool_size = 20
+
+idle_timeout = 300
+# Verbosity of SQL debugging information. 0=None, 100=Everything
+# connection_debug = 0
+
+# Add python stack traces to SQL as comment strings
+connection_trace = False
+
+[plugin_token_cleaner]
+enable = False
+
+[plugin_email]
+enable = False

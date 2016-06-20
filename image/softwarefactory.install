@@ -570,6 +570,10 @@ function install_gitweb_theme {
     rm -Rf ${dir}/tmp/kogakure
 }
 
+function copy_sf_ansible_roles {
+    sudo rsync --delete -a --no-owner ./../config/ansible/ ${dir}/etc/ansible/
+}
+
 image_clean() {
     rm -Rf ${dir}/usr/share/doc ${dir}/usr/share/info
     rm -Rf ${dir}/share ${dir}/usr/share/backgrounds
@@ -636,6 +640,9 @@ if [ "$STEP" == 1 ]; then
     checkpoint "etherpad, paste, bup, mod_authpub_tkt installed"
     install_gitweb_theme
     checkpoint "gitweb theme installed"
+    copy_sf_ansible_roles
+    ansible_install sf-storyboard "storyboard_commit: \"${STORYBOARD_COMMIT}\", storyboard_client_commit: \"${STORYBOARD_CLIENT_COMMIT}\""
+    ansible_install sf-storyboard-webclient "storyboard_webclient_commit: \"${STORYBOARD_WEBCLIENT_COMMIT}\""
     image_clean
     do_chroot ${dir} passwd -l root
     checkpoint "image cleaned"

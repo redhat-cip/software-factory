@@ -6,7 +6,7 @@
     - base
     - postfix
     - ntp
-{% for role in host['roles'] %}{% if role in ('redmine', 'mysql', 'gerrit', 'jenkins', 'zuul', 'nodepool', 'managesf', 'murmur') %}
+{% for role in host['roles'] %}{% if role in ('redmine', 'mysql', 'gerrit', 'jenkins', 'zuul', 'nodepool', 'managesf', 'murmur', 'storyboard') %}
     - {{ role }}
 {% endif %}{% endfor %}
   :username: root

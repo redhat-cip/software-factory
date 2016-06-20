@@ -84,6 +84,8 @@ case "${TEST_TYPE}" in
         ;;
     "upgrade")
         ./fetch_image.sh ${SF_PREVIOUS_VER} || fail "Could not fetch ${SF_PREVIOUS_VER}"
+        # before 2.2.3, storyboard wasn't available, remove it from refarch
+        sed -i ${REFARCH_FILE} -e "s/.*storyboard.*//g"
         lxc_init ${SF_PREVIOUS_VER}
         run_bootstraps
         run_provisioner

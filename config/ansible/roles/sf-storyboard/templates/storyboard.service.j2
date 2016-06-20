@@ -1,0 +1,14 @@
+[Unit]
+Description=Storyboard API Service
+After=syslog.target network.target mariadb.service
+
+[Service]
+Type=simple
+User=storyboard
+Group=storyboard
+EnvironmentFile=-/etc/sysconfig/storyboard
+ExecStart=/usr/bin/storyboard-api --config-file /etc/storyboard/storyboard.conf
+ExecReload=/bin/kill -HUP $MAINPID
+
+[Install]
+WantedBy=multi-user.target

@@ -9,6 +9,20 @@ function put_git_mark {
     echo $sha >> ${dir}/etc/SF_GIT_COMMIT
 }
 
+function ansible_install {
+    local role=$1
+    local params=$2
+    local ansible_debug=""
+    [ -z "$DEBUG" ] || ansible_debug="-vvvv"
+    cat <<EOF> $dir/ansible-install-playbook
+- hosts: localhost
+  roles:
+    - { role: "$role", action: "install", $params }
+EOF
+    do_chroot ${dir} ansible-playbook $ansible_debug /ansible-install-playbook
+    checkpoint "$role installed (ansible)"
+}
+
 function _http_fetch {
     local remote_location=$1
     local local_location=$2
@@ -174,7 +188,7 @@ clean_chroot() {
     for log in $(find $dir/var/log -type f || :); do
         > $log
     done
-    rm -rf $dir/tmp/* $dir/var/tmp/* $dir/tmp/.??* $dir/var/tmp/* $dir/var/tmp/.??* || :
+    rm -rf $dir/tmp/* $dir/var/tmp/* $dir/tmp/.??* $dir/var/tmp/* $dir/var/tmp/.??* $dir/ansible-install-playbook* || :
 }
 
 clean_mount_points() {
@@ -183,6 +197,8 @@ clean_mount_points() {
     fi
 
     # Since /dev is a copy, we shall clean it as it will be reconstructed at boot time
+    umount ${dir}/dev/shm || true
+    umount ${dir}/dev/ || true
     rm -rf ${dir}/dev
     mkdir -p ${dir}/dev
 
@@ -285,14 +301,13 @@ clear_trap() {
 }
 
 mount_fs() {
-    for virtual_dir in /proc; do
-        if [ ! -d ${dir}/${virtual_dir} ]; then
-            mkdir -p ${dir}/${virtual_dir}
-        fi
-        mount -obind ${virtual_dir} ${dir}/${virtual_dir}
-    done
+    [ -d ${dir}/proc ] || mkdir ${dir}/proc
+    mount -t proc none ${dir}/proc
 
     # Let's create a copy of the current /dev
     mkdir -p ${dir}/dev/pts
     rsync -aX --delete-before --exclude=shm /dev/ ${dir}/dev/
+
+    [ -d ${dir}/dev/shm ] || mkdir ${dir}/dev/shm
+    mount -t tmpfs none ${dir}/dev/shm
 }

@@ -18,6 +18,8 @@ inventory:
       - jenkins
       - redmine
       - murmur
+      - storyboard
+      - storyboard-webclient
     mem: 8
     cpu: 4
     disk: 20

@@ -1,0 +1,3 @@
+---
+- name: "Install storyboard-webclient config.json"
+  template: src=config.json.j2 dest=/var/www/storyboard/config.json

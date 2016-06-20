@@ -74,6 +74,8 @@ function generate_yaml {
     LODGEIT_MYSQL_SECRET=$(generate_random_pswd 32)
     GRAFANA_MYSQL_SECRET=$(generate_random_pswd 32)
     GNOCCHI_MYSQL_SECRET=$(generate_random_pswd 32)
+    STORYBOARD_MYSQL_SECRET=$(generate_random_pswd 32)
+    STORYBOARD_TOKEN_SECRET=$(generate_random_pswd 32)
     CAUTH_MYSQL_SECRET=$(generate_random_pswd 32)
     MANAGESF_MYSQL_SECRET=$(generate_random_pswd 32)
     SF_SERVICE_USER_SECRET=$(generate_random_pswd 32)
@@ -86,6 +88,8 @@ function generate_yaml {
     sed -i "s#LODGEIT_SQL_PWD#${LODGEIT_MYSQL_SECRET}#" ${OUTPUT}/sfcreds.yaml
     sed -i "s#GRAFANA_SQL_PWD#${GRAFANA_MYSQL_SECRET}#" ${OUTPUT}/sfcreds.yaml
     sed -i "s#GNOCCHI_SQL_PWD#${GNOCCHI_MYSQL_SECRET}#" ${OUTPUT}/sfcreds.yaml
+    sed -i "s#STORYBOARD_SQL_PWD#${STORYBOARD_MYSQL_SECRET}#" ${OUTPUT}/sfcreds.yaml
+    sed -i "s#STORYBOARD_SERVICE_TOKEN#${STORYBOARD_TOKEN_SECRET}#" ${OUTPUT}/sfcreds.yaml
     sed -i "s#CAUTH_SQL_PWD#${CAUTH_MYSQL_SECRET}#" ${OUTPUT}/sfcreds.yaml
     sed -i "s#MANAGESF_SQL_PWD#${MANAGESF_MYSQL_SECRET}#" ${OUTPUT}/sfcreds.yaml
     sed -i "s#SF_SERVICE_USER_PWD#${SF_SERVICE_USER_SECRET}#" ${OUTPUT}/sfcreds.yaml
