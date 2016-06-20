@@ -95,12 +95,13 @@ class TestGerrit(Base):
 
         gu.del_pubkey(k_index)
 
-    def _prepare_review_submit_testing(self, project_options=None):
-        if project_options is None:
-            u2mail = config.USERS[config.USER_2]['email']
-            project_options = {'core-group': u2mail}
+    def _prepare_review_submit_testing(self):
         pname = 'p_%s' % create_random_str()
-        self.create_project(pname, project_options)
+        self.create_project(pname)
+        self.msu.addUsertoProjectGroups(config.ADMIN_USER,
+                                        pname,
+                                        config.USER_2,
+                                        "core-group")
         un = config.ADMIN_USER
         gu = GerritUtils(
             config.GATEWAY_URL,
@@ -204,9 +205,11 @@ class TestGerrit(Base):
         """ Test if reviewers-by-blame plugin works
         """
         pname = 'p_%s' % create_random_str()
-        u2mail = config.USERS[config.USER_2]['email']
-        options = {'core-group': u2mail}
-        self.create_project(pname, options)
+        self.create_project(pname)
+        self.msu.addUsertoProjectGroups(config.ADMIN_USER,
+                                        pname,
+                                        config.USER_2,
+                                        "core-group")
         first_u = config.ADMIN_USER
         gu_first_u = GerritUtils(
             config.GATEWAY_URL,
