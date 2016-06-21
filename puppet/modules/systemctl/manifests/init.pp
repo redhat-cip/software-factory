@@ -13,23 +13,9 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-class socat_gerrit {
-  include ::systemctl
-
-  file {'/lib/systemd/system/socat_gerrit.service':
-    ensure => file,
-    mode   => '0640',
-    owner  => 'root',
-    group  => 'root',
-    source => 'puppet:///modules/socat_gerrit/socat_gerrit.service',
-    notify => [Exec['systemctl_reload'], Service['socat_gerrit']],
-  }
-
-  service {'socat_gerrit':
-    ensure     => running,
-    enable     => true,
-    hasrestart => true,
-    hasstatus  => true,
-    require    => Exec['reload_units'],
+class systemctl {
+  exec {'systemctl_reload':
+    command     => '/usr/bin/systemctl daemon-reload',
+    refreshonly => true,
   }
 }

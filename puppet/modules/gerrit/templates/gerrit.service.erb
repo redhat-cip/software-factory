@@ -1,12 +1,14 @@
 [Unit]
 Description=Web based code review and project management for Git based projects
-After=network.target
+After=network.target mariadb.service
 
 [Service]
 Type=simple
 User=gerrit
 SyslogIdentifier=gerrit
+ExecStartPre=/usr/bin/java -jar /home/gerrit/gerrit.war reindex -d /home/gerrit/site_path
 ExecStart=/usr/bin/java -Xmx<%= @settings['gerrit_heap_limit'] %> -Djava.security.egd=file:///dev/urandom -jar /home/gerrit/site_path/bin/gerrit.war daemon -d /home/gerrit/site_path
+ExecStartPost=/usr/libexec/wait4gerrit
 LimitCPU=infinity
 LimitFSIZE=infinity
 LimitDATA=infinity

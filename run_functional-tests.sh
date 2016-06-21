@@ -69,10 +69,13 @@ case "${TEST_TYPE}" in
         run_bootstraps
         run_serverspec_tests
         run_health_base
+        lxc_poweroff
+        lxc_start
+        wait_boot_finished
         run_functional_tests
         run_provisioner
         run_backup_start
-        lxc_stop
+        lxc_poweroff
         lxc_init
         run_bootstraps
         run_backup_restore

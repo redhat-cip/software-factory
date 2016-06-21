@@ -16,6 +16,7 @@
 class zuul {
   include ::apache
   include ::cauth_client
+  include ::systemctl
 
   $fqdn = hiera('fqdn')
   $url = hiera('url')
@@ -48,6 +49,7 @@ class zuul {
     owner  => 'root',
     group  => 'root',
     source => 'puppet:///modules/zuul/zuul.service',
+    notify  => Exec['systemctl_reload'],
   }
 
   file {'zuul_merger_init':
@@ -57,6 +59,7 @@ class zuul {
     group  => 'root',
     owner  => 'root',
     source => 'puppet:///modules/zuul/zuul-merger.service',
+    notify  => Exec['systemctl_reload'],
   }
 
   group { 'zuul':

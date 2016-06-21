@@ -14,6 +14,7 @@
 # under the License.
 
 class etherpad {
+  include ::systemctl
 
   $fqdn = hiera('fqdn')
   $admin_key = hiera('creds_etherpad_admin_key')
@@ -27,7 +28,7 @@ class etherpad {
     path   => '/lib/systemd/system/etherpad.service',
     mode   => '0740',
     source => 'puppet:///modules/etherpad/etherpad.service',
-    notify => Exec['reload_unit'],
+    notify => Exec['systemctl_reload'],
   }
 
   user { 'etherpad':
@@ -88,19 +89,14 @@ class etherpad {
     refreshonly => true,
   }
 
-  exec {'reload_unit':
-    command     => 'systemctl daemon-reload',
-    path        => '/usr/sbin/:/usr/bin/:/bin/',
-    require     => File['/lib/systemd/system/etherpad.service'],
-    refreshonly => true,
-  }
-
   service { 'etherpad':
     ensure     => running,
     enable     => true,
     hasrestart => true,
     hasstatus  => true,
-    require    => [File['/var/log/etherpad'],Exec['change_owner']],
+    require    => [File['/var/log/etherpad'],
+                   Exec['systemctl_reload'],
+                   Exec['change_owner']],
   }
 
   file { '/var/www/etherpad-lite/src/static/custom/pad.css':

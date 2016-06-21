@@ -18,6 +18,7 @@ class jenkins {
   include ::ssh_keys_jenkins
   include ::cauth_client
   include ::jjb
+  include ::systemctl
 
   $fqdn = hiera('fqdn')
   $auth = hiera('authentication')
@@ -55,6 +56,7 @@ class jenkins {
     owner   => 'jenkins',
     group   => 'jenkins',
     content => template('jenkins/jenkins.service.erb'),
+    notify  => Exec['systemctl_reload'],
   }
 
   file { '/var/cache/jenkins':
@@ -68,6 +70,7 @@ class jenkins {
     ensure  => 'running',
     enable  => true,
     require => [File['/lib/systemd/system/jenkins.service'],
+                Exec['systemctl_reload'],
                 File['/etc/init.d/jenkins'],
                 File['/var/lib/jenkins'],
                 File['/var/cache/jenkins'],
@@ -202,17 +205,11 @@ class jenkins {
   }
 
   file { 'wait4jenkins':
-    path   => '/root/wait4jenkins.sh',
-    mode   => '0740',
+    path   => '/usr/libexec/wait4jenkins',
+    mode   => '0755',
+    owner   => 'root',
+    group   => 'root',
     source => 'puppet:///modules/jenkins/wait4jenkins.sh',
-  }
-
-  # This ressource wait for Jenkins to bee fully UP
-  exec { 'wait4jenkins':
-    path    => '/usr/bin:/usr/sbin:/bin',
-    command => '/root/wait4jenkins.sh',
-    timeout => 900,
-    require => [File['wait4jenkins'],  Service['jenkins']],
   }
 
   file { '/etc/httpd/htpasswd':

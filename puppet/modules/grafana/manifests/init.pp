@@ -30,11 +30,18 @@ class grafana {
     content => template('grafana/grafana.ini'),
   }
 
+  file_line{ 'grafana-systemd-order':
+    path  => '/usr/lib/systemd/system/grafana-server.service',
+    line  => 'After=network-online.target mariadb.service',
+    match => '^After=',
+  }
+
   service { 'grafana-server':
     ensure     => true,
     enable     => true,
     hasrestart => true,
-    require     => File['/etc/grafana/grafana.ini'],
+    require    => [File['/etc/grafana/grafana.ini'],
+                   Exec['systemctl_reload']],
   }
 
   file { '/root/grafana-init.sql':

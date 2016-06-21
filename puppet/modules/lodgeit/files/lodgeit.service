@@ -1,6 +1,6 @@
 [Unit]
 Description=Run LodgeIt.
-After=syslog.target network.target
+After=syslog.target network.target mariadb.service
 
 [Service]
 Type=simple

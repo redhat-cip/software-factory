@@ -14,6 +14,7 @@
 # under the License.
 
 class nodepool {
+  include ::systemctl
 
   $jenkins_rsa_pub = hiera('jenkins_rsa_pub')
   $nodepool = hiera('nodepool')
@@ -55,6 +56,7 @@ class nodepool {
     path    => '/lib/systemd/system/nodepool.service',
     owner   => 'nodepool',
     source  => 'puppet:///modules/nodepool/nodepool.service',
+    notify  => Exec['systemctl_reload'],
   }
 
   file { '/var/run/nodepool':
@@ -133,6 +135,7 @@ class nodepool {
                     File['/etc/nodepool/_nodepool.yaml'],
                     File['/etc/nodepool/scripts'],
                     File['/etc/nodepool/logging.conf'],
+                    Exec['systemctl_reload'],
                     ],
   }
 
