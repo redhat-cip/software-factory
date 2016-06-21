@@ -63,15 +63,19 @@ fi
 
 # Clean old backups if needed
 backups=$(swift list $SWIFT_CONTAINER | sort)
-echo "Container $SWIFT_CONTAINER has $(echo $backups | wc -w) backups before deletion."
+count=$(echo $backups | wc -w)
+echo "Container $SWIFT_CONTAINER has $count backups before deletion."
 for backup in $backups; do
     upload_date=$(swift stat $SWIFT_CONTAINER $backup | grep X-Timestamp | cut -d":" -f 2)
     upload_date=$(echo $upload_date | cut -d"." -f 1)
     if [ $((epoch - upload_date)) -gt $RETENTION_SECS ]; then
-        echo "Backup $backup is too old according to the retention value. Delete it."
-        swift delete $SWIFT_CONTAINER $backup &> /dev/null || {
-            echo "Deleting backup $backup from $SWIFT_CONTAINER failed."
-        }
+        if [ $count -gt 5 ]; then
+            echo "Backup $backup is too old according to the retention value. Delete it."
+            swift delete $SWIFT_CONTAINER $backup &> /dev/null || {
+                echo "Deleting backup $backup from $SWIFT_CONTAINER failed."
+            }
+            let count=count-1
+        fi
     fi
 done
 
