@@ -1,0 +1,4 @@
+---
+fixes:
+  - Prevent the root gnupg keyring to be wiped during the upgrade. This
+    fix the broken export of the encrypted backup after the upgrade.

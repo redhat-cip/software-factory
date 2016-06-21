@@ -35,6 +35,7 @@
 /root/.ssh
 /root/.ansible
 /root/.gitconfig
+/root/.gnupg
 
 # System var stuff
 /var/cache/
