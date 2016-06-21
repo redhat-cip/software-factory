@@ -35,10 +35,17 @@ Vagrant.configure(2) do |config|
     cd software-factory
     SKIP_GPG=1 ./fetch_image.sh
 
+    # install GUI testing tools
     sudo yum install -y firefox Xvfb libXfont Xorg jre
     sudo mkdir /usr/lib/selenium /var/log/selenium /var/log/Xvfb
     sudo wget -O /usr/lib/selenium/selenium-server.jar http://selenium-release.storage.googleapis.com/2.53/selenium-server-standalone-2.53.0.jar
     sudo pip install selenium pyvirtualdisplay
+
+    # install ffmpeg and asciinema
+    sudo rpm --import http://li.nux.ro/download/nux/RPM-GPG-KEY-nux.ro
+    sudo rpm -Uvh http://li.nux.ro/download/nux/dextop/el7/x86_64/nux-dextop-release-0-1.el7.nux.noarch.rpm
+    sudo yum install -y ffmpeg
+    curl -sL https://asciinema.org/install | sh
   SHELL
 
   config.vm.provision "file", source: "~/.gitconfig", destination: "~/.gitconfig"
