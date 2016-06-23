@@ -24,6 +24,11 @@
   - name: systemctl daemon-reload
     shell: systemctl daemon-reload
 
+- hosts: jenkins
+  tasks:
+  - name: Be sure Jenkins master executors amount is 1
+    replace: dest=/var/lib/jenkins/config.xml regexp='<numExecutors>.*</numExecutors>' replace='<numExecutors>1</numExecutors>'
+
 - hosts: install-server
   tasks:
   - name: Restart the configuration script

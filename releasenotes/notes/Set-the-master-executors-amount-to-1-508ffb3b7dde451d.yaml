@@ -1,0 +1,3 @@
+---
+fixes:
+  - Set by default the amount of Jenkins master executors to 1. This prevent two config-update job to run in parallel.
