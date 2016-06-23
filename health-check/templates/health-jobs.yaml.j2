@@ -1,5 +1,5 @@
 - job-template:
-    name: "health-{node}-unit-tests"
+    name: "health-{name}-unit-tests"
     defaults: global
     node: "{node}"
     triggers:
@@ -9,7 +9,7 @@
       - shell: cd $ZUUL_PROJECT && ./run_tests.sh
 
 - job-template:
-    name: "health-{node}-functional-tests"
+    name: "health-{name}-functional-tests"
     defaults: global
     node: "{node}"
     triggers:

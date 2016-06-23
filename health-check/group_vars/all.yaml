@@ -4,11 +4,11 @@ keep: true
 # Use dynamic suffix for project name to create temporary project
 suffix: "-{{ ansible_date_time.epoch }}"
 # Default project name
-project: "health/zuul-basic{{ suffix }}"
+project: "zuul-basic{{ suffix }}"
 # Zuul pipelines
-check: ["health-{{ node }}-unit-tests"]
-gate: ["health-{{ node }}-functional-tests", "health-{{ node }}-unit-tests"]
-jobs: ["health-{node}-functional-tests", "health-{node}-unit-tests"]
+check: ["health-{{ project }}-unit-tests"]
+gate: ["health-{{ project }}-functional-tests", "health-{{ project }}-unit-tests"]
+jobs: ["health-{name}-functional-tests", "health-{name}-unit-tests"]
 
 # Where projects are checkout on install-server
 project_path: "/var/lib/software-factory/health-check/{{ project }}"
