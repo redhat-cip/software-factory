@@ -1,0 +1,12 @@
+--- index.html.orig	2016-06-25 20:12:51.797761347 +0000
++++ index.html	2016-06-25 20:14:26.974126228 +0000
+@@ -7,7 +7,8 @@
+     <meta name="viewport" content="width=device-width">
+     <title ng-bind-template="{{viewTitle ? viewTitle + ' | ' : ''}} StoryBoard">StoryBoard</title>
+ 
+-    
++    <script type="text/javascript" src="/static/js/topmenu.js"></script>
++ 
+     <meta name="fragment" content="!">
+ 
+     

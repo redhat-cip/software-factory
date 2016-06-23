@@ -1,0 +1,13 @@
+---
+prelude: >
+    A new service called storyboard is now available
+    to manage issues and sprint board.
+features:
+  - The storyboard webclient is available from the top-menu.
+    Direct access to the API is possible with a cauth
+    cookie, url is fqdn/storyboard_api, userid is cid and
+    access_token is the username.
+upgrade:
+  - To activate the storyboard service, the ansible roles
+    (storyboard and storyboardclient) needs to be added to
+    the arch.yaml hiera configuration file.

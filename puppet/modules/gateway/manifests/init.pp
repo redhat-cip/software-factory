@@ -17,6 +17,7 @@ class gateway ($cauth = hiera_hash('cauth', '')) {
   include ::apache
 
   $auth = hiera('authentication')
+  $arch = hiera('roles')
   $url = hiera('url')
   $murmur = hiera('mumble')
   $authenticated_only = $auth['authenticated_only']

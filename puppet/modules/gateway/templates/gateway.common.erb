@@ -125,6 +125,9 @@
         ProxyPass /zuul/ <%= @url["zuul_url"] %> nocanon retry=0
         ProxyPassReverse /zuul/ <%= @url["zuul_url"] %>
 
+        ProxyPass /storyboard_api/ http://storyboard:20000/v1/ nocanon retry=0
+        ProxyPassReverse /storyboard_api/ http://storyboard:20000/v1/
+
         ProxyPass /redmine/ <%= @url["redmine_url"] %> nocanon retry=0
         ProxyPassReverse /redmine/ <%= @url["redmine_url"] %>
         ProxyHTMLURLMap <%= @url["redmine_url"] %> /redmine/
@@ -170,6 +173,17 @@
     RewriteEngine On
     RewriteRule ^/$ /r/ [R]
     RewriteRule ^/redmine/redmine/(.*)$ /redmine/$1 [R=301,L]
+
+    <LocationMatch "^/storyboard_api">
+        # Make sure the access_token is set to username
+        Header set Authorization "Bearer %{REMOTE_USER}e"
+        Header set Cache-Control "no-cache, must-revalidate"
+        AuthType mod_auth_pubtkt
+        TKTAuthFakeBasicAuth on
+        TKTAuthLoginURL <%= @cauth['signin_url'] %>
+        TKTAuthDebug 1
+        require valid-user
+    </LocationMatch>
 
     <LocationMatch "^/dashboard">
         Header set Cache-Control "no-cache, must-revalidate"

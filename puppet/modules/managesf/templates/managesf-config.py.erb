@@ -54,6 +54,11 @@ auth = {
 }
 
 services = [
+# Because of http://softwarefactory-project.io/redmine/issues/1466
+# Add storyboard service at the begining
+<% if @arch.include?('storyboard') %>
+    'SFStoryboard',
+<% end %>
 <% if @services.include?('SFRedmine') %>
     'SFRedmine',
 <% end %>
@@ -125,6 +130,16 @@ redmine = {
     'host': 'api-redmine.<%= @fqdn %>',
     'url': '<%= @issues_tracker_api_url %>',
     'db_url': 'mysql://<%= @managesf_mysql_username %>:<%= @managesf_mysql_password %>@<%= @redmine_mysql_host %>/<%= @redmine_mysql_db %>',
+}
+
+storyboard = {
+    'url': 'http://storyboard:20000/v1/',
+    'host': 'storyboard',
+    'service_token': '<%= @storyboard_service_token %>',
+    'db_host': '<%= @storyboard_mysql_host %>',
+    'db_name': '<%= @storyboard_mysql_db %>',
+    'db_user': '<%= @storyboard_mysql_username %>',
+    'db_password': '<%= @storyboard_mysql_password %>'
 }
 
 sqlalchemy = {
