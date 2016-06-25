@@ -263,6 +263,8 @@ function get_logs {
         scp -r sftests.com:/usr/share/redmine/config ${ARTIFACTS_DIR}/redmine/
         scp -r sftests.com:/var/log/managesf/ ${ARTIFACTS_DIR}/managesf/
         scp -r sftests.com:/var/log/cauth/ ${ARTIFACTS_DIR}/cauth/
+        scp -r sftests.com:/var/log/gerritbot/ ${ARTIFACTS_DIR}/gerritbot/
+        scp sftests.com:/var/log/fakeircd.log ${ARTIFACTS_DIR}/gerritbot/ || true
         scp sftests.com:/var/www/managesf/config.py ${ARTIFACTS_DIR}/managesf/
         scp sftests.com:/var/www/cauth/config.py ${ARTIFACTS_DIR}/cauth/
         scp -r sftests.com:/var/log/httpd/ ${ARTIFACTS_DIR}/httpd/

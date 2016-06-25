@@ -43,8 +43,8 @@
         - git review
 
 # * Check gerritbot send irc message
-- name: "Check for 'proposed' notification"
-  include: playbooks/gerritbot_fakeircd_check.yaml ircd_logs_pattern="PRIVMSG .irc-channel-health-check .* proposed config. Test gerritbot notif .*http"
+- name: "Check for 'created' notification"
+  include: playbooks/gerritbot_fakeircd_check.yaml ircd_logs_pattern="PRIVMSG .irc-channel-health-check .* created config. Test gerritbot notif .*http"
 
 # * Test gerritbot config-update
 - hosts: install-server
@@ -79,8 +79,8 @@
         - git review
 
 # * Check gerritbot send irc message to correct channel
-- name: "Check for 'proposed' notification on new channel"
-  include: playbooks/gerritbot_fakeircd_check.yaml ircd_logs_pattern="PRIVMSG .{{ channel_name }} .* proposed config. Create new fake config change .*http"
+- name: "Check for 'created' notification on new channel"
+  include: playbooks/gerritbot_fakeircd_check.yaml ircd_logs_pattern="PRIVMSG .{{ channel_name }} .* created config. Create new fake config change .*http"
 
 - hosts: gerritbot
   tasks:

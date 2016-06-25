@@ -1,0 +1,4 @@
+---
+features:
+  - Gerritbot notification now suports the "change-created"
+    event type to notify new change only, instead of every patchset.
