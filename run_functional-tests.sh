@@ -75,7 +75,7 @@ case "${TEST_TYPE}" in
         run_functional_tests
         run_provisioner
         run_backup_start
-        lxc_poweroff
+        lxc_stop
         lxc_init
         run_bootstraps
         run_backup_restore

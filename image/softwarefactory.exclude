@@ -80,12 +80,3 @@
 /etc/httpd/htpasswd
 /etc/httpd/managesf_htpasswd
 /etc/httpd/pages.txt
-
-# REMOVEME?
-/usr/lib/systemd/system/etherpad.service
-/usr/lib/systemd/system/gerrit.service
-/usr/lib/systemd/system/jenkins.service
-/usr/lib/systemd/system/lodgeit.service
-/usr/lib/systemd/system/socat.service
-/usr/lib/systemd/system/zuul-merger.service
-/usr/lib/systemd/system/zuul.service

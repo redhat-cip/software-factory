@@ -35,7 +35,6 @@ function prepare_artifacts {
 }
 
 function lxc_stop {
-    ssh ${SF_HOST} sync
     (cd deploy/lxc; sudo ./deploy.py --workspace ${SF_WORKSPACE} stop)
     checkpoint "lxc-stop"
 }
