@@ -69,11 +69,11 @@ distributions.
  $ echo 'Defaults   !requiretty' | sudo tee --append /etc/sudoers.d/jenkins-slave
  $ sudo chmod 0440 /etc/sudoers.d/jenkins-slave
  $ # Download and start the swarm client
- $ sudo -u jenkins curl -o /home/jenkins/swarm-client-1.22-jar-with-dependencies.jar \
+ $ sudo -u jenkins curl -o /home/jenkins/swarm-client-2.1-jar-with-dependencies.jar \
     http://maven.jenkins-ci.org/content/repositories/releases/org/jenkins-ci/plugins/\
-    swarm-client/1.22/swarm-client-1.22-jar-with-dependencies.jar
+    swarm-client/2.1/swarm-client-2.1-jar-with-dependencies.jar
  $ sudo -u jenkins bash
- $ /usr/bin/java -Xmx256m -jar /home/jenkins/swarm-client-1.22-jar-with-dependencies.jar \
+ $ /usr/bin/java -Xmx256m -jar /home/jenkins/swarm-client-2.1-jar-with-dependencies.jar \
    -fsroot /home/jenkins -master http://<sf-hostname>:8080/jenkins -executors 1 -username jenkins -password \
    <jenkins-password> -name slave1 &> /home/jenkins/swarm.log &
 
