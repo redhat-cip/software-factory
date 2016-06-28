@@ -96,7 +96,8 @@ and a fresh one is started for the next job. Nodepool also prepares the images
 that are used for testing, for example when additional packages are required.
 
 To do this, an account on an OpenStack cloud is required and credentials need to
-be known by Nodepool.
+be known by Nodepool. Moreover it is highly recommended to use a dedicated
+network or tenant for slave instances.
 
 In order to configure Nodepool to define a provider (an OpenStack cloud account) you need
 to adapt sfconfig.yaml. Below is an example of configuration.
@@ -115,6 +116,8 @@ to adapt sfconfig.yaml. Below is an example of configuration.
        # Compute availability zone
        pool: nova
        project-id: 'tenantname'
+       # Dedicated instance network
+       network: 'neutron-network-uuid'
        # Delay in seconds between two tasks within nodepool
        rate: 10.0
        username: 'user'
