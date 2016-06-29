@@ -317,6 +317,7 @@ EOF
     [ -d ${dir}/var/www/redmine/plugins ] || mkdir -p ${dir}/var/www/redmine/plugins
     if [ ! -d ${dir}/var/www/redmine/plugins/redmine_backlogs ]; then
         retry do_chroot ${dir} git clone --depth 1 -b ${REDMINE_BACKLOG_VERSION} $REDMINE_BACKLOG_URL /var/www/redmine/plugins/redmine_backlogs
+        do_chroot ${dir} bash -c "cd /var/www/redmine/plugins/redmine_backlogs; patch Gemfile" < ./patches/redmine_backlog_gemfile.patch
         SUDO_UID=0 SUDO_GID=0 do_chroot ${dir} bash -c "cd /var/www/redmine/plugins/redmine_backlogs && bundle install --without development test"
     fi
 

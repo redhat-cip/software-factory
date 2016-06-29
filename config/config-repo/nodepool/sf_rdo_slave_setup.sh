@@ -2,7 +2,7 @@
 
 . sf_slave_setup.sh
 
-[ -n "${RDO_RELEASE}" ] || RDO_RELEASE=https://repos.fedorapeople.org/repos/openstack/openstack-mitaka/rdo-release-mitaka-3.noarch.rpm
+[ -n "${RDO_RELEASE}" ] || RDO_RELEASE=https://repos.fedorapeople.org/repos/openstack/openstack-mitaka/rdo-release-mitaka-5.noarch.rpm
 
 sudo yum install -y ${RDO_RELEASE}
 

@@ -1,0 +1,10 @@
+--- /var/www/redmine/plugins/redmine_backlogs/Gemfile	2016-06-21 11:19:24.000000000 +0000
++++ Gemfile	2016-07-01 15:59:59.564197457 +0000
+@@ -8,6 +8,7 @@
+ rails3 = Gem::Dependency.new('rails', '~>3.0')
+ RAILS_VERSION_IS_3 = rails3 =~ deps['rails']
+ 
++gem "rack", "= 1.4.7"
+ gem "holidays", "~>1.0.3"
+ gem "icalendar"
+ gem "nokogiri", "< 1.6.0"

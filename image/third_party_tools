@@ -3,7 +3,7 @@
 set +x
 
 # yum
-RDO_REPO="https://repos.fedorapeople.org/repos/openstack/openstack-mitaka/rdo-release-mitaka-3.noarch.rpm"
+RDO_REPO="https://repos.fedorapeople.org/repos/openstack/openstack-mitaka/rdo-release-mitaka-5.noarch.rpm"
 RDO_PKGS="$(grep '^[a-zA-Z]' ${ORIG}/packages/rpm_rdo.txt)"
 
 EPEL_REPO="epel-release"
