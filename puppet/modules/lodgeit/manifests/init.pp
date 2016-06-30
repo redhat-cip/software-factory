@@ -57,6 +57,7 @@ class lodgeit {
     enable    => true,
     hasstatus => true,
     require   => [File['init'],
+        File['wait4mariadb'],
         Exec['systemctl_reload'],
         File['/srv/lodgeit/lodgeit/manage.py'],
         File['/srv/lodgeit/lodgeit/lodgeit/urls.py']],

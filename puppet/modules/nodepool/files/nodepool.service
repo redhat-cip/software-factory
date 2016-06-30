@@ -1,12 +1,13 @@
 [Unit]
 Description=Nodepool Service
-After=syslog.target network.target mariadb.service
+After=syslog.target network.target
 
 [Service]
 Type=simple
 User=nodepool
 Group=nodepool
 EnvironmentFile=-/etc/sysconfig/nodepool
+ExecStartPre=/usr/libexec/wait4mariadb
 ExecStart=/usr/bin/nodepoold -d -l /etc/nodepool/logging.conf
 
 [Install]

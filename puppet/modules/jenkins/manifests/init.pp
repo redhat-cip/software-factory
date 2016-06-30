@@ -57,6 +57,7 @@ class jenkins {
     group   => 'jenkins',
     content => template('jenkins/jenkins.service.erb'),
     notify  => Exec['systemctl_reload'],
+    require => File['wait4mariadb'],
   }
 
   file { '/var/cache/jenkins':
