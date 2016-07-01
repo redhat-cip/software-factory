@@ -108,7 +108,13 @@ case "${TEST_TYPE}" in
     "gui")
         lxc_init
         run_bootstraps
+        d=$DISPLAY
+        pre_gui_tests
         run_gui_tests
+        failed=$?
+        post_gui_tests
+        DISPLAY=$d
+        if_gui_tests_failure $failed
         ;;
     *)
         echo "[+] Unknown test type ${TEST_TYPE}"

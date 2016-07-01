@@ -498,29 +498,43 @@ function run_functional_tests {
     checkpoint "run_functional_tests"
 }
 
-function run_gui_tests {
+function pre_gui_tests {
     echo "$(date) ======= run_gui_tests"
     echo "Starting Selenium server in background ..."
     ( sudo sh -c '/usr/bin/java -jar /usr/lib/selenium/selenium-server.jar -host 127.0.0.1 >/var/log/selenium/selenium.log 2>/var/log/selenium/error.log' ) &
-    d=$DISPLAY
-    if [[ "$d" == "localhost"* ]]; then
+    if [[ "$DISPLAY" == "localhost"* ]]; then
         echo "X Forwarding detected"
     else
         echo "Starting Xvfb in background ..."
         ( sudo sh -c 'Xvfb :99 -ac -screen 0 1280x1024x24 >/var/log/Xvfb/Xvfb.log 2>/var/log/Xvfb/error.log' ) &
-        export DISPLAY=:99
     fi
-    nosetests --with-timer --with-xunit -v tests/gui \
-        && echo "GUI tests: SUCCESS" \
-        || fail "GUI tests failed" ${ARTIFACTS_DIR}/gui-tests.debug
-    export DISPLAY=$d
+    mkdir -p /tmp/gui/
+}
+
+function post_gui_tests {
     echo "Stopping Xvfb if running ..."
     sudo pkill Xvfb
     echo "Stopping Selenium server ..."
     for i in $(ps ax | grep selenium | awk '{print $1}'); do
-        sudo kill $i
+        sudo kill $i > /dev/null
     done
-    checkpoint "run_gui_tests"
+}
+
+function run_gui_tests {
+    export DISPLAY=:99
+    # if ffmpeg is installed on the system, record a video
+    command -v ffmpeg > /dev/null && tmux new-session -d -s guiTestRecording 'ffmpeg -f x11grab -video_size 1280x1024 -i 127.0.0.1:99 -codec:v libx264 -r 12 /tmp/gui/guiTests.mp4'
+    nosetests --with-timer --with-xunit -v tests/gui
+    failed=$?
+    # stop recording by sending q to ffmpeg process
+    command -v ffmpeg > /dev/null && tmux send-keys -t guiTestRecording q
+    return $failed
+}
+
+function if_gui_tests_failure {
+    if [[ "$1" == "1" ]]; then
+        fail "GUI tests failed" ${ARTIFACTS_DIR}/gui-tests.debug
+    fi
 }
 
 function run_serverspec_tests {
