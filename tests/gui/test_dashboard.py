@@ -14,8 +14,8 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from . import config
-from .base import BaseGuiTest, snapshot_if_failure
+from tests.functional import config
+from tests.gui.base import BaseGuiTest, snapshot_if_failure
 
 from selenium.common.exceptions import NoSuchElementException
 
