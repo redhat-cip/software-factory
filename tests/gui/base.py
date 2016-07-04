@@ -112,3 +112,7 @@ class BaseGuiTest(unittest.TestCase):
         xpath = '//button[text()="%s"]' % btn_text
         element = self.driver.find_element_by_xpath(xpath)
         return self._highlight_element(element)
+
+    def highlight_by_xpath(self, xpath):
+        element = self.driver.find_element_by_xpath(xpath)
+        return self._highlight_element(element)
