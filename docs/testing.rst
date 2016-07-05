@@ -19,29 +19,34 @@ each projects hosted on Software Factory.
 This project is pre-filled by default with default Jenkins Job Builder (JJB)
 templates and also a default Zuul layout file.
 
-The default Zuul layout.yaml provided four test pipelines:
+The default Zuul layout.yaml provides five pipelines:
 
-* The check pipeline: Is used to run Jenkins jobs
+* The **check** pipeline: Is used to run Jenkins jobs
   related to a Gerrit change (a submitted patch) and to report
   a note (-1, or +1) in the **Verified** label according to attached
   tests result. This pipeline is managed by the independent
   manager of Zuul.
 
-* The gate pipeline: Jobs can be configured to run in this pipeline
+* The **gate** pipeline: Jobs can be configured to run in this pipeline
   after a change has received all the required approvals,
   (1 (+2) approval on the **Core-Review** label, one (+1) approval on
   the **Workflow** label and 1 (+1) on the **Verified** label).
   This pipeline is managed by the dependent manager of Zuul and acts
   as a `Gated Commit system <https://en.wikipedia.org/wiki/Gated_Commit>`_.
 
-* The post pipeline: Is used to run Jenkins jobs
+* The **post** pipeline: Is used to run Jenkins jobs
   after a change has been merged into the master branch of a
-  project. No note are given to the related change if the job fails
-  or pass. This pipeline is managed by the independent manager of Zuul.
+  project. No score is given to the related change regardless of success
+  or failure. This pipeline is managed by the independent manager of Zuul.
 
-* The periodic pipeline: Is used to run periodic (a bit like a
-  cron job) Jenkins jobs.
+* The **periodic** pipeline: Is used to run periodic (a bit like a
+  cron job) Jenkins jobs. Since these jobs are not related to a change, no
+  score is given either.
   This pipeline is managed by the independent manager of Zuul.
+
+* The **tag** pipeline: Jobs are triggered after a tag is pushed on a
+  project. Like the post and periodic pipelines, there is no score associated
+  to the results of these jobs.
 
 This default pipeline's configuration can be customized according to your
 needs.
@@ -81,6 +86,13 @@ Then these scripts are executed by their associated job:
 * '{name}-unit-tests'
 * '{name}-functional-tests'
 * '{name}-publish-docs'
+
+If a project is a python library, the template job '{name}-upload-to-pypi' can
+be used to push a package to a PyPI server. A valid .pypirc file set as a
+Jenkins credential must exist first; the id of the credential must then be
+passed as the variable 'pypirc' when configuring the job for the project.
+More information about the .pypirc file format can be found
+`here <https://docs.python.org/2/distutils/packageindex.html#pypirc>`_.
 
 Obviously, adding these pre-defined scripts to your projects in order to have tests
 executed is not mandatory. You can define your own.
