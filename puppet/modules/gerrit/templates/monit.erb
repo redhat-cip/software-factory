@@ -1,6 +1,4 @@
 check process gerrit
     matching "gerrit"
-    start program "/usr/bin/systemctl start gerrit"
-    stop program "/usr/bin/systemctl stop gerrit"
     if failed host 127.0.0.1 port 8000 protocol http request "/r/" with timeout 60 seconds for 5 cycles then alert
     if failed host <%= @ipaddress %> port 29418 protocol ssh with timeout 60 seconds for 5 cycles then alert
