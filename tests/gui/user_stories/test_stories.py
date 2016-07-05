@@ -14,41 +14,41 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from .base import BaseGuiTest, caption, snapshot_if_failure
-from .. import config
+# from .base import BaseGuiTest, caption, snapshot_if_failure
+# from .. import config
 
 
-class TestAdministratorTasks(BaseGuiTest):
-
-    @snapshot_if_failure
-    def test_create_project(self):
-        self.driver.get(config.GATEWAY_URL)
-        self.login_as(config.ADMIN_USER, config.ADMIN_PASSWORD)
-
-        msg = "Log in as adminstrator Go to the dashboard from the top menu"
-        with caption(self.driver, msg) as driver:
-            driver.get("%s/dashboard/" % config.GATEWAY_URL)
-
-        #TODO (gp) Give the buttons an element id
-        msg = "Click on 'Create project' bottom"
-        with caption(self.driver, msg) as driver:
-            driver.find_element_by_css_selector("button.btn-primary").click()
-
-        msg = "Describe your project"
-        with caption(self.driver, msg) as driver:
-            self.highlight("#projectname").send_keys("Demo_Project")
-            self.highlight("#description").send_keys("Test Description")
-            ele = self.highlight_button("Create project")
-            ele.click()
-
-        msg = "Now you have a project ready to work"
-        with caption(self.driver, msg) as driver:
-            self.highlight_link("Demo_Project").click()
-        msg = "Thank you for watching"
-        with caption(self.driver, msg) as driver:
-            self.highlight("body")
-
-
-if __name__ == '__main__':
-    from unittest import main
-    main()
+# class TestAdministratorTasks(BaseGuiTest):
+#
+#    @snapshot_if_failure
+#    def test_create_project(self):
+#        self.driver.get(config.GATEWAY_URL)
+#        self.login_as(config.ADMIN_USER, config.ADMIN_PASSWORD)
+#
+#        msg = "Log in as adminstrator Go to the dashboard from the top menu"
+#        with caption(self.driver, msg) as driver:
+#            driver.get("%s/dashboard/" % config.GATEWAY_URL)
+#
+#        #TODO (gp) Give the buttons an element id
+#        msg = "Click on 'Create project' bottom"
+#        with caption(self.driver, msg) as driver:
+#            driver.find_element_by_css_selector("button.btn-primary").click()
+#
+#        msg = "Describe your project"
+#        with caption(self.driver, msg) as driver:
+#            self.highlight("#projectname").send_keys("Demo_Project")
+#            self.highlight("#description").send_keys("Test Description")
+#            ele = self.highlight_button("Create project")
+#            ele.click()
+#
+#        msg = "Now you have a project ready to work"
+#        with caption(self.driver, msg) as driver:
+#            self.highlight_link("Demo_Project").click()
+#        msg = "Thank you for watching"
+#        with caption(self.driver, msg) as driver:
+#            self.highlight("body")
+#
+#
+# if __name__ == '__main__':
+#    from unittest import main
+#    main()
