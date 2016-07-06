@@ -73,7 +73,7 @@ SF image needs to be uploaded to Glance:
 
 .. code-block:: bash
 
- $ wget http://46.231.133.241:8080/v1/AUTH_sf/sf-images/softwarefactory-C7.0-2.2.2.img.qcow2
+ $ wget http://46.231.132.68:8080/v1/AUTH_b50e80d3969f441a8b7b1fe831003e0a/sf-images/softwarefactory-C7.0-2.2.2.img.qcow2
  $ glance image-create --progress --disk-format qcow2 --container-format bare --name sf-2.2.2 --file softwarefactory-C7.0-2.2.2.img.qcow2
 
 Deploy with Heat
@@ -90,7 +90,7 @@ They all requires:
 
 .. code-block:: bash
 
- $ wget http://46.231.133.241:8080/v1/AUTH_sf/sf-images/softwarefactory-C7.0-2.2.2-allinone.hot
+ $ wget http://46.231.132.68:8080/v1/AUTH_b50e80d3969f441a8b7b1fe831003e0a/sf-images/softwarefactory-C7.0-2.2.2-allinone.hot
  $ heat stack-create --template-file ./softwarefactory-C7.0-2.2.2-allinone.hot -P "key_name=SSH_KEY;domain=fqdn_of_deployment;image_id=GLANCE_UUID;ext_net_uuid=NETWORK_UUID;flavor=m1.large" sf_stack
 
 Once the stack is created jump to the section `Configuration and reconfiguration`.
@@ -140,7 +140,7 @@ You can also use Virtualbox if you want to try out Software Factory on your
 desktop.  First, you need to download one of our release images, for example
 2.2.2::
 
- curl -O http://46.231.133.241:8080/v1/AUTH_sf/sf-images/softwarefactory-C7.0-2.2.2.img.qcow2
+ curl -O http://46.231.132.68:8080/v1/AUTH_b50e80d3969f441a8b7b1fe831003e0a/sf-images/softwarefactory-C7.0-2.2.2.img.qcow2
 
 Next, increase the image size to ensure there is enough space is git and the
 database and convert the image to make it usable with Virtualbox::
