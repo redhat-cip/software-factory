@@ -1,0 +1,9 @@
+---
+upgrade:
+  - To ensure nodepool test run on a fresh node,
+    the zuul parameter-function is now set in the
+    read only config/zuul/layout.yaml file.
+    If the ^.*$ parameter function is set in another
+    file, it needs to be manually removed in
+    the upgrade proposed change "Upgrade of base config
+    repository files".

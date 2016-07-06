@@ -9,7 +9,3 @@ projects:
       - zuul-demo-unit-tests
     periodic:
       - periodic-zuul-demo
-
-jobs:
-  - name: ^.*$
-    parameter-function: set_node_options

@@ -449,6 +449,10 @@ function run_backup_restore {
 
 function run_upgrade {
     echo "$(date) ======= run_upgrade"
+    # TODO: remove this temporary fix after 2.2.3 or 2.3.0 release
+    ssh sftests.com "cd config; sed -i zuul/projects.yaml -e 's#\.\*#unused_job_definition#'; git add zuul/projects.yaml"
+    ssh sftests.com "cd config; git commit -m 'remove set_node_options from projects'; git push git+ssh://sftests.com/config master"
+
     INSTALL_SERVER=managesf.sftests.com
     sudo git clone file://$(pwd) /var/lib/lxc/${INSTALL_SERVER}/rootfs/root/software-factory  --depth 1 || fail "Could not clone sf in managesf instance"
     echo "[+] Copying new version (${IMAGE_PATH}/ -> /var/lib/lxc/${INSTALL_SERVER}/rootfs/${IMAGE_PATH})"

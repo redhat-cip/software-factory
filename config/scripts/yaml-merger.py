@@ -23,10 +23,16 @@ def loadConfig(config_path):
 
     # Keeps only .yaml files
     paths = filter(lambda x: x.endswith('.yaml'), paths)
+    # make sure layout.yaml is the first one
+    if '%s/layout.yaml' % config_path in paths:
+        paths.remove('%s/layout.yaml' % config_path)
+        paths.insert(0, '%s/layout.yaml' % config_path)
 
     final_data = {}
     for path in paths:
         data = yaml.load(open(path))
+        if not data:
+            continue
         # Merge document
         for key in data:
             if key in final_data:
