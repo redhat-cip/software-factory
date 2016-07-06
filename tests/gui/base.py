@@ -24,6 +24,7 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+# from selenium.common.exceptions import NoSuchElementException
 
 
 BOOTSTRAP_CAPTION = '''
@@ -60,11 +61,20 @@ def caption(driver, message, duration=3):
     time.sleep(duration)
 
 
+@contextmanager
+def loading_please_wait(driver):
+    yield driver
+    safeguard = 0
+    while ("ngIf: loading" not in driver.page_source) and safeguard < 100:
+        time.sleep(0.1)
+        safeguard += 1
+
+
 class BaseGuiTest(unittest.TestCase):
     def setUp(self):
         self.driver = webdriver.Firefox()
         self.driver.maximize_window()
-        self.driver.implicitly_wait(15)
+        self.driver.implicitly_wait(20)
 
     def tearDown(self):
         # Close the tab instead of the application.
