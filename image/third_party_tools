@@ -170,7 +170,7 @@ URL_LIST="$URL_LIST $GRAFANA_URL"
 # gitweb kogakure theme
 KOGAKURE_URL="https://github.com/kogakure/gitweb-theme.git"
 
-GIT_REPO_LIST="=GIT_REPO_LIST $KOGAKURE_URL"
+GIT_REPO_LIST="$GIT_REPO_LIST $KOGAKURE_URL"
 
 #---- URL health check -------
 function test_url {
