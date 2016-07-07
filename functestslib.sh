@@ -386,7 +386,7 @@ function run_heat_bootstraps {
 
 function prepare_functional_tests_utils {
     # TODO: replace this prepare_functional_tests_utils by a python-sfmanager package
-    cat ${PYSFLIB_CLONED_PATH}/requirements.txt ${SFMANAGER_CLONED_PATH}/requirements.txt | sort | uniq | grep -v '\(requests\|pysflib\)' > ${ARTIFACTS_DIR}/test-requirements.txt
+    cat ${PYSFLIB_CLONED_PATH}/requirements.txt ${SFMANAGER_CLONED_PATH}/requirements.txt tests/requirements.txt | sort | uniq | grep -v '\(requests\|pysflib\)' > ${ARTIFACTS_DIR}/test-requirements.txt
     (
         set -e
         cd ${PYSFLIB_CLONED_PATH}; pip install --user -r ${ARTIFACTS_DIR}/test-requirements.txt || {
@@ -539,7 +539,11 @@ function post_gui_tests {
 function run_gui_tests {
     export DISPLAY=:99
     # if ffmpeg is installed on the system, record a video
-    command -v ffmpeg > /dev/null && tmux new-session -d -s guiTestRecording 'ffmpeg -f x11grab -video_size 1280x1024 -i 127.0.0.1:99 -codec:v libx264 -r 12 /tmp/gui/guiTests.mp4'
+    command -v ffmpeg > /dev/null && tmux new-session -d -s guiTestRecording 'export FFREPORT=file=/tmp/gui/ffmpeg-$(date +%Y%m%s).log && ffmpeg -f x11grab -video_size 1280x1024 -i 127.0.0.1:99 -codec:v mpeg4 -r 16 -vtag xvid -q:v 8 /tmp/gui/guiTests.avi && sleep 5'
+    export LC_CTYPE="en_US.UTF-8"
+    export LC_ALL="en_US.UTF-8"
+    export LANG="en_US.UTF-8"
+    locale
     nosetests --with-timer --with-xunit -v tests/gui
     failed=$?
     # stop recording by sending q to ffmpeg process

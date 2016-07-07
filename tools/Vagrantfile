@@ -44,7 +44,7 @@ Vagrant.configure(2) do |config|
     # install ffmpeg and asciinema
     sudo rpm --import http://li.nux.ro/download/nux/RPM-GPG-KEY-nux.ro
     sudo rpm -Uvh http://li.nux.ro/download/nux/dextop/el7/x86_64/nux-dextop-release-0-1.el7.nux.noarch.rpm
-    sudo yum install -y ffmpeg
+    sudo yum install -y ffmpeg tmux xterm
     curl -sL https://asciinema.org/install | sh
   SHELL
 
