@@ -646,6 +646,8 @@ if [ "$STEP" == 1 ]; then
     ansible_install sf-storyboard "storyboard_commit: \"${STORYBOARD_COMMIT}\", storyboard_client_commit: \"${STORYBOARD_CLIENT_COMMIT}\""
     ansible_install sf-storyboard-webclient "storyboard_webclient_commit: \"${STORYBOARD_WEBCLIENT_COMMIT}\""
     ansible_install sf-mirror
+    ansible_install sf-job-logs-gearman-client "log_gearman_client_url: \"${LOG_GEARMAN_CLIENT_URL}\""
+    ansible_install sf-job-logs-gearman-worker "log_gearman_worker_url: \"${LOG_GEARMAN_WORKER_URL}\""
     image_clean
     do_chroot ${dir} passwd -l root
     checkpoint "image cleaned"

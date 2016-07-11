@@ -21,3 +21,6 @@
     - openstack-gnocchi-metricd
     - openstack-gnocchi-statsd
     - murmurd
+    - log-gearman-client
+    - log-gearman-worker
+    - elasticsearch

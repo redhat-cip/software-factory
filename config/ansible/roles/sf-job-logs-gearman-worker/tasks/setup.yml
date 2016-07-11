@@ -1,0 +1,9 @@
+---
+- name: "Install log gearman worker configuration"
+  template: src=templates/jenkins-log-worker.yaml.j2 dest=/etc/log-gearman-worker/config.yml owner=joblogsworker group=joblogsworker
+  register: config
+- name: "Enable log gearman worker"
+  service: name=log-gearman-worker enabled=yes state=started
+- name: "Restart log gearman worker if needed"
+  service: name=log-gearman-worker state=restarted
+  when: config|changed

@@ -1,0 +1,5 @@
+---
+- include: install.yml
+  when: action is not defined or action == "install"
+- include: setup.yml
+  when: action is not defined or action == "setup"

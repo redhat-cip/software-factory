@@ -32,6 +32,14 @@ STORYBOARD_COMMIT="3781b33cf688685a62ad6a4ae740618aa699fdce"
 STORYBOARD_WEBCLIENT_COMMIT="ffda0be"
 STORYBOARD_CLIENT_COMMIT="ad713855fbfdd0e89cdc867af7d347c2b2f8ae38"
 
+# Job logs Gearman processors
+LOG_GEARMAN_CLIENT_VERSION="d7d9d50ee2706608386c802246591a6c80a58a7f"
+LOG_GEARMAN_CLIENT_URL="https://raw.githubusercontent.com/openstack-infra/puppet-log_processor/${LOG_GEARMAN_CLIENT_VERSION}/files/log-gearman-client.py"
+LOG_GEARMAN_WORKER_VERSION="84c7e723128fab9da321ae1b0977e7d13923b36b"
+LOG_GEARMAN_WORKER_URL="https://raw.githubusercontent.com/openstack-infra/puppet-log_processor/${LOG_GEARMAN_WORKER_VERSION}/files/log-gearman-worker.py"
+
+URL_LIST="$URL_LIST $LOG_GEARMAN_CLIENT_URL $LOG_GEARMAN_WORKER_URL"
+
 # mod_auth_pubtkt
 MOD_AUTH_PUBTKT_VERSION=0.8
 MOD_AUTH_PUBTKT_URL="https://neon1.net/mod_auth_pubtkt/mod_auth_pubtkt-${MOD_AUTH_PUBTKT_VERSION}.tar.gz"

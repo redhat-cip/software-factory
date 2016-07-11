@@ -36,6 +36,7 @@ def update_sfconfig(data):
             'swift_mirror_tempurl_key': 'CHANGEME',
         }
         dirty = True
+
     return dirty
 
 

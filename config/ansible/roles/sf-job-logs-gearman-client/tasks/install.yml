@@ -1,0 +1,23 @@
+---
+- name: "Install logs gearman client group"
+  group: name=joblogsclient
+- name: "Install logs gearman client user"
+  user: name=joblogsclient group=joblogsclient shell=/sbin/nologin home=/srv/log-gearman-client
+- name: "Install virtualenv for job logs gearman client"
+  command: "{{ item }}"
+  with_items:
+    - virtualenv /srv/log-gearman-client
+    - /srv/log-gearman-client/bin/pip install --upgrade 'pbr' 'pip<8'
+    - /srv/log-gearman-client/bin/pip install gear statsd PyYAML python-daemon pyzmq 
+- name: "Fetch job logs gearman client from Openstack infra repo"
+  get_url: url={{ log_gearman_client_url }} dest=/srv/log-gearman-client/bin/log-gearman-client.py mode=0755
+  register: fetched
+- name: "Patch the client for SF"
+  patch: src=files/log-gearman-client.patch dest=/srv/log-gearman-client/bin/log-gearman-client.py
+  when: fetched|changed
+- name: "Create configuration directory"
+  file: path=/etc/log-gearman-client/ state=directory mode=0755
+- name: "Create log directory"
+  file: path=/var/log/log-gearman-client/ state=directory mode=0755 owner=joblogsclient group=joblogsclient
+- name: "Install systemd unit for log-gearman-client"
+  copy: src=files/log-gearman-client.service dest=/lib/systemd/system/log-gearman-client.service

@@ -1,0 +1,9 @@
+---
+- name: "Install log gearman client configuration"
+  template: src=templates/jenkins-log-client.yaml.j2 dest=/etc/log-gearman-client/config.yml owner=joblogsclient group=joblogsclient
+  register: config
+- name: "Enable log gearman client"
+  service: name=log-gearman-client enabled=yes state=started
+- name: "Restart log gearman client if needed"
+  service: name=log-gearman-client state=restarted
+  when: config|changed
