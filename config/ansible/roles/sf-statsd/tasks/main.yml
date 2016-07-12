@@ -1,4 +1,3 @@
 ---
-- name: Add statsd users
-  user: name={{ item }}
-  with_items: [grafana, carbon, gnocchi]
+- include: setup.yml
+  when: action is not defined or action == "setup"

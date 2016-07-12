@@ -1,6 +1,3 @@
-- include_vars: /etc/puppet/hiera/sf/sfcreds.yaml
-- template: src=create_database.sql.j2 dest=/root/create_databases.sql owner=root group=root mode=0400
-- template: src=client.cnf.j2 dest=/root/.my.cnf owner=root group=root mode=0400
-- include: /etc/ansible/tasks/puppet.yml puppet_statement="include ::sfmysql"
-- name: Create databases
-  shell: "mysql < /root/create_databases.sql"
+---
+- include: setup.yml
+  when: action is not defined or action == "setup"

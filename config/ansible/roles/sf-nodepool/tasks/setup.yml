@@ -1,0 +1,4 @@
+---
+- group: name=nodepool
+- user: name=nodepool group=nodepool shell=/sbin/nologin home=/var/lib/nodepool
+- file: path=/var/lib/nodepool state=directory mode=0700 owner=nodepool group=nodepool

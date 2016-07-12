@@ -1,0 +1,4 @@
+---
+- name: Add statsd users
+  user: name={{ item }}
+  with_items: [grafana, carbon, gnocchi]

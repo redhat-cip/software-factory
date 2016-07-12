@@ -1,11 +1,7 @@
 ---
-- name: "Test if /usr/bin/mirror2swift exist"
-  stat: path=/usr/bin/mirror2swift
-  register: mirror2swift
-
-- name: "Install if path doesn't exist or when action is 'install'"
-  include: install.yml
-  when: mirror2swift.stat.isreg is not defined or (action is defined and action == "install")
-
+- include: install.yml
+  when: action is not defined or action == "install"
+#- include: setup.yml
+#  when: action is not defined or action == "setup"
 - include: update.yml
   when: action is defined and action == "update"

@@ -1,0 +1,8 @@
+---
+# Seport fail to relabel existing port, see https://github.com/ansible/ansible-modules-extras/issues/2009
+#- seport: ports={{ item }} proto=tcp setype=http_port_t state=present
+- command: semanage port --modify -t http_port_t -p tcp {{ item }}
+  with_items: [8000]
+  when: selinuxenabled
+
+- template: src=gerrit-update-acl.j2 dest=/usr/share/gerrit-update-acl owner=root group=root mode=0700

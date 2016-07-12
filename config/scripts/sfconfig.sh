@@ -254,7 +254,7 @@ for host in $HOSTS; do
 done
 
 echo "[sfconfig] Starting configuration"
-time ansible-playbook /etc/ansible/sf_main.yml || {
+time ansible-playbook /etc/ansible/sf_setup.yml || {
     echo "[sfconfig] sfpuppet playbook failed"
     exit 1
 }

@@ -1,6 +1,6 @@
 ---
 - include: setup.yml
-  when: not mumble['disabled']
+  when: not mumble['disabled'] and (action is not defined or action == "setup")
 
 - service: name=murmurd state=stopped enabled=no
   when: mumble['disabled']

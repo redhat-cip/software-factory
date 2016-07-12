@@ -1,0 +1,2 @@
+---
+- file: path=/var/www/managesf state=directory mode=0750 owner=apache group=apache setype=httpd_sys_content_t

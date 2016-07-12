@@ -19,16 +19,16 @@
   pre_tasks:
     - include: /etc/ansible/tasks/selinux_check.yml
   roles:
-    - sf-base
+    - {name: "sf-base", action: "setup"}
 
 - hosts: mysql
   roles:
-    - sf-mysql
+    - {name: "sf-mysql", action: "setup"}
 
 {% for host in inventory %}
 - hosts: {{ host['hostname'] }}
   roles:
-{% for role in host['rolesname'] %}{% if role != 'sf-mysql' %}    - {{ role }}
+{% for role in host['rolesname'] %}{% if role != 'sf-mysql' %}    - {name: "{{ role }}", action: "setup"}
 {% endif %}{% endfor %}
   post_tasks:
 {% if host['puppet_statement'] != 'include ' %}

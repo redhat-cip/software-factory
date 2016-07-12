@@ -59,9 +59,9 @@ def generate_inventory():
     if args.verify:
         print "\n#----8<----\n# Playbook"
     else:
-        output = "%s/sf_main.yml" % ansible_root
+        output = "%s/sf_setup.yml" % ansible_root
     render_jinja2_template(output,
-                           "%s/templates/sf_main.yml.j2" % ansible_root,
+                           "%s/templates/sf_setup.yml.j2" % ansible_root,
                            arch)
 
     if args.verify:

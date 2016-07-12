@@ -1,0 +1,23 @@
+---
+- group: name=gerritbot
+- user: name=gerritbot group=gerritbot shell=/sbin/nologin home=/var/lib/gerritbot
+
+- name: "Create configuration directory"
+  file: path={{ item }} state=directory mode=0700 owner=gerritbot group=gerritbot
+  with_items:
+    - /var/lib/gerritbot
+    - /etc/gerritbot
+
+- name: "Init default channels.yaml file"
+  copy: src="/usr/local/share/sf-config-repo/gerritbot/channels.yaml" dest="/etc/gerritbot/channels.yaml" remote_src=True force=no
+
+- name: "Configure tmpfiles.d to recreate /var/run/gerritbot after reboot"
+  lineinfile: dest=/lib/tmpfiles.d/gerritbot.conf state=present create=yes line='d /var/run/gerritbot 0755 gerritbot gerritbot -'
+
+- name: "Apply feature patch"
+  patch: src={{ item }} basedir=/usr/lib/python2.7/site-packages strip=1
+  # ignore_errors because first patch will failed on second run with: Reversed (or previously applied) patch detected
+  ignore_errors: yes
+  with_items:
+    - 286366-Add_change_created_event_type.patch
+    - 318096-Add__get_username_method_to_discover_username.patch
