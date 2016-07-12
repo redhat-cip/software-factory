@@ -1,0 +1,18 @@
+input {
+  tcp {
+    host => "logstash.{{ fqdn }}"
+    port => 9999
+    codec => json_lines {}
+    type => "jenkins"
+  }
+}
+
+# filter {}
+
+output {
+  elasticsearch {
+    hosts => ['elasticsearch.{{ fqdn }}']
+    manage_template => false
+    flush_size => 1024
+  }
+}

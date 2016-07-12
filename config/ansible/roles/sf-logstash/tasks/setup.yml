@@ -1,0 +1,9 @@
+---
+- name: "Install logstash configuration"
+  template: src=templates/indexer.conf.erb dest=/etc/logstash/conf.d/indexer.conf
+  register: config
+- name: "Enable logstash"
+  service: name=logstash enabled=yes state=started
+- name: "Restart logstash if needed"
+  service: name=logstash state=restarted
+  when: config|changed

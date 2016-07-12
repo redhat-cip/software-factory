@@ -1,0 +1,6 @@
+---
+# Move the installation of logstash here
+#- include: install.yml
+#  when: action is defined and action == "install"
+- include: setup.yml
+  when: action is not defined or action == "setup"
