@@ -1,0 +1,34 @@
+---
+- include: /etc/ansible/tasks/update_configrepo.yaml
+  when: mirrors.periodic_update
+
+- name: "Check for current periodic pipeline"
+  stat: path=/root/config/zuul/_mirrors.yml
+  register: config_pipeline
+
+- name: "Add mirror periodic pipeline"
+  when: mirrors.periodic_update
+  template: src=_mirrors.yml.j2 dest=/root/config/zuul/_mirrors.yml
+  register: pipeline
+
+- name: "Add mirror periodic update job"
+  when: mirrors.periodic_update
+  template: src=_mirrors_update.yml.j2 dest=/root/config/jobs/_mirrors_update.yml
+
+- name: "Add periodic pipeline to config repo"
+  when: mirrors.periodic_update and pipeline|changed
+  command: chdir=/root/config {{ item }}
+  with_items:
+    - git add zuul/_mirrors.yml jobs/_mirrors_update.yml
+    - git commit -m "Add swift mirror periodic update"
+    - git push git+ssh://{{ fqdn }}/config master
+    - ansible-playbook /etc/ansible/sf_configrepo_update.yml
+
+- name: "Remove periodic pipeline from config repo"
+  when: mirrors.periodic_update == False and config_pipeline.stat.exists is defined and config_pipeline.stat.exists == True
+  command: chdir=/root/config {{ item }}
+  with_items:
+    - git rm zuul/_mirrors.yml jobs/_mirrors_update.yml
+    - git commit -m "Remove swift mirror periodic update"
+    - git push git+ssh://{{ fqdn }}/config master
+    - ansible-playbook /etc/ansible/sf_configrepo_update.yml

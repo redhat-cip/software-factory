@@ -101,6 +101,10 @@ def update_sfconfig(data):
     if 'gerrit_connections' not in data:
         data['gerrit_connections'] = []
         dirty = True
+
+    if 'periodic_update' not in data['mirrors']:
+        data['mirrors']['periodic_update'] = False
+        dirty = True
     return dirty
 
 

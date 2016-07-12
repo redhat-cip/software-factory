@@ -1,0 +1,5 @@
+---
+# This playbook is called by the zuul periodic pipeline
+- hosts: mirror
+  roles:
+  - {name: "sf-mirror", action: "update"}

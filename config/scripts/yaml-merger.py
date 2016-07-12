@@ -22,7 +22,7 @@ def loadConfig(config_path):
         paths.append(config_path)
 
     # Keeps only .yaml files
-    paths = filter(lambda x: x.endswith('.yaml'), paths)
+    paths = filter(lambda x: x.endswith('.yaml') or x.endswith('.yml'), paths)
     # make sure layout.yaml is the first one
     if '%s/layout.yaml' % config_path in paths:
         paths.remove('%s/layout.yaml' % config_path)

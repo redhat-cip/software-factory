@@ -1,6 +1,7 @@
 #!/bin/bash
 #
 # copyright (c) 2014 enovance sas <licensing@enovance.com>
+# copyright (c) 2016 Red Hat
 #
 # licensed under the apache license, version 2.0 (the "license"); you may
 # not use this file except in compliance with the license. you may obtain
@@ -235,6 +236,11 @@ time ansible-playbook /etc/ansible/sf_setup.yml || {
 
 time ansible-playbook /etc/ansible/sf_initialize.yml || {
     echo "[sfconfig] sfmain playbook failed"
+    exit 1
+}
+
+time ansible-playbook /etc/ansible/sf_postconf.yml || {
+    echo "[sfconfig] sfpostconf playbook failed"
     exit 1
 }
 

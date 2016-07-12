@@ -200,6 +200,56 @@ set custom ACL:
 
   https://wiki.mumble.info/wiki/Murmurguide#Becoming_Administrator_and_Registering_a_User
 
+How-to setup swift mirror of external requirements ?
+....................................................
+
+The mirror service uses the mirror2swift utility to provide a local cache
+for external ressources. It's usualy used to mirror rpm repository
+for ci image building purpose.
+
+To enable the mirror service, you need to configure a swift container
+in sfconfig.yaml and then specify what url needs to be mirrored in the config-repo:
+
+* Add the mirror role to /etc/puppet/hiera/sf/arch.yaml
+* Configure the mirror role in /etc/puppet/hiera/sf/sfconfig.yaml
+* Run sfconfig.sh
+* Edit mirror configuration template provided in config repo mirrors directory.
+
+When the periodic_update is set, the mirror update will be sceduled periodically
+through a dedicated zuul pipeline, status and progress can be checked like any
+other CI jobs. Otherwise, to update the cache manually, this command needs to be
+executed:
+
+.. code-block:: bash
+
+    sudo -u mirror2swift mirror2swift /var/lib/mirror2swift/config.yaml
+
+
+sfconfig.yaml example:
+
+.. code-block:: yaml
+
+  mirrors:
+    periodic_update: '0 0 * * \*'
+    swift_mirror_url: http://swift:8080/v1/AUTH_uuid/repomirror/
+    swift_mirror_tempurl_key: TEMP_URL_KEY
+
+The swift_mirror_url needs to be the canonical fully qualified url of the destination swift container.
+The swift_mirror_tempurl_key needs to be a write access tempurl key.
+The periodic_update needs to be a valid zuul timer format, e.g. daily is '0 0 * * \*'.
+
+config-repo yaml files represent the list of mirrors as documented here
+https://github.com/cschwede/mirror2swift. For example, config/mirrors/centos.yaml:
+
+.. code-block:: yaml
+
+  - name: os
+    type: repodata
+    url: 'http://centos.mirror.example.com/7/os/x86_64/'
+    prefix: 'os/'
+
+This will mirror the CentOS-7 base repository to http://swift:8080/v1/AUTH_uuid/repomirror/os/
+
 How can I use the Gerrit REST API?
 ..................................
 

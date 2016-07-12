@@ -109,6 +109,8 @@ backup:
     swift_backup_max_retention_secs: 864000
 
 mirrors:
+    # Set periodic update using time format, e.g. daily = '0 0 * * *'
+    periodic_update: False
     swift_mirror_url: http://swift:8080/v1/AUTH_uuid/repomirror/
     swift_mirror_tempurl_key: container_tempurl_key
 

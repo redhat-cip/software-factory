@@ -3,3 +3,5 @@ features:
   - Add swift mirror service through config-repo.
     It uses mirror2swift to mirror http or rpm repodata
     contents.
+  - Use periodic_update parameter to set time format of
+    periodic mirrors update. E.g., daily is '0 0 * * *'

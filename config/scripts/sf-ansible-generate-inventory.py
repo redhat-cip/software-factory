@@ -65,6 +65,14 @@ def generate_inventory():
                            arch)
 
     if args.verify:
+        print "\n#----8<----\n# Playbook"
+    else:
+        output = "%s/sf_postconf.yml" % ansible_root
+    render_jinja2_template(output,
+                           "%s/templates/sf_postconf.yml.j2" % ansible_root,
+                           arch)
+
+    if args.verify:
         print "\n#----8<----\n# Config-update Playbook"
     else:
         output = "%s/sf_configrepo_update.yml" % ansible_root
