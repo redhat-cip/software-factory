@@ -31,7 +31,9 @@
 {% for role in host['rolesname'] %}{% if role != 'sf-mysql' %}    - {{ role }}
 {% endif %}{% endfor %}
   post_tasks:
+{% if host['puppet_statement'] != 'include ' %}
     - include: /etc/ansible/tasks/puppet.yml puppet_statement="{{ host['puppet_statement'] }}"
+{% endif %}
     - include: /etc/ansible/tasks/selinux_finalize.yml
       when: selinuxenabled
 

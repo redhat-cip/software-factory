@@ -124,6 +124,28 @@ Please note that you might need to update URLs in other places as well, for
 example git remote urls in .gitreview and .git/config files in repositories
 hosted on Software Factory.
 
+How can I distribute service to new instance ?
+..............................................
+
+By default, sfconfig.sh will deploy and configure all service on
+the install server (allinone). To use a distributed architecture,
+new instances needs to be manually deployed using the sf image,
+then root ssh access needs to be granted using the service_rsa.pub
+key.
+
+Example of arch file to offload elasticsearch service to a dedicated
+host:
+
+.. code-block:: yaml
+
+  inventory:
+    - name: elasticsearch
+      ip: 192.168.0.3
+      roles:
+        - elasticsearch
+
+Note that sfconfig.sh won't disable a service previously deployed.
+
 How-to create channels in Mumble ?
 ..................................
 
