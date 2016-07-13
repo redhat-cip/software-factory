@@ -1,3 +1,6 @@
+# This file is part of the core configuration of SF.
+# Please do not modify it.
+
 url:
   gateway_url: "http://%{hiera('fqdn')}/"
   redmine_url: "http://redmine.%{hiera('fqdn')}:8083/"

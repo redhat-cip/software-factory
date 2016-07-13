@@ -23,7 +23,6 @@ class gerrit {
 
   $fqdn = hiera('fqdn')
   $url = hiera('url')
-  $cauth = hiera('cauth')
   $settings = hiera('gerrit')
   $auth = hiera('authentication')
 

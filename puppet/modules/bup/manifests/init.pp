@@ -15,12 +15,6 @@
 
 class bup {
 
-    $settings = hiera_hash('bup', '')
-    $bup_minute = $settings['bup_minute']
-    $bup_hour = $settings['bup_hour']
-    $bup_month = $settings['bup_month']
-    $bup_weekday = $settings['bup_weekday']
-
     exec {'bup_init':
         path    => '/usr/bin:/usr/sbin:/bin:/usr/local/bin:/usr/local/sbin',
         command => 'bup init',
@@ -33,10 +27,6 @@ class bup {
 define bup::scripts($name, $backup_script, $restore_script) {
 
   include ::bup
-  $bup_minute = $bup::bup_minute
-  $bup_hour = $bup::bup_hour
-  $bup_month = $bup::bup_month
-  $bup_weekday = $bup::bup_weekday
 
   file { "/root/backup_${name}.sh":
     ensure  => present,
@@ -55,10 +45,10 @@ define bup::scripts($name, $backup_script, $restore_script) {
   }
 
   cron { "backup_${name}":
-    minute  => $bup_minute,
-    hour    => $bup_hour,
-    month   => $bup_month,
-    weekday => $bup_weekday,
+    minute  => '0',
+    hour    => '1',
+    month   => '*',
+    weekday => '*',
     user    => 'root',
     command => "/root/backup_${name}.sh",
   }

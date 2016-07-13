@@ -7,7 +7,7 @@ WSGIDaemonProcess managesf python-path=/var/www/managesf/
     Order deny,allow
     Allow from all
     AuthType mod_auth_pubtkt
-    TKTAuthLoginURL <%= @cauth['signin_url'] %>
+    TKTAuthLoginURL /auth/login
     TKTAuthFakeBasicAuth on
     TKTAuthDebug 1
     require valid-user

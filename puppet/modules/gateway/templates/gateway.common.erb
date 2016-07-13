@@ -7,7 +7,7 @@
     # Don't login to Redmine itself, use cauth instead
     <LocationMatch "/redmine/login">
 	RewriteEngine On
-	RewriteRule ^(.*)$ <%= @cauth['signin_url'] %> [R,NC,L]
+	RewriteRule ^(.*)$ <%= @cauth_signin_url %> [R,NC,L]
     </LocationMatch>
 
     <Location "/rb/">
@@ -77,7 +77,7 @@
 
         AuthType mod_auth_pubtkt
         TKTAuthFakeBasicAuth on
-        TKTAuthLoginURL <%= @cauth['signin_url'] %>
+        TKTAuthLoginURL <%= @cauth_signin_url %>
         TKTAuthDebug 1
         require valid-user
     </LocationMatch>
@@ -96,7 +96,7 @@
         RequestHeader unset X-Forwarded-User
         <If "%{HTTP_COOKIE} =~ /auth_pubtkt=.*/">
             AuthType mod_auth_pubtkt
-            TKTAuthLoginURL <%= @cauth['signin_url'] %>
+            TKTAuthLoginURL <%= @cauth_signin_url %>
             TKTAuthFakeBasicAuth on
             TKTAuthDebug 1
             AuthName "Grafana"
@@ -163,7 +163,7 @@
 
         AuthType mod_auth_pubtkt
         TKTAuthFakeBasicAuth on
-        TKTAuthLoginURL <%= @cauth['signin_url'] %>
+        TKTAuthLoginURL <%= @cauth_signin_url %>
         TKTAuthDebug 1
         require valid-user
     </LocationMatch>
@@ -180,7 +180,7 @@
         Header set Cache-Control "no-cache, must-revalidate"
         AuthType mod_auth_pubtkt
         TKTAuthFakeBasicAuth on
-        TKTAuthLoginURL <%= @cauth['signin_url'] %>
+        TKTAuthLoginURL <%= @cauth_signin_url %>
         TKTAuthDebug 1
         require valid-user
     </LocationMatch>
@@ -189,7 +189,7 @@
         Header set Cache-Control "no-cache, must-revalidate"
         AuthType mod_auth_pubtkt
         TKTAuthFakeBasicAuth on
-        TKTAuthLoginURL <%= @cauth['signin_url'] %>
+        TKTAuthLoginURL <%= @cauth_signin_url %>
         TKTAuthDebug 1
         require valid-user
     </LocationMatch>
@@ -251,7 +251,7 @@
         Order deny,allow
         Allow from all
         AuthType mod_auth_pubtkt
-        TKTAuthLoginURL <%= @cauth['signin_url'] %>
+        TKTAuthLoginURL <%= @cauth_signin_url %>
         TKTAuthFakeBasicAuth on
         TKTAuthDebug 1
         require valid-user

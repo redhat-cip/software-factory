@@ -1,3 +1,0 @@
-cauth:
-  signin_url: "/auth/login"
-  signout_url: "/auth/logout"

@@ -18,7 +18,8 @@ class redmine {
     include ::cauth_client
     include ::apache
 
-    $cauth = hiera_hash('cauth')
+    $cauth_signin_url = "/auth/login"
+    $cauth_signout_url = "/auth/logout"
     $theme = hiera('theme')
     $auth = hiera('authentication')
     $fqdn = hiera('fqdn')

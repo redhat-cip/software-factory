@@ -1,6 +1,0 @@
-bup:
-  bup_minute: '0'
-  bup_hour: '1'
-  bup_month: '*'
-  bup_weekday: '*'
-# This cron job runs everyday at 1.00 AM

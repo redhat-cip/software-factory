@@ -117,7 +117,7 @@ gerrit = {
     'host': 'gerrit.<%= @fqdn %>',
     'url': '<%= @url["gateway_url"] %>',
     'top_domain': '<%= @fqdn %>',
-    'ssh_port': <%= @gerrit['gerrit_sshd_port'] %>,
+    'ssh_port': 29418,
     'sshkey_priv_path': '/var/www/managesf/gerrit_admin_rsa',
     'replication_config_path': '/home/gerrit/site_path/etc/replication.config',
     'db_host': '<%= @gerrit_mysql_host %>',

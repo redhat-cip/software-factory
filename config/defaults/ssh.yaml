@@ -1,3 +1,6 @@
+# This file is part of the core configuration of SF.
+# Please do not modify it.
+
 ssh_keys:
   ssh_root_service:
     user: root

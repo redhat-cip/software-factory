@@ -13,9 +13,11 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-class gateway ($cauth = hiera_hash('cauth', '')) {
+class gateway {
   include ::apache
 
+  $cauth_signin_url = "/auth/login"
+  $cauth_signout_url = "/auth/logout"
   $auth = hiera('authentication')
   $arch = hiera('roles')
   $url = hiera('url')

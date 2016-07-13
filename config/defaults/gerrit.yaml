@@ -1,6 +1,2 @@
 gerrit:
-  repo_base_path: git
-  gerrit_sshd_port: 29418
-  sshd_listen_address: "*:29418"  # use the same port as above
-  http_basic_auth: true
   gerrit_heap_limit: 256m

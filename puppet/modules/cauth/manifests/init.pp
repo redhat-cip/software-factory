@@ -13,7 +13,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-class cauth ($cauth = hiera('cauth'), $gerrit = hiera('gerrit')) {
+class cauth ($gerrit = hiera('gerrit')) {
   include ::apache
 
   $auth = hiera('authentication')

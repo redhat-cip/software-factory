@@ -14,19 +14,19 @@ RewriteEngine On
 RewriteCond %{REQUEST_URI} ^/logout$
 RewriteCond %{QUERY_STRING} (^.*$)
 RewriteCond %1 ^$
-RewriteRule logout <%= @cauth["signout_url"] %>?service=redmine [R,L,CO=_redmine_default:;:;:0:/redmine]
+RewriteRule logout <%= @cauth_signout_url %>?service=redmine [R,L,CO=_redmine_default:;:;:0:/redmine]
 
 RewriteCond %{REQUEST_URI} ^/logout$
 RewriteCond %{QUERY_STRING} ^services=(.*)$
 RewriteCond %1 !^$
-RewriteRule logout <%= @cauth["signout_url"] %>?services=%1 [R,L,CO=_redmine_default:;:;:0:/redmine]
+RewriteRule logout <%= @cauth_signout_url %>?services=%1 [R,L,CO=_redmine_default:;:;:0:/redmine]
 
 <Directory /var/www/redmine/public>
   AllowOverride all
   Options -MultiViews
   <If "%{HTTP_COOKIE} =~ /auth_pubtkt=.*/">
       AuthType mod_auth_pubtkt
-      TKTAuthLoginURL <%= @cauth['signin_url'] %>
+      TKTAuthLoginURL <%= @cauth_signin_url %>
       TKTAuthFakeBasicAuth on
       TKTAuthDebug 1
       require valid-user

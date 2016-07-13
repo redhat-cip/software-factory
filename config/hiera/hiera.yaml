@@ -3,13 +3,9 @@
 :hierarchy:
   - sf_version
   - ssh
-  - edeploy_client
-  - edeploy_server
   - "%{::clientcert}"
-  - bup
   - jenkins
   - gerrit
-  - cauth
   - common
   - _arch
   - sfconfig
