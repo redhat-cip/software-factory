@@ -16,6 +16,7 @@
 class nodepool {
   include ::systemctl
 
+  $arch = hiera('roles')
   $jenkins_rsa_pub = hiera('jenkins_rsa_pub')
   $nodepool = hiera('nodepool')
   $nodepool_rsa = hiera('jenkins_rsa')

@@ -7,7 +7,6 @@ inventory:
       - mysql
       - gateway
       - auth
-      - statsd
       - managesf
       - etherpad
       - lodgeit

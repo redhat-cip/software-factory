@@ -18,6 +18,7 @@ class zuul {
   include ::cauth_client
   include ::systemctl
 
+  $arch = hiera('roles')
   $fqdn = hiera('fqdn')
   $url = hiera('url')
   $logs = hiera('logs')
