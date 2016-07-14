@@ -1,0 +1,29 @@
+From 71f17db2d4ce302fce23e77d528526cb135a159e Mon Sep 17 00:00:00 2001
+From: Tristan Cacqueray <tdecacqu@redhat.com>
+Date: Wed, 20 Jan 2016 12:37:42 -0500
+Subject: [PATCH] Support swift logserver without Send-Temp-Url-Key
+
+As shown in the tests/fixtures/zuul-swift-temp-url.conf example,
+when Send-Temp-Url-Key is set to False and X-Account-Meta-Temp-Url-Key
+is defined, there is no need for a swiftclient connection.
+
+Without this, the [swift] configuration section always requires OS_
+settings, even if temp_url_key and logserver_prefix are already defined.
+
+Change-Id: I8990359d47e9d5065d34af3faea2d24e63e736b8
+---
+
+diff --git a/zuul/launcher/gearman.py b/zuul/launcher/gearman.py
+index 02f78fd..bf068f8 100644
+--- a/zuul/launcher/gearman.py
++++ b/zuul/launcher/gearman.py
+@@ -243,8 +243,8 @@
+         # NOTE(mmedvede): Swift parameter creation should remain after the call
+         # to job.parameter_function to make it possible to update LOG_PATH for
+         # swift upload url using parameter_function mechanism.
+-        if job.swift and self.swift.connection:
+ 
++        if job.swift and self.swift.storage_url:
+             for name, s in job.swift.items():
+                 swift_instructions = {}
+                 s_config = {}

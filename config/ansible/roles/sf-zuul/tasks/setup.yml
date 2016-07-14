@@ -4,3 +4,11 @@
 - command: semanage port --modify -t http_port_t -p tcp {{ item }}
   with_items: [8084]
   when: selinuxenabled
+
+- name: "Apply patch"
+  patch: src={{ item }} basedir=/srv/zuul/lib/python2.7/site-packages strip=1
+  # ignore_errors because first patch will failed on second run with: Reversed (or previously applied) patch detected
+  ignore_errors: yes
+  with_items:
+    - 152290-Add-support-for-layout-configuration-split.patch
+    - 270338-zuul_temp-url-key.patch

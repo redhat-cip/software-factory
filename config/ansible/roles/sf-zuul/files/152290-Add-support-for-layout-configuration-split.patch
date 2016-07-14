@@ -1,0 +1,111 @@
+From d17706cfb568b5d5f16a8f8cc4b35e70fff0646a Mon Sep 17 00:00:00 2001
+From: Tristan Cacqueray <tristan.cacqueray@enovance.com>
+Date: Sun, 15 Feb 2015 18:38:28 +0000
+Subject: [PATCH] Add support for layout configuration split
+
+This implements the zuul_split spec:
+* Allows to use a directory instead of a single file
+* Recurse this directory to grab all relevant yaml files
+* Yaml dictionaries are additively merged
+* Merge conflicts are detected through the layoutvalidator
+
+Change-Id: Ia8e0f121298cb2c99210e163986a7be33124f09b
+---
+
+diff --git a/zuul/cmd/server.py b/zuul/cmd/server.py
+index 2aca4f2..45a5c53 100755
+--- a/zuul/cmd/server.py
++++ b/zuul/cmd/server.py
+@@ -45,7 +45,7 @@
+         parser.add_argument('-c', dest='config',
+                             help='specify the config file')
+         parser.add_argument('-l', dest='layout',
+-                            help='specify the layout file')
++                            help='specify the layout file or directory')
+         parser.add_argument('-d', dest='nodaemon', action='store_true',
+                             help='do not run as a daemon')
+         parser.add_argument('-t', dest='validate', nargs='?', const=True,
+diff --git a/zuul/layoutvalidator.py b/zuul/layoutvalidator.py
+index a01eed3..6379cca 100644
+--- a/zuul/layoutvalidator.py
++++ b/zuul/layoutvalidator.py
+@@ -16,7 +16,9 @@
+ # under the License.
+ 
+ import voluptuous as v
++import os
+ import string
++import yaml
+ 
+ 
+ # Several forms accept either a single item or a list, this makes
+@@ -25,6 +27,42 @@
+     return v.Any([x], x)
+ 
+ 
++def loadConfig(config_path):
++    """Load layout configuration whenever it is a single file or a directory.
++       If it's a directory, this will walk through each .yaml file and performs
++       a simple yaml merge"""
++    config_path = os.path.expanduser(config_path)
++    if not os.path.exists(config_path):
++        raise Exception("Unable to read layout config path at %s" %
++                        config_path)
++
++    # Discover all files in config_path
++    paths = []
++    if os.path.isdir(config_path):
++        for root, dirs, files in os.walk(config_path, topdown=True):
++            paths.extend([os.path.join(root, path) for path in files])
++    else:
++        paths.append(config_path)
++
++    # Keeps only .yaml files
++    paths = filter(lambda x: x.endswith('.yaml'), paths)
++
++    final_data = {}
++    for path in paths:
++        data = yaml.load(open(path))
++        # Merge document
++        for key in data:
++            if key in final_data:
++                try:
++                    final_data[key] += data[key]
++                except:
++                    raise v.Invalid("Could not merge '%s' from %s" %
++                                    (key, path))
++            else:
++                final_data[key] = data[key]
++    return final_data
++
++
+ class LayoutSchema(object):
+     include = {'python-file': str}
+     includes = [include]
+diff --git a/zuul/scheduler.py b/zuul/scheduler.py
+index e1aa0c2..968ed33 100644
+--- a/zuul/scheduler.py
++++ b/zuul/scheduler.py
+@@ -25,7 +25,6 @@
+ import sys
+ import threading
+ import time
+-import yaml
+ 
+ import layoutvalidator
+ import model
+@@ -389,13 +388,7 @@
+         layout = model.Layout()
+         project_templates = {}
+ 
+-        if config_path:
+-            config_path = os.path.expanduser(config_path)
+-            if not os.path.exists(config_path):
+-                raise Exception("Unable to read layout config file at %s" %
+-                                config_path)
+-        with open(config_path) as config_file:
+-            data = yaml.load(config_file)
++        data = layoutvalidator.loadConfig(config_path)
+ 
+         validator = layoutvalidator.LayoutValidator()
+         validator.validate(data, connections)

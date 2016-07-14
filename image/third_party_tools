@@ -233,14 +233,10 @@ fi
 # JQuery
 JQUERY_VERSION=2.1.1
 JQUERY_URL="https://code.jquery.com/jquery-${JQUERY_VERSION}.min.js"
-JQUERY_VISIBILITY_URL="http://status.openstack.org/jquery-visibility.min.js"
-JQUERY_GRAPHITE_URL="http://status.openstack.org/jquery-graphite.js"
 
-URL_LIST="$URL_LIST $JQUERY_URL $JQUERY_VISIBILITY_URL $JQUERY_GRAPHITE_URL"
+URL_LIST="$URL_LIST $JQUERY_URL"
 if [ "${USE_SWIFT_CACHE}" == "yes" ]; then
     JQUERY_URL="${SWIFT_CACHE}/javascripts/jquery-${JQUERY_VERSION}.min.js"
-    JQUERY_VISIBILITY_URL="${SWIFT_CACHE}/javascripts/jquery-visibility.min.js"
-    JQUERY_GRAPHITE_URL="${SWIFT_CACHE}/javascripts/jquery-graphite.js"
 fi
 
 
@@ -254,11 +250,9 @@ if [ "${USE_SWIFT_CACHE}" == "yes" ]; then
 fi
 
 
-# Latest version of nodepool/zuul as of May11 2016
-ZUUL_URL="https://github.com/openstack-infra/zuul"
-ZUUL_VERSION=fdeb224824584dad355cbda207811a2105d1d2e2
 NODEPOOL_URL="https://github.com/openstack-infra/nodepool"
-NODEPOOL_VERSION=1fd2a14ab79d256419083e2b2d9c463af36e039a
+NODEPOOL_VERSION=1fd2a14ab79d256419083e2b2d9c463af36e039a # 2016-05-18
+ZUUL_VERSION=569b7a30de9d6e181989ede5c53ec4be6554da6b     # 2016-08-15
 
 # gerritbot
 GERRITBOT_URL="https://github.com/openstack-infra/gerritbot"
@@ -268,9 +262,12 @@ GERRITBOT_VERSION=d48b1bc41717291e43425ff437d6214b6934f60f
 PASTE_URL="https://git.openstack.org/openstack-infra/lodgeit"
 PASTE_VERSION=beb3ff7e266 # latest commit as of 05 Jun 2015
 
-GIT_REPO_LIST="$URL_LIST $ZUUL_URL $NODEPOOL_URL $GERRITBOT_URL $PASTE_URL"
+GIT_REPO_LIST="$URL_LIST $NODEPOOL_URL $GERRITBOT_URL $PASTE_URL"
 if [ "${USE_SWIFT_CACHE}" == "yes" ]; then
-    ZUUL_URL="${SWIFT_CACHE}/zuul.git"
+    ZUUL_EXTRA_VARS="zuul_url: \"${SWIFT_CACHE}/zuul.git\""
+    ZUUL_EXTRA_VARS+=", zuul_commit: \"${ZUUL_VERSION}\""
+    ZUUL_EXTRA_VARS+=", jquery_visibility_url: \"${SWIFT_CACHE}/javascripts/jquery-visibility.min.js\""
+    ZUUL_EXTRA_VARS+=", jquery_graphite_url: \"${SWIFT_CACHE}/javascripts/jquery-graphite.js\""
     NODEPOOL_URL="${SWIFT_CACHE}/nodepool.git"
     PASTE_URL="${SWIFT_CACHE}/lodgeit.git"
 fi

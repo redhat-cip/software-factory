@@ -510,49 +510,6 @@ function install_nodepool {
     rm -Rf ${dir}/tmp/nodepool*
 }
 
-function install_zuul {
-    # Checkout VERSION in /tmp
-    do_chroot ${dir} virtualenv /srv/zuul
-
-    # Cleanup left-overs
-    rm -Rf ${dir}/tmp/zuul*
-
-    retry do_chroot ${dir} git clone ${ZUUL_URL} /tmp/zuul
-    do_chroot ${dir} bash -c "cd /tmp/zuul && git checkout -b working ${ZUUL_VERSION}"
-
-    # Apply temp_url_key fix
-    # Apply not-merged fixes
-    for patch in ./patches/zuul_*; do
-        do_chroot ${dir} bash -c "cd /tmp/zuul; patch -p1" < ${patch}
-    done
-
-    # Install
-    do_chroot ${dir} sed -i "s/^apscheduler>=3.0/apscheduler>=3.0,<3.1/" /tmp/zuul/requirements.txt
-    sudo sed -i 's/^pbr.*//' ${dir}/tmp/zuul/requirements.txt
-
-    do_chroot ${dir} /srv/zuul/bin/pip install --upgrade 'pbr' 'pip<8'
-    do_chroot ${dir} /srv/zuul/bin/pip install 'pip<8' file:///tmp/zuul
-
-    # Manually install swift and keystone client
-    do_chroot ${dir} /srv/zuul/bin/pip install --upgrade 'pbr>=1.8' 'pip<8'
-    do_chroot ${dir} /srv/zuul/bin/pip install 'pip<8' python-swiftclient python-keystoneclient
-
-    # Install symlink to venv to set correct python path
-    for bin in zuul zuul-cloner zuul-merger zuul-server; do
-        ln -sf /srv/zuul/bin/${bin} ${dir}/usr/bin/${bin}
-    done
-
-    # Install zuul web virtualhost
-    rm -Rf ${dir}/var/www/zuul
-    mv ${dir}/tmp/zuul/etc/status/public_html/ ${dir}/var/www/zuul
-    mkdir -p ${dir}/var/www/static/js
-    http_fetch $JQUERY_VISIBILITY_URL ${dir}/var/www/static/js/jquery-visibility.min.js
-    http_fetch $JQUERY_GRAPHITE_URL   ${dir}/var/www/static/js/jquery.graphite.js
-
-    # Cleanup left-overs
-    rm -Rf ${dir}/tmp/zuul*
-}
-
 function install_gerritbot {
     # Checkout VERSION in /tmp
     rm -Rf ${dir}/tmp/gerritbot
@@ -634,8 +591,6 @@ if [ "$STEP" == 1 ]; then
     checkpoint "gerrit installed"
     install_elk
     checkpoint "elk installed"
-    install_zuul
-    checkpoint "zuul installed"
     install_nodepool
     checkpoint "nodepool installed"
     install_gerritbot
@@ -657,6 +612,7 @@ if [ "$STEP" == 1 ]; then
     # Copy prepared managesf source to support depends-on
     rsync -a --delete ${MANAGESF_CLONED_PATH}/ ${dir}/usr/src/managesf/
     ansible_install sf-managesf
+    ansible_install sf-zuul "$ZUUL_EXTRA_VARS"
     ansible_install sf-storyboard "storyboard_url: \"${STORYBOARD_URL}\", storyboard_commit: \"${STORYBOARD_COMMIT}\", storyboard_client_url: \"${STORYBOARD_CLIENT_URL}\", storyboard_client_commit: \"${STORYBOARD_CLIENT_COMMIT}\""
     ansible_install sf-storyboard-webclient "storyboard_webclient_url: \"${STORYBOARD_WEBCLIENT_URL}\""
     ansible_install sf-mirror
