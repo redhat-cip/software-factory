@@ -78,7 +78,7 @@ class SFProvisioner(object):
     def create_issues_on_project(self, name, issues):
         print " Create %s issue(s) for that project ..." % len(issues)
         for i in issues:
-            if is_present('SFRedmine'):
+            if is_present('redmine'):
                 issue = self.rm.create_issue(name, i['name'])
             else:
                 issue = random.randint(1,100)

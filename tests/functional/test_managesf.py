@@ -41,7 +41,7 @@ class TestConditionalTesting(Base):
         self.fail('Failure to detect that a service is missing')
 
     # assuming gerrit will always be there ...
-    @skipIfServicePresent('SFGerrit')
+    @skipIfServicePresent('gerrit')
     def test_skip_if_service_present(self):
         self.fail('Failure to detect that a service is present')
 
@@ -412,7 +412,7 @@ class TestManageSF(Base):
         self.create_project(pname, config.USER_2)
         self.assertTrue(self.gu.project_exists(pname))
         self.assertTrue(self.gu.group_exists('%s-ptl' % pname))
-        if is_present("SFRedmine"):
+        if is_present("redmine"):
             rname = '_'.join(pname.split('/'))
             self.assertTrue(self.rm.project_exists(rname))
         # Try to clone

@@ -18,17 +18,18 @@ if "REQUESTS_CA_BUNDLE" not in os.environ and os.path.isfile(requests_ca):
 
 sfconfig_filename = "%s/hiera/sfconfig.yaml" % SF_BOOTSTRAP_DATA
 sfcreds_filename = "%s/hiera/sfcreds.yaml" % SF_BOOTSTRAP_DATA
+sfarch_filename = "%s/hiera/_arch.yaml" % SF_BOOTSTRAP_DATA
+
+if not os.path.isfile(sfarch_filename):
+    # 2.2.2: Legacy filename
+    sfarch_filename = "%s/hiera/arch.yaml" % SF_BOOTSTRAP_DATA
 
 try:
     sfconfig = yaml.load(open(sfconfig_filename))
-except:
-    print "%s: can't load sfconfig" % sfconfig_filename
-    raise
-
-try:
     sfcreds = yaml.load(open(sfcreds_filename))
+    sfarch = yaml.load(open(sfarch_filename))
 except:
-    print "%s: can't load sfconfig" % sfconfig_filename
+    print "Can't load hiera config"
     raise
 
 GATEWAY_HOST = sfconfig['fqdn']
@@ -221,4 +222,4 @@ USERS = {
 
 
 # List of potential issue tracker plugins supported by managesf
-ISSUE_TRACKERS = ['SFRedmine', ]
+ISSUE_TRACKERS = ['redmine', ]

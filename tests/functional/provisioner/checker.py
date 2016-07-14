@@ -59,7 +59,7 @@ class SFchecker:
     def check_project(self, name):
         print " Check project %s exists ..." % name,
         if not self.gu.project_exists(name) or \
-           (is_present('SFRedmine') and not self.rm.project_exists(name)):
+           (is_present('redmine') and not self.rm.project_exists(name)):
             print "FAIL"
             exit(1)
         print "OK"
@@ -166,7 +166,7 @@ class SFchecker:
             self.check_project(project['name'])
             self.check_files_in_project(project['name'],
                                         [f['name'] for f in project['files']])
-            if is_present('SFRedmine'):
+            if is_present('redmine'):
                 self.check_issues_on_project(project['name'],
                                              project['issues'])
             self.check_reviews_on_project(project['name'], project['issues'])

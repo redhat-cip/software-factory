@@ -49,7 +49,7 @@ class TestGateway(Base):
                                  "%s returned status %s" % (url,
                                                             resp.status_code))
 
-    @skipIfServiceMissing('SFRedmine')
+    @skipIfServiceMissing('redmine')
     def test_redmine_versions_edit(self):
         tracker = get_issue_tracker_utils()
         cookies = dict(auth_pubtkt=config.USERS[config.USER_1]['auth_cookie'])

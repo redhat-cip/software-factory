@@ -63,67 +63,33 @@ EMPTY_JOB_XML = """<?xml version='1.0' encoding='UTF-8'?>
 skipIf = unittest.skipIf
 skip = unittest.skip
 
-
-# test decorators and utilities related to running services
-def _get_services():
-    cookie = get_cookie(config.ADMIN_USER,
-                        config.USERS[config.ADMIN_USER]['password'])
-    about = requests.get(config.GATEWAY_URL + '/manage/about/',
-                         headers={'Accept': 'application/json'},
-                         cookies={'auth_pubtkt': cookie})
-    if about.status_code > 399:
-        return []
-    try:
-        return about.json()['service']['services']
-    except ValueError:
-        raise Exception("Cannot get services from %s" % (config.GATEWAY_URL +
-                                                         '/manage/about/'))
+services = config.sfarch['roles'].keys()
 
 
 def is_present(service):
-    return service in _get_services()
+    return service in services
 
 
 def has_issue_tracker():
-    return set(config.ISSUE_TRACKERS) & set(_get_services())
+    return set(config.ISSUE_TRACKERS) & set(services)
 
 
 def skipIfServiceMissing(service):
-    services = _get_services()
-    if not services:
-        logger.warning('Introspection endpoint not available, you are '
-                       'probably testing a old version of SF, skipping test')
-        return skip
     return skipIf(service not in services,
                   'This instance of SF is not running %s' % service)
 
 
 def skipIfServicePresent(service):
-    services = _get_services()
-    if not services:
-        logger.warning('Introspection endpoint not available, you are '
-                       'probably testing a old version of SF, skipping test')
-        return skip
     return skipIf(service in services,
                   'This instance of SF is running %s' % service)
 
 
 def skipIfIssueTrackerMissing():
-    services = _get_services()
-    if not services:
-        logger.warning('Introspection endpoint not available, you are '
-                       'probably testing a old version of SF, skipping test')
-        return skip
     return skipIf(not set(config.ISSUE_TRACKERS) & set(services),
                   'This instance of SF is not running any issue tracker')
 
 
 def skipIfIssueTrackerPresent():
-    services = _get_services()
-    if not services:
-        logger.warning('Introspection endpoint not available, you are '
-                       'probably testing a old version of SF, skipping test')
-        return skip
     tracker = list(set(config.ISSUE_TRACKERS) & set(services))
     if tracker:
         return skipIf(
@@ -133,13 +99,7 @@ def skipIfIssueTrackerPresent():
 def get_issue_tracker_utils(*args, **kwargs):
     """Returns the correct utility instance depending on the issue tracker
     being deployed with Software Factory"""
-    services = _get_services()
-    if not services:
-        logger.warning('Introspection endpoint not available, you are '
-                       'probably testing a old version of SF')
-        return RedmineUtils(config.GATEWAY_URL + "/redmine/",
-                            *args, **kwargs)
-    if 'SFRedmine' in services:
+    if 'redmine' in services:
         return RedmineUtils(config.GATEWAY_URL + "/redmine/",
                             *args, **kwargs)
     else:
