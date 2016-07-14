@@ -4,3 +4,7 @@ libxml2-devel
 libstdc++-devel
 libX11-devel
 libtiff-devel
+perl-devel
+curl-devel
+zlib-devel
+autoconf

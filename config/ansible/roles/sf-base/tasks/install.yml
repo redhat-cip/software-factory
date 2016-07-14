@@ -1,3 +1,18 @@
 ---
 - name: "Create libexec directory"
   file: path=/usr/local/libexec/software-factory state=directory mode=0755
+
+# Install git>2
+- name: "git - Remove rpm package"
+  command: rpm -e --nodeps git
+
+- name: "git - Fetch git source"
+  unarchive: src={{git_url}} dest=/usr/src/ copy=no
+
+- name: "git - Compile and install source"
+  command: chdir=/usr/src/git-{{git_version}}/ {{ item }}
+  with_items:
+    - make configure
+    - ./configure --prefix=/usr
+    - make all
+    - make install

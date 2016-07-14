@@ -608,7 +608,7 @@ if [ "$STEP" == 1 ]; then
     install_gitweb_theme
     checkpoint "gitweb theme installed"
     copy_sf_ansible_roles
-    ansible_install sf-base
+    ansible_install sf-base "${BASE_EXTRA_VARS}"
     # Copy prepared managesf source to support depends-on
     rsync -a --delete ${MANAGESF_CLONED_PATH}/ ${dir}/usr/src/managesf/
     ansible_install sf-managesf

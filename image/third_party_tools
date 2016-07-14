@@ -34,6 +34,11 @@ export PIP_USE_MIRRORS=True
 # Serverspec gem versions
 SERVERSPEC_VERSION=2.25.0
 
+GIT_VERSION=2.8.4
+
+if [ "${USE_SWIFT_CACHE}" == "yes" ]; then
+    BASE_EXTRA_VARS="git_url: \"${SWIFT_CACHE}/git/v${GIT_VERSION}.tar.gz\", git_version: \"${GIT_VERSION}\""
+fi
 
 # Storyboard
 STORYBOARD_COMMIT="3781b33cf688685a62ad6a4ae740618aa699fdce"
