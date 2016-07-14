@@ -1,6 +1,10 @@
 role_actions:
+  - install
   - setup
   - update
   - get_logs
+
+nodepool_url: https://git.openstack.org/openstack-infra/nodepool
+nodepool_commit: master
 
 puppet_modules: nodepool

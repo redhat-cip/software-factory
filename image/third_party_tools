@@ -276,7 +276,8 @@ if [ "${USE_SWIFT_CACHE}" == "yes" ]; then
     ZUUL_EXTRA_VARS+=", zuul_commit: \"${ZUUL_VERSION}\""
     ZUUL_EXTRA_VARS+=", jquery_visibility_url: \"${SWIFT_CACHE}/javascripts/jquery-visibility.min.js\""
     ZUUL_EXTRA_VARS+=", jquery_graphite_url: \"${SWIFT_CACHE}/javascripts/jquery-graphite.js\""
-    NODEPOOL_URL="${SWIFT_CACHE}/nodepool.git"
+    NODEPOOL_EXTRA_VARS="nodepool_url: \"${SWIFT_CACHE}/nodepool.git\""
+    NODEPOOL_EXTRA_VARS+=", nodepool_commit: \"${NODEPOOL_VERSION}\""
     PASTE_URL="${SWIFT_CACHE}/lodgeit.git"
 fi
 

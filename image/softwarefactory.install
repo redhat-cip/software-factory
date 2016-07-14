@@ -484,32 +484,6 @@ EOF
     rm -Rf ${dir}/srv/lodgeit/lodgeit/.git
 }
 
-function install_nodepool {
-    # Checkout VERSION in /tmp
-    do_chroot ${dir} virtualenv /srv/nodepool
-    [ -d ${dir}/tmp/nodepool ] || retry do_chroot ${dir} git clone ${NODEPOOL_URL} /tmp/nodepool
-    do_chroot ${dir} bash -c "cd /tmp/nodepool && git checkout -b sf_stable ${NODEPOOL_VERSION}"
-
-    # Apply not-merged fixes
-    for patch in ./patches/nodepool_*; do
-        do_chroot ${dir} bash -c "cd /tmp/nodepool; patch -p1" < ${patch}
-    done
-
-    # Install
-    do_chroot ${dir} sed -i "s/^apscheduler>=3.0/apscheduler>=3.0,<3.1/" /tmp/nodepool/requirements.txt
-
-    do_chroot ${dir} /srv/nodepool/bin/pip install --upgrade 'pbr>=1.3' 'pip<8'
-    do_chroot ${dir} /srv/nodepool/bin/pip install 'pip<8' 'funcsigs' file:///tmp/nodepool
-
-    # Install symlink to venv to set correct python path
-    for bin in nodepool nodepoold; do
-        ln -sf /srv/nodepool/bin/${bin} ${dir}/usr/bin/${bin}
-    done
-
-    # Cleanup left-overs
-    rm -Rf ${dir}/tmp/nodepool*
-}
-
 function install_gerritbot {
     # Checkout VERSION in /tmp
     rm -Rf ${dir}/tmp/gerritbot
@@ -591,8 +565,6 @@ if [ "$STEP" == 1 ]; then
     checkpoint "gerrit installed"
     install_elk
     checkpoint "elk installed"
-    install_nodepool
-    checkpoint "nodepool installed"
     install_gerritbot
     checkpoint "gerritbot installed"
     install_murmurd
@@ -614,6 +586,7 @@ if [ "$STEP" == 1 ]; then
     ansible_install sf-managesf
     ansible_install sf-lecm "$LECM_EXTRA_VARS"
     ansible_install sf-zuul "$ZUUL_EXTRA_VARS"
+    ansible_install sf-nodepool "$NODEPOOL_EXTRA_VARS"
     ansible_install sf-storyboard "storyboard_url: \"${STORYBOARD_URL}\", storyboard_commit: \"${STORYBOARD_COMMIT}\", storyboard_client_url: \"${STORYBOARD_CLIENT_URL}\", storyboard_client_commit: \"${STORYBOARD_CLIENT_COMMIT}\""
     ansible_install sf-storyboard-webclient "storyboard_webclient_url: \"${STORYBOARD_WEBCLIENT_URL}\""
     ansible_install sf-mirror "${MIRROR2SWIFT_EXTRA_VARS}"

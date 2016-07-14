@@ -1,0 +1,5 @@
+---
+fixes:
+  - Nodepool wasn't able to delete instance because
+    of a shade bug, this release pin the library until
+    a proper fix is implemented.
