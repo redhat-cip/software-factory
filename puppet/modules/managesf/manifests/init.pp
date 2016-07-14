@@ -39,7 +39,6 @@ class managesf ($gerrit = hiera('gerrit'), $cauth = hiera('cauth')) {
   $gerrit_mysql_username = 'gerrit'
   $gerrit_mysql_password = hiera('creds_gerrit_sql_pwd')
   $admin_password = $auth['admin_password']
-  $services = hiera('services')
   $managesf_mysql_host = "mysql.${fqdn}"
   $managesf_mysql_db = 'managesf'
   $managesf_mysql_username = 'managesf'

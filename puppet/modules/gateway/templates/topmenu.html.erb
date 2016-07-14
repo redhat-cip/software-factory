@@ -19,10 +19,10 @@
         <div class="collapse navbar-collapse">
             <ul class="nav navbar-nav">
                 <li><a href="/dashboard/" target="_top">Dashboard</a></li>
-            <% if @services.include?('SFGerrit') %>
+            <% if @arch.include?('gerrit') %>
                 <li><a href="/r/" target="_top">Gerrit</a></li>
             <% end %>
-            <% if @services.include?('jenkins') %>
+            <% if @arch.include?('jenkins') %>
                 <li><a href="/jenkins/" target="_top">Jenkins</a></li>
             <% end %>
                 <li><a href="/zuul/" target="_top">Zuul</a></li>
@@ -30,17 +30,17 @@
                 <li><a href="/storyboard/" target="_top">Storyboard</a></li>
             <% end %>
             <% if not @theme["topmenu_hide_redmine"] %>
-                <% if @services.include?('SFRedmine') %>
+                <% if @arch.include?('redmine') %>
                 <li><a href="/redmine/" target="_top">Redmine</a></li>
                 <% end %>
             <% end %>
             <% if not @theme["topmenu_hide_etherpad"] %>
-                <% if @services.include?('etherpad') %>
+                <% if @arch.include?('etherpad') %>
                 <li><a href="/etherpad/" target="_top">Etherpad</a></li>
                 <% end %>
             <% end %>
             <% if not @theme["topmenu_hide_paste"] %>
-                <% if @services.include?('lodgeit') %>
+                <% if @arch.include?('lodgeit') %>
                 <li><a href="/paste/" target="_top">Paste</a></li>
                 <% end %>
             <% end %>
@@ -50,12 +50,12 @@
             </ul>
             <ul class="nav navbar-nav pull-right">
                 <%= @theme["topmenu_custom_entry"] %>
-		<li><p class="navbar-text" id="login-msg"></p></li>
+                <li><p class="navbar-text" id="login-msg"></p></li>
                 <li><p class="navbar-btn">
-		    <a id="logout-btn" href="/r/logout" target="_top" class="btn btn-danger">Logout</a>
-		    <a id="login-btn" href="/r/login" target="_top" class="btn btn-primary">Login</a>
-		</p></li>
-		<li>&nbsp;</li>
+                    <a id="logout-btn" href="/r/logout" target="_top" class="btn btn-danger">Logout</a>
+                    <a id="login-btn" href="/r/login" target="_top" class="btn btn-primary">Login</a>
+                </p></li>
+                <li>&nbsp;</li>
             </ul>
         </div>
     </div>

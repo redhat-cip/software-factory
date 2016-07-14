@@ -59,22 +59,22 @@ services = [
 <% if @arch.include?('storyboard') %>
     'SFStoryboard',
 <% end %>
-<% if @services.include?('SFRedmine') %>
+<% if @arch.include?('redmine') %>
     'SFRedmine',
 <% end %>
-<% if @services.include?('SFGerrit') %>
+<% if @arch.include?('gerrit') %>
     'SFGerrit',
 <% end %>
-<% if @services.include?('jenkins') %>
+<% if @arch.include?('jenkins') %>
     'jenkins',
 <% end %>
-<% if @services.include?('etherpad') %>
+<% if @arch.include?('etherpad') %>
     'etherpad',
 <% end %>
-<% if @services.include?('lodgeit') %>
+<% if @arch.include?('lodgeit') %>
     'lodgeit',
 <% end %>
-<% if @services.include?('nodepool') %>
+<% if @arch.include?('nodepool') %>
     'nodepool',
 <% end %>
 ]

@@ -11,20 +11,6 @@ network:
     # Default to root mailbox on managesf node
     admin_mail_forward: root@localhost
 
-services:
-    # EDIT THIS LIST ONLY IF YOU KNOW WHAT YOU ARE DOING !
-    # Removing or adding services might result in a broken deployment
-    # of Software Factory. See available services in the managesf documentation
-    #
-    # SFRedmine: Redmine hosted within Software Factory
-    - SFRedmine
-    # SFGerrit: Gerrit hosted within Software Factory
-    - SFGerrit
-    - jenkins
-    - etherpad
-    - lodgeit
-    - nodepool
-
 authentication:
     admin_password: userpass
     # timeout of session in seconds

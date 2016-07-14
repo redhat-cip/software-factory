@@ -24,16 +24,9 @@ def load(name):
 
 def update_sfconfig(data):
     dirty = False
-    # 2.1.x -> 2.2.x: adds service list
-    if 'services' not in data:
-        data['services'] = [
-            'SFRedmine',
-            'SFGerrit',
-            'jenkins',
-            'etherpad',
-            'lodgeit',
-            'nodepool'
-        ]
+    # 2.2.3: remove service list (useless since arch.yaml)
+    if 'services' in data:
+        del data['services']
         dirty = True
 
     # Make sure mirrors is in the conf
