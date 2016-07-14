@@ -45,6 +45,13 @@ The main challenge is to do functional testing using mocked resources
 to simulate an external tracker.
 
 
+Why can't I +2 after being added to the core group ?
+....................................................
+
+This may happen because of web browser cache issues. Remove all
+cookies and logout/login to refresh your gerrit privileges.
+
+
 Why my job fails with the "NOT_REGISTERED" error ?
 ..................................................
 
