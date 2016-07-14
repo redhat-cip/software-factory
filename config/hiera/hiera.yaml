@@ -11,6 +11,6 @@
   - gerrit
   - cauth
   - common
-  - arch
+  - _arch
   - sfconfig
   - sfcreds

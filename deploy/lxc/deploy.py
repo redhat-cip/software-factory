@@ -137,7 +137,7 @@ def stop(arch, cmd="terminate"):
         execute(['machinectl', cmd, machine.split()[0]], silent=True)
 
 
-def init(arch, base):
+def init(arch, base, arch_raw):
     print "[deploy] Init"
     if not os.path.isdir("/var/lib/lxc"):
         os.mkdir("/var/lib/lxc", 0755)
@@ -157,7 +157,7 @@ def init(arch, base):
     # "cloud-init": copy sfarch file
     root = "/var/lib/lxc/%s/rootfs" % arch["install"]
     open("%s/etc/puppet/hiera/sf/arch.yaml" % root, "w").write(
-        yaml.dump(arch, default_flow_style=False)
+        yaml.dump(arch_raw, default_flow_style=False)
     )
 
     # Generate libvirt domains
@@ -196,6 +196,7 @@ args = parser.parse_args()
 
 try:
     arch = load_refarch(args.arch, args.domain)
+    arch_raw = yaml.load(open(args.arch).read())
 except IOError:
     print "Invalid arch: %s" % args.arch
     exit(1)
@@ -215,5 +216,6 @@ elif args.action == "init":
         args.version = pread([
             "bash", "-c", ". ../../role_configrc > /dev/null; echo $SF_VER"],
             silent=True).strip()
-    init(arch, "%s/roles/install/%s" % (args.workspace, args.version))
+    init(arch, "%s/roles/install/%s" % (args.workspace, args.version),
+         arch_raw)
     start(arch)

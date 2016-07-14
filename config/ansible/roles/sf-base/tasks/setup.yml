@@ -1,6 +1,6 @@
 ---
 - include_vars: /etc/puppet/hiera/sf/sfcreds.yaml
-- include_vars: /etc/puppet/hiera/sf/arch.yaml
+- include_vars: /etc/puppet/hiera/sf/_arch.yaml
 - template: src=/etc/ansible/templates/etc-hosts.j2 dest=/etc/hosts mode=0644
 - known_hosts: name='[192.168.135.101]:29418' state=absent
 - known_hosts: name='[localhost]:29418' state=absent

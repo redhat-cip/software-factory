@@ -82,8 +82,9 @@ def generate_inventory():
                            arch)
 
     if not args.verify and args.arch == "/etc/puppet/hiera/sf/arch.yaml":
-        # Write updated version of refarch
-        open(args.arch, "w").write(yaml.dump(arch, default_flow_style=False))
+        # Write updated version of refarch to _arch.yaml
+        open("/etc/puppet/hiera/sf/_arch.yaml", "w").write(
+            yaml.dump(arch, default_flow_style=False))
 
         # Update /etc/hosts
         render_jinja2_template("/etc/hosts",

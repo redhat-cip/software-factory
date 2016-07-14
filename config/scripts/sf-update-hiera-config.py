@@ -46,6 +46,26 @@ def update_sfconfig(data):
     return dirty
 
 
+def clean_arch(data):
+    dirty = False
+    # Remove data added *IN-PLACE* by utils_refarch
+    # Those are now saved in _arch.yaml instead
+    for dynamic_key in ("domain", "gateway", "gateway_ip", "install",
+                        "install_ip", "ip_prefix", "roles", "hosts_file"):
+        if dynamic_key in data:
+            del data[dynamic_key]
+            dirty = True
+
+    # Remove deployments related information
+    for deploy_key in ("cpu", "disk", "mem", "hostid", "puppet_statement",
+                       "rolesname", "hostname"):
+        for host in data["inventory"]:
+            if deploy_key in host:
+                del host[deploy_key]
+                dirty = True
+    return dirty
+
+
 if len(argv) == 2:
     hiera_dir = argv[1]
 else:
@@ -61,6 +81,9 @@ try:
 except IOError:
     # 2.1.x -> 2.2.x: arch is missing, force update
     arch = yaml.load(open(DEFAULT_ARCH).read())
+    save("arch", arch)
+
+if clean_arch(arch):
     save("arch", arch)
 
 # sfconfig.yaml

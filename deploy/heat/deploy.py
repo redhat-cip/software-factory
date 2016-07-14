@@ -12,7 +12,7 @@ from utils_refarch import render_jinja2_template
 
 
 def render():
-    arch["arch_raw"] = yaml.dump(arch, default_flow_style=False)
+    arch["arch_raw"] = yaml.dump(arch_raw, default_flow_style=False)
     for host in arch["inventory"]:
         # TODO: remove default m1.medium and find flavor automatically
         host["flavor"] = "m1.medium"
@@ -41,6 +41,7 @@ args = parser.parse_args()
 
 try:
     arch = load_refarch(args.arch, args.domain)
+    arch_raw = yaml.load(open(args.arch).read())
     filename = args.output
     if not filename:
         filename = "sf-%s.hot" % os.path.basename(
