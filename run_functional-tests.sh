@@ -113,8 +113,28 @@ case "${TEST_TYPE}" in
         run_bootstraps
         d=$DISPLAY
         pre_gui_tests
-        run_gui_tests
+        run_gui_test guiTests tests/gui
         failed=$?
+        post_gui_tests
+        DISPLAY=$d
+        if_gui_tests_failure $failed
+        ;;
+    "video_docs")
+        . tests/gui/user_stories/user_stories
+        lxc_init
+        run_bootstraps
+        d=$DISPLAY
+        pre_gui_tests
+        failed=0
+        for video_path in ${!user_stories[@]}; do
+            run_gui_test $video_path ${user_stories["$video_path"]}
+            a=$?
+            if [[ $a > $failed ]]; then
+                failed=$a
+            fi
+            # wait for tmux to be discarded
+            sleep 5
+        done
         post_gui_tests
         DISPLAY=$d
         if_gui_tests_failure $failed
