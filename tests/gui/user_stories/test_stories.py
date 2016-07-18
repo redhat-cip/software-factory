@@ -220,10 +220,12 @@ class TestAdministratorTasks(ShellRecorder):
                      config.ADMIN_USER, config.ADMIN_PASSWORD)
         sfm += "project create --name %s" % test_project
         scenes = [
-            {'name': 'Create a project from the CLI',
+            {'name': 'create a project from the CLI',
              'action': sfm,
              'keep': {},
              'wait': True},
+            {'name': 'conclusion',
+             'line': 'Now we can switch to the GUI...'},
         ]
         session_name = 'create_project_from_CLI'
         r, d, m = self.record(session_name,
@@ -244,6 +246,54 @@ class TestAdministratorTasks(ShellRecorder):
             project = self.highlight_link(test_project)
             spielbash.pause(0.5)
             project.click()
+
+    @skipIf(spielbash is None,
+            'missing spielbash dependency')
+    def test_add_user_to_project_from_CLI(self):
+        # init project
+        sfmanager = utils.ManageSfUtils(config.GATEWAY_URL)
+        sfmanager.createProject(test_project, config.ADMIN_USER)
+        # must log in as user2 once before
+        sfmanager.list_active_members(config.USER_2)
+
+        sfm = "sfmanager --url %s --auth-server-url %s --auth %s:%s "
+        sfm = sfm % (config.GATEWAY_URL, config.GATEWAY_URL,
+                     config.ADMIN_USER, config.ADMIN_PASSWORD)
+        sfm += ("membership add --user %s --project %s "
+                "--groups ptl-group core-group")
+        sfm = sfm % (config.USERS[config.USER_2]['email'], test_project)
+        scenes = [
+            {'name': 'add user to project from the CLI',
+             'action': sfm,
+             'keep': {},
+             'wait': True},
+            {'name': 'conclusion',
+             'line': 'Now we can switch to the GUI...'},
+        ]
+        session_name = 'add_user_to_project_from_CLI'
+        r, d, m = self.record(session_name,
+                              'add user to project from the CLI',
+                              '/tmp/gui/add_user_to_project_from_CLI.json')
+        mock_movie = MockMovie()
+        for scene in scenes:
+            self.play_scene(session_name, scene, mock_movie)
+
+        self.stop_recording(session_name, r, d, m,
+                            '/tmp/gui/add_user_to_project_from_CLI.json')
+
+        self.driver.get(config.GATEWAY_URL)
+        self.login_as(config.ADMIN_USER, config.ADMIN_PASSWORD)
+
+        self.driver.get("%s/dashboard/" % config.GATEWAY_URL)
+        with loading_please_wait(self.driver):
+            mgmt_btn_xpath = '//table/tbody/tr[td="%s"]/td[4]/button[1]'
+            u = self.highlight_by_xpath(mgmt_btn_xpath % test_project)
+            spielbash.pause(0.5)
+            u.click()
+            user_found = (".//*[@id='modal_create_members']/div/div/form/"
+                          "div[1]/table/tbody/tr[contains(.,'%s')]")
+            self.highlight_by_xpath(user_found % config.USER_2)
+            spielbash.pause(1)
 
 
 if __name__ == '__main__':
