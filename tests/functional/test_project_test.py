@@ -85,7 +85,7 @@ class TestProjectTestsWorkflow(Base):
 
     def assert_reviewer_approvals(self, change_id, value):
         approvals = {}
-        for _ in range(90):
+        for _ in range(300):
             approvals = self.gu.get_reviewer_approvals(change_id,
                                                        'jenkins')
             if approvals and approvals.get('Verified') == value:
