@@ -25,6 +25,7 @@ try:
     import spielbash
 except ImportError:
     spielbash = None
+from selenium.common.exceptions import ElementNotVisibleException
 
 from tests.gui.base import BaseGuiTest, caption, snapshot_if_failure
 from tests.gui.base import loading_please_wait
@@ -294,6 +295,105 @@ class TestAdministratorTasks(ShellRecorder):
                           "div[1]/table/tbody/tr[contains(.,'%s')]")
             self.highlight_by_xpath(user_found % config.USER_2)
             spielbash.pause(1)
+
+    @skipIf(spielbash is None,
+            'missing spielbash dependency')
+    def test_prepare_dev_environment(self):
+        # init project
+        sfmanager = utils.ManageSfUtils(config.GATEWAY_URL)
+        sfmanager.createProject(test_project, config.ADMIN_USER)
+        # must log in as user2 once before
+        sfmanager.list_active_members(config.USER_2)
+        mail = config.USERS[config.USER_2]['email']
+
+        scenes = [
+            {'name': 'intro',
+             'line': ('Follow these steps to prepare a development '
+                      'environment suitable for Software Factory.')},
+            {'name': 'step1',
+             'line': ('Step 1: install git review. On CentOS, use the '
+                      'following command:')},
+            {'name': 'git and git review',
+             'action': 'sudo yum install -y git git-review'},
+            {'name': 'pause',
+             'pause': 5},
+            {'name': 'step2',
+             'line': ('Step 2: if needed, create a SSH keypair to be used '
+                      'with gerrit for reviews.')},
+            {'name': 'ssh keypair',
+             'action': 'ssh-keygen -t rsa -b 4096 -C "%s"' % mail,
+             'keep': {},
+             'wait': False},
+            {'name': 'pause',
+             'pause': 5},
+            {'name': 'save to user2_rsa',
+             'action': '/tmp/user2_rsa'},
+            {'name': 'confirm save',
+             'press_key': 'ENTER'},
+            {'name': 'no passphrase 1',
+             'press_key': 'ENTER'},
+            {'name': 'no passphrase 2',
+             'press_key': 'ENTER'},
+            {'name': 'get pub key',
+             'line': 'Finally, copy the public key and add it to Gerrit:'},
+            {'name': 'show pub key',
+             'action': 'cat /tmp/user2_rsa.pub',
+             'wait': False},
+            {'name': 'pause',
+             'pause': 2},
+            {'name': 'end',
+             'line': 'Now on to Gerrit...'}, ]
+
+        session_name = 'prepare_dev_env'
+        r, d, m = self.record(session_name,
+                              'prepare the dev environment',
+                              '/tmp/gui/prepare_dev_env.json')
+        mock_movie = MockMovie()
+        for scene in scenes:
+            self.play_scene(session_name, scene, mock_movie)
+
+        self.stop_recording(session_name, r, d, m,
+                            '/tmp/gui/prepare_dev_env.json')
+
+        with open('/tmp/user2_rsa.pub') as f:
+            ssh_key = f.read()
+
+        self.driver.get(config.GATEWAY_URL)
+        self.login_as(config.USER_2, config.ADMIN_PASSWORD)
+        self.driver.get("%s/r/" % config.GATEWAY_URL)
+
+        self.driver.set_window_position(0, 0)
+        self.driver.set_window_size(1900, 1000)
+
+        msg = 'Click on the user settings page.'
+        with caption(self.driver, msg):
+            panel = self.highlight("div.menuBarUserNamePanel")
+            spielbash.pause(1)
+            panel.click()
+            settings = self.highlight_link("Settings")
+            spielbash.pause(1)
+            settings.click()
+
+        msg = 'Click on "SSH public keys" then "Add key".'
+        xpath = (".//*[@id='gerrit_body']/div/div/div/div/table/tbody"
+                 "/tr/td[2]/div/div/div[1]/button[2]")
+        with caption(self.driver, msg) as d:
+            self.highlight_link("SSH Public Keys").click()
+            try:
+                add_key = d.find_element_by_xpath(xpath)
+                add_key.click()
+            except ElementNotVisibleException:
+                pass
+
+        msg = 'Copy your public key here.'
+        with caption(self.driver, msg) as d:
+            txtarea = d.find_element_by_css_selector("textarea.gwt-TextArea")
+            txtarea.send_keys(ssh_key)
+            self.highlight_button('Add').click()
+
+        msg = "You are now set up to work with Software Factory !"
+        with caption(self.driver, msg):
+            self.highlight("body")
 
 
 if __name__ == '__main__':

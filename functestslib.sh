@@ -524,7 +524,7 @@ function pre_gui_tests {
         echo "X Forwarding detected"
     else
         echo "Starting Xvfb in background ..."
-        ( sudo sh -c 'Xvfb :99 -ac -screen 0 1280x1024x24 >/var/log/Xvfb/Xvfb.log 2>/var/log/Xvfb/error.log' ) &
+        ( sudo sh -c 'Xvfb :99 -ac -screen 0 1920x1080x24 >/var/log/Xvfb/Xvfb.log 2>/var/log/Xvfb/error.log' ) &
     fi
     mkdir -p /tmp/gui/
 }
@@ -541,7 +541,7 @@ function post_gui_tests {
 function run_gui_test {
     export DISPLAY=:99
     # if ffmpeg is installed on the system, record a video
-    command -v ffmpeg > /dev/null && tmux new-session -d -s guiTestRecording_$(tr -cd 0-9 </dev/urandom | head -c 3) 'export FFREPORT=file=/tmp/gui/ffmpeg-$(date +%Y%m%s).log && ffmpeg -f x11grab -video_size 1280x1024 -i 127.0.0.1'$DISPLAY' -codec:v mpeg4 -r 16 -vtag xvid -q:v 8 /tmp/gui/'$1'.avi && sleep 5'
+    command -v ffmpeg > /dev/null && tmux new-session -d -s guiTestRecording_$(tr -cd 0-9 </dev/urandom | head -c 3) 'export FFREPORT=file=/tmp/gui/ffmpeg-$(date +%Y%m%s).log && ffmpeg -f x11grab -video_size 1920x1080 -i 127.0.0.1'$DISPLAY' -codec:v mpeg4 -r 16 -vtag xvid -q:v 8 /tmp/gui/'$1'.avi && sleep 5'
     export LC_CTYPE="en_US.UTF-8"
     export LC_ALL="en_US.UTF-8"
     export LANG="en_US.UTF-8"

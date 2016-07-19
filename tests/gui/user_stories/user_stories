@@ -7,3 +7,4 @@ user_stories["create_project_with_GUI"]="tests/gui/user_stories/test_stories.py:
 user_stories["create_project_with_CLI"]="tests/gui/user_stories/test_stories.py:TestAdministratorTasks.test_create_project_from_CLI"
 user_stories["add_user_to_project_with_GUI"]="tests/gui/user_stories/test_stories.py:TestAdministratorTasks.test_add_user_to_project"
 user_stories["add_user_to_project_with_CLI"]="tests/gui/user_stories/test_stories.py:TestAdministratorTasks.test_add_user_to_project_from_CLI"
+user_stories["prepare_dev_env"]="tests/gui/user_stories/test_stories.py:TestAdministratorTasks.test_prepare_dev_environment"
