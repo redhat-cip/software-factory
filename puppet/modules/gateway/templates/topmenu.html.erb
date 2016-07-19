@@ -29,6 +29,9 @@
             <% if @arch.include?('storyboard') %>
                 <li><a href="/storyboard/" target="_top">Storyboard</a></li>
             <% end %>
+            <% if @arch.include?('kibana') %>
+                <li><a href="/app/kibana" target="_top">Kibana</a></li>
+            <% end %>
             <% if not @theme["topmenu_hide_redmine"] %>
                 <% if @arch.include?('redmine') %>
                 <li><a href="/redmine/" target="_top">Redmine</a></li>

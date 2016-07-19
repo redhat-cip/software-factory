@@ -7,3 +7,12 @@
 
 - service: name=socat_gerrit enabled=no state=stopped
   when: groups['gerrit'] == groups['gateway'] and socat_service.stat.exists
+
+- name: Install Kibana SF gateway rules
+  template: src=templates/gateway-kibana.conf.j2 dest=/etc/httpd/conf.d/gateway-kibana.conf owner=apache group=apache
+  with_items: inventory
+  when: '"kibana" in item["roles"]'
+  register: httpdconf
+
+- service: name=httpd state=reloaded
+  when: httpdconf|changed

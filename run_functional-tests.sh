@@ -66,7 +66,7 @@ unset https_proxy
 case "${TEST_TYPE}" in
     "functional")
         # temporary adds elasticsearch and mirror until it's fully integrated
-        sed -i ${REFARCH_FILE} -e "s#      - murmur#      - murmur\n      - elasticsearch\n      - mirror\n      - job-logs-gearman-client\n      - job-logs-gearman-worker\n      - logstash#"
+        sed -i ${REFARCH_FILE} -e "s#      - murmur#      - murmur\n      - elasticsearch\n      - mirror\n      - job-logs-gearman-client\n      - job-logs-gearman-worker\n      - logstash\n      - kibana#"
         lxc_init
         run_bootstraps
         run_serverspec_tests

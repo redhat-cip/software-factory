@@ -1,0 +1,11 @@
+---
+- name: Ensure Kibana access to ElasticSearch
+  lineinfile: dest=/opt/kibana/config/kibana.yml
+              regexp="^elasticsearch.url{{':'}}.*"
+              line="elasticsearch.url{{':'}} \"http://elasticsearch.{{ fqdn }}:9200\""
+  register: kibanaconf
+- name: Kibana service started and enabled
+  service: name=kibana state=started enabled=yes
+- name: Restart kibana after the configuration changed
+  service: name=kibana state=restarted
+  when: kibanaconf|changed
