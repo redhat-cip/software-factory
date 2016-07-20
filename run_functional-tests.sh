@@ -94,6 +94,7 @@ case "${TEST_TYPE}" in
         lxc_init ${SF_PREVIOUS_VER}
         run_bootstraps
         run_provisioner
+        ssh sftests.com 'echo -e "  - elasticsearch\n  - job-logs-gearman-client\n  - job-logs-gearman-worker\n  - logstash\n  - kibana" >> /etc/puppet/hiera/sf/arch.yaml'
         run_upgrade
         run_checker "checksum_warn_only"
         run_serverspec_tests

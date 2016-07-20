@@ -104,7 +104,7 @@ class TestGateway(Base):
         """ Test if all service links are shown in topmenu
         """
         subpaths = ["/r/", "/jenkins/",
-                    "/zuul/", "/etherpad/", "/paste/", "/docs/"]
+                    "/zuul/", "/etherpad/", "/paste/", "/docs/", "/app/kibana"]
         if has_issue_tracker():
             tracker = get_issue_tracker_utils(
                 auth_cookie=config.USERS[config.ADMIN_USER]['auth_cookie'])
@@ -201,6 +201,17 @@ class TestGateway(Base):
 
         # User should be known in Jenkins if logged in with SSO
         self.assertTrue(config.USER_1 in resp.text)
+
+    def test_kibana_accessible(self):
+        """ Test if Kibana is accessible on gateway host
+        """
+        url = config.GATEWAY_URL + "/app/kibana"
+
+        # Without SSO cookie. Note that auth is no longer enforced
+
+        resp = requests.get(url)
+        self.assertEqual(resp.status_code, 200)
+        self.assertTrue('<title>Kibana</title>' in resp.text)
 
     def test_zuul_accessible(self):
         """ Test if Zuul is accessible on gateway host
