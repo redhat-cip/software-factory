@@ -281,6 +281,8 @@ function get_logs {
         cp -r /var/log/selenium/ ${ARTIFACTS_DIR}/selenium
         cp -r /var/log/Xvfb/ ${ARTIFACTS_DIR}/Xvfb
         cp -r /tmp/gui/ ${ARTIFACTS_DIR}/screenshots
+        (ls /tmp/gui/*.avi 1> /dev/null 2>&1) && gzip -9 ${ARTIFACTS_DIR}/screenshots/*.avi
+        (ls /tmp/gui/*.mp* 1> /dev/null 2>&1) && gzip -9 ${ARTIFACTS_DIR}/screenshots/*.mp*
         ) || true &> /dev/null
     } || echo "Skip fetching logs..."
     sudo chown -R ${USER} ${ARTIFACTS_DIR}
