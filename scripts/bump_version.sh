@@ -65,7 +65,7 @@ NEW_VER="C7.0-$(grep ^VER role_configrc | cut -d= -f2)"
 # Create new update path
 echo "## Metadata path..."
 echo "# Maintain old stable to current path"
-for i in image/metadata/C7.0-2.0*/softwarefactory/C7.0-*; do
+for i in image/metadata/C7.0-2.2*/softwarefactory/C7.0-*; do
     echo git mv $i $(dirname $i)/${SF_VER}
 done
 echo "# Create new path"

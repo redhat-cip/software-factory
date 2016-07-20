@@ -1,0 +1,19 @@
+---
+features:
+  - Expand dynarch effort
+  - disable statsd by default
+  - make mariadb systemd dependency multihost-aware
+  - allow FQDN change on an existing deployment
+  - add deletebranches tool
+  - add a template job to upload a package to PyPI
+  - add ElasticSearch ansible role to SF
+fixes:
+  - fix admin user update without username in gerrit
+  - prevent monit from restarting gerrit
+  - remove monit actions for redmine
+  - improve rebooting
+  - fix hook failure when commit message contains double
+    quotes
+  - prevent gnupg keyrings of the root user to be wiped
+    during upgrade
+
