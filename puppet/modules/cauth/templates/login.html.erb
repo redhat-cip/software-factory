@@ -35,23 +35,44 @@
                             </button>
                        </form>
                        <% end %>
-                       <!-- If both are enabled set a sperator between them -->
-                       <% if not @launchpad["disabled"] and not @github["disabled"] %>
+                       <!-- If more than one external provider are enabled set a separator between them -->
+                       <% if (not @github["disabled"] and not @google["disabled"]) or
+                             (not @github["disabled"] and @google["disabled"] and not @openid["disabled"]) %>
                        <br />
                        <hr />
                        <% end %>
-                       <% if not @launchpad["disabled"] %>
+                        <% if not @google["disabled"] %>
+                        <form method="post" action="/auth/login/" target="_top">
+                        <input type="hidden" name="back" value="${back}">
+                        <input type="hidden" name="method" value="Google">
+                            <button type="submit" class="btn btn-primary col-md-12">
+                                <i class="fa fa-lg fa-google"></i>
+                                &nbsp;&nbsp;Log in with Google
+                                <i class="fa fa-sign-in fa-fw"></i>
+                            </button>
+                       </form>
+                       <% end %>
+                       <!-- If more than one external provider are enabled set a separator between them -->
+                       <% if (not @openid["disabled"] and not @google["disabled"]) %>
+                       <br />
+                       <hr />
+                       <% end %>
+                       <% if not @openid["disabled"] %>
                        <form method="post" action="/auth/login/" target="_top">
                         <input type="hidden" name="back" value="${back}">
                         <input type="hidden" name="method" value="OpenID">
                             <button type="submit" class="btn btn-warning col-md-12">
                                 <i class="fa fa-lg fa-openid"></i>
-                                &nbsp;&nbsp;Log in with Launchpad
+                                &nbsp;&nbsp; <%= @openid["login_button_text"] %>
                                 <i class="fa fa-sign-in fa-fw"></i>
                             </button>
                        </form>
                        <% end %>
-                       <% if @github["disabled"] and @launchpad["disabled"] %>
+                       <% if not @github["disabled"] or not @google["disabled"] or not @openid["disabled"] %>
+                       <br />
+                       <hr />
+                       <% end %>
+                       <% if @github["disabled"] and @google["disabled"] and @openid["disabled"] %>
                        <div id="login-form">
                        <% else %>
                        <div id="login-form" class="hidden">
@@ -82,7 +103,7 @@
                             <button type="submit" class="btn btn-primary col-md-12">Log in<i class="fa fa-sign-in fa-fw"></i></button>
                         </form>
                        </div>
-                       <% if not @github["disabled"] or not @launchpad["disabled"] %>
+                       <% if not @github["disabled"] or not @google["disabled"] or not @openid["disabled"] %>
                        <div id="login-form-toogling" style="padding-top: 50px;">
                          <a id="toggle" title="Click here to log in as an administrator or if you were provided with specific credentials" href="#">Toggle login form</a>
                        </div>

@@ -23,7 +23,7 @@ authentication:
     # be used to ensure only authenticated users access the Jenkins logs on the
     # slaves. In this case the Jenkins slaves must be accessible only from the
     # gateway.
-    # Can bei either full domains or only prefixes, for example to allow
+    # Can be either full domains or only prefixes, for example to allow
     # IP-ranges
     allowed_proxy_prefixes:
         - "198.154.188."
@@ -38,14 +38,33 @@ authentication:
         ldap_account_mail_attribute: mail
         ldap_account_surname_attribute: sn
 
-    github:
-        disabled: False
-        github_app_id:
-        github_app_secret:
-        github_allowed_organizations:
+    oauth2:
+    # Currently supported OAuth2 providers are github, google
+    # While it is technically possible to have as many of these providers used
+    # at the same time, this might cause problems along the way with users
+    # and/or email collisions between several providers.
+    # Enable more than one at your own risk.
+        github:
+            disabled: False
+            client_id:
+            client_secret:
+            # the github provider also lets you filter users logging in depending
+            # on the organizations they belong to. Leave blank if not necessary
+            github_allowed_organizations:
+        google:
+            disabled: False
+            client_id:
+            client_secret:
 
-    launchpad:
+    openid:
+    # Provider discovery is not supported by the OpenID auth plugin (see also
+    # problems with multiple oauth providers as explained above). You must
+    # therefore specify the openID server you wish to use.
+    # Use the launchpad server by default
         disabled: False
+        server: https://login.launchpad.net/+openid
+        # what to display on the login button
+        login_button_text: "Log in with Launchpad"
 
 
 theme:

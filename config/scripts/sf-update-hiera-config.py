@@ -2,6 +2,7 @@
 # Update hiera configuration with new defaults
 
 from sys import argv
+import string
 import yaml
 import os
 
@@ -37,6 +38,60 @@ def update_sfconfig(data):
         }
         dirty = True
 
+    # 2.2.4: refactor OAuth2 and OpenID auth config
+    if 'oauth2' not in data['authentication']:
+        data['authentication']['oauth2'] = {
+            'github': {
+                'disabled': False,
+                'client_id': '',
+                'client_secret': '',
+                'github_allowed_organizations': ''
+            },
+            'google': {
+                'disabled': False,
+                'client_id': '',
+                'client_secret': ''
+            }
+        }
+        dirty = True
+    if 'openid' not in data['authentication']:
+        data['authentication']['openid'] = {
+            'disabled': False,
+            'server': 'https://login.launchpad.net/+openid',
+            'login_button_text': 'Log in with the Launchpad service'
+        }
+        dirty = True
+    if data['authentication'].get('github'):
+        (data['authentication']['oauth2']
+         ['github']['disabled']) = (data['authentication']['github']
+                                    ['disabled'])
+        (data['authentication']['oauth2']
+         ['github']['client_id']) = (data['authentication']['github']
+                                     ['github_app_id'])
+        (data['authentication']['oauth2']
+         ['github']['client_secret']) = (data['authentication']['github']
+                                         ['github_app_secret'])
+        (data['authentication']['oauth2']['github']
+         ['github_allowed_organizations']) = (data['authentication']
+                                              ['github']
+                                              ['github_allowed_organizations'])
+        if data['authentication']['github'].get('redirect_uri'):
+            (data['authentication']['oauth2']['github']
+             ['redirect_uri']) = string.replace(data['authentication']
+                                                ['github']['redirect_uri'],
+                                                "login/github/callback",
+                                                "login/oauth2/callback")
+        del data['authentication']['github']
+        dirty = True
+    if data['authentication'].get('launchpad'):
+        (data['authentication']['openid']
+         ['disabled']) = data['authentication']['launchpad']['disabled']
+        if data['authentication']['launchpad'].get('redirect_uri'):
+            (data['authentication']['openid']
+             ['redirect_uri']) = (data['authentication']['launchpad']
+                                  ['redirect_uri'])
+        del data['authentication']['launchpad']
+        dirty = True
     return dirty
 
 

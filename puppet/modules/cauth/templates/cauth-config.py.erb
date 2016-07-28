@@ -61,24 +61,33 @@ auth = {
     <% end %>
     <% if not @github['disabled'] %>
     'github': {
-        'top_domain': '<%= @fqdn %>',
-        'auth_url':  'https://github.com/login/oauth/authorize',
         <% if @network['enforce_ssl'] %>
-        'redirect_uri': 'https://<%= @fqdn %>/auth/login/github/callback',
+        'redirect_uri': 'https://<%= @fqdn %>/auth/login/oauth2/callback',
         <% else %>
-        'redirect_uri': 'http://<%= @fqdn %>/auth/login/github/callback',
+        'redirect_uri': 'http://<%= @fqdn %>/auth/login/oauth2/callback',
         <% end %>
-        'client_id': '<%= @github['github_app_id'] %>',
-        'client_secret': '<%= @github['github_app_secret'] %>',
+        'client_id': '<%= @github['client_id'] %>',
+        'client_secret': '<%= @github['client_secret'] %>',
         'allowed_organizations': '<%= @github['allowed_organizations'] %>'
+    },
+    <% end %>
+    <% if not @google['disabled'] %>
+    'google': {
+        <% if @network['enforce_ssl'] %>
+        'redirect_uri': 'https://<%= @fqdn %>/auth/login/oauth2/callback',
+        <% else %>
+        'redirect_uri': 'http://<%= @fqdn %>/auth/login/oauth2/callback',
+        <% end %>
+        'client_id': '<%= @google['client_id'] %>',
+        'client_secret': '<%= @google['client_secret'] %>'
     },
     <% end %>
     'localdb': {
         'managesf_url': 'http://managesf.<%= @fqdn %>',
     },
-    <% if not @launchpad['disabled'] %>
+    <% if not @openid['disabled'] %>
     'openid': {
-        'auth_url': 'https://login.launchpad.net/+openid',
+        'auth_url': '<%= @openid['server'] %>',
         'redirect_uri': '/auth/login/openid/callback'
     },
     <% end %>
