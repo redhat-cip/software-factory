@@ -189,8 +189,9 @@
       - shell: |
           cp $PYPIRC ~/.pypirc
           cd $ZUUL_PROJECT
-          python setup.py register -r pypi
-          python setup.py sdist upload -r pypi
+          python setup.py sdist
+          twine register dist/*
+          twine upload dist/*
     wrappers:
       - credentials-binding:
           - file:
