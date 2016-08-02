@@ -25,6 +25,7 @@ class cauth ($gerrit = hiera('gerrit')) {
   $ldap = $auth['ldap']
   $github = $auth['oauth2']['github']
   $google = $auth['oauth2']['google']
+  $bitbucket = $auth['oauth2']['bitbucket']
   $openid = $auth['openid']
   $issues_tracker_api_key = hiera('creds_issues_tracker_api_key')
   $gerrit_mysql_host = "mysql.${fqdn}"

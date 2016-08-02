@@ -82,6 +82,17 @@ auth = {
         'client_secret': '<%= @google['client_secret'] %>'
     },
     <% end %>
+    <% if not @bitbucket['disabled'] %>
+    'bitbucket': {
+        <% if @network['enforce_ssl'] %>
+        'redirect_uri': 'https://<%= @fqdn %>/auth/login/oauth2/callback',
+        <% else %>
+        'redirect_uri': 'http://<%= @fqdn %>/auth/login/oauth2/callback',
+        <% end %>
+        'client_id': '<%= @bitbucket['client_id'] %>',
+        'client_secret': '<%= @bitbucket['client_secret'] %>'
+    },
+    <% end %>
     'localdb': {
         'managesf_url': 'http://managesf.<%= @fqdn %>',
     },

@@ -39,7 +39,7 @@ authentication:
         ldap_account_surname_attribute: sn
 
     oauth2:
-    # Currently supported OAuth2 providers are github, google
+    # Currently supported OAuth2 providers are github, google, bitbucket
     # While it is technically possible to have as many of these providers used
     # at the same time, this might cause problems along the way with users
     # and/or email collisions between several providers.
@@ -53,6 +53,10 @@ authentication:
             github_allowed_organizations:
         google:
             disabled: False
+            client_id:
+            client_secret:
+        bitbucket:
+            disabled: True
             client_id:
             client_secret:
 

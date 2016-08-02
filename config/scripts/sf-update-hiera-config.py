@@ -51,7 +51,12 @@ def update_sfconfig(data):
                 'disabled': False,
                 'client_id': '',
                 'client_secret': ''
-            }
+            },
+            'bitbucket': {
+                'disabled': True,
+                'client_id': '',
+                'client_secret': ''
+            },
         }
         dirty = True
     if 'openid' not in data['authentication']:
