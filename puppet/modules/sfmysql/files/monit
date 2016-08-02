@@ -1,3 +1,0 @@
-check host db with address 46.231.128.61
-    if failed icmp type echo count 5 with timeout 15 seconds then alert
-    if failed port 3306 then alert
