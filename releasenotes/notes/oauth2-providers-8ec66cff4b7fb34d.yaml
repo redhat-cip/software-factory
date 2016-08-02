@@ -1,0 +1,12 @@
+---
+features:
+  - Added OAuth2 authentication with Google (G+ API)
+  - Added OAuth2 authentication with BitBucket
+issues:
+  - Deployers might run into data collision when more than
+    one external provider (OAuth, OpenID) is enabled. It
+    is advised to use only one Identity Provider at a time.
+deprecations:
+  - All OAuth2 providers must use the callback URL
+    https://fqdn/auth/login/oauth2/callback - The configuration
+    of the 3rd party app on github must be modified accordingly.
