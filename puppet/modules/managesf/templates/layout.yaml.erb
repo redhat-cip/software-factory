@@ -85,11 +85,6 @@ pipelines:
     trigger:
       timer:
         - time: '0 0 * * *'
-    failure:
-      smtp:
-        from: jenkins@<%= @fqdn %>
-        to: dev-robot@<%= @fqdn %>
-        subject: 'Stable check of {change.project} failed'
 
   - name: tag
     description: This pipeline runs jobs in response to any tag event.

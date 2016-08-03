@@ -64,3 +64,4 @@ sharing_new_sprint_sharingmode: none
 INSERT IGNORE INTO trackers (id, name, is_in_chlog, position, is_in_roadmap, fields_bits) VALUES(5, "Story", 0, 5, 1, 0);
 DELETE FROM settings WHERE name='plugin_redmine_backlogs';
 INSERT IGNORE INTO settings (name, value, updated_on) VALUES('plugin_redmine_backlogs', @backlog_config, CURRENT_TIMESTAMP());
+UPDATE users SET mail_notification="none" WHERE login = 'admin';
