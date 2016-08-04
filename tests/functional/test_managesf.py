@@ -547,27 +547,13 @@ class TestManageSF(Base):
         self.assertTrue(self.rm.project_exists(project))
         self.msu.update_project_page(config.USER_2, project,
                                      "http://tests.com/")
-        try:
-            self.assertEqual(self.msu.get_project_page(config.USER_2,
-                                                       project).strip(),
-                             "http://tests.com/")
-        except:
-            # This could be remove after
-            # Ie545817322fa321fc911dceb33c30a1ac4c4ba5b is merge
-            self.assertEqual(self.msu.get_project_page(config.USER_2,
-                                                       project).strip(),
-                             "\"http://tests.com/\"")
+        self.assertEqual(self.msu.get_project_page(config.USER_2,
+                                                   project).strip(),
+                         "http://tests.com/")
         self.msu.delete_project_page(config.USER_3, project)
-        try:
-            self.assertEqual(self.msu.get_project_page(config.USER_2,
-                                                       project).strip(),
-                             "http://tests.com/")
-        except:
-            # This could be remove after
-            # Ie545817322fa321fc911dceb33c30a1ac4c4ba5b is merge
-            self.assertEqual(self.msu.get_project_page(config.USER_2,
-                                                       project).strip(),
-                             "\"http://tests.com/\"")
+        self.assertEqual(self.msu.get_project_page(config.USER_2,
+                                                   project).strip(),
+                         "http://tests.com/")
         self.msu.delete_project_page(config.USER_2, project)
         self.assertEqual(self.msu.get_project_page(config.USER_2,
                                                    project).strip(),
