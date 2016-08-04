@@ -246,10 +246,15 @@ class ManageSfUtils(Tool):
 
     def list_active_members(self, user):
         passwd = config.USERS[user]['password']
-        cmd = self.base_cmd % (user, passwd) + " sf_user list"
+        cmd = self.base_cmd % (user, passwd) + " --json sf_user list"
         output = self.exe(cmd)
-        # TODO Dangerous ! but will have to do for now
-        return eval(output)
+        # For compatibility (These 3 lines of code could be removed
+        # after Ie545817322fa321fc911dceb33c30a1ac4c4ba5b is merged)
+        if not output:
+            cmd = self.base_cmd % (user, passwd) + " sf_user list"
+            output = self.exe(cmd)
+            return eval(output)
+        return json.loads(output)
 
     def register_user(self, auth_user, username, email):
         passwd = config.USERS[auth_user]['password']
