@@ -203,7 +203,7 @@ class gerrit {
     source  => '/root/gerrit_data_source/mysql-connector-java.jar',
     require => File['/home/gerrit/site_path/lib'],
   }
-  file { '/home/gerrit/site_path/lib/bcprov-jdk15on-151.jar':
+  file { '/home/gerrit/site_path/lib/bcprov-jdk15on-1.51.jar':
     ensure  => file,
     owner   => 'gerrit',
     group   => 'gerrit',
@@ -211,7 +211,7 @@ class gerrit {
     source  => '/root/gerrit_data_source/bcprov.jar',
     require => File['/home/gerrit/site_path/lib'],
   }
-  file { '/home/gerrit/site_path/lib/bcpkix-jdk15on-151.jar':
+  file { '/home/gerrit/site_path/lib/bcpkix-jdk15on-1.51.jar':
     ensure  => file,
     owner   => 'gerrit',
     group   => 'gerrit',
@@ -336,8 +336,8 @@ class gerrit {
                   File['/home/gerrit/site_path/plugins/delete-project.jar'],
                   File['/home/gerrit/site_path/plugins/reviewers-by-blame.jar'],
                   File['/home/gerrit/site_path/lib/mysql-connector-java-5.1.21.jar'],
-                  File['/home/gerrit/site_path/lib/bcprov-jdk15on-151.jar'],
-                  File['/home/gerrit/site_path/lib/bcpkix-jdk15on-151.jar'],
+                  File['/home/gerrit/site_path/lib/bcprov-jdk15on-1.51.jar'],
+                  File['/home/gerrit/site_path/lib/bcpkix-jdk15on-1.51.jar'],
                   File['/home/gerrit/site_path/plugins/download-commands.jar'],
                   File['/home/gerrit/site_path/plugins/delete-project.jar'],
                   File['/home/gerrit/site_path/etc/gerrit.config'],

@@ -283,7 +283,7 @@ class TestGerrit(Base):
             url,
             cookies=dict(
                 auth_pubtkt=config.USERS[config.USER_1]['auth_cookie']))
-        self.assertTrue('"2.11.5"' in resp.text)
+        self.assertTrue('"2.11.9"' in resp.text)
 
     def test_gitweb_access(self):
         """ Test if gitweb access works correctly

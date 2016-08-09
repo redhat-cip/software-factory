@@ -110,7 +110,7 @@ if [ "${USE_SWIFT_CACHE}" == "yes" ]; then
 fi
 
 # gerrit
-GERRIT_VERSION=2.11.5
+GERRIT_VERSION=2.11.9
 GERRIT_URL="https://gerrit-releases.storage.googleapis.com/gerrit-${GERRIT_VERSION}.war"
 MYSQLJAVA_VERSION=5.1.21
 MYSQLJAVA_URL="http://repo2.maven.org/maven2/mysql/mysql-connector-java/${MYSQLJAVA_VERSION}/mysql-connector-java-${MYSQLJAVA_VERSION}.jar"

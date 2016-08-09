@@ -146,7 +146,7 @@ describe file('/home/gerrit/site_path/lib/mysql-connector-java-5.1.21.jar') do
     }
 end
   
-describe file('/home/gerrit/site_path/lib/bcprov-jdk15on-151.jar') do
+describe file('/home/gerrit/site_path/lib/bcprov-jdk15on-1.51.jar') do
     it {
         should be_file
         should be_owned_by 'gerrit'
@@ -154,7 +154,7 @@ describe file('/home/gerrit/site_path/lib/bcprov-jdk15on-151.jar') do
     }
 end
 
-describe file('/home/gerrit/site_path/lib/bcpkix-jdk15on-151.jar') do
+describe file('/home/gerrit/site_path/lib/bcpkix-jdk15on-1.51.jar') do
     it {
         should be_file
         should be_owned_by 'gerrit'
