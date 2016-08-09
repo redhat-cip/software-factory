@@ -88,9 +88,7 @@ class gateway {
     notify  => Service['webserver'],
     require => [File['gateway_crt'],
                 File['gateway_key'],
-                File['gateway_common'],
-                File['ssl.conf'],
-                File['00-ssl.conf']],
+                File['gateway_common']]
   }
 
   file {'/var/www/static/js/topmenu.js':

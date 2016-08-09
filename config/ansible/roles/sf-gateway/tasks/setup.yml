@@ -1,18 +1,36 @@
 ---
-- include: /etc/ansible/tasks/puppet.yml puppet_statement="include ::socat_gerrit"
+- name: "puppet: include socat_gerrit"
+  include: /etc/ansible/tasks/puppet.yml puppet_statement="include ::socat_gerrit"
   when: groups['gerrit'] != groups['gateway']
 
-- stat: path=/lib/systemd/system/socat_gerrit.service
+- name: "socat_gerrit: create init file"
+  stat: path=/lib/systemd/system/socat_gerrit.service
   register: socat_service
 
-- service: name=socat_gerrit enabled=no state=stopped
+- name: "socat_gerrit: manage service"
+  service: name=socat_gerrit enabled=no state=stopped
   when: groups['gerrit'] == groups['gateway'] and socat_service.stat.exists
 
-- name: Install Kibana SF gateway rules
-  template: src=templates/gateway-kibana.conf.j2 dest=/etc/httpd/conf.d/gateway-kibana.conf owner=apache group=apache
-  with_items: inventory
-  when: '"kibana" in item["roles"]'
-  register: httpdconf
+- name: "apache: create ssl.conf"
+  copy:
+    src=files/ssl.conf dest=/etc/httpd/conf.d/ssl.conf
+    owner=apache group=apache mode=0640
 
-- service: name=httpd state=reloaded
-  when: httpdconf|changed
+- name: "apache: load ssl module"
+  lineinfile:
+    dest=/etc/httpd/conf.modules.d/00-ssl.conf
+    line="LoadModule ssl_module modules/mod_ssl.so"
+    owner=apache group=apache mode=0640
+
+- name: "apache: start service"
+  service: name=httpd enabled=yes state=started
+
+- name: "Install Kibana SF gateway rules"
+  template:
+    src=templates/gateway-kibana.conf.j2
+    dest=/etc/httpd/conf.d/gateway-kibana.conf
+    owner=apache group=apache
+  with_items: "{{ inventory }}"
+  when: '"kibana" in item["roles"]'
+  notify: apache reload
+

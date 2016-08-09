@@ -18,24 +18,7 @@ class apache {
   $provider = 'systemd'
   $http = 'httpd'
 
-  file {'00-ssl.conf':
-    path    => '/etc/httpd/conf.modules.d/00-ssl.conf',
-    content => 'LoadModule ssl_module modules/mod_ssl.so',
-  }
-
-  file {'ssl.conf':
-    ensure => file,
-    path   => '/etc/httpd/conf.d/ssl.conf',
-    source => 'puppet:///modules/apache/ssl.conf',
-    mode   => '0640',
-    owner  => 'apache',
-    group  => 'apache',
-  }
-
-  package { $http:
-    ensure => present,
-  }
-
+  # keep service for other modules
   service {'webserver':
     ensure     => running,
     name       => $http,
