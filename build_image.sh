@@ -82,7 +82,8 @@ function build_cache {
     (
         set -e
         cd image
-        STEP=1 sudo -E ./softwarefactory.install ${CACHE_PATH} ${SF_VER}
+        STEP=1 MANAGESF_CLONED_PATH=$MANAGESF_CLONED_PATH \
+            sudo -E ./softwarefactory.install ${CACHE_PATH} ${SF_VER}
         echo ${CACHE_HASH} | sudo tee ${CACHE_PATH}.description > /dev/null
         ./get_image_versions_information.sh ${CACHE_PATH} | sudo tee -a ${CACHE_PATH}.description > /dev/null
     )

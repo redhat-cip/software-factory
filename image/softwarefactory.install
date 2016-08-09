@@ -654,6 +654,9 @@ if [ "$STEP" == 1 ]; then
     checkpoint "gitweb theme installed"
     copy_sf_ansible_roles
     ansible_install sf-base
+    # Copy prepared managesf source to support depends-on
+    rsync -a --delete ${MANAGESF_CLONED_PATH}/ ${dir}/usr/src/managesf/
+    ansible_install sf-managesf
     ansible_install sf-storyboard "storyboard_commit: \"${STORYBOARD_COMMIT}\", storyboard_client_commit: \"${STORYBOARD_CLIENT_COMMIT}\""
     ansible_install sf-storyboard-webclient "storyboard_webclient_commit: \"${STORYBOARD_WEBCLIENT_COMMIT}\""
     ansible_install sf-mirror

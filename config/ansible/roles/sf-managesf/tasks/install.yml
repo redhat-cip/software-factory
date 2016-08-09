@@ -1,0 +1,8 @@
+---
+- name: "Install managesf venv"
+  command: chdir=/usr/src/managesf {{ item }}
+  with_items:
+    - virtualenv /var/www/managesf
+    - /var/www/managesf/bin/pip install --upgrade 'pbr' 'pip'
+    - /var/www/managesf/bin/pip install 'pip' -r/usr/src/managesf/requirements.txt file:///usr/src/managesf/
+    - /var/www/managesf/bin/python setup.py install

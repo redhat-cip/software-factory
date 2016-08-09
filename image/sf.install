@@ -78,7 +78,7 @@ function install_sf {
     # Install managesf
     [ ! -d "${dir}/var/www/managesf" ] && sudo mkdir ${dir}/var/www/managesf
     sudo cp -Rv ${MANAGESF_CLONED_PATH}/* ${dir}/var/www/managesf/
-    do_chroot ${dir} bash -c "cd /var/www/managesf; python setup.py install"
+    do_chroot ${dir} bash -c "cd /var/www/managesf; ./bin/python setup.py install"
 
     # Install python-sfmanager
     sudo mkdir -p ${dir}/tmp/python-sfmanager
