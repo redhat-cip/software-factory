@@ -54,6 +54,16 @@ baseurl=<%= @url['gerrit_pub_url'] %>
 user=jenkins
 sshkey=/var/lib/zuul/.ssh/id_rsa
 
+<% @gerrit_connections.each do |conn| -%><% if not conn.include?('disabled') or conn['disabled'] == false %>
+[connection <%= conn['name'] %>]
+driver=gerrit
+server=<%= conn['hostname'] %>
+baseurl=<%= conn['puburl'] %>
+user=<%= conn['username'] %>
+sshkey=/var/lib/zuul/.ssh/id_rsa
+
+<% end -%><% end -%>
+
 [connection smtp]
 driver=smtp
 server=localhost

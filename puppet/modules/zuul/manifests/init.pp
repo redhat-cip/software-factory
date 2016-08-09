@@ -23,7 +23,9 @@ class zuul {
   $url = hiera('url')
   $logs = hiera('logs')
   $jenkins_rsa = hiera('jenkins_rsa')
+  $jenkins_pub_rsa = hiera('creds_jenkins_pub_key')
   $gerrit_host = "gerrit.${fqdn}"
+  $gerrit_connections = hiera('gerrit_connections')
 
   $pub_html_path = '/var/www/zuul'
   $gitweb_path = '/usr/libexec/git-core'
@@ -118,6 +120,15 @@ class zuul {
     owner   => 'zuul',
     group   => 'zuul',
     content => inline_template('<%= @jenkins_rsa %>'),
+    require => File['/var/lib/zuul/.ssh'],
+  }
+
+  file {'/var/lib/zuul/.ssh/id_rsa.pub':
+    ensure  => file,
+    mode    => '0444',
+    owner   => 'zuul',
+    group   => 'zuul',
+    content => inline_template('ssh-rsa <%= @jenkins_pub_rsa %> zuul@<%= @fqdn %>'),
     require => File['/var/lib/zuul/.ssh'],
   }
 

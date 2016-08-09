@@ -71,6 +71,14 @@ authentication:
         login_button_text: "Log in with Launchpad"
 
 
+gerrit_connections:
+    - name: "external_gerrit"
+      hostname: external-gerrit-hostname
+      puburl: https://external-gerrit-host-name/r/
+      username: external-gerrit-user-name
+      disabled: True
+
+
 theme:
     loginpage_custom_footer: ""
     # Logo (50px height): embeded base64

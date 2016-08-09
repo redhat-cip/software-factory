@@ -1,0 +1,4 @@
+---
+features:
+  - A new 'gerrit_connections' option is added to sfconfig
+    to enable third party CI use-case.

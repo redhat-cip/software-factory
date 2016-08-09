@@ -97,6 +97,10 @@ def update_sfconfig(data):
                                   ['redirect_uri'])
         del data['authentication']['launchpad']
         dirty = True
+
+    if 'gerrit_connections' not in data:
+        data['gerrit_connections'] = []
+        dirty = True
     return dirty
 
 
