@@ -18,7 +18,7 @@
 
 set -e
 
-INSTALL_OPTIONS="--disablerepo=base,epel,extras,updates,jenkins --enablerepo=sfbase,sfepel,sfextras,sfupdates,sfjenkins"
+INSTALL_OPTIONS="--disablerepo=base,epel,extras,updates,jenkins,passenger --enablerepo=sfbase,sfextras,sfupdates,sfepel,sfrdo,sfjenkins,sfpassenger"
 
 [ -z "$DEBUG" ] || set -x
 # Target dir where the centos images will be built
@@ -58,33 +58,53 @@ bootstrap() {
 [sfbase]
 name=CentOS-7 - Base
 baseurl=http://46.231.132.68:8080/v1/AUTH_b50e80d3969f441a8b7b1fe831003e0a/repomirror/base/
-gpgcheck=0
-enabled=0
-
-[sfupdates]
-name=CentOS-7 - Updates
-baseurl=http://46.231.132.68:8080/v1/AUTH_b50e80d3969f441a8b7b1fe831003e0a/repomirror/updates/
-gpgcheck=0
+gpgcheck=1
 enabled=0
 
 [sfextras]
 name=CentOS-7 - Extras
 baseurl=http://46.231.132.68:8080/v1/AUTH_b50e80d3969f441a8b7b1fe831003e0a/repomirror/extras/
-gpgcheck=0
+gpgcheck=1
+enabled=0
+
+[sfupdates]
+name=CentOS-7 - Updates
+baseurl=http://46.231.132.68:8080/v1/AUTH_b50e80d3969f441a8b7b1fe831003e0a/repomirror/updates/
+gpgcheck=1
 enabled=0
 
 [sfepel]
 name=Extra Packages for Enterprise Linux 7
 baseurl=http://46.231.132.68:8080/v1/AUTH_b50e80d3969f441a8b7b1fe831003e0a/repomirror/epel/
-gpgcheck=0
+gpgcheck=1
+enabled=0
+
+[sfrdo]
+name=Rdo-mitaka
+baseurl=http://46.231.132.68:8080/v1/AUTH_b50e80d3969f441a8b7b1fe831003e0a/repomirror/openstack-mitaka/
+gpgcheck=1
 enabled=0
 
 [sfjenkins]
 name=Jenkins packages
 baseurl=http://46.231.132.68:8080/v1/AUTH_b50e80d3969f441a8b7b1fe831003e0a/repomirror/jenkins/
+gpgcheck=1
+enabled=0
+
+[sfpassenger]
+name=Passenger
+baseurl=http://46.231.132.68:8080/v1/AUTH_b50e80d3969f441a8b7b1fe831003e0a/repomirror/passenger/
 gpgcheck=0
 enabled=0
+
+[sf]
+name=SF repository for various packages
+baseurl=http://46.231.132.68:8080/v1/AUTH_b50e80d3969f441a8b7b1fe831003e0a/rpms
+gpgcheck=0
+enabled=1
 EOF
+    mkdir -p ${dir}/etc/pki/rpm-gpg/
+    rsync -a --delete ${ORIG}/keys/ ${dir}/etc/pki/rpm-gpg/
 
     local release_rpm_url=$(add_main_repository)
 
@@ -101,7 +121,7 @@ EOF
     cp -f /etc/resolv.conf "$target/etc/"
 
     if [ ! -f "${target}/usr/bin/yum" ]; then
-        rpm --root="$target" --import $(ls $target/etc/pki/rpm-gpg/RPM-GPG-KEY-* | fgrep -v Debug)
+        rpm --root="$target" --import $(ls $target/etc/pki/rpm-gpg/*.key | fgrep -v Debug)
         # We cannot use install_packages since the basesystem isn't yet setup
         yum --disableplugin=* --installroot $target $INSTALL_OPTIONS install -y basesystem yum shadow-utils
         checkpoint "first bootstrap"
@@ -153,16 +173,6 @@ net.ipv4.icmp_echo_ignore_broadcasts = 1
 kernel.sysrq = 0
 EOF
     chmod 0400 ${target}/etc/sysctl.conf
-
-    # Add caching repo for various rpms
-    cat > ${target}/etc/yum.repos.d/sf.repo <<EOF
-[sf]
-name=SF repository for various packages
-baseurl=http://46.231.132.68:8080/v1/AUTH_b50e80d3969f441a8b7b1fe831003e0a/rpms
-gpgcheck=0
-enabled=1
-EOF
-
 }
 
 enable_selinux() {
@@ -179,6 +189,7 @@ install_elk() {
 }
 
 install_sf_packages() {
+    do_chroot ${dir} bash -c 'for key in /etc/pki/rpm-gpg/*.key; do rpm --import $key; done'
     install_packages ${dir} $CENTOS_PKGS $BUILD_PKGS $SF_PKGS
 
     # Make sure auditd is enabled by default
