@@ -1,0 +1,4 @@
+---
+- name: "Apply new policy.json"
+  copy: src=/root/config/policies/policy.json dest=/var/www/managesf/policy.json
+  register: policy

@@ -17,3 +17,7 @@ require 'spec_helper'
 describe port(80) do
   it { should be_listening }
 end
+
+describe file('/var/www/managesf/policy.json') do
+    it { should be_file }
+end

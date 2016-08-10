@@ -52,3 +52,6 @@ class TestConfigRepo(Base):
         # Check if the clone dir has projects file
         self.assertTrue(os.path.isfile(os.path.join(clone_dir,
                                                     "jobs/projects.yaml")))
+
+        self.assertTrue(os.path.isfile(os.path.join(clone_dir,
+                                                    "policies/policy.json")))

@@ -106,6 +106,8 @@
 
           echo "[+] Checking gerrit replication"
           git config -f gerrit/replication.config -l > /dev/null
+          echo "[+] Checking syntax errors in policy file"
+          cat policies/policy.json | python -mjson.tool > /dev/null
     triggers:
       - zuul
     node: master

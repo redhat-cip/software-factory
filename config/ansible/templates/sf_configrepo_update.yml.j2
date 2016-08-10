@@ -23,8 +23,10 @@
     - include: tasks/gerrit_replication_update.yaml
 - hosts: managesf
   gather_facts: no
-  tasks:
+  pre_tasks:
     - include: tasks/update_configrepo.yaml
+  roles:
+    - {role: 'sf-managesf', action: 'update'}
 {% if 'mirror' in roles %}
 - hosts: mirror
   gather_facts: no
