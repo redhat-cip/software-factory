@@ -1,17 +1,34 @@
 ---
 - include_vars: /etc/puppet/hiera/sf/sfcreds.yaml
 - include_vars: /etc/puppet/hiera/sf/_arch.yaml
-- template: src=/etc/ansible/templates/etc-hosts.j2 dest=/etc/hosts mode=0644
-- known_hosts: name='[192.168.135.101]:29418' state=absent
-- known_hosts: name='[localhost]:29418' state=absent
-- name: Set /etc/ssh/ssh_known_hosts for all inventory
+
+- name: "system: manage /etc/hosts"
+  template: src=/etc/ansible/templates/etc-hosts.j2 dest=/etc/hosts mode=0644
+
+- name: "system: remove unused ip address if present"
+  known_hosts: name='[192.168.135.101]:29418' state=absent
+
+- name: "system: remove unused localhost entry if present"
+  known_hosts: name='[localhost]:29418' state=absent
+
+- name: "system: disable root password login"
+  user: name=root password="*"
+
+- name: "system: set /etc/ssh/ssh_known_hosts for all inventory"
   template: src=global_known_hosts.j2 dest=/etc/ssh/ssh_known_hosts owner=root group=root mode=0644
-# Allow apache to connect database
-- seboolean: name={{ item }} state=yes persistent=yes
+
+- name: "system: allow apache to connect database"
+  seboolean: name={{ item }} state=yes persistent=yes
   with_items: [httpd_can_network_connect, httpd_can_network_connect_db]
   when: selinuxenabled
-- include: /etc/ansible/tasks/puppet.yml puppet_statement="include ::sfbase, ::postfix"
-- template: src=mail-ssh-login.j2 dest=/etc/rsyslog.d/mail-ssh-login.conf
+
+- name: "puppet: add include statement (puppet: apply 'include ::sfbase, ::postfix) "
+  include: /etc/ansible/tasks/puppet.yml puppet_statement="include ::sfbase, ::postfix"
+
+- name: "rsyslog: configure ommail (mail output module)"
+  template: src=mail-ssh-login.j2 dest=/etc/rsyslog.d/mail-ssh-login.conf
   register: rsyslog_config
-- service: name=rsyslog state=restarted
+
+- name: "rsyslog: manage service"
+  service: name=rsyslog state=restarted
   when: rsyslog_config|changed
