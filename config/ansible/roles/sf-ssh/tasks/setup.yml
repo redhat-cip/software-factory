@@ -1,0 +1,27 @@
+---
+- include_vars: /etc/puppet/hiera/sf/sfcreds.yaml
+
+- name: "system: chmod ssh directory"
+  file:
+    path=/root/.ssh
+    state=directory
+    owner=root group=root mode=0700
+
+- name: "system: ensure id_rsa private key for root user is present"
+  copy:
+    content: "{{ service_rsa }}"
+    dest: /root/.ssh/id_rsa
+    owner: root
+    group: root
+    mode: 0600
+
+- name: "system: set authorized key to allow config update from jenkins"
+  authorized_key:
+    user: root
+    key: "{{ jenkins_rsa_pub }}"
+    key_options: 'command="/usr/local/bin/sf-config-update.sh",no-port-forwarding,no-x11-forwarding,no-agent-forwarding'
+
+- name: "system: set authorized key to allow root access from managesf to other nodes"
+  authorized_key:
+    user: root
+    key: "{{ service_rsa_pub }}"

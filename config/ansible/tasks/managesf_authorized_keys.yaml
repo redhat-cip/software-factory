@@ -1,6 +1,0 @@
-- include_vars: /etc/puppet/hiera/sf/sfcreds.yaml
-- name: "Set authorized key to allow config update from jenkins"
-  authorized_key:
-    user: root
-    key: "{{ jenkins_rsa_pub }}"
-    key_options: 'command="/usr/local/bin/sf-config-update.sh",no-port-forwarding,no-x11-forwarding,no-agent-forwarding'

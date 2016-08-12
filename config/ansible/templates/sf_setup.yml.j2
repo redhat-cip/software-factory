@@ -15,6 +15,10 @@
       synchronize: src=/etc/puppet/hiera/ dest=/etc/puppet/hiera/ delete=yes
 {% endif %}{% endfor %}
 
+- hosts: managesf
+  roles:
+    - {name: "sf-ssh", action: "setup"}
+
 - hosts: all
   pre_tasks:
     - include: /etc/ansible/tasks/selinux_check.yml

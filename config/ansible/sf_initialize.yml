@@ -2,6 +2,5 @@
 - hosts: managesf
   tasks:
     - include: tasks/create_config_repository.yaml
-    - include: tasks/managesf_authorized_keys.yaml
 
 - include: sf_configrepo_update.yml

@@ -54,7 +54,7 @@ EOF
 
 function generate_random_pswd {
     # The sed character replacement makes the base64-string URL safe; for example required by lodgeit
-    echo `base64 -w $1 < /dev/urandom | head -n1 | sed -e 's#/#_#g;s#\+#_#g'`
+    echo $(base64 -w $1 < /dev/urandom | head -n1 | sed -e 's#/#_#g;s#\+#_#g')
 }
 
 function generate_api_key {
@@ -69,71 +69,31 @@ function generate_api_key {
 
 function generate_yaml {
     OUTPUT=/etc/puppet/hiera/sf/
+
     echo "[sfconfig] copy defaults hiera to ${OUTPUT}"
     # MySQL password for services + service user
-    MYSQL_ROOT_SECRET=$(generate_random_pswd 32)
-    REDMINE_MYSQL_SECRET=$(generate_random_pswd 32)
-    GERRIT_MYSQL_SECRET=$(generate_random_pswd 32)
-    NODEPOOL_MYSQL_SECRET=$(generate_random_pswd 32)
-    ETHERPAD_MYSQL_SECRET=$(generate_random_pswd 32)
-    LODGEIT_MYSQL_SECRET=$(generate_random_pswd 32)
-    GRAFANA_MYSQL_SECRET=$(generate_random_pswd 32)
-    GNOCCHI_MYSQL_SECRET=$(generate_random_pswd 32)
-    STORYBOARD_MYSQL_SECRET=$(generate_random_pswd 32)
-    STORYBOARD_TOKEN_SECRET=$(generate_random_pswd 32)
-    CAUTH_MYSQL_SECRET=$(generate_random_pswd 32)
-    MANAGESF_MYSQL_SECRET=$(generate_random_pswd 32)
-    SF_SERVICE_USER_SECRET=$(generate_random_pswd 32)
-    MUMBLE_ICE_SECRET=$(generate_random_pswd 32)
-    sed -i "s#MYSQL_ROOT_PWD#${MYSQL_ROOT_SECRET}#" ${OUTPUT}/sfcreds.yaml
-    sed -i "s#REDMINE_SQL_PWD#${REDMINE_MYSQL_SECRET}#" ${OUTPUT}/sfcreds.yaml
-    sed -i "s#GERRIT_SQL_PWD#${GERRIT_MYSQL_SECRET}#" ${OUTPUT}/sfcreds.yaml
-    sed -i "s#NODEPOOL_SQL_PWD#${NODEPOOL_MYSQL_SECRET}#" ${OUTPUT}/sfcreds.yaml
-    sed -i "s#ETHERPAD_SQL_PWD#${ETHERPAD_MYSQL_SECRET}#" ${OUTPUT}/sfcreds.yaml
-    sed -i "s#LODGEIT_SQL_PWD#${LODGEIT_MYSQL_SECRET}#" ${OUTPUT}/sfcreds.yaml
-    sed -i "s#GRAFANA_SQL_PWD#${GRAFANA_MYSQL_SECRET}#" ${OUTPUT}/sfcreds.yaml
-    sed -i "s#GNOCCHI_SQL_PWD#${GNOCCHI_MYSQL_SECRET}#" ${OUTPUT}/sfcreds.yaml
-    sed -i "s#STORYBOARD_SQL_PWD#${STORYBOARD_MYSQL_SECRET}#" ${OUTPUT}/sfcreds.yaml
-    sed -i "s#STORYBOARD_SERVICE_TOKEN#${STORYBOARD_TOKEN_SECRET}#" ${OUTPUT}/sfcreds.yaml
-    sed -i "s#CAUTH_SQL_PWD#${CAUTH_MYSQL_SECRET}#" ${OUTPUT}/sfcreds.yaml
-    sed -i "s#MANAGESF_SQL_PWD#${MANAGESF_MYSQL_SECRET}#" ${OUTPUT}/sfcreds.yaml
-    sed -i "s#SF_SERVICE_USER_PWD#${SF_SERVICE_USER_SECRET}#" ${OUTPUT}/sfcreds.yaml
-    sed -i "s#MUMBLE_ICE_SECRET#${MUMBLE_ICE_SECRET}#" ${OUTPUT}/sfcreds.yaml
+    for cred in $(awk '!/api_key|sshkey|pub_key/ {print $1}' /etc/puppet/hiera/sf/sfcreds.yaml); do
+        password=$(generate_random_pswd 32)
+        sed -i "s#\($cred\).*#\1 $password#"  /etc/puppet/hiera/sf/sfcreds.yaml
+    done
+
     # Default authorized ssh keys on each node
     JENKINS_PUB="$(cat ${BUILD}/ssh_keys/jenkins_rsa.pub | cut -d' ' -f2)"
     SERVICE_PUB="$(cat ${BUILD}/ssh_keys/service_rsa.pub | cut -d' ' -f2)"
     sed -i "s#JENKINS_PUB_KEY#${JENKINS_PUB}#" ${OUTPUT}/sfcreds.yaml
     sed -i "s#SERVICE_PUB_KEY#${SERVICE_PUB}#" ${OUTPUT}/sfcreds.yaml
+
     # Redmine part
     REDMINE_API_KEY=$(generate_api_key)
     sed -i "s#REDMINE_API_KEY#${REDMINE_API_KEY}#" ${OUTPUT}/sfcreds.yaml
+
     # Gerrit part
-    GERRIT_EMAIL_PK=$(generate_random_pswd 32)
-    GERRIT_TOKEN_PK=$(generate_random_pswd 32)
     GERRIT_SERV_PUB="$(cat ${BUILD}/ssh_keys/gerrit_service_rsa.pub | cut -d' ' -f2)"
     GERRIT_ADMIN_PUB_KEY="$(cat ${BUILD}/ssh_keys/gerrit_admin_rsa.pub | cut -d' ' -f2)"
-    sed -i "s#GERRIT_EMAIL_PK#${GERRIT_EMAIL_PK}#" ${OUTPUT}/sfcreds.yaml
-    sed -i "s#GERRIT_TOKEN_PK#${GERRIT_TOKEN_PK}#" ${OUTPUT}/sfcreds.yaml
     sed -i "s#GERRIT_SERV_PUB_KEY#${GERRIT_SERV_PUB}#" ${OUTPUT}/sfcreds.yaml
     sed -i "s#GERRIT_ADMIN_PUB_KEY#${GERRIT_ADMIN_PUB_KEY}#" ${OUTPUT}/sfcreds.yaml
-    # Jenkins part
-    JENKINS_USER_PASSWORD="$(generate_random_pswd 32)"
-    sed -i "s#JENKINS_USER_PASSWORD#${JENKINS_USER_PASSWORD}#" ${OUTPUT}/sfcreds.yaml
-    # Etherpad part
-    ETHERPAD_ADMIN_KEY=$(generate_random_pswd 32)
-    sed -i "s#ETHERPAD_ADMIN_KEY#${ETHERPAD_ADMIN_KEY}#" ${OUTPUT}/sfcreds.yaml
-    # Lodgeit/Paste part
-    LODGEIT_SESSION_KEY=$(generate_random_pswd 32)
-    sed -i "s#LODGEIT_SESSION_KEY#${LODGEIT_SESSION_KEY}#" ${OUTPUT}/sfcreds.yaml
 
-    hieraedit.py --yaml ${OUTPUT}/sfcreds.yaml -f ${BUILD}/ssh_keys/service_rsa service_rsa
-    hieraedit.py --yaml ${OUTPUT}/sfcreds.yaml -f ${BUILD}/ssh_keys/jenkins_rsa jenkins_rsa
-    hieraedit.py --yaml ${OUTPUT}/sfcreds.yaml -f ${BUILD}/ssh_keys/jenkins_rsa.pub jenkins_rsa_pub
-    hieraedit.py --yaml ${OUTPUT}/sfcreds.yaml -f ${BUILD}/ssh_keys/gerrit_admin_rsa gerrit_admin_rsa
-    hieraedit.py --yaml ${OUTPUT}/sfcreds.yaml -f ${BUILD}/ssh_keys/gerrit_service_rsa gerrit_service_rsa
-    hieraedit.py --yaml ${OUTPUT}/sfcreds.yaml -f ${BUILD}/ssh_keys/gerrit_service_rsa.pub gerrit_service_rsa_pub
-    hieraedit.py --yaml ${OUTPUT}/sfcreds.yaml -f ${BUILD}/certs/privkey.pem privkey_pem
-    hieraedit.py --yaml ${OUTPUT}/sfcreds.yaml -f ${BUILD}/certs/pubkey.pem  pubkey_pem
+    manage_ssh_keys_and_certs
 
     chown -R root:puppet /etc/puppet/hiera/sf
     chmod -R 0750 /etc/puppet/hiera/sf
@@ -178,32 +138,43 @@ EOF
     [ -f ${OUTPUT}/gateway.key ] || {
         openssl req -x509 -nodes -days 365 -newkey rsa:2048 -subj "/C=FR/O=SoftwareFactory/CN=${DOMAIN}" \
             -keyout ${OUTPUT}/gateway.key -out ${OUTPUT}/gateway.crt -extensions v3_req -config openssl.cnf
-        hieraedit.py --yaml /etc/puppet/hiera/sf/sfcreds.yaml -f ${OUTPUT}/gateway.key gateway_key
-        hieraedit.py --yaml /etc/puppet/hiera/sf/sfcreds.yaml -f ${OUTPUT}/gateway.crt gateway_crt
-        hieraedit.py --yaml /etc/puppet/hiera/sf/sfcreds.yaml -f ${OUTPUT}/gateway.crt gateway_chain
+
         # Trust this certificate. This is mostly required for sfmanager
         cat ${OUTPUT}/gateway.crt >> /etc/pki/tls/certs/ca-bundle.crt
     }
-    # Update missing chain configuration (TODO: move this to global config updater (coming soon))
-    grep -q '^gateway_chain:' /etc/puppet/hiera/sf/sfcreds.yaml || \
-        hieraedit.py --yaml /etc/puppet/hiera/sf/sfcreds.yaml -f ${OUTPUT}/gateway.crt gateway_chain
+}
+
+function manage_ssh_keys_and_certs {
+    OUTPUT=/etc/puppet/hiera/sf/
+
+    for key in $(find ${BUILD}/ssh_keys -type f); do
+        name=$(basename $key | sed "s/.pub/_pub/")
+        if ! grep -qE  "\b$name\b" ${OUTPUT}/sfcreds.yaml; then
+            hieraedit.py --yaml ${OUTPUT}/sfcreds.yaml -f $key $name
+        fi
+    done
+
+    for cert in $(find ${BUILD}/certs -type f ); do
+        name=$(basename $cert | sed 's/\.\([[:alpha:]]\{3\}\)/_\1/')
+        if ! grep -qE  "\b$name\b" ${OUTPUT}/sfcreds.yaml; then
+            hieraedit.py --yaml ${OUTPUT}/sfcreds.yaml -f $cert $name
+        fi
+    done
+
+    hieraedit.py --yaml /etc/puppet/hiera/sf/sfcreds.yaml -f ${BUILD}/certs/gateway.crt gateway_chain
 }
 
 function recreate_bootstrap_data {
-    python -c "import yaml;print yaml.load(open('/etc/puppet/hiera/sf/sfcreds.yaml')).get('service_rsa')" > ${BUILD}/ssh_keys/service_rsa
-    echo -n "ssh-rsa " > ${BUILD}/ssh_keys/service_rsa.pub
-    python -c "import yaml;print yaml.load(open('/etc/puppet/hiera/sf/sfcreds.yaml')).get('creds_service_pub_key')" >> ${BUILD}/ssh_keys/service_rsa.pub
-    python -c "import yaml;print yaml.load(open('/etc/puppet/hiera/sf/sfcreds.yaml')).get('jenkins_rsa')" > ${BUILD}/ssh_keys/jenkins_rsa
-    echo -n "ssh-rsa " > ${BUILD}/ssh_keys/jenkins_rsa.pub
-    python -c "import yaml;print yaml.load(open('/etc/puppet/hiera/sf/sfcreds.yaml')).get('jenkins_rsa_pub')" >> ${BUILD}/ssh_keys/jenkins_rsa.pub
-    python -c "import yaml;print yaml.load(open('/etc/puppet/hiera/sf/sfcreds.yaml')).get('gerrit_admin_rsa')" > ${BUILD}/ssh_keys/gerrit_admin_rsa
-    python -c "import yaml;print yaml.load(open('/etc/puppet/hiera/sf/sfcreds.yaml')).get('gerrit_service_rsa')" > ${BUILD}/ssh_keys/gerrit_service_rsa
-    echo -n "ssh-rsa " > ${BUILD}/ssh_keys/gerrit_service_rsa.pub
-    python -c "import yaml;print yaml.load(open('/etc/puppet/hiera/sf/sfcreds.yaml')).get('gerrit_service_rsa_pub')" >> ${BUILD}/ssh_keys/gerrit_service_rsa.pub
-    python -c "import yaml;print yaml.load(open('/etc/puppet/hiera/sf/sfcreds.yaml')).get('privkey_pem')" > ${BUILD}/certs/privkey_pem
-    python -c "import yaml;print yaml.load(open('/etc/puppet/hiera/sf/sfcreds.yaml')).get('pubkey_pem')" > ${BUILD}/certs/pubkey_pem
-}
+    for name in $(awk -F ":" '/_rsa/ {print $1}' /etc/puppet/hiera/sf/sfcreds.yaml); do
+        filename=$(echo $name | sed "s/_pub/.pub/")
+        python -c "import yaml;print yaml.load(open('/etc/puppet/hiera/sf/sfcreds.yaml')).get('$name')" > ${BUILD}/ssh_keys/$filename
+    done
 
+    for name in $(awk -F ":" '/_pem/ {print $1}' /etc/puppet/hiera/sf/sfcreds.yaml); do
+        filename=$(echo $name | sed "s/_pem/.pem/")
+        python -c "import yaml;print yaml.load(open('/etc/puppet/hiera/sf/sfcreds.yaml')).get('$name')" > ${BUILD}/certs/$filename
+    done
+}
 
 function wait_for_ssh {
     local host=$1
@@ -236,6 +207,9 @@ if [ ! -f "${BUILD}/generate.done" ]; then
     generate_yaml
     touch "${BUILD}/generate.done"
 fi
+
+# Ensure all the ssh keys and certs are on sfcreds
+manage_ssh_keys_and_certs
 
 if [ -f "/etc/puppet/hiera/sf/sfcreds.yaml.orig" ]; then
     # Most likely this is a sfconfig.sh run after restoring a backup.
