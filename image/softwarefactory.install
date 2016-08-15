@@ -243,36 +243,36 @@ function install_jenkins {
     ln -sf ${swarm_client} ${dir}/var/lib/jenkins/swarm-client-latest.jar
 
     # Jenkins ssh-agent plugin
-    http_fetch $JENKINS_SSH_AGENT_PLUGIN_URL ${dir}/var/lib/jenkins/plugins/$(basename $JENKINS_SSH_AGENT_PLUGIN_URL)
+    http_fetch $JENKINS_SSH_AGENT_URL ${dir}/var/lib/jenkins/plugins/$(basename $JENKINS_SSH_AGENT_URL)
     # Jenkins Gearman plugin
     http_fetch $JENKINS_GEARMAN_PLUGIN_URL ${dir}/var/lib/jenkins/plugins/$(basename $JENKINS_GEARMAN_PLUGIN_URL)
 
     # Jenkins Swarm plugin
-    http_fetch $JENKINS_SWARM_PLUGIN_URL ${dir}/var/lib/jenkins/plugins/$(basename $JENKINS_SWARM_PLUGIN_URL)
+    http_fetch $JENKINS_SWARM_URL ${dir}/var/lib/jenkins/plugins/$(basename $JENKINS_SWARM_URL)
 
     # Jenkins theme plugin
-    http_fetch $JENKINS_THEME_PLUGIN_URL ${dir}/var/lib/jenkins/plugins/$(basename $JENKINS_THEME_PLUGIN_URL)
+    http_fetch $JENKINS_SIMPLE_THEME_PLUGIN_URL ${dir}/var/lib/jenkins/plugins/$(basename $JENKINS_SIMPLE_THEME_PLUGIN_URL)
 
     # Jenkins credentials plugin
     http_fetch $JENKINS_CREDENTIALS_BINDING_URL ${dir}/var/lib/jenkins/plugins/$(basename $JENKINS_CREDENTIALS_BINDING_URL)
     http_fetch $JENKINS_WORKFLOW_STEP_API_URL ${dir}/var/lib/jenkins/plugins/$(basename $JENKINS_WORKFLOW_STEP_API_URL)
     http_fetch $JENKINS_PLAIN_CREDENTIALS_URL ${dir}/var/lib/jenkins/plugins/$(basename $JENKINS_PLAIN_CREDENTIALS_URL)
-    http_fetch $JENKINS_REVERSE_AUTH_PROXY_PLUGIN_URL ${dir}/var/lib/jenkins/plugins/$(basename $JENKINS_REVERSE_AUTH_PROXY_PLUGIN_URL)
+    http_fetch $JENKINS_REVERSE_PROXY_AUTH_PLUGIN_URL ${dir}/var/lib/jenkins/plugins/$(basename $JENKINS_REVERSE_PROXY_AUTH_PLUGIN_URL)
 
     # Jenkins plugin to run scripts as publishers
-    http_fetch $JENKINS_POST_BUILDSCRIPT_PLUGIN_URL ${dir}/var/lib/jenkins/plugins/$(basename $JENKINS_POST_BUILDSCRIPT_PLUGIN_URL)
+    http_fetch $JENKINS_POSTBUILDSCRIPT_URL ${dir}/var/lib/jenkins/plugins/$(basename $JENKINS_POSTBUILDSCRIPT_URL)
 
     # Jenkins ZMQ event plugin
-    http_fetch $JENKINS_ZMQ_PLUGIN_URL ${dir}/var/lib/jenkins/plugins/$(basename $JENKINS_ZMQ_PLUGIN_URL)
+    http_fetch $JENKINS_ZMQ_EVENT_PUBLISHER_URL ${dir}/var/lib/jenkins/plugins/$(basename $JENKINS_ZMQ_EVENT_PUBLISHER_URL)
 
     # Jenkins Dashboard plugin
-    http_fetch $JENKINS_DASHBOARD_PLUGIN_URL ${dir}/var/lib/jenkins/plugins/$(basename $JENKINS_DASHBOARD_PLUGIN_URL)
+    http_fetch $JENKINS_DASHBOARD_VIEW_URL ${dir}/var/lib/jenkins/plugins/$(basename $JENKINS_DASHBOARD_VIEW_URL)
 
     # Jenkins Cobertura code coverage plugin
     http_fetch $JENKINS_COBERTURA_URL ${dir}/var/lib/jenkins/plugins/$(basename $JENKINS_COBERTURA_URL)
 
     # Jenkins AnsiColor plugin
-    http_fetch $JENKINS_ANSI_COLOR_PLUGIN_URL ${dir}/var/lib/jenkins/plugins/$(basename $JENKINS_ANSI_COLOR_PLUGIN_URL)
+    http_fetch $JENKINS_ANSICOLOR_URL ${dir}/var/lib/jenkins/plugins/$(basename $JENKINS_ANSICOLOR_URL)
 
     # make sure jenkins is disabled by default
     rm -Rf ${dir}/etc/rc.d/*/*jenkins*
@@ -327,7 +327,7 @@ EOF
     # Install Redmine backlog plugin
     [ -d ${dir}/var/www/redmine/plugins ] || mkdir -p ${dir}/var/www/redmine/plugins
     if [ ! -d ${dir}/var/www/redmine/plugins/redmine_backlogs ]; then
-        retry do_chroot ${dir} git clone --depth 1 -b ${REDMINE_BACKLOG_VERSION} $REDMINE_BACKLOG_URL /var/www/redmine/plugins/redmine_backlogs
+        retry do_chroot ${dir} git clone -b ${REDMINE_BACKLOG_VERSION} $REDMINE_BACKLOG_URL /var/www/redmine/plugins/redmine_backlogs
         do_chroot ${dir} bash -c "cd /var/www/redmine/plugins/redmine_backlogs; patch Gemfile" < ./patches/redmine_backlog_gemfile.patch
         SUDO_UID=0 SUDO_GID=0 do_chroot ${dir} bash -c "cd /var/www/redmine/plugins/redmine_backlogs && bundle install --without development test"
     fi
@@ -395,7 +395,7 @@ EOF
 function install_bup {
     if [ ! -d ${dir}/opt/bup ]; then
         do_chroot ${dir} mkdir -p /opt/bup
-        do_chroot ${dir} git clone --depth 1 ${BUP_URL} /opt/bup/
+        do_chroot ${dir} git clone ${BUP_URL} /opt/bup/
         do_chroot ${dir} bash -c 'cd /opt/bup && git checkout ${BUP_VERSION}'
         do_chroot ${dir} bash -c 'cd /opt/bup && ./configure && make && make install'
     fi
@@ -557,7 +557,7 @@ function install_gerritbot {
     # Checkout VERSION in /tmp
     rm -Rf ${dir}/tmp/gerritbot
 
-    retry do_chroot ${dir} git clone --depth 1 ${GERRITBOT_URL} /tmp/gerritbot
+    retry do_chroot ${dir} git clone ${GERRITBOT_URL} /tmp/gerritbot
     do_chroot ${dir} bash -c "cd /tmp/gerritbot && git checkout -b working ${GERRITBOT_VERSION}"
 
     # Install
@@ -571,7 +571,7 @@ function install_gitweb_theme {
     # Checkout VERSION in /tmp
     rm -Rf ${dir}/tmp/kogakure
 
-    retry do_chroot ${dir} git clone --depth 1 ${KOGAKURE_URL} /tmp/kogakure
+    retry do_chroot ${dir} git clone ${KOGAKURE_URL} /tmp/kogakure
     do_chroot ${dir} bash -c "cp /tmp/kogakure/gitweb.css /var/www/git/static/"
 
     # tweak config for gravatars and syntax highlighting
@@ -657,8 +657,8 @@ if [ "$STEP" == 1 ]; then
     # Copy prepared managesf source to support depends-on
     rsync -a --delete ${MANAGESF_CLONED_PATH}/ ${dir}/usr/src/managesf/
     ansible_install sf-managesf
-    ansible_install sf-storyboard "storyboard_commit: \"${STORYBOARD_COMMIT}\", storyboard_client_commit: \"${STORYBOARD_CLIENT_COMMIT}\""
-    ansible_install sf-storyboard-webclient "storyboard_webclient_commit: \"${STORYBOARD_WEBCLIENT_COMMIT}\""
+    ansible_install sf-storyboard "storyboard_url: \"${STORYBOARD_URL}\", storyboard_commit: \"${STORYBOARD_COMMIT}\", storyboard_client_url: \"${STORYBOARD_CLIENT_URL}\", storyboard_client_commit: \"${STORYBOARD_CLIENT_COMMIT}\""
+    ansible_install sf-storyboard-webclient "storyboard_webclient_url: \"${STORYBOARD_WEBCLIENT_URL}\""
     ansible_install sf-mirror
     ansible_install sf-job-logs-gearman-client "log_gearman_client_url: \"${LOG_GEARMAN_CLIENT_URL}\""
     ansible_install sf-job-logs-gearman-worker "log_gearman_worker_url: \"${LOG_GEARMAN_WORKER_URL}\""

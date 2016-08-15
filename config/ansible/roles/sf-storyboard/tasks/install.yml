@@ -1,6 +1,6 @@
 ---
 - name: "Fetch storyboard code"
-  git: repo=git://git.openstack.org/openstack-infra/storyboard dest=/usr/src/storyboard recursive=no version={{ storyboard_commit }} update=no
+  git: repo={{ storyboard_url }} dest=/usr/src/storyboard recursive=no version={{ storyboard_commit }} update=no
 - name: "Install storyboard venv"
   command: chdir=/usr/src/storyboard {{ item }}
   with_items:

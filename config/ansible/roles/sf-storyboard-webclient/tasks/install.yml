@@ -7,7 +7,7 @@
   register: installed
 
 - name: "Extract pre-built client"
-  unarchive: src=https://tarballs.openstack.org/storyboard-webclient/storyboard-webclient-{{ storyboard_webclient_commit }}.tar.gz dest=/var/www/storyboard/ copy=no
+  unarchive: src={{ storyboard_webclient_url }} dest=/var/www/storyboard/ copy=no
   when: installed.stat.exists == false
 
 - name: "Remove dist sub directory"

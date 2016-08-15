@@ -13,9 +13,11 @@ function ansible_install {
     local role=$1
     local params=$2
     local ansible_debug=""
+
     [ -z "$DEBUG" ] || ansible_debug="-vvvv"
     cat <<EOF> $dir/ansible-install-playbook
 - hosts: localhost
+  connection: local
   roles:
     - { role: "$role", action: "install", $params }
 EOF

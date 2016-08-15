@@ -1,6 +1,10 @@
 # -*- shell-script -*-
+# Note: Change to _VERSION likely needs to be reported to the mirror2swift configuration
 
 set +x
+
+USE_SWIFT_CACHE=${USE_SWIFT_CACHE:-yes}
+SWIFT_CACHE="http://46.231.132.68:8080/v1/AUTH_b50e80d3969f441a8b7b1fe831003e0a/repomirror"
 
 # yum
 RDO_REPO="https://repos.fedorapeople.org/repos/openstack/openstack-mitaka/rdo-release-mitaka-5.noarch.rpm"
@@ -26,13 +30,25 @@ SF_PKGS="$(grep '^[a-zA-Z]' ${ORIG}/packages/rpm_sf.txt)"
 PIP_PKGS="$(grep '^[a-zA-Z\-]' ${ORIG}/packages/pip_pkgs.txt)"
 export PIP_USE_MIRRORS=True
 
+
 # Serverspec gem versions
 SERVERSPEC_VERSION=2.25.0
 
+
 # Storyboard
 STORYBOARD_COMMIT="3781b33cf688685a62ad6a4ae740618aa699fdce"
-STORYBOARD_WEBCLIENT_COMMIT="ffda0be"
+STORYBOARD_URL="https://github.com/openstack-infra/storyboard"
 STORYBOARD_CLIENT_COMMIT="ad713855fbfdd0e89cdc867af7d347c2b2f8ae38"
+STORYBOARD_CLIENT_URL="https://github.com/openstack-infra/python-storyboardclient"
+STORYBOARD_WEBCLIENT_COMMIT="ffda0be"
+STORYBOARD_WEBCLIENT_URL="https://tarballs.openstack.org/storyboard-webclient/storyboard-webclient-${STORYBOARD_WEBCLIENT_COMMIT}.tar.gz"
+
+URL_LIST="$URL_LIST $STORYBOARD_URL $STORYBOARD_WEBCLIENT_URL $STORYBOARD_CLIENT_URL"
+if [ "${USE_SWIFT_CACHE}" == "yes" ]; then
+    STORYBOARD_URL="${SWIFT_CACHE}/storyboard.git"
+    STORYBOARD_CLIENT_URL="${SWIFT_CACHE}/python-storyboardclient.git"
+    STORYBOARD_WEBCLIENT_URL="${SWIFT_CACHE}/storyboard-webclient/storyboard-webclient-${STORYBOARD_WEBCLIENT_COMMIT}.tar.gz"
+fi
 
 # Job logs Gearman processors
 LOG_GEARMAN_CLIENT_VERSION="d7d9d50ee2706608386c802246591a6c80a58a7f"
@@ -41,37 +57,61 @@ LOG_GEARMAN_WORKER_VERSION="84c7e723128fab9da321ae1b0977e7d13923b36b"
 LOG_GEARMAN_WORKER_URL="https://raw.githubusercontent.com/openstack-infra/puppet-log_processor/${LOG_GEARMAN_WORKER_VERSION}/files/log-gearman-worker.py"
 
 URL_LIST="$URL_LIST $LOG_GEARMAN_CLIENT_URL $LOG_GEARMAN_WORKER_URL"
+if [ "${USE_SWIFT_CACHE}" == "yes" ]; then
+    LOG_GEARMAN_CLIENT_URL="${SWIFT_CACHE}/log_gearman/log-gearman-client.py"
+    LOG_GEARMAN_WORKER_URL="${SWIFT_CACHE}/log_gearman/log-gearman-worker.py"
+fi
+
 
 # mod_auth_pubtkt
 MOD_AUTH_PUBTKT_VERSION=0.8
 MOD_AUTH_PUBTKT_URL="https://neon1.net/mod_auth_pubtkt/mod_auth_pubtkt-${MOD_AUTH_PUBTKT_VERSION}.tar.gz"
 
 URL_LIST="$URL_LIST $MOD_AUTH_PUBTKT_URL"
+if [ "${USE_SWIFT_CACHE}" == "yes" ]; then
+    MOD_AUTH_PUBTKT_URL="${SWIFT_CACHE}/apache_mod/mod_auth_pubtkt-${MOD_AUTH_PUBTKT_VERSION}.tar.gz"
+fi
+
 
 # redmine
 REDMINE_VERSION=2.6.9
 REDMINE_RHEL_URL="http://www.redmine.org/releases/redmine-${REDMINE_VERSION}.tar.gz"
-REDMINE_BACKLOG_URL="git://github.com/backlogs/redmine_backlogs.git"
+REDMINE_BACKLOG_URL="https://github.com/backlogs/redmine_backlogs.git"
 REDMINE_BACKLOG_VERSION="v1.0.6"
-REDMINE_HTTP_PLUGIN_URL="git://github.com/kevinfoote/redmine_http_auth.git"
+REDMINE_HTTP_PLUGIN_URL="https://github.com/kevinfoote/redmine_http_auth.git"
 REDMINE_HTTP_PLUGIN_VERSION="259fb633ac27737d8b0f6a02230e7fa8f619b852"
 
 URL_LIST="$URL_LIST $REDMINE_RHEL_URL"
 GIT_REPO_LIST="$GIT_REPO_LIST $REDMINE_BACKLOG_URL $REDMINE_HTTP_PLUGIN_URL"
+if [ "${USE_SWIFT_CACHE}" == "yes" ]; then
+    REDMINE_RHEL_URL="${SWIFT_CACHE}/redmine/redmine-${REDMINE_VERSION}.tar.gz"
+    REDMINE_BACKLOG_URL="${SWIFT_CACHE}/redmine_backlogs.git"
+    REDMINE_HTTP_PLUGIN_URL="${SWIFT_CACHE}/redmine_http_auth.git"
+fi
+
 
 # murmur
 MURMUR_VERSION=1.2.13
 MURMUR_URL="https://github.com/mumble-voip/mumble/releases/download/${MURMUR_VERSION}/murmur-static_x86-${MURMUR_VERSION}.tar.bz2"
+
+URL_LIST="$URL_LIST $MURMUR_URL"
+if [ "${USE_SWIFT_CACHE}" == "yes" ]; then
+    MURMUR_URL="${SWIFT_CACHE}/murmur/murmur-static_x86-${MURMUR_VERSION}.tar.bz2"
+fi
+
 
 # bup
 BUP_URL="https://github.com/bup/bup.git"
 BUP_VERSION=0.26
 
 GIT_REPO_LIST="$GIT_REPO_LIST $BUP_URL"
+if [ "${USE_SWIFT_CACHE}" == "yes" ]; then
+    BUP_URL="${SWIFT_CACHE}/bup.git"
+fi
 
 # gerrit
 GERRIT_VERSION=2.11.5
-GERRIT_URL="http://gerrit-releases.storage.googleapis.com/gerrit-${GERRIT_VERSION}.war"
+GERRIT_URL="https://gerrit-releases.storage.googleapis.com/gerrit-${GERRIT_VERSION}.war"
 MYSQLJAVA_VERSION=5.1.21
 MYSQLJAVA_URL="http://repo2.maven.org/maven2/mysql/mysql-connector-java/${MYSQLJAVA_VERSION}/mysql-connector-java-${MYSQLJAVA_VERSION}.jar"
 BCPROV_VERSION="151"
@@ -82,78 +122,137 @@ BCPKIXJDK_VERSION=$BCPROVJDK_VERSION
 BCPKIXJAVA_URL="http://downloads.bouncycastle.org/java/bcpkix-${BCPKIXJDK_VERSION}-${BCPKIX_VERSION}.jar"
 
 URL_LIST="$URL_LIST $GERRIT_URL $MYSQLJAVA_URL $BCPROVJAVA_URL $BCPKIXJAVA_URL"
+if [ "${USE_SWIFT_CACHE}" == "yes" ]; then
+    GERRIT_URL="${SWIFT_CACHE}/gerrit/gerrit-${GERRIT_VERSION}.war"
+    MYSQLJAVA_URL="${SWIFT_CACHE}/gerrit/mysql-connector-java-${MYSQLJAVA_VERSION}.jar"
+    BCPROVJAVA_URL="${SWIFT_CACHE}/gerrit/bcprov-${BCPROVJDK_VERSION}-${BCPROV_VERSION}.jar"
+    BCPKIXJAVA_URL="${SWIFT_CACHE}/gerrit/bcpkix-${BCPKIXJDK_VERSION}-${BCPKIX_VERSION}.jar"
+fi
+
 
 # bootstrap
 BOOTSTRAP_VERSION=3.2.0
 BOOTSTRAP_URL="https://github.com/twbs/bootstrap/releases/download/v${BOOTSTRAP_VERSION}/bootstrap-${BOOTSTRAP_VERSION}-dist.zip"
 
 URL_LIST="$URL_LIST $BOOTSTRAP_URL"
+if [ "${USE_SWIFT_CACHE}" == "yes" ]; then
+    BOOTSTRAP_URL="${SWIFT_CACHE}/javascripts/bootstrap-${BOOTSTRAP_VERSION}-dist.zip"
+fi
+
 
 # jenkins plugins
-JENKINS_MIRROR_URL="http://46.231.132.68:8080/v1/AUTH_b50e80d3969f441a8b7b1fe831003e0a/jenkins_plugins"
+JENKINS_PLUGINS_URL="https://updates.jenkins-ci.org/download/plugins"
 JENKINS_SWARM_VERSION=2.1
-JENKINS_SWARM_CLIENT_URL="${JENKINS_MIRROR_URL}/plugins/swarm-client/${JENKINS_SWARM_VERSION}/swarm-client-${JENKINS_SWARM_VERSION}-jar-with-dependencies.jar"
-JENKINS_SWARM_PLUGIN_URL="${JENKINS_MIRROR_URL}/plugins/swarm/${JENKINS_SWARM_VERSION}/swarm-${JENKINS_SWARM_VERSION}.hpi"
+JENKINS_SWARM_CLIENT_URL="https://repo.jenkins-ci.org/releases/org/jenkins-ci/plugins/swarm-client/${JENKINS_SWARM_VERSION}/swarm-client-${JENKINS_SWARM_VERSION}-jar-with-dependencies.jar"
+JENKINS_SWARM_URL="${JENKINS_PLUGINS_URL}/swarm/${JENKINS_SWARM_VERSION}/swarm.hpi"
 
 JENKINS_CREDENTIALS_BINDING_VERSION=1.4
-JENKINS_CREDENTIALS_BINDING_URL="${JENKINS_MIRROR_URL}/plugins/credentials-binding/${JENKINS_CREDENTIALS_BINDING_VERSION}/credentials-binding.hpi"
+JENKINS_CREDENTIALS_BINDING_URL="${JENKINS_PLUGINS_URL}/credentials-binding/${JENKINS_CREDENTIALS_BINDING_VERSION}/credentials-binding.hpi"
 
 JENKINS_WORKFLOW_STEP_API_VERSION=1.8
-JENKINS_WORKFLOW_STEP_API_URL="${JENKINS_MIRROR_URL}/plugins/workflow-step-api/${JENKINS_WORKFLOW_STEP_API_VERSION}/workflow-step-api.hpi"
+JENKINS_WORKFLOW_STEP_API_URL="${JENKINS_PLUGINS_URL}/workflow-step-api/${JENKINS_WORKFLOW_STEP_API_VERSION}/workflow-step-api.hpi"
 
 JENKINS_PLAIN_CREDENTIALS_VERSION=1.0
-JENKINS_PLAIN_CREDENTIALS_URL="${JENKINS_MIRROR_URL}/plugins/plain-credentials/${JENKINS_PLAIN_CREDENTIALS_VERSION}/plain-credentials.hpi"
+JENKINS_PLAIN_CREDENTIALS_URL="${JENKINS_PLUGINS_URL}/plain-credentials/${JENKINS_PLAIN_CREDENTIALS_VERSION}/plain-credentials.hpi"
 
-JENKINS_SSH_AGENT_PLUGIN_VERSION=1.4.1
-JENKINS_SSH_AGENT_PLUGIN_URL="${JENKINS_MIRROR_URL}/plugins/ssh-agent/${JENKINS_SSH_AGENT_PLUGIN_VERSION}/ssh-agent.hpi"
+JENKINS_SSH_AGENT_VERSION=1.4.1
+JENKINS_SSH_AGENT_URL="${JENKINS_PLUGINS_URL}/ssh-agent/${JENKINS_SSH_AGENT_VERSION}/ssh-agent.hpi"
 
 JENKINS_GEARMAN_PLUGIN_VERSION=0.2.0
-JENKINS_GEARMAN_PLUGIN_URL="${JENKINS_MIRROR_URL}/plugins/gearman-plugin/${JENKINS_GEARMAN_PLUGIN_VERSION}/gearman-plugin.hpi"
+JENKINS_GEARMAN_PLUGIN_URL="${JENKINS_PLUGINS_URL}/gearman-plugin/${JENKINS_GEARMAN_PLUGIN_VERSION}/gearman-plugin.hpi"
 
-JENKINS_REVERSE_AUTH_PROXY_PLUGIN_VERSION=1.4.0
-JENKINS_REVERSE_AUTH_PROXY_PLUGIN_URL="${JENKINS_MIRROR_URL}/plugins/reverse-proxy-auth-plugin/${JENKINS_REVERSE_AUTH_PROXY_PLUGIN_VERSION}/reverse-proxy-auth-plugin.hpi"
+JENKINS_REVERSE_PROXY_AUTH_PLUGIN_VERSION=1.4.0
+JENKINS_REVERSE_PROXY_AUTH_PLUGIN_URL="${JENKINS_PLUGINS_URL}/reverse-proxy-auth-plugin/${JENKINS_REVERSE_PROXY_AUTH_PLUGIN_VERSION}/reverse-proxy-auth-plugin.hpi"
 
-JENKINS_POST_BUILDSCRIPT_PLUGIN_VERSION=0.17
-JENKINS_POST_BUILDSCRIPT_PLUGIN_URL="${JENKINS_MIRROR_URL}/plugins/postbuildscript/${JENKINS_POST_BUILDSCRIPT_PLUGIN_VERSION}/postbuildscript.hpi"
+JENKINS_POSTBUILDSCRIPT_VERSION=0.17
+JENKINS_POSTBUILDSCRIPT_URL="${JENKINS_PLUGINS_URL}/postbuildscript/${JENKINS_POSTBUILDSCRIPT_VERSION}/postbuildscript.hpi"
 
-JENKINS_ANSI_COLOR_PLUGIN_VERSION=0.4.2
-JENKINS_ANSI_COLOR_PLUGIN_URL="${JENKINS_MIRROR_URL}/plugins/ansicolor/${JENKINS_ANSI_COLOR_PLUGIN_VERSION}/ansicolor.hpi"
+JENKINS_ANSICOLOR_VERSION=0.4.2
+JENKINS_ANSICOLOR_URL="${JENKINS_PLUGINS_URL}/ansicolor/${JENKINS_ANSICOLOR_VERSION}/ansicolor.hpi"
 
-JENKINS_THEME_PLUGIN_URL="${JENKINS_MIRROR_URL}/plugins/simple-theme-plugin/latest/simple-theme-plugin.hpi"
-JENKINS_ZMQ_PLUGIN_URL="${JENKINS_MIRROR_URL}/plugins/zmq-event-publisher/latest/zmq-event-publisher.hpi"
-JENKINS_DASHBOARD_PLUGIN_URL="${JENKINS_MIRROR_URL}/plugins/dashboard-view/latest/dashboard-view.hpi"
-JENKINS_COBERTURA_URL="${JENKINS_MIRROR_URL}/plugins/cobertura/latest/cobertura.hpi"
+JENKINS_SIMPLE_THEME_PLUGIN_VERSION=0.3
+JENKINS_SIMPLE_THEME_PLUGIN_URL="${JENKINS_PLUGINS_URL}/simple-theme-plugin/${JENKINS_SIMPLE_THEME_PLUGIN_VERSION}/simple-theme-plugin.hpi"
 
+JENKINS_ZMQ_EVENT_PUBLISHER_VERSION=0.0.5
+JENKINS_ZMQ_EVENT_PUBLISHER_URL="${JENKINS_PLUGINS_URL}/zmq-event-publisher/${JENKINS_ZMQ_EVENT_PUBLISHER_VERSION}/zmq-event-publisher.hpi"
+
+JENKINS_DASHBOARD_VIEW_VERSION=2.9.10
+JENKINS_DASHBOARD_VIEW_URL="${JENKINS_PLUGINS_URL}/dashboard-view/${JENKINS_DASHBOARD_VIEW_VERSION}/dashboard-view.hpi"
+
+JENKINS_COBERTURA_VERSION=1.9.8
+JENKINS_COBERTURA_URL="${JENKINS_PLUGINS_URL}/cobertura/${JENKINS_COBERTURA_VERSION}/cobertura.hpi"
+
+URL_LIST="$URL_LIST $JENKINS_PLUGINS_URL $JENKINS_SWARM_CLIENT_URL $JENKINS_SWARM_URL $JENKINS_CREDENTIALS_BINDING_URL $JENKINS_WORKFLOW_STEP_API_URL"
+URL_LIST="$URL_LIST $JENKINS_PLAIN_CREDENTIALS_URL $JENKINS_SSH_AGENT_URL $JENKINS_GEARMAN_PLUGIN_URL $JENKINS_REVERSE_PROXY_AUTH_PLUGIN_URL $JENKINS_POSTBUILDSCRIPT_URL"
+URL_LIST="$URL_LIST $JENKINS_ANSICOLOR_URL $JENKINS_SIMPLE_THEME_PLUGIN_URL $JENKINS_ZMQ_EVENT_PUBLISHER_URL $JENKINS_DASHBOARD_VIEW_URL $JENKINS_COBERTURA_URL"
+if [ "${USE_SWIFT_CACHE}" == "yes" ]; then
+    JENKINS_SWARM_CLIENT_URL="${SWIFT_CACHE}/jenkins_plugins/swarm-client-${JENKINS_SWARM_VERSION}-jar-with-dependencies.jar"
+    JENKINS_SWARM_URL="${SWIFT_CACHE}/jenkins_plugins/swarm.hpi"
+    JENKINS_CREDENTIALS_BINDING_URL="${SWIFT_CACHE}/jenkins_plugins/credentials-binding.hpi"
+    JENKINS_WORKFLOW_STEP_API_URL="${SWIFT_CACHE}/jenkins_plugins/workflow-step-api.hpi"
+    JENKINS_PLAIN_CREDENTIALS_URL="${SWIFT_CACHE}/jenkins_plugins/plain-credentials.hpi"
+    JENKINS_SSH_AGENT_URL="${SWIFT_CACHE}/jenkins_plugins/ssh-agent.hpi"
+    JENKINS_GEARMAN_PLUGIN_URL="${SWIFT_CACHE}/jenkins_plugins/gearman-plugin.hpi"
+    JENKINS_REVERSE_PROXY_AUTH_PLUGIN_URL="${SWIFT_CACHE}/jenkins_plugins/reverse-proxy-auth-plugin.hpi"
+    JENKINS_POSTBUILDSCRIPT_URL="${SWIFT_CACHE}/jenkins_plugins/postbuildscript.hpi"
+    JENKINS_ANSICOLOR_URL="${SWIFT_CACHE}/jenkins_plugins/ansicolor.hpi"
+    JENKINS_SIMPLE_THEME_PLUGIN_URL="${SWIFT_CACHE}/jenkins_plugins/simple-theme-plugin.hpi"
+    JENKINS_ZMQ_EVENT_PUBLISHER_URL="${SWIFT_CACHE}/jenkins_plugins/zmq-event-publisher.hpi"
+    JENKINS_DASHBOARD_VIEW_URL="${SWIFT_CACHE}/jenkins_plugins/dashboard-view.hpi"
+    JENKINS_COBERTURA_URL="${SWIFT_CACHE}/jenkins_plugins/cobertura.hpi"
+fi
+
+# zuul_swift_upload
 ZUUL_SWIFT_UPLOAD_URL="https://raw.githubusercontent.com/openstack-infra/project-config/master/jenkins/scripts/zuul_swift_upload.py"
 URL_LIST="${URL_LIST} ${ZUUL_SWIFT_UPLOAD_URL}"
+if [ "${USE_SWIFT_CACHE}" == "yes" ]; then
+    ZUUL_SWIFT_UPLOAD_URL="${SWIFT_CACHE}/zuul/zuul_swift_upload.py"
+fi
 
-URL_LIST="$URL_LIST $JENKINS_SWARM_CLIENT_URL $JENKINS_SWARM_PLUGIN_URL $JENKINS_THEME_PLUGIN_URL $JENKINS_CREDENTIALS_BINDING_URL $JENKINS_CREDENTIALS_URL $JENKINS_WORKFLOW_STEP_API_URL $JENKINS_PLAIN_CREDENTIALS_URL $JENKINS_ZMQ_PLUGIN_URL $JENKINS_SSH_AGENT_PLUGIN_URL $JENKINS_GEARMAN_PLUGIN_URL $JENKINS_REVERSE_AUTH_PROXY_PLUGIN_URL $JENKINS_POST_BUILDSCRIPT_PLUGIN_URL $JENKINS_DASHBOARD_PLUGIN_URL $JENKINS_COBERTURA_URL $JENKINS_ANSI_COLOR_PLUGIN_URL"
 
 # etherpad
 ETHERPAD_LITE_VERSION=1.5.7
 ETHERPAD_LITE_URL="https://codeload.github.com/ether/etherpad-lite/tar.gz/${ETHERPAD_LITE_VERSION}"
 
 URL_LIST="$URL_LIST $ETHERPAD_LITE_URL"
+if [ "${USE_SWIFT_CACHE}" == "yes" ]; then
+    ETHERPAD_LITE_URL="${SWIFT_CACHE}/etherpad/${ETHERPAD_LITE_VERSION}"
+fi
+
 
 # font awesome
 FONTAWESOME_VERSION=4.2.0
 FONTAWESOME_URL="https://codeload.github.com/FortAwesome/Font-Awesome/zip/v${FONTAWESOME_VERSION}"
 
 URL_LIST="$URL_LIST $FONTAWESOME_URL"
+if [ "${USE_SWIFT_CACHE}" == "yes" ]; then
+    FONTAWESOME_URL="${SWIFT_CACHE}/fontawesome/v${FONTAWESOME_VERSION}"
+fi
+
 
 # JQuery
 JQUERY_VERSION=2.1.1
-JQUERY_URL="http://code.jquery.com/jquery-${JQUERY_VERSION}.min.js"
+JQUERY_URL="https://code.jquery.com/jquery-${JQUERY_VERSION}.min.js"
 JQUERY_VISIBILITY_URL="http://status.openstack.org/jquery-visibility.min.js"
 JQUERY_GRAPHITE_URL="http://status.openstack.org/jquery-graphite.js"
 
 URL_LIST="$URL_LIST $JQUERY_URL $JQUERY_VISIBILITY_URL $JQUERY_GRAPHITE_URL"
+if [ "${USE_SWIFT_CACHE}" == "yes" ]; then
+    JQUERY_URL="${SWIFT_CACHE}/javascripts/jquery-${JQUERY_VERSION}.min.js"
+    JQUERY_VISIBILITY_URL="${SWIFT_CACHE}/javascripts/jquery-visibility.min.js"
+    JQUERY_GRAPHITE_URL="${SWIFT_CACHE}/javascripts/jquery-graphite.js"
+fi
+
 
 # AngularJS
 ANGULARJS_VERSION=1.2.27
 ANGULARJS_URL="https://ajax.googleapis.com/ajax/libs/angularjs/${ANGULARJS_VERSION}/angular.min.js"
 
 URL_LIST="$URL_LIST $ANGULARJS_URL"
+if [ "${USE_SWIFT_CACHE}" == "yes" ]; then
+    ANGULARJS_URL="${SWIFT_CACHE}/javascripts/angular.min.js"
+fi
+
 
 # Latest version of nodepool/zuul as of May11 2016
 ZUUL_URL="https://github.com/openstack-infra/zuul"
@@ -165,22 +264,29 @@ NODEPOOL_VERSION=1fd2a14ab79d256419083e2b2d9c463af36e039a
 GERRITBOT_URL="https://github.com/openstack-infra/gerritbot"
 GERRITBOT_VERSION=d48b1bc41717291e43425ff437d6214b6934f60f
 
-URL_LIST="$URL_LIST $ZUUL_URL $NODEPOOL_URL"
-
 # paste (lodgeit)
 PASTE_URL="https://git.openstack.org/openstack-infra/lodgeit"
 PASTE_VERSION=beb3ff7e266 # latest commit as of 05 Jun 2015
 
-GIT_REPO_LIST="$GIT_REPO_LIST $PASTE_URL"
+GIT_REPO_LIST="$URL_LIST $ZUUL_URL $NODEPOOL_URL $GERRITBOT_URL $PASTE_URL"
+if [ "${USE_SWIFT_CACHE}" == "yes" ]; then
+    ZUUL_URL="${SWIFT_CACHE}/zuul.git"
+    NODEPOOL_URL="${SWIFT_CACHE}/nodepool.git"
+    PASTE_URL="${SWIFT_CACHE}/lodgeit.git"
+fi
 
 GRAFANA_URL="http://46.231.132.68:8080/v1/AUTH_b50e80d3969f441a8b7b1fe831003e0a/rpms/grafana-2.5.0-1.x86_64.rpm"
 
 URL_LIST="$URL_LIST $GRAFANA_URL"
 
+
 # gitweb kogakure theme
 KOGAKURE_URL="https://github.com/kogakure/gitweb-theme.git"
 
 GIT_REPO_LIST="$GIT_REPO_LIST $KOGAKURE_URL"
+if [ "${USE_SWIFT_CACHE}" == "yes" ]; then
+    KOGAKURE_URL="${SWIFT_CACHE}/gitweb-theme.git"
+fi
 
 #---- URL health check -------
 function test_url {
