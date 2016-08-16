@@ -1,5 +1,3 @@
-.. toctree::
-
 Third-party tools
 =================
 

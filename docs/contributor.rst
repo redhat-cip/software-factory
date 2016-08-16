@@ -1,7 +1,7 @@
-.. toctree::
+==================================================
+Software-Factory project Contributor documentation
+==================================================
 
-Contributing to Software Factory
-================================
 
 How can I help?
 ---------------
@@ -10,7 +10,10 @@ Thanks for asking.
 
 The easiest way to get involved is to join us on IRC: #softwarefactory channel on Freenode.
 
+The mailing list is: softwarefactory-dev@redhat.com , subscribe here: https://www.redhat.com/mailman/listinfo/softwarefactory-dev
+
 User stories and bug tracker is available here: http://softwarefactory-project.io/redmine/projects/software-factory/issues
+
 
 Prepare a development environment
 ---------------------------------
@@ -29,7 +32,12 @@ you need access to a CentOS 7 and execute:
  ./fetch_image.sh
 
 There is an included Vagrantfile in the tools directory to automate these tasks
-and deploy a usable CentOS 7 instance that can be used for testing.
+and deploy a usable CentOS 7 instance that can be used for testing:
+
+.. code-block:: bash
+
+ VAGRANT_CWD=./tools/ vagrant up
+
 
 Optional: use a local http cache
 --------------------------------
@@ -60,33 +68,27 @@ it should significantly speed up image building.
 How to run the tests locally
 ----------------------------
 
-There are four kinds of tests:
+There are five kinds of tests one can run from the development environment (host
+hypervisor):
 
 * Unit tests
 * Functional tests
 * Upgrade tests
 * Backup tests
+* GUI tests
 
 Before sending a patch to the upstream softwarefactory code, it's better
 to run functional and unit tests locally first:
 
 .. code-block:: bash
 
-  ./run_tests.sh               # unittests
-  ./run_functional-tests.sh    # functional tests
+  ./run_tests.sh                      # unittests
+  ./run_functional-tests.sh           # functional tests
+  ./run_functional-tests.sh upgrade   # upgrade tests
 
-Two reference architectures are currently supported and tested with functional,
-backup and restore tests: 1node-allinone and 2nodes-jenkins
-
-.. code-block:: bash
-
-  ./run_functional-tests.sh 1node-allinone          # functional tests
-  ./run_functional-tests.sh 2nodes-jenkins upgrade  # upgrade tests
-  ./run_functional-tests.sh 1node-allinone backup   # backup tests
 
 The functional tests will start LXC container(s) on the local VM to simulate
-as close as possible a real deployment.
-
+as close as possible a real deployment:
 
 .. code-block:: bash
 

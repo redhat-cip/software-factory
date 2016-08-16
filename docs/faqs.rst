@@ -45,12 +45,16 @@ The main challenge is to do functional testing using mocked resources
 to simulate an external tracker.
 
 
-Why my job fails with "NOT_REGISTERED" error ?
-..............................................
+Why my job fails with the "NOT_REGISTERED" error ?
+..................................................
 
-This error happens when zuul can't run a job. This means a project
-gate have been configured with unknown jobs. Make sure to edit both
-jobs and zuul configuration from the config repos.
+This error happens when zuul can't run a job. Most of the time it's because:
+
+* A project gate is configured with an unknown job. Jobs definition
+  are likely missing the job used in zuul layout.
+* A slave node label has never been ready. Zuul fails with NOT_REGISTERED
+  (instead of queuing) until a first slave with the correct node label is available.
+  Then after, once Zuul knows a label really exists, it will properly queue jobs.
 
 The first step to investigate that error is to verify the job is active
 in jenkins dashboard. If the job is not there, check the config-repo and check
@@ -60,7 +64,7 @@ the config repo.
 
 
 Why my job stays in "queued" ?
-.............................
+..............................
 
 This happens when no slaves are available to execute a job:
 
@@ -68,42 +72,6 @@ This happens when no slaves are available to execute a job:
   (slaves are shown in the left column)
 * Then verify node labels are corresponding between slave and jjb definition.
 
-
-What to do if nodepool is not working ?
-.......................................
-
-Until this is provided as an automatic task, here is the manual process:
-
-* Check OpenStack provider tenants and clean left-over resources:
- * server with an uptime more than 12 hours
- * glance images
- * unused floating ip
-
-* Remove un-assigned floating-ip
-* Check nodepool logs for permission errors or api failure
-* Try to update image manually using:
-  nodepool image-update <provider_name> <image_name>
-
-If nothing works, this is how to reset the service:
-
-* Stop nodepoold process
-* Delete all OpenStack nodepool resources
-* Connect to mysql and delete from node, snapshot_image tables
-* Manually update image using:
-  nodepool image-update <provider_name> <image_name>
-* Start nodepoold process
-* Follow the logs and wait for servers to be created.
-* Check zuul log to verify it is submitting job request.
-
-It might happen that some nodes are kept in the "delete" state for quite some
-time, while they are already deleted. This blocks spawning of new instances.
-The simplest way to fix this is to clean the stale entries in the nodepool DB
-using the following command (deleting all entries older than 24 hours and in
-state delete):
-
-.. code-block:: mysql
-
-     DELETE FROM node WHERE state_time < (UNIX_TIMESTAMP() - 86400) AND state = 4;
 
 How can I change the hostname?
 ..............................
@@ -186,6 +154,7 @@ host:
 
 Note that sfconfig.sh won't disable a service previously deployed.
 
+
 How-to create channels in Mumble ?
 ..................................
 
@@ -199,6 +168,7 @@ Then you can follow this documentation to create channels and
 set custom ACL:
 
   https://wiki.mumble.info/wiki/Murmurguide#Becoming_Administrator_and_Registering_a_User
+
 
 How-to setup swift mirror of external requirements ?
 ....................................................
@@ -249,6 +219,7 @@ https://github.com/cschwede/mirror2swift. For example, config/mirrors/centos.yam
     prefix: 'os/'
 
 This will mirror the CentOS-7 base repository to http://swift:8080/v1/AUTH_uuid/repomirror/os/
+
 
 How can I use the Gerrit REST API?
 ..................................

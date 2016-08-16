@@ -7,21 +7,10 @@ Welcome to software-factory's documentation!
 ============================================
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
 
    intro
-   deploy
-   auths
-   migration
-   upgrade
-   submitpatches
-   sfmanager
-   analytics
-   testing
-   jenkinsslaves
-   gerrit_replication
-   gerritbot
-   contribute
-   deepdive
-   tools
+   operator
+   user
+   contributor
    faqs

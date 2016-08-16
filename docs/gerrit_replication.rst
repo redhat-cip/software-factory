@@ -1,7 +1,5 @@
-.. toctree::
-
-Configure GIT repository replication to a remote
-================================================
+Configure GIT repository replication
+====================================
 
 The replication
 ---------------
@@ -73,6 +71,7 @@ host key to the known_hosts file.
 remote server (as long as a regular shell is available on the target). The
 replication plugin will create the repository if it does not exist.
 
+
 Recommendations for the replication on GitHub
 ---------------------------------------------
 
@@ -98,11 +97,13 @@ exists.
 **Note:** SF won't create repositories on Github if they does not exist. They
 should be created manually.
 
+
 SofwareFactory admin related tasks for the replication
 ------------------------------------------------------
 
 Below are some explanations and common tasks for a SF admin
 related to the replication.
+
 
 Public key to provide to SF users for the replication
 .....................................................
@@ -115,6 +116,7 @@ You will find the key at this path::
 
  /home/gerrit/site_path/etc/ssh_host_rsa_key.pub
 
+
 Add the host key of the remote server to the known_hosts
 ........................................................
 
@@ -124,6 +126,7 @@ replication issue is "Host key rejected" from the log file
 /home/gerrit/site_path/logs/replication.log then::
 
  $ ssh-keyscan <hostname> 2> /dev/null >> /home/gerrit/.ssh/known_hosts
+
 
 Define a deploy key inside Software Factory
 ...........................................
@@ -159,6 +162,7 @@ or
 These commands will copy the key at the right place and populate
 .ssh/config correctly.
 
+
 Restart the Gerrit replication plugin
 .....................................
 
@@ -170,6 +174,7 @@ reload and restart the replication with the following commands.
 
  $ ssh -p 29418 admin@sftests.com gerrit plugin reload replication
  $ ssh -p 29418 admin@sftests.com replication start --all
+
 
 General recommendations for the replication on GitHub
 .....................................................

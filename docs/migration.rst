@@ -1,18 +1,18 @@
-.. toctree::
+Migration of existing projects to Software Factory
+==================================================
 
-Migrating to Software Factory
-=============================
-
-It is relatively easy to migrate a previous work environment to a new
+It is relatively easy to migrate a previous work environment to an
 instance of Software Factory. Here are a few strategies available.
+
 
 Migrating a repository
 ----------------------
 
+
 Git repository
 ..............
 
-Simply follow the instructions in :doc:`the managesf documentation<managesf>`
+Simply follow the instructions in the :doc:`Software Factory CLI (sfmanager)<sfmanager>`
 about creating a project on Software Factory. You can either specify the
 upstream repository to clone when creating the project.
 
@@ -29,8 +29,9 @@ project history from your local copy, like so:
  $ git fetch local
  $ git push --force gerrit local/master:master
 
-Make sure the user is PTL on the project, and that your SSH public key is set
+Make sure the user is in the Project Technical Lead ("PTL") group on the project, and that your SSH public key is set
 in the gerrit user settings.
+
 
 Non-Git repositories
 ....................
@@ -47,6 +48,7 @@ about it are abundant, for example:
 Once the conversion is complete, follow the instructions to migrate a git
 repository as described above.
 
+
 Migrating issues
 ----------------
 
@@ -57,7 +59,11 @@ To install the library:
 
 .. code-block:: bash
 
- $ cd software-factory/tools/sfmigration
+ $ git clone http://softwarefactory-project.io/r/sf-issues-migration
+ $ cd sf-issues-migration
+ $ virtualenv .venv
+ $ . .venv/bin/activate
+ $ pip install -rrequirements.txt
  $ python setup.py install
 
 Migration scripts for a variety of issue trackers can be found under the "examples"
@@ -69,8 +75,9 @@ Once the ini file is filled appropriately, the script can be launched with
 
 .. code-block:: bash
 
- $ cd software-factory/tools/sfmigration/examples/from_<issue_tracker>/
+ $ cd examples/from_<issue_tracker>/
  $ python export_issues.py
+
 
 Redmine API limitations
 .......................
@@ -79,14 +86,10 @@ Not every functionality is exposed through Redmine's REST API, so some resources
 cannot be migrated programmatically. For a complete and up-to-date list of
 available resources, see http://www.redmine.org/projects/redmine/wiki/Rest_api
 
+
 sfmigration library limitations
 ...............................
 
 * Currently, the only issue trackers supported are Redmine (non SF) and Github.
 * Issue attachments are not imported.
 * Issue relations and dependencies are not imported.
-
-Migrating gate jobs
--------------------
-
-<TODO>

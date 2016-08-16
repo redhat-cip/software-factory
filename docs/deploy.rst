@@ -1,10 +1,9 @@
-.. toctree::
-
 Deploy Software Factory
 =======================
 
 SF is image based, each release is a new archive that includes
-a complete operating system and all services pre-installed.
+a complete operating system built on CentOS 7 and all services
+are pre-installed.
 
 While SF really benefits from running on top of OpenStack, the image
 can also be used standalone.
@@ -35,13 +34,18 @@ digest are signed with gpg, install the key and verify content with:
 .. code-block:: bash
 
  $ gpg --keyserver keys.gnupg.net --recv-key 0xE46E04A2344803E5A808BDD7E8C203A71C3BAE4B
- $ gpg --verify softwarefactory-C7.0-2.2.2.digest && sha256sum -c softwarefactory-C7.0-2.2.2.digest
+ $ gpg --verify softwarefactory-C7.0-2.2.3.digest && sha256sum -c softwarefactory-C7.0-2.2.3.digest
 
 
 Architecture
 ------------
 
-SF architecture is modular and defined by a single file called refarch::
+SF architecture is modular and defined by a single file called arch.yaml. This
+file defines the number of nodes, their requirements in term of resources and
+how services are distributed. While every services can be dispatched to a
+dedicated node, it is advised to use the allinone refarch first, and then do
+scale-up as needed (such as moving the SQL database or the ELK stack to
+a separate node):
 
 .. code-block:: yaml
 
@@ -50,13 +54,20 @@ SF architecture is modular and defined by a single file called refarch::
       roles:
         - install-server
         - mysql
+
     - name: node02
+      mem: 8
       roles:
         - gerrit
-      mem: 8
 
-Heat and Lxc based deployment autoconfigure dns. Manual deployments needs to edits the
-/etc/puppet/hiera/sf/hosts.yaml to set hostname and ip address of other node.
+
+After deployment, the arch file can still be modified:
+
+* Add root public ssh key (install-server:/root/.ssh/id_rsa.pub) to the new instance,
+* Make sure remote ssh connection access happen without password authentication,
+* Add the new instance to the arch inventory and set it's ip address,
+* Add desired services in the roles list (e.g., elasticsearch), and
+* Run sfconfig.sh to reconfigure the deployment.
 
 See config/refarch directory for example architectures.
 
@@ -66,6 +77,7 @@ OpenStack based deployment
 
 An account on an OpenStack cloud provider is needed.
 
+
 Install image
 .............
 
@@ -73,8 +85,9 @@ SF image needs to be uploaded to Glance:
 
 .. code-block:: bash
 
- $ wget http://46.231.132.68:8080/v1/AUTH_b50e80d3969f441a8b7b1fe831003e0a/sf-images/softwarefactory-C7.0-2.2.2.img.qcow2
- $ glance image-create --progress --disk-format qcow2 --container-format bare --name sf-2.2.2 --file softwarefactory-C7.0-2.2.2.img.qcow2
+ $ wget http://46.231.132.68:8080/v1/AUTH_b50e80d3969f441a8b7b1fe831003e0a/sf-images/softwarefactory-C7.0-2.2.3.img.qcow2
+ $ glance image-create --progress --disk-format qcow2 --container-format bare --name sf-2.2.3 --file softwarefactory-C7.0-2.2.3.img.qcow2
+
 
 Deploy with Heat
 ................
@@ -90,10 +103,11 @@ They all requires:
 
 .. code-block:: bash
 
- $ wget http://46.231.132.68:8080/v1/AUTH_b50e80d3969f441a8b7b1fe831003e0a/sf-images/softwarefactory-C7.0-2.2.2-allinone.hot
- $ heat stack-create --template-file ./softwarefactory-C7.0-2.2.2-allinone.hot -P "key_name=SSH_KEY;domain=fqdn_of_deployment;image_id=GLANCE_UUID;ext_net_uuid=NETWORK_UUID;flavor=m1.large" sf_stack
+ $ wget http://46.231.132.68:8080/v1/AUTH_b50e80d3969f441a8b7b1fe831003e0a/sf-images/softwarefactory-C7.0-2.2.3-allinone.hot
+ $ heat stack-create --template-file ./softwarefactory-C7.0-2.2.3-allinone.hot -P "key_name=SSH_KEY;domain=fqdn_of_deployment;image_id=GLANCE_UUID;ext_net_uuid=NETWORK_UUID;flavor=m1.large" sf_stack
 
-Once the stack is created jump to the section `Configuration and reconfiguration`.
+Once the stack is created jump to the section :ref:`Configuration and reconfiguration <reconfiguration>`.
+
 
 Deploy with Nova
 ................
@@ -101,21 +115,22 @@ Deploy with Nova
 When Heat is not available, SF can also be deployed manually using the Nova CLI, or
 using the web UI of your cloud provider.
 
-Once the VM is created jump to the section `Configuration and reconfiguration`.
-Don't forget to manage by yourself the security groups for the SF deployment `Network Access`.
+Once the VM is created jump to the section :ref:`Configuration and reconfiguration <reconfiguration>`.
+Don't forget to manage by yourself the security groups for the SF deployment `Network Access <network-access>`.
 
-Outside Openstack
+
+Without Openstack
 -----------------
 
 Deploy on a local hypervisor
 ............................
 
 SF can be deployed on a hypervisor without a metadata server accessible (needed by cloud-init).
-This is often the case when you are using QEMU, KVM or even VirtualBox. You can boot
+This is often the case when you are using QEMU, KVM or even :ref:`VirtualBox <using-virtualbox>`. You can boot
 a new VM using the SF image and then login via the console using root user.
 
+Then jump to :ref:`Configuration and reconfiguration <reconfiguration>`.
 
-Then jump to `Configuration and reconfiguration`.
 
 Deployment inside a LXC container
 .................................
@@ -126,27 +141,35 @@ You need a CentOS 7 VM or physical machine. The libvirtd-lxc package is needed.
 
  $ git clone https://softwarefactory-project.io/r/software-factory
  $ cd software-factory
- $ git checkout 2.2.2
+ $ git checkout 2.2.3
  $ ./sfstack.sh
 
 This method of deployment is mostly useful for testing, it uses the default configuration
 with "sftests.com" as the FQDN and "admin/userpass" as admin credentials.
 
+Then jump to :ref:`Configuration and reconfiguration <reconfiguration>`.
+
+
+.. _using-virtualbox:
 
 Using Virtualbox for testing SoftwareFactory
 ............................................
 
 You can also use Virtualbox if you want to try out Software Factory on your
 desktop.  First, you need to download one of our release images, for example
-2.2.2::
+2.2.3:
 
- curl -O http://46.231.132.68:8080/v1/AUTH_b50e80d3969f441a8b7b1fe831003e0a/sf-images/softwarefactory-C7.0-2.2.2.img.qcow2
+.. code-block:: bash
+
+ curl -O http://46.231.132.68:8080/v1/AUTH_b50e80d3969f441a8b7b1fe831003e0a/sf-images/softwarefactory-C7.0-2.2.3.img.qcow2
 
 Next, increase the image size to ensure there is enough space is git and the
-database and convert the image to make it usable with Virtualbox::
+database and convert the image to make it usable with Virtualbox:
 
- qemu-img resize softwarefactory-C7.0-2.2.2.img.qcow2 +20G
- qemu-img convert -O vdi softwarefactory-C7.0-2.2.2.img.qcow2 softwarefactory-C7.0-2.2.2.vdi
+.. code-block:: bash
+
+ qemu-img resize softwarefactory-C7.0-2.2.3.img.qcow2 +20G
+ qemu-img convert -O vdi softwarefactory-C7.0-2.2.3.img.qcow2 softwarefactory-C7.0-2.2.3.vdi
 
 Now you need to create a new VM in Virtualbox, and use the created .vdi file as
 disk. Assign enough memory to it (2GB is a good starting point), and boot the
@@ -158,29 +181,22 @@ system is prepared for you.
 
 Finally, change the root password to make sure you can login afterwards.
 
-Done! The webinterface is enabled on port 80, and the Gerrit git server on port
-29418.
+Then jump to :ref:`Configuration and reconfiguration <reconfiguration>`.
 
 
-Multi-node deployment without LXC or HEAT
------------------------------------------
-
-When system are deployed manually, you need to reference IP address of all instances.
-
-* Edit /etc/puppet/hiera/sf/arch.yaml to distribute services accross multiple system
-* Edit /etc/puppet/hiera/sf/hosts.yaml to set ip address of remote hosts
-
-Note that once the deployment is complete, change to those files is not supported.
-To modify the architecure, it needs to be redeployed on new instances and the data needs
-to be manually migrated from the previous architecture to the new one.
+.. _reconfiguration:
 
 Configuration and reconfiguration
 ---------------------------------
 
-First time: **Please read `Root password consideration`**.
+First time: **Please read** :ref:`Root password consideration<root-password>`.
 
-* Connect as (root) via SSH.
-* Edit the configuration sfconfig.yaml and set the configuration according to your needs.
+* Connect as (root) via SSH to the install-server (the first instance deployed).
+* Edit the configuration sfconfig.yaml (/etc/puppet/hiera/sf/sfconfig.yaml).
+
+  * set the configuration according to your needs.
+  * all parameters are editable and should be self-explanatory.
+
 * Run configuration script.
 
 .. code-block:: bash
@@ -193,10 +209,12 @@ Notice that the configuration is versioned and it is recommended to use git diff
 command to check files modifications.
 
 
+.. _network-access:
+
 Network Access
 --------------
 
-All network access goes through the main instance (called managesf). The FQDN
+All network access goes through the main instance (called gateway). The FQDN
 used during deployment needs to resolved to the instance IP. SF network
 access goes through TCP ports:
 
@@ -206,7 +224,7 @@ access goes through TCP ports:
 * 8080/45452 for Jenkins swarm slave connection
 
 Note that Heat deployment and LXC deployment automatically configure
-security group rules to allow these connections to managesf.
+security group rules to allow these connections to the gateway.
 
 
 SSL Certificates
@@ -232,7 +250,10 @@ using "Internal Login". If you used the default domain *sftests.com* then
 SF allows (user1, user2, user3) with the default "userpass" password to connect.
 
 If you need more information about authentication mechanisms on SF please refer to
-`Software Factory Authentication`.
+:ref:`Software Factory Authentication <authentication>`.
+
+
+.. _root-password:
 
 Root password consideration
 ---------------------------

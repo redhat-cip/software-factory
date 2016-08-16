@@ -1,15 +1,28 @@
-Contents:
-
-.. toctree::
-
 Software Factory Deep Dive
 ==========================
 
 The goal of this document is to describe SF internals.
 
 
+The components
+--------------
+
+Below is an overview of all the components integration (shown as dashed boxes) and services
+along with their connections to each others.
+
+.. graphviz:: components.dot
+
+
+The SSO mechanism
+-----------------
+
+Below is the sequence diagram of the SSO mechanism.
+
+.. graphviz:: authentication.dot
+
+
 The image
-.........
+---------
 
 SF release is actually a new disk image with *everythings* included.
 The build_image.sh script does the following:
@@ -35,7 +48,7 @@ Why use an image ?
 
 
 The deployment
-..............
+--------------
 
 The image is deployment agnostic since all services are pre-installed but not configured.
 Different architectures are supported through a notion of REFARCH.
@@ -50,51 +63,58 @@ Multi-node deployment needs multiple instance to be started:
 * deploy/heat/ could support a dynamic inventory (WIP)
 * The configuration scripts only needs to know about IP address of other instances
 
-How are services configured ?
+Next sections cover how services are configured.
 
 
 The system configuration
-........................
+------------------------
 
-The sfconfig.sh script drive the configuration of all services, running from the managesf node it will:
+The sfconfig.sh script drives the system configuration. This script does the following actions:
 
-* Set all virtual hosts according to the refarch (e.g. jenkins.fqdn)
-* Generate deployment secrets (internal user password, ssh keys and ssl certificates)
-* Wait for ssh access to all instances
-* Copy puppet configuration
-* Run puppet on each host
-* Run ansible to orchestrate final configuration (such as the config-repo creation)
-
-System configuration includes external authentication backend and cloud provider, so that all secrets and
-service tunning are defined in a single configuration file: sfconfig.yaml. This hiera file will be consumed
-by puppet and ansible.
+* Generates secrets such as ssh keys and tls certificats,
+* Generates sfcreds.yaml system credencials such as service database access and api keys,
+* Run sf-update-hiera-config.py to ensure hieras are up-to-date, this script
+  checks for missing section and makes sure the defaults value are present. This is particularly
+  useful when after an upgrade, a new component configuration has been added
+* Generates Ansible inventory and configuration playbook based on the arch.yaml file.
+* Waits for ssh access to all instances
+* Run sf_setup.yml playbook to setup all the services and run puppet when needed. This executes
+  all the setup.yml task of enabled ansible roles.
+* Run sf_initialize.yml playbook. This creates the config-repo and run the sf_configrepo_update.yml playbook
+  to update services based on config repo content.
+* Run sf_postconf.yml playbook to executes all the postconf.yml task of enabled ansible roles such as
+  the mirror role postconf that can enables a new periodic pipeline
 
 That system configuration process is re-entrant and needs to be executed everytime settings are changed.
-For example, if you want to remove redmine from topmenu, edit the sfconfig.yaml value of topmenu_hide_redmine
+For example, to remove redmine from topmenu, edit the sfconfig.yaml value of topmenu_hide_redmine
 and execute the sfconfig.sh script.
 
-SF is meant to be a self-service system, thus project configuration is done through the config-repo.
+Then SF is meant to be a self-service system, thus project configuration is done through the config-repo.
 
 
 The config-repo
-...............
+---------------
 
 Once SF is up and running, the actual configuration of the CI happens in the config-repo:
 
-* Jenkins jobs are defined in jobs/ jjb configuration
-* CI gating is defined in zuul/ zuul layout
-* Slave configuration is defined in nodepool/ nodepool configuration (image definition and labels)
+* jobs/: Jenkins jobs jjb configuration,
+* zuul/: CI gating zuul yaml configuration,
+* nodepool/: Slave configuration with images and labels definitions,
+* gerritbot/: IRC notification for gerrit event configuration,
+* gerrit/: Gerrit replication endpoint configuration, and
+* mirrors/: mirror2swift configuration.
 
 This is actually managed through SF CI system, thanks to the config-update job.
 This job is actually an ansible playbook that will:
 
-* Reconfigure each jenkins using jenkins-jobs-builder
-* Reload zuul configuration (hot reload without losing in-progress tasks)
-* Reload nodepool configuration
+* Reconfigure each jenkins using jenkins-jobs-builder,
+* Reload zuul configuration (hot reload without losing in-progress tasks),
+* Reload nodepool, gerritbot and gerrit replication, and
+* Set mirror2swift configuration for manual or next periodic update.
 
 
 SF upgrade
-..........
+----------
 
 The upgrade procedure is not included in the image, and the operator needs to manually download
 the module. It is part of software-factory project repository and the wanted tag release, based

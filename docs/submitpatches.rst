@@ -1,9 +1,8 @@
-.. toctree::
-
 Using Software factory for project development
 ==============================================
 
 To create a project see :ref:`managesf_create_project`
+
 
 Contribute to a project on SF
 -----------------------------
@@ -34,7 +33,8 @@ its user. (See :ref:`setup_ssh_keys`)
 
 .. code-block:: bash
 
- $ git clone ssh://{user-name}@sf.dom/{project-name}
+ $ git clone ssh://{user-name}@{sf-gateway}/{project-name}
+
 
 Initialize the GIT remote with git-review
 .........................................
@@ -59,10 +59,11 @@ will prompt you to enter your Gerrit user name.
  $ cd <project-name>
  $ git review -s
  Could not connect to gerrit.
- Enter your gerrit username: admin
- Trying again with ssh://admin@sftests.com:29418/p1
+ Enter your gerrit username: {user-name}
+ Trying again with ssh://{user-name}@{sf-gateway}:29418/p1
  Creating a git remote called "gerrit" that maps to:
-         ssh://admin@sftests.com:29418/p1
+         ssh://{user-name}@{sf-gateway}:29418/p1
+
 
 Submit a patch
 --------------
@@ -81,6 +82,7 @@ To create a branch:
  $ git branch
  * branch-name
    master
+
 
 Make and commit your change
 ...........................
@@ -122,6 +124,7 @@ After adding the files, you need to commit the changes in your local repo
 
  $ git commit -m "Detailed description about the change"
 
+
 Commit message hooks
 ''''''''''''''''''''
 
@@ -139,6 +142,7 @@ The following keywords are supported:
 * Related to/Related-To (this will not close the bug upon merging the patch)
 
 .. _publishchange:
+
 
 Publishing the change
 .....................
@@ -178,6 +182,7 @@ To push the change to Gerrit, execute the following command:
  # To ssh://{user-name}@{gerrit-host}:29418/{project-name}
  #  * [new branch]      HEAD -> refs/publish/master/branch-name
 
+
 Amending a change
 .................
 
@@ -214,10 +219,12 @@ the Change-Id line intact.
 
 Now, push the change using ``git review``
 
+
 Review workflow
 ---------------
 
 Software Factory mandates every patch to be reviewed before getting merged.
+
 
 Who can review
 ..............
@@ -226,6 +233,7 @@ Anybody who is logged into Software Factory is eligible to review a patch
 of any project except for private projects. Private projects can be
 reviewed only by the team leads, developers, and core-developers of that
 project.
+
 
 How to review
 .............
@@ -355,6 +363,7 @@ executing the following commands
 
 Then you will be asked enter an optional passphrase. After this
 you have a public key generated at the patch you chose.
+
 
 .. _`Adding public key`:
 

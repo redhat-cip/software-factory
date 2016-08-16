@@ -1,5 +1,3 @@
-.. toctree::
-
 Upgrade Software Factory
 ========================
 
@@ -38,6 +36,7 @@ The upgrade script will:
 - Auto submit a new Review to Gerrit config repository if the upgrade
   bring modifications for the default JBB and Zuul base files.
 
+
 What about the existing data in your SF instance during an upgrade
 ------------------------------------------------------------------
 
@@ -45,6 +44,7 @@ The files system upgrade done via rsync takes care of directories where user dat
 are. That means user data are kept on the node and untouched by the upgrade
 process. Nevertheless if a component upgrade requires a user data format upgrade
 then the SF upgrade system take care of that.
+
 
 How I upgrade my SF instance
 ----------------------------

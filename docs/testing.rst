@@ -1,7 +1,6 @@
-.. toctree::
-
 Configure automatic tests for a project
 =======================================
+
 
 The big picture
 ---------------
@@ -72,6 +71,7 @@ that new change.
 
 .. graphviz:: test_workflow.dot
 
+
 Default architecture
 --------------------
 
@@ -98,6 +98,7 @@ More information about the .pypirc file format can be found
 Obviously, adding these pre-defined scripts to your projects in order to have tests
 executed is not mandatory. You can define your own.
 
+
 How to define tests for a new project
 -------------------------------------
 
@@ -110,12 +111,15 @@ In order to have tests running on a new patch change, you need to:
  $ git clone http://{sf-gateway}/r/config
 
 You will find some yaml files related to JJB (Jenkins Job Build) and Zuul. There are two specific
-files that you can modify according to your needs:
+files that you can modify according to your needs, these are the demo files and additional files
+may be created like one by project group for instance:
 
- - jobs/projects.yaml (JJB)
- - zuul/projects.yaml (Zuul)
+* jobs/projects.yaml (JJB)
+* zuul/projects.yaml (Zuul)
 
-The other files may be modified by an upgrade of Software Factory and *shouldn't be modified manually*.
+
+The files starting by a "_" are default settings and they may be modified by an upgrade of Software
+Factory, thus they *shouldn't be modified manually*.
 
 Edit jobs/projects.yaml to define jobs for your project. e.g., to get the project
 "sfstack" created with 2 jobs on Jenkins:
@@ -152,6 +156,7 @@ tested by Jenkins in order to check if the syntax is correct and if the your cha
 by JJB and Zuul. Then the patch must be peer reviewed, accepted and pushed to master via
 the Gerrit UI. Once published to *config* master branch, the tests will be executed by Zuul/Jenkins
 for each patch on the *sfstack* project in this example.
+
 
 Define your own jobs
 --------------------
@@ -207,6 +212,7 @@ Some quick explanation about this job configuration:
 As explained in the previous chapter you need to submit and have your change merged on
 Gerrit *config* repository to have this new test triggered.
 
+
 Configure a job as "Non Voting"
 -------------------------------
 
@@ -232,145 +238,19 @@ can configure Zuul (zuul/projects.yaml) as follow:
 Zuul will then reports the "demo-job" result as a comment for the tested patch
 but wont set the global note negative.
 
+
 Configure logs/artifacts export
 -------------------------------
 
-Export in a Swift server
-........................
+Export to an OpenStack Swift server
+...................................
 
-A default publisher is provided with Software Factory "zuul-swift-upload".
-You can attach it to jobs as follow:
-
-.. code-block:: yaml
-
- - builder:
-    name: myapp-fetch-artifacts
-    builders:
-      - shell: |
-          mkdir artifacts
-          ./test/myapp-artifacts-copy.sh artifacts/
-
- - publisher:
-    name: myapp-fetch-artifacts
-    publishers:
-      - postbuildscript:
-          builders:
-            - myapp-fetch-artifacts
-          script-only-if-succeeded: False
-          script-only-if-failed: False
-
- - job:
-    name: myapp-test
-    defaults: global
-    builders:
-      - prepare-workspace
-      - shell: |
-          ./run_functional_tests.sh
-    publishers:
-      - myapp-fetch-artifacts
-      - zuul-swift-upload
-    triggers:
-      - zuul
-    node: bare-centos-7
+See the :ref:`Swiftlogs operator documentation<swiftlogs-operator>` and the
+:ref:`user documentation<swiftlogs-user>`.
 
 
-Note the additional publisher "myapp-fetch-artifacts" that is
-a custom script that you may have in your project to retreive all produced
-logs/artifacts by a job/test. This custom publisher is executed whatever
-the "./run_functional_tests.sh". All logs/artifacts must be copied in the
-"artifacts" directory at the root of the workspace.
-
-The second publisher to be executed is the default zuul-swift-upload that will
-look for a local "artifacts" directory. This publisher assume that the
-Software Factory has been configured to allow the export of logs/artifacts
-into a Swift server.
-
-The Jenkins console log is not exported to the swift server and a link
-to access the console will be still reported to Gerrit allowing you
-to browse the stdout output of your job.
-
-To ease the access of the logs/artifacts from the Jenkins console you
-can display the url contained in the environment variable : "SWIFT_artifacts_URL".
-
-Furthermore in order to trigger the creation by Zuul of all needed variables
-that allow the export by the publisher zuul-swift-upload in Swift
-you have to define a job like as follow in (zuul/projects.yaml):
-
-.. code-block:: yaml
-
- jobs:
-   - name: myapp-test
-      swift:
-        - name: artifacts
-
-The publisher uses the formpost capability of Swift. The cluster needs to enable
-staticweb middleware too.
-
-The Software Factory administrator should have configured Zuul via sfconfig.yaml
-to allow you to use that feature.
-
-
-Custom
-......
+Custom publisher
+................
 
 You can use Jenkins Jobs builder to define/configure a new publisher as long
 as the Jenkins' plugin you intend to use is included in Software Factory.
-
-Parallel testing
-----------------
-
-Running tests in parallel is somewhat challenging. Let's assume two patches are
-verified successfully independently and get merged, but will fail once they are
-merged together. zuul-merger avoids this by merging several patches during testing.
-
-.. graphviz:: zuul.dot
-
-Setup a Jenkins slave
----------------------
-
-If you need to setup one or more Jenkins slaves, you can follow the process below:
-
-To substitute:
-
- - <gateway>: The same name you access the SF Web user interface.
- - <password>: The password of the Jenkins user.
-
-.. code-block:: bash
-
- $ # Add the jenkins user
- $ sudo adduser --disabled-password --home /var/lib/jenkins jenkins
- $ # You can setup sudo for the jenkins user in order to have the possibility
- $ # to run command via sudo in your tests.
- $ sudo -i
- $ cat << EOF > /etc/sudoers.d/jenkins
-   Defaults   !requiretty
-   jenkins    ALL = NOPASSWD:ALL
-   EOF
- $ chmod 0440 /etc/sudoers.d/jenkins
- $ exit
- $ # Download and start the swarm client
- $ sudo -u jenkins curl -o /var/lib/jenkins/swarm-client-1.22-jar-with-dependencies.jar \
-    http://maven.jenkins-ci.org/content/repositories/releases/org/jenkins-ci/plugins/\
-    swarm-client/1.22/swarm-client-1.22-jar-with-dependencies.jar
- $ sudo -u jenkins bash
- $ /usr/bin/java -Xmx256m -jar /var/lib/jenkins/swarm-client-1.22-jar-with-dependencies.jar \
-   -fsroot /var/lib/jenkins -master http://<gateway>:8080/jenkins -executors 1 -username jenkins -password \
-   <password> -name slave1 &> /var/lib/jenkins/swarm.log &
-
-
-You should check the swarm.log file to verify the slave is well connected to the jenkins master. You can
-also check the Jenkins Web UI in order to verify the slave is listed in the slave list.
-
-Then you can customize the slave node according to your needs to install components
-required to run your tests.
-
-The Jenkins user password can be fetched from the file sfcrefs.yaml on the
-puppetmaster node. You can find it with the following command or request it from
-your Software Factory administrator.
-
-If you want this slave authorizes jobs to be run concurrently then modify the "executors"
-value.
-
-.. code-block:: bash
-
- $ grep creds_jenkins_user_password sf-bootstrap-data/hiera/sfcreds.yaml
