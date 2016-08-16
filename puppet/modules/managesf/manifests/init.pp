@@ -155,12 +155,4 @@ class managesf ($gerrit = hiera('gerrit')) {
     group   => 'root',
     content => template('managesf/sf_jjb_conf.yaml.erb'),
   }
-
-  file {'/usr/local/share/sf-config-repo/zuul/layout.yaml':
-    ensure  => file,
-    mode    => '0640',
-    owner   => 'root',
-    group   => 'root',
-    content => template('managesf/layout.yaml.erb'),
-  }
 }
