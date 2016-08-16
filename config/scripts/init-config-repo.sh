@@ -19,10 +19,10 @@ set -e
 
 [ "$1" = "upgrade" ] && upgrade=true || upgrade=false
 
-gateway_host="<%= @fqdn %>"
-gateway_url="<%= @url['gateway_url'] %>"
+gateway_host="$2"
+gateway_url="http://$2"
 
-auth="admin:<%= @auth['admin_password'] %>"
+auth="admin:$3"
 
 gerrit_ssh_key="/root/sf-bootstrap-data/ssh_keys/gerrit_admin_rsa"
 
@@ -60,7 +60,7 @@ fi
 
 if [ "$upgrade" = "true" ]; then
     rsync --exclude jobs/projects.yaml --exclude zuul/projects.yaml --exclude nodepool/images.yaml --exclude nodepool/labels.yaml \
-          --exclude gerrit/replication.config --exclude gerritbot/channels.yaml -av /usr/local/share/sf-config-repo/ ${CONF_TMP}/
+        --exclude gerrit/replication.config --exclude gerritbot/channels.yaml -av /usr/local/share/sf-config-repo/ ${CONF_TMP}/
     cd ${CONF_TMP}
     # Replace nodepool private ssh key
     sed -i 's#private-key: /var/lib/jenkins/.ssh/id_rsa#private-key: /var/lib/nodepool/.ssh/id_rsa#' nodepool/images.yaml

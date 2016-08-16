@@ -137,22 +137,4 @@ class managesf ($gerrit = hiera('gerrit')) {
     group   => 'root',
     content => inline_template('<%= @gerrit_admin_sshkey %>'),
   }
-
-  file {'/root/init-config-repo.sh':
-    ensure  => file,
-    mode    => '0540',
-    owner   => 'root',
-    group   => 'root',
-    require => [File['/root/sf-bootstrap-data/ssh_keys/gerrit_admin_rsa'],
-                File['/root/sf-bootstrap-data/ssh_keys/gerrit_admin_rsa.pub']],
-    content => template('managesf/init-config-repo.sh.erb'),
-  }
-
-  file {'/usr/local/share/sf-config-repo/jobs/sf_jjb_conf.yaml':
-    ensure  => file,
-    mode    => '0640',
-    owner   => 'root',
-    group   => 'root',
-    content => template('managesf/sf_jjb_conf.yaml.erb'),
-  }
 }

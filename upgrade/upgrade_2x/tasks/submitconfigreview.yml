@@ -4,5 +4,9 @@
 # in order to let the config-check do its job as well as the user review
 # process. This let the ability to the user to fix or report problem with
 # the upgrade.
+
+- name: Include sfconfig.yaml to get fqdn
+  include_vars: /etc/puppet/hiera/sf/sfconfig.yaml
+ 
 - name: Trigger init config repo with the upgrade option
-  shell: /root/init-config-repo.sh upgrade
+  shell: /usr/local/bin/init-config-repo.sh upgrade {{ fqdn }}
