@@ -1,4 +1,4 @@
-# This file get appended to layout.yaml, thus the lack of
+# This file get appended to _layout.yaml
 projects:
   - name: zuul-demo
     check:

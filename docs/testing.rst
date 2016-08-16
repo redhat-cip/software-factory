@@ -17,9 +17,9 @@ Jenkins and Zuul configurations that details how to run tests for
 each projects hosted on Software Factory.
 
 This project is pre-filled by default with default Jenkins Job Builder (JJB)
-templates and also a default Zuul layout file.
+templates and also a default Zuul layout file (zuul/_layout.yaml).
 
-The default Zuul layout.yaml provides five pipelines:
+The default Zuul _layout.yaml provides five pipelines:
 
 * The **check** pipeline: Is used to run Jenkins jobs
   related to a Gerrit change (a submitted patch) and to report
@@ -49,7 +49,8 @@ The default Zuul layout.yaml provides five pipelines:
   to the results of these jobs.
 
 This default pipeline's configuration can be customized according to your
-needs.
+needs in an additional file. Indeed _layout.yaml can automatically
+modified during an upgrade of the platform.
 
 More informations about Zuul managers can be found
 `here <http://docs.openstack.org/infra/zuul/zuul.html#pipelines>`_.
@@ -127,7 +128,7 @@ Edit jobs/projects.yaml to define jobs for your project. e.g., to get the projec
        - 'sfstack-unit-tests'
        - 'sfstack-functional-tests'
 
-The definition above use the default job templates provided by jobs/sf_jjb_conf.yaml.
+The definition above use the default job templates provided by jobs/_default_jobs.yaml.
 
 Edit zuul/projects.yaml to configure when jobs get executed, e.g., to get the unit and
 functional tests run on check and gate pipelines:

@@ -1,0 +1,16 @@
+---
+- name: Check if jobs/_default_jobs.yaml already in config-repo
+  stat: path=/root/config/jobs/_default_jobs.yaml
+  register: configrepo_jjb_new_name
+
+- name: Change sf_jjb_conf.yaml to _default_jobs.yaml
+  when: configrepo_jjb_new_name.stat.exists == false
+  command: chdir=/root/config {{ item }}
+  with_items:
+    - git fetch --all
+    - git reset --hard origin/master --
+    - git clean -f -x -d
+    - mv jobs/sf_jjb_conf.yaml jobs/_default_jobs.yaml
+    - git add -A
+    - git commit -m "Change JJB default job filename to _default_jobs.yaml"
+    - git push git+ssh://{{ fqdn }}/config master

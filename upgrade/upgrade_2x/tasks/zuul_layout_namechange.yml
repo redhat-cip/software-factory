@@ -1,0 +1,16 @@
+---
+- name: Check if zuul/_layout.yaml already in config-repo
+  stat: path=/root/config/zuul/_layout.yaml
+  register: configrepo_zuul_new_name
+
+- name: Change zuul layout filename to _layout.yaml
+  when: configrepo_zuul_new_name.stat.exists == false
+  command: chdir=/root/config {{ item }}
+  with_items:
+    - git fetch --all
+    - git reset --hard origin/master --
+    - git clean -f -x -d
+    - mv zuul/layout.yaml zuul/_layout.yaml
+    - git add -A
+    - git commit -m "Change zuul layout name to _layout.yaml"
+    - git push git+ssh://{{ fqdn }}/config master

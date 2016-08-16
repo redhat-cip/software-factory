@@ -1,6 +1,6 @@
 ---
 - name: Copy default JJB definitions
-  template: src=templates/sf_jjb_conf.yaml.j2 dest=/usr/local/share/sf-config-repo/jobs/sf_jjb_conf.yaml
+  template: src=templates/_default_jobs.yaml.j2 dest=/usr/local/share/sf-config-repo/jobs/_default_jobs.yaml
 
 - name: Run init-config-repo.sh
   command: /usr/local/bin/init-config-repo.sh init {{ fqdn }} {{ authentication.admin_password }}

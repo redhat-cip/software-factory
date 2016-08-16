@@ -64,8 +64,13 @@ class TestProjectTestsWorkflow(Base):
         # Clone the config repo and make change to it
         # in order to test the new sample_project
         self.config_clone_dir = self.clone_as_admin("config")
+        if os.path.exists(os.path.join(self.config_clone_dir,
+                                       "zuul/_layout.yaml")):
+            self.layout_path = "zuul/_layout.yaml"
+        else:
+            self.layout_path = "zuul/layout.yaml"
         self.original_layout = file(os.path.join(
-            self.config_clone_dir, "zuul/layout.yaml")).read()
+            self.config_clone_dir, self.layout_path)).read()
         self.original_zuul_projects = file(os.path.join(
             self.config_clone_dir, "zuul/projects.yaml")).read()
         self.original_project = file(os.path.join(
@@ -103,7 +108,7 @@ class TestProjectTestsWorkflow(Base):
 
     def restore_config_repo(self, layout, project, zuul):
         file(os.path.join(
-            self.config_clone_dir, "zuul/layout.yaml"), 'w').write(
+            self.config_clone_dir, self.layout_path), 'w').write(
             layout)
         file(os.path.join(
             self.config_clone_dir, "zuul/projects.yaml"), 'w').write(
@@ -113,7 +118,7 @@ class TestProjectTestsWorkflow(Base):
             project)
         self.commit_direct_push_as_admin(
             self.config_clone_dir,
-            "Restore layout.yaml and projects.yaml")
+            "Restore _layout.yaml and projects.yaml")
 
     def commit_direct_push_as_admin(self, clone_dir, msg):
         # Stage, commit and direct push the additions on master
@@ -132,7 +137,7 @@ class TestProjectTestsWorkflow(Base):
         self.projects.append(name)
 
     def test_check_project_test_workflow(self):
-        """ Validate new project to test via zuul layout.yaml
+        """ Validate new project to test via zuul _layout.yaml
         """
         # We want to create a project, provide project source
         # code with tests. We then configure zuul/jjb to handle the
@@ -152,7 +157,7 @@ class TestProjectTestsWorkflow(Base):
         copytree(self.sample_project_dir, clone_dir)
         self.commit_direct_push_as_admin(clone_dir, "Add the sample project")
 
-        # Change to config/zuul/layout.yaml and jobs/projects.yaml
+        # Change to config/zuul/_layout.yaml and jobs/projects.yaml
         # in order to test the new project
         ycontent = file(os.path.join(
             self.config_clone_dir, "zuul/projects.yaml")).read()

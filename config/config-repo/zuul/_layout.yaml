@@ -1,3 +1,6 @@
+# This file is managed by configuration management, do not edit directly
+# This is the definition of the default jobs
+
 includes:
   - python-file: zuul_functions.py
 

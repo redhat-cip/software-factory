@@ -24,9 +24,9 @@
   ignore_errors: yes
   with_items:
     - sed -i -e 's/host=.*/host={{ fqdn }}/g' .gitreview
-    - sed -i -e 's#zuul-cloner http://.*/r#zuul-cloner http://{{ fqdn }}/r#g' jobs/sf_jjb_conf.yaml
-    - sed -i -e 's#ssh root@managesf..* /usr/local/bin/sf-config-update.sh#ssh root@managesf.{{ fqdn }} /usr/local/bin/sf-config-update.sh#g' jobs/sf_jjb_conf.yaml
-    - git add .gitreview jobs/sf_jjb_conf.yaml
+    - sed -i -e 's#zuul-cloner http://.*/r#zuul-cloner http://{{ fqdn }}/r#g' jobs/_default_jobs.yaml
+    - sed -i -e 's#ssh root@managesf..* /usr/local/bin/sf-config-update.sh#ssh root@managesf.{{ fqdn }} /usr/local/bin/sf-config-update.sh#g' jobs/_default_jobs.yaml
+    - git add .gitreview jobs/_default_jobs.yaml
     - git commit -m "Update with new fqdn"
     - git push git+ssh://{{ fqdn }}:29418/config master
 
