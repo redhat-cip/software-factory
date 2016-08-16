@@ -1,9 +1,19 @@
-# This file won't be updated and must be updated manually
+# This is demo file.
 
 # Jobs
 # ====
 
-
+- job:
+    name: 'demo-job'
+    defaults: global
+    builders:
+      - prepare-workspace
+      - shell: |
+          cd $ZUUL_PROJECT
+          echo "This is a demo job"
+    triggers:
+      - zuul
+    node: slave-label
 
 # Projects
 # ========
