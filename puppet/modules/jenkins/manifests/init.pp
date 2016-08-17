@@ -15,7 +15,6 @@
 
 class jenkins {
   include ::apache
-  include ::ssh_keys_jenkins
   include ::cauth_client
   include ::jjb
   include ::systemctl
@@ -25,7 +24,6 @@ class jenkins {
   $url = hiera('url')
   $settings = hiera('jenkins')
   $jenkins_password = hiera('creds_jenkins_user_password')
-  $jenkins_rsa = hiera('jenkins_rsa')
 
   file {'/etc/httpd/conf.d/ports.conf':
     ensure => file,
@@ -94,20 +92,6 @@ class jenkins {
     require => [User['jenkins'], Group['jenkins']],
   }
 
-  file { '/var/lib/jenkins/.ssh':
-      ensure  => directory,
-      owner   => 'jenkins',
-      group   => 'jenkins',
-      require => [User['jenkins'], Group['jenkins']],
-  }
-  file { '/var/lib/jenkins/.ssh/id_rsa':
-      ensure  => file,
-      owner   => 'jenkins',
-      group   => 'jenkins',
-      mode    => '0400',
-      content => inline_template('<%= @jenkins_rsa %>'),
-      require => File['/var/lib/jenkins/.ssh'],
-  }
   file {'/var/lib/jenkins/jenkins.model.JenkinsLocationConfiguration.xml':
     ensure  => file,
     mode    => '0644',

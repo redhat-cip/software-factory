@@ -1,27 +1,51 @@
 ---
 - include_vars: /etc/puppet/hiera/sf/sfcreds.yaml
+- include_vars: main.yml
 
-- name: "system: chmod ssh directory"
+# mandatory: gerrit user is not present when the playbook is applied
+- name: "system: ensure user are present"
+  user:
+    name: "{{ item.name }}"
+    state: present
+  with_items: "{{ users }}"
+
+- name: "system: chmod ssh directory for root jenkins and gerrit user"
   file:
-    path=/root/.ssh
-    state=directory
-    owner=root group=root mode=0700
+    owner: "{{ item.name }}"
+    group: "{{ item.group }}"
+    path: "{{ item.path }}"
+    state: directory
+    mode: 0700
+  with_items: "{{ users }}"
 
-- name: "system: ensure id_rsa private key for root user is present"
+- name: "system: ensure static directory exist for gerrit"
+  file:
+    path: "/home/gerrit/site_path/etc"
+    owner: gerrit
+    group: gerrit
+    state: directory
+    mode: 0755
+
+- name: "system: ensure ssh key(s) are present for root, jenkins and gerrit users"
   copy:
-    content: "{{ service_rsa }}"
-    dest: /root/.ssh/id_rsa
-    owner: root
-    group: root
-    mode: 0600
+    owner: "{{ item.0.name }}"
+    group: "{{ item.0.name }}"
+    content: "{{ item.1.key }}"
+    dest: "{{ item.1.filename}}"
+    mode: "{{ item.1.mode|default(0600)}}"
+  with_subelements:
+      - "{{ users }}"
+      - ssh_keys
+      - flags:
+        skip_missing: True
 
-- name: "system: set authorized key to allow config update from jenkins"
+- name: "system: set authorized key for root  gerrit users"
   authorized_key:
-    user: root
-    key: "{{ jenkins_rsa_pub }}"
-    key_options: 'command="/usr/local/bin/sf-config-update.sh",no-port-forwarding,no-x11-forwarding,no-agent-forwarding,no-pty'
-
-- name: "system: set authorized key to allow root access from managesf to other nodes"
-  authorized_key:
-    user: root
-    key: "{{ service_rsa_pub }}"
+    user: "{{ item.0.name }}"
+    key: "{{ item.1.key }}"
+    key_options: "{{item.1.key_options|default(omit)}}"
+  with_subelements:
+      - "{{ users }}"
+      - authorized_keys
+      - flags:
+        skip_missing: True

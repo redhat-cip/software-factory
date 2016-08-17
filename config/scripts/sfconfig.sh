@@ -72,7 +72,7 @@ function generate_yaml {
     OUTPUT=/etc/puppet/hiera/sf/
 
     echo "[sfconfig] copy defaults hiera to ${OUTPUT}"
-    # MySQL password for services + service user
+    # Generate random passwords for services and users
     for cred in $(awk '!/api_key|sshkey|pub_key/ {print $1}' /etc/puppet/hiera/sf/sfcreds.yaml); do
         password=$(generate_random_pswd 32)
         sed -i "s#\($cred\).*#\1 $password#"  /etc/puppet/hiera/sf/sfcreds.yaml

@@ -16,8 +16,6 @@
 class gerrit {
   include ::monit
   include ::apache
-  include ::gerrituser
-  include ::ssh_keys_gerrit
   include ::bup
   include ::systemctl
 
@@ -69,21 +67,10 @@ class gerrit {
     mode   => '0755',
   }
 
-  # managesf uses gerrit_admin_key to ssh to gerrit
-  # and update replication.config
-  ssh_authorized_key { 'gerrit_admin_user':
-    user    => 'gerrit',
-    type    => 'ssh-rsa',
-    key     => $gerrit_admin_key,
-    require => File['/home/gerrit/.ssh'],
-  }
-
   # Here we build the basic directory tree for Gerrit
   file { '/home/gerrit/site_path':
     ensure  => directory,
     owner   => 'gerrit',
-    require => [User['gerrit'],
-                Group['gerrit']],
   }
   file { '/home/gerrit/site_path/bin':
     ensure  => directory,
@@ -119,30 +106,6 @@ class gerrit {
     ensure  => directory,
     owner   => 'gerrit',
     require => File['/home/gerrit/site_path'],
-  }
-  file { '/home/gerrit/site_path/etc/ssh_host_rsa_key':
-    ensure  => file,
-    owner   => 'gerrit',
-    group   => 'gerrit',
-    mode    => '0600',
-    content => inline_template('<%= @gerrit_service_rsa %>'),
-    require => File['/home/gerrit/site_path/etc'],
-  }
-  file { '/home/gerrit/.ssh/id_rsa':
-    ensure  => file,
-    owner   => 'gerrit',
-    group   => 'gerrit',
-    mode    => '0600',
-    content => inline_template('<%= @gerrit_service_rsa %>'),
-    require => File['/home/gerrit/.ssh'],
-  }
-  file { '/home/gerrit/site_path/etc/ssh_host_rsa_key.pub':
-    ensure  => file,
-    owner   => 'gerrit',
-    group   => 'gerrit',
-    mode    => '0644',
-    content => inline_template('<%= @gerrit_service_rsa_pub %>'),
-    require => File['/home/gerrit/site_path/etc'],
   }
   file { '/home/gerrit/site_path/plugins/replication.jar':
     ensure  => file,

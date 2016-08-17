@@ -1,0 +1,32 @@
+---
+users:
+  - name: root
+    authorized_keys:
+      - key: "{{ service_rsa_pub }}"
+      - key: "{{ jenkins_rsa_pub }}"
+        key_options: 'command="/usr/local/bin/sf-config-update.sh",no-port-forwarding,no-x11-forwarding,no-agent-forwarding,no-pty'
+    ssh_keys:
+      - key: "{{ service_rsa }}"
+        filename: "/root/.ssh/id_rsa"
+    group: root
+    path: "/root/.ssh/"
+  - name: gerrit
+    authorized_keys:
+      - key: "{{ gerrit_admin_rsa_pub }}"
+      - key: "{{ gerrit_service_rsa_pub }}"
+    ssh_keys:
+      - key: "{{ gerrit_admin_rsa }}"
+        filename: "/home/gerrit/.ssh/id_rsa"
+      - key: "{{ gerrit_service_rsa }}"
+        filename: "/home/gerrit/site_path/etc/ssh_host_rsa_key"
+      - key: "{{ gerrit_service_rsa_pub }}"
+        filename: "/home/gerrit/site_path/etc/ssh_host_rsa_key.pub"
+        mode: "u=rw,g=r,o=r"
+    group: gerrit
+    path: "/home/gerrit/.ssh"
+  - name: jenkins
+    ssh_keys:
+      - key: "{{ jenkins_rsa }}"
+        filename: "/var/lib/jenkins/.ssh/id_rsa"
+    group: jenkins
+    path: "/var/lib/jenkins/.ssh"
