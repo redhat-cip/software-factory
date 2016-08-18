@@ -1,2 +1,6 @@
 ---
-- file: path=/var/www/managesf state=directory mode=0750 owner=apache group=apache setype=httpd_sys_content_t
+- name: "Set /var/www/managesf context"
+  file: path=/var/www/managesf state=directory mode=0750 owner=apache group=apache setype=httpd_sys_content_t
+
+- name: "Copy app.wsgi"
+  copy: src=app.wsgi dest=/var/www/managesf/app.wsgi

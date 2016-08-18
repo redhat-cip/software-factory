@@ -4,5 +4,6 @@
   with_items:
     - virtualenv /var/www/managesf
     - /var/www/managesf/bin/pip install --upgrade 'pbr' 'pip'
+    - sed -i 's/^paramiko.*/paramiko<2/' requirements.txt
     - /var/www/managesf/bin/pip install 'pip' -r/usr/src/managesf/requirements.txt file:///usr/src/managesf/
     - /var/www/managesf/bin/python setup.py install

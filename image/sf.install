@@ -19,6 +19,8 @@ function install_sf {
     test -n "${PYSFLIB_CLONED_PATH}"
     test -n "${SFMANAGER_CLONED_PATH}"
 
+    mkdir -p ${dir}/usr/src
+
     cp -f /etc/resolv.conf "${dir}/etc/"
 
     if [ ! -z "${STAGING_PKGS}" ]; then
@@ -76,9 +78,8 @@ function install_sf {
     do_chroot ${dir} bash -c "cd /tmp/pysflib; python setup.py install"
 
     # Install managesf
-    [ ! -d "${dir}/var/www/managesf" ] && sudo mkdir ${dir}/var/www/managesf
-    sudo cp -Rv ${MANAGESF_CLONED_PATH}/* ${dir}/var/www/managesf/
-    do_chroot ${dir} bash -c "cd /var/www/managesf; ./bin/python setup.py install"
+    sudo rsync -a --delete ${MANAGESF_CLONED_PATH}/ ${dir}/usr/src/managesf/
+    do_chroot ${dir} bash -c "cd /usr/src/managesf; /var/www/managesf/bin/python setup.py install"
 
     # Install python-sfmanager
     sudo mkdir -p ${dir}/tmp/python-sfmanager

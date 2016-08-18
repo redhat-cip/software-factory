@@ -1,5 +1,5 @@
 WSGIScriptAlias /manage /var/www/managesf/app.wsgi
-WSGIDaemonProcess managesf python-path=/var/www/managesf/
+WSGIDaemonProcess managesf python-path=/var/www/managesf/lib/python2.7/site-packages
 <Location /manage>
     WSGIPassAuthorization On
     WSGIProcessGroup managesf
