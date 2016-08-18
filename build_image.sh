@@ -120,7 +120,10 @@ function build_image {
 
     # Copy the cache
     echo "(STEP2) rsync -a --delete '${CACHE_PATH}/' '${IMAGE_PATH}/'"
-    time sudo rsync -a --exclude '/usr/local/share/gems/cache' --exclude '/usr/local/share/gems/doc' --delete "${CACHE_PATH}/" "${IMAGE_PATH}/"
+    time sudo rsync -a --delete "${CACHE_PATH}/" "${IMAGE_PATH}/"
+        --exclude '/usr/local/share/gems/cache' \
+        --exclude '/usr/local/share/gems/doc' \
+        --exclude '/usr/src/'
 
     (
         set -e

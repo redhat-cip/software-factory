@@ -281,6 +281,9 @@ cleanup() {
             mkdir -p "$dir/var/lib/edeploy/${version}"
 
             echo > "${dir}"/etc/resolv.conf
+
+            # Ensure no sources are left-over
+            rm -Rf "${dir}/usr/src/*"
         fi
 
         clean_chroot
