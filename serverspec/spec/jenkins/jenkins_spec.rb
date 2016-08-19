@@ -32,7 +32,7 @@ end
 describe file('/etc/jenkins_jobs/jenkins_jobs.ini') do
     it {
         should be_file
-        should be_owned_by 'root'
+        should be_owned_by 'jenkins'
         should be_mode '400'
     }
 end

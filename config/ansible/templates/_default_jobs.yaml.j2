@@ -87,43 +87,23 @@
           zuul-cloner http://{{ fqdn }}/r config
           # Prepare a default configuration for zuul and nodepool
           mkdir -p build/nodepool build/zuul
-          (
-            echo "[zuul]"
-            echo
-            echo "[connection gerrit]"
-            echo "driver=gerrit"
-            echo "server=localhost"
-            echo "user=jenkins"
-            echo ""
-            echo "[connection smtp]"
-            echo "driver=smtp"
-            echo "server=localhost"
-          ) > build/zuul/zuul.conf
-          (
-            echo "script-dir: /etc/nodepool/scripts"
-            echo "images-dir: /opt/nodepool"
-            echo "gearman-servers:"
-            echo "  - host: 127.0.0.1"
-            echo "targets:"
-            echo "  - name: default"
-            echo "providers:"
-            echo "  - name: default"
-            for provider in $(awk '/provider: / { print $NF }' config/nodepool/images.yaml); do
-                echo "  - name: ${provider}"
-            done
-          ) > build/nodepool/nodepool.yaml
+          cp ~jenkins/defconf/zuul.conf build/zuul/
+          cp ~jenkins/defconf/nodepool.yaml build/nodepool/
+
           cd config
           echo "[+] Checking jobs"
-          # JJB needs access to jenkins to test (validate) jobs
-          sudo jenkins-jobs test jobs/ -o ../build/
+          jenkins-jobs test jobs/ -o ../build/
+
           echo "[+] Checking zuul"
           /usr/local/bin/yaml-merger.py zuul | tee ../build/zuul/layout.yaml
           cp zuul/*.py ../build/zuul/ || true
           zuul-server -c ../build/zuul/zuul.conf -l ../build/zuul/layout.yaml -t
+
           echo "[+] Checking nodepool"
           cp nodepool/*.yaml ../build/nodepool/
           WORKDIR=../build/nodepool/ /usr/local/bin/sf-nodepool-conf-merger.py merged.yaml
           nodepool -c ../build/nodepool/merged.yaml config-validate
+
           echo "[+] Checking gerrit replication"
           git config -f gerrit/replication.config -l > /dev/null
     triggers:

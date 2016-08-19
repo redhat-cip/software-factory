@@ -16,8 +16,26 @@
       semanage port --add -t http_port_t -p tcp 8010
   when: selinuxenabled
 
+- name: "Create /etc/jenkins_jobs directory"
+  file: path=/etc/jenkins_jobs/ state=directory mode=0500 owner=jenkins
+
+- name: "Setup jenkins_jobs.ini"
+  template: src=jenkins_jobs.ini.j2 dest=/etc/jenkins_jobs/jenkins_jobs.ini mode=0400 owner=jenkins group=root
+
 # Setup groovy script
 - file: path=/usr/local/share/sf-jenkins-slave-tools/ state=directory mode=0755
 - copy: src=remove-offline-node.groovy dest=/usr/local/share/sf-jenkins-slave-tools/remove-offline-node.groovy mode=0444
 - include_vars: /etc/puppet/hiera/sf/sfcreds.yaml
 - template: src=cron-jenkins-remove-offline-node.sh.j2 dest=/etc/cron.daily/jenkins-remove-offline-node.sh mode=0500
+
+# Setup default configuration for config-check
+- name: "Create defconf directory"
+  file:  path=/var/lib/jenkins/defconf state=directory mode=0500 owner=jenkins
+
+- include_vars: /etc/puppet/hiera/sf/sfcreds.yaml
+
+- name: "Setup test configuration for zuul and nodepool"
+  template: src={{ item }}.j2 dest=/var/lib/jenkins/defconf/{{ item }}
+  with_items:
+    - zuul.conf
+    - nodepool.yaml
