@@ -1,0 +1,71 @@
+---
+- include_vars: /etc/puppet/hiera/sf/sfconfig.yaml
+
+- name: "postfix: ensure postfix group is present"
+  group:
+      name: postfix
+      state: present
+
+- name: "postfix: ensure postfix user is present"
+  user:
+      name: postfix
+      group: postfix
+      groups: mail
+      state: present
+      home: /var/spool/postfix
+      shell: /sbin/nologin
+
+- name: "postfix: set mailname"
+  copy:
+      dest: /etc/mailname
+      content: "{{ ansible_fqdn }}"
+      owner: root 
+      group: root 
+      mode: 0640
+
+- name: "postfix: ensure directories exist"
+  file: 
+    owner: root
+    group: root
+    path: /etc/postfix/
+    state: directory
+    mode: 0755
+
+- name: "postfix: manage main.cf"
+  template:
+    src: main.cf.j2
+    dest: /etc/postfix/main.cf
+    owner: root
+    group: root
+    mode: 0644
+  notify:
+    - restart postfix
+
+- name: "postfix: manage virtual file"
+  template:
+    src: virtual.j2
+    dest: /etc/postfix/virtual
+    owner: root
+    group: root
+    mode: 0644
+
+- name: "postfix: generate virtual database"
+  shell: /usr/sbin/postmap /etc/postfix/virtual
+  notify:
+    - restart postfix
+
+- name: "monit: add system checks"
+  copy:
+    src: monit
+    dest: /etc/monit.d/postfix
+    owner: root
+    group: root
+    mode: 0640
+  notify:
+    - restart monit
+
+- name: "postfix: start service"
+  service: 
+    name: postfix
+    enabled: yes 
+    state: started

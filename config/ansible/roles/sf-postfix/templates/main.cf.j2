@@ -3,17 +3,17 @@ biff = no
 
 append_dot_mydomain = no
 
-myhostname = <%= @domain %>
-mydomain = <%= @domain %>
+myhostname = {{ ansible_domain }}
+mydomain = {{ ansible_domain }}
 mydestination = $myhostname, localhost
 
 alias_maps = hash:/etc/aliases
 
 virtual_alias_maps = hash:/etc/postfix/virtual
-myorigin = <%= @domain %>
-<% if @smtp_relay %>
-relayhost = <%= @smtp_relay %>
-<% end %>
+myorigin = {{ ansible_domain }}
+{% if network.smtp_relay %}
+relayhost = {{ network.smtp_relay }}
+{% endif %}
 mynetworks = 127.0.0.0/8 [::ffff:127.0.0.0]/104 [::1]/128
 mailbox_size_limit = 0
 recipient_delimiter = +

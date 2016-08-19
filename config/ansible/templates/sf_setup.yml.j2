@@ -23,6 +23,7 @@
   pre_tasks:
     - include: /etc/ansible/tasks/selinux_check.yml
   roles:
+    - {name: "sf-postfix", action: "setup"}
     - {name: "sf-base", action: "setup"}
     - {name: "sf-monit", action: "setup"}
 
