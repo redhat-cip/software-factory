@@ -4,9 +4,10 @@
 - name: "Install storyboard venv"
   command: chdir=/usr/src/storyboard {{ item }}
   with_items:
-    - virtualenv /srv/storyboard
-    - /srv/storyboard/bin/pip install --upgrade 'pbr' 'pip<8'
-    - /srv/storyboard/bin/pip install 'pip<8' file:///usr/src/storyboard/
+    - virtualenv --system-site-packages /srv/storyboard
+    - /srv/storyboard/bin/pip install --upgrade 'pbr' 'pip'
+    - sed -i 's/^pbr.*//' requirements.txt
+    - /srv/storyboard/bin/pip install -rrequirements.txt
     - /srv/storyboard/bin/python setup.py install
 - name: "Install storyboard program"
   command: ln -sf /srv/storyboard/bin/{{ item }} /usr/bin/{{ item }}

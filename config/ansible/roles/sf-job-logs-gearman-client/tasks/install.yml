@@ -6,9 +6,9 @@
 - name: "Install virtualenv for job logs gearman client"
   command: "{{ item }}"
   with_items:
-    - virtualenv /srv/log-gearman-client
-    - /srv/log-gearman-client/bin/pip install --upgrade 'pbr' 'pip<8'
-    - /srv/log-gearman-client/bin/pip install gear statsd PyYAML python-daemon pyzmq 
+    - virtualenv --system-site-packages /srv/log-gearman-client
+    - /srv/log-gearman-client/bin/pip install --upgrade 'pbr' 'pip'
+    - /srv/log-gearman-client/bin/pip install gear statsd PyYAML python-daemon pyzmq
 - name: "Fetch job logs gearman client from Openstack infra repo"
   get_url: url={{ log_gearman_client_url }} dest=/srv/log-gearman-client/bin/log-gearman-client.py mode=0755
   register: fetched
