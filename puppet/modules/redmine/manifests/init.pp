@@ -113,7 +113,6 @@ class redmine {
     file { '/etc/monit.d/redmine':
       ensure  => file,
       content => template('redmine/monit.erb'),
-      require => [Package['monit'], File['/etc/monit.d']],
       notify  => Service['monit'],
     }
 

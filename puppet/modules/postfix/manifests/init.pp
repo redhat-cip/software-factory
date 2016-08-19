@@ -76,7 +76,6 @@ class postfix {
   file { '/etc/monit.d/postfix':
     ensure  => file,
     source  => 'puppet:///modules/postfix/monit',
-    require => [Package['monit'], File['/etc/monit.d']],
     notify  => Service['monit'],
   }
 

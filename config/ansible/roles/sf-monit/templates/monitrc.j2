@@ -6,8 +6,8 @@
   set eventqueue
       basedir /var/monit
       slots 100
-  set mail-format { from: <%= @mail_from %> }
-  set alert <%= @mail_to %>
+  set mail-format { from: {{ mail_from }} }
+  set alert {{ mail_to }}
   set httpd port 2812 and
     use address 0.0.0.0
     allow 0.0.0.0/0.0.0.0

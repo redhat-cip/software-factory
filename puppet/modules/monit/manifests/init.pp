@@ -15,54 +15,13 @@
 
 class monit {
 
-  $fqdn = hiera('fqdn')
-  $mail_from = "monit@${fqdn}"
-  # mail forward managed by admin_mail_forward parameter
-  $mail_to = 'root@localhost'
   $provider = 'systemd'
 
-  package { 'monit':
-    ensure => present,
-  }
-
-  file { '/etc/monit':
-    ensure  => directory,
-    require => Package['monit'],
-  }
-
-  file { '/etc/monit.d':
-    ensure  => directory,
-    require => Package['monit'],
-  }
-
-  file { '/etc/monitrc':
-    ensure  => file,
-    mode    => '0600',
-    content => template('monit/monitrc.erb'),
-    require => [Package['monit'], File['/etc/monit']],
-    replace => true,
-  }
-
+  # keep service until we migrate all others modules
   service { 'monit':
     ensure     => running,
     enable     => true,
     hasrestart => true,
     provider   => $provider,
-    require    => Package['monit'],
-    subscribe  => File['/etc/monitrc'],
-  }
-
-  file { '/etc/monit.d/rootfs':
-    ensure  => file,
-    source  => 'puppet:///modules/monit/rootfs',
-    require => [Package['monit'], File['/etc/monit.d']],
-    notify  => Service['monit'],
-  }
-
-  file { '/etc/monit.d/system':
-    ensure  => file,
-    source  => 'puppet:///modules/monit/system',
-    require => [Package['monit'], File['/etc/monit.d']],
-    notify  => Service['monit'],
   }
 }

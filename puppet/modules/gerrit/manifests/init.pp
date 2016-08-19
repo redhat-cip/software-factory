@@ -391,7 +391,6 @@ class gerrit {
   file { '/etc/monit.d/gerrit':
     ensure  => file,
     content => template('gerrit/monit.erb'),
-    require => [Package['monit'], File['/etc/monit.d']],
     notify  => Service['monit'],
   }
 
