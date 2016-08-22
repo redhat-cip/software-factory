@@ -1,5 +1,5 @@
 ---
 # This playbook is called by the zuul periodic pipeline
 - hosts: mirror
-  roles:
-  - {name: "sf-mirror", action: "update"}
+  tasks:
+    - include: /etc/ansible/roles/sf-mirror/tasks/fullupdate.yml

@@ -105,6 +105,10 @@ def update_sfconfig(data):
     if 'periodic_update' not in data['mirrors']:
         data['mirrors']['periodic_update'] = False
         dirty = True
+    if 'swift_mirror_ttl' not in data['mirrors']:
+        data['mirrors']['swift_mirror_ttl'] = 15811200
+        dirty = True
+
     return dirty
 
 

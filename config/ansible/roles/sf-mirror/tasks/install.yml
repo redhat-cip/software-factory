@@ -8,7 +8,11 @@
   with_items: [python-lxml, PyYAML, python-requests]
 
 - name: "Fetch mirror2swift code"
-  git: repo=git://github.com/cschwede/mirror2swift.git dest=/usr/src/mirror2swift recursive=no
+  git:
+    repo: "{{ mirror2swift_url }}"
+    dest: /usr/src/mirror2swift
+    recursive: no
+    force: yes
 
 - name: "Install mirror2swift"
   command: chdir=/usr/src/mirror2swift python setup.py install

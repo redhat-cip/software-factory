@@ -37,6 +37,7 @@ conf = {
         "swift": {
             "url": "MIRROR2SWIFT_URL",
             "key": "MIRROR2SWIFT_TEMPURL_KEY",
+            "ttl": "MIRROR2SWIFT_TTL",
         },
     }
 }

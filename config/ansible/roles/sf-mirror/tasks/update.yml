@@ -7,6 +7,7 @@
   with_items:
     - {regexp: "MIRROR2SWIFT_URL", replace: "'{{mirrors.swift_mirror_url}}'"}
     - {regexp: "MIRROR2SWIFT_TEMPURL_KEY", replace: "'{{mirrors.swift_mirror_tempurl_key}}'"}
+    - {regexp: "MIRROR2SWIFT_TTL", replace: "'{{mirrors.swift_mirror_ttl}}'"}
 
 #TODO: Implement baseline based update, only run mirror2swift on added mirror
 #- name: "Update mirrors"

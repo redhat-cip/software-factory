@@ -113,6 +113,7 @@ mirrors:
     periodic_update: False
     swift_mirror_url: http://swift:8080/v1/AUTH_uuid/repomirror/
     swift_mirror_tempurl_key: container_tempurl_key
+    swift_mirror_ttl: 15811200 # 6 months ttl
 
 nodepool:
     disabled: True

@@ -14,6 +14,9 @@
 - name: "system: disable root password login"
   user: name=root password="*"
 
+- name: "system: remove requiretty from sudoers"
+  lineinfile: dest=/etc/sudoers state=absent regexp="^Defaults.*requiretty"
+
 - name: "system: set /etc/ssh/ssh_known_hosts for all inventory"
   template:
     src=global_known_hosts.j2
