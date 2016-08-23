@@ -16,13 +16,14 @@
 class socat_gerrit {
   include ::systemctl
 
-  file {'/lib/systemd/system/socat_gerrit.service':
+  file {'socat_gerrit_service':
+    path   => '/lib/systemd/system/socat_gerrit.service',
     ensure => file,
     mode   => '0640',
     owner  => 'root',
     group  => 'root',
     source => 'puppet:///modules/socat_gerrit/socat_gerrit.service',
-    notify => [Exec['systemctl_reload'], Service['socat_gerrit']],
+    notify => Exec['systemctl_reload'],
   }
 
   service {'socat_gerrit':
@@ -30,6 +31,6 @@ class socat_gerrit {
     enable     => true,
     hasrestart => true,
     hasstatus  => true,
-    require    => Exec['reload_units'],
+    require    => File['socat_gerrit_service'],
   }
 }
