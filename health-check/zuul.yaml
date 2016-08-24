@@ -12,12 +12,12 @@
 # * Add jobs and zuul layout to config repo
 - name: "Reset config repos"
   include: playbooks/config_reset.yaml
-  when: job_created.stat.isdir is not defined or zuul_created.rc != 0 #zuul_created.stdout.find({{ project }}) == -1
+  when: hostvars[groups["jenkins"][0]]["job_created"].stat.isdir is not defined or hostvars[groups["zuul"][0]]["zuul_created"].rc != 0 #zuul_created.stdout.find({{ project }}) == -1
 
 - hosts: install-server
   tasks:
     - name: "Add config repo files"
-      when: job_created.stat.isdir is not defined or zuul_created.rc != 0
+      when: hostvars[groups["jenkins"][0]]["job_created"].stat.isdir is not defined or hostvars[groups["zuul"][0]]["zuul_created"].rc != 0
       template: src=templates/{{ item.template }}.j2 dest=/root/config/{{ item.dest }}
       with_items:
         - { template: "health-jobs.yaml", dest: "jobs/health-check.yaml" }
@@ -25,12 +25,12 @@
         - { template: "project-jobs.yaml", dest: "jobs/{{ project|replace('/', '_')}}.yaml" }
     - name: "Commit change"
       command: chdir=/root/config bash -c "git add */*.yaml; exec git commit -a -m 'Add {{ project }} to config repo'"
-      when: job_created.stat.isdir is not defined or zuul_created.rc != 0
+      when: hostvars[groups["jenkins"][0]]["job_created"].stat.isdir is not defined or hostvars[groups["zuul"][0]]["zuul_created"].rc != 0
 
 
 - name: "Submit config repos"
   include: playbooks/config_submit_change.yaml
-  when: job_created.stat.isdir is not defined or zuul_created.rc != 0
+  when: hostvars[groups["jenkins"][0]]["job_created"].stat.isdir is not defined or hostvars[groups["zuul"][0]]["zuul_created"].rc != 0
 
 # * Submit a bad change and verify Jenkins CI -1
 # * Fix bad change and verify Jenkins CI +1
