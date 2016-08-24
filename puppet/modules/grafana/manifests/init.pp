@@ -14,6 +14,7 @@
 # under the License.
 
 class grafana {
+  include ::systemctl
 
   $fqdn = hiera('fqdn')
   $mysql_host = "mysql.${fqdn}"
