@@ -77,15 +77,9 @@ class gerrit {
     owner   => 'gerrit',
     require => File['/home/gerrit/site_path'],
   }
-  file { '/home/gerrit/site_path/etc':
-    ensure  => directory,
-    owner   => 'gerrit',
-    require => File['/home/gerrit/site_path'],
-  }
   file { '/home/gerrit/site_path/etc/mail':
     ensure  => directory,
     owner   => 'gerrit',
-    require => File['/home/gerrit/site_path/etc'],
   }
   file { '/home/gerrit/site_path/hooks':
     ensure  => directory,
@@ -213,7 +207,6 @@ class gerrit {
     group   => 'gerrit',
     mode    => '0644',
     content => template('gerrit/gerrit.config.erb'),
-    require => File['/home/gerrit/site_path/etc'],
     replace => true,
   }
   file { '/home/gerrit/site_path/etc/secure.config':
@@ -222,7 +215,6 @@ class gerrit {
     group   => 'gerrit',
     mode    => '0600',
     content => template('gerrit/secure.config.erb'),
-    require => File['/home/gerrit/site_path/etc'],
     replace => true,
   }
 
@@ -385,7 +377,6 @@ class gerrit {
     mode    => '0644',
     source  => 'puppet:///modules/gerrit/replication.config',
     replace => false,
-    require => File['/home/gerrit/site_path/etc'],
   }
 
   file { '/etc/monit.d/gerrit':

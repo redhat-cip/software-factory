@@ -1,4 +1,26 @@
 ---
+- name: "Create gerrit user"
+  include: /etc/ansible/tasks/create_user.yml user_name=gerrit home_dir=/home/gerrit ssh_key=gerrit_service_rsa shell=/bin/bash
+
+- name: "Create gerrit service key directory"
+  file: path=/home/gerrit/site_path/etc/ state=directory owner=gerrit group=gerrit mode=0700
+
+- name: "Copy gerrit service key"
+  copy:
+    content: "{{ hostvars[inventory_hostname][item.name] }}"
+    dest: "/home/gerrit/site_path/etc/{{ item.file }}"
+    mode: "{{ item.mode }}"
+    owner: gerrit
+    group: gerrit
+  with_items:
+    - {name: gerrit_service_rsa, file: ssh_host_rsa_key, mode: "0400"}
+    - {name: gerrit_service_rsa_pub, file: ssh_host_rsa_key.pub, mode: "0444"}
+
+- name: "Allow gerrit to connect to himself for self replication"
+  authorized_key:
+    user: gerrit
+    key: "{{ gerrit_service_rsa_pub }}"
+
 # Seport fail to relabel existing port, see https://github.com/ansible/ansible-modules-extras/issues/2009
 #- seport: ports={{ item }} proto=tcp setype=http_port_t state=present
 - command: semanage port --modify -t http_port_t -p tcp {{ item }}

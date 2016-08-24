@@ -1,51 +1,11 @@
 ---
 - include_vars: /etc/puppet/hiera/sf/sfcreds.yaml
-- include_vars: main.yml
 
-# mandatory: gerrit user is not present when the playbook is applied
-- name: "system: ensure user are present"
-  user:
-    name: "{{ item.name }}"
-    state: present
-  with_items: "{{ users }}"
+- name: "Install service_rsa key"
+  include: /etc/ansible/tasks/create_user.yml user_name=root shell=/bin/bash home_dir=/root ssh_key=service_rsa
 
-- name: "system: chmod ssh directory for root jenkins and gerrit user"
-  file:
-    owner: "{{ item.name }}"
-    group: "{{ item.group }}"
-    path: "{{ item.path }}"
-    state: directory
-    mode: 0700
-  with_items: "{{ users }}"
-
-- name: "system: ensure static directory exist for gerrit"
-  file:
-    path: "/home/gerrit/site_path/etc"
-    owner: gerrit
-    group: gerrit
-    state: directory
-    mode: 0755
-
-- name: "system: ensure ssh key(s) are present for root, jenkins and gerrit users"
-  copy:
-    owner: "{{ item.0.name }}"
-    group: "{{ item.0.name }}"
-    content: "{{ item.1.key }}"
-    dest: "{{ item.1.filename}}"
-    mode: "{{ item.1.mode|default(0600)}}"
-  with_subelements:
-      - "{{ users }}"
-      - ssh_keys
-      - flags:
-        skip_missing: True
-
-- name: "system: set authorized key for root  gerrit users"
+- name: "Allow jenkins to run sf-config-update"
   authorized_key:
-    user: "{{ item.0.name }}"
-    key: "{{ item.1.key }}"
-    key_options: "{{item.1.key_options|default(omit)}}"
-  with_subelements:
-      - "{{ users }}"
-      - authorized_keys
-      - flags:
-        skip_missing: True
+    user: root
+    key: "{{ jenkins_rsa_pub }}"
+    key_options: 'command="/usr/local/bin/sf-config-update.sh",no-port-forwarding,no-x11-forwarding,no-agent-forwarding,no-pty'

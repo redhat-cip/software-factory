@@ -1,7 +1,5 @@
 ---
-- group: name=jenkins
-- user: name=jenkins group=jenkins shell=/sbin/nologin home=/var/lib/jenkins
-- file: path=/var/lib/jenkins/ state=directory mode=0755 owner=jenkins
+- include: /etc/ansible/tasks/create_user.yml user_name=jenkins ssh_key=jenkins_rsa
 - file: path=/var/lib/jenkins/plugins state=directory mode=0755 owner=jenkins
 
 # Seport fail to relabel existing port, see https://github.com/ansible/ansible-modules-extras/issues/2009

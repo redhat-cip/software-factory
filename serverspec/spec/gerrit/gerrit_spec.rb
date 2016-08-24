@@ -87,7 +87,7 @@ describe file('/home/gerrit/site_path/etc/ssh_host_rsa_key') do
         should be_file
         should be_owned_by 'gerrit'
         should be_grouped_into 'gerrit'
-        should be_mode '600'
+        should be_mode '400'
     }
 end
 
@@ -96,7 +96,7 @@ describe file('/home/gerrit/site_path/etc/ssh_host_rsa_key.pub') do
         should be_file
         should be_owned_by 'gerrit'
         should be_grouped_into 'gerrit'
-        should be_mode '644'
+        should be_mode '444'
     }
 end
 

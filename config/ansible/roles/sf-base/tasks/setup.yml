@@ -23,6 +23,11 @@
     dest=/etc/ssh/ssh_known_hosts
     owner=root group=root mode=0644
 
+- name: "system: allow install-server to connect"
+  authorized_key:
+    user: root
+    key: "{{ service_rsa_pub }}"
+
 - name: "system: allow apache to connect database"
   seboolean: name={{ item }} state=yes persistent=yes
   with_items: [httpd_can_network_connect, httpd_can_network_connect_db]
