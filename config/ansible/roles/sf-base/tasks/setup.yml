@@ -43,3 +43,9 @@
 - name: "rsyslog: manage service"
   service: name=rsyslog state=restarted
   when: rsyslog_config|changed
+
+- name: "auth: create cauth_keys directory"
+  file: path=/srv/cauth_keys state=directory mode=0755
+
+- name: "auth: install pubkey.pem"
+  copy: content="{{ pubkey_pem }}" dest="/srv/cauth_keys/pubkey.pem" mode=0444 setype=httpd_sys_content_t
