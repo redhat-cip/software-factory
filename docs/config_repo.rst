@@ -32,3 +32,6 @@ To update the configuration repo:
    nodepool_user
    gerritbot_user
    gerrit_replication_user
+   access_control_user
+
+

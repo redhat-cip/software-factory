@@ -1,0 +1,9 @@
+---
+features:
+  - Add a policy engine to manageSF. Access to REST API
+    endpoints can be set depending on the user requesting
+    them, the groups he/she belongs to, and depending on the
+    endpoints, the properties of the target of the action.
+upgrade:
+  - A default policy settings file will be added to the
+    config repository.
