@@ -1,7 +1,0 @@
--e git+https://github.com/redhat-cip/pysflib.git#egg=pysflib
-nose
-mock
-requests>=2.4.1
-testfixtures
-python-redmine==1.2.0
-github3.py==1.0.0a1

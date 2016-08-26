@@ -40,10 +40,4 @@ echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
 REPL_TOOL_ERRORS=$?
 echo
 
-echo "sfmigration tests"
-echo "~~~~~~~~~~~~~~~~~"
-(cd tools/sfmigration; rm -Rf .tox; tox)
-SFMIGRATION_ERRORS=$?
-echo
-
-exit $[${FLAKE8_ERRORS} + ${BASH8_ERRORS} + ${SFMIGRATION_ERRORS} + ${REPL_TOOL_ERRORS}];
+exit $[${FLAKE8_ERRORS} + ${BASH8_ERRORS} + ${REPL_TOOL_ERRORS}];
