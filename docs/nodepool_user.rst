@@ -1,7 +1,7 @@
 .. _nodepool-user:
 
-Setup nodepool slave configuration
-==================================
+Nodepool images and labels configuration
+========================================
 
 Build scripts, images and labels definition are done via the config repository of SF.
 

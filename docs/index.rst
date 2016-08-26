@@ -11,6 +11,7 @@ Welcome to software-factory's documentation!
 
    intro
    operator
+   config_repo
    user
    contributor
    faqs

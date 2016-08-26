@@ -1,4 +1,4 @@
-Software Factory Deep Dive
+Software Factory Internals
 ==========================
 
 The goal of this document is to describe SF internals.
@@ -29,15 +29,19 @@ The build_image.sh script does the following:
 
 * The first step fetchs all sub projects such as the managesf service or the python client.
 * The second step builds the image cache (see image/softwarefactory.install)
+
   * Install yum.repos and already packaged requirements
   * Install gerrit (which is build using image/packages/gerrit/build.sh)
+  * Install zuul/nodepool
   * Install redmine
   * Everything that is not developped by/for SF
+
 * The third step adds the SF secret sauce to the image cache (see image/sf.install)
+
   * Copy the puppet/ansible modules
-  * Install zuul/nodepool
   * Install SF components such as managesf
   * Everything that is developped for SF
+
 * The last step produces a tarball and a qcow2 disk image
 
 Why use an image ?
@@ -113,8 +117,8 @@ This job is actually an ansible playbook that will:
 * Set mirror2swift configuration for manual or next periodic update.
 
 
-SF upgrade
-----------
+The upgrade
+-----------
 
 The upgrade procedure is not included in the image, and the operator needs to manually download
 the module. It is part of software-factory project repository and the wanted tag release, based

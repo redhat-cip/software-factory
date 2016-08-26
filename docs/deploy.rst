@@ -40,36 +40,7 @@ digest are signed with gpg, install the key and verify content with:
 Architecture
 ------------
 
-SF architecture is modular and defined by a single file called arch.yaml. This
-file defines the number of nodes, their requirements in term of resources and
-how services are distributed. While every services can be dispatched to a
-dedicated node, it is advised to use the allinone refarch first, and then do
-scale-up as needed (such as moving the SQL database or the ELK stack to
-a separate node):
-
-.. code-block:: yaml
-
-  inventory:
-    - name: node01
-      roles:
-        - install-server
-        - mysql
-
-    - name: node02
-      mem: 8
-      roles:
-        - gerrit
-
-
-After deployment, the arch file can still be modified:
-
-* Add root public ssh key (install-server:/root/.ssh/id_rsa.pub) to the new instance,
-* Make sure remote ssh connection access happen without password authentication,
-* Add the new instance to the arch inventory and set it's ip address,
-* Add desired services in the roles list (e.g., elasticsearch), and
-* Run sfconfig.sh to reconfigure the deployment.
-
-See config/refarch directory for example architectures.
+To enable multi-node deployment, see :ref:`Architecture configuration<sf-arch>`
 
 
 OpenStack based deployment
@@ -192,7 +163,7 @@ Configuration and reconfiguration
 First time: **Please read** :ref:`Root password consideration<root-password>`.
 
 * Connect as (root) via SSH to the install-server (the first instance deployed).
-* Edit the configuration sfconfig.yaml (/etc/puppet/hiera/sf/sfconfig.yaml).
+* Edit the configuration sfconfig.yaml (see :ref:`Main configuration documentation<sfconfig>`)
 
   * set the configuration according to your needs.
   * all parameters are editable and should be self-explanatory.
@@ -204,9 +175,6 @@ First time: **Please read** :ref:`Root password consideration<root-password>`.
  $ ssh -A root@sf_instance
  [root@managesf ~]# vim /etc/puppet/hiera/sf/sfconfig.yaml
  [root@managesf ~]# sfconfig.sh
-
-Notice that the configuration is versioned and it is recommended to use git diff and git commit
-command to check files modifications.
 
 
 .. _network-access:

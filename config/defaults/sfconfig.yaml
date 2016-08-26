@@ -13,7 +13,7 @@ network:
 
 authentication:
     admin_password: userpass
-    # timeout of session in seconds
+    # timeout of sessions in seconds
     sso_cookie_timeout: 43200
 
     # Enforce authentication for all services (such as etherpad and pastebin that doesn't require authentication by default)

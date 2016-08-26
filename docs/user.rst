@@ -8,7 +8,5 @@ This chapter documents how to use Software Factory.
    :maxdepth: 2
 
    submitpatches
-   config_repo
    sfmanager
-   testing
    tools

@@ -9,6 +9,7 @@ This chapter documents how to deploy and manage a Software Factory instance.
 
    deploy
    sfconfig
+   arch
    migration
    upgrade
    jenkinsslaves

@@ -1,7 +1,7 @@
 .. _gerritbot-user:
 
-Configure gerritbot channels
-============================
+Gerritbot notification channels configuration
+=============================================
 
 Once the service is running (see :ref:`operator configuration <gerritbot-operator>`),
 you can configure the irc channels to get notification:

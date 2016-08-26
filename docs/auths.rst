@@ -1,18 +1,30 @@
 .. _authentication:
 
-Sofware Factory Authentication
-------------------------------
+Authentication
+--------------
 
-The admin user
-^^^^^^^^^^^^^^
+Software Factory supports different authentication backend for user.
+The `Cauth <http://softwarefactory-project.io/r/gitweb?p=cauth.git;a=shortlog;h=HEAD>`_ component is used to enforce
+all authenticated HTTP access.
 
-Admin user is used to create new repositories, modify ACLs and assign users to projects.
+
+Admin user
+^^^^^^^^^^
+
+The admin user is hard coded and only the password can be defined.
+To change the admin user password, edits sfconfig.yaml:
+
+.. code-block:: yaml
+
+  authentication:
+    admin_password: userpass
+
 
 
 OAuth2-based authentication
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Software Factory allows you to authenticate with several OAuth2-based identity providers. The
+Software Factory allows authentication with several OAuth2-based identity providers. The
 following providers are currently supported:
 
 * GitHub
@@ -44,6 +56,20 @@ The GitHub provider also lets you filter users logging in depending on the organ
 to, with the field "github_allowed_organizations". Leave blank if not necessary.
 
 
+OpenID authentication
+^^^^^^^^^^^^^^^^^^^^^
+
+Similarly, an OpenID provider can be used for authentication, for example to use Launchpad:
+
+.. code-block:: yaml
+
+  authentication:
+    openid:
+      disabled: False
+      server: https://login.launchpad.net/+openid
+      login_button_text: "Log in with Launchpad"
+
+
 Local user management
 ^^^^^^^^^^^^^^^^^^^^^
 
@@ -54,22 +80,29 @@ can be done through the SFmanager command-line utility :ref:`User management <sf
 a user database locally.
 
 
-Admin user password change
-^^^^^^^^^^^^^^^^^^^^^^^^^^
+Other authentication settings
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-To change the admin user password, you need to edit /etc/puppet/hiera/sf/sfconfig.yaml and change the value
-of `admin_password`. Then call `sfconfig.sh` to set the password.
+Cookie timeout
+""""""""""""""
 
+The SSO cookie timeout can also be changed:
+
+.. code-block:: yaml
+
+  authentication:
+    # timeout of sessions in seconds
+    sso_cookie_timeout: 43200
 
 Redmine API key change
-^^^^^^^^^^^^^^^^^^^^^^
+""""""""""""""""""""""
 
 To change the Redmine API key, you need to edit /etc/puppet/hiera/sf/sfcreds.yaml and change the value of
 `creds_issues_tracker_api_key`. Then call `sfconfig.sh` to update the key.
 
 
 Local database access credencials
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+"""""""""""""""""""""""""""""""""
 
 Each service credencials for mysql database access are stored in /etc/puppet/hiera/sf/sfcreds.yaml.
 You can use the `sf_rotate_mysql_passwords.py` command line to replace them all and restart services.
