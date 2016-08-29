@@ -29,7 +29,6 @@ class etherpad {
     mode   => '0740',
     source => 'puppet:///modules/etherpad/etherpad.service',
     notify => Exec['systemctl_reload'],
-    require => File['wait4mariadb'],
   }
 
   user { 'etherpad':
@@ -97,8 +96,7 @@ class etherpad {
     hasstatus  => true,
     require    => [File['/var/log/etherpad'],
                    Exec['systemctl_reload'],
-                   Exec['change_owner'],
-                   File['wait4mariadb']],
+                   Exec['change_owner']],
   }
 
   file { '/var/www/etherpad-lite/src/static/custom/pad.css':

@@ -8,7 +8,7 @@ User=gerrit
 SyslogIdentifier=gerrit
 ExecStartPre=/usr/libexec/wait4mariadb
 ExecStartPre=/usr/bin/java -jar /home/gerrit/gerrit.war reindex -d /home/gerrit/site_path
-ExecStart=/usr/bin/java -Xmx<%= @settings['gerrit_heap_limit'] %> -Djava.security.egd=file:///dev/urandom -jar /home/gerrit/site_path/bin/gerrit.war daemon -d /home/gerrit/site_path
+ExecStart=/usr/bin/java -Xmx{{ gerrit.gerrit_heap_limit }} -Djava.security.egd=file:///dev/urandom -jar /home/gerrit/site_path/bin/gerrit.war daemon -d /home/gerrit/site_path
 ExecStartPost=/usr/libexec/wait4gerrit
 LimitCPU=infinity
 LimitFSIZE=infinity

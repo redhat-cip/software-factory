@@ -1,0 +1,45 @@
+---
+- name: "Remove old/unused plugins"
+  file:
+    path: "/home/gerrit/site_path/plugins/{{ item }}"
+    state: absent
+  with_items:
+    - reviewersbyblame-2.8.1.jar
+    - gravatar.jar
+
+- name: "Install plugins"
+  copy:
+    dest: "/home/gerrit/site_path/plugins/{{ item.name }}"
+    src: "files/{{ item.name }}"
+    owner: gerrit
+    group: gerrit
+    mode: 0640
+  with_items:
+    - { name: avatars-gravatar.jar }
+    - { name: delete-project.jar }
+    - { name: download-commands.jar }
+    - { name: replication.jar }
+    - { name: reviewers-by-blame.jar }
+
+# Version numbers are required by Gerrit for the following three .jars,
+# otherwise Gerrit downloads the file again
+# https://gerrit.googlesource.com/gerrit/+/v2.8.6.1/gerrit-pgm/src/main/resources/com/google/gerrit/pgm/libraries.config
+- name: "Install libraries"
+  copy:
+    dest: "/home/gerrit/site_path/lib/{{ item.name }}"
+    src: "/root/gerrit_data_source/{{ item.file }}"
+    owner: gerrit
+    group: gerrit
+    mode: 0640
+  with_items:
+      - { name: mysql-connector-java-5.1.21.jar, file: mysql-connector-java.jar }
+      - { name: bcprov-jdk15on-1.51.jar, file: bcprov.jar }
+      - { name: bcpkix-jdk15on-1.51.jar, file: bcpkix.jar }
+
+- name: "Install gerrit.war"
+  copy:
+    dest: "/home/gerrit/gerrit.war"
+    src: "/root/gerrit_data_source/gerrit.war"
+    owner: gerrit
+    group: gerrit
+    mode: 0644

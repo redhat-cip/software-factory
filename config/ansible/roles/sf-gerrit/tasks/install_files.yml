@@ -1,0 +1,113 @@
+---
+- name: "Create service directories"
+  file:
+    path: "/home/gerrit/site_path/{{ item.name }}"
+    state: directory
+    owner: gerrit
+    group: gerrit
+    mode: "{{ item.mode | default(0755) }}"
+  with_items:
+    - { name: bin }
+    - { name: etc, mode: "0700" }
+    - { name: etc/mail }
+    - { name: git }
+    - { name: hooks }
+    - { name: lib }
+    - { name: plugins }
+    - { name: static }
+
+- name: "Chmod cgi file"
+  file:
+    path: /var/www/git/gitweb.cgi
+    mode: 0755
+
+- name: "Install gerrit service file"
+  template:
+      src: gerrit.service.j2
+      dest: /lib/systemd/system/gerrit.service
+      owner: root
+      group: root
+      mode: 0644
+  register: install_service_file
+
+- name: "Reload systemctl daemon"
+  shell: "systemctl daemon-reload"
+  when: install_service_file|changed
+
+- name: "Install configuration files"
+  template:
+    src: "{{ item.name }}.j2"
+    dest: "{{ item.path }}/{{ item.name }}"
+    owner: gerrit
+    group: gerrit
+    mode: "{{ item.mode }}"
+  with_items:
+    - { name: patchset-created,
+        path: /home/gerrit/site_path/hooks,
+        mode: '0740' }
+    - { name: change-merged,
+        path: /home/gerrit/site_path/hooks,
+        mode: '0740' }
+    - { name: gerrit.config,
+        path: /home/gerrit/site_path/etc,
+        mode: '0644' }
+    - { name: secure.config,
+        path: /home/gerrit/site_path/etc,
+        mode: '0600' }
+
+- name: "Install static configuration files for gerrit"
+  copy:
+    src: "{{ item.name }}"
+    dest: /home/gerrit/site_path/etc/
+    mode: 0644
+    owner: gerrit
+    group: gerrit
+  with_items:
+    - { name: replication.config }
+    - { name: GerritSiteHeader.html }
+
+- name: "Install static configuration files or scripts (root user)"
+  copy:
+    src: "{{ item.name }}"
+    dest: "{{ item.path }}/{{ item.realname | default(item.name) }}"
+    mode: "{{ item.mode }}"
+    owner: root
+    group: root
+  with_items:
+    - { name: project.config, path: /root/gerrit_data_source, mode: '0640' }
+    - { name: ssh_wrapper.sh, path: /root/gerrit_data_source, mode: '0740' }
+    - { name: wait4gerrit.sh, path: /usr/libexec, mode: '0755', realname: wait4gerrit }
+
+- name: "Install initialization and migration scripts"
+  template:
+    src: "{{ item.name }}.j2"
+    dest: "{{ item.path | default('/root') }}/{{ item.name }}"
+    owner: root
+    group: root
+    mode: "{{ item.mode | default('0700')}}"
+  with_items:
+    - { name: backup_gerrit.sh, mode: '0740' }
+    - { name: gerrit-firstuser-init.sql, mode: '0644' }
+    - { name: gerrit-restore-user-keys.sql, mode: '0644' }
+    - { name: gerrit-set-default-acl.sh }
+    - { name: gerrit-set-jenkins-user.sh }
+    - { name: gerrit-update-acl, dest: /usr/share/ }
+    - { name: restore_gerrit.sh, mode: '0740' }
+
+- name: "Install crontab for backup nightly job"
+  cron:
+    name: backup_gerrit
+    job: /root/backup_gerrit.sh
+    user: root
+    minute: 0
+    hour: 1
+
+- name: "Add monit service check"
+  copy:
+    src: monit
+    dest: /etc/monit.d/gerrit
+    owner: root
+    group: root
+    mode: 0640
+  notify:
+    - restart monit

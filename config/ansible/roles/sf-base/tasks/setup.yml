@@ -48,4 +48,14 @@
   file: path=/srv/cauth_keys state=directory mode=0755
 
 - name: "auth: install pubkey.pem"
-  copy: content="{{ pubkey_pem }}" dest="/srv/cauth_keys/pubkey.pem" mode=0444 setype=httpd_sys_content_t
+  copy:
+      content: "{{ pubkey_pem }}"
+      dest: "/srv/cauth_keys/pubkey.pem"
+      mode: 0444
+      setype: httpd_sys_content_t
+
+- name: "Initialize bup"
+  shell: "/usr/local/bin/bup init"
+  args:
+      chdir: /root
+      creates: /root/.bup/HEAD

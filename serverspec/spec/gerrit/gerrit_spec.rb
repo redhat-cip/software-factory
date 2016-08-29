@@ -107,13 +107,6 @@ describe file('/root/gerrit-firstuser-init.sql') do
     }
 end
 
-describe file('/root/gerrit-firstuser-init.sh') do
-    it {
-        should be_file
-        should be_mode '700'
-    }
-end
-
 describe file('/root/gerrit-set-default-acl.sh') do
      it {
         should be_file

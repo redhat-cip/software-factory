@@ -7,7 +7,7 @@ set -e
 export HOME=/root
 
 ADMINUSER=admin
-ADMINUSEREMAIL=admin@<%= @fqdn %>
+ADMINUSEREMAIL=admin@{{ fqdn }}
 CLONETEMPDIR="/tmp/All-projects"
 
 [ -d "$CLONETEMPDIR" ] && rm -Rf $CLONETEMPDIR

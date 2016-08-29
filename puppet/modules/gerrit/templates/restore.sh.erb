@@ -1,8 +1,0 @@
-#!/bin/sh
-systemctl stop gerrit
-bup join -r root@managesf.<%= @fqdn %>: gerrit | tar -xPf -
-ssh root@managesf.<%= @fqdn %> cat /root/gerritdb.sql.gz | gunzip | mysql
-mysql -u<%= @mysql_user %> -p<%= @mysql_password %> -h<%= @mysql_host %> -P <%= @mysql_port %> <%= @mysql_db %> < /root/gerrit-restore-user-keys.sql
-/usr/bin/java -jar /home/gerrit/gerrit.war reindex -d /home/gerrit/site_path
-chown -R gerrit:gerrit /home/gerrit/*
-systemctl start gerrit

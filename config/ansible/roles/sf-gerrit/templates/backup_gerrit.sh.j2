@@ -1,6 +1,6 @@
 #!/bin/sh
 mysqldump --databases gerrit | gzip -9 | \
-    ssh root@managesf.<%= @fqdn %> tee /root/gerritdb.sql.gz > /dev/null
+    ssh root@managesf.{{ fqdn }} tee /root/gerritdb.sql.gz > /dev/null
 tar --absolute-names -cf - \
     /home/gerrit/site_path/git \
     /home/gerrit/site_path/etc/replication.config \
@@ -8,4 +8,4 @@ tar --absolute-names -cf - \
     /home/gerrit/site_path/etc/ssh_host_rsa_key \
     /home/gerrit/.ssh \
     /etc/httpd/managesf_htpasswd \
-    | /usr/local/bin/bup split -r root@managesf.<%= @fqdn %>: -n gerrit
+    | /usr/local/bin/bup split -r root@managesf.{{ fqdn }}: -n gerrit

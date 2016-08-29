@@ -1,6 +1,6 @@
-SET @pubkey="<%= @gerrit_admin_sshkey %>";
-SET @pubkey2="<%= @gerrit_local_sshkey %>";
-SET @jenkinskey="<%= @gerrit_jenkins_sshkey %>";
+SET @pubkey="{{ gerrit_admin_rsa_pub }}";
+SET @pubkey2="{{ gerrit_service_rsa_pub }}";
+SET @jenkinskey="{{ jenkins_rsa_pub }}";
 
 DELETE FROM account_ssh_keys WHERE  account_id=1 AND seq=1;
 DELETE FROM account_ssh_keys WHERE  account_id=1 AND seq=2;

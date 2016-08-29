@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# Copyright (C) 2015 Red Hat <licensing@enovance.com>
+# Copyright 2016 Red Hat
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -92,14 +92,14 @@ echo $(date +'%F %T') " - $0 called for change $CHANGE" | tee -a ${LOGFILE}
 COMMIT_MESSAGE=`git cat-file -p $COMMIT`
 COMMIT_MESSAGE="${COMMIT_MESSAGE//$QUOTE/$ESCAPED}"
 
-MANAGESF_BASE_URL=http://managesf.<%= @fqdn %>
-SF_SERVICE_PASSWORD=<%= @service_user_password %>
+MANAGESF_BASE_URL=http://managesf.{{ fqdn }}
+SF_SERVICE_PASSWORD={{ creds_sf_service_user_pwd }}
 
 PAYLOAD=`mktemp -u`
 COOKIE=`mktemp -u`
 (
 # get auth cookie
-curl -X POST http://<%= @fqdn %>/auth/login/ \
+curl -X POST http://{{ fqdn }}/auth/login/ \
      --data '{"back": "/", "method": "Password", "args": {"username": "_SF_SERVICE_USER_", "password": "'$SF_SERVICE_PASSWORD'"}}' \
      -c ${COOKIE} -H "Content-Type: application/json"
 # prepare JSON payload

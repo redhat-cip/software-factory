@@ -20,12 +20,4 @@ class systemctl {
     command     => '/usr/bin/systemctl daemon-reload',
     refreshonly => true,
   }
-
-  file { 'wait4mariadb':
-    path   => '/usr/libexec/wait4mariadb',
-    mode   => '0755',
-    owner  => 'root',
-    group  => 'root',
-    content => template('systemctl/wait4mariadb'),
-  }
 }

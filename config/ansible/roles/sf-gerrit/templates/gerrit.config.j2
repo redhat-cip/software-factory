@@ -1,14 +1,14 @@
 [gerrit]
     basePath = git
-    canonicalWebUrl = <%= @url['gerrit_pub_url'] %>
+    canonicalWebUrl = {{ gerrit_pub_url }}
     gitHttpUrl =
 [database]
     type = MYSQL
-    hostname = <%= @mysql_host %>
-    database = <%= @mysql_db %>
-    username = <%= @mysql_user %>
-    port = <%= @mysql_port %>
-    url = jdbc:mysql://<%= @mysql_host %>/<%= @mysql_db %>?useUnicode=yes&characterEncoding=UTF-8
+    hostname = {{ mysql_host }}
+    database = {{ mysql_db }}
+    username = {{ mysql_user }}
+    port = {{ mysql_port }}
+    url = jdbc:mysql://{{ mysql_host }}/{{ mysql_db }}?useUnicode=yes&characterEncoding=UTF-8
 [auth]
     type = HTTP
     gitBasicAuth = true
@@ -17,7 +17,7 @@
 [container]
     user = gerrit
     javaHome = /usr/lib/jvm/java-1.6.0-openjdk-1.6.0.0.x86_64/jre
-    heapLimit = <%= @settings['gerrit_heap_limit'] %>
+    heapLimit = {{ gerrit.gerrit_heap_limit }}
 [sshd]
     listenAddress = "*:29418"
 [httpd]
@@ -27,12 +27,12 @@
   link = "#q,$1,n,z"
 [commentlink "Redmine_addressing"]
     match = "([Bb]ug|[Ff]ix|[Ss]tory|[Ii]ssue|[Cc]loses?):\\s+#?(\\d+)"
-    html = $1<a href=\"<%= @url["redmine_pub_url"] %>/issues/$2\">$2</a>
+    html = $1<a href=\"{{ redmine_pub_url }}/issues/$2\">$2</a>
 [commentlink "Redmine_related"]
     match = "([Rr]elated|[Rr]elated[ -][Tt]o):\\s+#?(\\d+)"
-    html = $1<a href=\"<%= @url["redmine_pub_url"] %>/issues/$2\">$2</a>
+    html = $1<a href=\"{{ redmine_pub_url }}/issues/$2\">$2</a>
 [gitweb]
-    cgi = <%= @gitweb_cgi %>
+    cgi = {{ gitweb_cgi }}
 [sendemail]
     enable = true
     from = MIXED
@@ -49,6 +49,6 @@
 [cache]
     directory = cache
 [user]
-    email = gerrit@<%= @fqdn %>
+    email = gerrit@{{ fqdn }}
 [plugins]
     allowRemoteAdmin = true

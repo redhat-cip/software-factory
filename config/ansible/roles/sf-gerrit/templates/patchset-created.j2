@@ -102,8 +102,8 @@ echo $(date +'%F %T') " - $0 called for change $CHANGE" | tee -a ${LOGFILE}
 COMMIT_MESSAGE=`git cat-file -p $COMMIT`
 COMMIT_MESSAGE="${COMMIT_MESSAGE//$QUOTE/$ESCAPED}"
 
-MANAGESF_BASE_URL=http://managesf.<%= @fqdn %>
-SF_SERVICE_PASSWORD=<%= @service_user_password %>
+MANAGESF_BASE_URL=http://managesf.{{ fqdn }}
+SF_SERVICE_PASSWORD={{ creds_sf_service_user_pwd }}
 
 PAYLOAD=`mktemp -u`
 COOKIE=`mktemp -u`
