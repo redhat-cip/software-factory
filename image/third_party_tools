@@ -44,11 +44,14 @@ STORYBOARD_WEBCLIENT_COMMIT="ffda0be"
 STORYBOARD_WEBCLIENT_URL="https://tarballs.openstack.org/storyboard-webclient/storyboard-webclient-${STORYBOARD_WEBCLIENT_COMMIT}.tar.gz"
 
 URL_LIST="$URL_LIST $STORYBOARD_URL $STORYBOARD_WEBCLIENT_URL $STORYBOARD_CLIENT_URL"
+GIT_REPO_LIST="$GIT_REPO_LIST $STORYBOARD_URL $STORYBOARD_CLIENT_URL"
+
 if [ "${USE_SWIFT_CACHE}" == "yes" ]; then
     STORYBOARD_URL="${SWIFT_CACHE}/storyboard.git"
     STORYBOARD_CLIENT_URL="${SWIFT_CACHE}/python-storyboardclient.git"
     STORYBOARD_WEBCLIENT_URL="${SWIFT_CACHE}/storyboard-webclient/storyboard-webclient-${STORYBOARD_WEBCLIENT_COMMIT}.tar.gz"
 fi
+
 
 # Job logs Gearman processors
 LOG_GEARMAN_CLIENT_VERSION="d7d9d50ee2706608386c802246591a6c80a58a7f"
@@ -262,7 +265,7 @@ GERRITBOT_VERSION=d48b1bc41717291e43425ff437d6214b6934f60f
 PASTE_URL="https://git.openstack.org/openstack-infra/lodgeit"
 PASTE_VERSION=beb3ff7e266 # latest commit as of 05 Jun 2015
 
-GIT_REPO_LIST="$URL_LIST $NODEPOOL_URL $GERRITBOT_URL $PASTE_URL"
+GIT_REPO_LIST="$GIT_REPO_LIST $NODEPOOL_URL $GERRITBOT_URL $PASTE_URL"
 if [ "${USE_SWIFT_CACHE}" == "yes" ]; then
     ZUUL_EXTRA_VARS="zuul_url: \"${SWIFT_CACHE}/zuul.git\""
     ZUUL_EXTRA_VARS+=", zuul_commit: \"${ZUUL_VERSION}\""
