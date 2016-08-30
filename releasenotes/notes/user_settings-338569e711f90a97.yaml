@@ -1,0 +1,6 @@
+---
+features:
+  - A new software-factory wide user settings page is
+    now available from the top right menu.
+  - A new identity provider ("idp") sync toggle is available to
+    control if idp data are synchronized upon login or not.

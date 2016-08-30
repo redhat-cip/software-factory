@@ -24,6 +24,7 @@ function displayLoggedIn(username) {
         document.getElementById("login-msg").innerHTML = "Welcome " + username;
         document.getElementById("login-msg").style.display = "block";
         document.getElementById("login-btn").style.display = "none";
+        document.getElementById("login-setting").style.display = "block";
         document.getElementById("logout-btn").style.display = "block";
     } catch (err) {
     }
@@ -34,6 +35,7 @@ function displaySignIn() {
         document.getElementById("login-msg").innerText = "";
         document.getElementById("login-msg").style.display = "none";
         document.getElementById("login-btn").style.display = "block";
+        document.getElementById("login-setting").style.display = "none";
         document.getElementById("logout-btn").style.display = "none";
     } catch (err) {
     }
@@ -53,6 +55,8 @@ function initAuth() {
                     // storyboard_api is already protected by cauth, the token is the username
                     localStorage.setItem("ls.access_token", username);
                     localStorage.setItem("ls.token_type", "Bearer");
+                    // store sf user info
+                    localStorage.setItem("sf.username", username);
                     displayLoggedIn(username);
                     return;
                 }

@@ -445,6 +445,11 @@ class TestManageSF(Base):
         """
         active_users = self.msu.list_active_members(config.USER_2)
         for user in active_users:
+            # Remove the if below once managesf change is merged
+            # I9f994288b9991dda81b98f59357b8ea753e6d200
+            if "idp_sync" in user.keys():
+                del user["idp_sync"]
+            # TODO: add idp_sync in bellow key list
             self.assertEqual(sorted(['username', 'fullname',
                                      'email', 'cauth_id', 'id']),
                              sorted(user.keys()),

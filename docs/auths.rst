@@ -94,6 +94,14 @@ The SSO cookie timeout can also be changed:
     # timeout of sessions in seconds
     sso_cookie_timeout: 43200
 
+Identity provider data sync
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+By default, user data such as full name or email address are synchronized upon each successful login. Users
+can disable this behavior in the user settings page (available from top right menu). When disabled, users
+can manage the email address used in Software Factory service indepently from the identity provider data.
+
+
 Redmine API key change
 """"""""""""""""""""""
 

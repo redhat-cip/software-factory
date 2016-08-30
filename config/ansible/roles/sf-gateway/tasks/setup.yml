@@ -11,6 +11,13 @@
   service: name=socat_gerrit enabled=no state=stopped
   when: groups['gerrit'] == groups['gateway'] and socat_service.stat.exists
 
+- name: "sf-web-ui: create directory"
+  file: path=/var/www/sf state=directory
+
+- name: "sf-web-ui: copy files"
+  copy: src=files/{{item}} dest=/var/www/sf/{{item}} mode=0444
+  with_items: ["user_settings.html", "user_settings.js"]
+
 - name: "apache: create ssl.conf"
   copy:
     src=files/ssl.conf dest=/etc/httpd/conf.d/ssl.conf

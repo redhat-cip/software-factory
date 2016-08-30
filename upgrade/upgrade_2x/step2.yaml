@@ -36,6 +36,8 @@
   tasks:
   - name: Restart the configuration script
     shell: sfconfig.sh > /var/log/upgrade-bootstrap.log
+  # Managesf database migration
+  - include: tasks/managesf_db.yml
 
 - hosts: statsd
   tasks:

@@ -1,0 +1,5 @@
+---
+- name: "Add idp_sync column"
+  command: mysql managesf -e "alter table SF_USERS add column idp_sync bool default true"
+  ignore_errors: yes
+#  no_log: true

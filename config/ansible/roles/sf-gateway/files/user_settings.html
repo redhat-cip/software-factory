@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Cache-control" content="no-cache, max-age=0">
+    <link rel="stylesheet" href="/static/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="/static/bootstrap/css/bootstrap.min.css">
+    <script src="/static/js/jquery.min.js"></script>
+    <script src="/static/bootstrap/js/bootstrap.min.js"></script>
+    <script src="/static/js/angular.min.js"></script>
+    <script src="/static/js/topmenu.js"></script>
+    <script src="user_settings.js"></script>
+</head>
+
+<body ng-app="sfSettings" ng-controller="mainController">
+    <div class="container">
+        <h3>User {{user.username}} informations</h3>
+        <form ng-submit="save()"><table>
+            <tr data-toggle="tooltip" data-placement="right" title="The username is immutable!">
+                <td><label>Username</label></td>
+                <td><input type="text" ng-model="user.username" ng-disabled="true" /></td>
+            </tr>
+            <tr>
+                <td><label>Full name</label></td>
+                <td><input type="text" ng-model="user.fullname" ng-disabled="user.idp_sync" /></td>
+            </tr>
+            <tr>
+                <td><label>eMail</label></td>
+                <td><input type="text" ng-model="user.email" ng-disabled="user.idp_sync" /></td>
+            </tr>
+            <tr data-toggle="tooltip" data-placement="bottom" title="When disabled, eMail and full name are not updated with Identity Provider data">
+                <td><label>Synchronize user data with the Identity Provider&nbsp;</label></td>
+                <td><input type="checkbox" ng-model="user.idp_sync" /></td>
+            </tr>
+            <tr><td style="text-align: center" colspan="2">
+                <input type="submit" value="Save" />
+                <div class="alert alert-success" ng-show="showSuccessAlert">
+                    <strong>Saved!</strong> {{successTextAlert}}
+                    <button type="button" class="close" data-ng-click="showSuccessAlert = !showSuccessAlert">×</button>
+                </div>
+                <div class="alert alert-danger" ng-show="showErrorAlert">
+                    <strong>Oops, couldn't save!</strong>
+                    <button type="button" class="close" data-ng-click="showErrorAlert = !showErrorAlert">×</button>
+                </div>
+
+            </td></tr>
+        </table></form>
+    </div>
+</body>
+</html>
