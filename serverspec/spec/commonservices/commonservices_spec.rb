@@ -17,7 +17,7 @@ require 'spec_helper'
 
 describe user('etherpad') do
     it {
-        should exist 
+        should exist
     }
 end
 

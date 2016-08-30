@@ -356,4 +356,3 @@ else
         qemu-img convert $COMP_OPT -O $IMAGE_FORMAT "$IMG" "$IMG".$IMAGE_FORMAT
     fi
 fi
-

@@ -19,12 +19,12 @@
   copy:
       dest: /etc/mailname
       content: "{{ ansible_fqdn }}"
-      owner: root 
-      group: root 
+      owner: root
+      group: root
       mode: 0640
 
 - name: "postfix: ensure directories exist"
-  file: 
+  file:
     owner: root
     group: root
     path: /etc/postfix/
@@ -65,7 +65,7 @@
     - restart monit
 
 - name: "postfix: start service"
-  service: 
+  service:
     name: postfix
-    enabled: yes 
+    enabled: yes
     state: started

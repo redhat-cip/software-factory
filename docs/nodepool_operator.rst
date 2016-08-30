@@ -91,5 +91,3 @@ state delete):
 .. code-block:: mysql
 
      DELETE FROM node WHERE state_time < (UNIX_TIMESTAMP() - 86400) AND state = 4;
-
-

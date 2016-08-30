@@ -62,7 +62,7 @@ function initAuth() {
     displaySignIn();
 };
 
-/** Init function 
+/** Init function
  */
 if (document.body) {
     initAuth();

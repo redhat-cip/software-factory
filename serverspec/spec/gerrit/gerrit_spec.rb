@@ -16,7 +16,7 @@ require 'spec_helper'
 
 describe user('gerrit') do
     it {
-        should exist 
+        should exist
         should belong_to_group 'gerrit'
         should have_home_directory '/home/gerrit'
     }
@@ -25,7 +25,7 @@ end
 describe file('/home/gerrit/site_path') do
     it {
         should be_directory
-        should be_owned_by 'gerrit' 
+        should be_owned_by 'gerrit'
     }
 end
 
@@ -145,7 +145,7 @@ describe file('/home/gerrit/site_path/lib/mysql-connector-java-5.1.21.jar') do
         should be_grouped_into 'gerrit'
     }
 end
-  
+
 describe file('/home/gerrit/site_path/lib/bcprov-jdk15on-1.51.jar') do
     it {
         should be_file

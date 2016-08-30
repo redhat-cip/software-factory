@@ -2,7 +2,7 @@
 - include_vars: /etc/puppet/hiera/sf/sfconfig.yaml
 
 - name: "monit: ensure directories exist"
-  file: 
+  file:
     owner: root
     group: root
     path: "{{ item }}"
@@ -14,7 +14,7 @@
 
 - name: "monit: manage monitrc"
   template:
-    src: monitrc.j2 
+    src: monitrc.j2
     dest: /etc/monitrc
     owner: root
     group: root
@@ -37,4 +37,3 @@
 
 - name: "monit: start service"
   service: name=monit enabled=yes state=started
-

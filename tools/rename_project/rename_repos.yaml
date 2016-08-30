@@ -118,7 +118,7 @@
       replace='\1{{ item.new | regex_replace('/', '_') }}\2'
       backup=yes
     with_items: repos
-    when: sshconfig.stat.exists == true 
+    when: sshconfig.stat.exists == true
     tags:
       - replication_project_rename
 

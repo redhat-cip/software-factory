@@ -16,7 +16,7 @@ require 'spec_helper'
 
 describe user('jenkins') do
     it {
-        should exist 
+        should exist
     }
 end
 
@@ -44,4 +44,3 @@ end
 describe port(8080) do
   it { should be_listening }
 end
-

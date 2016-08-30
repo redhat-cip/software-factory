@@ -33,4 +33,3 @@
   with_items: "{{ inventory }}"
   when: '"kibana" in item["roles"]'
   notify: apache reload
-

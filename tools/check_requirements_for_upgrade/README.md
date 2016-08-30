@@ -17,4 +17,4 @@ ZUUL_PROJECT=/path/to/project ./check_requirements_for_updates.sh
 
 or
 
-./check_requirements_for_updates.sh path/to/requirements.txt 
+./check_requirements_for_updates.sh path/to/requirements.txt

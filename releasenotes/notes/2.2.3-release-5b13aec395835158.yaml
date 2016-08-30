@@ -16,4 +16,3 @@ fixes:
     quotes
   - prevent gnupg keyrings of the root user to be wiped
     during upgrade
-

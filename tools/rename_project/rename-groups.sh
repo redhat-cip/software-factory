@@ -21,4 +21,3 @@ core=$(ssh -i /root/sf-bootstrap-data/ssh_keys/gerrit_service_rsa -p 29418 admin
 if [ -z "$core" ]; then
     ssh -i /root/sf-bootstrap-data/ssh_keys/gerrit_service_rsa -p 29418 admin@managesf gerrit rename-group "$1-core" "$2-core"
 fi
-

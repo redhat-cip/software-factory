@@ -41,4 +41,3 @@
 - name: Remove /root/fqdn_changed
   when: fqdn_changed.stat.exists
   file: path=/root/fqdn_changed state=absent
-

@@ -10,4 +10,3 @@ ExecStart=/srv/log-gearman-client/bin/python /srv/log-gearman-client/bin/log-gea
 
 [Install]
 WantedBy=multi-user.target
-

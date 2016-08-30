@@ -74,5 +74,3 @@ staticweb middleware too.
 The Software Factory administrator should have configured Zuul via sfconfig.yaml
 to allow you to use that feature. See the
 :ref:`Swiftlogs operator documentation<swiftlogs-operator>`
-
-

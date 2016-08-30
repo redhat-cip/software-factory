@@ -23,4 +23,3 @@
 #    - virtualenv /usr/src/storyboard-webclient/.venv
 #    - /usr/src/storyboard-webclient/.venv/bin/pip install --upgrade 'pbr' 'pip<8' 'tox'
 #    - /usr/src/storyboard-webclient/.venv/bin/tox -egrunt_no_api -- compile
-

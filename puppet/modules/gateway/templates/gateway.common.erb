@@ -6,8 +6,8 @@
 
     # Don't login to Redmine itself, use cauth instead
     <LocationMatch "/redmine/login">
-	RewriteEngine On
-	RewriteRule ^(.*)$ <%= @cauth_signin_url %> [R,NC,L]
+    RewriteEngine On
+    RewriteRule ^(.*)$ <%= @cauth_signin_url %> [R,NC,L]
     </LocationMatch>
 
     <Location "/rb/">
@@ -33,22 +33,22 @@
         ProxyHTMLEnable On
 
         # Included example from /usr/share/doc/httpd-2.4.6/proxy-html.conf
-        ProxyHTMLLinks	a		    href
-        ProxyHTMLLinks	area		href
-        ProxyHTMLLinks	link		href
-        ProxyHTMLLinks	img		    src longdesc usemap
-        ProxyHTMLLinks	object		classid codebase data usemap
-        ProxyHTMLLinks	q		    cite
-        ProxyHTMLLinks	blockquote	cite
-        ProxyHTMLLinks	ins		    cite
-        ProxyHTMLLinks	del		    cite
-        ProxyHTMLLinks	form		action
-        ProxyHTMLLinks	input		src usemap
-        ProxyHTMLLinks	head		profile
-        ProxyHTMLLinks	base		href
-        ProxyHTMLLinks	script		src for
+        ProxyHTMLLinks    a             href
+        ProxyHTMLLinks    area          href
+        ProxyHTMLLinks    link          href
+        ProxyHTMLLinks    img           src longdesc usemap
+        ProxyHTMLLinks    object        classid codebase data usemap
+        ProxyHTMLLinks    q             cite
+        ProxyHTMLLinks    blockquote    cite
+        ProxyHTMLLinks    ins           cite
+        ProxyHTMLLinks    del           cite
+        ProxyHTMLLinks    form          action
+        ProxyHTMLLinks    input         src usemap
+        ProxyHTMLLinks    head          profile
+        ProxyHTMLLinks    base          href
+        ProxyHTMLLinks    script        src for
 
-        ProxyHTMLEvents	onclick ondblclick onmousedown onmouseup \
+        ProxyHTMLEvents    onclick ondblclick onmousedown onmouseup \
                 onmouseover onmousemove onmouseout onkeypress \
                 onkeydown onkeyup onfocus onblur onload \
                 onunload onsubmit onreset onselect onchange
@@ -58,17 +58,17 @@
     </Location>
 
     <LocationMatch "/r/(?!(login|logout|a))">
-	RewriteEngine On
+    RewriteEngine On
 
-	# Logged in in SSO, but logged out from Gerrit
-	RewriteCond %{HTTP_COOKIE} !^GerritAccount.*$ [NC]
-	RewriteCond %{HTTP_COOKIE} ^.*auth_pubtkt.*$ [NC]
-	RewriteRule ^(.*)$ /r/login [R,NC,L]
+    # Logged in in SSO, but logged out from Gerrit
+    RewriteCond %{HTTP_COOKIE} !^GerritAccount.*$ [NC]
+    RewriteCond %{HTTP_COOKIE} ^.*auth_pubtkt.*$ [NC]
+    RewriteRule ^(.*)$ /r/login [R,NC,L]
 
-	# Logged in in Gerrit, but logged out from cauth
-	RewriteCond %{HTTP_COOKIE} ^GerritAccount.*$ [NC]
-	RewriteCond %{HTTP_COOKIE} !^.*auth_pubtkt.*$ [NC]
-	RewriteRule ^(.*)$ /r/logout [R,NC,L]
+    # Logged in in Gerrit, but logged out from cauth
+    RewriteCond %{HTTP_COOKIE} ^GerritAccount.*$ [NC]
+    RewriteCond %{HTTP_COOKIE} !^.*auth_pubtkt.*$ [NC]
+    RewriteRule ^(.*)$ /r/logout [R,NC,L]
     </LocationMatch>
 
     <LocationMatch "/r/(login|a)(/|$)">
@@ -147,9 +147,9 @@
             allow from all
         </Proxy>
 
-	    <% @allowed_proxy_prefixes.each do |prefix| -%>
+        <% @allowed_proxy_prefixes.each do |prefix| -%>
         ProxyPassMatch ^/jenkinslogs/<%= prefix %>(.*)$ http://<%= prefix %>$1
-	    <% end -%>
+        <% end -%>
 
         RewriteRule ^/grafana$ grafana/ [R]
         ProxyPass /grafana/ http://127.0.0.1:3000/

@@ -1,8 +1,8 @@
 digraph {
     nodesep = 0.5;
     ranksep = 1.0;
-    node [shape=circle,width=1.0]; 
-    edge [fontsize=10]; 
+    node [shape=circle,width=1.0];
+    edge [fontsize=10];
     rankdir=LR;
 
     subgraph cluster_one {
@@ -15,7 +15,7 @@ digraph {
             "A2" [shape="box" color="white" label="#1"];
             A1 -> A2 [style=invis]
         }
-    
+
         subgraph cluster_B {
             label = "";
             color=lightgrey;
@@ -23,7 +23,7 @@ digraph {
             "B2" [shape="box" color="white" label="#2"];
             B1 -> B2 [style=invis]
         }
-    
+
         subgraph cluster_C {
             label = "";
             color=lightgrey;
@@ -47,7 +47,7 @@ digraph {
             "D2" [shape="box" color="white" label="#1"];
             D1 -> D2 [style=invis]
         }
-    
+
         subgraph cluster_E {
             label = "";
             color=lightgrey;
@@ -55,7 +55,7 @@ digraph {
             "E2" [shape="box" color="white" label="#2"];
             E1 -> E2 [style=invis]
         }
-    
+
         subgraph cluster_F {
             label = "";
             color=lightgrey;
@@ -80,7 +80,7 @@ digraph {
             "G2" [shape="box" color="white" label="#1"];
             G1 -> G2 [style=invis]
         }
-    
+
         subgraph cluster_H {
             label = "";
             color=gray;
@@ -89,7 +89,7 @@ digraph {
             "H2" [shape="box" color="white" label="#2" fontcolor=gray];
             H1 -> H2 [style=invis]
         }
-    
+
         subgraph cluster_I {
             label = "";
             color=lightgrey;

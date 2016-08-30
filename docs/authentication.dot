@@ -1,7 +1,7 @@
-digraph { 
+digraph {
     nodesep = 1.0;
-    node [fontsize=10,width=0.9,shape=doublecircle,color=orange]; 
-    edge [fontsize=10]; 
+    node [fontsize=10,width=0.9,shape=doublecircle,color=orange];
+    edge [fontsize=10];
 
     "User" [shape=box];
     "Apache";
@@ -25,27 +25,27 @@ digraph {
     edge [dir=forward, color=black, style=solid];
 
     u1 -> a1 [label="1. Request"]; {rank=same; u1; a1;}
- 
+
     a2 -> u2 [label="2. Redirect to login Form", constraint=False]; {rank=same;u2; a2;}
 
     u3 -> c3 [label="3. Select Github authentication"]; {rank=same;u3; c3;}
-   
+
     c4 -> u4 [label=" 4. Redirect to Github", constraint=False]; {rank=same; c4; u4;}
 
     u5 -> g5 [label="5. Request"]; {rank=same; u5; g5;}
- 
+
     g5 -> g6 [label=" 6. Authenticate", constraint=False];
 
     g6 -> u6 [label=" 7. Redirect to cauth with token", constraint=False]; {rank=same; u6; g6;}
 
     u7 -> c7 [label="8. Request with token"]; {rank=same;u7; c7;}
- 
+
     c7 -> c8 [label=" 9. Verify token", constraint=False];
 
     c8 -> u8 [label=" 10. Redirect to Apache with cookie", constraint=False]; {rank=same; u6; g6;}
 
     u9 -> a9 [label="11. Request with cookie"]; {rank=same; u9; a9;}
- 
+
     a9 -> a10 [label=" 12. Verify cookie", constraint=False];
 
     a10 -> u10 [label="13. Final response with content", constraint=False]; {rank=same;u10; a10;}

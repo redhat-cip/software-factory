@@ -3,7 +3,7 @@ SET @mail="admin@<%= @fqdn %>";
 SET @pubkey="<%= @gerrit_admin_sshkey %>";
 SET @pubkey2="<%= @gerrit_local_sshkey %>";
 
-DELETE FROM account_external_ids WHERE account_id = 1; 
+DELETE FROM account_external_ids WHERE account_id = 1;
 
 DROP TRIGGER IF EXISTS default_password;
 delimiter //
