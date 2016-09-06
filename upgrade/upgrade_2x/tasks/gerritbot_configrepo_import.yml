@@ -19,4 +19,4 @@
     - bash -c "cp /etc/gerritbot/channels.yaml /root/config/gerritbot/channels.yaml || touch /root/config/gerritbot/channels.yaml"
     - git add gerritbot
     - git commit -m "Import of gerritbot configuration"
-    - git push git+ssh://{{ fqdn }}/config
+    - git push git+ssh://{{ fqdn }}/config master

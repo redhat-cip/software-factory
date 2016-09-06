@@ -1,0 +1,20 @@
+---
+- name: Check if gerrit commentlinks already in config-repo
+  stat: path=/root/config/gerrit/commentlinks.yaml
+  register: configrepo_gerritlinks
+
+- name: Include sfconfig.yaml to get fqdn
+  include_vars: /etc/puppet/hiera/sf/sfconfig.yaml
+
+- name: Copy gerrit commentlinks configuration
+  when: configrepo_gerritlinks.stat.exists == false
+  command: chdir=/root/config {{ item }}
+  with_items:
+    - git fetch --all
+    - git reset --hard origin/master --
+    - git clean -f -x -d
+    - bash -c "[ -d /root/config/gerrit ] || mkdir /root/config/gerrit"
+    - cp {{install_path}}/softwarefactory/usr/local/share/sf-config-repo/gerrit/commentlinks.yaml gerrit
+    - git add gerrit/commentlinks.yaml
+    - git commit -m "Initialize gerrit commentlinks"
+    - git push git+ssh://{{ fqdn }}/config master

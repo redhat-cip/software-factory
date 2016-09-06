@@ -107,6 +107,9 @@
           echo "[+] Checking gerrit replication"
           git config -f gerrit/replication.config -l > /dev/null
 
+          echo "[+] Checking gerrit commentlinks"
+          python -c "import yaml; 'commentlinks' in yaml.safe_load(open('gerrit/commentlinks.yaml'))"
+
           echo "[+] Checking syntax errors in policy file"
           python -c "import yaml; yaml.safe_load(open('policies/policy.yaml'))"
     triggers:

@@ -1,0 +1,32 @@
+---
+- file: path=/var/lib/software-factory/gerrit_config state=touch
+
+- name: Check local config
+  command: cat /var/lib/software-factory/gerrit_config
+  register: localconfig
+
+- name: Check upstream config
+  command: chdir=/root/config git log --oneline gerrit/commentlinks.yaml
+  register: upstreamconfig
+
+# Include gerrit.yaml for heap_limit
+- include_vars: /etc/puppet/hiera/sf/gerrit.yaml
+
+- include_vars: /root/config/gerrit/commentlinks.yaml
+
+- name: Update configuration file
+  when: localconfig.stdout != upstreamconfig.stdout
+  template:
+    src: gerrit.config.j2
+    dest: /home/gerrit/site_path/etc/gerrit.config
+    owner: gerrit
+    group: gerrit
+    mode: 0644
+
+- name: Reload gerrit service
+  service: name=gerrit state=restarted
+  when: localconfig.stdout != upstreamconfig.stdout
+
+- name: Write config repo sha1 matching current configuration
+  copy: content="{{ upstreamconfig.stdout }}" dest=/var/lib/software-factory/gerrit_config
+  when: localconfig.stdout != upstreamconfig.stdout

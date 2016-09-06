@@ -1,3 +1,5 @@
 ---
 - include: setup.yml
   when: action is not defined or action == "setup"
+- include: update.yml
+  when: action is defined and action == "update"

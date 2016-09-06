@@ -33,5 +33,4 @@ To update the configuration repo:
    gerritbot_user
    gerrit_replication_user
    access_control_user
-
-
+   gerritlinks_user

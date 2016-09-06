@@ -23,14 +23,13 @@
 [httpd]
     listenUrl = proxy-http://0.0.0.0:8000/r/
 [commentlink "changeid"]
-  match = (I[0-9a-f]{8,40})
-  link = "#q,$1,n,z"
-[commentlink "Redmine_addressing"]
-    match = "([Bb]ug|[Ff]ix|[Ss]tory|[Ii]ssue|[Cc]loses?):\\s+#?(\\d+)"
-    html = $1<a href=\"{{ redmine_pub_url }}/issues/$2\">$2</a>
-[commentlink "Redmine_related"]
-    match = "([Rr]elated|[Rr]elated[ -][Tt]o):\\s+#?(\\d+)"
-    html = $1<a href=\"{{ redmine_pub_url }}/issues/$2\">$2</a>
+    match = (I[0-9a-f]{8,40})
+    link = "#q,$1,n,z"
+{% for commentlink in commentlinks %}
+[commentlink "{{ commentlink.name }}"]
+    match = "{{ commentlink.match }}"
+    html = "{{ commentlink.html }}"
+{% endfor %}
 [gitweb]
     cgi = {{ gitweb_cgi }}
 [sendemail]

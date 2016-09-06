@@ -1,0 +1,10 @@
+---
+features:
+  - Gerrit comment links are now configurable through
+    the config repo gerrit/commentlinks.yaml file. This
+    enable chaning the default redirection from redmine
+    to a custom external bug tracker.
+upgrade:
+  - The default gerrit/commentlinks.yaml file will be
+    automatically added to the config repo during the
+    upgrade.

@@ -34,6 +34,12 @@
   shell: "systemctl daemon-reload"
   when: install_service_file|changed
 
+# During the first run, config repo isn't created, so use the default file
+- include_vars: "{{ item }}"
+  with_first_found:
+    - /root/config/gerrit/commentlinks.yaml
+    - /usr/local/share/sf-config-repo/gerrit/commentlinks.yaml
+
 - name: "Install configuration files"
   template:
     src: "{{ item.name }}.j2"
