@@ -2,7 +2,6 @@
 
 Modular Architecture: arch.yaml
 ===============================
---------------------
 
 SF architecture is modular and defined by a single file called arch.yaml. This
 file defines the number of nodes, their requirements in term of resources and
