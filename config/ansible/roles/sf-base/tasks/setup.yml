@@ -33,6 +33,10 @@
   with_items: [httpd_can_network_connect, httpd_can_network_connect_db]
   when: selinuxenabled
 
+- name: "system: install wait4 scripts"
+  copy: src={{ item }} dest=/usr/libexec/{{ item }} mode=0555
+  with_items: [wait4port, wait4mariadb, wait4gerrit]
+
 - name: "puppet: add include statement (puppet: apply 'include ::sfbase) "
   include: /etc/ansible/tasks/puppet.yml puppet_statement="include ::sfbase"
 
@@ -53,9 +57,3 @@
       dest: "/srv/cauth_keys/pubkey.pem"
       mode: 0444
       setype: httpd_sys_content_t
-
-- name: "Initialize bup"
-  shell: "/usr/local/bin/bup init"
-  args:
-      chdir: /root
-      creates: /root/.bup/HEAD

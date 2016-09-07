@@ -4,3 +4,9 @@
 
 - name: "Copy app.wsgi"
   copy: src=app.wsgi dest=/var/www/managesf/app.wsgi
+
+- name: "Initialize bup"
+  shell: "/usr/local/bin/bup init"
+  args:
+      chdir: /root
+      creates: /root/.bup/HEAD

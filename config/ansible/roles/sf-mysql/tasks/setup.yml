@@ -21,12 +21,3 @@
 
 - name: Create databases
   shell: "mysql < /root/create_databases.sql"
-
-- name: "Install wait4mariadb script"
-  template:
-      src: wait4mariadb.j2
-      dest: /usr/libexec/wait4mariadb
-      owner: root
-      group: root
-      mode: 0755
-

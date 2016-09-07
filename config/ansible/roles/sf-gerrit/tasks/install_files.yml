@@ -76,7 +76,6 @@
   with_items:
     - { name: project.config, path: /root/gerrit_data_source, mode: '0640' }
     - { name: ssh_wrapper.sh, path: /root/gerrit_data_source, mode: '0740' }
-    - { name: wait4gerrit.sh, path: /usr/libexec, mode: '0755', realname: wait4gerrit }
 
 - name: "Install initialization and migration scripts"
   template:
