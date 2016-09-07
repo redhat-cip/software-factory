@@ -54,4 +54,4 @@ class TestConfigRepo(Base):
                                                     "jobs/projects.yaml")))
 
         self.assertTrue(os.path.isfile(os.path.join(clone_dir,
-                                                    "policies/policy.json")))
+                                                    "policies/policy.yaml")))

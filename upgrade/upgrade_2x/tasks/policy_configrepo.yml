@@ -15,7 +15,7 @@
     - git clean -f -x -d
     - mkdir policies
     # Copy default policy.json
-    - cp {{install_path}}/softwarefactory/usr/local/share/sf-config-repo/policies/policy.json policies/
+    - cp {{install_path}}/softwarefactory/usr/local/share/sf-config-repo/policies/policy.yaml policies/
     - git add policies
     - git commit -m "Initialize policy configuration"
     - git push git+ssh://{{ fqdn }}/config master

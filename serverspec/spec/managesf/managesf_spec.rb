@@ -18,6 +18,6 @@ describe port(80) do
   it { should be_listening }
 end
 
-describe file('/var/www/managesf/policy.json') do
+describe file('/var/www/managesf/policy.yaml') do
     it { should be_file }
 end

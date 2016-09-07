@@ -350,24 +350,23 @@ function run_bootstraps {
     ssh-add ~/.ssh/id_rsa
     echo "$(date) ======= run_bootstraps" | tee -a ${ARTIFACTS_DIR}/bootstraps.log
 
-    echo "POLICY: prepare policy to support project creation by any user..."
     ssh ${SF_HOST} python <<SCRIPT
 import json
+import yaml
 import os
-f = '/usr/local/share/sf-config-repo/policies/policy.json'
+f = '/usr/local/share/sf-config-repo/policies/policy.yaml'
 if not os.path.isfile(f):
     exit(0)
-j = json.load(file(f))
-j['managesf.project:create'] = 'rule:authenticated_api'
-j['managesf.project:delete'] = 'rule:authenticated_api'
-json.dump(j, file(f, 'w'), indent=1)
+d = yaml.load(open(f))
+d['managesf.project:create'] = 'rule:authenticated_api'
+d['managesf.project:delete'] = 'rule:authenticated_api'
+json.dump(d, file(f, 'w'), indent=1)
+print "POLICY: prepared policy to support project creation by any user..."
 SCRIPT
-
     ssh -A -tt ${SF_HOST} sfconfig.sh &> ${ARTIFACTS_DIR}/sfconfig.log \
         && echo "sfconfig.sh: SUCCESS"  \
         || { kill -9 $SSH_AGENT_PID; fail "sfconfig.sh failed" ${ARTIFACTS_DIR}/sfconfig.log; }
     kill -9 $SSH_AGENT_PID
-    rm /tmp/pol_change.py
     checkpoint "run_bootstraps"
     fetch_bootstraps_data
 }
@@ -476,11 +475,30 @@ function run_upgrade {
     sudo mkdir -p /var/lib/lxc/${INSTALL_SERVER}/rootfs/${IMAGE_PATH}/ || fail "Could not copy ${SF_VER}"
     sudo rsync -a --delete ${IMAGE_PATH}/ /var/lib/lxc/${INSTALL_SERVER}/rootfs/${IMAGE_PATH}/ || fail "Could not copy ${SF_VER}"
 
-    echo "POLICY: prepare policy to support project creation by any user..."
-    ssh ${SF_HOST} "cd /root/config; if [ -f policies/policy.json ]; then sed -i policies/policy.json -e 's/rule:admin_api/rule:authenticated_api/'; git add policies; git commit -a -m 'test policy...'; git push git+ssh://sftests.com/config master; else exit 1; fi" || {
-        sudo sed -i /var/lib/lxc/${INSTALL_SERVER}/rootfs/${IMAGE_PATH}/usr/local/share/sf-config-repo/policies/policy.json \
-            -e "s/rule:admin_api/rule:authenticated_api/"
-    }
+    ssh ${SF_HOST} python <<SCRIPT
+import json
+import yaml
+import os
+import subprocess
+os.chdir('/root/config')
+f = 'policies/policy.yaml'
+commit = True
+if not os.path.isfile(f):
+    commit = False
+    f = "${IMAGE_PATH}/usr/local/share/sf-config-repo/policies/policy.yaml"
+d = yaml.load(open(f))
+d['managesf.project:create'] = 'rule:authenticated_api'
+d['managesf.project:delete'] = 'rule:authenticated_api'
+json.dump(d, file(f, 'w'), indent=1)
+if commit:
+    for cmd in [
+        ['git', 'add', 'policies'],
+        ['git', 'commit', '-m', 'test policy...'],
+        ['git', 'push', 'git+ssh://sftests.com/config', 'master']
+        ]:
+        subprocess.Popen(cmd).wait()
+print "POLICY: prepared policy to support project creation by any user..."
+SCRIPT
 
     echo "[+] Running upgrade"
     ssh ${SF_HOST} "cd software-factory; ./upgrade.sh" || fail "Upgrade failed" "/var/lib/lxc/${INSTALL_SERVER}/rootfs/var/log/upgrade-bootstrap.log"
