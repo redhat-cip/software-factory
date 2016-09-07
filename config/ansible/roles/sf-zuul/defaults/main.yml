@@ -1,3 +1,8 @@
+role_actions:
+  - install
+  - setup
+  - update
+
 puppet_modules: zuul
 jquery_visibility_url: http://status.openstack.org/jquery-visibility.min.js
 jquery_graphite_url: http://status.openstack.org/jquery-graphite.js

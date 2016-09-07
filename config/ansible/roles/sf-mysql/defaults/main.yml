@@ -1,1 +1,4 @@
+role_actions:
+  - setup
+
 mysql_host: "mysql.{{ fqdn }}"

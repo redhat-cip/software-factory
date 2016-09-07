@@ -1,3 +1,7 @@
+role_actions:
+  - setup
+  - update
+
 puppet_modules:
   - jenkins
   - jjb

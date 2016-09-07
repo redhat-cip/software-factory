@@ -165,6 +165,5 @@ gerritbot:
     password: null
 
 mumble:
-    disabled: False
     password: False
     super_user_password: CHANGEME

@@ -111,6 +111,10 @@ def update_sfconfig(data):
 
     if 'use_letsencrypt' not in data['network']:
         data['network']['use_letsencrypt'] = False
+
+    # Mumble is enable when the role is defined in arch
+    if 'disabled' in data['mumble']:
+        del data['mumble']['disabled']
         dirty = True
 
     return dirty

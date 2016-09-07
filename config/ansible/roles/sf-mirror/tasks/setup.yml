@@ -1,0 +1,2 @@
+---
+- include: /etc/ansible/tasks/create_user.yml user_name=mirror2swift

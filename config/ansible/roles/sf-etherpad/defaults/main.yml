@@ -1,1 +1,4 @@
+role_actions:
+  - setup
+
 puppet_modules: etherpad

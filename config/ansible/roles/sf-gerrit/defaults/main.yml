@@ -1,3 +1,7 @@
+role_actions:
+  - setup
+  - update
+
 gerrit_admin_rsa: "{{ gerrit_admin_rsa }}"
 gerrit_admin_rsa_pub: "{{ gerrit_admin_rsa_pub }}"
 gerrit_email_pk: "{{ creds_gerrit_email_pk }}"
