@@ -32,31 +32,58 @@ class gateway {
   $theme = hiera('theme')
   $sf_version = hiera('sf_version')
 
-  file {'gateway_crt':
-    ensure  => file,
-    path    => '/etc/httpd/conf.d/gateway.crt',
-    content => inline_template('<%= @gateway_crt %>'),
-    mode    => '0640',
-    owner   => 'apache',
-    group   => 'apache',
+  if $network['use_letsencrypt'] {
+    file {'gateway_crt':
+      ensure  => symlink,
+      path    => '/etc/httpd/conf.d/gateway.crt',
+      target  => "/etc/letsencrypt/pem/${fqdn}.pem",
+    }
+
+    file {'gateway_chain':
+      ensure  => symlink,
+      path    => '/etc/httpd/conf.d/gateway-chain.crt',
+      target  => '/etc/letsencrypt/pem/lets-encrypt-x3-cross-signed.pem',
+    }
+
+    file {'gateway_key':
+      ensure  => symlink,
+      path    => '/etc/httpd/conf.d/gateway.key',
+      target  => "/etc/letsencrypt/private/${fqdn}.key",
+    }
+  } else {
+    file {'gateway_crt':
+      ensure  => file,
+      path    => '/etc/httpd/conf.d/gateway.crt',
+      content => inline_template('<%= @gateway_crt %>'),
+      mode    => '0640',
+      owner   => 'apache',
+      group   => 'apache',
+    }
+
+    file {'gateway_chain':
+      ensure  => file,
+      path    => '/etc/httpd/conf.d/gateway-chain.crt',
+      content => inline_template('<%= @gateway_chain %>'),
+      mode    => '0640',
+      owner   => 'apache',
+      group   => 'apache',
+    }
+
+    file {'gateway_key':
+      ensure  => file,
+      path    => '/etc/httpd/conf.d/gateway.key',
+      content => inline_template('<%= @gateway_key %>'),
+      mode    => '0640',
+      owner   => 'apache',
+      group   => 'apache',
+    }
   }
 
-  file {'gateway_chain':
-    ensure  => file,
-    path    => '/etc/httpd/conf.d/gateway-chain.crt',
-    content => inline_template('<%= @gateway_chain %>'),
-    mode    => '0640',
-    owner   => 'apache',
-    group   => 'apache',
-  }
-
-  file {'gateway_key':
-    ensure  => file,
-    path    => '/etc/httpd/conf.d/gateway.key',
-    content => inline_template('<%= @gateway_key %>'),
-    mode    => '0640',
-    owner   => 'apache',
-    group   => 'apache',
+  exec { 'reload_httpd_cert':
+    command => '/usr/bin/systemctl reload httpd',
+    subscribe => [File['gateway_crt'],
+                  File['gateway_chain'],
+                  File['gateway_key']]
   }
 
   file {'gateway_common':

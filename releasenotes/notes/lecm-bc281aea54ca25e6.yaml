@@ -1,0 +1,5 @@
+---
+features:
+  - A new 'network.use_letsencrypt' option is available in
+    sfconfig.yaml to automatically manage certificate
+    with the lecm utility.

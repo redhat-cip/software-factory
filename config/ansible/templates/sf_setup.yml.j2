@@ -39,6 +39,11 @@
   roles:
     - {name: "sf-mysql", action: "setup"}
 
+# Setup lecm if needed
+- hosts: gateway
+  roles:
+    - {name: "sf-lecm", action: "setup", when: "network.use_letsencrypt"}
+
 # Setup all components
 {% for host in inventory %}
 - hosts: {{ host['hostname'] }}

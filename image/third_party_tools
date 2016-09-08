@@ -275,6 +275,13 @@ if [ "${USE_SWIFT_CACHE}" == "yes" ]; then
     PASTE_URL="${SWIFT_CACHE}/lodgeit.git"
 fi
 
+LECM_URL="https://github.com/Spredzy/lecm"
+
+GIT_REPO_LIST="$GIT_REPO_LIST $LECM_URL"
+if [ "${USE_SWIFT_CACHE}" == "yes" ]; then
+    LECM_EXTRA_VARS="lecm_url: \"${SWIFT_CACHE}/lecm.git\""
+fi
+
 # mirror2swift
 if [ "${USE_SWIFT_CACHE}" == "yes" ]; then
     MIRROR2SWIFT_EXTRA_VARS="mirror2swift_url: \"${SWIFT_CACHE}/mirror2swift.git\""
