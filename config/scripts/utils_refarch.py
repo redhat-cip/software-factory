@@ -18,7 +18,7 @@ required_roles = (
 
 
 def fail(msg):
-    print >>sys.stdterr, msg
+    print >>sys.stderr, msg
     exit(1)
 
 
