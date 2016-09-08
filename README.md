@@ -9,7 +9,7 @@ run on an OpenStack-based cloud but it can also be used standalone
 without features related to the cloud-like tests environments.
 
 * Documentation: http://softwarefactory-project.io/docs
-* How-to contribute: http://softwarefactory-project.io/docs/contribute.html
+* How-to contribute: http://softwarefactory-project.io/docs/contributor.html
 * Contact: #softwarefactory channel on Freenode
 * Mailing list: softwarefactory@redhat.com and softwarefactory-dev@redhat.com
 
