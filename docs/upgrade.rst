@@ -34,7 +34,7 @@ The upgrade script will:
 - Live copy the file system diff using rsync.
 - Trigger puppet apply.
 - Auto submit a new Review to Gerrit config repository if the upgrade
-  bring modifications for the default JBB and Zuul base files.
+  bring modifications for the default JJB and Zuul base files.
 
 
 What about the existing data in your SF instance during an upgrade
@@ -56,7 +56,7 @@ Here are the steps to upgrade:
 
 .. code-block:: bash
 
- $ ssh root@managesf_public_address
+ $ ssh root@fqdn
  $ git clone http://softwarefactory-project.io/r/software-factory software-factory
  $ cd software-factory
  $ git checkout <latest TAG>

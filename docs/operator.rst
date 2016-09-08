@@ -13,5 +13,5 @@ This chapter documents how to deploy and manage a Software Factory instance.
    migration
    upgrade
    jenkinsslaves
-   gerrit_replication
+   gerrit_replication_operator
    deepdive

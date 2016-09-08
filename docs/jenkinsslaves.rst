@@ -53,9 +53,9 @@ Jenkins slave.
 
 You will need to substitute:
 
- - <sf-hostname>: the one you defined in sfconfig.yaml (domain).
+ - <fqdn>: the one you defined in sfconfig.yaml (domain).
  - <jenkins-password>: The password of the Jenkins user. You can find it in
-   "/root/sf-bootstrap-data/hiera/sfcreds.yaml" (creds_jenkins_user_password)
+   "/etc/puppet/hiera/sf/sfcreds.yaml" (creds_jenkins_user_password)
 
 The instructions below are adapted to Centos 7 but should work on others Linux
 distributions.
@@ -76,7 +76,7 @@ distributions.
     swarm-client/2.1/swarm-client-2.1-jar-with-dependencies.jar
  $ sudo -u jenkins bash
  $ /usr/bin/java -Xmx256m -jar /home/jenkins/swarm-client-2.1-jar-with-dependencies.jar \
-   -fsroot /home/jenkins -master http://<sf-hostname>:8080/jenkins -executors 1 -username jenkins -password \
+   -fsroot /home/jenkins -master http://<fqdn>:8080/jenkins -executors 1 -username jenkins -password \
    <jenkins-password> -name slave1 &> /home/jenkins/swarm.log &
 
 

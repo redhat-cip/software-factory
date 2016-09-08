@@ -87,7 +87,7 @@ When Heat is not available, SF can also be deployed manually using the Nova CLI,
 using the web UI of your cloud provider.
 
 Once the VM is created jump to the section :ref:`Configuration and reconfiguration <reconfiguration>`.
-Don't forget to manage by yourself the security groups for the SF deployment `Network Access <network-access>`.
+Don't forget to manage by yourself the security groups for the SF deployment :ref:`Network Access <network-access>`.
 
 
 Without Openstack

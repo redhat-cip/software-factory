@@ -24,7 +24,7 @@ Using HTTP:
 
 .. code-block:: bash
 
- $ git clone http://{sf-gateway}/r/{project-name}
+ $ git clone http://{fqdn}/r/{project-name}
 
 Using SSH:
 
@@ -33,7 +33,7 @@ its user. (See :ref:`setup_ssh_keys`)
 
 .. code-block:: bash
 
- $ git clone ssh://{user-name}@{sf-gateway}/{project-name}
+ $ git clone ssh://{user-name}@{fqdn}/{project-name}
 
 
 Initialize the GIT remote with git-review
@@ -60,9 +60,9 @@ will prompt you to enter your Gerrit user name.
  $ git review -s
  Could not connect to gerrit.
  Enter your gerrit username: {user-name}
- Trying again with ssh://{user-name}@{sf-gateway}:29418/p1
+ Trying again with ssh://{user-name}@{fqdn}:29418/p1
  Creating a git remote called "gerrit" that maps to:
-         ssh://{user-name}@{sf-gateway}:29418/p1
+         ssh://{user-name}@{fqdn}:29418/p1
 
 
 Submit a patch
@@ -177,9 +177,9 @@ To push the change to Gerrit, execute the following command:
  # remote: Processing changes: new: 1, refs: 1, done
  # remote:
  # remote: New Changes:
- # remote:   http://{gerrit-host}/{change-number}
+ # remote:   http://{fqdn}/{change-number}
  # remote:
- # To ssh://{user-name}@{gerrit-host}:29418/{project-name}
+ # To ssh://{user-name}@{fqdn}:29418/{project-name}
  #  * [new branch]      HEAD -> refs/publish/master/branch-name
 
 

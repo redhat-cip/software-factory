@@ -33,7 +33,7 @@ following providers are currently supported:
 
 You have to register your SF deployment with the provider of your choice in order to enable
 authentication. Please refer to the provider's documentation to do so. The OAuth2 protocol will
-always require a callback URL regardless of the provider; this URL is http://yourdomain/auth/login/oauth2/callback .
+always require a callback URL regardless of the provider; this URL is http://fqdn/auth/login/oauth2/callback .
 
 During configuration, the identity provider will generate a client ID and a client secret that are
 needed to complete the configuration in sfconfig.yaml. Heres is a example of setting up the GitHub

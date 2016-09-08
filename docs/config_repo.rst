@@ -11,7 +11,7 @@ and after change approval, the config-update job applies configuration change.
 
 To update the configuration repo:
 
-* First clone the repository: git clone http://{sf-gateway}/r/config
+* First clone the repository: git clone http://<fqdn>/r/config
 * Edit files and commit: git commit
 * Create a review: git review
 * Approve the review to run config update
@@ -31,3 +31,4 @@ To update the configuration repo:
    swiftlogs_user
    nodepool_user
    gerritbot_user
+   gerrit_replication_user

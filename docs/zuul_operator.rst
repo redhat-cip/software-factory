@@ -1,7 +1,7 @@
 Configure zuul
 --------------
 
-Software Factory only allow adding gerrit connections to zuul,
+Software Factory only allows adding gerrit connections to Zuul,
 the rest of the configuration is set for correct integration with
 the rest of SF services.
 
@@ -9,7 +9,7 @@ the rest of SF services.
 Third-party CI configuration
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-You can configure zuul to connect to a remote gerrit event stream.
+You can configure Zuul to connect to a remote gerrit event stream.
 First you need a Non-Interactive Users created on the external gerrit.
 Then you need to configure that user to use the local zuul ssh public key:
 /var/lib/zuul/.ssh/id_rsa.pub

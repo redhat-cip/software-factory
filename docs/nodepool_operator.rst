@@ -4,7 +4,7 @@ Configure nodepool to manage ephemeral test slaves
 --------------------------------------------------
 
 Nodepool automates management of Jenkins slave. It automatically prepares and
-starts VMs that are used for a single job. After each jib the VM is destroyed
+starts VMs that are used for a single job. After each job the VM is destroyed
 and a fresh one is started for the next job. Nodepool also prepares the images
 that are used for testing, for example when additional packages are required.
 

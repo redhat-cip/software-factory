@@ -6,7 +6,7 @@ Jenkins jobs configuration
 `Jenkins <https://jenkins.io/>`_ is a continuous integration tool.
 
 Jobs are configured in the config-repo jobs/ directory using
-`Jenkins Job Builder (JJB) <https://docs.openstack.org/infra/jenkins-job-builder/>`_. Basically JJB is a definition format in yaml that allow you to easily configure and define Jenkins Jobs.
+`Jenkins Job Builder (JJB) <http://docs.openstack.org/infra/jenkins-job-builder/>`_. Basically JJB is a definition format in yaml that allow you to easily configure and define Jenkins Jobs.
 
 
 Default tests
