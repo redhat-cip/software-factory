@@ -1,3 +1,0 @@
----
-features:
-  - [tech-preview] Add the ELK stack for the usage of exporting job logs to ElasticSearch via Logstash

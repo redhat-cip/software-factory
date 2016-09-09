@@ -1,0 +1,21 @@
+---
+features:
+  - Implemented a 'gerrit_connections' option to enable third-party-CI use case.
+  - Reduced the amount of system notification sent by the SF plaform
+  - Revamp the documentation organization to seperator operate and user parts.
+  - Minor fixes such as better names of defaults file (sf_jjb_jobs.yaml renamed to _default_jobs.yaml).
+  - Integrate a periodic trigger to update user configured swift mirror.
+  - Platform wide oslo.policy implementation in progress, project CRUD-related policies are now in place.
+  - Add a setting page so that users can manage their email address independently from Identity Provider
+  - Add a use_letsencrypt option to automate TLS certificate renewal
+  - Enable commit message issue link render to custom endpoints, such as bugzilla.redhat.com
+  - Increase coverage of managesf API by the policy engine
+  - Add the ELK stack for the usage of exporting job logs to ElasticSearch via Logstash (tech preview)
+upgrade:
+  - zuul/layout.yaml file will be renamed zuul/_layout.yaml
+  - jobs/sf_jjb_conf.yaml will be renamed jobs/_default_jobs.yaml
+other:
+  - Gerrit upgrade to 2.11.9
+  - Pre-provided zuul layout and Jenkins jobs are now stored respectively
+    in zuul/_layout.yaml and jobs/_default_jobs.yaml. Files with an
+    underscore as prefix must be considered by the operator "read only".
