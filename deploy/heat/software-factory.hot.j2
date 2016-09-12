@@ -6,7 +6,7 @@ description: >
 parameters:
   key_name:
     type: string
-    description:  Name of the KeyPair to enable SSH access to the SF instance
+    description: Name of the KeyPair to enable SSH access to the SF instance
     default: id_rsa
   domain:
     type: string
@@ -15,9 +15,10 @@ parameters:
   image_id:
     type: string
     description: Glance image ID of the SF image
-  ext_net_uuid:
+  external_network:
     type: string
-    description: The UUID of the external net
+    description: The name or UUID of the external net
+    default: public
   sg_admin_cidr:
     type: string
     description: Ip range authorized for shell access
@@ -27,9 +28,9 @@ parameters:
     description: Ip range authorized for SF service access
     default: 0.0.0.0/0
   nameservers:
-    type: comma_delimited_list
+    type: json
     description: Nameserver IPs used by VMs
-    default: "8.8.8.8"
+    default: ['8.8.8.8', '8.8.4.4']
 
 resources:
   admin_password:
@@ -52,7 +53,7 @@ resources:
     type: OS::Neutron::Router
     properties:
       external_gateway_info:
-        network: { get_param: ext_net_uuid }
+        network: { get_param: external_network }
 
   router_interface:
     type: OS::Neutron::RouterInterface
@@ -107,7 +108,7 @@ resources:
     type: OS::Neutron::FloatingIP
     properties:
       port_id: { get_resource: sf_{{ host['name'] }}_port }
-      floating_network_id: { get_param: ext_net_uuid }
+      floating_network: { get_param: external_network }
 
   sf_{{ host['name'] }}_volume:
     type: OS::Cinder::Volume
@@ -136,12 +137,15 @@ resources:
             write_files:
             - content: |
                #!/bin/bash
-               set -x
-               HOME=/root
+               export HOME=/root
+               export USER=root
+               export LOGNAME=root
+               export TERM=xterm
+               export SHELL=/bin/bash
+               export SHLVL=1
 {% if 'install-server' in host['roles'] %}
                sed -i 's/admin_password:.*/admin_password: adminpwd/' /etc/puppet/hiera/sf/sfconfig.yaml
                sed -i 's/^fqdn:.*/fqdn: domain/' /etc/puppet/hiera/sf/sfconfig.yaml
-               rm -f /etc/puppet/hiera/sf/arch.yaml
                cat << EOF > /etc/puppet/hiera/sf/arch.yaml
                {{ arch_raw.replace('\n', '\n               ') }}
                EOF
@@ -176,7 +180,7 @@ resources:
     type: OS::Neutron::Router
     properties:
       external_gateway_info:
-        network: { get_param: ext_net_uuid }
+        network: { get_param: external_network }
 
   slave_interface:
     type: OS::Neutron::RouterInterface

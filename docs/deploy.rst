@@ -75,7 +75,7 @@ They all requires:
 .. code-block:: bash
 
  $ wget http://46.231.132.68:8080/v1/AUTH_b50e80d3969f441a8b7b1fe831003e0a/sf-images/softwarefactory-C7.0-2.2.3-allinone.hot
- $ heat stack-create --template-file ./softwarefactory-C7.0-2.2.3-allinone.hot -P "key_name=SSH_KEY;domain=fqdn_of_deployment;image_id=GLANCE_UUID;ext_net_uuid=NETWORK_UUID;flavor=m1.large" sf_stack
+ $ heat stack-create --template-file ./softwarefactory-C7.0-2.2.3-allinone.hot -P "key_name=SSH_KEY;domain=FQDN;image_id=GLANCE_UUID;external_network=NETWORK_UUID;flavor=m1.large" sf_stack
 
 Once the stack is created jump to the section :ref:`Configuration and reconfiguration <reconfiguration>`.
 
