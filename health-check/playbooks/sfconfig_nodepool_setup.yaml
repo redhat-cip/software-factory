@@ -24,8 +24,8 @@
             'network':    '{{ os_slave_network }}',
             'pool':       '{{ os_pool }}',
             'boot-timeout': 120,
-            'max-servers': 2,
-            'rate': 10.0,
+            'max-servers': 3,
+            'rate': 3.0,
           }]}"
 
     - name: "Restart sfconfig"

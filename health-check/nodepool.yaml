@@ -45,7 +45,7 @@
         hieraedit.py --yaml /root/config/nodepool/labels.yaml --eval labels "[{
             'name': '{{ node }}',
             'image': '{{ image_name }}',
-            'min-ready': 1,
+            'min-ready': 2,
             'providers': [{'name': '{{ provider_name }}'}]
         }]"
 
