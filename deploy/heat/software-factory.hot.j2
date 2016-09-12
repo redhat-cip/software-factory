@@ -31,6 +31,10 @@ parameters:
     type: json
     description: Nameserver IPs used by VMs
     default: ['8.8.8.8', '8.8.4.4']
+  bootstrap:
+    type: boolean
+    description: Whether or not run a first sfconfig.sh
+    default: true
 
 resources:
   admin_password:
@@ -149,7 +153,9 @@ resources:
                cat << EOF > /etc/puppet/hiera/sf/arch.yaml
                {{ arch_raw.replace('\n', '\n               ') }}
                EOF
-               sfconfig.sh
+               if [ "$bootstrap" = "true" ]; then
+                   sfconfig.sh
+               fi
 {% endif %}
               path: /root/startup.sh
             runcmd:
@@ -158,6 +164,7 @@ resources:
               - rm -f /root/startup.sh
           params:
             domain: {get_param: domain}
+            bootstrap: {get_param: bootstrap}
 {% if 'install-server' in host['roles'] %}{% for host in inventory %}
             adminpwd: {get_attr: [admin_password, value]}
             {% if 'install-server' not in host['roles'] %}{{ host['ip'] }}: {get_attr: [sf_{{ host['name'] }}_instance, first_address]}{% endif %}
