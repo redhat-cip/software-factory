@@ -514,6 +514,7 @@ function run_upgrade {
         ) || fail "Could not approve the auto generated config review for replication.config"
     } || echo "No config review found"
     checkpoint "run_upgrade"
+    fetch_bootstraps_data
 }
 
 function change_fqdn {
