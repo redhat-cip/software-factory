@@ -1,0 +1,5 @@
+---
+- name: "Add provider column to state_mapping table"
+  command: mysql cauth -e "alter table state_mapping add column provider varchar(80)"
+  ignore_errors: yes
+#  no_log: true
