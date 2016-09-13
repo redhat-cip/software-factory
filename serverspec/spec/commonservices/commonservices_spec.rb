@@ -36,3 +36,8 @@ end
 describe port(5000) do
   it { should be_listening }
 end
+
+describe file('/var/lib/edeploy/conf') do
+      its(:content) { should match /RSERV=install-server/ }
+      its(:content) { should match /RSERV_PORT=873/ }
+end

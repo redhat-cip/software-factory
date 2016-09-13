@@ -66,3 +66,15 @@
       dest: "/srv/cauth_keys/pubkey.pem"
       mode: 0444
       setype: httpd_sys_content_t
+
+- name: "Set edeploy server ip address"
+  lineinfile:
+      dest: /var/lib/edeploy/conf
+      regexp: ^RSERV=
+      line: "RSERV={{ edeploy_server }}"
+
+- name: "Set edeploy server port"
+  lineinfile:
+      dest: /var/lib/edeploy/conf
+      regexp: ^RSERV_PORT=
+      line: "RSERV_PORT={{ edeploy_service_port }}"
