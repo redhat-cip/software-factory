@@ -113,25 +113,11 @@ function mainController($scope, $http) {
             });
     };
 
-    function initHtpasswd() {
-      $http.get('/manage/htpasswd/')
-        .success( function (data) {
-          $scope.htpasswd_set = true;
-        })
-        .error( function (data) {
-          $scope.htpasswd_set = false;
-        })
-        .catch( function (data) {
-          $scope.htpasswd_set = false;
-        });
-    };
-
     function init() {
         initConfig();
         initProjects();
         initMembers();
         initTests();
-        initHtpasswd();
     };
 
     $scope.createProject = function() {
@@ -255,29 +241,6 @@ function mainController($scope, $http) {
                 }
             }
         }
-    };
-
-    $scope.htpasswd_disable = function(name) {
-        $scope.errors = false;
-        $http.delete('/manage/htpasswd/')
-            .success(function(data) {
-                initHtpasswd();
-            })
-            .error(function(data) {
-                $scope.errors = data;
-            });
-    };
-
-    $scope.htpasswd_enable = function(name) {
-        $scope.errors = false;
-        $http.put('/manage/htpasswd/')
-            .success(function(data) {
-                window.confirm('Generated password for Gerrit API: ' + data);
-                initHtpasswd();
-            })
-            .error(function(data) {
-                $scope.errors = data;
-            });
     };
 
     init();

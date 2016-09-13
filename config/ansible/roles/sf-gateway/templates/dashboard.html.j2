@@ -17,17 +17,6 @@
 </head>
 
 <body ng-controller="mainController">
-    <div class="container">
-        <div class="pull-right">
-            <button class="btn btn-success btn-xs" ng-if="htpasswd_set" ng-click="htpasswd_disable()" title="Disable password-protected API access to Gerrit for this user">
-                <span class="glyphicon glyphicon-lock"></span>
-            </button>
-
-            <button class="btn btn-default btn-xs" ng-if="!htpasswd_set" ng-click="htpasswd_enable()" title="Enable authenticated API access to Gerrit using a randomly generated password for this user">
-                <span class="glyphicon glyphicon-lock"></span>
-            </button>
-        </div>
-    </div>
 
     <div class="container">
 
