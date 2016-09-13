@@ -1,4 +1,8 @@
 ---
+- name: "Install logs gearman client group"
+  group: name=joblogsclient
+- name: "Install logs gearman client user"
+  user: name=joblogsclient group=joblogsclient shell=/sbin/nologin home=/srv/log-gearman-client
 - name: "Install log gearman client configuration"
   template: src=templates/jenkins-log-client.yaml.j2 dest=/etc/log-gearman-client/config.yml owner=joblogsclient group=joblogsclient
   register: config

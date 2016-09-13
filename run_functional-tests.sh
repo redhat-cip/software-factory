@@ -63,10 +63,12 @@ fi
 unset http_proxy
 unset https_proxy
 
+TECH_PREVIEW="elasticsearch job-logs-gearman-client job-logs-gearman-worker logstash kibana mirror"
+
 case "${TEST_TYPE}" in
     "functional")
-        # temporary adds elasticsearch and mirror until it's fully integrated
-        sed -i ${REFARCH_FILE} -e "s#      - murmur#      - murmur\n      - elasticsearch\n      - mirror\n      - job-logs-gearman-client\n      - job-logs-gearman-worker\n      - logstash\n      - kibana#"
+        # Add tech preview compenent until they are fully integrated in the refarch
+        enable_arch_components locally $REFARCH_FILE "$TECH_PREVIEW"
         lxc_init
         run_bootstraps
         run_serverspec_tests
@@ -94,7 +96,9 @@ case "${TEST_TYPE}" in
         lxc_init ${SF_PREVIOUS_VER}
         run_bootstraps
         run_provisioner
-        ssh sftests.com 'echo -e "  - elasticsearch\n  - job-logs-gearman-client\n  - job-logs-gearman-worker\n  - logstash\n  - kibana" >> /etc/puppet/hiera/sf/arch.yaml'
+        # Add tech preview compenents until they are fully integrated in the refarch
+        TECH_PREVIEW="elasticsearch job-logs-gearman-client job-logs-gearman-worker logstash kibana"
+        enable_arch_components remote /etc/puppet/hiera/sf/arch.yaml "$TECH_PREVIEW"
         run_upgrade
         run_checker "checksum_warn_only"
         run_serverspec_tests

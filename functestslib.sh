@@ -343,6 +343,21 @@ function fetch_bootstraps_data {
     checkpoint "fetch_bootstraps_data"
 }
 
+function enable_arch_components {
+    [ "$1" = "remote" ] && remote_cmd="ssh ${SF_HOST}" || remote_cmd=""
+    arch_path=$2
+    components=$3
+    $remote_cmd cp $arch_path ${arch_path}.before_techpreview_save
+    $remote_cmd python <<SCRIPT
+import yaml
+comps = "$components".split()
+cont = yaml.load(file("$arch_path"))
+cont['inventory'][0]['roles'].extend(comps)
+yaml.dump(cont, file("$arch_path", 'w'), default_flow_style=False, indent=2)
+SCRIPT
+    checkpoint "enable_arch_components"
+}
+
 function run_bootstraps {
     # Configure lxc host network with container ip 192.168.135.101
     configure_network 192.168.135.101
