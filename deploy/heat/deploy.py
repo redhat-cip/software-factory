@@ -16,7 +16,13 @@ def render():
     for host in arch["inventory"]:
         # TODO: remove default m1.medium and find flavor automatically
         host["flavor"] = "m1.medium"
-    render_jinja2_template(filename, "software-factory.hot.j2", arch)
+    arch["fixed_ip"] = False
+    render_jinja2_template("%s.hot" % filename,
+                           "software-factory.hot.j2", arch)
+    # Also generate fixed_ip version
+    arch["fixed_ip"] = True
+    render_jinja2_template("%s-fixed-ip.hot" % filename,
+                           "software-factory.hot.j2", arch)
 
 
 def start():
@@ -44,8 +50,10 @@ try:
     arch_raw = yaml.load(open(args.arch).read())
     filename = args.output
     if not filename:
-        filename = "sf-%s.hot" % os.path.basename(
+        filename = "sf-%s" % os.path.basename(
             args.arch).replace('.yaml', '')
+    if filename.endswith(".hot"):
+        filename = filename[:-4]
 
 except IOError:
     print "Invalid arch: %s" % args.arch

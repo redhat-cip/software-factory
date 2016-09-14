@@ -31,7 +31,7 @@ function publish {
         done
     fi
     echo "[+] Creating manifest"
-    OBJ="$(/bin/ls ${IMG_NAME}.{tgz,description,img.qcow2} ${IMG_NAME}-allinone.hot 2> /dev/null || true)"
+    OBJ="$(/bin/ls ${IMG_NAME}.{tgz,description,img.qcow2} ${IMG_NAME}-allinone.hot ${IMG_NAME}-allinone-fixed-ip.hot 2> /dev/null || true)"
     sha256sum $OBJ | sudo tee ${IMG_NAME}.digest
     for OBJECT in $OBJ ${IMG_NAME}.digest ${IMG_NAME}*.hot; do
         [ -f ${OBJECT} ] || continue

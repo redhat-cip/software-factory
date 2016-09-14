@@ -51,6 +51,7 @@ function fetch_prebuilt {
     # Fetch ${IMG}.hot for 2.1.8 digest
     sudo curl -o ${UPSTREAM}/${IMG}.hot ${SWIFT_SF_URL}/${IMG}.hot
     sudo curl -o ${UPSTREAM}/${IMG}-allinone.hot ${SWIFT_SF_URL}/${IMG}-allinone.hot
+    sudo curl -o ${UPSTREAM}/${IMG}-allinone-fixed-ip.hot ${SWIFT_SF_URL}/${IMG}-allinone-fixed-ip.hot
     sudo curl -o ${UPSTREAM}/${IMG}.digest ${SWIFT_SF_URL}/${IMG}.digest
     sudo curl -o ${UPSTREAM}/${IMG}.description ${SWIFT_SF_URL}/${IMG}.description
     echo "Digests..."

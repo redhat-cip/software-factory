@@ -15,6 +15,11 @@ parameters:
   image_id:
     type: string
     description: Glance image ID of the SF image
+{% if fixed_ip %}
+  floatingip_id:
+    type: string
+    description: Fixed floating IP id for the gateway
+{% endif %}
   external_network:
     type: string
     description: The name or UUID of the external net
@@ -109,10 +114,16 @@ resources:
                          ]
 
   sf_{{ host['name'] }}_floating_ip:
+{% if "gateway" in host["roles"] and fixed_ip %}
+    type: OS::Neutron::FloatingIPAssociation
+    properties:
+      floatingip_id: { get_param: floatingip_id }
+{% else %}
     type: OS::Neutron::FloatingIP
     properties:
-      port_id: { get_resource: sf_{{ host['name'] }}_port }
       floating_network: { get_param: external_network }
+{% endif %}
+      port_id: { get_resource: sf_{{ host['name'] }}_port }
 
   sf_{{ host['name'] }}_volume:
     type: OS::Cinder::Volume
@@ -197,6 +208,7 @@ resources:
 
 
 outputs:
+{% if not fixed_ip %}
   sf_public_address:
     description: Public address of SF
     value:
@@ -204,6 +216,7 @@ outputs:
         template: "Public address of the SF instance: host"
         params:
           host: { get_attr: [sf_{% for host in inventory %}{% if 'gateway' in host['roles'] %}{{ host['name'] }}{% endif %}{% endfor %}_floating_ip, floating_ip_address] }
+{% endif %}
   administrator_password:
     description: SF administrator password
     value:
