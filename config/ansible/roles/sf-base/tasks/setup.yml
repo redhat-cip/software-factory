@@ -46,9 +46,6 @@
   copy: src={{ item }} dest=/usr/libexec/{{ item }} mode=0555
   with_items: [wait4port, wait4mariadb, wait4gerrit]
 
-- name: "puppet: add include statement (puppet: apply 'include ::sfbase) "
-  include: /etc/ansible/tasks/puppet.yml puppet_statement="include ::sfbase"
-
 - name: "rsyslog: configure ommail (mail output module)"
   template: src=mail-ssh-login.j2 dest=/etc/rsyslog.d/mail-ssh-login.conf
   register: rsyslog_config

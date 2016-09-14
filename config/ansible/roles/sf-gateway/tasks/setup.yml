@@ -78,6 +78,28 @@
 - name: "copy dashboard js"
   copy: src=files/dashboard.js dest=/var/www/dashboard/dashboard.js
 
+- name: "Http: install crt"
+  copy:
+      content: "{{ gateway_crt }}"
+      dest: "/etc/pki/ca-trust/source/anchors/gateway.crt"
+      mode: 0644
+      owner: root
+      group: root
+  register: new_crt
+
+- name: "Trust crt"
+  shell: update-ca-trust
+  when: new_crt|changed
+
+- name: "Update CA list for python-requests"
+  copy:
+      src: /etc/pki/ca-trust/extracted/openssl/ca-bundle.trust.crt
+      dest: /usr/lib/python2.7/site-packages/requests/cacert.pem
+      mode: 0444
+      owner: root
+      group: root
+  when: new_crt|changed
+
 - name: "apache: create ssl.conf"
   copy: src=files/ssl.conf dest=/etc/httpd/conf.d/ssl.conf mode=0444
 
