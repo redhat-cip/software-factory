@@ -159,10 +159,6 @@ sshconfig = {
     'hostname': 'gerrit.<%= @fqdn %>',
 }
 
-<% if @fqdn == "sftests.com" %>
-project_create_administrator_only = False
-<% end %>
-
 policy = {
     'policy_file': '/var/www/managesf/policy.yaml',
 }
