@@ -11,7 +11,7 @@
   command: chdir=/usr/src/lecm {{ item }}
   with_items:
     - virtualenv --system-site-packages /srv/lecm
-    - /srv/lecm/bin/pip install --upgrade pbr pip
+    - /srv/lecm/bin/pip install --upgrade pbr pip setuptools
     - /srv/lecm/bin/pip install -rrequirements.txt
     - /srv/lecm/bin/python setup.py install
 
