@@ -14,6 +14,5 @@
 # under the License.
 
 class sfbase {
-    include ::ntpserver
     include ::https_cert
 }

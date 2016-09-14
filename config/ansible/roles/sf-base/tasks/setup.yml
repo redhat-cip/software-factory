@@ -78,3 +78,14 @@
       dest: /var/lib/edeploy/conf
       regexp: ^RSERV_PORT=
       line: "RSERV_PORT={{ edeploy_service_port }}"
+
+- name: "Set ntp server"
+  template: src=ntp.conf.j2 dest=/etc/ntp.conf
+  register: ntp_config
+
+- name: "ntpd: manage service"
+  service:
+      name: ntpd
+      enabled: true
+      state: restarted
+  when: ntp_config|changed
