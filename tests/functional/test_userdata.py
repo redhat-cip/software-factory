@@ -118,6 +118,7 @@ class TestUserdata(Base):
         response = self.login('toto', 'nopass', '/')
         self.assertEqual(response.status_code, 401)
 
+    @skipIfIssueTrackerMissing()
     def test_hook_user_login(self):
         """ Functional test when trying to reach redmine with service user
         """

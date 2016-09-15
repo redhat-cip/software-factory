@@ -549,7 +549,8 @@ class TestManageSF(Base):
         project = 'p_%s' % create_random_str()
         self.create_project(project, config.USER_2)
         self.assertTrue(self.gu.project_exists(project))
-        self.assertTrue(self.rm.project_exists(project))
+        if has_issue_tracker():
+            self.assertTrue(self.rm.project_exists(project))
         self.msu.update_project_page(config.USER_2, project,
                                      "http://tests.com/")
         self.assertEqual(self.msu.get_project_page(config.USER_2,

@@ -62,7 +62,9 @@
                 <tr>
                     <th>Project</th>
                     <th class="text-center">Open Reviews</th>
+<% if @arch.include?('redmine') %>
                     <th class="text-center">Open Bugs</th>
+<% end %>
                     <th class="text-right">
                         <button type="button" class="btn btn-primary" ng-show="create_project_permission"
                         data-toggle="modal" data-target="#modal_create_project"
@@ -76,7 +78,9 @@
                 <tr ng-repeat="(project, entry) in projects">
                     <td><a href="/r/gitweb?p={{ project }}.git;a=summary">{{ project }}</a></td>
                     <td class="text-center"><a href="/r/#/q/status:open+project:{{ project }},n,z">{{ entry.open_reviews }}</a></td>
+<% if @arch.include?('redmine') %>
                     <td class="text-center"><a href="/redmine/projects/{{ entry.alt_name }}/issues">{{ entry.open_issues }}</a></td>
+<% end %>
                     <td class="text-right">
                         <button class="btn btn-primary btn-xs" ng-click="membershipForm(project, entry)"
                             ng-if="entry.admin == 1" data-toggle="modal"

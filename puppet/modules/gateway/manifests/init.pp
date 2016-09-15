@@ -163,7 +163,7 @@ class gateway {
     mode    => '0640',
     owner   => 'apache',
     group   => 'apache',
-    source  => 'puppet:///modules/gateway/dashboard.html',
+    content  => template('gateway/dashboard.html.erb'),
     require => File['/var/www/dashboard'],
   }
 

@@ -183,7 +183,11 @@ class TestAdministratorTasks(ShellRecorder):
         msg = ("Click on the membership management button "
                "next to the project on which your user will work.")
         with caption(self.driver, msg):
-            mgmt_btn_xpath = '//table/tbody/tr[td="%s"]/td[4]/button[1]'
+            mgmt_btn_xpath = '//table/tbody/tr[td="%s"]'
+            if utils.has_issue_tracker():
+                mgmt_btn_xpath += '/td[4]/button[1]'
+            else:
+                mgmt_btn_xpath += '/td[3]/button[1]'
             self.highlight_by_xpath(mgmt_btn_xpath % test_project).click()
 
         msg = ("Look for the user to add in the search box.")
@@ -287,7 +291,11 @@ class TestAdministratorTasks(ShellRecorder):
 
         self.driver.get("%s/dashboard/" % config.GATEWAY_URL)
         with loading_please_wait(self.driver):
-            mgmt_btn_xpath = '//table/tbody/tr[td="%s"]/td[4]/button[1]'
+            mgmt_btn_xpath = '//table/tbody/tr[td="%s"]'
+            if utils.has_issue_tracker():
+                mgmt_btn_xpath += '/td[4]/button[1]'
+            else:
+                mgmt_btn_xpath += '/td[3]/button[1]'
             u = self.highlight_by_xpath(mgmt_btn_xpath % test_project)
             spielbash.pause(0.5)
             u.click()
