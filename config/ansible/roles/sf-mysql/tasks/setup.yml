@@ -1,23 +1,48 @@
 ---
 - include_vars: /etc/puppet/hiera/sf/sfcreds.yaml
 
-- name: Install sql template
-  template:
-      src: create_database.sql.j2
-      dest: /root/create_databases.sql
-      owner: root
-      group: root
-      mode: 0400
+- name: Set character_set_server to utf8
+  lineinfile:
+      dest: /etc/my.cnf
+      line: "character_set_server = utf8"
 
-- name: Install my.cnf file
+- name: Start service
+  service: name=mariadb enabled=yes state=started
+
+- name: Check mysql root password
+  shell: "/usr/bin/mysqladmin -u root -p{{ mysql_root_password }} status"
+  register: mysql_root_password_set
+  ignore_errors: True
+
+- name: Set mysql root password
+  shell: "/usr/bin/mysqladmin -u root password {{ mysql_root_password }}"
+  register: result
+  until: result.rc == 0
+  retries: 5
+  delay: 1
+  when: mysql_root_password_set|failed
+
+- name: Install initialization and backup/restore scripts
   template:
-    src: client.cnf.j2
-    dest: /root/.my.cnf
+    src: "{{ item.name }}.j2"
+    dest: "/root/{{ item.realname | default(item.name) }}"
     owner: root
     group: root
-    mode: 0400
+    mode: "{{ item.mode | default('0555')}}"
+  with_items:
+    - { name: backup_mysql.sh }
+    - { name: restore_mysql.sh }
+    - { name: create_databases.sql }
+    - { name: client.cnf, realname: .my.cnf, mode: '0400' }
 
-- include: /etc/ansible/tasks/puppet.yml puppet_statement="include ::sfmysql"
+- name: ensure anonymous users are not in the database
+  mysql_user: name='' host={{ item }} state=absent
+  with_items:
+    - localhost
+    - "{{ ansible_hostname }}"
+
+- name: remove the test database
+  mysql_db: name=test state=absent
 
 - name: Create databases
   shell: "mysql < /root/create_databases.sql"
