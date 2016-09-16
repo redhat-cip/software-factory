@@ -59,7 +59,7 @@ if [ "$upgrade" = "false" ]; then
 fi
 
 if [ "$upgrade" = "true" ]; then
-    rsync --exclude jobs/projects.yaml --exclude zuul/projects.yaml --exclude nodepool/images.yaml --exclude nodepool/labels.yaml \
+    rsync --exclude jobs/projects.yaml --exclude policies/policy.yaml --exclude zuul/projects.yaml --exclude nodepool/images.yaml --exclude nodepool/labels.yaml \
         --exclude gerrit/replication.config --exclude gerritbot/channels.yaml -av /usr/local/share/sf-config-repo/ ${CONF_TMP}/
     cd ${CONF_TMP}
     # Replace nodepool private ssh key

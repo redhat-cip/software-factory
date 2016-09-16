@@ -285,6 +285,8 @@ function get_logs {
         (ls /tmp/gui/*.mp* 1> /dev/null 2>&1) && gzip -9 ${ARTIFACTS_DIR}/screenshots/*.mp*
         ) || true &> /dev/null
     } || echo "Skip fetching logs..."
+    # get config repo git logs
+    ssh sftests.com "cd /root/config && git log --name-only" > ${ARTIFACTS_DIR}/config-project.git.log
     sudo chown -R ${USER} ${ARTIFACTS_DIR}
     checkpoint "get_logs"
 }
@@ -489,31 +491,6 @@ function run_upgrade {
     echo "[+] Copying new version (${IMAGE_PATH}/ -> /var/lib/lxc/${INSTALL_SERVER}/rootfs/${IMAGE_PATH})"
     sudo mkdir -p /var/lib/lxc/${INSTALL_SERVER}/rootfs/${IMAGE_PATH}/ || fail "Could not copy ${SF_VER}"
     sudo rsync -a --delete ${IMAGE_PATH}/ /var/lib/lxc/${INSTALL_SERVER}/rootfs/${IMAGE_PATH}/ || fail "Could not copy ${SF_VER}"
-
-    ssh ${SF_HOST} python <<SCRIPT
-import json
-import yaml
-import os
-import subprocess
-os.chdir('/root/config')
-f = 'policies/policy.yaml'
-commit = True
-if not os.path.isfile(f):
-    commit = False
-    f = "${IMAGE_PATH}/usr/local/share/sf-config-repo/policies/policy.yaml"
-d = yaml.load(open(f))
-d['managesf.project:create'] = 'rule:authenticated_api'
-d['managesf.project:delete'] = 'rule:authenticated_api'
-json.dump(d, file(f, 'w'), indent=1)
-if commit:
-    for cmd in [
-        ['git', 'add', 'policies'],
-        ['git', 'commit', '-m', 'test policy...'],
-        ['git', 'push', 'git+ssh://sftests.com/config', 'master']
-        ]:
-        subprocess.Popen(cmd).wait()
-print "POLICY: prepared policy to support project creation by any user..."
-SCRIPT
 
     echo "[+] Running upgrade"
     ssh ${SF_HOST} "cd software-factory; ./upgrade.sh" || fail "Upgrade failed" "/var/lib/lxc/${INSTALL_SERVER}/rootfs/var/log/upgrade-bootstrap.log"
