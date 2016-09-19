@@ -5,5 +5,24 @@
     - virtualenv --system-site-packages /var/www/managesf
     - /var/www/managesf/bin/pip install --upgrade 'pbr' 'pip'
     - sed -i 's/^paramiko.*/paramiko<2/' requirements.txt
+    - sed -i 's/^.*storyboardclient.*//' requirements.txt
     - /var/www/managesf/bin/pip install -rrequirements.txt
     - /var/www/managesf/bin/python setup.py install
+
+- name: "Fetch storyboardclient"
+  git:
+    repo: "{{ storyboardclient_url }}"
+    dest: /usr/src/python-storyboardclient
+    version: "{{ storyboardclient_commit }}"
+    recursive: no
+    force: yes
+
+- name: "Install storyboardclient"
+  command: chdir=/usr/src/python-storyboardclient {{ item }}
+  with_items:
+    - sed -i 's/^pbr.*//' requirements.txt
+    - /var/www/managesf/bin/pip install -rrequirements.txt
+    - /var/www/managesf/bin/python setup.py install
+
+- name: "Fix pbr version issue"
+  copy: src=../sf-storyboard/files/storyboard_pbr_version_fix.py dest=/var/www/managesf/lib/python2.7/site-packages/storyboardclient/__init__.py

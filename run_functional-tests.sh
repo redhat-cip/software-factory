@@ -66,6 +66,7 @@ unset http_proxy
 unset https_proxy
 
 TECH_PREVIEW="elasticsearch job-logs-gearman-client job-logs-gearman-worker logstash kibana mirror"
+TECH_PREVIEW+=" storyboard storyboard-webclient"
 
 case "${TEST_TYPE}" in
     "functional")

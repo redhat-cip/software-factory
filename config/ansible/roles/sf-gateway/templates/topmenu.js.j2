@@ -3,6 +3,7 @@ function loadTopmenu() {
         iframe.setAttribute("src", "/topmenu.html");
         iframe.setAttribute("width", "100%");
         iframe.setAttribute("height", "51px");
+        iframe.setAttribute("id", "sf-topmenu");
         iframe.frameBorder = 0;
         {% if theme["favicon_data"] %}
             var favicon = document.createElement("link");

@@ -1,3 +1,6 @@
 role_actions:
   - install
   - setup
+
+storyboard_webclient_commit: "d6ecab3"
+storyboard_webclient_url: "https://tarballs.openstack.org/storyboard-webclient/storyboard-webclient-{{ storyboard_webclient_commit }}.tar.gz"

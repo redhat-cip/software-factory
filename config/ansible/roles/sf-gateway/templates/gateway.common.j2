@@ -10,6 +10,11 @@
     RewriteRule ^(.*)$ /auth/login [R,NC,L]
     </LocationMatch>
 
+    # Don't login to Storyboard itself, use cauth instead
+    <LocationMatch "/storyboard_api/openid/">
+        RewriteEngine On
+        RewriteRule ^(.*)$ /auth/login [R,NC,L]
+    </LocationMatch>
 
     # TODO: make /issues/ location bug-tracker awar
     <Location "/issues/">
@@ -171,14 +176,17 @@
     RewriteRule ^/redmine/redmine/(.*)$ /redmine/$1 [R=301,L]
 
     <LocationMatch "^/storyboard_api">
-        # Make sure the access_token is set to username
-        Header set Authorization "Bearer %{REMOTE_USER}e"
-        Header set Cache-Control "no-cache, must-revalidate"
-        AuthType mod_auth_pubtkt
-        TKTAuthFakeBasicAuth on
-        TKTAuthLoginURL /auth/login
-        TKTAuthDebug 1
-        require valid-user
+        # If api requests are authenticated, check cauth cookie
+        <If "%{HTTP:Authorization} =~/Bearer .*/">
+            AuthType mod_auth_pubtkt
+            TKTAuthLoginURL /auth/login
+            TKTAuthFakeBasicAuth on
+            TKTAuthDebug 1
+            require valid-user
+            # Enforce token name to be cauth user
+            RequestHeader set Authorization "Bearer %{REMOTE_USER}e"
+            Header set Cache-Control "no-cache, must-revalidate"
+        </If>
     </LocationMatch>
 
     <LocationMatch "^/dashboard">

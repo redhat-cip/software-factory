@@ -7,3 +7,6 @@ role_actions:
 puppet_modules:
   - managesf
   - auto_backup
+
+storyboardclient_url: https://git.openstack.org/openstack-infra/python-storyboardclient
+storyboardclient_commit: master

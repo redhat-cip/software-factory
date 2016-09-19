@@ -32,6 +32,9 @@ function displayLoggedIn(username) {
 
 function displaySignIn() {
     try {
+        localStorage.removeItem("ls.access_token");
+        localStorage.removeItem("ls.token_type");
+        localStorage.removeItem("ls.id_token");
         document.getElementById("login-msg").innerText = "";
         document.getElementById("login-msg").style.display = "none";
         document.getElementById("login-btn").style.display = "block";

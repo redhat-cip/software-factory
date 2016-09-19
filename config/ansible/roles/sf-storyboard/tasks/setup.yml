@@ -5,9 +5,6 @@
 - file: path=/etc/storyboard state=directory mode=0700 owner=storyboard group=storyboard
 - include_vars: /etc/puppet/hiera/sf/sfcreds.yaml
 
-- name: "Fix pbr version issue"
-  copy: src=storyboard_pbr_version_fix.py dest=/src/python-storyboardclient/storyboardclient/__init__.py
-
 - name: "Install storyboard.conf"
   template: src={{ item }}.j2 dest=/etc/storyboard/{{ item }} owner=storyboard group=storyboard mode=0400
   with_items:

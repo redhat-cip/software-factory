@@ -1,3 +1,9 @@
 role_actions:
   - install
   - setup
+
+storyboard_url: https://git.openstack.org/openstack-infra/storyboard
+storyboard_commit: master
+
+storyboardclient_url: https://git.openstack.org/openstack-infra/python-storyboardclient
+storyboardclient_commit: master

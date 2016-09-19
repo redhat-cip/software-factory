@@ -41,20 +41,21 @@ if [ "${USE_SWIFT_CACHE}" == "yes" ]; then
 fi
 
 # Storyboard
-STORYBOARD_COMMIT="3781b33cf688685a62ad6a4ae740618aa699fdce"
-STORYBOARD_URL="https://github.com/openstack-infra/storyboard"
-STORYBOARD_CLIENT_COMMIT="ad713855fbfdd0e89cdc867af7d347c2b2f8ae38"
-STORYBOARD_CLIENT_URL="https://github.com/openstack-infra/python-storyboardclient"
-STORYBOARD_WEBCLIENT_COMMIT="ffda0be"
-STORYBOARD_WEBCLIENT_URL="https://tarballs.openstack.org/storyboard-webclient/storyboard-webclient-${STORYBOARD_WEBCLIENT_COMMIT}.tar.gz"
-
-URL_LIST="$URL_LIST $STORYBOARD_URL $STORYBOARD_WEBCLIENT_URL $STORYBOARD_CLIENT_URL"
-GIT_REPO_LIST="$GIT_REPO_LIST $STORYBOARD_URL $STORYBOARD_CLIENT_URL"
+STORYBOARD_COMMIT="4926b471e2ccf0f4adb6e92e9f26769c942ae621"
+STORYBOARD_CLIENT_COMMIT="cfdfaf866ca5da63ac734552772e1fe2f87c6543"
+STORYBOARD_WEBCLIENT_COMMIT="d6ecab3"
 
 if [ "${USE_SWIFT_CACHE}" == "yes" ]; then
-    STORYBOARD_URL="${SWIFT_CACHE}/storyboard.git"
-    STORYBOARD_CLIENT_URL="${SWIFT_CACHE}/python-storyboardclient.git"
-    STORYBOARD_WEBCLIENT_URL="${SWIFT_CACHE}/storyboard-webclient/storyboard-webclient-${STORYBOARD_WEBCLIENT_COMMIT}.tar.gz"
+    MANAGESF_EXTRA_VARS="storyboardclient_url: \"${SWIFT_CACHE}/python-storyboardclient.git\""
+    MANAGESF_EXTRA_VARS+=", storyboardclient_commit: \"${STORYBOARD_CLIENT_COMMIT}\""
+
+    STORYBOARD_EXTRA_VARS+="storyboard_url: \"${SWIFT_CACHE}/storyboard.git\""
+    STORYBOARD_EXTRA_VARS+=", storyboard_commit: \"${STORYBOARD_COMMIT}\""
+    STORYBOARD_EXTRA_VARS+=", storyboardclient_url: \"${SWIFT_CACHE}/python-storyboardclient.git\""
+    STORYBOARD_EXTRA_VARS+=", storyboardclient_commit: \"${STORYBOARD_CLIENT_COMMIT}\""
+
+    STORYBOARD_WEBCLIENT_EXTRA_VARS="storyboard_webclient_url: \"${SWIFT_CACHE}/storyboard-webclient/storyboard-webclient-${STORYBOARD_WEBCLIENT_COMMIT}.tar.gz\""
+    STORYBOARD_WEBCLIENT_EXTRA_VARS+=", storyboard_webclient_commit: \"${STORYBOARD_WEBCLIENT_COMMIT}\""
 fi
 
 
