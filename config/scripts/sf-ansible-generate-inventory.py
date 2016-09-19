@@ -55,6 +55,17 @@ def generate_inventory():
                            "%s/templates/inventory.j2" % ansible_root,
                            arch)
 
+    # Generate inventory
+    if args.verify:
+        print "==== %s ===" % args.arch
+        print "\n#----8<----\n# get_logs playbook"
+        output = "/dev/stdout"
+    else:
+        output = "%s/get_logs.yml" % ansible_root
+    render_jinja2_template(output,
+                           "%s/templates/get_logs.yml.j2" % ansible_root,
+                           arch)
+
     # Generate main playbook
     if args.verify:
         print "\n#----8<----\n# Playbook"

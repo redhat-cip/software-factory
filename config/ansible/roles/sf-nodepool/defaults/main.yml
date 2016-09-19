@@ -1,5 +1,6 @@
 role_actions:
   - setup
   - update
+  - get_logs
 
 puppet_modules: nodepool

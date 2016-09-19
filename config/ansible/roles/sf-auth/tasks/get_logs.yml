@@ -1,0 +1,7 @@
+---
+- name: "Fetch cauth logs"
+  synchronize: mode=pull src=/var/log/cauth/ dest="{{ log_dest }}/log"
+- name: "Fetch cauth config"
+  synchronize: mode=pull src="/var/www/cauth/{{ item }}" dest="{{ log_dest }}/{{ item }}"
+  with_items:
+    - config.py

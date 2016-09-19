@@ -1,0 +1,5 @@
+---
+- name: "Fetch zuul logs"
+  synchronize: mode=pull src=/var/log/zuul/ dest="{{ log_dest }}/log"
+- name: "Fetch zuul config"
+  synchronize: mode=pull src="/etc/zuul/" dest="{{ log_dest }}/etc"

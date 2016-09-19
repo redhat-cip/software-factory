@@ -1,0 +1,9 @@
+---
+- name: "Fetch gerritbot logs"
+  synchronize: mode=pull src=/var/log/gerritbot/ dest="{{ log_dest }}/log"
+- name: "Check fakeircd.log"
+  stat: path=/var/log/fakeircd.log
+  register: fakeircd
+- name: "Fetch fakeircd.log"
+  synchronize: mode=pull src=/var/log/fakeircd.log dest="{{ log_dest }}/fakeircd.log"
+  when: fakeircd.stat.exists == True

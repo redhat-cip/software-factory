@@ -244,49 +244,26 @@ function get_logs {
     #This delay is used to wait a bit before fetching log file from hosts
     #in order to not avoid so important logs that can appears some seconds
     #after a failure.
+    sleep 2
     set +e
+
+    # Run get_logs from install-server and copy resulting logs
+    ssh ${SF_HOST} ansible-playbook /etc/ansible/get_logs.yml &> ${ARTIFACTS_DIR}/get_logs.log && \
+    rsync -avi ${SF_HOST}:sf-logs/ ${ARTIFACTS_DIR}/ &>> ${ARTIFACTS_DIR}/get_logs.log || {
+        cat ${ARTIFACTS_DIR}/get_logs.log; echo "get_logs failed...";
+    }
+
+    # Copy relevant local file to artifacts_dir
     sudo cp ${IMAGE_PATH}.description ${ARTIFACTS_DIR}/image.description &> /dev/null
     sudo cp ${IMAGE_PATH}.description_diff ${ARTIFACTS_DIR}/image.description_diff &> /dev/null
-    ssh sftests.com hostname > /dev/null && {
-        echo "Collecting log from test instance"
-        sleep 1
-        (
-        scp sftests.com:/var/log/messages ${ARTIFACTS_DIR}/
-        scp sftests.com:/var/log/audit/audit.log ${ARTIFACTS_DIR}/
-        ssh sftests.com ps auxZ | grep -i 'unconfin' > ${ARTIFACTS_DIR}/unconfined_process.txt
-        scp sftests.com:/var/log/upgrade-bootstrap.log ${ARTIFACTS_DIR}/
-        scp sftests.com:/var/log/cloud-init* ${ARTIFACTS_DIR}/
-        scp sftests.com:/var/log/puppet_apply.log ${ARTIFACTS_DIR}/
-        scp -r sftests.com:/home/gerrit/site_path/logs/ ${ARTIFACTS_DIR}/gerrit/
-        scp -r sftests.com:/home/gerrit/site_path/etc/*.config ${ARTIFACTS_DIR}/gerrit/
-        scp -r sftests.com:/usr/share/redmine/log/ ${ARTIFACTS_DIR}/redmine/
-        scp -r sftests.com:/usr/share/redmine/config ${ARTIFACTS_DIR}/redmine/
-        scp -r sftests.com:/var/log/managesf/ ${ARTIFACTS_DIR}/managesf/
-        scp -r sftests.com:/var/log/cauth/ ${ARTIFACTS_DIR}/cauth/
-        scp -r sftests.com:/var/log/gerritbot/ ${ARTIFACTS_DIR}/gerritbot/
-        scp sftests.com:/var/log/fakeircd.log ${ARTIFACTS_DIR}/gerritbot/ || true
-        scp sftests.com:/var/www/managesf/config.py ${ARTIFACTS_DIR}/managesf/
-        scp sftests.com:/var/www/cauth/config.py ${ARTIFACTS_DIR}/cauth/
-        scp -r sftests.com:/var/log/httpd/ ${ARTIFACTS_DIR}/httpd/
-        scp -r sftests.com:/var/log/zuul/ ${ARTIFACTS_DIR}/zuul/
-        scp sftests.com:/etc/zuul/* ${ARTIFACTS_DIR}/zuul/
-        scp -r sftests.com:/var/log/nodepool/ ${ARTIFACTS_DIR}/nodepool/
-        scp sftests.com:/etc/nodepool/*.yaml ${ARTIFACTS_DIR}/nodepool/
-        scp -r sftests.com:/var/lib/jenkins/jobs/ ${ARTIFACTS_DIR}/jenkins-jobs/
-        scp sftests.com:/var/lib/jenkins/*.xml ${ARTIFACTS_DIR}/jenkins/
-        scp -r sftests.com:/root/config/ ${ARTIFACTS_DIR}/config-project
-        scp -r sftests.com:/etc/puppet/hiera/sf/ ${ARTIFACTS_DIR}/hiera
-        scp -r sftests.com:/var/log/mariadb/ ${ARTIFACTS_DIR}/mariadb
-        scp -r sftests.com:/root/sf-bootstrap-data/hiera/ ${ARTIFACTS_DIR}/sf-bootstrap-data-hiera
-        cp -r /var/log/selenium/ ${ARTIFACTS_DIR}/selenium
-        cp -r /var/log/Xvfb/ ${ARTIFACTS_DIR}/Xvfb
-        cp -r /tmp/gui/ ${ARTIFACTS_DIR}/screenshots
-        (ls /tmp/gui/*.avi 1> /dev/null 2>&1) && gzip -9 ${ARTIFACTS_DIR}/screenshots/*.avi
-        (ls /tmp/gui/*.mp* 1> /dev/null 2>&1) && gzip -9 ${ARTIFACTS_DIR}/screenshots/*.mp*
-        ) || true &> /dev/null
-    } || echo "Skip fetching logs..."
-    # get config repo git logs
-    ssh sftests.com "cd /root/config && git log --name-only" > ${ARTIFACTS_DIR}/config-project.git.log
+    [ -d /var/log/selenium ] && cp -r /var/log/selenium/ ${ARTIFACTS_DIR}/selenium
+    [ -d /var/log/Xvfb ] && cp -r /var/log/Xvfb/ ${ARTIFACTS_DIR}/Xvfb
+    cp -r /tmp/gui/ ${ARTIFACTS_DIR}/screenshots
+
+    # Compress gui test
+    (ls /tmp/gui/*.avi 1> /dev/null 2>&1) && gzip -9 ${ARTIFACTS_DIR}/screenshots/*.avi
+    (ls /tmp/gui/*.mp* 1> /dev/null 2>&1) && gzip -9 ${ARTIFACTS_DIR}/screenshots/*.mp*
+
     sudo chown -R ${USER} ${ARTIFACTS_DIR}
     checkpoint "get_logs"
 }
@@ -457,7 +434,7 @@ function run_backup_start {
     echo "$(date) ======= run_backup_start"
     sfmanager --url "${MANAGESF_URL}" --auth "admin:${ADMIN_PASSWORD}" system backup_start || fail "Backup failed"
     sfmanager --url "${MANAGESF_URL}" --auth "admin:${ADMIN_PASSWORD}" system backup_get   || fail "Backup get failed"
-    scp sftests.com:/var/log/managesf/managesf.log ${ARTIFACTS_DIR}/backup_managesf.log
+    scp ${SF_HOST}:/var/log/managesf/managesf.log ${ARTIFACTS_DIR}/backup_managesf.log
     tar tzvf sf_backup.tar.gz > ${ARTIFACTS_DIR}/backup_content.log
     grep -q '\.bup\/objects\/pack\/.*.pack$' ${ARTIFACTS_DIR}/backup_content.log || fail "Backup empty" ${ARTIFACTS_DIR}/backup_content.log
     checkpoint "run_backup_start"
@@ -469,7 +446,7 @@ function run_backup_restore {
     echo "[+] Waiting for gerrit to restart..."
     retry=0
     while [ $retry -lt 1000 ]; do
-        wget --spider  http://sftests.com/r/ 2> /dev/null && break
+        wget --spider  http://${SF_HOST}/r/ 2> /dev/null && break
         sleep 1
         let retry=retry+1
     done
@@ -483,10 +460,10 @@ function run_backup_restore {
 function run_upgrade {
     echo "$(date) ======= run_upgrade"
     # TODO: remove this temporary fix after 2.2.3 or 2.3.0 release
-    ssh sftests.com "cd config; sed -i zuul/projects.yaml -e 's#\.\*#unused_job_definition#'; git add zuul/projects.yaml"
-    ssh sftests.com "cd config; git commit -m 'remove set_node_options from projects'; git push git+ssh://sftests.com/config master"
+    ssh ${SF_HOST} "cd config; sed -i zuul/projects.yaml -e 's#\.\*#unused_job_definition#'; git add zuul/projects.yaml"
+    ssh ${SF_HOST} "cd config; git commit -m 'remove set_node_options from projects'; git push git+ssh://${SF_HOST}/config master"
 
-    INSTALL_SERVER=managesf.sftests.com
+    INSTALL_SERVER=managesf.${SF_HOST}
     sudo git clone file://$(pwd) /var/lib/lxc/${INSTALL_SERVER}/rootfs/root/software-factory  --depth 1 || fail "Could not clone sf in managesf instance"
     echo "[+] Copying new version (${IMAGE_PATH}/ -> /var/lib/lxc/${INSTALL_SERVER}/rootfs/${IMAGE_PATH})"
     sudo mkdir -p /var/lib/lxc/${INSTALL_SERVER}/rootfs/${IMAGE_PATH}/ || fail "Could not copy ${SF_VER}"
@@ -497,20 +474,20 @@ function run_upgrade {
     echo "[+] Update sf-bootstrap-data"
     rsync -a -v ${SF_HOST}:sf-bootstrap-data/ ./sf-bootstrap-data/
     echo "[+] Auto submit the auto generated config review after the upgrade"
-    review_id=$(./tools/get_last_autogen_upgrade_config_review.py http://sftests.com "Upgrade of base config repository files")
+    review_id=$(./tools/get_last_autogen_upgrade_config_review.py http://${SF_HOST} "Upgrade of base config repository files")
     [ "$review_id" != "0" ] && {
         (
-            ssh sftests.com "cd config; submit_and_wait.py --review-id $review_id --recheck"
-            ssh sftests.com "cd config; submit_and_wait.py --review-id $review_id --approve"
+            ssh ${SF_HOST} "cd config; submit_and_wait.py --review-id $review_id --recheck"
+            ssh ${SF_HOST} "cd config; submit_and_wait.py --review-id $review_id --approve"
         ) || fail "Could not approve the auto generated config review"
     } || echo "No config review found"
     echo "[+] Auto submit the auto generated config (replication.config) upgrade"
-    review_id=$(./tools/get_last_autogen_upgrade_config_review.py http://sftests.com "Add gerrit%2Freplication.config in the config repository")
+    review_id=$(./tools/get_last_autogen_upgrade_config_review.py http://${SF_HOST} "Add gerrit%2Freplication.config in the config repository")
     [ "$review_id" != "0" ] && {
         (
-            ssh sftests.com "cd config; submit_and_wait.py --review-id $review_id --rebase"
+            ssh ${SF_HOST} "cd config; submit_and_wait.py --review-id $review_id --rebase"
             sleep 45
-            ssh sftests.com "cd config; submit_and_wait.py --review-id $review_id --approve"
+            ssh ${SF_HOST} "cd config; submit_and_wait.py --review-id $review_id --approve"
         ) || fail "Could not approve the auto generated config review for replication.config"
     } || echo "No config review found"
     checkpoint "run_upgrade"
@@ -519,19 +496,19 @@ function run_upgrade {
 
 function change_fqdn {
     echo "$(date) ======= change_fqdn"
-    ssh sftests.com "sed -i -e 's/fqdn: sftests.com/fqdn: sftests2.com/g' /etc/puppet/hiera/sf/sfconfig.yaml"
-    ssh sftests.com "sed -i -e 's/sftests.com/sftests2.com/g' /etc/puppet/hiera/sf/arch.yaml"
+    ssh ${SF_HOST} "sed -i -e 's/fqdn: ${SF_HOST}/fqdn: sftests2.com/g' /etc/puppet/hiera/sf/sfconfig.yaml"
+    ssh ${SF_HOST} "sed -i -e 's/${SF_HOST}/sftests2.com/g' /etc/puppet/hiera/sf/arch.yaml"
     # This triggers cert recreating in sfconfig.sh. Should be done automatically
     # in the Ansible task update_fqdn; but that is currently executed after cert
     # creation.
-    ssh sftests.com "rm sf-bootstrap-data/certs/gateway.* openssl.cnf"
+    ssh ${SF_HOST} "rm sf-bootstrap-data/certs/gateway.* openssl.cnf"
 
     checkpoint "change_fqdn"
 }
 
 function run_sfconfig {
     echo "$(date) ======= run_sfconfig"
-    ssh sftests.com sfconfig.sh &> ${ARTIFACTS_DIR}/last_sfconfig.sh || fail "sfconfig.sh failed" ${ARTIFACTS_DIR}/last_sfconfig.sh
+    ssh ${SF_HOST} sfconfig.sh &> ${ARTIFACTS_DIR}/last_sfconfig.sh || fail "sfconfig.sh failed" ${ARTIFACTS_DIR}/last_sfconfig.sh
     checkpoint "run_sfconfig"
 }
 

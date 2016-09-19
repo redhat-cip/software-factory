@@ -1,5 +1,6 @@
 role_actions:
   - setup
+  - get_logs
 
 puppet_modules:
   - cauth

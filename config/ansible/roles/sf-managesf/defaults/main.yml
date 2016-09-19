@@ -2,6 +2,7 @@ role_actions:
   - install
   - setup
   - update
+  - get_logs
 
 puppet_modules:
   - managesf

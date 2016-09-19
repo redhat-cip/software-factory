@@ -1,0 +1,41 @@
+---
+- hosts: localhost
+  tasks:
+    - name: "Cleanup sf-logs directory"
+      file: path=/root/sf-logs state=absent
+    - name: "Create sf-logs directory"
+      file: path=/root/sf-logs state=directory mode=0700
+    - name: "Copy the config repo"
+      synchronize: src=/root/config dest=/root/sf-logs/config-repo rsync_opts="--exclude .git"
+    - name: "Get config repo git logs"
+      shell: "cd /root/config && git log --name-only > /root/sf-logs/config-repo.git.log"
+    - name: "Copy the bootstrap data"
+      synchronize: src=/root/sf-bootstrap-data/ dest=/root/sf-logs/sf-bootstrap-data/
+    - name: "Copy the hiera configuration"
+      synchronize: src=/etc/puppet/hiera/sf/ dest=/root/sf-logs/hiera/ rsync_opts="--exclude .git"
+{% for host in inventory %}{% for role in host['rolesname'] %}
+    - name: "Create {{ role }} log storage directory"
+      file: path=/root/sf-logs/{{ role }} state=directory
+{% endfor %}{% endfor %}
+
+- hosts: all
+  tasks:
+    - name: "Check for unconfined process"
+      shell: "ps auxZ | grep -i 'unconfin' > /var/log/audit/unconfined_process.txt"
+    - name: "Fetch system logs"
+      fetch: src={{ '{{' }} item {{ '}}' }} dest=/root/sf-logs
+      with_items:
+        - /var/log/messages
+        - /var/log/audit/audit.log
+        - /var/log/audit/unconfined_process.txt
+        - /var/log/upgrade-bootstrap.log
+        - /var/log/cloud-init.log
+        - /var/log/cloud-init-output.log
+        - /var/log/puppet_apply.log
+
+{% for host in inventory %}
+- hosts: {{ host['hostname'] }}
+  roles:
+{% for role in host['rolesname'] %}    - {role: "{{ role }}", action: "get_logs", log_dest: "/root/sf-logs/{{role}}"}
+{% endfor %}
+{% endfor %}

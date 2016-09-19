@@ -1,0 +1,13 @@
+---
+- name: "Fetch jenkins jobs"
+  synchronize:
+    mode: pull
+    src: "/var/lib/jenkins/jobs/"
+    dest: "{{ log_dest }}/jobs/"
+- name: "Fetch jenkins config"
+  synchronize:
+    mode: pull
+    src: "/var/lib/jenkins/{{ item }}"
+    dest: "{{ log_dest }}/{{ item }}"
+  with_items:
+    - config.xml

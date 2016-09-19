@@ -2,6 +2,7 @@ role_actions:
   - install
   - setup
   - update
+  - get_logs
 
 puppet_modules: zuul
 jquery_visibility_url: http://status.openstack.org/jquery-visibility.min.js
