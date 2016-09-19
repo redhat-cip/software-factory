@@ -245,4 +245,8 @@ time ansible-playbook /etc/ansible/sf_postconf.yml || {
 }
 
 echo "${DOMAIN}: SUCCESS"
+echo
+echo "Access dashboard: https://${DOMAIN}"
+echo "Login with admin user, get the admin password by running:"
+echo "  awk '/admin_password/ {print \$2}' /etc/puppet/hiera/sf/sfconfig.yaml"
 exit 0
