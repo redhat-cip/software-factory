@@ -117,6 +117,13 @@ def update_sfconfig(data):
         del data['mumble']['disabled']
         dirty = True
 
+    # 2.2.5: finished arch aware top-menu, remove service toggle now
+    for hideable in ('redmine', 'etherpad', 'paste'):
+        key = 'topmenu_hide_%s' % hideable
+        if key in data['theme']:
+            del data['theme'][key]
+            dirty = True
+
     return dirty
 
 

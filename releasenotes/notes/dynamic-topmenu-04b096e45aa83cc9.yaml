@@ -1,0 +1,4 @@
+---
+other:
+  - The hideable toggle in theme configuration such as 'topmenu_hide_redmine'
+    are removed since the topmenu now uses the arch file directly.
