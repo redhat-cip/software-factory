@@ -153,7 +153,7 @@ resources:
                cat << EOF > /etc/puppet/hiera/sf/arch.yaml
                {{ arch_raw.replace('\n', '\n               ') }}
                EOF
-               if [ "$bootstrap" = "true" ]; then
+               if [ "bootstrap" == "True" ]; then
                    sfconfig.sh
                fi
 {% endif %}
