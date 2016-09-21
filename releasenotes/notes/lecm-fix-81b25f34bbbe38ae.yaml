@@ -1,0 +1,4 @@
+---
+fixes:
+  - The let's encrypt automatic configuration task had
+    a typo that prevented usage of lecm.

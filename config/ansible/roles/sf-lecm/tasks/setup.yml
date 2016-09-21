@@ -12,7 +12,8 @@
 
 - name: "Ensure certificate are generated"
   command: lecm --generate
-  creates: /etc/letsencrypt/private/{{ fqdn }}.key
+  args:
+    creates: /etc/letsencrypt/private/{{ fqdn }}.key
 
 - name: "Install renew crontab"
   cron:
