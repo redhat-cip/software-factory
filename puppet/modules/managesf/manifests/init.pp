@@ -15,7 +15,6 @@
 
 class managesf ($gerrit = hiera('gerrit')) {
   include ::apache
-  include ::cauth_client
 
   $fqdn = hiera('fqdn')
   $url = hiera('url')

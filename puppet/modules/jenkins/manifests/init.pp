@@ -15,7 +15,6 @@
 
 class jenkins {
   include ::apache
-  include ::cauth_client
   include ::jjb
   include ::systemctl
 

@@ -4,3 +4,12 @@
 - command: semanage port --modify -t http_port_t -p tcp {{ item }}
   with_items: [8083]
   when: selinuxenabled
+
+- name: "ensure directories are created"
+  file: path=/var/www/redmine/public/themes/classic/javascripts/ state=directory
+
+- name: "install topmenu theme"
+  template:
+    src: /etc/ansible/roles/sf-gateway/templates/topmenu.js.j2
+    dest: /var/www/redmine/public/themes/classic/javascripts/theme.js
+    mode: 0444

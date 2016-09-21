@@ -26,9 +26,9 @@ var trustedCIRegex = /^(OpenStack CI|Jenkins)$/;
 // this regex matches the pipeline markup
 var pipelineNameRegex = /Build \w+ \((\w+) pipeline\)/;
 // The url to full status information on running jobs
-var zuulStatusURL = '<%= @url['zuul_pub_url'] %>';
+var zuulStatusURL = 'http://{{ fqdn }}/zuul/';
 // The json URL to check for running jobs
-var zuulStatusJSON = '<%= @url['zuul_pub_url'] %>/status.json';
+var zuulStatusJSON = 'http://{{ fqdn }}/zuul/status.json';
 
 // This is a variable to determine if we're in debugging mode, which
 // lets you globally set it to see what's going on in the flow.

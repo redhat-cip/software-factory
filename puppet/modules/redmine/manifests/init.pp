@@ -15,7 +15,6 @@
 
 class redmine {
     include ::monit
-    include ::cauth_client
     include ::apache
 
     $cauth_signin_url = "/auth/login"
@@ -150,27 +149,9 @@ class redmine {
       group  => 'apache',
     }
 
-    file {'/var/www/redmine/public/themes/classic/javascripts/':
-      ensure => directory,
-      mode   => '0644',
-      owner  => 'apache',
-      group  => 'apache',
-    }
-
-    file {'topmenu.js':
-      ensure  => file,
-      path    => '/var/www/redmine/public/themes/classic/javascripts/theme.js',
-      mode    => '0644',
-      owner   => 'apache',
-      group   => 'apache',
-      content => template('gateway/topmenu.js.erb'),
-      require => File['/var/www/redmine/public/themes/classic/javascripts/'],
-    }
-
     exec {'backlog_topmenu':
       command => "sed -i '/<head>/a <script src=\"/redmine/themes/classic/javascripts/theme.js\" type=\"text/javascript\"></script>' /var/www/redmine/plugins/redmine_backlogs/app/views/layouts/rb.html.erb",
       path    => '/usr/sbin/:/usr/bin/:/bin/',
-      require => File['topmenu.js'],
       unless  => '/usr/bin/grep "javascripts/theme.js" /var/www/redmine/plugins/redmine_backlogs/app/views/layouts/rb.html.erb',
     }
 

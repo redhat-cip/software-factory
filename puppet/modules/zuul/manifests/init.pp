@@ -15,7 +15,6 @@
 
 class zuul {
   include ::apache
-  include ::cauth_client
   include ::systemctl
 
   $arch = hiera('roles')

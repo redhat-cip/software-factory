@@ -1,4 +1,13 @@
 ---
+- include_vars: /etc/puppet/hiera/sf/_arch.yaml
+- include_vars: /etc/puppet/hiera/sf/sfcreds.yaml
+- include_vars: /etc/puppet/hiera/sf/sf_version.yaml
+- include_vars: /etc/puppet/hiera/sf/common.yaml
+- include_vars: ../sf-gerrit/defaults/main.yml
+- include_vars: ../sf-zuul/defaults/main.yml
+- include_vars: ../sf-jenkins/defaults/main.yml
+- include_vars: ../sf-redmine/defaults/main.yml
+
 - name: "puppet: include socat_gerrit"
   include: /etc/ansible/tasks/puppet.yml puppet_statement="include ::socat_gerrit"
   when: groups['gerrit'] != groups['gateway']
@@ -11,6 +20,48 @@
   service: name=socat_gerrit enabled=no state=stopped
   when: groups['gerrit'] == groups['gateway'] and socat_service.stat.exists
 
+- name: "Remove un-needed files"
+  file: path={{ item }} state=absent
+  with_items:
+    - /etc/httpd/conf.d/autoindex.conf
+    - /etc/httpd/conf.d/userdir.conf
+    - /etc/httpd/conf.d/welcome.conf
+
+- name: "apache: add embedded TLS certificate"
+  when: not network['use_letsencrypt']
+  notify: apache reload
+  copy:
+    content: "{{ item.content }}\n"
+    dest: "/etc/pki/tls/{{ item.path }}"
+    mode: "{{ item.mode|default(0444) }}"
+    setype: "unconfined_u:object_r:cert_t:s0"
+  with_items:
+    - {content: "{{gateway_crt}}", path: "certs/{{ fqdn }}.crt"}
+    - {content: "{{gateway_chain}}", path: "certs/{{ fqdn }}-chain.crt"}
+    - {content: "{{gateway_key}}", path: "private/{{ fqdn }}.key", mode: 0400}
+
+- name: "copy base64helper"
+  copy: src=files/base64helper dest=/usr/local/sbin/base64helper mode=0755
+
+- name: "copy pages-404.html"
+  copy: src=files/pages-404.html dest=/var/www/pages-404.html mode=0444
+
+- name: "ensure managesf_htpasswd is present"
+  file: path=/etc/httpd/managesf_htpasswd state=touch mode=0640 owner=apache group=apache
+
+- name: "ensure pages.txt is present"
+  file: path=/etc/httpd/pages.txt state=touch mode=0640 owner=apache group=apache
+
+- name: "copy static javascripts"
+  template: src="templates/{{ item }}.j2" dest=/var/www/static/js/{{ item }} mode=0444
+  with_items:
+    - menu.js
+    - hideci.js
+    - topmenu.js
+
+- name: "copy topmenu"
+  template: src=templates/topmenu.html.j2 dest=/var/www/topmenu.html mode=0444
+
 - name: "sf-web-ui: create directory"
   file: path=/var/www/sf state=directory
 
@@ -18,10 +69,17 @@
   copy: src=files/{{item}} dest=/var/www/sf/{{item}} mode=0444
   with_items: ["user_settings.html", "user_settings.js"]
 
+- name: "create dashboard directory"
+  file: path=/var/www/dashboard state=directory
+
+- name: "copy dashboard index.html"
+  template: src=templates/dashboard.html.j2 dest=/var/www/dashboard/index.html
+
+- name: "copy dashboard js"
+  copy: src=files/dashboard.js dest=/var/www/dashboard/dashboard.js
+
 - name: "apache: create ssl.conf"
-  copy:
-    src=files/ssl.conf dest=/etc/httpd/conf.d/ssl.conf
-    owner=apache group=apache mode=0640
+  copy: src=files/ssl.conf dest=/etc/httpd/conf.d/ssl.conf mode=0444
 
 - name: "apache: load ssl module"
   lineinfile:
@@ -29,14 +87,18 @@
     line="LoadModule ssl_module modules/mod_ssl.so"
     owner=apache group=apache mode=0640
 
-- name: "apache: start service"
-  service: name=httpd enabled=yes state=started
+- name: "apache: add gateway conf"
+  template: src="templates/{{ item }}.j2" dest=/etc/httpd/conf.d/{{ item }} mode=0444
+  with_items:
+    - gateway.common
+    - gateway.conf
+  notify: apache reload
 
 - name: "Install Kibana SF gateway rules"
-  template:
-    src=templates/gateway-kibana.conf.j2
-    dest=/etc/httpd/conf.d/gateway-kibana.conf
-    owner=apache group=apache
+  template: src=templates/gateway-kibana.conf.j2 dest=/etc/httpd/conf.d/gateway-kibana.conf mode=0444
   with_items: "{{ inventory }}"
   when: '"kibana" in item["roles"]'
   notify: apache reload
+
+- name: "apache: start service"
+  service: name=httpd enabled=yes state=started

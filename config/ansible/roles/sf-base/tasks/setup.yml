@@ -67,6 +67,18 @@
       mode: 0444
       setype: httpd_sys_content_t
 
+- name: "auth: install tkt apache module configuration"
+  copy:
+      content: "LoadModule auth_pubtkt_module modules/mod_auth_pubtkt.so\n"
+      dest: /etc/httpd/conf.modules.d/00-tkt.conf
+      mode: 0444
+
+- name: "auth: install tkt apache pubtkt configuration"
+  copy:
+      content: "TKTAuthPublicKey /srv/cauth_keys/pubkey.pem\n"
+      dest: /etc/httpd/conf.d/auth_pubtkt.conf
+      mode: 0444
+
 - name: "Set edeploy server ip address"
   lineinfile:
       dest: /var/lib/edeploy/conf

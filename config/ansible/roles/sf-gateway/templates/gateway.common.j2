@@ -1,20 +1,17 @@
     RewriteEngine On
-    RewriteCond %{HTTP_HOST} !<%= @fqdn %> [NC]
-    RewriteRule ^/(.*)$ <%= @url["gateway_url"] %>/$1 [R=301,L]
+    RewriteCond %{HTTP_HOST} !{{ fqdn }} [NC]
+    RewriteRule ^/(.*)$ {{ fqdn }}/$1 [R=301,L]
 
     RewriteMap base64helper "prg:/usr/local/sbin/base64helper"
 
     # Don't login to Redmine itself, use cauth instead
     <LocationMatch "/redmine/login">
     RewriteEngine On
-    RewriteRule ^(.*)$ <%= @cauth_signin_url %> [R,NC,L]
+    RewriteRule ^(.*)$ /auth/login [R,NC,L]
     </LocationMatch>
 
-    <Location "/rb/">
-        RewriteEngine On
-        RewriteRule "/rb/(.*$)" "<%= @url["redmine_url"] %>/rb/$1" [P]
-    </Location>
 
+    # TODO: make /issues/ location bug-tracker awar
     <Location "/issues/">
         RewriteEngine On
         RewriteRule "/issues(.*$)" "/redmine/issues/$1" [R]
@@ -23,7 +20,6 @@
     <Location /redmine/>
         ProxyPassReverse /
 
-        ProxyHTMLURLMap <%= @url["redmine_url"] %> /redmine/
         ProxyHTMLURLMap /           /redmine/
         ProxyHTMLURLMap /redmine/   /redmine/
 
@@ -77,7 +73,7 @@
 
         AuthType mod_auth_pubtkt
         TKTAuthFakeBasicAuth on
-        TKTAuthLoginURL <%= @cauth_signin_url %>
+        TKTAuthLoginURL /auth/login
         TKTAuthDebug 1
         require valid-user
     </LocationMatch>
@@ -96,7 +92,7 @@
         RequestHeader unset X-Forwarded-User
         <If "%{HTTP_COOKIE} =~ /auth_pubtkt=.*/">
             AuthType mod_auth_pubtkt
-            TKTAuthLoginURL <%= @cauth_signin_url %>
+            TKTAuthLoginURL /auth/login
             TKTAuthFakeBasicAuth on
             TKTAuthDebug 1
             AuthName "Grafana"
@@ -112,25 +108,25 @@
         ProxyVia On
         ProxyRequests Off
 
-        ProxyPass /r/ <%= @url["gerrit_url"] %> nocanon retry=0
-        ProxyPassReverse /r/ <%= @url["gerrit_url"] %>
+        ProxyPass /r/ {{ gerrit_internal_url }} nocanon retry=0
+        ProxyPassReverse /r/ {{ gerrit_internal_url }}
 
         # Requires internal authentication in Gerrit (without SSO)
-        ProxyPass /api/ <%= @url["gerrit_url"] %> nocanon
-        ProxyPassReverse /api/ <%= @url["gerrit_url"] %>
+        ProxyPass /api/ {{ gerrit_internal_url }} nocanon
+        ProxyPassReverse /api/ {{ gerrit_internal_url }}
 
-        ProxyPass /jenkins/ <%= @url["jenkins_url"] %> nocanon retry=0
-        ProxyPassReverse /jenkins/ <%= @url["jenkins_url"] %>
+        ProxyPass /jenkins/ {{ jenkins_internal_url }} nocanon retry=0
+        ProxyPassReverse /jenkins/ {{ jenkins_internal_url }}
 
-        ProxyPass /zuul/ <%= @url["zuul_url"] %> nocanon retry=0
-        ProxyPassReverse /zuul/ <%= @url["zuul_url"] %>
+        ProxyPass /zuul/ {{ zuul_internal_url }} nocanon retry=0
+        ProxyPassReverse /zuul/ {{ zuul_internal_url }}
 
         ProxyPass /storyboard_api/ http://storyboard:20000/v1/ nocanon retry=0
         ProxyPassReverse /storyboard_api/ http://storyboard:20000/v1/
 
-        ProxyPass /redmine/ <%= @url["redmine_url"] %> nocanon retry=0
-        ProxyPassReverse /redmine/ <%= @url["redmine_url"] %>
-        ProxyHTMLURLMap <%= @url["redmine_url"] %> /redmine/
+        ProxyPass /redmine/ {{ redmine_internal_url }} nocanon retry=0
+        ProxyPassReverse /redmine/ {{ redmine_internal_url }}
+        ProxyHTMLURLMap {{ redmine_internal_url }} /redmine/
 
         ProxyPass /etherpad/ http://127.0.0.1:9001/ retry=0
         ProxyPassReverse /etherpad/ http://127.0.0.1:9001/
@@ -147,9 +143,9 @@
             allow from all
         </Proxy>
 
-        <% @allowed_proxy_prefixes.each do |prefix| -%>
-        ProxyPassMatch ^/jenkinslogs/<%= prefix %>(.*)$ http://<%= prefix %>$1
-        <% end -%>
+        {% for prefix in authentication['allowed_proxy_prefixes'] %}
+        ProxyPassMatch ^/jenkinslogs/{{ prefix }}(.*)$ http://{{ prefix }}$1
+        {% endfor %}
 
         RewriteRule ^/grafana$ grafana/ [R]
         ProxyPass /grafana/ http://127.0.0.1:3000/
@@ -163,7 +159,7 @@
 
         AuthType mod_auth_pubtkt
         TKTAuthFakeBasicAuth on
-        TKTAuthLoginURL <%= @cauth_signin_url %>
+        TKTAuthLoginURL /auth/login
         TKTAuthDebug 1
         require valid-user
     </LocationMatch>
@@ -180,7 +176,7 @@
         Header set Cache-Control "no-cache, must-revalidate"
         AuthType mod_auth_pubtkt
         TKTAuthFakeBasicAuth on
-        TKTAuthLoginURL <%= @cauth_signin_url %>
+        TKTAuthLoginURL /auth/login
         TKTAuthDebug 1
         require valid-user
     </LocationMatch>
@@ -189,7 +185,7 @@
         Header set Cache-Control "no-cache, must-revalidate"
         AuthType mod_auth_pubtkt
         TKTAuthFakeBasicAuth on
-        TKTAuthLoginURL <%= @cauth_signin_url %>
+        TKTAuthLoginURL /auth/login
         TKTAuthDebug 1
         require valid-user
     </LocationMatch>
@@ -201,7 +197,7 @@
         require valid-user
 
         Order Allow,Deny
-        Allow from <%= @fqdn %>
+        Allow from {{ fqdn }}
 
         # Grant access based on password authentication or IP address
         Satisfy any
@@ -212,7 +208,7 @@
         RequestHeader set Authorization "Basic %{B64}e"
 
         # Requests from localhost get admin permission
-        RewriteCond %{REMOTE_HOST} ^.*.<%= @fqdn %>$
+        RewriteCond %{REMOTE_HOST} ^.*.{{ fqdn }}$
         RewriteRule .* - [E=B64:${base64helper:admin},NE]
         RequestHeader set Authorization "Basic %{B64}e"
     </LocationMatch>
@@ -220,7 +216,7 @@
     RewriteMap path2content "txt:/etc/httpd/pages.txt"
     <LocationMatch "^/pages/((?!404.*).)+">
         RewriteEngine On
-        RewriteRule "/pages/([a-zA-Z1-9]*)/(.*$)" "${path2content:$1|<%= @url["gateway_url"] %>/pages/404}/$2" [P]
+        RewriteRule "/pages/([a-zA-Z1-9]*)/(.*$)" "${path2content:$1|{{ fqdn }}/pages/404}/$2" [P]
     </LocationMatch>
 
     <LocationMatch "^/pages/404/.*">
@@ -244,16 +240,16 @@
         Deny from all
     </Directory>
 
-    <% if @authenticated_only %>
+    {% if authentication["authenticated_only"] %}
     # Make sure static files, docs, git and the topmenu are accessible even if
     # anonymous access is disabled. Git itself is protected by Gerrit
     <LocationMatch "^(?!/(r/.*/(info/refs|git-upload-pack)|docs|static|auth|index.html|$))">
         Order deny,allow
         Allow from all
         AuthType mod_auth_pubtkt
-        TKTAuthLoginURL <%= @cauth_signin_url %>
+        TKTAuthLoginURL /auth/login
         TKTAuthFakeBasicAuth on
         TKTAuthDebug 1
         require valid-user
     </LocationMatch>
-    <% end %>
+    {% endif %}

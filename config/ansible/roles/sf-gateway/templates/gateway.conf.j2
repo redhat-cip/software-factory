@@ -1,0 +1,30 @@
+<VirtualHost *:80>
+{% if network["enforce_ssl"] %}
+    # Enforce HTTPS for non-internal requests. HostnameLookups is required,
+    # otherwise REMOTE_HOST contains only the IP address
+    HostnameLookups On
+    RewriteEngine On
+    RewriteCond %{HTTPS} off
+    RewriteCond %{REMOTE_HOST} !{{ fqdn }}$
+    RewriteRule (.*) https://%{HTTP_HOST}%{REQUEST_URI}
+{% endif %}
+
+    # Some internal requests require larger refactoring, thus allow these kind
+    # of requests for now
+    Include conf.d/gateway.common
+</VirtualHost>
+
+<VirtualHost *:443>
+    SSLEngine on
+{% if network["use_letsencrypt"] %}
+    SSLCertificateFile /etc/letsencrypt/pem/{{ fqdn }}.pem
+    SSLCertificateKeyFile /etc/letsencrypt/pem/lets-encrypt-x3-cross-signed.pem
+    SSLCertificateChainFile /etc/letsencrypt/private/{{ fqdn }}.key
+{% else %}
+    SSLCertificateFile /etc/pki/tls/certs/{{ fqdn }}.crt
+    SSLCertificateChainFile /etc/pki/tls/certs/{{ fqdn }}-chain.crt
+    SSLCertificateKeyFile  /etc/pki/tls/private/{{ fqdn }}.key
+{% endif %}
+
+    Include conf.d/gateway.common
+</VirtualHost>

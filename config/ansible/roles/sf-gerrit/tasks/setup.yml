@@ -1,6 +1,7 @@
 ---
 - include_vars: /etc/puppet/hiera/sf/sfcreds.yaml
 - include_vars: /etc/puppet/hiera/sf/gerrit.yaml
+- include_vars: ../sf-redmine/defaults/main.yml
 
 - name: "Create gerrit user"
   include: /etc/ansible/tasks/create_user.yml user_name=gerrit home_dir=/home/gerrit ssh_key=gerrit_service_rsa shell=/bin/bash

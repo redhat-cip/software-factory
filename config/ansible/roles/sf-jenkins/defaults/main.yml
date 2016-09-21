@@ -6,3 +6,5 @@ role_actions:
 puppet_modules:
   - jenkins
   - jjb
+
+jenkins_internal_url: "http://jenkins.{{ fqdn }}:8081/jenkins/"

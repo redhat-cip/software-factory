@@ -46,7 +46,7 @@
                 <span class="sr-only">Close</span>
             </button>
             <strong>Error!</strong>
-            {{ errors }}
+            {{'{{'}} errors {{'}}'}}
         </div>
 
         <div ng-if="loading" class="alert alert-info" role="alert">
@@ -62,9 +62,9 @@
                 <tr>
                     <th>Project</th>
                     <th class="text-center">Open Reviews</th>
-<% if @arch.include?('redmine') %>
+{% if 'redmine' in roles %}
                     <th class="text-center">Open Bugs</th>
-<% end %>
+{% endif %}
                     <th class="text-right">
                         <button type="button" class="btn btn-primary" ng-show="create_project_permission"
                         data-toggle="modal" data-target="#modal_create_project"
@@ -76,11 +76,11 @@
             </thead>
             <tbody>
                 <tr ng-repeat="(project, entry) in projects">
-                    <td><a href="/r/gitweb?p={{ project }}.git;a=summary">{{ project }}</a></td>
-                    <td class="text-center"><a href="/r/#/q/status:open+project:{{ project }},n,z">{{ entry.open_reviews }}</a></td>
-<% if @arch.include?('redmine') %>
-                    <td class="text-center"><a href="/redmine/projects/{{ entry.alt_name }}/issues">{{ entry.open_issues }}</a></td>
-<% end %>
+                    <td><a href="/r/gitweb?p={{'{{'}} project {{'}}'}}.git;a=summary">{{'{{'}} project {{'}}'}}</a></td>
+                    <td class="text-center"><a href="/r/#/q/status:open+project:{{'{{'}} project {{'}}'}},n,z">{{'{{'}} entry.open_reviews {{'}}'}}</a></td>
+{% if 'redmine' in roles %}
+                    <td class="text-center"><a href="/redmine/projects/{{'{{'}} entry.alt_name {{'}}'}}/issues">{{'{{'}} entry.open_issues {{'}}'}}</a></td>
+{% endif %}
                     <td class="text-right">
                         <button class="btn btn-primary btn-xs" ng-click="membershipForm(project, entry)"
                             ng-if="entry.admin == 1" data-toggle="modal"
@@ -106,7 +106,7 @@
                     <span aria-hidden="true">&times;</span><span class="sr-only">Close</span>
                 </button>
 
-              <h4 class="modal-title">Add Members to project "{{ selectedProjectName }}" groups</h4>
+              <h4 class="modal-title">Add Members to project "{{'{{'}} selectedProjectName {{'}}'}}" groups</h4>
             </div>
 
             <form>
@@ -121,7 +121,7 @@
                       </tr></thead>
                       <tbody>
                           <tr ng-repeat="member in selectedMembers | projectMembers:searchMember">
-                              <td>{{ member.name }}</td>
+                              <td>{{'{{'}} member.name {{'}}'}}</td>
                               <td><input type="checkbox" ng-model="member.groups.ptl" /></td>
                               <td><input type="checkbox" ng-model="member.groups.core" /></td>
                               <td>

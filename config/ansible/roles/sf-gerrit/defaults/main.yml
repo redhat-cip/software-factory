@@ -3,27 +3,19 @@ role_actions:
   - update
   - get_logs
 
-gerrit_admin_rsa: "{{ gerrit_admin_rsa }}"
-gerrit_admin_rsa_pub: "{{ gerrit_admin_rsa_pub }}"
 gerrit_email_pk: "{{ creds_gerrit_email_pk }}"
 gerrit_pub_url: "http://{{ fqdn }}/r/"
-gerrit_service_rsa: "{{ gerrit_service_rsa }}"
-gerrit_service_rsa_pub: "{{ gerrit_service_rsa_pub }}"
+gerrit_internal_url: "http://gerrit.{{ fqdn }}:8000/r/"
 gerrit_token_pk: "{{ creds_gerrit_token_pk }}"
 
 gitweb_cgi: '/var/www/git/gitweb.cgi'
 gitweb_url: "{{ gerrit_pub_url }}"
 
 issues_tracker_api_key: "{{ creds_issues_tracker_api_key }}"
-issues_tracker_api_url: "{{ redmine_url }}"
-
-jenkins_rsa_pub: "{{ jenkins_rsa_pub }}"
+issues_tracker_api_url: "{{ redmine_internal_url }}"
 
 mysql_db: 'gerrit'
 mysql_host: "mysql.{{ fqdn }}"
 mysql_password: "{{ creds_gerrit_sql_pwd }}"
 mysql_port: 3306
 mysql_user: 'gerrit'
-
-redmine_pub_url: "http://{{ fqdn }}/redmine/"
-redmine_url: "http://redmine.{{ fqdn }}:8083/"
