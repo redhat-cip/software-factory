@@ -12,6 +12,15 @@
           echo "List openstack package version"
           rpm -qa | grep openstack
 
+- publisher:
+    name: fetch-rdo-artifacts
+    publishers:
+      - postbuildscript:
+          builders:
+            - fetch-rdo-artifacts
+          script-only-if-succeeded: False
+          script-only-if-failed: False
+
 - builder:
     name: nested-cloud-prepare
     builders:

@@ -9,8 +9,6 @@ sudo yum install -y epel-release > /dev/null
 sudo yum install -y python-pip git wget curl patch iproute > /dev/null
 sudo pip install --upgrade 'pip<8'
 sudo pip install tox
-# Install twine for uploading modules to pypi.python.org
-sudo pip install twine
 
 # The jenkins user. Must be able to use sudo without password
 sudo useradd -m jenkins
