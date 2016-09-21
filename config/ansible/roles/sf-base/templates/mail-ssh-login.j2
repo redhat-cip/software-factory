@@ -1,6 +1,6 @@
 $ModLoad ommail
 $ActionMailSMTPServer localhost
-$ActionMailFrom root@localhost
+$ActionMailFrom root@{{ fqdn }}
 $ActionMailTo root@localhost
 $template mailSubject,"SSH Login to %hostname%"
 $template mailBody,"%msg%"
