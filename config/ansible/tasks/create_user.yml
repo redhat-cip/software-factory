@@ -38,5 +38,5 @@
     owner: "{{ user_name }}"
     group: "{{ group_name|default(user_name) }}"
   with_items:
-    - {key: "{{ ssh_key }}", name: "id_rsa", mode: "0400"}
-    - {key: "{{ ssh_key }}_pub", name: "id_rsa.pub", mode: "0444"}
+    - {key: "{{ ssh_key|default(omit) }}", name: "id_rsa", mode: "0400"}
+    - {key: "{{ ssh_key|default(omit) }}_pub", name: "id_rsa.pub", mode: "0444"}
