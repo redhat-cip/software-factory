@@ -29,10 +29,9 @@ end
 describe file('/etc/zuul/zuul.conf') do
     it {
         should be_file
-        should be_owned_by 'zuul'
         should be_grouped_into 'zuul'
-        should be_mode '644'
-    }
+        should be_mode '440'
+        }
 end
 
 describe file('/etc/zuul/layout.yaml') do

@@ -1,4 +1,5 @@
 ---
+- include_vars: /etc/ansible/vars/common.yml
 - file: path=/var/lib/software-factory/gerrit_config state=touch
 
 - name: Check local config

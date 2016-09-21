@@ -1,6 +1,17 @@
 ---
 - include: /etc/ansible/tasks/create_user.yml user_name=jenkins ssh_key=jenkins_rsa
-- file: path=/var/lib/jenkins/plugins state=directory mode=0755 owner=jenkins
+
+- name: "Create directory"
+  file: path={{ item }} state=directory mode=0755 owner=jenkins
+  with_items:
+    - /var/lib/jenkins
+    - /var/lib/jenkins/plugins
+    - /var/cache/jenkins
+
+- name: "Setup configuration"
+  template: src={{ item }}.j2 dest=/var/lib/jenkins/{{ item }} owner=jenkins group=jenkins mode=0644
+  with_items:
+    - jenkins.model.JenkinsLocationConfiguration.xml
 
 # Seport fail to relabel existing port, see https://github.com/ansible/ansible-modules-extras/issues/2009
 # seport: ports={{ item }} proto=tcp setype=http_port_t state=present

@@ -19,7 +19,6 @@ class cauth ($gerrit = hiera('gerrit')) {
   $auth = hiera('authentication')
   $fqdn = hiera('fqdn')
   $theme = hiera('theme')
-  $url = hiera('url')
   $network = hiera('network')
   $admin_password = $auth['admin_password']
   $ldap = $auth['ldap']

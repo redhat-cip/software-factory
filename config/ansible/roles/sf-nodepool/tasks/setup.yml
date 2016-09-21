@@ -1,4 +1,13 @@
 ---
-- group: name=nodepool
-- user: name=nodepool group=nodepool shell=/sbin/nologin home=/var/lib/nodepool
-- file: path=/var/lib/nodepool state=directory mode=0700 owner=nodepool group=nodepool
+- include_vars: /etc/ansible/vars/common.yml
+- include: /etc/ansible/tasks/create_user.yml user_name=nodepool ssh_key=jenkins_rsa
+
+- name: "Create /etc/nodepool directory"
+  file: path=/etc/nodepool state=directory
+
+- name: "Setup configuration"
+  template: src="templates/{{ item }}.j2" dest="/etc/nodepool/{{ item }}" mode=0440 group=nodepool
+  with_items: ["secure.conf"]
+
+- name: "Setup conf update script"
+  template: src=templates/sf-nodepool-conf-update.sh.j2 dest=/usr/local/bin/sf-nodepool-conf-update.sh mode=0755

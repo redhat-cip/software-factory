@@ -2,7 +2,7 @@
 - include_vars: /etc/puppet/hiera/sf/_arch.yaml
 - include_vars: /etc/puppet/hiera/sf/sfcreds.yaml
 - include_vars: /etc/puppet/hiera/sf/sf_version.yaml
-- include_vars: /etc/puppet/hiera/sf/common.yaml
+- include_vars: /etc/ansible/vars/common.yml
 - include_vars: ../sf-gerrit/defaults/main.yml
 - include_vars: ../sf-zuul/defaults/main.yml
 - include_vars: ../sf-jenkins/defaults/main.yml

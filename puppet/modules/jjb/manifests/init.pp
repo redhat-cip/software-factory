@@ -17,7 +17,6 @@ class jjb ($gerrit = hiera('gerrit')) {
 
   $fqdn = hiera('fqdn')
   $auth = hiera('authentication')
-  $url = hiera('url')
   $gerrit_host = "gerrit.${fqdn}"
 
   $jenkins_password = hiera('creds_jenkins_user_password')

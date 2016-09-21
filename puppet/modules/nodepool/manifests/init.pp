@@ -19,14 +19,8 @@ class nodepool {
   $arch = hiera('roles')
   $jenkins_rsa_pub = hiera('jenkins_rsa_pub')
   $nodepool = hiera('nodepool')
-  $nodepool_rsa = hiera('jenkins_rsa')
   $fqdn = hiera('fqdn')
-  $url = hiera('url')
-
   $jenkins_host = "jenkins.${fqdn}"
-  $jenkins_password = hiera('creds_jenkins_user_password')
-  $nodepool_mysql_address = "mysql.${fqdn}"
-  $nodepool_sql_password = hiera('creds_nodepool_sql_pwd')
 
   if $nodepool['disabled'] {
     $running = false
@@ -35,22 +29,6 @@ class nodepool {
   else {
     $running = true
     $enabled = true
-  }
-
-  file { '/var/lib/nodepool/.ssh':
-    ensure     => directory,
-    owner      => 'nodepool',
-    group      => 'nodepool',
-    mode       => '0700',
-  }
-
-  file { '/var/lib/nodepool/.ssh/id_rsa':
-    require => File['/var/lib/nodepool/.ssh'],
-    ensure  => file,
-    owner   => 'nodepool',
-    group   => 'nodepool',
-    mode    => '0400',
-    content => inline_template('<%= @nodepool_rsa %>'),
   }
 
   file { 'nodepool_service':
@@ -105,26 +83,11 @@ class nodepool {
     require => [File['/etc/nodepool']],
   }
 
-  file { '/etc/nodepool/secure.conf':
-    owner   => 'nodepool',
-    mode   => '0400',
-    content => template('nodepool/secure.conf.erb'),
-    require => [File['/etc/nodepool']],
-  }
-
   file {'/etc/nodepool/logging.conf':
     source => 'puppet:///modules/nodepool/logging.conf',
     require => [File['/etc/nodepool/']],
   }
 
-
-  file { '/usr/local/bin/sf-nodepool-conf-update.sh':
-    ensure => file,
-    mode   => '0755',
-    owner  => 'root',
-    group  => 'root',
-    content => template('nodepool/sf-nodepool-conf-update.sh.erb'),
-  }
 
   service { 'nodepool':
     ensure     => $running,

@@ -5,4 +5,7 @@ role_actions:
 puppet_modules: redmine
 
 redmine_internal_url: "http://redmine.{{ fqdn }}:8083/"
-redmine_pub_url: "http://{{ fqdn }}/redmine/"
+redmine_pub_url: "{{ gateway_url }}/redmine/"
+
+redmine_api_key: "{{ creds_issues_tracker_api_key }}"
+redmine_api_url: "http://api-redmine.{{ fqdn }}:8083/"

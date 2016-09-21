@@ -22,7 +22,6 @@ class redmine {
     $theme = hiera('theme')
     $auth = hiera('authentication')
     $fqdn = hiera('fqdn')
-    $url = hiera_hash('url')
     $sf_version = hiera('sf_version')
     $api_key = hiera('creds_issues_tracker_api_key')
     $mysql_url = "mysql.${fqdn}"
@@ -61,13 +60,6 @@ class redmine {
       unless  => 'stat -c %U /var/www/redmine | grep apache',
     }
 
-    file { '/root/post-conf-in-mysql.sql':
-        ensure  => file,
-        mode    => '0640',
-        content => template('redmine/post-conf-in-mysql.sql.erb'),
-        replace => true,
-    }
-
     exec {'create_secret_token':
         environment => ['HOME=/root'],
         command     => 'bundle exec rake generate_secret_token',
@@ -99,12 +91,11 @@ class redmine {
         notify      => Exec['chown_redmine'],
     }
 
+    # TODO: Fix this faulty logic once redmine module is imported in ansible
     exec {'post-conf-in-mysql':
-        command     => "mysql -u redmine redmine -p\"${mysql_password}\" -h ${mysql_url} < /root/post-conf-in-mysql.sql",
+        command     => "[ \"\$(md5sum /root/redmine-postconf.sql)\" == \"\$(cat /root/redmine-postconf.sql.md5)\" ] || { mysql -u redmine redmine -p\"${mysql_password}\" -h ${mysql_url} < /root/redmine-postconf.sql &> /root/redmine-postconf.log; md5sum /root/redmine-postconf.sql > /root/redmine-postconf.sql.md5; }",
         path        => '/usr/bin/:/bin/',
         cwd         => '/usr/bin',
-        refreshonly => true,
-        subscribe   => File['/root/post-conf-in-mysql.sql'],
         require     => [Exec['default_data']],
         notify      => Exec['chown_redmine'],
     }

@@ -20,7 +20,6 @@ class jenkins {
 
   $fqdn = hiera('fqdn')
   $auth = hiera('authentication')
-  $url = hiera('url')
   $settings = hiera('jenkins')
   $jenkins_password = hiera('creds_jenkins_user_password')
 
@@ -56,21 +55,12 @@ class jenkins {
     notify  => Exec['systemctl_reload'],
   }
 
-  file { '/var/cache/jenkins':
-      ensure  => directory,
-      owner   => 'jenkins',
-      group   => 'jenkins',
-      require => [User['jenkins'], Group['jenkins']],
-  }
-
   service { 'jenkins':
     ensure  => 'running',
     enable  => true,
     require => [File['/lib/systemd/system/jenkins.service'],
                 Exec['systemctl_reload'],
                 File['/etc/init.d/jenkins'],
-                File['/var/lib/jenkins'],
-                File['/var/cache/jenkins'],
                 File['/var/lib/jenkins/config.xml']],
   }
 
@@ -83,21 +73,6 @@ class jenkins {
     ensure => present,
   }
 
-  file { '/var/lib/jenkins':
-    ensure  => directory,
-    owner   => 'jenkins',
-    group   => 'jenkins',
-    require => [User['jenkins'], Group['jenkins']],
-  }
-
-  file {'/var/lib/jenkins/jenkins.model.JenkinsLocationConfiguration.xml':
-    ensure  => file,
-    mode    => '0644',
-    owner   => 'jenkins',
-    group   => 'jenkins',
-    content => template('jenkins/jenkins.model.JenkinsLocationConfiguration.xml.erb'),
-    require => User['jenkins'],
-  }
   file {'/var/lib/jenkins/hudson.plugins.git.GitSCM.xml':
     ensure  => file,
     mode    => '0644',
@@ -152,8 +127,7 @@ class jenkins {
     owner   => 'jenkins',
     group   => 'jenkins',
     content => template('jenkins/config.xml.erb'),
-    require => [File['/var/lib/jenkins/jenkins.model.JenkinsLocationConfiguration.xml'],
-                File['/var/lib/jenkins/hudson.plugins.gearman.GearmanPluginConfig.xml'],
+    require => [File['/var/lib/jenkins/hudson.plugins.gearman.GearmanPluginConfig.xml'],
                 File['/var/lib/jenkins/hudson.tasks.Mailer.xml'],
                 File['/var/lib/jenkins/org.jenkinsci.main.modules.sshd.SSHD.xml'],
                 File['/etc/sudoers.d/jenkins']],

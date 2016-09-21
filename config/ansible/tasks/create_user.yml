@@ -16,7 +16,7 @@
   file:
     path: "{{ home_dir|default('/var/lib/' + user_name) }}"
     state: directory
-    mode: 0750
+    mode: "{{ home_dir_mode|default('0750') }}"
     owner: "{{ user_name }}"
     group: "{{ group_name|default(user_name) }}"
 

@@ -19,10 +19,7 @@ class zuul {
 
   $arch = hiera('roles')
   $fqdn = hiera('fqdn')
-  $url = hiera('url')
   $logs = hiera('logs')
-  $jenkins_rsa = hiera('jenkins_rsa')
-  $jenkins_pub_rsa = hiera('creds_jenkins_pub_key')
   $gerrit_host = "gerrit.${fqdn}"
   $gerrit_connections = hiera('gerrit_connections')
 
@@ -64,71 +61,15 @@ class zuul {
     notify  => Exec['systemctl_reload'],
   }
 
-  group { 'zuul':
-    ensure => present,
-  }
-
-  user { 'zuul':
-    ensure     => present,
-    home       => '/var/lib/zuul',
-    shell      => '/bin/bash',
-    gid        => 'zuul',
-    managehome => true,
-    require    => Group['zuul'],
-  }
-
   file {'/var/log/zuul/':
     ensure  => directory,
     mode    => '0755',
     owner   => 'zuul',
     group   => 'zuul',
-    require => [User['zuul'], Group['zuul']],
   }
 
   file {'/etc/sysconfig/zuul':
     content => template('graphite/statsd.environment.erb'),
-  }
-
-  file {'/etc/zuul':
-    ensure  => directory,
-    mode    => '0750',
-    owner   => 'zuul',
-    group   => 'zuul',
-    require => [User['zuul'], Group['zuul']],
-  }
-
-  file {'/var/lib/zuul/':
-    ensure  => directory,
-    mode    => '0755',
-    owner   => 'zuul',
-    group   => 'zuul',
-    require => [User['zuul'], Group['zuul']],
-  }
-
-  file {'/var/lib/zuul/.ssh':
-    ensure  => directory,
-    mode    => '0755',
-    owner   => 'zuul',
-    group   => 'zuul',
-    require => File['/var/lib/zuul/'],
-  }
-
-  file {'/var/lib/zuul/.ssh/id_rsa':
-    ensure  => file,
-    mode    => '0400',
-    owner   => 'zuul',
-    group   => 'zuul',
-    content => inline_template('<%= @jenkins_rsa %>'),
-    require => File['/var/lib/zuul/.ssh'],
-  }
-
-  file {'/var/lib/zuul/.ssh/id_rsa.pub':
-    ensure  => file,
-    mode    => '0444',
-    owner   => 'zuul',
-    group   => 'zuul',
-    content => inline_template('ssh-rsa <%= @jenkins_pub_rsa %> zuul@<%= @fqdn %>'),
-    require => File['/var/lib/zuul/.ssh'],
   }
 
   file {'/var/run/zuul/':
@@ -136,7 +77,6 @@ class zuul {
     mode    => '0755',
     owner   => 'zuul',
     group   => 'zuul',
-    require => [User['zuul'], Group['zuul']],
   }
 
   file {'/etc/zuul/logging.conf':
@@ -145,7 +85,6 @@ class zuul {
     owner   => 'zuul',
     group   => 'zuul',
     source  => 'puppet:///modules/zuul/logging.conf',
-    require => File['/etc/zuul'],
   }
 
   file {'/etc/zuul/gearman-logging.conf':
@@ -154,7 +93,6 @@ class zuul {
     owner   => 'zuul',
     group   => 'zuul',
     source  => 'puppet:///modules/zuul/gearman-logging.conf',
-    require => File['/etc/zuul'],
   }
 
   file {'/etc/zuul/merger-logging.conf':
@@ -163,18 +101,6 @@ class zuul {
     owner   => 'zuul',
     group   => 'zuul',
     source  => 'puppet:///modules/zuul/merger-logging.conf',
-    require => File['/etc/zuul'],
-  }
-
-  file {'/etc/zuul/zuul.conf':
-    ensure  => file,
-    mode    => '0644',
-    owner   => 'zuul',
-    group   => 'zuul',
-    content => template('zuul/zuul.conf.erb'),
-    require => [File['/etc/zuul/logging.conf'],
-                File['/etc/zuul/gearman-logging.conf'],
-                File['/etc/zuul/merger-logging.conf']],
   }
 
   file {'/etc/zuul/layout.yaml':
@@ -182,7 +108,6 @@ class zuul {
     mode    => '0644',
     owner   => 'zuul',
     group   => 'zuul',
-    require => [File['/etc/zuul']],
   }
 
   file {'gearman-check':

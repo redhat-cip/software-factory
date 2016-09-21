@@ -13,3 +13,6 @@
     src: /etc/ansible/roles/sf-gateway/templates/topmenu.js.j2
     dest: /var/www/redmine/public/themes/classic/javascripts/theme.js
     mode: 0444
+
+- name: "install postconf sql"
+  template: src=templates/postconf.sql.j2 dest=/root/redmine-postconf.sql

@@ -6,7 +6,6 @@
   - "%{::clientcert}"
   - jenkins
   - gerrit
-  - common
   - _arch
   - sfconfig
   - sfcreds

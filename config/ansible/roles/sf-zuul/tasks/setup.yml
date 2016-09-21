@@ -1,4 +1,7 @@
 ---
+# Use 0751 to let apache access /var/lib/zuul/git
+- include: /etc/ansible/tasks/create_user.yml user_name=zuul ssh_key=jenkins_rsa home_dir_mode=0751
+
 # Seport fail to relabel existing port, see https://github.com/ansible/ansible-modules-extras/issues/2009
 #- seport: ports={{ item }} proto=tcp setype=http_port_t state=present
 - command: semanage port --modify -t http_port_t -p tcp {{ item }}
@@ -12,3 +15,10 @@
   with_items:
     - 152290-Add-support-for-layout-configuration-split.patch
     - 270338-zuul_temp-url-key.patch
+
+- name: "Create /etc/zuul directory"
+  file: path=/etc/zuul state=directory
+
+- name: "Setup configuration"
+  template: src="templates/{{ item }}.j2" dest="/etc/zuul/{{ item }}" mode=0440 group=zuul
+  with_items: ["zuul.conf"]

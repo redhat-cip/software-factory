@@ -2,7 +2,7 @@
 
 set -e
 
-gateway_url="<%= @url['gateway_url'] %>"
+gateway_url="{{ gateway_url }}"
 url=${gateway_url}/r/config
 workdir=$(mktemp -d)
 toclean="${workdir}"

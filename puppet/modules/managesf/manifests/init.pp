@@ -17,34 +17,14 @@ class managesf ($gerrit = hiera('gerrit')) {
   include ::apache
 
   $fqdn = hiera('fqdn')
-  $url = hiera('url')
   $auth = hiera('authentication')
   $arch = hiera('roles')
-  $issues_tracker_api_key = hiera('creds_issues_tracker_api_key')
-  $storyboard_service_token = hiera('creds_storyboard_service_token')
-  $storyboard_mysql_host = "mysql.${fqdn}"
-  $storyboard_mysql_db = 'storyboard'
-  $storyboard_mysql_username = 'storyboard'
-  $storyboard_mysql_password = hiera('creds_storyboard_sql_pwd')
-
-  $issues_tracker_api_url = $url["api_redmine_url"]
-  $gerrit_host = "gerrit.${fqdn}"
   $gerrit_admin_rsa = hiera('gerrit_admin_rsa')
   $gerrit_admin_sshkey_rsa = hiera('creds_gerrit_admin_sshkey')
   $gerrit_admin_sshkey = "ssh-rsa ${gerrit_admin_sshkey_rsa}"
   $service_rsa = hiera('service_rsa')
-  $gerrit_mysql_host = "mysql.${fqdn}"
-  $gerrit_mysql_db = 'gerrit'
-  $gerrit_mysql_username = 'gerrit'
-  $gerrit_mysql_password = hiera('creds_gerrit_sql_pwd')
   $admin_password = $auth['admin_password']
   $admin_mail_forward = $auth['admin_mail_forward']
-  $managesf_mysql_host = "mysql.${fqdn}"
-  $managesf_mysql_db = 'managesf'
-  $managesf_mysql_username = 'managesf'
-  $managesf_mysql_password = hiera('creds_managesf_sql_pwd')
-  $redmine_mysql_host = "mysql.${fqdn}"
-  $redmine_mysql_db = 'redmine'
 
   file {'/etc/httpd/conf.d/managesf.conf':
     ensure  => file,
@@ -92,16 +72,6 @@ class managesf ($gerrit = hiera('gerrit')) {
     owner  => 'apache',
     group  => 'apache',
     mode   => '0640',
-  }
-
-  file { '/var/www/managesf/config.py':
-    ensure  => file,
-    owner   => 'apache',
-    group   => 'apache',
-    mode    => '0640',
-    content => template('managesf/managesf-config.py.erb'),
-    require => File['/var/www/managesf/'],
-    replace => true,
   }
 
   file { '/var/www/managesf/gerrit_admin_rsa':

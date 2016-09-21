@@ -5,12 +5,12 @@ SET @http_auth_config_value="--- !ruby/hash:ActiveSupport::HashWithIndifferentAc
   lookup_mode: login
   auto_registration: 'true'
 ";
-SET @api_key="<%= @api_key %>";
+SET @api_key="{{ redmine_api_key }}";
 SET @username="admin";
-SET @email="admin@<%= @fqdn %>";
-SET @host="<%= @url['redmine_pub_url'] %>";
-SET @mailfrom="redmine@<%= @fqdn %>";
-SET @footer="You have received this notification because you have either subscribed to it, or are involved in it. To change your notification preferences, please click here: <%= @url['redmine_pub_url'] %>my/account";
+SET @email="admin@{{ fqdn }}";
+SET @host="{{ redmine_pub_url }}";
+SET @mailfrom="redmine@{{ fqdn }}";
+SET @footer="You have received this notification because you have either subscribed to it, or are involved in it. To change your notification preferences, please click here: {{ redmine_pub_url }}my/account";
 
 
 INSERT IGNORE INTO settings (name, value, updated_on) SELECT * FROM (SELECT 'rest_api_enabled','1', CURRENT_TIMESTAMP()) AS TMP WHERE NOT EXISTS(SELECT name FROM settings WHERE name='rest_api_enabled');

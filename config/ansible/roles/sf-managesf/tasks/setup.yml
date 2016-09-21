@@ -1,9 +1,13 @@
 ---
+- include_vars: /etc/ansible/vars/common.yml
 - name: "Set /var/www/managesf context"
   file: path=/var/www/managesf state=directory mode=0750 owner=apache group=apache setype=httpd_sys_content_t
 
 - name: "Copy app.wsgi"
   copy: src=app.wsgi dest=/var/www/managesf/app.wsgi
+
+- name: "Setup config.py"
+  template: src=templates/config.py.j2 dest=/var/www/managesf/config.py owner=root group=apache mode=0440
 
 - name: "Initialize bup"
   shell: "/usr/local/bin/bup init"

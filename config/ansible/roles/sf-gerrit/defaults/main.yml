@@ -4,12 +4,11 @@ role_actions:
   - get_logs
 
 gerrit_email_pk: "{{ creds_gerrit_email_pk }}"
-gerrit_pub_url: "http://{{ fqdn }}/r/"
+gerrit_pub_url: "{{ gateway_url }}/r/"
 gerrit_internal_url: "http://gerrit.{{ fqdn }}:8000/r/"
 gerrit_token_pk: "{{ creds_gerrit_token_pk }}"
 
 gitweb_cgi: '/var/www/git/gitweb.cgi'
-gitweb_url: "{{ gerrit_pub_url }}"
 
 issues_tracker_api_key: "{{ creds_issues_tracker_api_key }}"
 issues_tracker_api_url: "{{ redmine_internal_url }}"
