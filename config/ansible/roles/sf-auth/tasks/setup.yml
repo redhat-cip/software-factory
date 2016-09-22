@@ -1,8 +1,20 @@
 ---
-- file: path=/var/www/cauth state=directory mode=0750 owner=apache group=apache setype=httpd_sys_content_t
-
-# Install cauth keys
 - include_vars: /etc/puppet/hiera/sf/sfcreds.yaml
-- copy: content="{{ privkey_pem }}" dest="/srv/cauth_keys/privkey.pem" mode=0440 owner=root group=apache setype=httpd_sys_content_t
-- command: semanage fcontext -a -t httpd_sys_content_t "/srv/cauth_keys(/.*)?"
-  when: selinuxenabled
+
+- name: Create /var/www/cauth
+  file:
+      path: /var/www/cauth
+      state: directory
+      owner: apache
+      group: apache
+      mode: 0750
+      setype: httpd_sys_content_t
+
+- name: Install cauth private key
+  copy:
+    content: "{{ privkey_pem }}"
+    dest: /srv/cauth_keys/privkey.pem
+    owner: root
+    group: apache
+    mode: 0440
+    setype: httpd_sys_content_t
