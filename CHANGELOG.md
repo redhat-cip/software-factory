@@ -2,8 +2,34 @@
 Release Notes
 =============
 
+2.2.5
+=====
+
+New Features
+------------
+
+- The enforce_ssl options now properly set all links to https when used. This improve git review links and ci logs urls.
+- The mirror update task now shows the detail of each mirror files update.
+
+
+Bug Fixes
+---------
+
+- Local backend password now support unicode characters.
+- Nodepool wasn't able to delete instance because of a shade bug, this release pin the library until a proper fix is implemented.
+- The policy engine was prone to a race condition which prevented the dashboard to works properly.
+- The let's encrypt automatic configuration task had a typo that prevented usage of lecm.
+- The mirror update postconf to add a new pipeline error is now fixed.
+
+
+Other Notes
+-----------
+
+- The hideable toggle in theme configuration such as 'topmenu_hide_redmine' are removed since the topmenu now uses the arch file directly.
+
+
 2.2.4
-========
+=====
 
 New Features
 ------------

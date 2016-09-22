@@ -17,19 +17,19 @@ Live instance: http://softwarefactory-project.io
 
 # Get Last releases
 
-The last stable release is 2.2.4 grab the image here:
+The last stable release is 2.2.5 grab the image here:
+
+* Qcow2 image: http://46.231.132.68:8080/v1/AUTH_b50e80d3969f441a8b7b1fe831003e0a/sf-images/softwarefactory-C7.0-2.2.5.img.qcow2
+* Heat deployment: http://46.231.132.68:8080/v1/AUTH_b50e80d3969f441a8b7b1fe831003e0a/sf-images/softwarefactory-C7.0-2.2.5-allinone.hot
+* Signed digest: http://46.231.132.68:8080/v1/AUTH_b50e80d3969f441a8b7b1fe831003e0a/sf-images/softwarefactory-C7.0-2.2.5.digest
+
+Previous stable release is 2.2.4:
 
 * Qcow2 image: http://46.231.132.68:8080/v1/AUTH_b50e80d3969f441a8b7b1fe831003e0a/sf-images/softwarefactory-C7.0-2.2.4.img.qcow2
 * Heat deployment: http://46.231.132.68:8080/v1/AUTH_b50e80d3969f441a8b7b1fe831003e0a/sf-images/softwarefactory-C7.0-2.2.4-allinone.hot
 * Signed digest: http://46.231.132.68:8080/v1/AUTH_b50e80d3969f441a8b7b1fe831003e0a/sf-images/softwarefactory-C7.0-2.2.4.digest
 
-Previous stable release is 2.2.3:
+Current dev version is 2.2.6:
 
-* Qcow2 image: http://46.231.132.68:8080/v1/AUTH_b50e80d3969f441a8b7b1fe831003e0a/sf-images/softwarefactory-C7.0-2.2.3.img.qcow2
-* Heat deployment: http://46.231.132.68:8080/v1/AUTH_b50e80d3969f441a8b7b1fe831003e0a/sf-images/softwarefactory-C7.0-2.2.3-allinone.hot
-* Signed digest: http://46.231.132.68:8080/v1/AUTH_b50e80d3969f441a8b7b1fe831003e0a/sf-images/softwarefactory-C7.0-2.2.3.digest
-
-Current dev version is 2.2.5:
-
-* Qcow2 image: http://46.231.132.68:8080/v1/AUTH_b50e80d3969f441a8b7b1fe831003e0a/sf-images/softwarefactory-C7.0-2.2.5.img.qcow2
-* Heat deployment: http://46.231.132.68:8080/v1/AUTH_b50e80d3969f441a8b7b1fe831003e0a/sf-images/softwarefactory-C7.0-2.2.5-allinone.hot
+* Qcow2 image: http://46.231.132.68:8080/v1/AUTH_b50e80d3969f441a8b7b1fe831003e0a/sf-images/softwarefactory-C7.0-2.2.6.img.qcow2
+* Heat deployment: http://46.231.132.68:8080/v1/AUTH_b50e80d3969f441a8b7b1fe831003e0a/sf-images/softwarefactory-C7.0-2.2.6-allinone.hot

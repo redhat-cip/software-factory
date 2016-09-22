@@ -1,5 +1,12 @@
 ---
+features:
+  - The enforce_ssl options now properly set all
+    links to https when used. This improve git
+    review links and ci logs urls.
 fixes:
+  - Local backend password now support unicode characters.
   - Nodepool wasn't able to delete instance because
     of a shade bug, this release pin the library until
     a proper fix is implemented.
+  - The policy engine was prone to a race condition which
+    prevented the dashboard to works properly.

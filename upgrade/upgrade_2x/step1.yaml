@@ -6,6 +6,7 @@
   - include: tasks/gerrit_configrepo_import.yml
   - include: tasks/zuul_layout_namechange.yml
   - include: tasks/sf_jjb_namechange.yml
+  - include: tasks/policy_configrepo.yml
 
 - hosts: all
   tasks:

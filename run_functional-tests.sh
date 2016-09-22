@@ -97,7 +97,6 @@ case "${TEST_TYPE}" in
         run_bootstraps
         run_provisioner
         # Add tech preview compenents until they are fully integrated in the refarch
-        TECH_PREVIEW="elasticsearch job-logs-gearman-client job-logs-gearman-worker logstash kibana"
         enable_arch_components remote /etc/puppet/hiera/sf/arch.yaml "$TECH_PREVIEW"
         run_upgrade
         run_checker "checksum_warn_only"

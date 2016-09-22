@@ -475,6 +475,33 @@ function run_upgrade {
     sudo mkdir -p /var/lib/lxc/${INSTALL_SERVER}/rootfs/${IMAGE_PATH}/ || fail "Could not copy ${SF_VER}"
     sudo rsync -a --delete ${IMAGE_PATH}/ /var/lib/lxc/${INSTALL_SERVER}/rootfs/${IMAGE_PATH}/ || fail "Could not copy ${SF_VER}"
 
+    if [ "${SF_PREVIOUS_VER}" == "C7.0-2.2.2" ]; then
+        ssh ${SF_HOST} python <<SCRIPT
+import json
+import yaml
+import os
+import subprocess
+os.chdir('/root/config')
+f = 'policies/policy.yaml'
+commit = True
+if not os.path.isfile(f):
+    commit = False
+    f = "${IMAGE_PATH}/usr/local/share/sf-config-repo/policies/policy.yaml"
+d = yaml.load(open(f))
+d['managesf.project:create'] = 'rule:authenticated_api'
+d['managesf.project:delete'] = 'rule:authenticated_api'
+json.dump(d, file(f, 'w'), indent=1)
+if commit:
+    for cmd in [
+        ['git', 'add', 'policies'],
+        ['git', 'commit', '-m', 'test policy...'],
+        ['git', 'push', 'git+ssh://sftests.com/config', 'master']
+        ]:
+        subprocess.Popen(cmd).wait()
+print "POLICY: prepared policy to support project creation by any user..."
+SCRIPT
+    fi
+
     echo "[+] Running upgrade"
     ssh ${SF_HOST} "cd software-factory; ./upgrade.sh" || fail "Upgrade failed" "/var/lib/lxc/${INSTALL_SERVER}/rootfs/var/log/upgrade-bootstrap.log"
     echo "[+] Update sf-bootstrap-data"
