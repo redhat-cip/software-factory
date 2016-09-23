@@ -326,7 +326,13 @@ function enable_arch_components {
     [ "$1" = "remote" ] && remote_cmd="ssh ${SF_HOST}" || remote_cmd=""
     arch_path=$2
     components=$3
-    $remote_cmd cp $arch_path ${arch_path}.before_techpreview_save
+    if [ "$1" = "remote" ]; then
+        $remote_cmd cp $arch_path ${arch_path}.before_techpreview_save
+    else
+        cp $arch_path ${arch_path}.techpreview
+        export REFARCH_FILE=${arch_path}.techpreview
+        arch_path=${arch_path}.techpreview
+    fi
     $remote_cmd python <<SCRIPT
 import yaml
 comps = "$components".split()
