@@ -8,6 +8,7 @@
     - name: Get config sha1
       command: git ls-remote -h http://{{ '{{' }} fqdn {{ '}}' }}/r/config.git
       register: configsha
+
 - hosts: jenkins:zuul:nodepool:managesf:gerrit{% if 'gerritbot' in roles %}:gerritbot{% endif %}{% if 'mirror' in roles %}:mirror{% endif %}
 
   tasks:
