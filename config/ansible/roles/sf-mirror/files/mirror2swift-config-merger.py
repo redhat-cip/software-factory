@@ -18,17 +18,20 @@ import sys
 import os
 import yaml
 
-if len(sys.argv) != 3 or not os.path.isdir(sys.argv[1]):
+if len(sys.argv) != 3 or not os.path.exists(sys.argv[1]):
     print "usage: %s mirrors-dir output-conf.yaml" % sys.argv[0]
     exit(1)
 
 # Collect mirrors configuration files
-paths = []
-for root, dirs, files in os.walk(sys.argv[1], topdown=True):
-    paths.extend([os.path.join(root, path) for path in files])
+if os.path.isfile(sys.argv[1]):
+    paths = [sys.argv[1]]
+else:
+    paths = []
+    for root, dirs, files in os.walk(sys.argv[1], topdown=True):
+        paths.extend([os.path.join(root, path) for path in files])
 
 # Keeps only .yaml files
-paths = filter(lambda x: x.endswith('.yaml'), paths)
+paths = filter(lambda x: x.endswith('.yaml') or x.endswith('.yml'), paths)
 
 # swift2mirror configuration template
 conf = {

@@ -1,8 +1,4 @@
 ---
-- group: name=mirror2swift
-- user: name=mirror2swift group=mirror2swift shell=/sbin/nologin home=/var/lib/mirror2swift
-- file: path=/var/lib/mirror2swift state=directory mode=0750 owner=mirror2swift group=mirror2swift
-
 - name: "Install requirements"
   yum: name={{ item }} state=present
   with_items: [python-lxml, PyYAML, python-requests]
@@ -16,6 +12,3 @@
 
 - name: "Install mirror2swift"
   command: chdir=/usr/src/mirror2swift python setup.py install
-
-- name: "Install configuration updater"
-  copy: src=mirror2swift-config-merger.py dest=/usr/local/libexec/software-factory/mirror2swift-config-merger.py mode=0555
