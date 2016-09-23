@@ -112,6 +112,10 @@
 
           echo "[+] Checking syntax errors in policy file"
           python -c "import yaml; yaml.safe_load(open('policies/policy.yaml'))"
+
+          echo "[+] Checking resources changes"
+          /usr/local/bin/resources.sh validate
+
     triggers:
       - zuul
     node: master
@@ -123,6 +127,8 @@
       - shell: |
           echo "Updating configuration using $ZUUL_COMMIT"
           ssh root@managesf.{{ fqdn }} sf_configrepo_update
+          echo "[+] Applying resources changes"
+          /usr/local/bin/resources.sh apply
     publishers:
       - email:
           recipients: {{ network.admin_mail_forward }}

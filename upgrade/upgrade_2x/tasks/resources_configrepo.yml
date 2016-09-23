@@ -1,0 +1,18 @@
+---
+- name: Check if resources config is already in config-repo
+  stat: path=/root/config/resources
+  register: configrepo_resources
+
+- name: Init resources configuration
+  when: configrepo_resources.stat.exists == false
+  command: chdir=/root/config {{ item }}
+  with_items:
+    - git fetch --all
+    - git reset --hard origin/master --
+    - git clean -f -x -d
+    - mkdir resources
+    # Copy default content
+    - cp {{install_path}}/softwarefactory/usr/local/share/sf-config-repo/resources/resources.yaml resources/
+    - git add resources
+    - git commit -m "Initialize resources configuration"
+    - git push git+ssh://{{ fqdn }}/config master

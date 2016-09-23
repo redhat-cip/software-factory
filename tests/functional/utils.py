@@ -424,7 +424,7 @@ class GerritGitUtils(Tool):
         self.exe('git checkout master', clone_dir)
         if not commit:
             commit = "Add all the additions"
-        self.exe('git add *', clone_dir)
+        self.exe('git add -A', clone_dir)
         self.exe("git commit --author '%s' -m '%s'" % (self.author, commit),
                  clone_dir)
 

@@ -110,6 +110,12 @@ admin = {
     'http_password': '{{ authentication['admin_password'] }}',
 }
 
+resources = {
+    'workdir': '/var/lib/managesf',
+    'subdir': 'resources',
+    'master_repo': '{{ gateway_url }}/r/config',
+}
+
 gerrit = {
     'user': 'gerrit',
     'admin_user': 'admin',
