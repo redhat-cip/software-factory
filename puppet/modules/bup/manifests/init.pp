@@ -43,13 +43,4 @@ define bup::scripts($name, $backup_script, $restore_script) {
     mode    => '0744',
     content => template($restore_script),
   }
-
-  cron { "backup_${name}":
-    minute  => '0',
-    hour    => '1',
-    month   => '*',
-    weekday => '*',
-    user    => 'root',
-    command => "/root/backup_${name}.sh",
-  }
 }

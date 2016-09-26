@@ -43,7 +43,7 @@ class auto_backup {
     command     => '/usr/local/bin/export_backup_swift.sh',
     environment => "MAILTO=${mail}",
     user        => root,
-    hour        => 0,
-    minute      => 30,
+    hour        => 5,
+    minute      => 0,
   }
 }

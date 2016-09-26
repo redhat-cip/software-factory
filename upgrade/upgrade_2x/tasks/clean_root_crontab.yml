@@ -1,0 +1,3 @@
+---
+- name: Wipe the crontab for user root
+  command: crontab -r

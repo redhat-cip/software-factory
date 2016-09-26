@@ -10,6 +10,7 @@
 
 - hosts: all
   tasks:
+  - include: tasks/clean_root_crontab.yml
   - include: tasks/stopsfservices.yml
 
 - hosts: all

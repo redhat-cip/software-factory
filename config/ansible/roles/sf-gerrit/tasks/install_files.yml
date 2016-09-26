@@ -99,14 +99,6 @@
     - { name: gerrit-update-acl, dest: /usr/share/ }
     - { name: restore_gerrit.sh, mode: '0740' }
 
-- name: "Install crontab for backup nightly job"
-  cron:
-    name: backup_gerrit
-    job: /root/backup_gerrit.sh
-    user: root
-    minute: 0
-    hour: 1
-
 - name: "Add monit service check"
   copy:
     src: monit

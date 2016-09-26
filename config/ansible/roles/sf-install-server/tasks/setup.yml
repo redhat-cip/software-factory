@@ -5,3 +5,17 @@
   args:
       chdir: /etc/puppet/hiera/sf/
       creates: /etc/puppet/hiera/sf/.git
+
+- name: Install backup trigger job
+  copy:
+    src: files/trigger_backup.sh
+    dest: /usr/local/bin/trigger_backup.sh
+    mode: 0700
+
+- name: Install crontab for backup nightly job
+  cron:
+    name: backup_gerrit
+    job: /usr/local/bin/trigger_backup.sh
+    user: root
+    minute: 0
+    hour: 1

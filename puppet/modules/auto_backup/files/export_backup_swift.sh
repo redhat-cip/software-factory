@@ -80,8 +80,7 @@ for backup in $backups; do
 done
 
 # Get SF backup via managesf
-sfmanager --url http://$HOST --auth $ADMIN:$ADMIN_PASSWORD system backup_start
-sfmanager --url http://$HOST --auth $ADMIN:$ADMIN_PASSWORD system backup_get
+sfmanager system backup_get
 mv sf_backup.tar.gz /tmp/sf_backup.tar.gz
 # Encrypt backup
 [ -e /tmp/sf_backup.tar.gz.gpg ] && rm /tmp/sf_backup.tar.gz.gpg
