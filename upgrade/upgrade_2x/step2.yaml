@@ -41,11 +41,6 @@
   # Cauth database migration
   - include: tasks/cauth_db.yml
 
-- hosts: statsd
-  tasks:
-  - name: Restart grafana-server
-    shell: systemctl restart grafana-server
-
 - hosts: jenkins
   tasks:
   - include: tasks/submitconfigreview.yml

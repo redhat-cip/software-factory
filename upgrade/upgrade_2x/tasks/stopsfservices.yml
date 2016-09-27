@@ -25,3 +25,4 @@
     - log-gearman-worker
     - elasticsearch
     - logstash
+    - storyboard
