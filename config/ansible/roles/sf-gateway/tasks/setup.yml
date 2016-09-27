@@ -38,7 +38,7 @@
   with_items:
     - {content: "{{gateway_crt}}", path: "certs/{{ fqdn }}.crt"}
     - {content: "{{gateway_chain}}", path: "certs/{{ fqdn }}-chain.crt"}
-    - {content: "{{gateway_key}}", path: "private/{{ fqdn }}.key", mode: 0400}
+    - {content: "{{gateway_key}}", path: "private/{{ fqdn }}.key", mode: '0400'}
 
 - name: "copy base64helper"
   copy: src=files/base64helper dest=/usr/local/sbin/base64helper mode=0755
