@@ -8,5 +8,5 @@
 - name: Include sfconfig.yaml to get fqdn
   include_vars: /etc/puppet/hiera/sf/sfconfig.yaml
 
-- name: Trigger init config repo with the upgrade option
-  shell: /usr/local/bin/init-config-repo.sh upgrade {{ fqdn }}
+- name: Trigger upgrade config repo
+  shell: /usr/local/bin/upgrade-config-repo.sh
