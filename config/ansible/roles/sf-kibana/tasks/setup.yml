@@ -1,4 +1,5 @@
 ---
+- include: /etc/ansible/tasks/create_user.yml user_name=kibana
 - name: Ensure Kibana access to ElasticSearch
   lineinfile: dest=/opt/kibana/config/kibana.yml
               regexp="^elasticsearch.url{{':'}}.*"

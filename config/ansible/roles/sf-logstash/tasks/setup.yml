@@ -1,4 +1,5 @@
 ---
+- include: /etc/ansible/tasks/create_user.yml user_name=logstash
 - name: "Install logstash configuration"
   template: src=templates/indexer.conf.erb dest=/etc/logstash/conf.d/indexer.conf
   register: config
