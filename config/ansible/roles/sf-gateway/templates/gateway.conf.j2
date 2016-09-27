@@ -18,8 +18,8 @@
     SSLEngine on
 {% if network["use_letsencrypt"] %}
     SSLCertificateFile /etc/letsencrypt/pem/{{ fqdn }}.pem
-    SSLCertificateKeyFile /etc/letsencrypt/pem/lets-encrypt-x3-cross-signed.pem
-    SSLCertificateChainFile /etc/letsencrypt/private/{{ fqdn }}.key
+    SSLCertificateChainFile /etc/letsencrypt/pem/lets-encrypt-x3-cross-signed.pem
+    SSLCertificateKeyFile /etc/letsencrypt/private/{{ fqdn }}.key
 {% else %}
     SSLCertificateFile /etc/pki/tls/certs/{{ fqdn }}.crt
     SSLCertificateChainFile /etc/pki/tls/certs/{{ fqdn }}-chain.crt

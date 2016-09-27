@@ -1,0 +1,4 @@
+---
+fixes:
+  - Let's encrypt httpd configuration contained a typo
+    that prevented the service to start.
