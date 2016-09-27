@@ -3,14 +3,14 @@ biff = no
 
 append_dot_mydomain = no
 
-myhostname = {{ ansible_domain }}
-mydomain = {{ ansible_domain }}
+myhostname = {{ fqdn }}
+mydomain = {{ fqdn }}
 mydestination = $myhostname, localhost
 
 alias_maps = hash:/etc/aliases
 
 virtual_alias_maps = hash:/etc/postfix/virtual
-myorigin = {{ ansible_domain }}
+myorigin = {{ fqdn }}
 {% if network.smtp_relay %}
 relayhost = {{ network.smtp_relay }}
 {% endif %}
