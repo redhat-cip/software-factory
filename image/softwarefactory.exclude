@@ -32,6 +32,7 @@
 /etc/systemd/system/multi-user.target.wants
 /etc/udev/rules.d/*persistent*
 /etc/puppet/environments/production
+/etc/letsencrypt/
 /root/.ssh
 /root/.ansible
 /root/.gitconfig
