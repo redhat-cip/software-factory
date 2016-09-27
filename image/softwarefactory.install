@@ -531,6 +531,7 @@ final_image_clean() {
     rm -Rf ${dir}/root/.cache
     rm -Rf ${dir}/root/.npm
     rm -Rf ${dir}/root/.gem
+    rm -Rf ${dir}/usr/src/
 }
 
 START=$(date '+%s')
