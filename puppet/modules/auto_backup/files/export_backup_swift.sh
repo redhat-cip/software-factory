@@ -22,6 +22,8 @@
 
 [ -n "$DEBUG" ] && set -x
 set -e
+export HOME=/root
+cd ${HOME}
 
 . /etc/auto_backup.conf
 
@@ -81,12 +83,12 @@ done
 
 # Get SF backup via managesf
 sfmanager system backup_get
-mv sf_backup.tar.gz /tmp/sf_backup.tar.gz
+
 # Encrypt backup
-[ -e /tmp/sf_backup.tar.gz.gpg ] && rm /tmp/sf_backup.tar.gz.gpg
-gpg --homedir /root/.gnupg/ -e -r sfadmin /tmp/sf_backup.tar.gz
+[ -e sf_backup.tar.gz.gpg ] && rm sf_backup.tar.gz.gpg
+gpg --homedir /root/.gnupg/ -e -r sfadmin --trust-model always sf_backup.tar.gz
 # Upload backup
-swift upload $SWIFT_CONTAINER /tmp/sf_backup.tar.gz.gpg --object-name sf_backup_${epoch}.tar.gz.gpg &> /dev/null
+swift upload $SWIFT_CONTAINER sf_backup.tar.gz.gpg --object-name sf_backup_${epoch}.tar.gz.gpg &> /dev/null
 if [ "$?" != "0" ]; then
     echo "Error when uploading the backup sf_backup_${epoch}.tar.gz in container $SWIFT_CONTAINER ! exit."
     exit 1
