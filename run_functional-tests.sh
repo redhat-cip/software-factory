@@ -34,6 +34,8 @@ TEST_TYPE="${1:-functional}"
 
 REFARCH_FILE=${SF_ARCH:-$(pwd)/config/refarch/allinone.yaml}
 
+SF_TESTS=${SF_TESTS:-tests/functional}
+
 if [ ${TEST_TYPE} == "openstack" ] && [ ! -n "${OS_AUTH_URL}" ]; then
     echo "Source openrc first"
     exit 1
@@ -77,6 +79,9 @@ case "${TEST_TYPE}" in
         lxc_start
         wait_boot_finished
         run_functional_tests
+        if [ "${SF_TESTS}" != "tests/functional" ]; then
+            exit 0
+        fi
         run_provisioner
         run_backup_start
         lxc_stop
