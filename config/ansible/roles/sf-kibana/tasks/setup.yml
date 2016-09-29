@@ -1,12 +1,20 @@
 ---
 - include: /etc/ansible/tasks/create_user.yml user_name=kibana
+
 - name: Ensure Kibana access to ElasticSearch
   lineinfile: dest=/opt/kibana/config/kibana.yml
               regexp="^elasticsearch.url{{':'}}.*"
               line="elasticsearch.url{{':'}} \"http://elasticsearch.{{ fqdn }}:9200\""
   register: kibanaconf
+
+- name: Add top menu
+  lineinfile:
+    dest: /opt/kibana/optimize/bundles/kibana.bundle.js
+    line: "{{ kibana_topmenu_patch }}"
+
 - name: Kibana service started and enabled
   service: name=kibana state=started enabled=yes
+
 - name: Restart kibana after the configuration changed
   service: name=kibana state=restarted
   when: kibanaconf|changed

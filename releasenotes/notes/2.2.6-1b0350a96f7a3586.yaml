@@ -2,3 +2,4 @@
 fixes:
   - Let's encrypt httpd configuration contained a typo
     that prevented the service to start.
+  - Adds top-menu to Kibana dashboard

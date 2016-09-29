@@ -1,2 +1,10 @@
 role_actions:
   - setup
+
+kibana_topmenu_patch: |
+  function load_menu() { loadTopmenu(); }
+  newScript = document.createElement('script');
+  newScript.type = 'text/javascript';
+  newScript.src = '/static/js/topmenu.js';
+  newScript.onload = load_menu;
+  document.getElementsByTagName('head')[0].appendChild(newScript);
