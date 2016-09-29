@@ -22,17 +22,31 @@
   with_items:
     - jenkins.model.JenkinsLocationConfiguration.xml
 
+- name: "Selinux: check port labelling"
+  shell: "semanage port -l | grep -w 'http_port_t.*{{ item }}' > /dev/null"
+  register: no_selinux_labelling
+  changed_when: "no_selinux_labelling.rc != 0"
+  ignore_errors: yes
+  with_items: [8010, 8081]
+  when: selinuxenabled
+
 # Seport fail to relabel existing port, see https://github.com/ansible/ansible-modules-extras/issues/2009
 # seport: ports={{ item }} proto=tcp setype=http_port_t state=present
 #   -  with_items: [8081, 8010]
-- command: semanage port --modify -t http_port_t -p tcp 8081
-  when: selinuxenabled
+- name: "Selinux: port labelling"
+  command: semanage port --modify -t http_port_t -p tcp 8081
+  when:
+      - selinuxenabled
+      - no_selinux_labelling|failed
+
 # special case for 8010 that is not already defined
-- shell: |
-    semanage port --list | grep 'tcp.*8010' && \
-      semanage port --modify -t http_port_t -p tcp 8010 ||
-      semanage port --add -t http_port_t -p tcp 8010
-  when: selinuxenabled
+- name: "Selinux: port labelling"
+  shell: |
+    semanage port --modify -t http_port_t -p tcp 8010 ||
+    semanage port --add -t http_port_t -p tcp 8010
+  when:
+      - selinuxenabled
+      - no_selinux_labelling|failed
 
 - name: "Create /etc/jenkins_jobs directory"
   file: path=/etc/jenkins_jobs/ state=directory mode=0500 owner=jenkins

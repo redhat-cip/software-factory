@@ -2,11 +2,22 @@
 # Use 0751 to let apache access /var/lib/zuul/git
 - include: /etc/ansible/tasks/create_user.yml user_name=zuul ssh_key=jenkins_rsa home_dir_mode=0751
 
-# Seport fail to relabel existing port, see https://github.com/ansible/ansible-modules-extras/issues/2009
-#- seport: ports={{ item }} proto=tcp setype=http_port_t state=present
-- command: semanage port --modify -t http_port_t -p tcp {{ item }}
+- name: "Selinux: check port labelling"
+  shell: "semanage port -l | grep -w 'http_port_t.*{{ item }}' > /dev/null"
+  register: no_selinux_labelling
+  changed_when: "no_selinux_labelling.rc != 0"
+  ignore_errors: yes
   with_items: [8084]
   when: selinuxenabled
+
+# Seport fail to relabel existing port, see https://github.com/ansible/ansible-modules-extras/issues/2009
+#- seport: ports={{ item }} proto=tcp setype=http_port_t state=present
+- name: "Selinux: port labelling"
+  command: semanage port --modify -t http_port_t -p tcp {{ item }}
+  with_items: [8084]
+  when:
+      - selinuxenabled
+      - no_selinux_labelling|failed
 
 - name: "Apply patch"
   patch: src={{ item }} basedir=/srv/zuul/lib/python2.7/site-packages strip=1
