@@ -37,7 +37,6 @@ m2crypto
 mod_ssl
 mod_wsgi
 net-tools
-nginx
 nss
 ntp
 ntpdate

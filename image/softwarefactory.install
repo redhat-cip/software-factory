@@ -183,11 +183,6 @@ enable_selinux() {
     sed -i "s/^SELINUX=.*/SELINUX=permissive/" "${dir}/etc/selinux/config"
 }
 
-install_elk() {
-    # Make sure nginx is disabled by default
-    do_chroot ${dir} systemctl disable nginx
-}
-
 install_sf_packages() {
     do_chroot ${dir} bash -c 'for key in /etc/pki/rpm-gpg/*.key; do rpm --import $key; done'
     install_packages ${dir} $CENTOS_PKGS $BUILD_PKGS $SF_PKGS
@@ -564,8 +559,6 @@ if [ "$STEP" == 1 ]; then
     checkpoint "redmine installed"
     install_gerrit
     checkpoint "gerrit installed"
-    install_elk
-    checkpoint "elk installed"
     install_gerritbot
     checkpoint "gerritbot installed"
     install_murmurd
