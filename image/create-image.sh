@@ -16,6 +16,8 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+set -e
+
 ORIG=$(cd $(dirname $0); pwd)
 
 do_fatal_error() {
@@ -268,63 +270,23 @@ UUID=$(blkid -s UUID -o value "$PART")
 export GRUB_DEVICE_UUID=$UUID
 echo $GRUB_DEVICE_UUID
 
-if [ -x ${MDIR}/usr/sbin/grub-mkconfig -o -x ${MDIR}/usr/sbin/grub2-mkconfig ]; then
-    if [ -x ${MDIR}/usr/sbin/grub2-mkconfig ]; then
-        V=2
-    else
-        V=
-        # Install grub1
-        cat > "$MDIR"/boot/grub/device.map <<EOF
-(hd0) $DISK
-(hd0,1) $PART
-EOF
-    fi
-
-    # Display console on serial line
-    if [ -r $MDIR/etc/default/grub ]; then
-        sed -i -E 's/GRUB_CMDLINE_LINUX_DEFAULT="?([^"]*)"?/GRUB_CMDLINE_LINUX_DEFAULT="\1 console=ttyS0"/' $MDIR/etc/default/grub
-    else
-        echo "GRUB_CMDLINE_LINUX_DEFAULT=\"console=ttyS0\"" > $MDIR/etc/default/grub
-    fi
-
-    do_chroot "$MDIR" grub$V-install --modules="ext2 part_msdos" --no-floppy "$DISK"
-
-    do_chroot "$MDIR" grub$V-mkconfig -o /boot/grub$V/grub.cfg || :
-
-    # Fix generated grub.cfg
-    sed -i -e 's/\t*loopback.*//' -e 's/\t*set root=.*//' -e "s/\(--set=root \|UUID=\)[^ ]?+/\1$UUID/" $MDIR/boot/grub$V/grub.cfg
-    sed -i -e 's/msdos5/msdos1/g' $MDIR/boot/grub$V/grub.cfg
-
-    # add / to fstab
-    echo "UUID=$UUID / ext4 errors=remount-ro 0 1" >> $MDIR/etc/fstab
+# Display console on serial line
+if [ -r $MDIR/etc/default/grub ]; then
+    sed -i -E 's/GRUB_CMDLINE_LINUX_DEFAULT="?([^"]*)"?/GRUB_CMDLINE_LINUX_DEFAULT="\1 console=ttyS0"/' $MDIR/etc/default/grub
 else
-    # Grub1 doesn't have /usr/sbin/grub-mkconfig, failback on extlinux for booting
-    if [ ! -x extlinux/extlinux ] || [ ! -f extlinux/menu.c32 ] || [ ! -f extlinux/libutil.c32 ]; then
-        rm -rf extlinux
-        mkdir -p extlinux
-        # Installing extlinux & mbr from source
-        SYSLINUX_VER=5.10
-        wget --no-verbose https://kernel.org/pub/linux/utils/boot/syslinux/${TESTING_SYSLINUX}/syslinux-${SYSLINUX_VER}.tar.xz
-        tar -xf syslinux-${SYSLINUX_VER}.tar.xz
-        cp syslinux-${SYSLINUX_VER}/extlinux/extlinux extlinux/
-        cp syslinux-${SYSLINUX_VER}/mbr/mbr.bin extlinux/
-        cp syslinux-${SYSLINUX_VER}/com32/menu/menu.c32 extlinux/
-        cp syslinux-${SYSLINUX_VER}/com32/libutil/libutil.c32 extlinux/
-        rm -rf syslinux-${SYSLINUX_VER}*
-    fi
-    for kernel in ${MDIR}/boot/vmlinuz-*; do
-        kversion=`echo $kernel | awk -F'vmlinuz-' '{print $NF}'`;
-        KERNEL="/boot/vmlinuz-${kversion}"
-        INITRD="/boot/initramfs-${kversion}.img"
-        echo "default Linux" >  ${MDIR}/boot/extlinux.conf
-        echo "label Linux" >>  ${MDIR}/boot/extlinux.conf
-        echo "  kernel $KERNEL" >> ${MDIR}/boot/extlinux.conf
-        echo "  append initrd=$INITRD root=UUID=$UUID nomodeset rw $BOOT_ARG" >> ${MDIR}/boot/extlinux.conf
-        extlinux --install ${MDIR}/boot
-    done
-    # install mbr
-    dd if=extlinux/mbr.bin of=$IMG conv=notrunc
+    echo "GRUB_CMDLINE_LINUX_DEFAULT=\"console=ttyS0\"" > $MDIR/etc/default/grub
 fi
+
+do_chroot "$MDIR" grub2-install --modules="ext2 part_msdos" --no-floppy "$DISK"
+
+do_chroot "$MDIR" grub2-mkconfig -o /boot/grub2/grub.cfg || :
+
+# Fix generated grub.cfg
+sed -i -e 's/\t*loopback.*//' -e 's/\t*set root=.*//' -e "s/\(--set=root \|UUID=\)[^ ]?+/\1$UUID/" $MDIR/boot/grub2/grub.cfg
+sed -i -e 's/msdos5/msdos1/g' $MDIR/boot/grub2/grub.cfg
+
+# add / to fstab
+echo "UUID=$UUID / ext4 errors=remount-ro 0 1" >> $MDIR/etc/fstab
 
 sync
 

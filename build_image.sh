@@ -56,7 +56,7 @@ function build_qcow {
     IMAGE_FILE="${IMAGE_PATH}-${SF_VER}.img"
     [ -f "${IMAGE_FILE}" ] && sudo rm -Rf ${IMAGE_FILE}
     [ -f "${IMAGE_FILE}.qcow2" ] && sudo rm -Rf "${IMAGE_FILE}.qcow2"
-    sudo ./image/create-image.sh ${IMAGE_PATH} ${IMAGE_FILE} ./image/params.virt
+    sudo ./image/create-image.sh ${IMAGE_PATH} ${IMAGE_FILE} ./image/params.virt || exit 1
     # Remove the raw image, only keep the qcow2 image
     sudo rm -f ${IMAGE_FILE} ${IMAGE_FILE}.md5
 }
