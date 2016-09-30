@@ -5,3 +5,24 @@
   command: semanage port --modify -t http_port_t -p tcp {{ item }}
   with_items: [5000]
   when: selinuxenabled
+
+- name: Copy service file
+  copy: src=lodgeit.service dest=/lib/systemd/system/lodgeit.service
+  register: service_file
+
+- name: Daemon-reload
+  command: systemctl daemon-reload
+  when: service_file|changed
+
+- name: Install manage.py
+  template: src=manage.py.j2 dest=/srv/lodgeit/lodgeit/manage.py mode=0755
+  notify: [restart lodgeit]
+
+- name: Install urls.py
+  copy: src=urls.py dest=/srv/lodgeit/lodgeit/lodgeit/urls.py
+
+- name: Install static link
+  file: dest=/var/www/static/lodgeit src=/srv/lodgeit/lodgeit/lodgeit/static state=link
+
+- name: Setup service
+  service: name=lodgeit state=started enabled=yes
