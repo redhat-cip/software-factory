@@ -1,0 +1,4 @@
+#!/bin/bash
+systemctl stop jenkins
+bup join -r root@managesf.{{ fqdn }}: jenkins | tar -xPf -
+systemctl start jenkins

@@ -178,10 +178,4 @@ class jenkins {
     command => "/usr/bin/htpasswd -b /etc/httpd/htpasswd jenkins ${jenkins_password}",
     require => File['/etc/httpd/htpasswd'],
   }
-
-  bup::scripts{ 'jenkins_scripts':
-    name           => 'jenkins',
-    backup_script  => 'jenkins/backup.sh.erb',
-    restore_script => 'jenkins/restore.sh.erb',
-  }
 }

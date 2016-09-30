@@ -1,3 +1,0 @@
-#!/bin/bash
-exec mysqldump --databases etherpad | gzip -9 | \
-    ssh root@managesf.<%= @fqdn %> tee /root/etherpaddb.sql.gz > /dev/null

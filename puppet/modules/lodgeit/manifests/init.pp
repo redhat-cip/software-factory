@@ -66,10 +66,4 @@ class lodgeit {
     ensure => link,
     target => '/srv/lodgeit/lodgeit/lodgeit/static/',
   }
-
-  bup::scripts{ 'lodgeit_scripts':
-    name           => 'lodgeit',
-    backup_script  => 'lodgeit/backup.sh.erb',
-    restore_script => 'lodgeit/restore.sh.erb',
-  }
 }

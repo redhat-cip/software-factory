@@ -6,6 +6,16 @@
       chdir: /etc/puppet/hiera/sf/
       creates: /etc/puppet/hiera/sf/.git
 
+- name: Initialize bup
+  command: bup init
+  args:
+    chdir: /root
+    creates: /root/.bup/HEAD
+
+- name: Install backup procedure
+  template: src="{{ item }}.sh.j2" dest="/root/{{ item }}_backup.sh" mode=0555
+  with_items: ["backup", "restore"]
+
 - name: Install backup trigger job
   copy:
     src: files/trigger_backup.sh
@@ -19,3 +29,6 @@
     user: root
     minute: 0
     hour: 1
+
+- name: Start rsyncd
+  service: name=rsyncd state=started enabled=yes

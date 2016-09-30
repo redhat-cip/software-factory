@@ -1,0 +1,3 @@
+#!/bin/bash
+
+ssh root@managesf.{{ fqdn }} cat /root/redminedb.sql.gz | gunzip | mysql

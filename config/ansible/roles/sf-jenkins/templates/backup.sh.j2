@@ -1,0 +1,2 @@
+#!/bin/sh
+tar --absolute-names -cf - /var/lib/jenkins/jobs /var/lib/jenkins/secret* /var/lib/jenkins/credentials*.xml | /usr/local/bin/bup split -r root@managesf.{{ fqdn }}: -n jenkins

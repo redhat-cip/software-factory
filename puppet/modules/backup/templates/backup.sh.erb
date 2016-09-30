@@ -1,2 +1,0 @@
-#!/bin/sh
-tar --absolute-names -cf - /etc/puppet/hiera/sf/sfconfig.yaml /etc/puppet/hiera/sf/sfcreds.yaml | /usr/local/bin/bup split -r root@managesf.<%= @fqdn %>: -n backup

@@ -145,10 +145,4 @@ class redmine {
       path    => '/usr/sbin/:/usr/bin/:/bin/',
       unless  => '/usr/bin/grep "javascripts/theme.js" /var/www/redmine/plugins/redmine_backlogs/app/views/layouts/rb.html.erb',
     }
-
-  bup::scripts{ 'redmine_scripts':
-    name           => 'redmine',
-    backup_script  => 'redmine/backup.sh.erb',
-    restore_script => 'redmine/restore.sh.erb',
-  }
 }

@@ -1,6 +1,2 @@
 role_actions:
   - setup
-
-puppet_modules:
-  - edeploy_server
-  - backup

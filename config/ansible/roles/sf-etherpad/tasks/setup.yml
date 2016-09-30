@@ -5,3 +5,7 @@
   command: semanage port --modify -t http_port_t -p tcp {{ item }}
   with_items: [9001]
   when: selinuxenabled
+
+- name: Install backup procedure
+  template: src="{{ item }}.sh.j2" dest="/root/{{ item }}_etherpad.sh" mode=0555
+  with_items: ["backup", "restore"]

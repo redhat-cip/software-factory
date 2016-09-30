@@ -2,6 +2,10 @@
 - include_vars: /etc/ansible/vars/common.yml
 - include: /etc/ansible/tasks/create_user.yml user_name=nodepool ssh_key=jenkins_rsa
 
+- name: Install backup procedure
+  template: src="{{ item }}.sh.j2" dest="/root/{{ item }}_nodepool.sh" mode=0555
+  with_items: ["backup", "restore"]
+
 - name: "Create /etc/nodepool directory"
   file: path=/etc/nodepool state=directory
 

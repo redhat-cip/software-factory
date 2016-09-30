@@ -102,10 +102,4 @@ class nodepool {
                     Exec['systemctl_reload'],
                     ],
   }
-
-  bup::scripts{ 'nodepool_scripts':
-    name           => 'nodepool',
-    backup_script  => 'nodepool/backup.sh.erb',
-    restore_script => 'nodepool/restore.sh.erb',
-  }
 }
