@@ -24,7 +24,7 @@
                           <span>${message}</span>
                         </div>
                     % endif
-                        <% if not @github["disabled"] %>
+                    {% if not authentication['oauth2']['github']['disabled'] %}
                         <form method="post" action="/auth/login/" target="_top">
                         <input type="hidden" name="back" value="${back}">
                         <input type="hidden" name="method" value="Github">
@@ -34,14 +34,16 @@
                                 <i class="fa fa-sign-in fa-fw"></i>
                             </button>
                        </form>
-                       <% end %>
+                    {% endif %}
+                    {% if not authentication['oauth2']['github']['disabled'] and (
+                            not authentication['oauth2']['google']['disabled'] or
+                            not authentication['oauth2']['bitbucket']['disabled'] or
+                            not authentication['openid']['disabled']) %}
                        <!-- If more than one external provider are enabled set a separator between them -->
-                       <% if not @github["disabled"] and (not @google["disabled"] or
-                             not @bitbucket["disabled"] or not @openid["disabled"]) %>
                        <br />
                        <hr />
-                       <% end %>
-                        <% if not @google["disabled"] %>
+                    {% endif %}
+                    {% if not authentication['oauth2']['google']['disabled'] %}
                         <form method="post" action="/auth/login/" target="_top">
                         <input type="hidden" name="back" value="${back}">
                         <input type="hidden" name="method" value="Google">
@@ -51,13 +53,14 @@
                                 <i class="fa fa-sign-in fa-fw"></i>
                             </button>
                        </form>
+                    {% if (not authentication['openid']['disabled'] or
+                           not authentication['oauth2']['bitbucket']['disabled']) %}
                        <!-- If more than one external provider are enabled set a separator between them -->
-                       <% if (not @openid["disabled"] or not @bitbucket["disabled"]) %>
                        <br />
                        <hr />
-                       <% end %>
-                       <% end %>
-                        <% if not @bitbucket["disabled"] %>
+                    {% endif %}
+                    {% endif %}
+                    {% if not authentication['oauth2']['bitbucket']['disabled'] %}
                         <form method="post" action="/auth/login/" target="_top">
                         <input type="hidden" name="back" value="${back}">
                         <input type="hidden" name="method" value="BitBucket">
@@ -67,31 +70,34 @@
                                 <i class="fa fa-sign-in fa-fw"></i>
                             </button>
                        </form>
+                     {% if (not authentication['openid']['disabled']) %}
                        <!-- If more than one external provider are enabled set a separator between them -->
-                       <% if (not @openid["disabled"]) %>
                        <br />
                        <hr />
-                       <% end %>
-                       <% end %>
+                     {% endif %}
+                     {% endif %}
 
-                       <% if not @openid["disabled"] %>
+                     {% if not authentication['openid']['disabled'] %}
                        <form method="post" action="/auth/login/" target="_top">
                         <input type="hidden" name="back" value="${back}">
                         <input type="hidden" name="method" value="OpenID">
                             <button type="submit" class="btn btn-warning col-md-12">
                                 <i class="fa fa-lg fa-openid"></i>
-                                &nbsp;&nbsp; <%= @openid["login_button_text"] %>
+                                &nbsp;&nbsp; {{ authentication['openid']['login_button_text'] }}
                                 <i class="fa fa-sign-in fa-fw"></i>
                             </button>
                        </form>
-                       <% end %>
-                       <% if @github["disabled"] and @google["disabled"] and @bitbucket["disabled"] and @openid["disabled"] %>
+                     {% endif %}
+                     {% if authentication['oauth2']['github']['disabled'] and
+                           authentication['oauth2']['google']['disabled'] and
+                           authentication['oauth2']['bitbucket']['disabled'] and
+                           authentication['openid']['disabled'] %}
                        <div id="login-form">
-                       <% else %>
+                     {% else %}
                        <div id="login-form" class="hidden">
                        <br />
                        <hr />
-                       <% end %>
+                     {% endif %}
                         <p><b>Please enter your credentials</b></p>
                         <form method="post" action="/auth/login/" class="form-signin" target="_top"/>
                             % if message:
@@ -116,11 +122,14 @@
                             <button type="submit" class="btn btn-primary col-md-12">Log in<i class="fa fa-sign-in fa-fw"></i></button>
                         </form>
                        </div>
-                       <% if not @github["disabled"] or not @google["disabled"] or not @bitbucket["disabled"] or not @openid["disabled"] %>
+                       {% if not authentication['oauth2']['github']['disabled'] or
+                             not authentication['oauth2']['google']['disabled'] or
+                             not authentication['oauth2']['bitbucket']['disabled'] or
+                             not authentication['openid']['disabled'] %}
                        <div id="login-form-toogling" style="padding-top: 50px;">
                          <a id="toggle" title="Click here to log in as an administrator or if you were provided with specific credentials" href="#">Toggle login form</a>
                        </div>
-                       <% end %>
+                       {% endif %}
                     </div>
                 </div>
             </div>
@@ -134,6 +143,6 @@
             }
           });
         </script>
-        <%= @theme["loginpage_custom_footer"] %>
+        {{ theme['loginpage_custom_footer'] }}
     </body>
 </html>

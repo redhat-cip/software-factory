@@ -20,9 +20,9 @@ app = {
     'static_root': '%(confdir)s/public',
     'template_path': '%(confdir)s/cauth/templates',
     'priv_key_path': '/srv/cauth_keys/privkey.pem',
-    'cookie_domain': '<%= @fqdn %>',
+    'cookie_domain': '{{ fqdn }}',
     'debug': False,
-    'cookie_period': <%= @auth['sso_cookie_timeout'] %>
+    'cookie_period': {{ authentication['sso_cookie_timeout'] }}
 }
 
 logging = {
@@ -51,100 +51,89 @@ logging = {
 
 # Authorization configurations
 auth = {
-    <% if not @ldap['disabled'] %>
+    {% if not authentication['ldap']['disabled'] %}
     'ldap': {
-        'host': '<%= @ldap['ldap_url'] %>',
-        'dn': '<%= @ldap['ldap_account_username_attribute'] %>=%(username)s,' + '<%= @ldap['ldap_account_base'] %>',
-        'sn': '<%= @ldap['ldap_account_surname_attribute'] %>',
-        'mail': '<%= @ldap['ldap_account_mail_attribute'] %>',
+        'host': '{{ authentication['ldap']['ldap_url'] }}',
+        'dn': '{{ authentication['ldap']['ldap_account_username_attribute'] }}=%(username)s,' + '{{ authentication['ldap']['ldap_account_base'] }}',
+        'sn': '{{ authentication['ldap']['ldap_account_surname_attribute'] }}',
+        'mail': '{{ authentication['ldap']['ldap_account_mail_attribute'] }}',
     },
-    <% end %>
-    <% if not @github['disabled'] %>
+    {% endif %}
+    {% if not authentication['oauth2']['github']['disabled'] %}
     'github': {
-        <% if @network['enforce_ssl'] %>
-        'redirect_uri': 'https://<%= @fqdn %>/auth/login/oauth2/callback',
-        <% else %>
-        'redirect_uri': 'http://<%= @fqdn %>/auth/login/oauth2/callback',
-        <% end %>
-        'client_id': '<%= @github['client_id'] %>',
-        'client_secret': '<%= @github['client_secret'] %>',
-        'allowed_organizations': '<%= @github['allowed_organizations'] %>'
+        'redirect_uri': '{{ gateway_url }}/auth/login/oauth2/callback',
+        'client_id': '{{ authentication['oauth2']['github']['client_id'] }}',
+        'client_secret': '{{ authentication['oauth2']['github']['client_secret'] }}',
+        'allowed_organizations': '{{ authentication['oauth2']['github']['github_allowed_organizations'] }}'
     },
-    <% end %>
-    <% if not @google['disabled'] %>
+    {% endif %}
+    {% if not authentication['oauth2']['google']['disabled'] %}
     'google': {
-        <% if @network['enforce_ssl'] %>
-        'redirect_uri': 'https://<%= @fqdn %>/auth/login/oauth2/callback',
-        <% else %>
-        'redirect_uri': 'http://<%= @fqdn %>/auth/login/oauth2/callback',
-        <% end %>
-        'client_id': '<%= @google['client_id'] %>',
-        'client_secret': '<%= @google['client_secret'] %>'
+        'redirect_uri': '{{ gateway_url }}/auth/login/oauth2/callback',
+        'client_id': '{{ authentication['oauth2']['google']['client_id'] }}',
+        'client_secret': '{{ authentication['oauth2']['google']['client_secret'] }}'
     },
-    <% end %>
-    <% if not @bitbucket['disabled'] %>
+    {% endif %}
+    {% if not authentication['oauth2']['bitbucket']['disabled'] %}
     'bitbucket': {
-        <% if @network['enforce_ssl'] %>
-        'redirect_uri': 'https://<%= @fqdn %>/auth/login/oauth2/callback',
-        <% else %>
-        'redirect_uri': 'http://<%= @fqdn %>/auth/login/oauth2/callback',
-        <% end %>
-        'client_id': '<%= @bitbucket['client_id'] %>',
-        'client_secret': '<%= @bitbucket['client_secret'] %>'
+        'redirect_uri': '{{ gateway_url }}/auth/login/oauth2/callback',
+        'client_id': '{{ authentication['oauth2']['bitbucket']['client_id'] }}',
+        'client_secret': '{{ authentication['oauth2']['bitbucket']['client_secret'] }}'
     },
-    <% end %>
+    {% endif %}
     'localdb': {
-        'managesf_url': 'http://managesf.<%= @fqdn %>',
+        'managesf_url': 'http://managesf.{{ fqdn }}',
     },
-    <% if not @openid['disabled'] %>
+    {% if not authentication['openid']['disabled'] %}
     'openid': {
-        'auth_url': '<%= @openid['server'] %>',
+        'auth_url': '{{ authentication['openid']['server'] }}',
         'redirect_uri': '/auth/login/openid/callback'
     },
-    <% end %>
+    {% endif %}
     'users': {
         "admin": {
             "lastname": "Software Factory Administrator",
-            "mail": "admin@<%= @fqdn %>",
-            "password": "<%= @admin_password_hashed %>",
+            "mail": "admin@{{ fqdn }}",
+            "password": "{{ admin_password_hashed.stdout }}",
         },
         "_SF_SERVICE_USER_":{
             "lastname": "SF user for automated tasks",
-            "mail": "service.user@<%= @fqdn %>",
-            "password": "<%= @service_user_password_hashed %>",
+            "mail": "service.user@{{ fqdn }}",
+            "password": "{{ service_user_password_hashed.stdout }}",
         },
-        <% if @fqdn == "sftests.com" %>
+        {% if fqdn == "sftests.com" %}
             "user2": {
                 "lastname": "Demo user2",
                 "mail": "user2@sftests.com",
-                "password": "<%= @admin_password_hashed %>",
+                "password": "{{ admin_password_hashed.stdout }}",
             },
             "user3": {
                 "lastname": "Demo user3",
                 "mail": "user3@sftests.com",
-                "password": "<%= @admin_password_hashed %>",
+                "password": "{{ admin_password_hashed.stdout }}",
             },
              "user4": {
                 "lastname": "Demo user4",
                 "mail": "user4@sftests.com",
-                "password": "<%= @admin_password_hashed %>",
+                "password": "{{ admin_password_hashed.stdout }}",
             },
             "user5": {
                 "lastname": "Demo user5",
                 "mail": "user5@sftests.com",
-                "password": "<%= @admin_password_hashed %>",
+                "password": "{{ admin_password_hashed.stdout }}",
             }
-        <% end %>
+        {% endif %}
     }
 }
 
 services = ['managesf', ]
 
 sqlalchemy = {
-    'url'           : 'mysql://<%= @cauth_mysql_username %>:<%= @cauth_mysql_password %>@<%= @cauth_mysql_host %>/<%= @cauth_mysql_db %>',
+    'url'           : 'mysql://cauth:{{ creds_cauth_sql_pwd }}@mysql.{{ fqdn }}/cauth',
     'echo'          : True,
     'encoding'      : 'utf-8'
 }
+
 managesf = {
-    'url'           : 'http://managesf.<%= @fqdn %>',
+    'url'           : 'http://managesf.{{ fqdn }}',
 }

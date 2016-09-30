@@ -1,5 +1,6 @@
 ---
 - include_vars: /etc/puppet/hiera/sf/sfcreds.yaml
+- include_vars: /etc/ansible/vars/common.yml
 
 - name: Create /var/www/cauth
   file:
@@ -9,6 +10,38 @@
       group: apache
       mode: 0750
       setype: httpd_sys_content_t
+
+- name: Create /var/lib/cauth directory
+  file: path=/var/lib/cauth state=directory owner=apache group=apache mode=0750
+
+- name: Create /var/lib/cauth/templates directory
+  file: path=/var/lib/cauth/templates state=directory owner=apache group=apache mode=0750
+
+- name: Create /var/lib/cauth/keys directory
+  file: path=/var/lib/cauth/keys state=directory owner=root group=root mode=0755
+
+- name: Create /var/log/cauth
+  file: path=/var/log/cauth state=directory owner=apache group=apache mode=0750
+
+- name: Hash admin password
+  shell: python <<<"{{hash_code}}'{{authentication.admin_password}}'{{hash_code_end}}"
+  register: admin_password_hashed
+
+- name: Hash service user password
+  shell: python <<<"{{hash_code}}'{{creds_sf_service_user_pwd}}'{{hash_code_end}}"
+  register: service_user_password_hashed
+
+- name: Install cauth config.py
+  template: src=templates/config.py.j2 dest=/var/www/cauth/config.py
+  notify: apache reload
+
+- name: Install login.html
+  template: src=templates/login.html.j2 dest=/var/www/cauth/cauth/templates/login.html
+
+- name: Install auth site
+  copy:
+    src: files/cauth.site
+    dest: /etc/httpd/conf.d/cauth.conf
 
 - name: Install cauth private key
   copy:
