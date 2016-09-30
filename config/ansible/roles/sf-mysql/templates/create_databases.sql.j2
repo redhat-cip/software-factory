@@ -1,6 +1,6 @@
 /* Create auth database */
 CREATE DATABASE IF NOT EXISTS cauth CHARACTER SET utf8 COLLATE utf8_general_ci;
-{% for host in groups["auth"] %}
+{% for host in groups["cauth"] %}
 GRANT ALL PRIVILEGES ON cauth.* TO 'cauth'@'{{ host }}' IDENTIFIED BY "{{ hostvars[inventory_hostname]["creds_cauth_sql_pwd"] }}" WITH GRANT OPTION;
 {% endfor %}
 

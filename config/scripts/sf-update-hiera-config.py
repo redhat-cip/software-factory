@@ -134,6 +134,12 @@ def update_sfconfig(data):
 
 def clean_arch(data):
     dirty = False
+    # Rename auth in cauth
+    for host in data['inventory']:
+        if 'auth' in host['roles']:
+            host['roles'].remove('auth')
+            host['roles'].append('cauth')
+            dirty = True
     # Remove data added *IN-PLACE* by utils_refarch
     # Those are now saved in _arch.yaml instead
     for dynamic_key in ("domain", "gateway", "gateway_ip", "install",

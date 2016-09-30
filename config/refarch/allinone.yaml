@@ -6,7 +6,7 @@ inventory:
       - install-server
       - mysql
       - gateway
-      - auth
+      - cauth
       - managesf
       - etherpad
       - lodgeit

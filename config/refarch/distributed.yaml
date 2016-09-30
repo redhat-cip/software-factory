@@ -6,7 +6,7 @@ inventory:
       - mysql
   - name: managesf
     roles:
-      - auth
+      - cauth
       - gateway
       - managesf
   - name: redmine

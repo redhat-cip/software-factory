@@ -5,7 +5,7 @@ inventory:
     roles:
       - install-server
       - mysql
-      - auth
+      - cauth
       - gateway
       - managesf
       - statsd
