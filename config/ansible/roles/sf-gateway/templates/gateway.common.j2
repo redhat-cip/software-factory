@@ -158,9 +158,8 @@
         {% endfor %}
 
         RewriteRule ^/grafana$ grafana/ [R]
-        ProxyPass /grafana/ http://127.0.0.1:3000/
-        ProxyPassReverse /grafana/ http://127.0.0.1:3000/
-
+        ProxyPass /grafana/ {{ grafana_internal_url }}
+        ProxyPassReverse /grafana/ {{ grafana_internal_url }}
     </IfModule>
 
     <LocationMatch "^/jenkinslogs/">

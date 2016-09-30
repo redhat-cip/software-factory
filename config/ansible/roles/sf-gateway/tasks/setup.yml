@@ -7,6 +7,7 @@
 - include_vars: ../sf-zuul/defaults/main.yml
 - include_vars: ../sf-jenkins/defaults/main.yml
 - include_vars: ../sf-redmine/defaults/main.yml
+- include_vars: ../sf-grafana/defaults/main.yml
 
 - name: "puppet: include socat_gerrit"
   include: /etc/ansible/tasks/puppet.yml puppet_statement="include ::socat_gerrit"

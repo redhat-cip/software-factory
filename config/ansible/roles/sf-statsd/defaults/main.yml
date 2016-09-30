@@ -3,4 +3,3 @@ role_actions:
 
 puppet_modules:
   - sfgnocchi
-  - grafana

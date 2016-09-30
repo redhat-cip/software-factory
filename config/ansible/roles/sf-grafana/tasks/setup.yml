@@ -1,0 +1,29 @@
+---
+- include: /etc/ansible/tasks/create_user.yml user_name=grafana
+
+- name: "Setup grafana.ini"
+  template: src=grafana.ini.j2 dest=/etc/grafana/grafana.ini
+  notify: [restart grafana]
+
+- name: "Fix systemd file to wait for mysql"
+  ini_file:
+    dest: /lib/systemd/system/grafana-server.service
+    section: Service
+    option: ExecStartPre
+    value: /usr/libexec/wait4mariadb
+  register: grafana_service
+
+- name: "Daemon-reload"
+  command: systemctl daemon-reload
+  when: grafana_service|changed
+
+- name: "Setup granafa-init.sql"
+  copy: src=grafana-init.sql dest=/root/grafana-init.sql
+  register: grafanasql
+
+- name: "Update grafana db"
+  shell: mysql grafana < /root/grafana-init.sql
+  when: grafanasql|changed
+
+- name: "Setup service"
+  service: name=grafana-server state=started enabled=yes
