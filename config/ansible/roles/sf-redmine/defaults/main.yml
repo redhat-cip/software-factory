@@ -2,8 +2,6 @@ role_actions:
   - setup
   - get_logs
 
-puppet_modules: redmine
-
 redmine_internal_url: "http://redmine.{{ fqdn }}:8083/"
 redmine_pub_url: "{{ gateway_url }}/redmine/"
 

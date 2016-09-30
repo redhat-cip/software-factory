@@ -1,12 +1,13 @@
 Listen 8083
 NameVirtualHost *:8083
 
-<VirtualHost redmine.<%= @fqdn %>:8083>
+<VirtualHost redmine.{{fqdn}}:8083>
 
 LogLevel warn
 RailsBaseURI /
 Alias /plugin_assets/ /var/www/redmine/plugins/redmine_backlogs/assets/
 PassengerAppRoot /var/www/redmine
+PassengerDefaultUser apache
 
 Alias / /var/www/redmine/public/
 
@@ -14,19 +15,19 @@ RewriteEngine On
 RewriteCond %{REQUEST_URI} ^/logout$
 RewriteCond %{QUERY_STRING} (^.*$)
 RewriteCond %1 ^$
-RewriteRule logout <%= @cauth_signout_url %>?service=redmine [R,L,CO=_redmine_default:;:;:0:/redmine]
+RewriteRule logout /auth/logout?service=redmine [R,L,CO=_redmine_default:;:;:0:/redmine]
 
 RewriteCond %{REQUEST_URI} ^/logout$
 RewriteCond %{QUERY_STRING} ^services=(.*)$
 RewriteCond %1 !^$
-RewriteRule logout <%= @cauth_signout_url %>?services=%1 [R,L,CO=_redmine_default:;:;:0:/redmine]
+RewriteRule logout /auth/logout?services=%1 [R,L,CO=_redmine_default:;:;:0:/redmine]
 
 <Directory /var/www/redmine/public>
   AllowOverride all
   Options -MultiViews
   <If "%{HTTP_COOKIE} =~ /auth_pubtkt=.*/">
       AuthType mod_auth_pubtkt
-      TKTAuthLoginURL <%= @cauth_signin_url %>
+      TKTAuthLoginURL /auth/login
       TKTAuthFakeBasicAuth on
       TKTAuthDebug 1
       require valid-user

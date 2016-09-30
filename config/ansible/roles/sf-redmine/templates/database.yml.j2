@@ -1,6 +1,6 @@
 production:
   adapter: mysql2
   database: redmine
-  host: <%= @mysql_url %>
+  host: mysql.{{fqdn}}
   username: redmine
-  password: <%= @mysql_password %>
+  password: {{creds_redmine_sql_pwd}}
