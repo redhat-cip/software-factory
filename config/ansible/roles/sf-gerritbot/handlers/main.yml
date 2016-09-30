@@ -1,0 +1,3 @@
+---
+- name: restart gerritbot
+  service: name=gerritbot state=restarted

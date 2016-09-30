@@ -1,8 +1,8 @@
 [ircbot]
-nick=<%= @gerritbot['botname'] %>
-pass=<%= @gerritbot['password'] %>
-server=<%= @gerritbot['ircserver'] %>
-port=<%= @gerritbot['ircport'] %>
+nick={{ gerritbot['botname'] }}
+pass={{ gerritbot['password'] }}
+server={{ gerritbot['ircserver'] }}
+port={{ gerritbot['ircport'] }}
 channel_config=/etc/gerritbot/channels.yaml
 pid=/var/run/gerritbot/gerritbot.pid
 log_config=/etc/gerritbot/logging.conf
