@@ -5,10 +5,10 @@
   "port" : 9001,
   "dbType" : "mysql",
   "dbSettings" : {
-                  "user"    : "<%= @mysql_db_username %>",
-                  "host"    : "<%= @mysql_db_address %>",
-                  "password": "<%= @mysql_db_secret %>",
-                  "database": "<%= @mysql_db %>"
+                  "user"    : "etherpad",
+                  "host"    : "mysql.{{fqdn}}",
+                  "password": "{{creds_etherpad_sql_pwd}}",
+                  "database": "etherpad"
                  },
   "defaultPadText" : "Welcome to Etherpad!\n\nThis pad text is synchronized as you type, so that everyone viewing this page sees the same text. This allows you to collaborate seamlessly on documents!\n\nGet involved with Etherpad at http:\/\/etherpad.org\n",
   "padOptions": {
@@ -39,7 +39,7 @@
   "disableIPlogging": false,
   "users": {
     "admin": {
-      "password": "<%= @admin_key %>",
+      "password": "{{creds_etherpad_admin_key}}",
       "is_admin": true
       }
   },
