@@ -23,25 +23,25 @@ log_config=/etc/zuul/merger-logging.conf
 
 {% if not logs['disabled'] %}
 [swift]
-{% if logs['swift_logsexport_container'] %}default_container={{ logs['swift_logsexport_container'] }}
+{% if logs.get('swift_logsexport_container') %}default_container={{ logs['swift_logsexport_container'] }}
 {% endif %}
-{% if logs['swift_logsexport_logserver_prefix'] %}default_logserver_prefix={{ logs['swift_logsexport_logserver_prefix'] }}
+{% if logs.get('swift_logsexport_logserver_prefix') %}default_logserver_prefix={{ logs['swift_logsexport_logserver_prefix'] }}
 {% endif %}
-{% if logs['swift_logsexport_authurl'] %}authurl={{ logs['swift_logsexport_authurl'] }}
+{% if logs.get('swift_logsexport_authurl') %}authurl={{ logs['swift_logsexport_authurl'] }}
 {% endif %}
-{% if logs['swift_logsexport_x_storage_url'] %}X-Storage-Url={{ logs['swift_logsexport_x_storage_url'] }}
+{% if logs.get('swift_logsexport_x_storage_url') %}X-Storage-Url={{ logs['swift_logsexport_x_storage_url'] }}
 {% endif %}
-{% if logs['swift_logsexport_username'] %}user={{ logs['swift_logsexport_username'] }}
+{% if logs.get('swift_logsexport_username') %}user={{ logs['swift_logsexport_username'] }}
 {% endif %}
-{% if logs['swift_logsexport_tenantname'] %}tenant_name={{ logs['swift_logsexport_tenantname'] }}
+{% if logs.get('swift_logsexport_tenantname') %}tenant_name={{ logs['swift_logsexport_tenantname'] }}
 {% endif %}
-{% if logs['swift_logsexport_password'] %}key={{ logs['swift_logsexport_password'] }}
+{% if logs.get('swift_logsexport_password') %}key={{ logs['swift_logsexport_password'] }}
 {% endif %}
-{% if logs['swift_logsexport_authversion'] %}auth_version={{ logs['swift_logsexport_authversion'] }}
+{% if logs.get('swift_logsexport_authversion') %}auth_version={{ logs['swift_logsexport_authversion'] }}
 {% endif %}
-{% if logs['swift_logsexport_x_tempurl_key'] %}X-Account-Meta-Temp-Url-Key={{ logs['swift_logsexport_x_tempurl_key'] }}
+{% if logs.get('swift_logsexport_x_tempurl_key') %}X-Account-Meta-Temp-Url-Key={{ logs['swift_logsexport_x_tempurl_key'] }}
 {% endif %}
-{% if logs['swift_logsexport_send_tempurl_key'] %}Send-Temp-Url-Key={{ logs['swift_logsexport_send_tempurl_key'] }}
+{% if logs.get('swift_logsexport_send_tempurl_key') %}Send-Temp-Url-Key={{ logs['swift_logsexport_send_tempurl_key'] }}
 {% endif %}
 {% endif %}
 
