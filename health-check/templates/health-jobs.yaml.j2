@@ -6,7 +6,15 @@
       - zuul
     builders:
       - prepare-workspace
-      - shell: cd $ZUUL_PROJECT && ./run_tests.sh
+      - shell: mkdir artifacts; cd $ZUUL_PROJECT && ./run_tests.sh
+{% if test_log_export %}
+    publishers:
+      - postbuildscript:
+          builders:
+            - shell: /usr/local/bin/zuul_swift_upload.py --name {{ os_container }} --delete-after 86400  artifacts
+          script-only-if-succeeded: False
+          script-only-if-failed: False
+{% endif %}
 
 - job-template:
     name: "health-{name}-functional-tests"

@@ -15,14 +15,25 @@ jobs: ["health-{name}-functional-tests", "health-{name}-unit-tests"]
 # Where projects are checkout on install-server
 project_path: "/var/lib/software-factory/health-check/{{ project }}"
 
+# Openstack access
+os_env:
+  OS_AUTH_URL: "{{ os_auth_url|default(omit) }}"
+  OS_TENANT_NAME: "{{ os_tenant_name|default(omit) }}"
+  OS_USERNAME: "{{ os_username|default(omit) }}"
+  OS_PASSWORD: "{{ os_password|default(omit) }}"
+
+
 # Nodepool
-provider_name: nested-cloud
+provider_name: default
 os_pool: external_network
 base_image_name: "CentOS 7 (1603) x86_64"
 image_name: sfcentos
 
 # Swift
 os_container: sflogs
+os_tempurl_key: "{{ 65535 | random | to_uuid }}"
+os_swifturl: "http://46.231.132.68:8080/v1/AUTH_b442a7330f034c57be06fec4c6cffb07/preprod-test"
+test_log_export: false
 
 # Gerritbot
 bot_name: health-check-bot

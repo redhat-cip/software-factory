@@ -1,3 +1,10 @@
+{% if test_log_export %}
+jobs:
+  - name: ^health-.*$
+    swift:
+      - name: {{ os_container }}
+{% endif %}
+
 projects:
   - name: {{ project }}
     check:

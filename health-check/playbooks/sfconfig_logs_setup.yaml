@@ -1,0 +1,36 @@
+---
+# * Setup logs export
+- hosts: zuul
+  tasks:
+    - name: Check swiftlog sfconfig
+      command: "grep -q {{ os_swifturl }}/{{ os_container }} /etc/zuul/zuul.conf"
+      register: swiftlog_config
+      failed_when: False
+
+- hosts: install-server
+  tasks:
+    - name: Add swift logs configuration to sfconfig
+      when: hostvars[groups['zuul'][0]]['swiftlog_config'].rc != 0
+      command: >
+        hieraedit.py --yaml /etc/puppet/hiera/sf/sfconfig.yaml --eval logs "{ 'disabled': False,
+            'swift_logsexport_container': '{{ os_container }}',
+            'swift_logsexport_logserver_prefix': '{{ os_swifturl }}/{{ os_container }}',
+            'swift_logsexport_x_storage_url': '{{ os_swifturl }}',
+            'swift_logsexport_x_tempurl_key': '{{ os_tempurl_key }}',
+            'swift_logsexport_send_tempurl_key': 'false',
+          }"
+
+    - name: Restart sfconfig
+      when: hostvars[groups['zuul'][0]]['swiftlog_config'].rc != 0
+      command: sfconfig.sh
+
+- hosts: zuul
+  tasks:
+    # TODO: fixme
+    - name: Restart zuul to take logsexport option into account
+      service: name=zuul state=restarted
+
+- hosts: zuul
+  tasks:
+    - name: "Check configuration"
+      command: grep "{{ os_swifturl }}" /etc/zuul/zuul.conf

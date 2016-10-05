@@ -19,6 +19,11 @@ nodepool.yaml
 * Add image and node label to config-repo
 * Check if slave are running
 
+swiftlogs.yaml
+---------
+* Create swift container
+* Setup logexport with sfconfig.sh
+
 zuul.yaml
 ---------
 * Create a new project
@@ -26,6 +31,7 @@ zuul.yaml
 * Submit a bad change and verify Jenkins CI -1
 * Fix bad change and verify Jenkins CI +1
 * Check if change got merged
+* Check logs export
 
 playbooks/config_reset.yaml
 ---------
@@ -48,9 +54,17 @@ playbooks/managesf_project_create.yaml
 ---------
 * Create project and checkout or update local clone
 
+playbooks/sfconfig_logs_setup.yaml
+---------
+* Setup logs export
+
 playbooks/sfconfig_nodepool_setup.yaml
 ---------
 * Setup cloud provider
+
+playbooks/zuul_check_layout.yaml
+---------
+* Check if a zuul job and project are defined
 
 
 # Render above doc using:

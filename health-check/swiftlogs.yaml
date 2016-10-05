@@ -1,0 +1,25 @@
+---
+# * Create swift container
+- hosts: install-server
+  tasks:
+    - name: Check Swift container exists
+      command: swift stat "{{ os_container }}"
+      register: swift_stat
+      environment: "{{os_env}}"
+      ignore_errors: yes
+
+    - name: Create container
+      when: swift_stat.rc != 0
+      command: "{{ item }}"
+      environment: "{{os_env}}"
+      with_items:
+        - "swift post {{ os_container }} -r '.r:*' -m 'web-listing: true'"
+        - "swift stat {{ os_container }}"
+
+    - name: Set temp url key
+      environment: "{{os_env}}"
+      command: "swift post -m 'Temp-URL-Key: {{ os_tempurl_key }}'"
+
+# * Setup logexport with sfconfig.sh
+- name: "Check logexport configuration"
+  include: playbooks/sfconfig_logs_setup.yaml

@@ -50,7 +50,7 @@
     - name: "Update change and check for test SUCCESS"
       command: chdir={{ project_path }} {{ item }}
       with_items:
-        - 'bash -c "(echo exit 0; date) > run_tests.sh"' # Add date to prevent (no new changes reject)
+        - 'bash -c "(echo echo TEST EXPORT \| tee ../artifacts/test_log.txt; echo exit 0; date) > run_tests.sh"' # Add date to prevent (no new changes reject)
         - 'bash -c "(echo exit 0; date) > run_functional-tests.sh"'
         - 'git commit -a --amend'
         - 'submit_and_wait.py --delay 600 --approve'
@@ -61,5 +61,20 @@
       command: chdir={{ project_path }} git diff HEAD origin/master
       register: diff
       failed_when: diff.stdout != ''
+
+# * Check logs export
+- hosts: jenkins
+  tasks:
+    - name: "Get artifact url from console.log"
+      when: test_log_export == 'yes'
+      command: "grep '^http' /var/lib/jenkins/jobs/{{ check[0] }}/lastSuccessful/log"
+      register: logsurl
+
+    - name: "Check artifact is published"
+      when: test_log_export == 'yes'
+      command: "curl {{ logsurl.stdout }}artifacts/test_log.txt"
+      register: test_log
+      failed_when: test_log.stdout.find('TEST EXPORT') == -1
+
 
 # TODO: remove project and cleanup config-repo when: keep == false
