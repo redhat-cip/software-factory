@@ -228,6 +228,20 @@ install_sf_packages() {
     grep -q "^UseRoaming no" ${target}/etc/ssh/ssh_config || echo UseRoaming no >> ${target}/etc/ssh/ssh_config
 }
 
+function nodejs_epel_stick {
+    # Stick nodejs to 0.10. 01/10/2016 Nodejs 0.10.x has been removed from EPEL repo as upstream LTS ended
+    # Etherpad-lite does not support nodejs other than 0.10.x, 0.11.x and 0.12.x. This need to be removed
+    # when upstream supports newer version of nodejs.
+    SF_MIRROR=http://46.231.132.68:8080/v1/AUTH_b50e80d3969f441a8b7b1fe831003e0a/repomirror
+    do_chroot ${dir} yum -y $INSTALL_OPTIONS install nodejs-devel libuv-devel
+    do_chroot ${dir} yum -y $INSTALL_OPTIONS downgrade \
+        $SF_MIRROR/epel/n/nodejs-0.10.46-1.el7.x86_64.rpm \
+        $SF_MIRROR/epel/l/libuv-0.10.34-2.el7.x86_64.rpm \
+        $SF_MIRROR/epel/n/npm-1.3.6-5.el7.noarch.rpm \
+        $SF_MIRROR/epel/n/nodejs-devel-0.10.46-1.el7.x86_64.rpm \
+        $SF_MIRROR/epel/l/libuv-devel-0.10.34-2.el7.x86_64.rpm
+}
+
 function install_jenkins {
     [ -d ${dir}/var/lib/jenkins/plugins ] || mkdir -p ${dir}/var/lib/jenkins/plugins
 
@@ -552,7 +566,10 @@ if [ "$STEP" == 1 ]; then
     bootstrap
     checkpoint "bootstrapped"
     install_sf_packages
+    nodejs_epel_stick
+    checkpoint "sf dep packages installed"
     enable_selinux
+    checkpoint "selinux configured"
     install_jenkins
     checkpoint "jenkins installed"
     install_redmine
