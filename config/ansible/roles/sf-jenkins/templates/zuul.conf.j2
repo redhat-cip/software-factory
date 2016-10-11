@@ -7,6 +7,7 @@ user=jenkins
 
 {% for conn in gerrit_connections %}{% if not conn.disabled|default(False) %}
 [connection {{ conn.name }}]
+driver=gerrit
 server=localhost
 user=jenkins
 
