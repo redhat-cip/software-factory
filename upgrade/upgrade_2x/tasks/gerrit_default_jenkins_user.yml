@@ -1,0 +1,11 @@
+---
+- include_vars: /etc/puppet/hiera/sf/sfconfig.yaml
+
+- name: Update email of Jenkins CI user
+  command: mysql gerrit -e "{{ item }}"
+  with_items:
+    - "update account_external_ids set email_address = 'jenkins@{{ fqdn }}', external_id = 'mailto:jenkins@{{ fqdn }}' where account_id = '2' and email_address = 'admin@{{ fqdn }}';"
+    - "update accounts set preferred_email = 'jenkins@{{ fqdn }}' where account_id = '2' and preferred_email = 'admin@{{ fqdn }}';"
+
+- name: Gerrit flush caches
+  command: ssh -p 29418 admin@{{ fqdn }} gerrit flush-caches --all
