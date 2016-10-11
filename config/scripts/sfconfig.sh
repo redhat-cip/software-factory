@@ -112,7 +112,7 @@ function generate_keys {
     [ -d "${HOME}/.ssh" ] || mkdir -m 0700 "${HOME}/.ssh"
     [ -f "${HOME}/.ssh/known_hosts" ] || touch "${HOME}/.ssh/known_hosts"
 
-    # SSL certificate
+    # Default self-signed SSL certificate
     OUTPUT=${BUILD}/certs
 
     # If localCA doesn't exists, remove all ssl files

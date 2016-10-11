@@ -124,6 +124,11 @@ def update_sfconfig(data):
             del data['theme'][key]
             dirty = True
 
+    # 2.2.6: enforce_ssl is enabled by default
+    if 'enforce_ssl' in data['network']:
+        del data['network']['enforce_ssl']
+        dirty = True
+
     return dirty
 
 

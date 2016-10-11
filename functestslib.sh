@@ -456,7 +456,7 @@ function run_backup_restore {
     echo "[+] Waiting for gerrit to restart..."
     retry=0
     while [ $retry -lt 1000 ]; do
-        wget --spider  http://${SF_HOST}/r/ 2> /dev/null && break
+        wget --no-check-certificate --spider  https://${SF_HOST}/r/ 2> /dev/null && break
         sleep 1
         let retry=retry+1
     done
@@ -509,9 +509,9 @@ SCRIPT
     echo "[+] Running upgrade"
     ssh ${SF_HOST} "cd software-factory; ./upgrade.sh" || fail "Upgrade failed" "/var/lib/lxc/${INSTALL_SERVER}/rootfs/var/log/upgrade-bootstrap.log"
     echo "[+] Update sf-bootstrap-data"
-    rsync -a -v ${SF_HOST}:sf-bootstrap-data/ ./sf-bootstrap-data/
+    fetch_bootstraps_data
     echo "[+] Auto submit the auto generated config review after the upgrade"
-    review_id=$(./tools/get_last_autogen_upgrade_config_review.py http://${SF_HOST} "Upgrade of base config repository files")
+    review_id=$(./tools/get_last_autogen_upgrade_config_review.py https://${SF_HOST} "Upgrade of base config repository files")
     [ "$review_id" != "0" ] && {
         (
             ssh ${SF_HOST} "cd config; submit_and_wait.py --review-id $review_id --recheck"
@@ -519,7 +519,7 @@ SCRIPT
         ) || fail "Could not approve the auto generated config review"
     } || echo "No config review found"
     echo "[+] Auto submit the auto generated config (replication.config) upgrade"
-    review_id=$(./tools/get_last_autogen_upgrade_config_review.py http://${SF_HOST} "Add gerrit%2Freplication.config in the config repository")
+    review_id=$(./tools/get_last_autogen_upgrade_config_review.py https://${SF_HOST} "Add gerrit%2Freplication.config in the config repository")
     [ "$review_id" != "0" ] && {
         (
             ssh ${SF_HOST} "cd config; submit_and_wait.py --review-id $review_id --rebase"
@@ -528,7 +528,6 @@ SCRIPT
         ) || fail "Could not approve the auto generated config review for replication.config"
     } || echo "No config review found"
     checkpoint "run_upgrade"
-    fetch_bootstraps_data
 }
 
 function change_fqdn {

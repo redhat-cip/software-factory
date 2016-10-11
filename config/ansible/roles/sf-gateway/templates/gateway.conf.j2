@@ -1,5 +1,4 @@
 <VirtualHost *:80>
-{% if network["enforce_ssl"] %}
     # Enforce HTTPS for non-internal requests. HostnameLookups is required,
     # otherwise REMOTE_HOST contains only the IP address
     HostnameLookups On
@@ -7,7 +6,6 @@
     RewriteCond %{HTTPS} off
     RewriteCond %{REMOTE_HOST} !{{ fqdn }}$
     RewriteRule (.*) https://%{HTTP_HOST}%{REQUEST_URI}
-{% endif %}
 
     # Some internal requests require larger refactoring, thus allow these kind
     # of requests for now

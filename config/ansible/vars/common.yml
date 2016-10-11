@@ -1,2 +1,1 @@
-gateway_scheme: "{% if network['enforce_ssl'] %}https{% else %}http{% endif %}"
-gateway_url: "{{ gateway_scheme }}://{{ fqdn }}"
+gateway_url: "https://{{ fqdn }}"

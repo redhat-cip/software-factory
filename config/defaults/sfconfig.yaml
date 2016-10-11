@@ -2,7 +2,6 @@
 fqdn: sftests.com
 
 network:
-    enforce_ssl: false
     use_letsencrypt: false
     smtp_relay:
     # NTP main reference server

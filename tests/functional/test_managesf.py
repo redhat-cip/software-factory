@@ -508,7 +508,7 @@ class TestManageSF(Base):
             "/manage/project/%s" % project,
             "/manage/project/membership/"]
         for path in paths:
-            url = "http://%s%s" % (config.GATEWAY_HOST, path)
+            url = "https://%s%s" % (config.GATEWAY_HOST, path)
             resp = requests.get(url, cookies=cookies)
             self.assertEqual(200, resp.status_code)
 
@@ -521,7 +521,7 @@ class TestManageSF(Base):
             auth_pubtkt=config.USERS[config.ADMIN_USER]['auth_cookie'])
         user2_cookies = dict(
             auth_pubtkt=config.USERS[config.USER_2]['auth_cookie'])
-        url = "http://%s%s" % (config.GATEWAY_HOST, "/manage/project/")
+        url = "https://%s%s" % (config.GATEWAY_HOST, "/manage/project/")
         resp = requests.get(url, cookies=admin_cookies)
         self.assertEqual(200, resp.status_code)
         self.assertTrue(project in resp.json())
@@ -535,7 +535,7 @@ class TestManageSF(Base):
         # Validate the same behavior with project including a '/'
         project = 'p/%s' % create_random_str()
         self.create_project(project, config.USER_2)
-        url = "http://%s%s" % (config.GATEWAY_HOST, "/manage/project/")
+        url = "https://%s%s" % (config.GATEWAY_HOST, "/manage/project/")
         # Wait 15 seconds for managesf cache invalidation
         import time
         time.sleep(15)
@@ -552,14 +552,14 @@ class TestManageSF(Base):
         if has_issue_tracker():
             self.assertTrue(self.rm.project_exists(project))
         self.msu.update_project_page(config.USER_2, project,
-                                     "http://tests.com/")
+                                     "https://tests.com/")
         self.assertEqual(self.msu.get_project_page(config.USER_2,
                                                    project).strip(),
-                         "http://tests.com/")
+                         "https://tests.com/")
         self.msu.delete_project_page(config.USER_3, project)
         self.assertEqual(self.msu.get_project_page(config.USER_2,
                                                    project).strip(),
-                         "http://tests.com/")
+                         "https://tests.com/")
         self.msu.delete_project_page(config.USER_2, project)
         self.assertEqual(self.msu.get_project_page(config.USER_2,
                                                    project).strip(),
@@ -569,7 +569,7 @@ class TestManageSF(Base):
         """Test the api key auth workflow"""
         user2_cookies = dict(
             auth_pubtkt=config.USERS[config.USER_2]['auth_cookie'])
-        url = "http://%s%s" % (config.GATEWAY_HOST, "/auth/apikey/")
+        url = "https://%s%s" % (config.GATEWAY_HOST, "/auth/apikey/")
         create_key = requests.post(url, cookies=user2_cookies)
         self.assertEqual(201,
                          create_key.status_code)

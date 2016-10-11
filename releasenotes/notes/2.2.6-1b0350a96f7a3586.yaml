@@ -3,3 +3,6 @@ fixes:
   - Let's encrypt httpd configuration contained a typo
     that prevented the service to start.
   - Adds top-menu to Kibana dashboard
+upgrade:
+  - The enforce_ssl option is now removed and always
+    enabled.

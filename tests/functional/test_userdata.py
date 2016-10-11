@@ -26,9 +26,9 @@ from utils import ManageSfUtils
 from utils import skip
 from utils import skipIfIssueTrackerMissing, has_issue_tracker
 from utils import get_issue_tracker_utils
+from utils import get_cookie
 
 from pysflib.sfgerrit import GerritUtils
-from pysflib.sfauth import get_cookie
 
 
 class TestUserdata(Base):
@@ -178,8 +178,7 @@ class TestUserdata(Base):
         del_url = config.GATEWAY_URL +\
             '/manage/services_users/?username=bootsy'
         # try with a a non-admin user, it should not work ...
-        auth_cookie = get_cookie(config.GATEWAY_HOST,
-                                 'user5', config.ADMIN_PASSWORD)
+        auth_cookie = get_cookie('user5', config.ADMIN_PASSWORD)
         d = requests.delete(del_url,
                             cookies={'auth_pubtkt': auth_cookie})
         self.assertTrue(400 < int(d.status_code) < 500)
