@@ -19,6 +19,7 @@
 # Functions
 # -----------------
 [ -z "${DEBUG}" ] || set -x
+set -e
 
 # Defaults
 DOMAIN=$(cat /etc/puppet/hiera/sf/sfconfig.yaml | grep "^fqdn:" | cut -d: -f2 | sed 's/ //g')
@@ -46,11 +47,6 @@ Host ${DOMAIN}
     Port 29418
     IdentityFile /root/sf-bootstrap-data/ssh_keys/gerrit_admin_rsa
 EOF
-
-    # Make sure the keys in bootstrap are same as in sfcreds.yaml. This is only
-    # needed to run functional test because tests use this directory. A running
-    # SF only uses data from /etc/puppet/hiera/sf/sfcreds.yaml.
-    recreate_bootstrap_data
 }
 
 function generate_random_pswd {
@@ -94,8 +90,6 @@ function generate_yaml {
     sed -i "s#GERRIT_SERV_PUB_KEY#${GERRIT_SERV_PUB}#" ${OUTPUT}/sfcreds.yaml
     sed -i "s#GERRIT_ADMIN_PUB_KEY#${GERRIT_ADMIN_PUB_KEY}#" ${OUTPUT}/sfcreds.yaml
 
-    manage_ssh_keys_and_certs
-
     chown -R root:puppet /etc/puppet/hiera/sf
     chmod -R 0750 /etc/puppet/hiera/sf
 }
@@ -120,8 +114,22 @@ function generate_keys {
 
     # SSL certificate
     OUTPUT=${BUILD}/certs
-    # Generate self-signed Apache certificate
-    [ -f openssl.cnf ] || cat > openssl.cnf << EOF
+
+    # If localCA doesn't exists, remove all ssl files
+    [ -f ${OUTPUT}/localCA.pem ] || rm -f ${OUTPUT}/gateway.*
+
+    # Gen CA
+    [ -f ${OUTPUT}/localCA.pem ] || openssl req -nodes -days 3650 -new -x509 -subj "/C=FR/O=SoftwareFactory" \
+        -keyout ${OUTPUT}/localCAkey.pem        \
+        -out ${OUTPUT}/localCA.pem
+
+    # If FQDN changed, remove all ssl files
+    [ -f ${OUTPUT}/gateway.cnf ] && [ "$(grep ' = ${DOMAIN}$' ${OUTPUT}/gateway.cnf))" == "" ] && \
+        rm -f ${OUTPUT}/gateway.*
+
+    # Gen conf
+    [ -f ${OUTPUT}/gateway.cnf ] || {
+        cat > ${OUTPUT}/gateway.cnf << EOF
 [req]
 req_extensions = v3_req
 distinguished_name = req_distinguished_name
@@ -134,15 +142,27 @@ subjectAltName=@alt_names
 
 [alt_names]
 DNS.1 = ${DOMAIN}
-DNS.2 = auth.${DOMAIN}
 EOF
-    [ -f ${OUTPUT}/gateway.key ] || {
-        openssl req -x509 -nodes -days 365 -newkey rsa:2048 -subj "/C=FR/O=SoftwareFactory/CN=${DOMAIN}" \
-            -keyout ${OUTPUT}/gateway.key -out ${OUTPUT}/gateway.crt -extensions v3_req -config openssl.cnf
-
-        # Trust this certificate. This is mostly required for sfmanager
-        cat ${OUTPUT}/gateway.crt >> /etc/pki/tls/certs/ca-bundle.crt
     }
+
+    # Gen Key
+    [ -f ${OUTPUT}/gateway.key ] || openssl genrsa -out ${OUTPUT}/gateway.key 2048
+    # Gen Req
+    [ -f ${OUTPUT}/gateway.req ] || openssl req -new -subj "/C=FR/O=SoftwareFactory/CN=${DOMAIN}" \
+        -extensions v3_req -config ${OUTPUT}/gateway.cnf  \
+        -key ${OUTPUT}/gateway.key              \
+        -out ${OUTPUT}/gateway.req
+    # Gen certificate
+    [ -f ${OUTPUT}/gateway.srl ] || echo '00' > ${OUTPUT}/gateway.srl
+    [ -f ${OUTPUT}/gateway.crt ] || openssl x509 -req -days 3650 \
+        -extensions v3_req -extfile ${OUTPUT}/gateway.cnf \
+        -CA ${OUTPUT}/localCA.pem               \
+        -CAkey ${OUTPUT}/localCAkey.pem         \
+        -CAserial ${OUTPUT}/gateway.srl         \
+        -in ${OUTPUT}/gateway.req               \
+        -out ${OUTPUT}/gateway.crt
+    # Gen pem
+    [ -f ${OUTPUT}/gateway.pem ] || cat ${OUTPUT}/gateway.key ${OUTPUT}/gateway.crt > ${OUTPUT}/gateway.pem
 }
 
 function manage_ssh_keys_and_certs {
@@ -150,31 +170,15 @@ function manage_ssh_keys_and_certs {
 
     for key in $(find ${BUILD}/ssh_keys -type f); do
         name=$(basename $key | sed "s/.pub/_pub/")
-        if ! grep -qE  "\b$name\b" ${OUTPUT}/sfcreds.yaml; then
-            hieraedit.py --yaml ${OUTPUT}/sfcreds.yaml -f $key $name
-        fi
+        hieraedit.py --yaml ${OUTPUT}/sfcreds.yaml -f $key $name
     done
 
     for cert in $(find ${BUILD}/certs -type f ); do
         name=$(basename $cert | sed 's/\.\([[:alpha:]]\{3\}\)/_\1/')
-        if ! grep -qE  "\b$name\b" ${OUTPUT}/sfcreds.yaml; then
-            hieraedit.py --yaml ${OUTPUT}/sfcreds.yaml -f $cert $name
-        fi
+        hieraedit.py --yaml ${OUTPUT}/sfcreds.yaml -f $cert $name
     done
 
     hieraedit.py --yaml /etc/puppet/hiera/sf/sfcreds.yaml -f ${BUILD}/certs/gateway.crt gateway_chain
-}
-
-function recreate_bootstrap_data {
-    for name in $(awk -F ":" '/_rsa/ {print $1}' /etc/puppet/hiera/sf/sfcreds.yaml); do
-        filename=$(echo $name | sed "s/_pub/.pub/")
-        python -c "import yaml;print yaml.load(open('/etc/puppet/hiera/sf/sfcreds.yaml')).get('$name')" > ${BUILD}/ssh_keys/$filename
-    done
-
-    for name in $(awk -F ":" '/_pem/ {print $1}' /etc/puppet/hiera/sf/sfcreds.yaml); do
-        filename=$(echo $name | sed "s/_pem/.pem/")
-        python -c "import yaml;print yaml.load(open('/etc/puppet/hiera/sf/sfcreds.yaml')).get('$name')" > ${BUILD}/certs/$filename
-    done
 }
 
 function wait_for_ssh {

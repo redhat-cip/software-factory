@@ -98,3 +98,28 @@
       enabled: true
       state: restarted
   when: ntp_config|changed
+
+- name: "Add localCA to pki trust"
+  copy:
+      content: "{{ localCA_pem }}"
+      dest: "/etc/pki/ca-trust/source/anchors/localCA.pem"
+      mode: 0644
+      owner: root
+      group: root
+  register: new_crt
+
+- name: "Trust crt"
+  shell: update-ca-trust
+  when: new_crt|changed
+
+- name: "Update CA list for python-requests"
+  copy:
+      src: /etc/pki/ca-trust/extracted/openssl/ca-bundle.trust.crt
+      dest: "{{ item }}/cacert.pem"
+      mode: 0444
+      owner: root
+      group: root
+  when: new_crt|changed
+  with_items:
+    - /usr/lib/python2.7/site-packages/requests/
+    - /var/www/managesf/lib/python2.7/site-packages/requests/
