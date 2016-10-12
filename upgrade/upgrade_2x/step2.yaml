@@ -41,6 +41,10 @@
   # Cauth database migration
   - include: tasks/cauth_db.yml
 
+- hosts: auth
+  tasks:
+  - include: tasks/remove_old_service_user.yml
+
 - hosts: jenkins
   tasks:
   - include: tasks/submitconfigreview.yml

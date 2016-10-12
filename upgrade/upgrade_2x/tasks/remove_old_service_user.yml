@@ -1,0 +1,9 @@
+---
+- name: Remove old service user if it exists
+  command: sfmanager sf_user delete --username _SF_SERVICE_USER_
+
+- name: Change service user entry in cauth config
+  replace:
+    dest: /var/www/cauth/config.py
+    regexp: "_SF_SERVICE_USER_"
+    replace: "SF_SERVICE_USER"

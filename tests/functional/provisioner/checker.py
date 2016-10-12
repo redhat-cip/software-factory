@@ -136,7 +136,7 @@ class SFchecker:
         # usernames are in first position
         r_users = [u[0] for u in registered]
         if not set(users).issubset(set(r_users)):
-            print "FAIL"
+            print "FAIL: expected %s, got %s" % (users, r_users)
             exit(1)
         print "OK"
 

@@ -46,7 +46,7 @@ ADMIN_PASSWORD = sfconfig.get('authentication')['admin_password']
 USER_1 = "admin"
 USER_1_PASSWORD = ADMIN_PASSWORD
 
-HOOK_USER = "_SF_SERVICE_USER_"
+HOOK_USER = "SF_SERVICE_USER"
 HOOK_USER_PASSWORD = sfcreds.get('creds_sf_service_user_pwd')
 
 ADMIN_USER = USER_1

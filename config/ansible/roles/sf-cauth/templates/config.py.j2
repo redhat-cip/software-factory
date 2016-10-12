@@ -96,7 +96,7 @@ auth = {
             "mail": "admin@{{ fqdn }}",
             "password": "{{ admin_password_hashed.stdout }}",
         },
-        "_SF_SERVICE_USER_":{
+        "SF_SERVICE_USER":{
             "lastname": "SF user for automated tasks",
             "mail": "service.user@{{ fqdn }}",
             "password": "{{ service_user_password_hashed.stdout }}",

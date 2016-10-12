@@ -110,7 +110,7 @@ COOKIE=`mktemp -u`
 (
 # get auth cookie
 curl -X POST ${MANAGESF_BASE_URL}/auth/login/ \
-     --data '{"back": "/", "method": "Password", "args": {"username": "_SF_SERVICE_USER_", "password": "'$SF_SERVICE_PASSWORD'"}}' \
+     --data '{"back": "/", "method": "Password", "args": {"username": "SF_SERVICE_USER", "password": "'$SF_SERVICE_PASSWORD'"}}' \
      -c ${COOKIE} -H "Content-Type: application/json"
 
 echo '{"change": "'$CHANGE'", "is_draft": "'$ISDRAFT'", "change_url": "'$CHANGEURL'", "project": "'$PROJECT'", "branch": "'$BRANCH'", "topic": "'$TOPIC'", "uploader": "'$UPLOADER'", "commit": "'$COMMIT'", "patchset": "'$PATCHSET'", "commit_message": "'$COMMIT_MESSAGE'", "kind": "'$KIND'", "change_owner": "'$CHANGEOWNER'", "newrev": "'$NEWREV'"}' > ${PAYLOAD}
