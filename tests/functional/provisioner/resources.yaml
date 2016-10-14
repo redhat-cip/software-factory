@@ -38,9 +38,6 @@ commands:
   - cmd: hieraedit.py --yaml /etc/puppet/hiera/sf/sfcreds.yaml safekey pc_test
   - cmd: hieraedit.py --yaml /etc/puppet/hiera/sf/sfconfig.yaml safekey pc_test
   - cmd: echo "admin:OpPzvAQ.RbXb6" > /etc/httpd/managesf_htpasswd
-  - cmd: git config -f /home/gerrit/site_path/etc/replication.config remote.pctest.projects pc_test
-  - cmd: echo "Host \"test_pc\"" > /home/gerrit/.ssh/config
-  - cmd: echo "pc_test fake key" > /home/gerrit/.ssh/id_rsa_pc_test.key
 checksum:
   - file: /etc/puppet/hiera/sf/sfconfig.yaml
   - file: /etc/puppet/hiera/sf/sfcreds.yaml
@@ -49,6 +46,3 @@ checksum:
   - file: /etc/httpd/managesf_htpasswd
   - file: /home/gerrit/site_path/etc/ssh_host_rsa_key.pub
   - file: /home/gerrit/site_path/etc/ssh_host_rsa_key
-  - file: /home/gerrit/site_path/etc/replication.config
-  - file: /home/gerrit/.ssh/config
-  - file: /home/gerrit/.ssh/id_rsa_pc_test.key

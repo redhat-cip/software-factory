@@ -45,62 +45,42 @@ def generate_inventory():
         host["puppet_statement"] = "include %s" % (", ".join(puppet_modules))
 
     # Generate inventory
-    if args.verify:
-        print "==== %s ===" % args.arch
-        print "\n#----8<----\n# Inventory"
-        output = "/dev/stdout"
-    else:
-        output = "%s/hosts" % ansible_root
-    render_jinja2_template(output,
+    render_jinja2_template("%s/hosts" % ansible_root,
                            "%s/templates/inventory.j2" % ansible_root,
                            arch)
 
     # Generate inventory
-    if args.verify:
-        print "==== %s ===" % args.arch
-        print "\n#----8<----\n# get_logs playbook"
-        output = "/dev/stdout"
-    else:
-        output = "%s/get_logs.yml" % ansible_root
-    render_jinja2_template(output,
+    render_jinja2_template("%s/get_logs.yml" % ansible_root,
                            "%s/templates/get_logs.yml.j2" % ansible_root,
                            arch)
 
     # Generate main playbook
-    if args.verify:
-        print "\n#----8<----\n# Playbook"
-    else:
-        output = "%s/sf_setup.yml" % ansible_root
-    render_jinja2_template(output,
+    render_jinja2_template("%s/sf_setup.yml" % ansible_root,
                            "%s/templates/sf_setup.yml.j2" % ansible_root,
                            arch)
 
-    if args.verify:
-        print "\n#----8<----\n# Playbook"
-    else:
-        output = "%s/sf_postconf.yml" % ansible_root
-    render_jinja2_template(output,
+    render_jinja2_template("%s/sf_postconf.yml" % ansible_root,
                            "%s/templates/sf_postconf.yml.j2" % ansible_root,
                            arch)
 
-    if args.verify:
-        print "\n#----8<----\n# Config-update Playbook"
-    else:
-        output = "%s/sf_configrepo_update.yml" % ansible_root
-    render_jinja2_template(output,
+    render_jinja2_template("%s/sf_backup.yml" % ansible_root,
+                           "%s/templates/sf_backup.yml.j2" % ansible_root,
+                           arch)
+
+    render_jinja2_template("%s/sf_restore.yml" % ansible_root,
+                           "%s/templates/sf_restore.yml.j2" % ansible_root,
+                           arch)
+
+    render_jinja2_template("%s/sf_configrepo_update.yml" % ansible_root,
                            "%s/templates/sf_configrepo_update.yml.j2" % (
                                ansible_root),
                            arch)
 
-    if args.verify:
-        print "\n#----8<----\n# Serverspec"
-    else:
-        output = "/etc/serverspec/hosts.yaml"
-    render_jinja2_template(output,
+    render_jinja2_template("/etc/serverspec/hosts.yaml",
                            "%s/templates/serverspec.yml.j2" % ansible_root,
                            arch)
 
-    if not args.verify and args.arch == "/etc/puppet/hiera/sf/arch.yaml":
+    if args.arch == "/etc/puppet/hiera/sf/arch.yaml":
         # Write updated version of refarch to _arch.yaml
         open("/etc/puppet/hiera/sf/_arch.yaml", "w").write(
             yaml.dump(arch, default_flow_style=False))
@@ -114,7 +94,6 @@ def generate_inventory():
 parser = argparse.ArgumentParser()
 parser.add_argument("--domain", default="sftests.com")
 parser.add_argument("--ansible_root", default="/etc/ansible")
-parser.add_argument("--verify", action='store_const', const=True)
 parser.add_argument("--install_server_ip")
 parser.add_argument("arch", help="refarch file")
 args = parser.parse_args()
@@ -130,7 +109,6 @@ if not ansible_root:
     print "Can't find ansible directory, use --ansible_root"
     exit(1)
 
-if not args.verify:
-    install()
+install()
 
 generate_inventory()

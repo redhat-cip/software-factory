@@ -125,6 +125,9 @@ class SFProvisioner(object):
         if out:
             return out.split()[0]
 
+    def read_file(self, f):
+        return self.command("cat %s" % f)[0]
+
     def provision(self):
         for cmd in self.resources['commands']:
             print "Execute command %s" % cmd['cmd']
@@ -134,7 +137,10 @@ class SFProvisioner(object):
             print "Compute checksum for file %s" % checksum['file']
             checksum_list[checksum['file']] = self.compute_checksum(
                 checksum['file'])
-        yaml.dump(checksum_list, file('/tmp/pc_checksums.yaml', 'w'))
+            checksum_list['content_' + checksum['file']] = self.read_file(
+                checksum['file'])
+        yaml.dump(checksum_list, file('pc_checksums.yaml', 'w'),
+            default_flow_style=False)
         for user in self.resources['local_users']:
             print "Create local user %s" % user['username']
             self.create_local_user(user['username'],

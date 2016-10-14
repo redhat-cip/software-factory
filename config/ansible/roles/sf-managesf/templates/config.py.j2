@@ -92,7 +92,6 @@ lodgeit = {
     'host': 'managesf.{{ fqdn }}',
 }
 
-
 # fake host, does not matter
 nodepool = {
     'host': 'nodepool.{{ fqdn }}',
@@ -101,6 +100,7 @@ nodepool = {
 managesf = {
     'host': 'managesf.{{ fqdn }}',
     'sshkey_priv_path': '/usr/share/httpd/.ssh/id_rsa',
+    'sshkey_update_path': '/var/lib/managesf/jenkins_rsa',
     'backup_dir': '/var/www/managesf/',
 }
 

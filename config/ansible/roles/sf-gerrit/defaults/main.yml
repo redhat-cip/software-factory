@@ -2,6 +2,9 @@ role_actions:
   - setup
   - update
   - get_logs
+  - backup
+  - restore
+  - pre_restore
 
 gerrit_email_pk: "{{ creds_gerrit_email_pk }}"
 gerrit_pub_url: "{{ gateway_url }}/r/"

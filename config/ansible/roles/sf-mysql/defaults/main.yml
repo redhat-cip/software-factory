@@ -1,6 +1,8 @@
 role_actions:
   - setup
   - get_logs
+  - backup
+  - restore
 
 mysql_host: "mysql.{{ fqdn }}"
 mysql_root_password: "{{ creds_mysql_root_pwd }}"

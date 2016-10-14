@@ -11,6 +11,9 @@
     - /usr/libexec/software-factory
     - /usr/share/software-factory
 
+- name: "sf: create log directory"
+  file: path=/var/log/software-factory state=directory mode=0700
+
 - name: "system: manage /etc/hosts"
   template: src=/etc/ansible/templates/etc-hosts.j2 dest=/etc/hosts mode=0644
 

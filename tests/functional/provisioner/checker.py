@@ -142,9 +142,11 @@ class SFchecker:
 
     def check_checksums(self):
         print "Check that expected file are there"
-        checksum_list = yaml.load(file('/tmp/pc_checksums.yaml'))
+        checksum_list = yaml.load(file('pc_checksums.yaml'))
         mismatch = False
         for f, checksum in checksum_list.items():
+            if f.startswith("content_"):
+                continue
             c = self.compute_checksum(f)
             if c == checksum:
                 print "Expected checksum (%s) for %s is OK." % (
@@ -154,6 +156,9 @@ class SFchecker:
                     checksum, f, c)
                 print "New file is:"
                 print "    %s" % self.read_file(f).replace("\n", "\n    ")
+                print "Old file was:"
+                print "    %s" % checksum_list['content_' + f].replace("\n",
+                    "\n    ")
                 mismatch = True
         if "checksum_warn_only" not in sys.argv and mismatch:
             sys.exit(1)

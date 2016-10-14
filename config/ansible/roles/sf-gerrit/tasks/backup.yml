@@ -1,0 +1,15 @@
+---
+- name: "Backup data"
+  synchronize:
+    mode: pull
+    src: "{{ item }}"
+    dest: "{{ backup_dest }}/"
+    delete: yes
+    rsync_opts: --relative
+  with_items:
+    - /home/gerrit/site_path/git
+    - /home/gerrit/site_path/etc/replication.config
+    - /home/gerrit/site_path/etc/ssh_host_rsa_key.pub
+    - /home/gerrit/site_path/etc/ssh_host_rsa_key
+    - /home/gerrit/.ssh
+    - /etc/httpd/managesf_htpasswd

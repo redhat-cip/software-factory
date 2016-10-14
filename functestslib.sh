@@ -203,8 +203,8 @@ function build_image {
         sudo rsync -a --delete --no-owner config/config-repo/ ${IMAGE_PATH}/usr/local/share/sf-config-repo/
         sudo rsync -a --delete --no-owner serverspec/ ${IMAGE_PATH}/etc/serverspec/
         sudo rsync -a config/scripts/ ${IMAGE_PATH}/usr/local/bin/
-        echo "SKIP_BUILD: direct copy of ${MANAGESF_CLONED_PATH}/ to ${IMAGE_PATH}/var/www/managesf/"
-        sudo rsync -a --delete ${MANAGESF_CLONED_PATH}/managesf/ ${IMAGE_PATH}/var/www/managesf/lib/python2.7/site-packages/managesf/
+        echo "SKIP_BUILD: direct copy of ${MANAGESF_CLONED_PATH}/ to ${IMAGE_PATH}/var/www/managesf/lib/python2.7/site-packages/managesf*-py2.7.egg/managesf/"
+        sudo rsync -a --delete ${MANAGESF_CLONED_PATH}/managesf/ ${IMAGE_PATH}/var/www/managesf/lib/python2.7/site-packages/managesf*-py2.7.egg/managesf/
         echo "SKIP_BUILD: direct copy of ${CAUTH_CLONED_PATH}/ to ${IMAGE_PATH}/var/www/cauth/"
         sudo rsync -a --delete ${CAUTH_CLONED_PATH}/ ${IMAGE_PATH}/var/www/cauth/
         PYSFLIB_LOC=${IMAGE_PATH}/$(sudo chroot ${IMAGE_PATH} pip show pysflib | grep '^Location:' | awk '{ print $2 }')
@@ -449,26 +449,29 @@ function run_backup_start {
     echo "$(date) ======= run_backup_start"
     sfmanager --url "${MANAGESF_URL}" --auth "admin:${ADMIN_PASSWORD}" system backup_start || fail "Backup failed"
     sfmanager --url "${MANAGESF_URL}" --auth "admin:${ADMIN_PASSWORD}" system backup_get   || fail "Backup get failed"
-    scp ${SF_HOST}:/var/log/managesf/managesf.log ${ARTIFACTS_DIR}/backup_managesf.log
     tar tzvf sf_backup.tar.gz > ${ARTIFACTS_DIR}/backup_content.log
-    grep -q '\.bup\/objects\/pack\/.*.pack$' ${ARTIFACTS_DIR}/backup_content.log || fail "Backup empty" ${ARTIFACTS_DIR}/backup_content.log
     checkpoint "run_backup_start"
 }
 
 function run_backup_restore {
     echo "$(date) ======= run_backup_restore"
-    sfmanager --url "${MANAGESF_URL}" --auth "admin:${ADMIN_PASSWORD}" system restore --filename $(pwd)/sf_backup.tar.gz || fail "Backup resore failed"
-    echo "[+] Waiting for gerrit to restart..."
-    retry=0
-    while [ $retry -lt 1000 ]; do
-        wget --no-check-certificate --spider  https://${SF_HOST}/r/ 2> /dev/null && break
-        sleep 1
-        let retry=retry+1
-    done
-    [ $retry -eq 1000 ] && fail "Gerrit did not restart"
-    echo "=> Took ${retry} retries"
-    # Give it some more time...
-    sleep 5
+    # Check for legacy backup support (remove this after 2.2.6 release)
+    ssh ${SF_HOST} test -d /var/www/managesf/lib/python2.7/site-packages/managesf*/managesf/services/jenkins
+    if [ $? -eq 0 ]; then
+        sfmanager --url "${MANAGESF_URL}" --auth "admin:${ADMIN_PASSWORD}" system restore --filename $(pwd)/sf_backup.tar.gz || fail "Backup resore failed"
+        echo "[+] Waiting for gerrit to restart..."
+        retry=0
+        while [ $retry -lt 1000 ]; do
+            wget --no-check-certificate --spider  https://${SF_HOST}/r/ 2> /dev/null && break
+            sleep 1
+            let retry=retry+1
+        done
+    else
+        # TODO: replace by sfmanager command
+        scp sf_backup.tar.gz ${SF_HOST}:/var/www/managesf/sf_backup.tar.gz
+        ssh ${SF_HOST} ansible-playbook /etc/ansible/sf_restore.yml &> ${ARTIFACTS_DIR}/restore.log || fail "Backup restore failed"
+    fi
+    fetch_bootstraps_data
     checkpoint "run_backup_restore"
 }
 

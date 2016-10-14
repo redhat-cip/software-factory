@@ -90,20 +90,4 @@ class managesf ($gerrit = hiera('gerrit')) {
     mode    => '0640',
     require => File['/var/www/managesf/'],
   }
-
-  file {'/root/sf-bootstrap-data/ssh_keys/gerrit_admin_rsa':
-    ensure  => file,
-    mode    => '0400',
-    owner   => 'root',
-    group   => 'root',
-    content => inline_template('<%= @gerrit_admin_rsa %>'),
-  }
-
-  file {'/root/sf-bootstrap-data/ssh_keys/gerrit_admin_rsa.pub':
-    ensure  => file,
-    mode    => '0400',
-    owner   => 'root',
-    group   => 'root',
-    content => inline_template('<%= @gerrit_admin_sshkey %>'),
-  }
 }

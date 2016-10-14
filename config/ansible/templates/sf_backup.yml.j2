@@ -1,0 +1,28 @@
+---
+# Create local backup directory
+- hosts: localhost
+  tasks:
+    - name: "Create backup directory"
+      file: path=/var/lib/software-factory/backup state=directory mode=0700
+
+    - file: path="/var/lib/software-factory/backup/{{'{{'}} item {{'}}'}}" state=directory
+      with_items:
+    {% for role in roles %}
+        - {{ role }}
+    {% endfor %}
+
+# Call backup task
+{% for host in inventory %}
+- hosts: {{ host['hostname'] }}
+  roles:
+{% for role in host['roles'] %}    - {role: "sf-{{ role }}", action: "backup", backup_dest: "/var/lib/software-factory/backup/{{ role }}"}
+{% endfor %}
+{% endfor %}
+
+# Generate backup file
+- hosts: localhost
+  tasks:
+    - name: "Generate backup file"
+      command: chdir=/var/lib/software-factory/backup/ tar czpf /var/lib/software-factory/backup.tar.gz .
+    - name: "Copy backup to managesf"
+      command: scp /var/lib/software-factory/backup.tar.gz managesf.{{domain}}:/var/www/managesf/sf_backup.tar.gz

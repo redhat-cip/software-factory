@@ -1,0 +1,13 @@
+---
+- name: "Backup data"
+  synchronize:
+    mode: pull
+    src: "{{ item }}"
+    dest: "{{ backup_dest }}/"
+    delete: yes
+    rsync_opts: --relative
+  with_items:
+    - /etc/puppet/hiera/sf/sfconfig.yaml
+    - /etc/puppet/hiera/sf/sfcreds.yaml
+    - /root/sf-bootstrap-data
+    - /root/config

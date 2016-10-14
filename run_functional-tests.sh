@@ -90,7 +90,6 @@ case "${TEST_TYPE}" in
         run_bootstraps
         run_backup_restore
         run_checker
-        run_sfconfig
         change_fqdn
         run_sfconfig
         run_serverspec_tests

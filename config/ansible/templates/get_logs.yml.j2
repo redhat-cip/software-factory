@@ -17,6 +17,9 @@
     - name: "Copy the hiera configuration"
       synchronize: src=/etc/puppet/hiera/sf/ dest=/root/sf-logs/hiera/ rsync_opts="--exclude .git"
       ignore_errors: True
+    - name: "Copy config-update logs"
+      synchronize: src=/var/log/software-factory/ dest=/root/sf-logs/config-updates/
+      ignore_errors: True
 {% for host in inventory %}{% for role in host['rolesname'] %}
     - name: "Create {{ role }} log storage directory"
       file: path=/root/sf-logs/{{ role }} state=directory

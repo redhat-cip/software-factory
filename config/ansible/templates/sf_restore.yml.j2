@@ -1,0 +1,47 @@
+---
+# Retrieve backup file
+- hosts: localhost
+  tasks:
+    - name: "Remove previous backup"
+      file: path=/var/lib/software-factory/backup state=absent
+
+    - name: "Remove previous config"
+      file: path=/root/config state=absent
+
+    - name: "Create empty backup directory"
+      file: path=/var/lib/software-factory/backup state=directory mode=0700
+
+    - name: "Copy backup from managesf"
+      command: scp managesf.{{domain}}:/var/www/managesf/sf_backup.tar.gz /var/lib/software-factory/backup.tar.gz
+
+    - name: "Extract backup file"
+      command: chdir=/var/lib/software-factory/backup/ tar xzpf /var/lib/software-factory/backup.tar.gz
+
+# Call pre restore task
+{% for host in inventory %}
+- hosts: {{ host['hostname'] }}
+  roles:
+{% for role in host['roles'] %}    - {role: "sf-{{ role }}", action: "pre_restore"}
+{% endfor %}
+{% endfor %}
+
+# Call restore task
+{% for host in inventory %}
+- hosts: {{ host['hostname'] }}
+  roles:
+{% for role in host['roles'] %}    - {role: "sf-{{ role }}", action: "restore", backup_src: "/var/lib/software-factory/backup/{{ role }}"}
+{% endfor %}
+{% endfor %}
+
+{% for host in inventory %}
+- hosts: {{ host['hostname'] }}
+  roles:
+{% for role in host['roles'] %}    - {role: "sf-{{ role }}", action: "post_restore"}
+{% endfor %}
+{% endfor %}
+
+# Call sfconfig
+- hosts: localhost
+  tasks:
+    - name: "Re-run sfconfig.sh"
+      shell: sfconfig.sh &>> /var/log/software-factory/sfconfig-restore.log
