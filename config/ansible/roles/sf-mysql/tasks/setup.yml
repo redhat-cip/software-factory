@@ -22,7 +22,7 @@
   delay: 1
   when: mysql_root_password_set|failed
 
-- name: Install initialization and backup/restore scripts
+- name: Install initialization scripts
   template:
     src: "{{ item.name }}.j2"
     dest: "/root/{{ item.realname | default(item.name) }}"
@@ -30,8 +30,6 @@
     group: root
     mode: "{{ item.mode | default('0555')}}"
   with_items:
-    - { name: backup_mysql.sh }
-    - { name: restore_mysql.sh }
     - { name: create_databases.sql }
     - { name: client.cnf, realname: .my.cnf, mode: '0400' }
 

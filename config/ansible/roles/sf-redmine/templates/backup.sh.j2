@@ -1,3 +1,0 @@
-#!/bin/bash
-exec mysqldump --databases redmine | gzip -9 | \
-    ssh root@managesf.{{ fqdn }} tee /root/redminedb.sql.gz > /dev/null

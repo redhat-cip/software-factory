@@ -5,10 +5,6 @@
 
 - include: /etc/ansible/tasks/create_user.yml user_name=jenkins ssh_key=jenkins_rsa
 
-- name: Install backup procedure
-  template: src="{{ item }}.sh.j2" dest="/root/{{ item }}_jenkins.sh" mode=0555
-  with_items: ["backup", "restore"]
-
 - name: Create working directories
   file:
       path: "{{ item.name }}"

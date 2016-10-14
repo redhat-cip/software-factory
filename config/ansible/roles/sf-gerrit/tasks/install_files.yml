@@ -91,13 +91,11 @@
     group: root
     mode: "{{ item.mode | default('0700')}}"
   with_items:
-    - { name: backup_gerrit.sh, mode: '0740' }
     - { name: gerrit-firstuser-init.sql, mode: '0644' }
     - { name: gerrit-restore-user-keys.sql, mode: '0644' }
     - { name: gerrit-set-default-acl.sh }
     - { name: gerrit-set-ci-user.sh }
     - { name: gerrit-update-acl, dest: /usr/share/ }
-    - { name: restore_gerrit.sh, mode: '0740' }
 
 - name: "Add monit service check"
   copy:

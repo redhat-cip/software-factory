@@ -65,31 +65,10 @@ services = [
 {% if 'gerrit' in roles %}
     'SFGerrit',
 {% endif %}
-{% if 'jenkins' in roles %}
-    'jenkins',
-{% endif %}
-{% if 'etherpad' in roles %}
-    'etherpad',
-{% endif %}
-{% if 'lodgeit' in roles %}
-    'lodgeit',
-{% endif %}
-{% if 'nodepool' in roles %}
-    'nodepool',
-{% endif %}
 ]
 
 mysql = {
     'host': 'mysql.{{ fqdn }}',
-}
-jenkins = {
-    'host': 'jenkins.{{ fqdn }}',
-}
-etherpad = {
-    'host': 'managesf.{{ fqdn }}',
-}
-lodgeit = {
-    'host': 'managesf.{{ fqdn }}',
 }
 
 # fake host, does not matter

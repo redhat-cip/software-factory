@@ -10,10 +10,6 @@
   when:
       - selinuxenabled
 
-- name: Install backup procedure
-  template: src="{{ item }}.sh.j2" dest="/root/{{ item }}_etherpad.sh" mode=0555
-  with_items: ["backup", "restore"]
-
 - name: "Copy service file"
   copy: src=etherpad.service dest=/lib/systemd/system/etherpad.service
   register: etherpad_service

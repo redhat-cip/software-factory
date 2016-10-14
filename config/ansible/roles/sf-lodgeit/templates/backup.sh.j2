@@ -1,3 +1,0 @@
-#!/bin/bash
-exec mysqldump --databases lodgeit | gzip -9 | \
-    ssh root@managesf.{{ fqdn }} tee /root/lodgeitdb.sql.gz > /dev/null

@@ -1,3 +1,0 @@
-#!/bin/bash
-[ -f "/etc/puppet/hiera/sf/sfcreds.yaml" ] && cp /etc/puppet/hiera/sf/sfcreds.yaml /etc/puppet/hiera/sf/sfcreds.yaml.orig
-bup join -r root@managesf.{{ fqdn }}: backup | tar -xPf -

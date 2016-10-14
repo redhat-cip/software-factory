@@ -1,5 +1,0 @@
-#!/bin/bash
-# close any existing connections
-systemctl restart mariadb
-ssh root@managesf.{{ fqdn }} cat /root/mysqldb.sql.gz | gunzip | mysql
-systemctl restart mariadb

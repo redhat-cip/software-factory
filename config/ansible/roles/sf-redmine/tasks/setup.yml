@@ -23,10 +23,6 @@
 - name: "ensure directories are created"
   file: path=/var/www/redmine/public/themes/classic/javascripts/ state=directory
 
-- name: Install backup procedure
-  template: src="{{ item }}.sh.j2" dest="/root/{{ item }}_redmine.sh" mode=0555
-  with_items: ["backup", "restore"]
-
 - name: "install topmenu theme"
   template:
     src: /etc/ansible/roles/sf-gateway/templates/topmenu.js.j2

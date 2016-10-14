@@ -1,3 +1,0 @@
-#!/bin/bash
-exec mysqldump --databases nodepool | gzip -9 | \
-    ssh root@managesf.{{ fqdn }} tee /root/nodepooldb.sql.gz > /dev/null
