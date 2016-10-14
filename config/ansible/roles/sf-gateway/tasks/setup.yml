@@ -109,6 +109,14 @@
     line="LoadModule ssl_module modules/mod_ssl.so"
     owner=apache group=apache mode=0640
 
+- name: "apache: load cache module"
+  lineinfile:
+    dest=/etc/httpd/conf.modules.d/00-cache.conf
+    line="LoadModule cache_module modules/mod_cache.so"
+    create=True
+    state=present
+    owner=apache group=apache mode=0640
+
 - name: "apache: add gateway conf"
   template: src="templates/{{ item }}.j2" dest=/etc/httpd/conf.d/{{ item }} mode=0444
   with_items:

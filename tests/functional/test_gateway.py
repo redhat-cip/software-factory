@@ -14,14 +14,16 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import os
 import re
+import shlex
 
 import config
 from utils import Base
 from utils import ManageSfUtils
 from utils import skipIfIssueTrackerMissing, has_issue_tracker, \
     skipIfServiceMissing
-from utils import get_issue_tracker_utils
+from utils import get_issue_tracker_utils, ssh_run_cmd
 from pysflib.sfgerrit import GerritUtils
 
 from requests.auth import HTTPBasicAuth
@@ -357,3 +359,19 @@ class TestGateway(Base):
         self.assertEqual(resp.history[0].status_code, 302)
         self.assertEqual(resp.history[0].url,
                          "http://%s/" % config.GATEWAY_HOST)
+
+    def test_static_files_are_not_cached(self):
+        """Make sure files in the 'static' dir are not cached"""
+        script = "topmenu.js"
+        url = "http://%s/static/js/%s" % (config.GATEWAY_HOST, script)
+        js = requests.get(url).text
+        # add a comment at the end of the js
+        cmd = "echo '// this is a useless comment' >> /var/www/static/js/%s"
+        ssh_run_cmd(os.path.expanduser("~/.ssh/id_rsa"),
+                    "root",
+                    config.GATEWAY_HOST, shlex.split(cmd % script))
+        newjs = requests.get(url).text
+        self.assertTrue(len(newjs) > len(js),
+                        "New js is %s" % newjs)
+        self.assertTrue("useless comment" in newjs,
+                        "New js has no useless comment !")

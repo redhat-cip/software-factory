@@ -10,6 +10,11 @@
     RewriteRule ^(.*)$ /auth/login [R,NC,L]
     </LocationMatch>
 
+    # Disable caching of static files
+    <LocationMatch "/static">
+    CacheDisable on
+    </LocationMatch>
+
     # Don't login to Storyboard itself, use cauth instead
     <LocationMatch "/storyboard_api/openid/">
         RewriteEngine On
