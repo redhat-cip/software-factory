@@ -6,6 +6,7 @@ After=syslog.target network.target gerrit.service
 Type=simple
 User=zuul
 Group=zuul
+LimitNOFILE=8192
 EnvironmentFile=-/etc/sysconfig/zuul
 ExecStart=/usr/bin/zuul-merger -d
 ExecReload=/bin/kill -HUP $MAINPID
