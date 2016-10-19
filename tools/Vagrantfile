@@ -27,6 +27,9 @@ Vagrant.configure(2) do |config|
   end
 
   config.vm.provision "shell", privileged: false, inline: <<-SHELL
+    # Set MTU to be cloud-proof
+    sudo ip link set dev eth0 mtu 1400
+
     # Configure extra space
     sudo parted /dev/vdb --script -- mklabel msdos
     sudo parted /dev/vdb --script -- mkpart primary 0% 100%
