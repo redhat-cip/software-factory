@@ -8,23 +8,41 @@ set -e
 ### resources get/post/put will be called through the
 ### sf-config-update mechanism
 
-FQDN={{ fqdn }}
+GATEWAY_URL="{{ gateway_url }}"
+ENDPOINT="$GATEWAY_URL/manage/resources/"
 SPASS={{ creds_sf_service_user_pwd }}
+
 COOKIE_PATH=cookie
 APPLIED_OUTPUT="applied-output"
 VALIDATED_OUTPUT="validated-output"
-ENDPOINT="http://$FQDN/manage/resources/"
 
 trap "rm -f $COOKIE_PATH && rm -f $VALIDATED_OUTPUT && rm -f $APPLIED_OUTPUT" EXIT
 
 [ -z "$1" ] && {
-    echo "Valable arguments are validate, apply, get. Exit."
+    echo "Valid arguments are validate, apply, direct_apply, get. Exit."
     exit 1
+}
+
+[ "$1" == "direct_apply" ] && {
+    [ ! -f "$2" -a ! -f "$3" ] && {
+        echo "direct_apply action needs two yaml files as second and third args"
+        echo "$(basename $0) direct_apply prev.yaml new.yaml"
+        exit 1
+    } || {
+        rm -f direct_apply.json
+        python <<SCRIPT
+import json
+data = {}
+data['prev'] = file("$2").read()
+data['new'] = file("$3").read()
+json.dump(data, file('direct_apply.json', 'w'))
+SCRIPT
+    }
 }
 
 curl -s -X POST -c $COOKIE_PATH --data \
  '{"back": "/", "method": "Password", "args": {"username": "_SF_SERVICE_USER_", "password": "'$SPASS'"}}' \
- -H "Content-Type: application/json" http://$FQDN/auth/login/
+ -H "Content-Type: application/json" $GATEWAY_URL/auth/login/
 [ ! -f $COOKIE_PATH ] && {
     echo "Unable to get a cookie ..."
     exit 1
@@ -52,6 +70,18 @@ case $1 in
         cat $APPLIED_OUTPUT | python -m json.tool
         [ "$http_code" != "201" ] && {
             echo "Resource modifications apply failed (API return code: $http_code)."
+            exit 1
+        }
+        exit 0
+        ;;
+    direct_apply)
+        http_code=$(curl -s -w "%{http_code}" -b $COOKIE_PATH \
+         -H "Content-Type: application/json" \
+         --data @direct_apply.json \
+         -X PUT $ENDPOINT -o $APPLIED_OUTPUT)
+        cat $APPLIED_OUTPUT | python -m json.tool
+        [ "$http_code" != "201" ] && {
+            echo "Resource modifications direct_apply failed (API return code: $http_code)."
             exit 1
         }
         exit 0

@@ -54,6 +54,7 @@
 /etc/ansible/hosts
 /root/sf-bootstrap-data/
 /root/software-factory/
+/root/config/
 /var/lib/zuul/
 /var/lib/managesf/users.db
 /var/lib/murmur/murmur.sqlite
@@ -63,7 +64,6 @@
 /var/www/cauth/keys/
 /var/www/redmine/log
 /var/www/redmine/public/plugin_assets
-/usr/share/config.init.done
 
 # Sf data
 /var/lib/mysql/
