@@ -90,7 +90,7 @@
       wait_for: path=/var/log/nodepool/debug.log timeout=900 search_regex=".*Node .* ready in provider.*"
 
     - name: "Wait for the first slave to appears in Jenkins"
-      shell: for i in {1..100}; do sleep 1; curl -Ls http://{{ fqdn }}/jenkins/computer/ | grep base_centos-nested-cloud- > /dev/null && exit 0; done; exit 1
+      shell: for i in {1..100}; do sleep ${i}; curl -Ls https://{{ fqdn }}/jenkins/computer/ | grep base_centos-default- > /dev/null && exit 0; done; exit 1
 
     - name: "Wait for the first slave to appears online in Jenkins"
-      shell: for i in {1..100}; do sleep 9; curl -Ls http://{{ fqdn }}/jenkins/computer/ | grep offline > /dev/null && continue || exit 0; done; exit 1
+      shell: for i in {1..100}; do sleep ${i}; curl -Ls https://{{ fqdn }}/jenkins/computer/ | grep offline > /dev/null && continue || exit 0; done; exit 1
