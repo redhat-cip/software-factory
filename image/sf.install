@@ -38,6 +38,9 @@ function install_sf {
         exit -1
     fi
 
+    # Make sure final image use latest ids.tables
+    cp ./C7.0-ids.tables ${dir}/etc/ids.tables
+
     # Finish gnocchi install
     install_gnocchi
 

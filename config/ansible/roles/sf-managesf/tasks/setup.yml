@@ -1,29 +1,41 @@
 ---
+- include: /etc/ansible/tasks/create_user.yml user_name=managesf ssh_key=service_rsa
 - include_vars: /etc/ansible/vars/common.yml
 - include_vars: /etc/puppet/hiera/sf/sfcreds.yaml
 
 - name: "Set /var/www/managesf context"
-  file: path=/var/www/managesf state=directory mode=0750 owner=apache group=apache setype=httpd_sys_content_t
+  file: path=/var/www/managesf state=directory mode=0750 owner=managesf group=apache setype=httpd_sys_content_t
 
-- name: "Create /var/lib/managesf"
-  file: path=/var/lib/managesf state=directory mode=0700 owner=apache group=apache
+- name: "Create httpd conf"
+  template: src=managesf.site.j2 dest=/etc/httpd/conf.d/managesf.conf mode=0444
 
-- name: "Copy config-update ssh key"
+- name: "Create log directory"
+  file: path=/var/log/managesf state=directory mode=0700 owner=managesf
+
+- name: "Copy ssh keys"
   copy:
-    content: "{{ jenkins_rsa }}"
-    dest: "/var/lib/managesf/jenkins_rsa"
-    mode: 0400
-    owner: apache
-    group: apache
+    content: "{{ item.content }}"
+    dest: "/var/lib/managesf/.ssh/{{ item.name }}"
+    mode: "{{ item.mode }}"
+    owner: managesf
+    group: managesf
+  with_items:
+    - {content: "{{ gerrit_admin_rsa }}", name: "gerrit_admin_rsa", mode: "0400"}
+    - {content: "{{ gerrit_admin_rsa_pub }}", name: "gerrit_admin_rsa.pub", mode: "0444"}
+    - {content: "{{ jenkins_rsa }}", name: "jenkins_rsa", mode: "0400"}
+    - {content: "{{ jenkins_rsa_pub }}", name: "jenkins_rsa.pub", mode: "0444"}
+
+- name: "ensure pages.txt is writable by managesf"
+  file: path=/etc/httpd/pages.txt state=touch mode=0640 owner=managesf group=apache
+
+- name: "Create sshconfig directory"
+  file: path=/var/www/managesf/sshconfig state=directory mode=0750 owner=managesf group=managesf
+
+- name: "ensure managesf_htpasswd is present"
+  file: path=/etc/httpd/managesf_htpasswd state=touch mode=0640 owner=managesf group=apache
 
 - name: "Copy app.wsgi"
   copy: src=app.wsgi dest=/var/www/managesf/app.wsgi
 
 - name: "Setup config.py"
-  template: src=templates/config.py.j2 dest=/var/www/managesf/config.py owner=root group=apache mode=0440
-
-- name: "Initialize bup"
-  shell: "/usr/local/bin/bup init"
-  args:
-      chdir: /root
-      creates: /root/.bup/HEAD
+  template: src=config.py.j2 dest=/var/www/managesf/config.py owner=root group=managesf mode=0440

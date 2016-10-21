@@ -78,8 +78,8 @@ nodepool = {
 
 managesf = {
     'host': 'managesf.{{ fqdn }}',
-    'sshkey_priv_path': '/usr/share/httpd/.ssh/id_rsa',
-    'sshkey_update_path': '/var/lib/managesf/jenkins_rsa',
+    'sshkey_update_path': '/var/lib/managesf/.ssh/jenkins_rsa',
+    'sshkey_priv_path': '/var/lib/managesf/.ssh/id_rsa',
     'backup_dir': '/var/www/managesf/',
 }
 
@@ -103,7 +103,7 @@ gerrit = {
     'url': '{{ gateway_url }}/',
     'top_domain': '{{ fqdn }}',
     'ssh_port': 29418,
-    'sshkey_priv_path': '/var/www/managesf/gerrit_admin_rsa',
+    'sshkey_priv_path': '/var/lib/managesf/.ssh/gerrit_admin_rsa',
     'replication_config_path': '/home/gerrit/site_path/etc/replication.config',
     'db_host': 'mysql.{{ fqdn }}',
     'db_name': 'gerrit',

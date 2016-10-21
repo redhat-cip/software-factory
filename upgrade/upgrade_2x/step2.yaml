@@ -22,6 +22,12 @@
   # 2.0.0: Remove hosts.yaml hiera
   - file: path=/etc/puppet/hiera/sf/hosts.yaml state=absent
 
+- hosts: managesf
+  tasks:
+  # 2.2.7: managesf is running with its own user
+  - name: Make sure /var/log/managesf is owned by managesf
+    command: chown -R 949:949 /var/log/managesf
+
 - hosts: all
   tasks:
   - name: systemctl daemon-reload
