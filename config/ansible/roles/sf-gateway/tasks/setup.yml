@@ -28,6 +28,10 @@
     - /etc/httpd/conf.d/userdir.conf
     - /etc/httpd/conf.d/welcome.conf
 
+- name: "Add x-x509-ca-cert mime types"
+  lineinfile: dest=/etc/mime.types line="application/x-x509-ca-cert                      der pem crt"
+  notify: apache reload
+
 - name: "apache: add embedded TLS certificate"
   when: not network['use_letsencrypt']
   notify: apache reload
@@ -46,6 +50,9 @@
 
 - name: "copy pages-404.html"
   copy: src=files/pages-404.html dest=/var/www/pages-404.html mode=0444
+
+- name: "Expose localCA.pem"
+  copy: content="{{ localCA_pem }}" dest=/var/www/localCA.pem mode=0444
 
 - name: "ensure managesf_htpasswd is present"
   file: path=/etc/httpd/managesf_htpasswd state=touch mode=0640 owner=apache group=apache

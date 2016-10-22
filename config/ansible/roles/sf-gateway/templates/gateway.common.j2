@@ -1,7 +1,3 @@
-    RewriteEngine On
-    RewriteCond %{HTTP_HOST} !{{ fqdn }} [NC]
-    RewriteRule ^/(.*)$ {{ fqdn }}/$1 [R=301,L]
-
     RewriteMap base64helper "prg:/usr/local/sbin/base64helper"
 
     # Don't login to Redmine itself, use cauth instead

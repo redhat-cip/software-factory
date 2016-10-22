@@ -153,12 +153,12 @@ EOF
         -key ${OUTPUT}/gateway.key              \
         -out ${OUTPUT}/gateway.req
     # Gen certificate
-    [ -f ${OUTPUT}/gateway.srl ] || echo '00' > ${OUTPUT}/gateway.srl
+    [ -f ${OUTPUT}/localCA.srl ] || echo '00' > ${OUTPUT}/localCA.srl
     [ -f ${OUTPUT}/gateway.crt ] || openssl x509 -req -days 3650 \
         -extensions v3_req -extfile ${OUTPUT}/gateway.cnf \
         -CA ${OUTPUT}/localCA.pem               \
         -CAkey ${OUTPUT}/localCAkey.pem         \
-        -CAserial ${OUTPUT}/gateway.srl         \
+        -CAserial ${OUTPUT}/localCA.srl         \
         -in ${OUTPUT}/gateway.req               \
         -out ${OUTPUT}/gateway.crt
     # Gen pem

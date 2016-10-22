@@ -70,7 +70,12 @@ def prepare_role(base_path, name, ip, gateway, netmask="255.255.255.0"):
         os.mkdir("/var/lib/lxc/%s" % name, 0755)
     root = "/var/lib/lxc/%s/rootfs" % name
     if execute(["rsync", "-a", "--delete",
+                # Keep new version in place for faster upgrade tests
                 "--exclude", "/var/lib/sf/roles/install/",
+                # Keep TLS CA too
+                "--exclude", "/root/sf-bootstrap-data/certs/localCA.pem",
+                "--exclude", "/root/sf-bootstrap-data/certs/localCAkey.pem",
+                "--exclude", "/root/sf-bootstrap-data/certs/localCA.srl",
                 "%s/softwarefactory/" % base_path,
                 "%s/" % root]):
         print "Could not prepare %s with %s" % (name, base_path)
