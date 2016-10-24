@@ -15,7 +15,6 @@
 
 class jenkins {
   include ::apache
-  include ::jjb
   include ::systemctl
 
   $fqdn = hiera('fqdn')
