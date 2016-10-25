@@ -10,3 +10,5 @@ galaxy_info:
     - 7
   galaxy_tags:
     - software-factory
+dependencies:
+  - role: sf-handlers

@@ -3,9 +3,7 @@ role_actions:
   - update
   - get_logs
 
-puppet_modules:
-  - jenkins
-
 jenkins_internal_url: "http://jenkins.{{ fqdn }}:8081/jenkins/"
 jenkins_api_url: "http://jenkins.{{ fqdn }}:8080/jenkins/"
 jenkins_pub_url: "{{ gateway_url }}/jenkins/"
+jenkins_password: "{{ creds_jenkins_user_password }}"

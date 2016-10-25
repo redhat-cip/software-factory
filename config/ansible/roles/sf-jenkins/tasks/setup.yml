@@ -1,28 +1,115 @@
 ---
+- include_vars: /etc/puppet/hiera/sf/jenkins.yaml
+- include_vars: /etc/puppet/hiera/sf/sfcreds.yaml
+- include_vars: /etc/ansible/roles/sf-jenkins/defaults/main.yml
+
 - include: /etc/ansible/tasks/create_user.yml user_name=jenkins ssh_key=jenkins_rsa
 
 - name: Install backup procedure
   template: src="{{ item }}.sh.j2" dest="/root/{{ item }}_jenkins.sh" mode=0555
   with_items: ["backup", "restore"]
 
-- name: "Create directory"
-  file: path={{ item }} state=directory mode=0755 owner=jenkins
-  with_items:
-    - /var/lib/jenkins
-    - /var/lib/jenkins/plugins
-    - /var/cache/jenkins
-
-- name: "Cleanup unused directory"
+- name: Create working directories
   file:
-      path: /usr/local/jenkins
-      state: absent
-
-- name: "Setup configuration"
-  template: src={{ item }}.j2 dest=/var/lib/jenkins/{{ item }} owner=jenkins group=jenkins mode=0644
+      path: "{{ item.name }}"
+      state: directory
+      owner: jenkins
+      group: jenkins
+      mode: "{{ item.mode | default(0755) }}"
   with_items:
-    - jenkins.model.JenkinsLocationConfiguration.xml
+    - {name: /etc/jenkins_jobs, mode: '0500'}
+    - {name: /usr/local/share/sf-jenkins-slave-tools}
+    - {name: /var/cache/jenkins}
+    - {name: /var/lib/jenkins}
+    - {name: /var/lib/jenkins/defconf, mode: '0500'}
+    - {name: /var/lib/jenkins/plugins}
 
-- name: "Selinux: check port labelling"
+- name: Cleanup unused files/directories
+  file:
+      path: "{{ item }}"
+      state: absent
+  with_items:
+      - /etc/init.d/jenkins
+      - /usr/local/jenkins
+
+- name: Install templates for root user
+  template:
+      src: "{{ item.name }}.j2"
+      dest: "{{item.dest}}/{{ item.name }}"
+      owner: root
+      group: root
+      mode: "{{ item.mode | default(0444) }}"
+  with_items:
+      - {name: jenkins-remove-offline-node.sh, dest: /etc/cron.daily, mode: '0555'}
+      - {name: nodepool.yaml, dest: /var/lib/jenkins/defconf}
+      - {name: resources.sh, dest: /usr/local/bin, mode: '0555'}
+      - {name: zuul.conf, dest: /var/lib/jenkins/defconf}
+
+- name: Install templates for jenkins user
+  template:
+      src: "{{ item.name }}.j2"
+      dest: "{{item.dest | default('/var/lib/jenkins') }}/{{ item.name }}"
+      owner: jenkins
+      group: jenkins
+      mode: "{{ item.mode | default(0444) }}"
+  with_items:
+      - {name: hudson.plugins.gearman.GearmanPluginConfig.xml}
+      - {name: hudson.plugins.git.GitSCM.xml}
+      - {name: jenkins.model.JenkinsLocationConfiguration.xml}
+      - {name: jenkins_jobs.ini, dest: /etc/jenkins_jobs, mode: '0400'}
+
+- name: Install files for root user
+  copy:
+      src: "{{ item.name }}"
+      dest: "{{item.dest}}/{{ item.name }}"
+      owner: root
+      group: root
+      mode: "{{ item.mode | default(0444) }}"
+  notify:
+      - apache reload
+  with_items:
+      - {name: jenkins, dest: /etc/sudoers.d, mode: '0440'}
+      - {name: jenkins.conf, dest: /etc/httpd/conf.d}
+      - {name: ports.conf, dest: /etc/httpd/conf.d}
+      - {name: remove-offline-node.groovy, dest: /usr/local/share/sf-jenkins-slave-tools}
+      - {name: wait4jenkins, dest: /usr/libexec, mode: '0555'}
+
+- name: Install files for jenkins user
+  copy:
+      src: "{{ item.name }}"
+      dest: "/var/lib/jenkins/{{ item.name }}"
+      owner: jenkins
+      group: jenkins
+      mode: "{{ item.mode | default(0444) }}"
+      force: "{{ item.force | default('yes') }}"
+  with_items:
+      - {name: config.xml, mode: '0644', force: no}
+      - {name: credentials.xml, mode: '0644', force: no}
+      - {name: hudson.tasks.Mailer.xml}
+      - {name: org.codefirst.SimpleThemeDecorator.xml}
+      - {name: org.jenkinsci.main.modules.sshd.SSHD.xml}
+      - {name: org.jenkinsci.plugins.ZMQEventPublisher.HudsonNotificationProperty.xml}
+
+- name: Manage jenkins user password for apache
+  htpasswd:
+      path: /etc/httpd/htpasswd
+      name: jenkins
+      password: "{{ jenkins_password }}"
+
+- name: Install service file
+  template:
+      src: jenkins.service.j2
+      dest: /lib/systemd/system/jenkins.service
+      owner: root
+      group: root
+      mode: 0644
+  register: install_service_file
+
+- name: Reload systemctl daemon
+  shell: "systemctl daemon-reload"
+  when: install_service_file|changed
+
+- name: Selinux check port labelling
   shell: "semanage port -l | grep -w 'http_port_t.*{{ item }}' > /dev/null"
   register: no_selinux_labelling
   changed_when: "no_selinux_labelling.rc != 0"
@@ -33,14 +120,14 @@
 # Seport fail to relabel existing port, see https://github.com/ansible/ansible-modules-extras/issues/2009
 # seport: ports={{ item }} proto=tcp setype=http_port_t state=present
 #   -  with_items: [8081, 8010]
-- name: "Selinux: port labelling"
+- name: Selinux port labelling
   command: semanage port --modify -t http_port_t -p tcp 8081
   when:
       - selinuxenabled
       - no_selinux_labelling|failed
 
 # special case for 8010 that is not already defined
-- name: "Selinux: port labelling"
+- name: Selinux port labelling
   shell: |
     semanage port --modify -t http_port_t -p tcp 8010 ||
     semanage port --add -t http_port_t -p tcp 8010
@@ -48,27 +135,5 @@
       - selinuxenabled
       - no_selinux_labelling|failed
 
-- name: "Create /etc/jenkins_jobs directory"
-  file: path=/etc/jenkins_jobs/ state=directory mode=0500 owner=jenkins
-
-- name: "Setup jenkins_jobs.ini"
-  template: src=jenkins_jobs.ini.j2 dest=/etc/jenkins_jobs/jenkins_jobs.ini mode=0400 owner=jenkins group=root
-
-# Setup groovy script
-- file: path=/usr/local/share/sf-jenkins-slave-tools/ state=directory mode=0755
-- copy: src=remove-offline-node.groovy dest=/usr/local/share/sf-jenkins-slave-tools/remove-offline-node.groovy mode=0444
-- include_vars: /etc/puppet/hiera/sf/sfcreds.yaml
-- template: src=cron-jenkins-remove-offline-node.sh.j2 dest=/etc/cron.daily/jenkins-remove-offline-node.sh mode=0500
-- template: src=resources.sh.j2 dest=/usr/local/bin/resources.sh mode=0755
-
-# Setup default configuration for config-check
-- name: "Create defconf directory"
-  file:  path=/var/lib/jenkins/defconf state=directory mode=0500 owner=jenkins
-
-- include_vars: /etc/puppet/hiera/sf/sfcreds.yaml
-
-- name: "Setup test configuration for zuul and nodepool"
-  template: src={{ item }}.j2 dest=/var/lib/jenkins/defconf/{{ item }}
-  with_items:
-    - zuul.conf
-    - nodepool.yaml
+- name: Start service
+  service: name=jenkins enabled=yes state=started

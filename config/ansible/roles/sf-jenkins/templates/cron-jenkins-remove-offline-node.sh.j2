@@ -1,2 +1,0 @@
-#!/bin/sh
-exec curl -s --user 'jenkins:{{ creds_jenkins_user_password }}' --data-urlencode "script=$(</usr/local/share/sf-jenkins-slave-tools/remove-offline-node.groovy)" {{ jenkins_api_url }}/scriptText > /dev/null
