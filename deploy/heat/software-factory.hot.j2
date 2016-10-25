@@ -70,7 +70,7 @@ resources:
       router_id: { get_resource: router }
       subnet_id: { get_resource: sf_subnet }
 {% if fixed_ip %}
-    DependsOn: { get_param: floatingip_id }
+    depends_on: { get_param: floatingip_id }
 {% endif %}
 
   sf_secgroup_admin:
