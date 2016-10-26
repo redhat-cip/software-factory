@@ -17,9 +17,12 @@
 import os
 import re
 import time
+import json
 import config
 import shutil
 import requests
+
+from subprocess import Popen
 
 from utils import Base
 from utils import set_private_key
@@ -50,6 +53,18 @@ class TestResourcesWorkflow(Base):
     def tearDown(self):
         for dirs in self.dirs_to_delete:
             shutil.rmtree(dirs)
+
+    def ssh_run_cmd(self, sshkey_priv_path, user, host, subcmd):
+        host = '%s@%s' % (user, host)
+        sshcmd = ['ssh', '-o', 'LogLevel=ERROR',
+                  '-o', 'StrictHostKeyChecking=no',
+                  '-o', 'UserKnownHostsFile=/dev/null', '-i',
+                  sshkey_priv_path, host]
+        cmd = sshcmd + subcmd
+
+        devnull = open(os.devnull, 'wb')
+        p = Popen(cmd, stdout=devnull, stderr=devnull)
+        return p.communicate(), p.returncode
 
     def clone_as_admin(self, pname):
         url = "ssh://%s@%s:29418/%s" % (config.ADMIN_USER,
@@ -411,3 +426,104 @@ class TestResourcesWorkflow(Base):
         ret = requests.get("%s/manage/resources/" % config.GATEWAY_URL,
                            cookies=cookies)
         self.assertIn('resources', ret.json())
+
+    def test_GET_missing_resources(self):
+        """ Check resources - GET missing resources works as expected"""
+        token = config.USERS[config.ADMIN_USER]['auth_cookie']
+        prev = "resources: {}"
+        new = """resources:
+  groups:
+    %(gname)s:
+      name: %(gname)s
+      description: A test group
+      members: ['user2@sftests.com']
+"""
+        group_name = create_random_str()
+        data = {'prev': prev, 'new': new % {'gname': group_name}}
+        # Direct PUT resources bypassing the config repo workflow
+        requests.put("%s/manage/resources/" % config.GATEWAY_URL,
+                     json=data,
+                     cookies={'auth_pubtkt': token})
+        # Verify managesf detects diff and propose a re-sync resource struct
+        ret = requests.get("%s/manage/resources/?get_missing_"
+                           "resources=true" % config.GATEWAY_URL,
+                           cookies={'auth_pubtkt': token})
+        logs, resources = ret.json()
+        self.assertListEqual(logs, [])
+        self.assertIn(group_name, resources['resources']['groups'])
+        # Call the resources.sh script on managesf node to propose
+        # a review on the config repo to re-sync with the reality
+        cmd = ['/usr/local/bin/resources.sh',
+               'get_missing_resources', 'submit']
+        self.ssh_run_cmd(config.SERVICE_PRIV_KEY_PATH,
+                         'root',
+                         config.GATEWAY_HOST, cmd)
+        # Get change id of the submitted review
+        search_string = "Propose missing resources to the config repo"
+        r = requests.get(
+            '%s/r/changes/?q=%s' % (config.GATEWAY_URL, search_string))
+        lastid = 0
+        for r in json.loads(r.content[4:]):
+            if r['_number'] > lastid:
+                lastid = r['_number']
+        change_id = str(lastid)
+        # Check Jenkins reported Verified +1 on that change
+        self.wait_for_jenkins_note(change_id)
+        while True:
+            time.sleep(1)
+            ret = self.gu.get_reviewer_approvals(
+                change_id, 'jenkins')['Verified']
+            if int(ret) != 0:
+                break
+        self.assertEqual(
+            self.gu.get_reviewer_approvals(
+                change_id, 'jenkins')['Verified'], '+1')
+        # Check flag "sf-resources: skip-apply" in the commit msg
+        changes = self.gu.g.get('changes/')
+        change = [c for c in changes if c["_number"] == int(change_id)][0]
+        self.assertEqual(change['subject'],
+                         'Propose missing resources to the config repo')
+        cmt = self.gu.g.get('changes/%s/'
+                            'revisions/current/commit' % change['id'])
+        self.assertTrue(cmt['message'].find('sf-resources: skip-apply') > 0)
+        # Fetch the last successful build ID for the config-update job
+        last_success_build_num_cu = \
+            self.ju.get_last_build_number("config-update",
+                                          "lastSuccessfulBuild")
+        # Approve the change and wait for the +2
+        self.gu.submit_change_note(change['id'], "current", "Code-Review", "2")
+        self.gu.submit_change_note(change['id'], "current", "Workflow", "1")
+        self.wait_for_jenkins_note(change_id)
+        while True:
+            time.sleep(1)
+            ret = self.gu.get_reviewer_approvals(
+                change_id, 'jenkins')['Verified']
+            if int(ret) != 0 and int(ret) != -1 and int(ret) != +1:
+                break
+        self.assertEqual(
+            self.gu.get_reviewer_approvals(
+                change_id, 'jenkins')['Verified'], '+2')
+        # Check config-update return a success
+        # The flag sf-resources: skip-apply should be detected
+        # by the config update. Then missing resources won't
+        # by concidered new and the resources apply will be skipped.
+        # This tests (checking config-update succeed) confirm
+        # resource apply have been skipped if not managesf resources
+        # apply would have return 409 error making config-update failed too.
+        self.ju.wait_till_job_completes("config-update",
+                                        last_success_build_num_cu,
+                                        "lastSuccessfulBuild",
+                                        max_retries=120)
+        previous = last_success_build_num_cu
+        last_success_build_num_cu = \
+            self.ju.get_last_build_number("config-update",
+                                          "lastSuccessfulBuild")
+        # If not True then we cannot concider config-update succeed
+        self.assertEqual(previous + 1, last_success_build_num_cu)
+        # Checking again missing resources  must return nothing
+        ret = requests.get("%s/manage/resources/?get_missing_"
+                           "resources=true" % config.GATEWAY_URL,
+                           cookies={'auth_pubtkt': token})
+        logs, resources = ret.json()
+        self.assertListEqual(logs, [])
+        self.assertEqual(len(resources['resources']), 0)
