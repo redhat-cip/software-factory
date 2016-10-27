@@ -95,8 +95,8 @@ function build_cache {
 }
 
 function build_image {
-    # Image description is last commit of DEPS and the one that changed content of the image (bootstraps/ docs/ gerrit-hooks/ image/ puppet/)
-    IMAGE_HASH="SF: $(git log --simplify-merges --format=oneline -n 1 config/ docs/ image/ puppet/)"
+    # Image description is last commit of DEPS and the one that changed content of the image (bootstraps/ docs/ gerrit-hooks/ image/ puppet/) or the heat template (deploy/heat/software-factory.hot.j2)
+    IMAGE_HASH="SF: $(git log --simplify-merges --format=oneline -n 1 config/ docs/ image/ puppet/ deploy/heat/*.hot.j2)"
     IMAGE_HASH="${IMAGE_HASH} || CAUTH: $(cd ${CAUTH_CLONED_PATH}; git log --simplify-merges --format=oneline -n 1)"
     IMAGE_HASH="${IMAGE_HASH} || PYSFLIB: $(cd ${PYSFLIB_CLONED_PATH}; git log --simplify-merges --format=oneline -n 1)"
     IMAGE_HASH="${IMAGE_HASH} || MANAGESF: $(cd ${MANAGESF_CLONED_PATH}; git log --simplify-merges --format=oneline -n 1)"
