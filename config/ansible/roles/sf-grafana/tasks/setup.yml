@@ -17,6 +17,12 @@
   command: systemctl daemon-reload
   when: grafana_service|changed
 
+- name: "Start the service"
+  service: name=grafana-server state=started enabled=yes
+
+- name: "Wait for db initialization"
+  wait_for: port=3000
+
 - name: "Setup granafa-init.sql"
   copy: src=grafana-init.sql dest=/root/grafana-init.sql
   register: grafanasql
@@ -24,6 +30,3 @@
 - name: "Update grafana db"
   shell: mysql grafana < /root/grafana-init.sql
   when: grafanasql|changed
-
-- name: "Setup service"
-  service: name=grafana-server state=started enabled=yes
