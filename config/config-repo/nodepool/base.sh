@@ -43,6 +43,10 @@ sudo pip install zuul glob2 python-magic
 # Copy slave tools
 sudo cp -v /opt/nodepool-scripts/*.py /usr/local/bin/
 
+# Install local CA
+sudo cp /opt/nodepool-scripts/*.pem /etc/pki/ca-trust/source/anchors/
+sudo update-ca-trust
+
 # sync FS, otherwise there are 0-byte sized files from the yum/pip installations
 sudo sync
 sudo sync

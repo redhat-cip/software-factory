@@ -9,12 +9,18 @@
 - name: "Create /etc/nodepool directory"
   file: path=/etc/nodepool state=directory
 
+- name: "Create /etc/nodepool/scripts directory"
+  file: path=/etc/nodepool/scripts state=directory
+
 - name: "Setup configuration"
   template: src="templates/{{ item }}.j2" dest="/etc/nodepool/{{ item }}" mode=0440 group=nodepool
   with_items: ["secure.conf"]
 
 - name: "Setup conf update script"
   template: src=templates/sf-nodepool-conf-update.sh.j2 dest=/usr/local/bin/sf-nodepool-conf-update.sh mode=0755
+
+- name: "Setup localCA"
+  copy: content="{{ localCA_pem }}" dest=/etc/nodepool/scripts/localCA.pem
 
 - name: "Apply patch"
   patch: src={{ item }} basedir=/srv/nodepool/lib/python2.7/site-packages strip=1
