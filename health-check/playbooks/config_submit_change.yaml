@@ -20,7 +20,7 @@
 
     - name: Check for config-update post job
       wait_for:
-        path: /var/lib/jenkins/jobs/config-update/builds/lastStableBuild/log
+        path: /var/lib/jenkins/jobs/config-update/builds/lastStableBuild/build.xml
         search_regex: "{{ hostvars[groups['install-server'][0]]['commitsha'].stdout }}"
         timeout: 1200
 
