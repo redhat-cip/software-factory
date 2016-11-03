@@ -37,8 +37,6 @@ end
 describe file('/etc/zuul/layout.yaml') do
     it {
         should be_file
-        should be_owned_by 'zuul'
-        should be_grouped_into 'zuul'
         should be_mode '644'
     }
 end

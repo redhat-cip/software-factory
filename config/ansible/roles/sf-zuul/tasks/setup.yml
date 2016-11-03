@@ -27,9 +27,61 @@
     - 152290-Add-support-for-layout-configuration-split.patch
     - 270338-zuul_temp-url-key.patch
 
+- name: "Setup apache site zuul.conf"
+  template: src=zuul.site.j2 dest=/etc/httpd/conf.d/zuul.conf mode=0444
+  notify: apache reload
+
+- name: "Setup zuul.service file"
+  copy: src=zuul.service dest=/lib/systemd/system/zuul.service mode=0444
+  register: zuul_service
+
+- name: "Call systemctl daemon-reload"
+  command: systemctl daemon-reload
+  when: zuul_service|changed
+
+- name: "Setup zuul-merger.service file"
+  copy: src=zuul-merger.service dest=/lib/systemd/system/zuul-merger.service mode=0444
+  register: zuul_merger_service
+
+- name: "Call systemctl daemon-reload"
+  command: systemctl daemon-reload
+  when: zuul_merger_service|changed
+
+- name: "Create state directory directory"
+  file: path={{ item }} state=directory owner=zuul group=zuul
+  with_items:
+    - /var/log/zuul
+    - /var/run/zuul
+
 - name: "Create /etc/zuul directory"
   file: path=/etc/zuul state=directory
 
+- name: "Touch layout.yaml"
+  file: path=/etc/zuul/layout.yaml state=touch
+
+- name: "Copy logging configuration"
+  copy: src={{ item }} dest=/etc/zuul/{{ item }}
+  with_items:
+    - logging.conf
+    - gearman-logging.conf
+    - merger-logging.conf
+
+- name: "Setup sysconfig"
+  template: src=sysconfig.j2 dest=/etc/sysconfig/zuul
+  notify: restart zuul
+
 - name: "Setup configuration"
-  template: src="templates/{{ item }}.j2" dest="/etc/zuul/{{ item }}" mode=0440 group=zuul
-  with_items: ["zuul.conf"]
+  template: src=zuul.conf.j2 dest=/etc/zuul/zuul.conf mode=0440 group=zuul
+  notify: restart zuul
+
+- name: "Start services"
+  service: name={{ item }} state=started enabled=yes
+  with_items:
+    - zuul
+    - zuul-merger
+
+- name: "Copy gearman-check script"
+  copy: src=gearman-check dest=/usr/local/bin/gearman-check mode=0555
+
+- name: "Setup gearman-check cron"
+  cron: name=gearman-check-cron job=/usr/local/bin/gearman-check minute=0 hour=0

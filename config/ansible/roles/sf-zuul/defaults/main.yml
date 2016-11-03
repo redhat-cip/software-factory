@@ -4,7 +4,6 @@ role_actions:
   - update
   - get_logs
 
-puppet_modules: zuul
 jquery_visibility_url: http://status.openstack.org/jquery-visibility.min.js
 jquery_graphite_url: http://status.openstack.org/jquery-graphite.js
 zuul_url: https://git.openstack.org/openstack-infra/zuul
