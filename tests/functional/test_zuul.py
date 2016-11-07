@@ -16,6 +16,7 @@
 
 import os
 import config
+import re
 import shutil
 import time
 
@@ -117,6 +118,20 @@ class TestZuulOps(Base):
         self.msu.createProject(name, user,
                                options)
         self.projects.append(name)
+
+    def test_timestamped_logs(self):
+        """Test that jenkins timestamps logs"""
+        # Done here to make sure a config-update job was run and to avoid
+        # duplicating code
+        timestamp_re = re.compile('\d{2}:\d{2}:\d{2}.\d{0,3}')
+        n = self.ju.get_last_build_number("config-update",
+                                          "lastBuild")
+        cu_logs = self.ju.get_job_logs("config-update",
+                                       n)
+        self.assertTrue(cu_logs is not None)
+        for l in cu_logs.split('\n'):
+            if l:
+                self.assertRegexpMatches(l, timestamp_re, msg=l)
 
     def test_check_zuul_operations(self):
         """ Test if zuul verifies project correctly through zuul-demo project

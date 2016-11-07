@@ -320,7 +320,6 @@ class TestProjectTestsWorkflow(Base):
             self.ju.get_last_build_number("%s-functional-tests" % pname,
                                           "lastSuccessfulBuild")
         self.assertEqual(last_build_num_sp_ft, last_success_build_num_sp_ft)
-
         # Get the change id
         change_ids = self.gu.get_my_changes_for_project(pname)
         self.assertGreater(len(change_ids), 0)

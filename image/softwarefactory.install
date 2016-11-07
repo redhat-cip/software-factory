@@ -259,6 +259,9 @@ function install_jenkins {
     # Jenkins Swarm plugin
     http_fetch $JENKINS_SWARM_URL ${dir}/var/lib/jenkins/plugins/$(basename $JENKINS_SWARM_URL)
 
+    # Jenkins timestamper plugin
+    http_fetch $JENKINS_TIMESTAMPER_URL ${dir}/var/lib/jenkins/plugins/$(basename $JENKINS_TIMESTAMPER_URL)
+
     # Jenkins theme plugin
     http_fetch $JENKINS_SIMPLE_THEME_PLUGIN_URL ${dir}/var/lib/jenkins/plugins/$(basename $JENKINS_SIMPLE_THEME_PLUGIN_URL)
 

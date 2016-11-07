@@ -536,6 +536,20 @@ class JenkinsUtils:
         except:
             return 0
 
+    def get_job_logs(self, job_name, job_id):
+        """Get timestamped logs
+        Works also if the timestamps wrapper is not set."""
+        url = "%(server)sjob/%(job_name)s/%(job_id)s"
+        url = url % {'server': self.jenkins_url,
+                     'job_name': job_name,
+                     'job_id': job_id}
+        url += "/timestamps/?time=HH:mm:ss.S&appendLog"
+        try:
+            resp = self.get(url)
+            return resp.text
+        except:
+            return None
+
     def wait_till_job_completes(self, job_name, last, type, max_retries=120):
         retries = 0
         while True:
