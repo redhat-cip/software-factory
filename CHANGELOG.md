@@ -2,6 +2,38 @@
 Release Notes
 =============
 
+2.2.6
+=====
+
+New Features
+------------
+
+- This release includes the experimental resources description using the config repository.
+  This feature enables requests to create/update/delete git repo, groups, git acls using a
+  Git repository. This to align managing hosted projects configuration with the way jobs,
+  replication, ... are configured. As already said this feature is experimental.
+
+Upgrade Notes
+-------------
+
+- The enforce_ssl option is now removed and always enabled.
+- A new directory called resources will be created under the config repository.
+  This is part of the new resources description Git style. This feature is experimental
+  and should not be used in production. Please do not allow approve changes under that
+  directory.
+
+Bug Fixes
+---------
+
+- Let's encrypt httpd configuration contained a typo that prevented the service to start.
+- Adds top-menu to Kibana dashboard
+- Disable caching of static files of the SF WEB UI
+- zuul-merger increate maximum open files
+- config-check fix invalid zuul.conf for gerrit_connections
+- Change service user name to be compliant with gerrit constraints
+- Avoid possible overlapping of SF backup scripts runs
+
+
 2.2.5
 =====
 
