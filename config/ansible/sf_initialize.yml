@@ -23,6 +23,13 @@
       shell: "echo 'resources: {}' > /tmp/empty_resources.yaml"
       when: config_done.stat.exists != True
 
+    - name: Change default admin email
+      replace:
+          dest: /usr/local/share/sf-config-repo/resources/resources.yaml
+          regexp: '@sftests.com'
+          replace: '@{{ fqdn }}'
+      when: config_done.stat.exists != True
+
     - name: Create config repository resources
       command: /usr/local/bin/resources.sh direct_apply /tmp/empty_resources.yaml /usr/local/share/sf-config-repo/resources/resources.yaml
       when: config_done.stat.exists != True
