@@ -36,12 +36,105 @@ parameters:
     type: json
     description: Nameserver IPs used by VMs
     default: ['8.8.8.8', '8.8.4.4']
+{# Until SoftwareConfig works, disabled auto-configuration for multi-node #}
+{% if inventory|length == 1 %}
   bootstrap:
     type: boolean
     description: Whether or not run a first sfconfig.sh
     default: true
+{% endif %}
 
 resources:
+{# Disabled SoftwareConfig
+## Run sfconfig through SoftwareDeployment is disabled until os-collect-config is properly installed
+#
+{% if inventory|length > 1 %}
+  key_gen:
+    type: OS::Heat::SoftwareConfig
+    properties:
+      outputs:
+        - name: id_rsa_pub
+      group: script
+      config: |
+        #!/bin/bash
+        test -f /root/.ssh/id_rsa.pub || ssh-keygen -q -t rsa -N "" -f /root/.ssh/id_rsa
+        cat .ssh/id_rsa.pub
+  do_key_gen:
+    type: OS::Heat::SoftwareDeployment
+    properties:
+      config:
+        get_resource: key_gen
+      server:
+        get_resource: sf_{% for host in inventory %}{% if 'install-server' in host['roles'] %}{{ host['name'] }}{% endif %}{% endfor %}_instance
+
+
+  key_add:
+    type: OS::Heat::SoftwareConfig
+    properties:
+      inputs:
+        - name: id_rsa_pub
+      group: script
+      config: |
+        #!/bin/bash
+        echo "${id_rsa_pub}" | tee -a /root/.ssh/authorized_keys
+
+{% for host in inventory %}{% if 'install-server' not in host['roles'] %}
+  do_key_add_{{ host['name'] }}:
+    type: OS::Heat::SoftwareDeployment
+    properties:
+      input_values:
+        id_rsa_pub:
+          get_attr: [do_key_gen, id_rsa_pub]
+      config:
+        get_resource: key_add
+      server:
+        get_resource: sf_{{ host['name'] }}_instance
+{% endif %}{% endfor %}
+{% endif %}
+
+  sfconfig:
+    type: OS::Heat::SoftwareConfig
+    properties:
+      inputs:
+        - name: domain
+        - name: bootstrap
+        - name: adminpwd
+{% for host in inventory %}{% if 'install-server' not in host['roles'] %}
+        - name: {{ host['ip'] }}
+{% endif %}{% endfor %}
+      group: script
+      config: |
+        #!/bin/bash
+        export HOME=/root
+        export USER=root
+        export LOGNAME=root
+        export TERM=xterm
+        export SHELL=/bin/bash
+        export SHLVL=1
+        sed -i 's/admin_password:.*/admin_password: adminpwd/' /etc/puppet/hiera/sf/sfconfig.yaml
+        sed -i 's/^fqdn:.*/fqdn: domain/' /etc/puppet/hiera/sf/sfconfig.yaml
+        cat << EOF > /etc/puppet/hiera/sf/arch.yaml
+        {{ arch_raw.replace('\n', '\n        ') }}
+        EOF
+        if [ "bootstrap" == "True" ]; then
+            sfconfig.sh 2>&1
+        fi
+
+  run_sfconfig:
+    type: OS::Heat::SoftwareDeployment
+    properties:
+      input_values:
+        domain: {get_param: domain}
+        bootstrap: {get_param: bootstrap}
+        adminpwd: {get_attr: [admin_password, value]}
+{% for host in inventory %}{% if 'install-server' not in host['roles'] %}
+        {{ host['ip'] }}: {get_attr: [sf_{{ host['name'] }}_instance, first_address]}
+{% endif %}{% endfor %}
+      config:
+        get_resource: sfconfig
+      server:
+        get_resource: sf_{% for host in inventory %}{% if 'install-server' in host['roles'] %}{{ host['name'] }}{% endif %}{% endfor %}_instance
+#}
   admin_password:
     type: OS::Heat::RandomString
     properties:
@@ -79,38 +172,47 @@ resources:
          port_range_min: 22,
          port_range_max: 22,},
         {remote_ip_prefix: { get_param: sg_admin_cidr },
-         protocol: icmp,}
+         protocol: icmp,},
+        {remote_ip_prefix: 192.168.240.0/24,
+         protocol: tcp,
+         port_range_min: 0,
+         port_range_max: 65535,},
+        {remote_ip_prefix: 192.168.240.0/24,
+         protocol: udp,
+         port_range_min: 0,
+         port_range_max: 65535,},
+        {remote_ip_prefix: 192.168.240.0/24,
+         protocol: icmp,},
         ]
 
+  sf_secgroup_gateway:
+    type: OS::Neutron::SecurityGroup
+    properties:
+      rules: [
 {% for service, ports in (
     ('gateway', (('tcp', 80), ('tcp', 443))),
     ('swarm', (('tcp', 8080), ('tcp', 45452))),
     ('gerrit', (('tcp', 29418),)),
     ('murmur', (('tcp', 64738), ('udp', 64738)))
     ) %}
-  sf_secgroup_{{ service }}:
-    type: OS::Neutron::SecurityGroup
-    properties:
-      rules: [
 {% for port in ports %}
         {remote_ip_prefix: { get_param: sg_user_cidr },
          protocol: {{ port[0] }},
          port_range_min: {{ port[1] }},
          port_range_max: {{ port[1] }},},
 {% endfor %}
+{% endfor %}
         ]
 
-{% endfor %}
 {% for host in inventory %}
   sf_{{ host['name'] }}_port:
     type: OS::Neutron::Port
     properties:
       network_id: { get_resource: sf_net }
-      security_groups: [ { get_resource: sf_secgroup_gerrit },
-                         { get_resource: sf_secgroup_murmur },
+      security_groups: [ { get_resource: sf_secgroup_admin },
+{% if "gateway" in host["roles"] %}
                          { get_resource: sf_secgroup_gateway },
-                         { get_resource: sf_secgroup_swarm },
-                         { get_resource: sf_secgroup_admin },
+{% endif %}
                          ]
 
   sf_{{ host['name'] }}_floating_ip:
@@ -143,6 +245,9 @@ resources:
       key_name: { get_param: key_name }
       networks:
         - port: { get_resource: sf_{{ host['name'] }}_port }
+{# Disabled SoftwareConfig
+      user_data_format: SOFTWARE_CONFIG
+#}
       user_data_format: RAW
       user_data:
         str_replace:
@@ -164,9 +269,12 @@ resources:
                cat << EOF > /etc/puppet/hiera/sf/arch.yaml
                {{ arch_raw.replace('\n', '\n               ') }}
                EOF
+{# Until SoftwareConfig works, disabled auto-configuration for multi-node #}
+{% if inventory|length == 1 %}
                if [ "bootstrap" == "True" ]; then
                    sfconfig.sh
                fi
+{% endif %}
 {% endif %}
               path: /root/startup.sh
             runcmd:
@@ -176,9 +284,11 @@ resources:
           params:
             domain: {get_param: domain}
             bootstrap: {get_param: bootstrap}
-{% if 'install-server' in host['roles'] %}{% for host in inventory %}
             adminpwd: {get_attr: [admin_password, value]}
-            {% if 'install-server' not in host['roles'] %}{{ host['ip'] }}: {get_attr: [sf_{{ host['name'] }}_instance, first_address]}{% endif %}
+{% if 'install-server' in host['roles'] %}{% for host in inventory %}
+{% if 'install-server' not in host['roles'] %}
+            {{ host['ip'] }}: {get_attr: [sf_{{ host['name'] }}_instance, first_address]}
+{% endif %}
 {% endfor %}{% endif %}
 
 
@@ -217,6 +327,14 @@ outputs:
         params:
           host: { get_attr: [sf_{% for host in inventory %}{% if 'gateway' in host['roles'] %}{{ host['name'] }}{% endif %}{% endfor %}_floating_ip, floating_ip_address] }
 {% endif %}
+
+{# Disabled SoftwareConfig
+  sfconfig_output:
+    description: Configuration script output
+    value:
+      get_attr: [run_sfconfig, deploy_stdout]
+#}
+
   administrator_password:
     description: SF administrator password
     value:
