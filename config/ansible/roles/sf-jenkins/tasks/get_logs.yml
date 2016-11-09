@@ -4,6 +4,7 @@
     mode: pull
     src: "/var/lib/jenkins/jobs/"
     dest: "{{ log_dest }}/jobs/"
+  ignore_errors: True
 - name: "Fetch jenkins config"
   synchronize:
     mode: pull
@@ -11,3 +12,4 @@
     dest: "{{ log_dest }}/{{ item }}"
   with_items:
     - config.xml
+  ignore_errors: True

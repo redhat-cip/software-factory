@@ -6,3 +6,4 @@
     dest: "{{ log_dest }}/{{ item }}/"
     rsync_opts: "--exclude mail --exclude ssh_host_*"
   with_items: ["logs", "etc"]
+  ignore_errors: True

@@ -1,3 +1,4 @@
 ---
 - name: "Fetch gateway logs"
   synchronize: mode=pull src=/var/log/httpd/ dest="{{ log_dest }}/log"
+  ignore_errors: True
