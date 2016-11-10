@@ -1,25 +1,85 @@
 ---
 - include_vars: /etc/ansible/vars/common.yml
+- include_vars: /etc/puppet/hiera/sf/sfconfig.yaml
+
 - include: /etc/ansible/tasks/create_user.yml user_name=nodepool ssh_key=jenkins_rsa
 
-- name: "Create /etc/nodepool directory"
-  file: path=/etc/nodepool state=directory
+- name: Create working directories
+  file:
+      path: "{{ item.name }}"
+      state: directory
+      owner: nodepool
+      group: nodepool
+      mode: "{{ item.mode | default(0550) }}"
+  with_items:
+    - {name: /etc/nodepool}
+    - {name: /etc/nodepool/scripts}
+    - {name: /opt/nodepool}
+    - {name: /var/log/nodepool, mode: '0700'}
+    - {name: /var/run/nodepool}
 
-- name: "Create /etc/nodepool/scripts directory"
-  file: path=/etc/nodepool/scripts state=directory
+- name: Install templates
+  template:
+      src: "{{ item.name }}.j2"
+      dest: "{{item.dest }}/{{ item.name }}"
+      owner: "{{ item.owner | default('root') }}"
+      group: "{{ item.group | default('root') }}"
+      mode: "{{ item.mode | default(0444) }}"
+  with_items:
+      - {name: _nodepool.yaml, dest: /etc/nodepool, owner: nodepool}
+      - {name: secure.conf, dest: /etc/nodepool, group: nodepool, mode: '0440'}
+      - {name: sf-nodepool-conf-update.sh, dest: /usr/local/bin, mode: '0555'}
 
-- name: "Setup configuration"
-  template: src="templates/{{ item }}.j2" dest="/etc/nodepool/{{ item }}" mode=0440 group=nodepool
-  with_items: ["secure.conf"]
+- name: Setup sysconfig
+  template:
+      src: sysconfig.j2
+      dest: /etc/sysconfig/nodepool
+  notify: nodepool restart
+  when: nodepool.disabled == False
 
-- name: "Setup conf update script"
-  template: src=templates/sf-nodepool-conf-update.sh.j2 dest=/usr/local/bin/sf-nodepool-conf-update.sh mode=0755
+- name: Install logging.conf
+  copy:
+      src: logging.conf
+      dest: /etc/nodepool/logging.conf
 
-- name: "Setup localCA"
-  copy: content="{{ localCA_pem }}" dest=/etc/nodepool/scripts/localCA.pem
+- name: Setup authorized keys
+  copy:
+      content: "{{ jenkins_rsa_pub }}"
+      dest: /etc/nodepool/scripts/authorized_keys
 
-- name: "Apply patch"
-  patch: src={{ item }} basedir=/srv/nodepool/lib/python2.7/site-packages strip=1
+- name: Setup localCA
+  copy:
+      content: "{{ localCA_pem }}"
+      dest: /etc/nodepool/scripts/localCA.pem
+
+- name: Apply patches
+  patch:
+      src: "{{ item }}"
+      basedir: /srv/nodepool/lib/python2.7/site-packages
+      strip: 1
   with_items:
     - 272097-image-api-use-tasks.patch
     - 321480-Add-log-config-option-to-nodepool-cmd.patch
+
+- name: Install service file
+  copy:
+      src: nodepool.service
+      dest: /lib/systemd/system/nodepool.service
+      owner: root
+      group: root
+      mode: 0644
+  register: install_service_file
+  when: nodepool.disabled == False
+
+- name: Reload systemctl daemon
+  shell: "systemctl daemon-reload"
+  when:
+      - install_service_file|changed
+      - nodepool.disabled == False
+
+- name: Start service
+  service:
+      name: nodepool
+      enabled: yes
+      state: started
+  when: nodepool.disabled == False

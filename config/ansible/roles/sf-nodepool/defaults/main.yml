@@ -6,6 +6,6 @@ role_actions:
 
 nodepool_url: https://git.openstack.org/openstack-infra/nodepool
 nodepool_commit: master
-jenkins_api_url: "http://jenkins.{{ fqdn }}:8080/jenkins/"
 
-puppet_modules: nodepool
+jenkins_host: "jenkins.{{fqdn}}"
+jenkins_api_url: "http://{{ jenkins_host }}:8080/jenkins/"

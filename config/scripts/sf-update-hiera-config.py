@@ -140,6 +140,14 @@ def update_sfconfig(data):
         }
         dirty = True
 
+    # 2.2.7 rename variables for jinja2 templates
+    old_names = ["auth-url", "project-id", "max-servers", "boot-timeout"]
+    for value in data['nodepool']['providers']:
+        for name in old_names:
+            if name in value:
+                value[name.replace('-', '_')] = value.pop(name)
+                dirty = True
+
     return dirty
 
 

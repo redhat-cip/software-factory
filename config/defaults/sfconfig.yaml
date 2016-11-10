@@ -119,8 +119,8 @@ nodepool:
     disabled: True
     providers:
       - name: default
-        auth-url: http://localhost:35357/v2.0
-        project-id: tenantname
+        auth_url: http://localhost:35357/v2.0
+        project_id: tenantname
         username: username
         password: secret
         # Optional nodepool network uuid (required by heat based tenant when multiple network are available)
@@ -128,11 +128,11 @@ nodepool:
         # Compute availability zone
         pool: nova
         # Max amount of Slaves that can be started
-        max-servers: 10
+        max_servers: 10
         # Delay in seconds between two tasks within nodepool
         rate: 10.0
         # Timeout in seconds for SSH login to node
-        boot-timeout: 120
+        boot_timeout: 120
 
 logs:
     disabled: True
