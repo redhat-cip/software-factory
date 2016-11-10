@@ -6,7 +6,7 @@
   file: path=/var/log/murmur state=directory mode=0750 owner=murmur group=murmur
 
 - name: Install config file
-  template: src=../files/murmur.ini.j2 dest=/etc/murmur.ini owner=murmur group=murmur mode=0400
+  template: src=murmur.ini.j2 dest=/etc/murmur.ini owner=murmur group=murmur mode=0400
   notify: [restart murmur]
 
 - name: Set super user password

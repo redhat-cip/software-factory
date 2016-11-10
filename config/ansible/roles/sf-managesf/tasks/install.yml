@@ -25,4 +25,4 @@
     - /var/www/managesf/bin/python setup.py install
 
 - name: "Fix pbr version issue"
-  copy: src=../sf-storyboard/files/storyboard_pbr_version_fix.py dest=/var/www/managesf/lib/python2.7/site-packages/storyboardclient/__init__.py
+  copy: src=/etc/ansible/roles/sf-storyboard/files/storyboard_pbr_version_fix.py dest=/var/www/managesf/lib/python2.7/site-packages/storyboardclient/__init__.py

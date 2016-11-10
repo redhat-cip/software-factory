@@ -543,6 +543,10 @@ final_image_clean() {
     rm -Rf ${dir}/usr/src/
 }
 
+fix_ansible_issue5504() {
+    sed -i "s/after=remote_head, //" ${dir}/usr/lib/python2.7/site-packages/ansible/modules/core/source_control/git.py
+}
+
 START=$(date '+%s')
 function checkpoint {
     set +x
@@ -566,6 +570,7 @@ if [ "$STEP" == 1 ]; then
     bootstrap
     checkpoint "bootstrapped"
     install_sf_packages
+    fix_ansible_issue5504
     nodejs_epel_stick
     checkpoint "sf dep packages installed"
     enable_selinux

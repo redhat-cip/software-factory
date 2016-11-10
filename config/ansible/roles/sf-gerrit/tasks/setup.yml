@@ -1,7 +1,7 @@
 ---
 - include_vars: /etc/puppet/hiera/sf/sfcreds.yaml
 - include_vars: /etc/puppet/hiera/sf/gerrit.yaml
-- include_vars: ../sf-redmine/defaults/main.yml
+- include_vars: /etc/ansible/roles/sf-redmine/defaults/main.yml
 - include_vars: /etc/ansible/vars/common.yml
 
 - name: "Create gerrit user"
