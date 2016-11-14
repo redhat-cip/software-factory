@@ -11,8 +11,17 @@
     - git reset --hard origin/master --
     - git clean -f -x -d
     - mkdir resources
-    # Copy default content
-    - cp {{install_path}}/softwarefactory/usr/local/share/sf-config-repo/resources/resources.yaml resources/
+
+- lineinfile: >
+    dest=/root/config/resources/resources.yaml
+    create=yes
+    line="resources: {}"
+  when: configrepo_resources.stat.exists == false
+
+- name: Push empty resources configuration
+  when: configrepo_resources.stat.exists == false
+  command: chdir=/root/config {{ item }}
+  with_items:
     - git add resources
     - git commit -m "Initialize resources configuration"
     - git push git+ssh://{{ fqdn }}/config master

@@ -28,7 +28,8 @@ rsync -av /usr/local/share/sf-config-repo/ ${CONF_TMP}/ \
       --exclude nodepool/images.yaml \
       --exclude nodepool/labels.yaml \
       --exclude gerrit/replication.config \
-      --exclude gerritbot/channels.yaml
+      --exclude gerritbot/channels.yaml \
+      --exclude resources/resources.yaml
 
 cd ${CONF_TMP}
 # Replace nodepool private ssh key

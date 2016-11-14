@@ -407,18 +407,16 @@ class TestResourcesWorkflow(Base):
             os.path.join(tmpl_keys['pname'],
                          tmpl_keys['g2name'])))
         res = self.get_resources()
-        self.assertNotIn(tmpl_keys['pname'],
-                         res['resources']['projects'].keys())
-        self.assertNotIn(tmpl_keys['aname'],
-                         res['resources']['acls'].keys())
-        self.assertNotIn(tmpl_keys['g1name'],
-                         res['resources']['groups'].keys())
-        self.assertNotIn(tmpl_keys['g2name'],
-                         res['resources']['groups'].keys())
-        self.assertNotIn(tmpl_keys['r1name'],
-                         res['resources']['repos'].keys())
-        self.assertNotIn(tmpl_keys['r2name'],
-                         res['resources']['repos'].keys())
+        projects = res['resources'].get('projects', {})
+        acls = res['resources'].get('acls', {})
+        groups = res['resources'].get('groups', {})
+        repos = res['resources'].get('repos', {})
+        self.assertNotIn(tmpl_keys['pname'], projects.keys())
+        self.assertNotIn(tmpl_keys['aname'], acls.keys())
+        self.assertNotIn(tmpl_keys['g1name'], groups.keys())
+        self.assertNotIn(tmpl_keys['g2name'], groups.keys())
+        self.assertNotIn(tmpl_keys['r1name'], repos.keys())
+        self.assertNotIn(tmpl_keys['r2name'], repos.keys())
 
     def test_GET_resources(self):
         """ Check resources - GET resources works as expected"""
