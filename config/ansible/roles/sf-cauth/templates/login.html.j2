@@ -38,7 +38,8 @@
                     {% if not authentication['oauth2']['github']['disabled'] and (
                             not authentication['oauth2']['google']['disabled'] or
                             not authentication['oauth2']['bitbucket']['disabled'] or
-                            not authentication['openid']['disabled']) %}
+                            not authentication['openid']['disabled'] or
+                            not authentication['openid_connect']['disabled']) %}
                        <!-- If more than one external provider are enabled set a separator between them -->
                        <br />
                        <hr />
@@ -54,7 +55,8 @@
                             </button>
                        </form>
                     {% if (not authentication['openid']['disabled'] or
-                           not authentication['oauth2']['bitbucket']['disabled']) %}
+                           not authentication['oauth2']['bitbucket']['disabled'] or
+                           not authentication['openid_connect']['disabled']) %}
                        <!-- If more than one external provider are enabled set a separator between them -->
                        <br />
                        <hr />
@@ -70,7 +72,8 @@
                                 <i class="fa fa-sign-in fa-fw"></i>
                             </button>
                        </form>
-                     {% if (not authentication['openid']['disabled']) %}
+                     {% if (not authentication['openid']['disabled'] or
+                            not authentication['openid_connect']['disabled']) %}
                        <!-- If more than one external provider are enabled set a separator between them -->
                        <br />
                        <hr />
@@ -87,11 +90,28 @@
                                 <i class="fa fa-sign-in fa-fw"></i>
                             </button>
                        </form>
+                     {% if (not authentication['openid_connect']['disabled']) %}
+                       <!-- If more than one external provider are enabled set a separator between them -->
+                       <br />
+                       <hr />
+                     {% endif %}
+                     {% endif %}
+                     {% if not authentication['openid_connect']['disabled'] %}
+                        <form method="post" action="/auth/login/" target="_top">
+                        <input type="hidden" name="back" value="${back}">
+                        <input type="hidden" name="method" value="OpenIDConnect">
+                            <button type="submit" class="btn btn-primary col-md-12">
+                                <i class="fa fa-lg fa-bitbucket"></i>
+                                &nbsp;&nbsp; {{ authentication['openid_connect']['login_button_text'] }}
+                                <i class="fa fa-sign-in fa-fw"></i>
+                            </button>
+                       </form>
                      {% endif %}
                      {% if authentication['oauth2']['github']['disabled'] and
                            authentication['oauth2']['google']['disabled'] and
                            authentication['oauth2']['bitbucket']['disabled'] and
-                           authentication['openid']['disabled'] %}
+                           authentication['openid']['disabled'] and
+                           authentication['openid_connect']['disabled'] %}
                        <div id="login-form">
                      {% else %}
                        <div id="login-form" class="hidden">
@@ -125,7 +145,8 @@
                        {% if not authentication['oauth2']['github']['disabled'] or
                              not authentication['oauth2']['google']['disabled'] or
                              not authentication['oauth2']['bitbucket']['disabled'] or
-                             not authentication['openid']['disabled'] %}
+                             not authentication['openid']['disabled'] or
+                             not authentication['openid_connect']['disabled'] %}
                        <div id="login-form-toogling" style="padding-top: 50px;">
                          <a id="toggle" title="Click here to log in as an administrator or if you were provided with specific credentials" href="#">Toggle login form</a>
                        </div>

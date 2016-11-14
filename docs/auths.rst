@@ -59,7 +59,8 @@ to, with the field "github_allowed_organizations". Leave blank if not necessary.
 OpenID authentication
 ^^^^^^^^^^^^^^^^^^^^^
 
-Similarly, an OpenID provider can be used for authentication, for example to use Launchpad:
+Similarly, an OpenID provider can be used for authentication. Only a single OpenID provider
+can be configured at a time, for example to use Launchpad:
 
 .. code-block:: yaml
 
@@ -69,6 +70,29 @@ Similarly, an OpenID provider can be used for authentication, for example to use
       server: https://login.launchpad.net/+openid
       login_button_text: "Log in with Launchpad"
 
+
+OpenID Connect authentication
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+An OpenID Connect provider can be used for authentication. Likewise OAuth2, it requires an
+application created on the provider to provides a client_id and client_secret. The callback
+URL will be: https://fqdn/auth/login/openid_connect/callback .
+
+Moreover it needs an issuer_url to retrieve the openid-configuration. Only a single OpenID
+Connect provider can be configured at a time.
+
+.. code-block:: yaml
+
+  authentication:
+    openid_connect:
+        disabled: False
+        issuer_url: https://accounts.google.com/
+        login_button_text: "Log in with Google"
+        client_id:
+        client_secret:
+
+The issuer_url can be tested using the */.well-known/openid-configuration* uri path, e.g.:
+https://accounts.google.com/.well-known/openid-configuration
 
 Local user management
 ^^^^^^^^^^^^^^^^^^^^^

@@ -20,3 +20,4 @@ htpasswd
 wsgiref==0.1.2
 pygerrit
 -e git+https://github.com/openstack-infra/python-storyboardclient.git#egg=python-storyboardclient
+-e git+https://github.com/rohe/pyoidc.git@85514e6400a62e812d7dea968eba3738983312da#egg=pyoidc

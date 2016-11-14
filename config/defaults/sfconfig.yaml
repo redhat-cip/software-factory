@@ -70,6 +70,13 @@ authentication:
         # what to display on the login button
         login_button_text: "Log in with Launchpad"
 
+    openid_connect:
+        disabled: True
+        issuer_url:
+        login_button_text: "Log in with OpenID Connect"
+        client_id:
+        client_secret:
+
 
 gerrit_connections:
     - name: "external_gerrit"

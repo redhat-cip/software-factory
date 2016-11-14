@@ -129,6 +129,17 @@ def update_sfconfig(data):
         del data['network']['enforce_ssl']
         dirty = True
 
+    # 2.2.7: add openid_connect settings
+    if 'openid_connect' not in data['authentication']:
+        data['authentication']['openid_connect'] = {
+            'disabled': True,
+            'issuer_url': None,
+            'client_secret': None,
+            'client_id': None,
+            'login_button_text': 'Log in with OpenID Connect'
+        }
+        dirty = True
+
     return dirty
 
 
