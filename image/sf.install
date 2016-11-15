@@ -83,7 +83,7 @@ function install_sf {
     DOCBUILDDIR=$(mktemp -d /tmp/sfdocs_buildXXXXXXX)
     rm -Rf ${dir}/var/www/docs
     mkdir ${dir}/var/www/docs
-    cd ${DOCDIR} && make BUILDDIR=$DOCBUILDDIR CAUTH_CLONED_PATH=${CAUTH_CLONED_PATH} SFMANAGER_CLONED_PATH=${SFMANAGER_CLONED_PATH} html ; cd -
+    cd ${DOCDIR} && make BUILDDIR=$DOCBUILDDIR MANAGESF_CLONED_PATH=${MANAGESF_CLONED_PATH} SFMANAGER_CLONED_PATH=${SFMANAGER_CLONED_PATH} html ; cd -
     mv $DOCBUILDDIR/html/* ${dir}/var/www/docs/
     rm -rf $DOCBUILDDIR
 

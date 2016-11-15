@@ -1,4 +1,4 @@
-.. _gerritbot-user:
+.. _gerritlinks-user:
 
 Gerrit comments link customisation
 ==================================
@@ -10,10 +10,11 @@ using the config-repository gerrit/commentlinks.yaml file:
 * edit the gerrit/commentlinks.yaml, for example adding bugzilla.redhat.com:
 
 .. code-block:: yaml
-    commentlinks:
-      - name: External_Bugzilla_addressing
-        match: "BZ:\\s+#?(\\d+)"
-        html: "BZ: <a href=\"https://bugzilla.redhat.com/show_bug.cgi?id=$2\">$2</a>"
+
+   commentlinks:
+     - name: External_Bugzilla_addressing
+       match: "BZ:\\s+#?(\\d+)"
+       html: "BZ: <a href=\"https://bugzilla.redhat.com/show_bug.cgi?id=$2\">$2</a>"
 
 * submit and merge the config change.
 

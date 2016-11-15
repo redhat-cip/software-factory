@@ -17,6 +17,7 @@ which pip &> /dev/null          || PKGS="${PKGS} python-pip"
 [ -d "/usr/lib64/python2.7/site-packages/Crypto/" ] || PKGS="${PKGS} python2-crypto"
 [ -d "/usr/lib/python2.7/site-packages/jinja2/" ] || PKGS="${PKGS} python-jinja2"
 [ -f "/usr/lib64/libvirt/connection-driver/libvirt_driver_lxc.so" ] || PKGS="${PKGS} libvirt-daemon-driver-lxc libvirt-daemon-lxc libvirt"
+[ -f "/usr/lib/python2.7/site-packages/mock.py" ] || PKGS="${PKGS} python-mock"
 
 if [ ! -f "/etc/yum.repos.d/epel.repo" ]; then
     echo "(+) Adds epel-release..."

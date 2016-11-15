@@ -34,3 +34,5 @@ To update the configuration repo:
    gerrit_replication_user
    access_control_user
    gerritlinks_user
+   resources_user
+   resources

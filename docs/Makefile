@@ -10,6 +10,7 @@ PAPER                  =
 BUILDDIR               = _build
 SFMANAGER_CLONED_PATH  := $(MAKEFILE_DIR)/../../python-sfmanager/
 GET_SFMANAGER          = cp $(SFMANAGER_CLONED_PATH)/docs/source/sfmanager.rst sfmanager.rst
+BUILD_MANAGESF_RESOURCES_DOC = bash -c "cd $(MANAGESF_CLONED_PATH); PYTHONPATH=. python docs/generate-resources-docs.py > $(MAKEFILE_DIR)/resources.rst"
 
 # User-friendly check for sphinx-build
 ifeq ($(shell which $(SPHINXBUILD) >/dev/null 2>&1; echo $$?), 1)
@@ -55,6 +56,7 @@ clean:
 
 html:
 	@$(GET_SFMANAGER)
+	@$(BUILD_MANAGESF_RESOURCES_DOC)
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 	@rm sfmanager.rst
 	@echo

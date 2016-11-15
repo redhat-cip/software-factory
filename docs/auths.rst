@@ -97,11 +97,10 @@ https://accounts.google.com/.well-known/openid-configuration
 Local user management
 ^^^^^^^^^^^^^^^^^^^^^
 
-For simple deployments without a Identity Provider,
-you can manage the users through the SFManager command-line utility in the :ref:`User Management <sfmanager-user-management>` section.
-(except for the default admin user, defined in the sfconfig.yaml file)
-can be done through the SFmanager command-line utility :ref:`User management <sfmanager-user-management>`. This backend allows to have
-a user database locally.
+For simple deployments without an Identity Provider, you can manage the users
+through the SFManager command-line utility (except for the default admin user, defined
+in the sfconfig.yaml file). See SFmanager command-line :ref:`User management <user-management>`
+documentation for more details.
 
 
 Other authentication settings
