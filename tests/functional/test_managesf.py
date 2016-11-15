@@ -60,6 +60,7 @@ class TestManageSF(Base):
         pass
 
     def setUp(self):
+        super(TestManageSF, self).setUp()
         self.projects = []
         self.dirs_to_delete = []
         self.rm = get_issue_tracker_utils(
@@ -79,6 +80,7 @@ class TestManageSF(Base):
             return False
 
     def tearDown(self):
+        super(TestManageSF, self).tearDown()
         for name in self.projects:
             self.msu.deleteProject(name,
                                    config.ADMIN_USER)

@@ -38,6 +38,7 @@ class TestProjectMembership(Base):
         pass
 
     def setUp(self):
+        super(TestProjectMembership, self).setUp()
         self.projects = []
         self.rm = get_issue_tracker_utils(
             auth_cookie=config.USERS[config.ADMIN_USER]['auth_cookie'])
@@ -46,6 +47,7 @@ class TestProjectMembership(Base):
             auth_cookie=config.USERS[config.ADMIN_USER]['auth_cookie'])
 
     def tearDown(self):
+        super(TestProjectMembership, self).tearDown()
         for name in self.projects:
             self.msu.deleteProject(name,
                                    config.ADMIN_USER)

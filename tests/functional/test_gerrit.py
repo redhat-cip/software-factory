@@ -42,12 +42,14 @@ class TestGerrit(Base):
         pass
 
     def setUp(self):
+        super(TestGerrit, self).setUp()
         self.projects = []
         self.clone_dirs = []
         self.dirs_to_delete = []
         self.msu = ManageSfUtils(config.GATEWAY_URL)
 
     def tearDown(self):
+        super(TestGerrit, self).tearDown()
         for name in self.projects:
             self.msu.deleteProject(name,
                                    config.ADMIN_USER)

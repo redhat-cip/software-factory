@@ -32,6 +32,7 @@ class TestLogExportedInElasticSearch(Base):
     """ Functional tests to verify job logs are exported in ElasticSearch
     """
     def setUp(self):
+        super(TestLogExportedInElasticSearch, self).setUp()
         self.un = config.ADMIN_USER
         self.priv_key_path = set_private_key(config.USERS[self.un]["privkey"])
         self.gitu_admin = GerritGitUtils(self.un,

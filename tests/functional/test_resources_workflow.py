@@ -37,6 +37,7 @@ from pysflib.sfgerrit import GerritUtils
 class TestResourcesWorkflow(Base):
 
     def setUp(self):
+        super(TestResourcesWorkflow, self).setUp()
         priv_key_path = set_private_key(
             config.USERS[config.ADMIN_USER]["privkey"])
         self.gitu_admin = GerritGitUtils(
@@ -51,6 +52,7 @@ class TestResourcesWorkflow(Base):
         self.dirs_to_delete = []
 
     def tearDown(self):
+        super(TestResourcesWorkflow, self).tearDown()
         for dirs in self.dirs_to_delete:
             shutil.rmtree(dirs)
 

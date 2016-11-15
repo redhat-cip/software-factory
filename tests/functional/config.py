@@ -20,10 +20,6 @@ sfconfig_filename = "%s/hiera/sfconfig.yaml" % SF_BOOTSTRAP_DATA
 sfcreds_filename = "%s/hiera/sfcreds.yaml" % SF_BOOTSTRAP_DATA
 sfarch_filename = "%s/hiera/_arch.yaml" % SF_BOOTSTRAP_DATA
 
-if not os.path.isfile(sfarch_filename):
-    # 2.2.2: Legacy filename
-    sfarch_filename = "%s/hiera/arch.yaml" % SF_BOOTSTRAP_DATA
-
 try:
     sfconfig = yaml.load(open(sfconfig_filename))
     sfcreds = yaml.load(open(sfcreds_filename))

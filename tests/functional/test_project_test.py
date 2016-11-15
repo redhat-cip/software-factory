@@ -46,6 +46,7 @@ class TestProjectTestsWorkflow(Base):
         pass
 
     def setUp(self):
+        super(TestProjectTestsWorkflow, self).setUp()
         self.projects = []
         self.dirs_to_delete = []
         self.un = config.ADMIN_USER
@@ -79,6 +80,7 @@ class TestProjectTestsWorkflow(Base):
         self.gu.add_group_member(config.USER_2, "config-core")
 
     def tearDown(self):
+        super(TestProjectTestsWorkflow, self).tearDown()
         self.restore_config_repo(self.original_layout,
                                  self.original_project,
                                  self.original_zuul_projects)

@@ -23,6 +23,7 @@ class TestJenkinsBasic(Base):
     """
 
     def setUp(self):
+        super(TestJenkinsBasic, self).setUp()
         self.ju = JenkinsUtils()
 
     def test_config_jobs_exist(self):

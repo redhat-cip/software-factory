@@ -55,6 +55,7 @@ class TestGerritHooks(Base):
         pass
 
     def setUp(self):
+        super(TestGerritHooks, self).setUp()
         self.projects = []
         self.dirs_to_delete = []
         self.issues = []
@@ -75,6 +76,7 @@ class TestGerritHooks(Base):
                                    config.USERS[self.u]['email'])
 
     def tearDown(self):
+        super(TestGerritHooks, self).tearDown()
         for issue in self.issues:
             self.rm.delete_issue(issue)
         for name in self.projects:

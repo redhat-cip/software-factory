@@ -70,6 +70,7 @@ class TestZuulOps(Base):
         self.gitu_admin.direct_push_branch(clone_dir, 'master')
 
     def setUp(self):
+        super(TestZuulOps, self).setUp()
         self.projects = []
         self.dirs_to_delete = []
         self.ju = JenkinsUtils()
@@ -103,6 +104,7 @@ class TestZuulOps(Base):
                                         max_retries=60)
 
     def tearDown(self):
+        super(TestZuulOps, self).tearDown()
         self.restore_config_repo(self.original_zuul_projects)
         for name in self.projects:
             self.msu.deleteProject(name,

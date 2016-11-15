@@ -39,6 +39,7 @@ from subprocess import Popen, PIPE
 
 logging.getLogger("requests").setLevel(logging.WARNING)
 logging.captureWarnings(True)
+logging.basicConfig(format="%(asctime)s: %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
@@ -164,7 +165,11 @@ def ssh_run_cmd(sshkey_priv_path, user, host, subcmd):
 
 
 class Base(unittest.TestCase):
-    pass
+    def setUp(self):
+        logger.debug("Test case setUp")
+
+    def tearDown(self):
+        logger.debug("Test case tearDown")
 
 
 class Tool:

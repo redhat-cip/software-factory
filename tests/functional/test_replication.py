@@ -35,6 +35,7 @@ class TestProjectReplication(Base):
     """ Functional tests to verify the gerrit replication feature
     """
     def setUp(self):
+        super(TestProjectReplication, self).setUp()
         self.msu = ManageSfUtils(config.GATEWAY_URL)
         self.un = config.ADMIN_USER
         self.gu = GerritUtils(
@@ -76,6 +77,7 @@ class TestProjectReplication(Base):
         self.delete_mirror_repo(self.pname)
 
     def tearDown(self):
+        super(TestProjectReplication, self).tearDown()
         self.delete_config_section(self.un, self.pname)
         self.delete_mirror_repo(self.pname)
         self.msu.deleteProject(self.pname, self.un)
