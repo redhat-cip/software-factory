@@ -11,22 +11,14 @@
   command: find /var/www/redmine -uid "{{ redmine_owner.stat.uid }}" -exec chown root:root {} \;
   when: redmine_owner.stat.uid != 0
 
-# Seport fail to relabel existing port, see https://github.com/ansible/ansible-modules-extras/issues/2009
-#- seport: ports={{ item }} proto=tcp setype=http_port_t state=present
-- name: "Selinux: check port labelling"
-  shell: "semanage port -l | grep -w 'http_port_t.*{{ item }}' > /dev/null"
-  register: no_selinux_labelling
-  changed_when: "no_selinux_labelling.rc != 0"
-  ignore_errors: yes
-  with_items: [8083]
-  when: selinuxenabled
-
-- name: "Selinux: port labelling"
-  command: semanage port --modify -t http_port_t -p tcp {{ item }}
-  with_items: [8083]
+- name: Apply selinux port labelling
+  seport:
+      ports: 8083
+      proto: tcp
+      setype: http_port_t
+      state: present
   when:
       - selinuxenabled
-      - no_selinux_labelling|failed
 
 - name: "ensure directories are created"
   file: path=/var/www/redmine/public/themes/classic/javascripts/ state=directory
