@@ -164,12 +164,10 @@ function check_args() {
 }
 
 function activate-pkgmngr() {
-    for pkgmngr in apt-get yum; do
-        if [ ! -L /usr/bin/${pkgmngr} ]; then
-            mv -f /usr/bin/${pkgmngr} /usr/bin/${pkgmngr}.real
-        fi
-        ln -sf /usr/bin/${pkgmngr}.real /usr/bin/${pkgmngr}
-    done
+    if [ ! -L /usr/bin/yum ]; then
+        mv -f /usr/bin/yum /usr/bin/yum.real
+    fi
+    ln -sf /usr/bin/yum.real /usr/bin/yum
 }
 
 function deactivate-pkgmngr() {

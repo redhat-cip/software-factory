@@ -28,25 +28,12 @@ do_fatal_error() {
 setup_network() {
 if [ "$NETWORK_CONFIG" = "auto" ]; then
     # Fix network to start eth0 in DHCP
-    if [ -f "$MDIR/etc/network/interfaces" ]; then
-        if [ -r "$MDIR"/etc/network/interfaces ]; then
-            cat > "$MDIR"/etc/network/interfaces <<EOF
-# interfaces(5) file used by ifup(8) and ifdown(8)
-auto lo
-iface lo inet loopback
-
-auto eth0
-iface eth0 inet dhcp
-EOF
-        fi
-    else
-        cat > "$MDIR"/etc/sysconfig/network-scripts/ifcfg-eth0 <<EOF
+    cat > "$MDIR"/etc/sysconfig/network-scripts/ifcfg-eth0 <<EOF
 DEVICE=eth0
 BOOTPROTO=dhcp
 ONBOOT=yes
 EOF
-        echo "NETWORKING=yes" >> "$MDIR"/etc/sysconfig/network
-    fi
+    echo "NETWORKING=yes" >> "$MDIR"/etc/sysconfig/network
 fi
 }
 
@@ -238,7 +225,6 @@ if [ -n "$VAGRANT" ]; then
     # Vagrant password for root and vagrant
     sed -i -E 's,^(root|vagrant):.*,\1:$6$noowoT8z$b4ncy.PlVqQPzULCy1/pb5RDUbKCq02JgfCQGMQ1.mSmGItYRWFSJeLJemPcWjiaStJRa7HlXLt2gDh.aPAFa0:16118:0:99999:7:::,' "$MDIR/etc/shadow"
     echo nameserver 8.8.4.4 > "$MDIR/etc/resolv.conf"
-    chroot "$MDIR"  apt-get.moved install -y nfs-common cloud-initramfs-growroot
 
     # SSH setup
     # Add Vagrant ssh key for root and vagrant accouts.
