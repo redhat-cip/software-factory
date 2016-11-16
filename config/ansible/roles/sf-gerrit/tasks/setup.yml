@@ -88,7 +88,7 @@
   when: initialize_done|changed
 
 - name: "Add jenkins user"
-  command: /root/gerrit-set-jenkins-user.sh
+  command: /root/gerrit-set-ci-user.sh
   when: initialize_done|changed
 
 - name: "Set ACL"

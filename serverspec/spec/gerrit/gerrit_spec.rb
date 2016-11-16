@@ -114,7 +114,7 @@ describe file('/root/gerrit-set-default-acl.sh') do
     }
 end
 
-describe file('/root/gerrit-set-jenkins-user.sh') do
+describe file('/root/gerrit-set-ci-user.sh') do
     it {
         should be_file
         should be_mode '700'
