@@ -711,6 +711,12 @@ def update_sfconfig(data):
     if 'splash_image_data' not in data['theme']:
         add_default_splash_image(data)
         dirty = True
+
+    # 2.3.0: enable static hosts settings
+    if 'static_hostnames' not in data['network']:
+        data['network']['static_hostnames'] = []
+        dirty = True
+
     return dirty
 
 

@@ -11,6 +11,10 @@ network:
     # Default to root mailbox on managesf node
     admin_mail_forward: root@localhost
 
+    static_hostnames: []
+    # Define static hostnames
+    # - "8.8.8.8 google-dns.com"
+
 authentication:
     admin_password: userpass
     # timeout of sessions in seconds

@@ -6,3 +6,6 @@
 
 {{ hostip }}{% for cname in hosts_file[hostip] %} {{ cname }}{% endfor %}
 {% endfor %}
+
+{% for host in (network|default({'static_hostnames':[]}))["static_hostnames"]|default([]) %}{{ host }}
+{% endfor %}
