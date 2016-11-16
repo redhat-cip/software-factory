@@ -25,4 +25,5 @@
     - log-gearman-worker
     - elasticsearch
     - logstash
+    - kibana
     - storyboard
