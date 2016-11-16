@@ -54,6 +54,11 @@ function generate_random_pswd {
     echo $(base64 -w $1 < /dev/urandom | head -n1 | sed -e 's#/#_#g;s#\+#_#g')
 }
 
+function random_hex_string {
+    SIZE=${1-:12}
+    python -c "import random; print ''.join(random.choice('0123456789abcdef') for n in xrange($SIZE))"
+}
+
 function generate_api_key {
     out=""
     while [ ${#out} -lt 40 ]; do
@@ -119,7 +124,7 @@ function generate_keys {
     [ -f ${OUTPUT}/localCA.pem ] || rm -f ${OUTPUT}/gateway.*
 
     # Gen CA
-    [ -f ${OUTPUT}/localCA.pem ] || openssl req -nodes -days 3650 -new -x509 -subj "/C=FR/O=SoftwareFactory" \
+    [ -f ${OUTPUT}/localCA.pem ] || openssl req -nodes -days 3650 -new -x509 -subj "/C=FR/O=SoftwareFactory/OU=$(random_hex_string 6)" \
         -keyout ${OUTPUT}/localCAkey.pem        \
         -out ${OUTPUT}/localCA.pem
 
