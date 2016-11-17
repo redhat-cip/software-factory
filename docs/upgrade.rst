@@ -61,3 +61,8 @@ Here are the steps to upgrade:
  $ cd software-factory
  $ git checkout <latest TAG>
  $ ./upgrade.sh
+
+A change (named "Upgrade of base config repository files") for the config repository
+may be proposed as a review on Gerrit when some default files have evolve between both
+version of SF. You should take care of approving that change to avoid unexpected
+behaviors on the validation or apply phases of config repository changes.
