@@ -106,7 +106,7 @@ function run_health_openstack {
         && echo "Nodepool integration test SUCCESS"    \
         || fail "Nodepool integration test failed" ${ARTIFACTS_DIR}/integration_tests.txt
     ssh ${SF_HOST} ansible-playbook "--extra-vars='${EXTRA_VARS}'" /etc/ansible/health-check/swiftlogs.yaml >> ${ARTIFCATS_DIR}/integration_tests.txt \
-        && { echo "Swiftlogs integration test SUCCESS"; EXTRA_VARS+=" test_log_export=yes" }    \
+        && { echo "Swiftlogs integration test SUCCESS"; EXTRA_VARS+=" test_log_export=yes"; }    \
         || echo "Swiftlogs integration test failed (non-voting)"
     ssh ${SF_HOST} ansible-playbook "--extra-vars='${EXTRA_VARS}'" /etc/ansible/health-check/zuul.yaml >> ${ARTIFACTS_DIR}/integration_tests.txt \
         && echo "Zuul integration test SUCCESS"                        \
