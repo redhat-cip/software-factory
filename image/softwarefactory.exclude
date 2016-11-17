@@ -75,6 +75,7 @@
 /home/zuul/
 /usr/share/config.init.done
 /srv/cauth_keys/
+/var/lib/elasticsearch/
 
 # Sf configuration
 /etc/puppet/hiera/sf/
