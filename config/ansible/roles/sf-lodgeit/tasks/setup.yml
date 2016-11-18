@@ -1,4 +1,6 @@
 ---
+- include_vars: /etc/puppet/hiera/sf/sfcreds.yaml
+
 - name: Apply selinux port labelling
   seport:
       ports: 5000
