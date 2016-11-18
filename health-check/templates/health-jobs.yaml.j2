@@ -11,7 +11,7 @@
     publishers:
       - postbuildscript:
           builders:
-            - shell: /usr/local/bin/zuul_swift_upload.py --name {{ os_container }} --delete-after 86400  artifacts
+            - shell: /usr/local/bin/zuul_swift_upload.py --verbose --name {{ os_container }} --delete-after 86400  artifacts
           script-only-if-succeeded: False
           script-only-if-failed: False
 {% endif %}
