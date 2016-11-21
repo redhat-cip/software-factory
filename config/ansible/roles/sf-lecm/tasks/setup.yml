@@ -6,6 +6,9 @@
   template: src=gateway-lecm.conf.j2 dest=/etc/httpd/conf.d/gateway-lecm.conf
   register: lecmgateway
 
+- name: "Ensure apache is up"
+  service: name=httpd enabled=yes state=started
+
 - name: "Reload apache"
   service: name=httpd state=reloaded
   when: lecmgateway|changed
