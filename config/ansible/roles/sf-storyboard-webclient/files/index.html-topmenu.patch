@@ -8,7 +8,7 @@
      <title ng-bind-template="{{viewTitle ? viewTitle + ' | ' : ''}} StoryBoard">StoryBoard</title>
  
      
-@@ -19,6 +20,17 @@
+@@ -19,6 +20,18 @@
  
      <script src="js/storyboard.js"></script>
      <script src="js/templates.js"></script>
@@ -19,14 +19,15 @@
 +#sf-topmenu {
 +    position: fixed;
 +    top: 0px;
-+    left: 0px
++    left: 0px;
++    z-index: 99;
 +}
 +</style>
 +</head>
  
  <body ng-class="{'logged-in' : isLoggedIn, 'submenu': hasSubmenu}" ng-controller="ApplicationController">
  
-@@ -36,6 +48,6 @@
+@@ -36,6 +49,6 @@
          </div>
      </div>
  </div>
