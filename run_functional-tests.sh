@@ -69,8 +69,15 @@ TECH_PREVIEW="elasticsearch job-logs-gearman-client job-logs-gearman-worker logs
 TECH_PREVIEW+=" storyboard storyboard-webclient"
 
 case "${TEST_TYPE}" in
+    "minimal")
+        # Add tech preview components until they are fully integrated in the refarch
+        enable_arch_components locally $REFARCH_FILE "$TECH_PREVIEW"
+        lxc_init
+        run_bootstraps
+        run_serverspec_tests
+        ;;
     "functional")
-        # Add tech preview compenent until they are fully integrated in the refarch
+        # Add tech preview components until they are fully integrated in the refarch
         enable_arch_components locally $REFARCH_FILE "$TECH_PREVIEW"
         lxc_init
         run_bootstraps
@@ -101,7 +108,7 @@ case "${TEST_TYPE}" in
         lxc_init ${SF_PREVIOUS_VER}
         run_bootstraps
         run_provisioner
-        # Add tech preview compenents until they are fully integrated in the refarch
+        # Add tech preview components until they are fully integrated in the refarch
         enable_arch_components remote /etc/puppet/hiera/sf/arch.yaml "$TECH_PREVIEW"
         run_upgrade
         run_checker "checksum_warn_only"
