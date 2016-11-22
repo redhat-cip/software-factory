@@ -15,6 +15,12 @@
 
         <div class="container">
             <br />
+        {% if theme['splash_image_data'] %}
+            <div class="col-md-4 col-md-offset-4">
+              <img src="data:image/png;base64,{{ theme['splash_image_data'] }}" class="img-responsive" alt="Software Factory" title="Software Factory" />
+            </div>
+            <br />
+        {% endif %}
             <div class="col-md-4 col-md-offset-4">
                 <div class="panel panel-default" id="login">
                     <div class="panel-body text-center">
