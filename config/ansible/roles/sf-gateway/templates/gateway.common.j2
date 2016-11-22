@@ -130,6 +130,9 @@
         ProxyPass /storyboard_api/ http://storyboard:20000/v1/ nocanon retry=0
         ProxyPassReverse /storyboard_api/ http://storyboard:20000/v1/
 
+        ProxyPass /manage/ http://managesf:20001/ retry=0
+        ProxyPassReverse /manage/ http://managesf:20001/
+
         ProxyPass /redmine/ {{ redmine_internal_url }} nocanon retry=0
         ProxyPassReverse /redmine/ {{ redmine_internal_url }}
         ProxyHTMLURLMap {{ redmine_internal_url }} /redmine/
@@ -188,6 +191,22 @@
             Header set Cache-Control "no-cache, must-revalidate"
         </If>
     </LocationMatch>
+
+
+    <Location "/manage">
+        AuthType mod_auth_pubtkt
+        TKTAuthLoginURL /auth/login
+        TKTAuthFakeBasicAuth on
+        TKTAuthDebug 1
+        require valid-user
+        RequestHeader set X-Remote-User %{REMOTE_USER}s
+    </Location>
+
+    <Location "/manage/bind">
+        Allow from All
+        Satisfy Any
+    </Location>
+
 
     <LocationMatch "^/dashboard">
         Header set Cache-Control "no-cache, must-revalidate"

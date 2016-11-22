@@ -16,6 +16,11 @@
 import os
 
 # Pecan Application Configurations
+server = {
+    'port': {{ managesf_port }},
+    'host': '0.0.0.0',
+}
+
 app = {
     'guess_content_type_from_ext': False,
     'root': 'managesf.controllers.root.RootController',

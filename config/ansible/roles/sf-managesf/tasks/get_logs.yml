@@ -5,6 +5,10 @@
 - name: "Fetch managesf config"
   synchronize: mode=pull src="/var/www/managesf/{{ item }}" dest="{{ log_dest }}/{{ item }}"
   with_items:
-    - config.py
     - policy.yaml
+  ignore_errors: True
+- name: "Fetch managesf config"
+  synchronize: mode=pull src="/etc/managesf/{{ item }}" dest="{{ log_dest }}/{{ item }}"
+  with_items:
+    - config.py
   ignore_errors: True

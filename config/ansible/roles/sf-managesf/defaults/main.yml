@@ -8,3 +8,5 @@ storyboardclient_url: https://git.openstack.org/openstack-infra/python-storyboar
 storyboardclient_commit: master
 redmine_api_url: "http://api-redmine.{{ fqdn }}:8083/"
 roles: []
+
+managesf_port: 20001

@@ -1,0 +1,13 @@
+[Unit]
+Description=ManageSF API Service
+After=syslog.target network.target mariadb.service
+
+[Service]
+Type=simple
+User=managesf
+Group=managesf
+EnvironmentFile=-/etc/sysconfig/managesf
+ExecStart=/usr/bin/managesf-api
+
+[Install]
+WantedBy=multi-user.target
