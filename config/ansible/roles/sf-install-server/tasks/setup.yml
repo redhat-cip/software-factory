@@ -1,4 +1,5 @@
 ---
+- include_vars: /etc/puppet/hiera/sf/sfconfig.yaml
 
 - name: Initalize version control for hiera files
   shell: git init .; git add *; git commit -m 'init'
@@ -14,17 +15,29 @@
 
 - name: Install backup trigger job
   copy:
-    src: files/trigger_backup.sh
-    dest: /usr/local/bin/trigger_backup.sh
-    mode: 0700
+    src: "{{ item.name }}"
+    dest: "/usr/local/bin/{{ item.name }}"
+    mode: 0500
+  with_items:
+      - {name: trigger_backup.sh}
+      - {name: export_backup_swift.sh}
 
-- name: Install crontab for backup nightly job
+- name: Install auto_backup.conf
+  template:
+      src: auto_backup.conf.j2
+      dest: /etc/auto_backup.conf
+      mode: 0444
+
+- name: Install crontab for backup nightly jobs
   cron:
-    name: backup_gerrit
-    job: /usr/local/bin/trigger_backup.sh
+    name: "{{ item.name }}"
+    job: "{{ item.job }}"
     user: root
-    minute: 0
-    hour: 1
+    hour: "{{ item.hour }}"
+    minute: "{{ item.minute }}"
+  with_items:
+      - {name: backup_gerrit, job: /usr/local/bin/trigger_backup.sh, hour: "1", minute: "0"}
+      - {name: auto_backup, job: /usr/local/bin/export_backup_swift.sh, hour: "5", minute: "0"}
 
 - name: Start rsyncd
   service: name=rsyncd state=started enabled=yes

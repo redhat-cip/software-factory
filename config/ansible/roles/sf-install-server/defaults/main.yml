@@ -2,3 +2,18 @@ role_actions:
   - setup
   - backup
   - restore
+
+fqdn: "{{ fqdn }}"
+backup: "{{ backup }}"
+
+mail: "admin@{{ fqdn }}"
+admin_password: "{{ auth.admin_password }}"
+
+backup_os_auth_url: "{{ backup.os_auth_url }}"
+backup_os_auth_version: "{{ backup.os_auth_version }}"
+backup_os_tenant_name: "{{ backup.os_tenant_name }}"
+backup_os_username: "{{ backup.os_username }}"
+backup_os_password: "{{ backup.os_password }}"
+
+backup_swift_backup_container: "{{ backup.swift_backup_container }}"
+backup_swift_backup_max_retention_secs: "{{ backup.swift_backup_max_retention_secs }}"
