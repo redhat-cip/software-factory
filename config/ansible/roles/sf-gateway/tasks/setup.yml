@@ -9,30 +9,29 @@
 - include_vars: /etc/ansible/roles/sf-redmine/defaults/main.yml
 - include_vars: /etc/ansible/roles/sf-grafana/defaults/main.yml
 
-- name: "puppet: include socat_gerrit"
-  include: /etc/ansible/tasks/puppet.yml puppet_statement="include ::socat_gerrit"
-  when: groups['gerrit'] != groups['gateway']
-
-- name: "socat_gerrit: create init file"
-  stat: path=/lib/systemd/system/socat_gerrit.service
-  register: socat_service
-
-- name: "socat_gerrit: manage service"
-  service: name=socat_gerrit enabled=no state=stopped
-  when: groups['gerrit'] == groups['gateway'] and socat_service.stat.exists
-
-- name: "Remove un-needed files"
-  file: path={{ item }} state=absent
+- name: Remove un-needed files
+  file:
+      path: "{{ item }}"
+      state: absent
   with_items:
     - /etc/httpd/conf.d/autoindex.conf
     - /etc/httpd/conf.d/userdir.conf
     - /etc/httpd/conf.d/welcome.conf
 
-- name: "Add x-x509-ca-cert mime types"
-  lineinfile: dest=/etc/mime.types line="application/x-x509-ca-cert                      der pem crt"
-  notify: apache reload
+- name: Create working directories
+  file:
+      path: "{{ item }}"
+      state: directory
+  with_items:
+    - /var/www/sf
+    - /var/www/dashboard
 
-- name: "apache: add embedded TLS certificate"
+- name: Expose localCA.pem
+  copy:
+      content: "{{ localCA_pem }}"
+      dest: /var/www/localCA.pem mode=0444
+
+- name: Add embedded TLS certificate for apache
   when: not network['use_letsencrypt']
   notify: apache reload
   copy:
@@ -41,83 +40,122 @@
     mode: "{{ item.mode|default(0444) }}"
     setype: "unconfined_u:object_r:cert_t:s0"
   with_items:
-    - {content: "{{gateway_crt}}", path: "certs/{{ fqdn }}.crt"}
-    - {content: "{{gateway_chain}}", path: "certs/{{ fqdn }}-chain.crt"}
-    - {content: "{{gateway_key}}", path: "private/{{ fqdn }}.key", mode: '0400'}
+      - {content: "{{gateway_crt}}", path: "certs/{{ fqdn }}.crt"}
+      - {content: "{{gateway_chain}}", path: "certs/{{ fqdn }}-chain.crt"}
+      - {content: "{{gateway_key}}", path: "private/{{ fqdn }}.key", mode: '0400'}
 
-- name: "copy base64helper"
-  copy: src=files/base64helper dest=/usr/local/sbin/base64helper mode=0755
-
-- name: "copy pages-404.html"
-  copy: src=files/pages-404.html dest=/var/www/pages-404.html mode=0444
-
-- name: "Expose localCA.pem"
-  copy: content="{{ localCA_pem }}" dest=/var/www/localCA.pem mode=0444
-
-- name: "ensure managesf_htpasswd is present"
-  file: path=/etc/httpd/managesf_htpasswd state=touch mode=0640 owner=apache group=apache
-
-- name: "ensure pages.txt is present"
-  file: path=/etc/httpd/pages.txt state=touch mode=0640 owner=apache group=apache
-
-- name: "copy static javascripts"
-  template: src="templates/{{ item }}.j2" dest=/var/www/static/js/{{ item }} mode=0444
+- name: Install config files
+  copy:
+    src: "{{ item.name }}"
+    dest: "{{ item.path }}/{{ item.name }}"
+    mode: "{{ item.mode|default(0444) }}"
   with_items:
-    - menu.js
-    - hideci.js
-    - topmenu.js
+      - {name: base64helper, path: /usr/local/sbin, mode: '0755'}
+      - {name: dashboard.js, path: /var/www/dashboard}
+      - {name: menu.js, path: /var/www/static/js}
+      - {name: pages-404.html, path: /var/www/}
+      - {name: ssl.conf, path: /etc/httpd/conf.d}
+      - {name: user_settings.html, path: /var/www/sf}
+      - {name: user_settings.js, path: /var/www/sf}
 
-- name: "copy topmenu"
-  template: src=templates/topmenu.html.j2 dest=/var/www/topmenu.html mode=0444
+- name: Install index.html for zuul
+  copy:
+    src: zuul.index.html
+    dest: /var/www/zuul/index.html
+    mode: 0444
 
-- name: "sf-web-ui: create directory"
-  file: path=/var/www/sf state=directory
-
-- name: "sf-web-ui: copy files"
-  copy: src=files/{{item}} dest=/var/www/sf/{{item}} mode=0444
-  with_items: ["user_settings.html", "user_settings.js"]
-
-- name: "create dashboard directory"
-  file: path=/var/www/dashboard state=directory
-
-- name: "copy dashboard index.html"
-  template: src=templates/dashboard.html.j2 dest=/var/www/dashboard/index.html
-
-- name: "copy dashboard js"
-  copy: src=files/dashboard.js dest=/var/www/dashboard/dashboard.js
-
-- name: "apache: create ssl.conf"
-  copy: src=files/ssl.conf dest=/etc/httpd/conf.d/ssl.conf mode=0444
-
-- name: "apache: load ssl module"
-  lineinfile:
-    dest=/etc/httpd/conf.modules.d/00-ssl.conf
-    line="LoadModule ssl_module modules/mod_ssl.so"
-    owner=apache group=apache mode=0640
-
-- name: "apache: load cache module"
-  lineinfile:
-    dest=/etc/httpd/conf.modules.d/00-cache.conf
-    line="LoadModule cache_module modules/mod_cache.so"
-    create=True
-    state=present
-    owner=apache group=apache mode=0640
-
-- name: "apache: add gateway conf"
-  template: src="templates/{{ item }}.j2" dest=/etc/httpd/conf.d/{{ item }} mode=0444
+- name: Touch files
+  file:
+    path: "{{ item }}"
+    state: touch
+    mode: 0640
+    owner: apache
+    group: apache
   with_items:
-    - gateway.common
-    - gateway.conf
+      - /etc/httpd/managesf_htpasswd
+      - /etc/httpd/pages.txt
+
+- name: Install templates
+  template:
+      src: "{{ item.name }}.j2"
+      dest: "{{item.dest }}/{{ item.name }}"
+      owner: "{{ item.owner | default('root') }}"
+      group: "{{ item.group | default('root') }}"
+      mode: "{{ item.mode | default(0444) }}"
+  with_items:
+      - {name: gateway.common, dest: /etc/httpd/conf.d}
+      - {name: gateway.conf, dest: /etc/httpd/conf.d}
+      - {name: hideci.js, dest: /var/www/static/js}
+      - {name: topmenu.html, dest: /var/www}
+      - {name: topmenu.js, dest: /var/www/static/js}
   notify: apache reload
 
-- name: "Install Kibana SF gateway rules"
-  template: src=templates/gateway-kibana.conf.j2 dest=/etc/httpd/conf.d/gateway-kibana.conf mode=0444
+- name: Copy dashboard index.html
+  template:
+      src: dashboard.html.j2
+      dest: /var/www/dashboard/index.html
+      mode: 0444
+
+- name: Install Kibana SF gateway rules
+  template:
+      src: gateway-kibana.conf.j2
+      dest: /etc/httpd/conf.d/gateway-kibana.conf
+      mode: 0444
   with_items: "{{ inventory }}"
   when: '"kibana" in item["roles"]'
   notify: apache reload
 
-- name: "zuul: install index.html"
-  copy: src=zuul.index.html dest=/var/www/zuul/index.html mode=0444
+- name: Load ssl module in apache configuration
+  lineinfile:
+      dest: /etc/httpd/conf.modules.d/00-ssl.conf
+      line: "LoadModule ssl_module modules/mod_ssl.so"
+      owner: apache
+      group: apache
+      mode: 0640
+  notify: apache reload
 
-- name: "apache: start service"
-  service: name=httpd enabled=yes state=started
+- name: Add x-x509-ca-cert mime types
+  lineinfile:
+      dest: /etc/mime.types
+      line: "application/x-x509-ca-cert                      der pem crt"
+  notify: apache reload
+
+- name: Load cache module in apache configuration
+  lineinfile:
+      dest: /etc/httpd/conf.modules.d/00-cache.conf
+      line: "LoadModule cache_module modules/mod_cache.so"
+      create: True
+      state: present
+      owner: apache
+      group: apache
+      mode: 0640
+  notify: apache reload
+
+- name: Install service file for socat_gerrit
+  copy:
+      src: socat_gerrit.service
+      dest: /lib/systemd/system/socat_gerrit.service
+      owner: root
+      group: root
+      mode: 0644
+  register: install_service_file
+  when: groups['gerrit'] != groups['gateway']
+
+- name: Reload systemctl daemon
+  shell: "systemctl daemon-reload"
+  when:
+      - install_service_file|changed
+      - groups['gerrit'] != groups['gateway']
+
+- name: Start socat_gerrit
+  service:
+      name: socat_gerrit
+      enabled: yes
+      state: started
+  when: groups['gerrit'] != groups['gateway']
+
+- name: Start apache service
+  service:
+    name: httpd
+    enabled: yes
+    state: started
