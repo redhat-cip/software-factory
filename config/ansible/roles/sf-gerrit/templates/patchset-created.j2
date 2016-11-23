@@ -38,9 +38,6 @@
 QUOTE="\""
 ESCAPED="\\\""
 
-# TODO Find a better place to store these logs
-LOGFILE=/tmp/hook.log
-
 while [ $# -gt 1 ]
 do
 key="$1"
@@ -97,7 +94,7 @@ esac
 shift # past argument or value
 done
 
-echo $(date +'%F %T') " - $0 called for change $CHANGE" | tee -a ${LOGFILE}
+echo -n "$PATCHSET ($PROJECT) $CHANGE - "
 
 COMMIT_MESSAGE=`git cat-file -p $COMMIT`
 COMMIT_MESSAGE="${COMMIT_MESSAGE//$QUOTE/$ESCAPED}"
@@ -107,20 +104,18 @@ SF_SERVICE_PASSWORD={{ creds_sf_service_user_pwd }}
 
 PAYLOAD=`mktemp -u`
 COOKIE=`mktemp -u`
-(
+
 # get auth cookie
-curl -X POST ${MANAGESF_BASE_URL}/auth/login/ \
+curl -sS -X POST ${MANAGESF_BASE_URL}/auth/login/ \
      --data '{"back": "/", "method": "Password", "args": {"username": "SF_SERVICE_USER", "password": "'$SF_SERVICE_PASSWORD'"}}' \
-     -c ${COOKIE} -H "Content-Type: application/json"
+     -c ${COOKIE} -H "Content-Type: application/json" > /dev/null
 
 echo '{"change": "'$CHANGE'", "is_draft": "'$ISDRAFT'", "change_url": "'$CHANGEURL'", "project": "'$PROJECT'", "branch": "'$BRANCH'", "topic": "'$TOPIC'", "uploader": "'$UPLOADER'", "commit": "'$COMMIT'", "patchset": "'$PATCHSET'", "commit_message": "'$COMMIT_MESSAGE'", "kind": "'$KIND'", "change_owner": "'$CHANGEOWNER'", "newrev": "'$NEWREV'"}' > ${PAYLOAD}
 
 # hook call
-curl -X POST ${MANAGESF_BASE_URL}/manage/hooks/patchset_created/ \
+curl -sS -X POST ${MANAGESF_BASE_URL}/manage/hooks/patchset_created/ \
      -H "Accept: application/json" -H "Content-Type: application/json" \
-     -b ${COOKIE} --trace-ascii /dev/stdout \
-     -d @${PAYLOAD}
-) 2>&1 | tee -a /tmp/hook.log
+     -b ${COOKIE} -d @${PAYLOAD}
 
 rm ${PAYLOAD}
 rm ${COOKIE}
