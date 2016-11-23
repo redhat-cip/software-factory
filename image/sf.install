@@ -76,6 +76,7 @@ function install_sf {
     sudo mkdir -p ${dir}/tmp/pysflib
     sudo cp -Rv ${PYSFLIB_CLONED_PATH}/* ${dir}/tmp/pysflib/
     do_chroot ${dir} bash -c "cd /tmp/pysflib; python setup.py install"
+    do_chroot ${dir} bash -c "cd /tmp/pysflib; /var/www/managesf/bin/python setup.py install"
 
     # Install managesf
     sudo rsync -a --delete ${MANAGESF_CLONED_PATH}/ ${dir}/usr/src/managesf/
