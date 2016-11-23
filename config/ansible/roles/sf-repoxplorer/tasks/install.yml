@@ -1,0 +1,14 @@
+---
+- name: "Fetch RepoXplorer code"
+  git:
+    repo={{ repoxplorer_url }}
+    dest=/usr/src/repoxplorer
+    recursive=no
+    version={{ repoxplorer_commit }}
+    force=yes
+- name: "Install RepoXplorer venv"
+  command: chdir=/usr/src/repoxplorer {{ item }}
+  with_items:
+    - virtualenv /srv/repoxplorer
+    - /srv/repoxplorer/bin/pip install -rrequirements.txt
+    - /srv/repoxplorer/bin/python setup.py install

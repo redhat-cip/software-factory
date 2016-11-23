@@ -1,0 +1,48 @@
+---
+- name: "Check if repoxplorer directory already exists in the config repo"
+  stat: path=/root/config/repoxplorer
+  register: configrepo_repoxplorer
+
+- name: "Init repoxplorer config repo directory (1)"
+  command: chdir=/root/config {{ item }}
+  with_items:
+    - mkdir repoxplorer
+    - cp /etc/repoxplorer/idents.yaml /root/config/repoxplorer/
+  when: configrepo_repoxplorer.stat.exists == false
+
+- name: "Init repoxplorer config repo directory (2)"
+  template:
+    src: projects.yaml.j2
+    dest: /root/config/repoxplorer/projects.yaml
+  when: configrepo_repoxplorer.stat.exists == false
+
+- name: "Push repoxplorer directory in the config repo"
+  command: chdir=/root/config {{ item }}
+  with_items:
+    - git add repoxplorer
+    - git commit -m "Initialize repoxplorer configuration"
+    - git push git+ssh://{{ fqdn }}/config master
+  when: configrepo_repoxplorer.stat.exists == false
+
+- file: path=/var/lib/software-factory/repoxplorer_config state=touch
+
+- name: "Check local repoxplorer config"
+  command: cat /var/lib/software-factory/repoxplorer_config
+  register: localconfig
+
+- name: "Check upstream repoxplorer config"
+  command: chdir=/root/config git log --oneline repoxplorer/
+  register: upstreamconfig
+
+- name: "Update local repoxplorer configuration files"
+  when: localconfig.stdout != upstreamconfig.stdout
+  copy:
+    src: /root/config/repoxplorer/{{ item }}
+    dest: /etc/repoxplorer/{{ item }}
+  with_items:
+    - projects.yaml
+    - idents.yaml
+
+- name: "Write config repo sha1 matching current repoxplorer configuration"
+  copy: content="{{ upstreamconfig.stdout }}" dest=/var/lib/software-factory/repoxplorer_config
+  when: localconfig.stdout != upstreamconfig.stdout

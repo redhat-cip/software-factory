@@ -6,7 +6,7 @@
     - base
     - postfix
     - ntp
-{% for role in host['roles'] %}{% if role in ('redmine', 'mysql', 'gerrit', 'jenkins', 'zuul', 'nodepool', 'managesf', 'murmur', 'storyboard', 'elasticsearch', 'mirror', 'job-logs-gearman-client', 'job-logs-gearman-worker', 'logstash', 'kibana') %}
+{% for role in host['roles'] %}{% if role in ('redmine', 'mysql', 'gerrit', 'jenkins', 'zuul', 'nodepool', 'managesf', 'murmur', 'storyboard', 'elasticsearch', 'mirror', 'job-logs-gearman-client', 'job-logs-gearman-worker', 'logstash', 'kibana', 'repoxplorer') %}
     - {{ role }}
 {% endif %}{% endfor %}
   :username: root

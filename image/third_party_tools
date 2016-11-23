@@ -262,7 +262,11 @@ if [ "${USE_SWIFT_CACHE}" == "yes" ]; then
     ANGULARJS_URL="${SWIFT_CACHE}/javascripts/angular.min.js"
 fi
 
+# repoXplorer
+REPOXPLORER_URL="https://github.com/morucci/repoxplorer"
+REPOXPLORER_VERSION=a63cfecf0049afb34c7ac90ee1bcb979aa01e4d5 # 2016-11-25
 
+# Zuul / Nodepool
 NODEPOOL_URL="https://github.com/openstack-infra/nodepool"
 NODEPOOL_VERSION=1fd2a14ab79d256419083e2b2d9c463af36e039a # 2016-05-18
 ZUUL_VERSION=a8b90b38094587bbd82ffa5e4028aef1dfd02987     # 2016-08-24
@@ -275,7 +279,7 @@ GERRITBOT_VERSION=d48b1bc41717291e43425ff437d6214b6934f60f
 PASTE_URL="https://git.openstack.org/openstack-infra/lodgeit"
 PASTE_VERSION=beb3ff7e266 # latest commit as of 05 Jun 2015
 
-GIT_REPO_LIST="$GIT_REPO_LIST $NODEPOOL_URL $GERRITBOT_URL $PASTE_URL"
+GIT_REPO_LIST="$GIT_REPO_LIST $NODEPOOL_URL $GERRITBOT_URL $PASTE_URL REPOXPLORER_URL"
 if [ "${USE_SWIFT_CACHE}" == "yes" ]; then
     ZUUL_EXTRA_VARS="zuul_url: \"${SWIFT_CACHE}/zuul.git\""
     ZUUL_EXTRA_VARS+=", zuul_commit: \"${ZUUL_VERSION}\""
@@ -284,6 +288,8 @@ if [ "${USE_SWIFT_CACHE}" == "yes" ]; then
     NODEPOOL_EXTRA_VARS="nodepool_url: \"${SWIFT_CACHE}/nodepool.git\""
     NODEPOOL_EXTRA_VARS+=", nodepool_commit: \"${NODEPOOL_VERSION}\""
     PASTE_URL="${SWIFT_CACHE}/lodgeit.git"
+    REPOXPLORER_EXTRA_VARS="repoxplorer_url: \"${REPOXPLORER_URL}\""
+    REPOXPLORER_EXTRA_VARS+=", repoxplorer_commit: \"${REPOXPLORER_VERSION}\""
 fi
 
 LECM_URL="https://github.com/Spredzy/lecm"

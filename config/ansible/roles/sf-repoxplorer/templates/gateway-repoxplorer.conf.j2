@@ -1,0 +1,4 @@
+<IfModule mod_proxy.c>
+    ProxyPass /repoxplorer/ http://repoxplorer.{{ fqdn }}:8091/
+    ProxyPassReverse /repoxplorer/ http://repoxplorer.{{ fqdn }}:8091/
+</IfModule>

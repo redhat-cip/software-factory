@@ -76,6 +76,7 @@
 /usr/share/config.init.done
 /srv/cauth_keys/
 /var/lib/elasticsearch/
+/var/lib/repoxplorer/
 
 # Sf configuration
 /etc/puppet/hiera/sf/

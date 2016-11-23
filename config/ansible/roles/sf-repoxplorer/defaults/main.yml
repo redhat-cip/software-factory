@@ -1,0 +1,7 @@
+role_actions:
+  - install
+  - setup
+  - update
+
+repoxplorer_url: https://softwarefactory-project.io/r/repoxplorer
+repoxplorer_commit: master

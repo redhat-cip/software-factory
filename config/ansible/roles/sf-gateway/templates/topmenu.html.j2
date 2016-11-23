@@ -41,6 +41,9 @@
             {% if 'lodgeit' in roles %}
                 <li><a href="/paste/" target="_top">Paste</a></li>
             {% endif %}
+            {% if 'repoxplorer' in roles %}
+                <li><a href="/repoxplorer/" target="_top">RepoXplorer</a></li>
+            {% endif %}
             {% if 'murmur' in roles %}
                 <li><a href="mumble://{{ fqdn }}/?version=1.2.0">Mumble</a></li>
             {% endif %}

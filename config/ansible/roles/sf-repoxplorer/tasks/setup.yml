@@ -1,0 +1,68 @@
+---
+- name: "Create RepoXplorer user"
+  include: /etc/ansible/tasks/create_user.yml user_name=repoxplorer
+
+- name: "Create RepoXplorer default directories"
+  file:
+    path={{ item }}
+    state=directory
+    mode=0700
+    owner=repoxplorer
+    group=repoxplorer
+  with_items:
+    - /var/lib/repoxplorer/git_store
+    - /var/log/repoxplorer
+    - /etc/repoxplorer
+
+- name: "Install RepoXplorer default user config files"
+  copy:
+    src={{ item }}
+    dest=/etc/repoxplorer/{{ item }}
+    force=no
+  with_items:
+    - projects.yaml
+    - idents.yaml
+
+- name: "Install RepoXplorer default config files"
+  copy:
+    src={{ item }}
+    dest=/etc/repoxplorer/{{ item }}
+  with_items:
+    - config.py
+
+- name: "Set links to production user config files"
+  file:
+    src=/etc/repoxplorer/{{ item }}
+    dest=/srv/repoxplorer/local/share/repoxplorer/{{ item }}
+    state=link
+    force=true
+  with_items:
+    - config.py
+
+- name: "Install RepoXplorer services files Indexer service"
+  copy:
+    src={{ item }}
+    dest=/lib/systemd/system/{{ item }}
+  register: services
+  with_items:
+    - repoxplorer-webui.service
+    - repoxplorer.service
+- command: systemctl daemon-reload
+  when: services|changed
+
+- name: "Add topmenu"
+  patch: src=layout.html-topmenu.patch basedir=/srv/repoxplorer/local/share/repoxplorer/templates/
+
+- name: "Start repoxplorer services"
+  service:
+    name={{ item }}
+    state=restarted
+    enabled=yes
+  with_items:
+    - repoxplorer-webui
+    - repoxplorer
+
+- name: "Install Apache gateway rule for repoxplorer"
+  template:
+    src: gateway-repoxplorer.conf.j2
+    dest: /etc/httpd/conf.d/gateway-repoxplorer.conf
