@@ -30,26 +30,29 @@ app = {
 }
 
 logging = {
+    'root': {'level': 'INFO', 'handlers': ['normal']},
     'loggers': {
-        'managesf': {'level': 'DEBUG',
-                     'handlers': ['file_handler']},
-        'pysflib': {'level': 'DEBUG',
-                     'handlers': ['file_handler']},
-        '__force_dict__': True
+        'managesf': {'level': 'DEBUG', 'handlers': ['console'],
+                     'propagate': False},
     },
     'handlers': {
-        'file_handler': {
-            'class': 'logging.handlers.RotatingFileHandler',
+        'console': {'level': 'INFO', 'class': 'logging.StreamHandler',
+                    'formatter': 'console'},
+        'normal': {
+            'class': 'logging.handlers.TimedRotatingFileHandler',
             'level': 'DEBUG',
-            'formatter': 'simple',
+            'formatter': 'normal',
             'filename': '/var/log/managesf/managesf.log',
-        }
+            'when': 'D',
+            'interval': 1,
+            'backupCount': 30,
+        },
     },
     'formatters': {
-        'simple': {
-            'format': ('%(asctime)s %(levelname)-5.5s [%(name)s]'
-                      '[%(threadName)s] %(message)s')
-        }
+        'console': {'format': ('%(levelname)-5.5s [%(name)s]'
+                               '[%(threadName)s] %(message)s')},
+        'normal': {'format': ('%(asctime)s %(levelname)-5.5s [%(name)s]'
+                              '[%(threadName)s] %(message)s')},
     }
 }
 
