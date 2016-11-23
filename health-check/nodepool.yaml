@@ -87,7 +87,7 @@
       wait_for: path=/var/log/nodepool/nodepool.log timeout=900 search_regex="SnapshotImageUpdater.* Image .*{{ image_name }}.* in {{ provider_name }} is ready"
 
     - name: "Wait for the first slave node to connect on Jenkins"
-      wait_for: path=/var/log/nodepool/debug.log timeout=900 search_regex=".*Node .* ready in provider.*"
+      wait_for: path=/var/log/nodepool/nodepool.log timeout=900 search_regex=".*Node .* ready in provider.*"
 
     - name: "Wait for the first slave to appear in Jenkins"
       shell: for i in {1..100}; do sleep ${i}; curl -Ls https://{{ fqdn }}/jenkins/computer/api/json | python -c "import sys, json; d = json.loads(sys.stdin.read()); slaves = [s for s in d['computer'] if ('base_centos-default' in s['displayName'])]; len(slaves) > 0 and sys.exit(0) or sys.exit(1)" && exit 0; done; exit 1
