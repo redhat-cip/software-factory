@@ -21,3 +21,5 @@ mysql_host: "mysql.{{ fqdn }}"
 mysql_password: "{{ creds_gerrit_sql_pwd }}"
 mysql_port: 3306
 mysql_user: 'gerrit'
+
+gerrit_heap_limit: 512m

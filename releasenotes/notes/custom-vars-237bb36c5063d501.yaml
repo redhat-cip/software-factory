@@ -1,0 +1,5 @@
+---
+features:
+  - A new /etc/software-factory/custom-vars.yaml is
+    created to manage custom Ansible variables such as
+    gerrit heap limit.

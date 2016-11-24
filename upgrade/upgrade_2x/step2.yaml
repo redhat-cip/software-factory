@@ -18,6 +18,15 @@
   - include: tasks/new_creds.yml sf_secret_name=managesf_sql_pwd
   # 2.0.0: Remove hosts.yaml hiera
   - file: path=/etc/software-factory/hosts.yaml state=absent
+  # 2.3.0: Remove gerrit.yaml hiera
+  - stat: path=/etc/software-factory/gerrit.yaml
+    register: gerrit_hiera
+  - command: awk '/gerrit_heap_limit/ { print $2 }' /etc/software-factory/gerrit.yaml
+    register: heap_limit
+    when: gerrit_hiera.stat.exists == True
+  - command: hieraedit.py --yaml /etc/software-factory/custom-vars.yaml gerrit_heap_limit {{ heap_limit.stdout }}
+    when: gerrit_hiera.stat.exists == True
+  - file: path=/etc/software-factory/gerrit.yaml state=absent
 
 - hosts: managesf
   tasks:

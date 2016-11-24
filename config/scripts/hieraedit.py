@@ -69,7 +69,12 @@ parser.add_argument('value', help='the value', nargs='?')
 parser.add_argument('-f', dest='file', help='file to read in as value')
 
 args = parser.parse_args()
-data = yaml.load(open(args.yaml))
+if os.path.isfile(args.yaml):
+    data = yaml.load(open(args.yaml))
+else:
+    data = {}
+if data is None:
+    data = {}
 
 # Try to convert key to int
 try:
