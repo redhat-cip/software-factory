@@ -2,22 +2,14 @@
 
 set -e
 
-### This script is at the moment executed in the Jenkins master node.
-### This is temporary and most of the code here will land in sfmanager.
-### Futhermore as suggested in the review comment the futur sfmanager
-### resources get/post/put will be called through the
-### sf-config-update mechanism
-
 FQDN="{{ fqdn }}"
 GATEWAY_URL="{{ gateway_url }}"
-ENDPOINT="$GATEWAY_URL/manage/resources/"
-SPASS={{ creds_sf_service_user_pwd }}
+ENDPOINT="http://managesf.{{ fqdn }}:20001/resources/"
 
-COOKIE_PATH=cookie
 APPLIED_OUTPUT="applied-output"
 VALIDATED_OUTPUT="validated-output"
 
-trap "rm -f $COOKIE_PATH && rm -f $VALIDATED_OUTPUT && rm -f $APPLIED_OUTPUT" EXIT
+trap "rm -f $VALIDATED_OUTPUT && rm -f $APPLIED_OUTPUT" EXIT
 
 [ -z "$1" ] && {
     echo "Valid arguments are validate, apply, direct_apply, get, get_missing_resources. Exit."
@@ -41,20 +33,13 @@ SCRIPT
     }
 }
 
-curl -s -X POST -c $COOKIE_PATH --data \
- '{"back": "/", "method": "Password", "args": {"username": "SF_SERVICE_USER", "password": "'$SPASS'"}}' \
- -H "Content-Type: application/json" $GATEWAY_URL/auth/login/
-[ ! -f $COOKIE_PATH ] && {
-    echo "Unable to get a cookie ..."
-    exit 1
-}
 case $1 in
     validate)
         [ -z "$ZUUL_URL" -o -z "$ZUUL_REF" ] && {
             echo "ZUUL_URL and ZUUL_REF need to set. Exit."
             exit 1
         }
-        http_code=$(curl -s -w "%{http_code}" -b $COOKIE_PATH \
+        http_code=$(curl -s -w "%{http_code}" -H "X-Remote-User: SF_SERVICE_USER" \
          -H "Content-Type: application/json" \
          -d '{"zuul_url": "'$ZUUL_URL'/config", "zuul_ref": "'$ZUUL_REF'"}' \
          -X POST $ENDPOINT -o $VALIDATED_OUTPUT)
@@ -90,7 +75,7 @@ case $1 in
         fi
         cd -
         rm -R $clone
-        http_code=$(curl -s -w "%{http_code}" -b $COOKIE_PATH \
+        http_code=$(curl -s -w "%{http_code}" -H "X-Remote-User: SF_SERVICE_USER" \
          -X PUT $ENDPOINT -o $APPLIED_OUTPUT)
         cat $APPLIED_OUTPUT | python -m json.tool
         [ "$http_code" != "201" ] && {
@@ -100,7 +85,7 @@ case $1 in
         exit 0
         ;;
     direct_apply)
-        http_code=$(curl -s -w "%{http_code}" -b $COOKIE_PATH \
+        http_code=$(curl -s -w "%{http_code}" -H "X-Remote-User: SF_SERVICE_USER" \
          -H "Content-Type: application/json" \
          --data @direct_apply.json \
          -X PUT $ENDPOINT -o $APPLIED_OUTPUT)
@@ -112,10 +97,10 @@ case $1 in
         exit 0
         ;;
     get)
-        curl -s -b $COOKIE_PATH $ENDPOINT | python -m json.tool
+        curl -s -H "X-Remote-User: SF_SERVICE_USER" $ENDPOINT | python -m json.tool
         ;;
     get_missing_resources)
-        curl -s -b $COOKIE_PATH "$ENDPOINT?get_missing_resources=true" -o missing_resources.json
+        curl -s -H "X-Remote-User: SF_SERVICE_USER" "$ENDPOINT?get_missing_resources=true" -o missing_resources.json
         python <<SCRIPT
 import json
 import yaml
