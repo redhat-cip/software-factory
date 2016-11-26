@@ -1,6 +1,6 @@
 ---
-- include_vars: /etc/puppet/hiera/sf/jenkins.yaml
-- include_vars: /etc/puppet/hiera/sf/sfcreds.yaml
+- include_vars: /etc/software-factory/jenkins.yaml
+- include_vars: /etc/software-factory/sfcreds.yaml
 - include_vars: /etc/ansible/roles/sf-jenkins/defaults/main.yml
 
 - include: /etc/ansible/tasks/create_user.yml user_name=jenkins ssh_key=jenkins_rsa

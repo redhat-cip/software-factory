@@ -31,7 +31,6 @@
 /etc/sysconfig/network-scripts/ifcfg-eth0
 /etc/systemd/system/multi-user.target.wants
 /etc/udev/rules.d/*persistent*
-/etc/puppet/environments/production
 /etc/letsencrypt/
 /root/.ssh
 /root/.ansible
@@ -44,7 +43,6 @@
 /var/lib/debootstrap/
 /var/lib/edeploy/
 /var/lib/postfix/master.lock
-/var/lib/puppet/
 /var/lib/sf/
 /var/log/
 /var/spool/
@@ -80,6 +78,7 @@
 
 # Sf configuration
 /etc/puppet/hiera/sf/
+/etc/software-factory/
 /etc/httpd/htpasswd
 /etc/httpd/managesf_htpasswd
 /etc/httpd/pages.txt

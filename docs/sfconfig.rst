@@ -3,7 +3,7 @@
 Main configuration file: sfconfig.yaml
 ======================================
 
-Currently located in /etc/puppet/hiera/sf/sfconfig.yaml,
+Currently located in /etc/software-factory/sfconfig.yaml,
 this is THE SF configuration entry point.
 
 Notice that the configuration is versioned and it is recommended to use git diff and git commit

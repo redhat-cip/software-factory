@@ -3,7 +3,7 @@
 - hosts: install-server
   pre_tasks:
     - name: Load sfconfig
-      include_vars: /etc/puppet/hiera/sf/sfconfig.yaml
+      include_vars: /etc/software-factory/sfconfig.yaml
   tasks:
     - debug: msg="Create or reset project {{ project }} to {{ project_path }}"
 

@@ -5,7 +5,7 @@
 
 - name: Add creds_service_user_pwd to sfcreds.yaml
   lineinfile:
-    dest: /etc/puppet/hiera/sf/sfcreds.yaml
+    dest: /etc/software-factory/sfcreds.yaml
     create: yes
     state: present
     regexp: 'creds_sf_service_user_pwd.*'

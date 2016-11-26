@@ -195,8 +195,7 @@ function build_image {
         echo "SKIP_BUILD: Reusing previously built image, just update source code without re-installing"
         echo "            To update requirements and do a full installation, do not use SKIP_BUILD"
         set -e
-        sudo rsync -a --delete --no-owner puppet/ ${IMAGE_PATH}/etc/puppet/environments/sf/
-        sudo rsync -a --delete --no-owner -L config/defaults/ ${IMAGE_PATH}/etc/puppet/hiera/sf/
+        sudo rsync -a --delete --no-owner -L config/defaults/ ${IMAGE_PATH}/etc/software-factory/
         sudo rsync -a --delete --no-owner -L config/defaults/ ${IMAGE_PATH}/usr/local/share/sf-default-config/
         sudo rsync -a --delete --no-owner config/ansible/ ${IMAGE_PATH}/etc/ansible/
         sudo rsync -a --delete --no-owner health-check/ ${IMAGE_PATH}/etc/ansible/health-check/
@@ -320,8 +319,10 @@ function fetch_bootstraps_data {
     echo "[+] Fetch bootstrap data"
     rm -Rf sf-bootstrap-data
     scp -r ${SF_HOST}:sf-bootstrap-data .
-    rsync -a -L ${SF_HOST}:/etc/puppet/hiera/sf/ sf-bootstrap-data/hiera/
-    ADMIN_PASSWORD=$(cat sf-bootstrap-data/hiera/sfconfig.yaml | grep 'admin_password:' | sed 's/^.*admin_password://' | awk '{ print $1 }' | sed 's/ //g')
+    # could be remove after 2.2.7 release
+    rsync -a -L ${SF_HOST}:/etc/puppet/hiera/sf/ sf-bootstrap-data/
+    rsync -a -L ${SF_HOST}:/etc/software-factory/ sf-bootstrap-data/
+    ADMIN_PASSWORD=$(awk '/admin_password:/ {print $2}' sf-bootstrap-data/sfconfig.yaml)
 
     echo "[+] Fetch ${SF_HOST} ssl cert"
     scp -r ${SF_HOST}:/etc/pki/ca-trust/extracted/openssl/ca-bundle.trust.crt sf-bootstrap-data/ca-bundle.trust.crt
@@ -517,8 +518,8 @@ SCRIPT
 
 function change_fqdn {
     echo "$(date) ======= change_fqdn"
-    ssh ${SF_HOST} "sed -i -e 's/fqdn: ${SF_HOST}/fqdn: sftests2.com/g' /etc/puppet/hiera/sf/sfconfig.yaml"
-    ssh ${SF_HOST} "sed -i -e 's/${SF_HOST}/sftests2.com/g' /etc/puppet/hiera/sf/arch.yaml"
+    ssh ${SF_HOST} "sed -i -e 's/fqdn: ${SF_HOST}/fqdn: sftests2.com/g' /etc/software-factory/sfconfig.yaml"
+    ssh ${SF_HOST} "sed -i -e 's/${SF_HOST}/sftests2.com/g' /etc/software-factory/arch.yaml"
     # This triggers cert recreating in sfconfig.sh. Should be done automatically
     # in the Ansible task update_fqdn; but that is currently executed after cert
     # creation.

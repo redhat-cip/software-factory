@@ -129,12 +129,12 @@ can manage the email address used in Software Factory service indepently from th
 Redmine API key change
 """"""""""""""""""""""
 
-To change the Redmine API key, you need to edit /etc/puppet/hiera/sf/sfcreds.yaml and change the value of
+To change the Redmine API key, you need to edit /etc/software-factory/sfcreds.yaml and change the value of
 `creds_issues_tracker_api_key`. Then call `sfconfig.sh` to update the key.
 
 
 Local database access credencials
 """""""""""""""""""""""""""""""""
 
-Each service credencials for mysql database access are stored in /etc/puppet/hiera/sf/sfcreds.yaml.
+Each service credencials for mysql database access are stored in /etc/software-factory/sfcreds.yaml.
 You can use the `sf_rotate_mysql_passwords.py` command line to replace them all and restart services.

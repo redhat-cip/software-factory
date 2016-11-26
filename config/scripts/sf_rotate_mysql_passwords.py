@@ -34,10 +34,10 @@ class MyDumper(yaml.Dumper):
 # end from
 
 
-creds = yaml.load(open("/etc/puppet/hiera/sf/sfcreds.yaml").read())
+creds = yaml.load(open("/etc/software-factory/sfcreds.yaml").read())
 
 sqls = []
-fqdn = yaml.load(open("/etc/puppet/hiera/sf/sfconfig.yaml").read())['fqdn']
+fqdn = yaml.load(open("/etc/software-factory/sfconfig.yaml").read())['fqdn']
 
 for user in ('redmine', 'gerrit', 'nodepool', 'etherpad', 'lodgeit', 'graphite', 'grafana', 'cauth', 'managesf'):
     key = "creds_%s_sql_pwd" % user
@@ -67,7 +67,7 @@ for user in ('redmine', 'gerrit', 'nodepool', 'etherpad', 'lodgeit', 'graphite',
     ))
     creds[key] = pwd
 
-open("/etc/puppet/hiera/sf/sfcreds.yaml", "w").write(yaml.dump(creds, default_flow_style=False, Dumper=MyDumper))
+open("/etc/software-factory/sfcreds.yaml", "w").write(yaml.dump(creds, default_flow_style=False, Dumper=MyDumper))
 ret = subprocess.Popen(["mysql", "-e",  " ".join(sqls)]).wait()
 if ret:
     print "Error: Couldn't update database passwords... (rc: %d)" % ret

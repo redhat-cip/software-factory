@@ -6,7 +6,7 @@
       when: node == 'master' or os_slave_network is undefined
 
     - name: "Check configuration"
-      command: grep "project-id.*{{ os_tenant_name }}" /etc/puppet/hiera/sf/sfconfig.yaml
+      command: grep "project-id.*{{ os_tenant_name }}" /etc/software-factory/sfconfig.yaml
       no_log: true
       register: provider_config
       ignore_errors: true
@@ -14,7 +14,7 @@
     - name: Update sfconfig
       when: provider_config.rc != 0
       command: >
-        hieraedit.py --yaml /etc/puppet/hiera/sf/sfconfig.yaml --eval nodepool "{ 'disabled': False,
+        hieraedit.py --yaml /etc/software-factory/sfconfig.yaml --eval nodepool "{ 'disabled': False,
         'providers': [{
             'name': '{{ provider_name }}',
             'auth-url':   '{{ os_auth_url }}',

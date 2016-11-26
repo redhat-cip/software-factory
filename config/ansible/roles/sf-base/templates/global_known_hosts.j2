@@ -6,11 +6,11 @@
 {% for host in inventory %}
 
 # Host: {{ host['name'] }}.{{ fqdn }}
-{{ host['name'] }}.{{ fqdn }} ssh-rsa {{ hostvars["%s.%s" % (host['name'], fqdn)].facter_sshrsakey }}
+{{ host['name'] }}.{{ fqdn }} ssh-rsa {{ hostvars["%s.%s" % (host['name'], fqdn)].ansible_ssh_host_key_rsa_public }}
 {% if "gateway" in host['roles'] %} # This is the gateway host, also set {{ fqdn }}
-{{ fqdn }} ssh-rsa {{ hostvars["%s.%s" % (host['name'], fqdn)].facter_sshrsakey }}
+{{ fqdn }} ssh-rsa {{ hostvars["%s.%s" % (host['name'], fqdn)].ansible_ssh_host_key_rsa_public }}
 {% endif %}
 # Below are virtual hosts for each roles
 {% for role in host['roles'] %}
-{{ role }}.{{ fqdn }} ssh-rsa {{ hostvars["%s.%s" % (host['name'], fqdn)].facter_sshrsakey }}
+{{ role }}.{{ fqdn }} ssh-rsa {{ hostvars["%s.%s" % (host['name'], fqdn)].ansible_ssh_host_key_rsa_public }}
 {% endfor %}{% endfor %}

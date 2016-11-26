@@ -16,16 +16,16 @@ requests_ca = "%s/ca-bundle.trust.crt" % SF_BOOTSTRAP_DATA
 if "REQUESTS_CA_BUNDLE" not in os.environ and os.path.isfile(requests_ca):
     os.environ["REQUESTS_CA_BUNDLE"] = requests_ca
 
-sfconfig_filename = "%s/hiera/sfconfig.yaml" % SF_BOOTSTRAP_DATA
-sfcreds_filename = "%s/hiera/sfcreds.yaml" % SF_BOOTSTRAP_DATA
-sfarch_filename = "%s/hiera/_arch.yaml" % SF_BOOTSTRAP_DATA
+sfconfig_filename = "%s/sfconfig.yaml" % SF_BOOTSTRAP_DATA
+sfcreds_filename = "%s/sfcreds.yaml" % SF_BOOTSTRAP_DATA
+sfarch_filename = "%s/_arch.yaml" % SF_BOOTSTRAP_DATA
 
 try:
     sfconfig = yaml.load(open(sfconfig_filename))
     sfcreds = yaml.load(open(sfcreds_filename))
     sfarch = yaml.load(open(sfarch_filename))
 except:
-    print "Can't load hiera config"
+    print "Can't load config"
     raise
 
 GATEWAY_HOST = sfconfig['fqdn']

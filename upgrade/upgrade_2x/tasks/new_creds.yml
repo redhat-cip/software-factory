@@ -5,7 +5,7 @@
 
 - name: Adds {{ sf_secret_name }} to sfcreds.yaml
   lineinfile:
-    dest: /etc/puppet/hiera/sf/sfcreds.yaml
+    dest: /etc/software-factory/sfcreds.yaml
     create: yes
     state: present
     regexp: "^creds_{{ sf_secret_name }}.*"

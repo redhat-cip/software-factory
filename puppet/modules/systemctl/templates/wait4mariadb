@@ -1,8 +1,0 @@
-#!/bin/bash
-HOST="<%= @mysql_host %>"
-
-# Wait until the mysql server accepts connections on port 3306
-while [ `echo "" | nc -w 5 --send-only ${HOST} 3306 ; echo $?` -ne 0 ]; do
-    sleep 1
-    echo -n '.'
-done

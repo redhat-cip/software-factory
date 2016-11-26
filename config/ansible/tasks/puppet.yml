@@ -1,9 +1,0 @@
----
-- shell: puppet apply --test --environment sf --modulepath=/etc/puppet/environments/sf/modules/:/etc/puppet/modules/:/usr/share/openstack-puppet/modules/ -e "{{ puppet_statement }}" >> /var/log/puppet_apply.log
-  register: puppet_exec
-  changed_when: puppet_exec.rc == 2
-  failed_when: puppet_exec.rc != 2 and puppet_exec.rc != 0
-
-#- name: "puppet output"
-#  debug: var=puppet_exec.stdout_lines
-#  when: puppet_exec|failed

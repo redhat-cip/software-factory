@@ -34,20 +34,19 @@ function install_sf {
     cp ./C7.0-ids.tables ${dir}/etc/ids.tables
 
     # Disable postfix and remove configuration to reduce puppet noise
+    # Disable postfix and remove configuration
     do_chroot ${dir} systemctl disable postfix
     for i in main.cf virtual; do
         echo -n > ${dir}/etc/postfix/$i
     done
 
-    # Install puppet files for SF
-    do_chroot ${dir} mkdir -p /etc/puppet/environments/sf /etc/puppet/hiera/sf
-    sudo rsync --delete -a --no-owner ./../puppet/ ${dir}/etc/puppet/environments/sf/
+    # Install ansible playbooks and configuration files
+    do_chroot ${dir} mkdir -p /etc/software-factory
     sudo rsync --delete -a --no-owner ./../serverspec/ ${dir}/etc/serverspec/
-    sudo cp -v ./../config/hiera/hiera.yaml ${dir}/etc/puppet/
 
     # Sf-config
     sudo rsync -a --no-owner ./../config/scripts/ ${dir}/usr/local/bin/
-    sudo rsync --delete -a -L --no-owner ./../config/defaults/ ${dir}/etc/puppet/hiera/sf/
+    sudo rsync --delete -a -L --no-owner ./../config/defaults/ ${dir}/etc/software-factory/
     sudo rsync --delete -a -L --no-owner ./../config/defaults/ ${dir}/usr/local/share/sf-default-config/
     sudo rsync --delete -a --no-owner ./../config/ansible/ ${dir}/etc/ansible/
     sudo mkdir -p ${dir}/etc/software-factory ${dir}/etc/ansible/group_vars ${dir}/var/lib/ansible

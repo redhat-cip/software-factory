@@ -5,7 +5,7 @@ Configure gerritbot for IRC notification
 
 To start the service:
 
-* Add the gerritbot role to desired host in the inventory: /etc/puppet/hiera/sf/arch.yaml:
+* Add the gerritbot role to desired host in the inventory: /etc/software-factory/arch.yaml:
 
 .. code-block:: yaml
 
@@ -14,7 +14,7 @@ To start the service:
       roles:
         - gerritbot
 
-* Set the gerritbot configuration in /etc/puppet/hiera/sf/sfconfig.yaml:
+* Set the gerritbot configuration in /etc/software-factory/sfconfig.yaml:
 
 .. code-block:: yaml
 

@@ -4,7 +4,7 @@
   tasks:
     - name: Add swift logs configuration to sfconfig
       command: >
-        hieraedit.py --yaml /etc/puppet/hiera/sf/sfconfig.yaml --eval logs "{ 'disabled': False,
+        hieraedit.py --yaml /etc/software-factory/sfconfig.yaml --eval logs "{ 'disabled': False,
             'swift_logsexport_container': '{{ os_container }}',
             'swift_logsexport_logserver_prefix': '{{ os_swifturl }}/{{ os_container }}',
             'swift_logsexport_x_storage_url': '{{ os_swifturl }}',

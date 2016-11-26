@@ -1,5 +1,5 @@
 ---
-- include_vars: /etc/puppet/hiera/sf/sfconfig.yaml
+- include_vars: /etc/software-factory/sfconfig.yaml
 
 - name: Ensure postfix group is present
   group:

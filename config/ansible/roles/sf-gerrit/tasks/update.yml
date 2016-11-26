@@ -11,7 +11,7 @@
   register: upstreamconfig
 
 # Include gerrit.yaml for heap_limit
-- include_vars: /etc/puppet/hiera/sf/gerrit.yaml
+- include_vars: /etc/software-factory/gerrit.yaml
 
 - include_vars: /root/config/gerrit/commentlinks.yaml
 

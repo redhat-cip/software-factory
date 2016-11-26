@@ -22,7 +22,7 @@ What is the added value of Software Factory ?
 .............................................
 
 * Ready to use CI system that works out of the box
-* System configuration interface using yaml and puppet/ansible
+* System configuration interface using yaml and ansible
 * Project configuration interface using code review to manage
   jobs, zuul layouts and nodepool project configuration
 * REST API to manage project creation and users ACL provisioning
@@ -84,14 +84,14 @@ How can I change the hostname?
 ..............................
 
 You can change the hostname after the deployment by setting the fqdn parameter
-in /etc/puppet/hiera/sf/sfconfig.yaml, removing the existing SSL certificates
+in /etc/software-factory/sfconfig.yaml, removing the existing SSL certificates
 (only required if runninng functional tests and using the default self-signed
 certificates) and running sfconfig.sh again:
 
 .. code-block:: bash
 
-    sed -i -e 's/fqdn:.*/fqdn: mynewhostname.com/g' /etc/puppet/hiera/sf/sfconfig.yaml
-    sed -i -e 's/sftests.com/sftests2.com/g' /etc/puppet/hiera/sf/arch.yaml
+    sed -i -e 's/fqdn:.*/fqdn: mynewhostname.com/g' /etc/software-factory/sfconfig.yaml
+    sed -i -e 's/sftests.com/sftests2.com/g' /etc/software-factory/arch.yaml
     rm /root/sf-bootstrap-data/certs/gateway.* /root/openssl.cnf
     sfconfig.sh
 
@@ -130,7 +130,7 @@ You need to log-in as SuperUser using the super_user_password
 from the sfconfig.yaml configuration. If no password was set,
 then you need to read it's value using:
 
-  awk '/super_user_password:/ { print $2 }' /etc/puppet/hiera/sf/sfconfig.yaml
+  awk '/super_user_password:/ { print $2 }' /etc/software-factory/sfconfig.yaml
 
 Then you can follow this documentation to create channels and
 set custom ACL:
@@ -148,8 +148,8 @@ for ci image building purpose.
 To enable the mirror service, you need to configure a swift container
 in sfconfig.yaml and then specify what url needs to be mirrored in the config-repo:
 
-* Add the mirror role to /etc/puppet/hiera/sf/arch.yaml
-* Configure the mirror role in /etc/puppet/hiera/sf/sfconfig.yaml
+* Add the mirror role to /etc/software-factory/arch.yaml
+* Configure the mirror role in /etc/software-factory/sfconfig.yaml
 * Run sfconfig.sh
 * Edit mirror configuration template provided in config repo mirrors directory.
 

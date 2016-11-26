@@ -1,5 +1,7 @@
 ---
 - hosts: install-server
+  pre_tasks:
+  - include: tasks/remove_puppet.yaml
   tasks:
   - include: tasks/fetchupstream.yml
   - include: tasks/gerritbot_configrepo_import.yml

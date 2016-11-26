@@ -1,5 +1,3 @@
-facter
-puppet
 pyflakes
 pyOpenSSL
 pyparsing

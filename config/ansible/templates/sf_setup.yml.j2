@@ -1,6 +1,6 @@
 ---
 # This file is managed by sfconfig.sh, don't edit.
-# This playbook applies puppet and ansible roles.
+# This playbook applies ansible roles.
 
 
 # TODO: Fix fqdn update to work on distributed arch
@@ -14,16 +14,6 @@
   connection: local
   roles:
     - {name: "sf-ssh", action: "setup"}
-
-# Copy hiera configuration to all node except the install-server
-# TODO: Remove this block once puppet is un-used
-{% for host in inventory %}{% if 'install-server' not in host['roles'] %}
-
-- hosts: {{ host['hostname'] }}
-  tasks:
-    - name: Copy hiera configuration
-      synchronize: src=/etc/puppet/hiera/ dest=/etc/puppet/hiera/ delete=yes
-{% endif %}{% endfor %}
 
 # Setup sf-base role on all hosts
 - hosts: all
@@ -51,9 +41,6 @@
 {% for role in host['rolesname'] %}{% if role != 'sf-mysql' %}    - {name: "{{ role }}", action: "setup"}
 {% endif %}{% endfor %}
   post_tasks:
-{% if host['puppet_statement'] != 'include ' %}
-    - include: /etc/ansible/tasks/puppet.yml puppet_statement="{{ host['puppet_statement'] }}"
-{% endif %}
     - include: /etc/ansible/tasks/selinux_finalize.yml
       when: selinuxenabled
 

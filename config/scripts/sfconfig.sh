@@ -22,17 +22,17 @@
 set -e
 
 # Defaults
-DOMAIN=$(cat /etc/puppet/hiera/sf/sfconfig.yaml | grep "^fqdn:" | cut -d: -f2 | sed 's/ //g')
+DOMAIN=$(cat /etc/software-factory/sfconfig.yaml | grep "^fqdn:" | cut -d: -f2 | sed 's/ //g')
 BUILD=/root/sf-bootstrap-data
 HOME=/root
 
 export PATH=/bin:/sbin:/usr/local/bin:/usr/local/sbin
 
 function update_config {
-    echo "sf_version: $(grep ^VERS= /var/lib/edeploy/conf | cut -d"=" -f2 | cut -d'-' -f2)" > /etc/puppet/hiera/sf/sf_version.yaml
+    echo "sf_version: $(grep ^VERS= /var/lib/edeploy/conf | cut -d"=" -f2 | cut -d'-' -f2)" > /etc/software-factory/sf_version.yaml
     /usr/local/bin/sf-update-hiera-config.py
     /usr/local/bin/sf-ansible-generate-inventory.py --domain ${DOMAIN} --install_server_ip $(ip route get 8.8.8.8 | awk '{ print $7 }') \
-        /etc/puppet/hiera/sf/arch.yaml
+        /etc/software-factory/arch.yaml
 
     # set managesf gitconfig
     git config --global user.name "SF initial configurator"
@@ -70,13 +70,13 @@ function generate_api_key {
 }
 
 function generate_yaml {
-    OUTPUT=/etc/puppet/hiera/sf/
+    OUTPUT=/etc/software-factory/
 
     echo "[sfconfig] copy defaults hiera to ${OUTPUT}"
     # Generate random passwords for services and users
-    for cred in $(awk '!/api_key|sshkey|pub_key/ {print $1}' /etc/puppet/hiera/sf/sfcreds.yaml); do
+    for cred in $(awk '!/api_key|sshkey|pub_key/ {print $1}' /etc/software-factory/sfcreds.yaml); do
         password=$(generate_random_pswd 32)
-        sed -i "s#\($cred\).*#\1 $password#"  /etc/puppet/hiera/sf/sfcreds.yaml
+        sed -i "s#\($cred\).*#\1 $password#"  /etc/software-factory/sfcreds.yaml
     done
 
     # Default authorized ssh keys on each node
@@ -95,8 +95,8 @@ function generate_yaml {
     sed -i "s#GERRIT_SERV_PUB_KEY#${GERRIT_SERV_PUB}#" ${OUTPUT}/sfcreds.yaml
     sed -i "s#GERRIT_ADMIN_PUB_KEY#${GERRIT_ADMIN_PUB_KEY}#" ${OUTPUT}/sfcreds.yaml
 
-    chown -R root:puppet /etc/puppet/hiera/sf
-    chmod -R 0750 /etc/puppet/hiera/sf
+    chown -R root:root /etc/software-factory
+    chmod -R 0750 /etc/software-factory
 }
 
 function generate_keys {
@@ -171,7 +171,7 @@ EOF
 }
 
 function manage_ssh_keys_and_certs {
-    OUTPUT=/etc/puppet/hiera/sf/
+    OUTPUT=/etc/software-factory/
 
     for key in $(find ${BUILD}/ssh_keys -type f); do
         name=$(basename $key | sed "s/.pub/_pub/")
@@ -183,7 +183,7 @@ function manage_ssh_keys_and_certs {
         hieraedit.py --yaml ${OUTPUT}/sfcreds.yaml -f $cert $name
     done
 
-    hieraedit.py --yaml /etc/puppet/hiera/sf/sfcreds.yaml -f ${BUILD}/certs/gateway.crt gateway_chain
+    hieraedit.py --yaml /etc/software-factory/sfcreds.yaml -f ${BUILD}/certs/gateway.crt gateway_chain
 }
 
 function wait_for_ssh {
@@ -221,17 +221,17 @@ fi
 # Ensure all the ssh keys and certs are on sfcreds
 manage_ssh_keys_and_certs
 
-if [ -f "/etc/puppet/hiera/sf/sfcreds.yaml.orig" ]; then
+if [ -f "/etc/software-factory/sfcreds.yaml.orig" ]; then
     # Most likely this is a sfconfig.sh run after restoring a backup.
     # We need to update the mysql root password
-    oldpw=`grep -Po "(?<=creds_mysql_root_pwd: ).*" /etc/puppet/hiera/sf/sfcreds.yaml.orig`
-    newpw=`grep -Po "(?<=creds_mysql_root_pwd: ).*" /etc/puppet/hiera/sf/sfcreds.yaml`
-    mysqladmin -u root -p"$oldpw" password "$newpw" && rm /etc/puppet/hiera/sf/sfcreds.yaml.orig
+    oldpw=`grep -Po "(?<=creds_mysql_root_pwd: ).*" /etc/software-factory/sfcreds.yaml.orig`
+    newpw=`grep -Po "(?<=creds_mysql_root_pwd: ).*" /etc/software-factory/sfcreds.yaml`
+    mysqladmin -u root -p"$oldpw" password "$newpw" && rm /etc/software-factory/sfcreds.yaml.orig
 fi
 
 update_config
 
-# Configure ssh access to inventory and copy puppet configuration
+# Configure ssh access to inventory
 HOSTS=$(awk "/${DOMAIN}/ { print \$1 }" /etc/ansible/hosts | sort | uniq)
 for host in $HOSTS; do
     wait_for_ssh $host
@@ -239,7 +239,7 @@ done
 
 echo "[sfconfig] Starting configuration"
 time ansible-playbook /etc/ansible/sf_setup.yml || {
-    echo "[sfconfig] sfpuppet playbook failed"
+    echo "[sfconfig] sfansible playbook failed"
     exit 1
 }
 
@@ -257,5 +257,5 @@ echo "${DOMAIN}: SUCCESS"
 echo
 echo "Access dashboard: https://${DOMAIN}"
 echo "Login with admin user, get the admin password by running:"
-echo "  awk '/admin_password/ {print \$2}' /etc/puppet/hiera/sf/sfconfig.yaml"
+echo "  awk '/admin_password/ {print \$2}' /etc/software-factory/sfconfig.yaml"
 exit 0

@@ -168,7 +168,7 @@
       - project_rename
 
   - name: Get hostname
-    shell: "grep fqdn /etc/puppet/hiera/sf/sfconfig.yaml | awk -F ': ' '{ print $2 }'"
+    shell: "grep fqdn /etc/software-factory/sfconfig.yaml | awk -F ': ' '{ print $2 }'"
     register: fqdn
     tags:
       - test_triggers_rename

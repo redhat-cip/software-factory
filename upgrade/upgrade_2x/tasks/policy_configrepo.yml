@@ -4,7 +4,7 @@
   register: configrepo_policies
 
 - name: Include sfconfig.yaml to get fqdn
-  include_vars: /etc/puppet/hiera/sf/sfconfig.yaml
+  include_vars: /etc/software-factory/sfconfig.yaml
 
 - name: Init policy configuration
   when: configrepo_policies.stat.exists == false

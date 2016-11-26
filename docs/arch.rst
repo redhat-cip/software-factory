@@ -14,7 +14,7 @@ a separate node).
 Configuration
 -------------
 
-The architecture is defined in /etc/puppet/hiera/sf/arch.yaml:
+The architecture is defined in /etc/software-factory/arch.yaml:
 
 .. code-block:: yaml
 
@@ -86,7 +86,7 @@ This procedure demonstrates how to run the log indexation services (ELK stack) o
 
 * First stop and disable all elk related services (elasticsearch, logstash, log-gearman-client and log-gearman-worker)
 * Copy the current data, e.g.: rsync -a /var/lib/elasticsearch/ new_instance_ip:/var/lib/elasticsearch/
-* Add the new instances and roles to the /etc/puppet/hiera/sf/arch.yaml file:
+* Add the new instances and roles to the /etc/software-factory/arch.yaml file:
 
 .. code-block:: yaml
 

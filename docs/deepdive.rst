@@ -38,7 +38,7 @@ The build_image.sh script does the following:
 
 * The third step adds the SF secret sauce to the image cache (see image/sf.install)
 
-  * Copy the puppet/ansible modules
+  * Copy the ansible modules
   * Install SF components such as managesf
   * Everything that is developped for SF
 
@@ -82,8 +82,8 @@ The sfconfig.sh script drives the system configuration. This script does the fol
   useful when after an upgrade, a new component configuration has been added
 * Generates Ansible inventory and configuration playbook based on the arch.yaml file.
 * Waits for ssh access to all instances
-* Run sf_setup.yml playbook to setup all the services and run puppet when needed. This executes
-  all the setup.yml task of enabled ansible roles.
+* Run sf_setup.yml playbook to setup all the services. This executes all the
+  setup.yml task of enabled ansible roles.
 * Run sf_initialize.yml playbook. This creates the config-repo and run the sf_configrepo_update.yml playbook
   to update services based on config repo content.
 * Run sf_postconf.yml playbook to executes all the postconf.yml task of enabled ansible roles such as

@@ -161,7 +161,7 @@ def init(arch, base, arch_raw):
 
     # "cloud-init": copy sfarch file
     root = "/var/lib/lxc/%s/rootfs" % arch["install"]
-    open("%s/etc/puppet/hiera/sf/arch.yaml" % root, "w").write(
+    open("%s/etc/software-factory/arch.yaml" % root, "w").write(
         yaml.dump(arch_raw, default_flow_style=False)
     )
 

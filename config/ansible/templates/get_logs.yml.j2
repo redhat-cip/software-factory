@@ -15,7 +15,7 @@
       synchronize: src=/root/sf-bootstrap-data/ dest=/root/sf-logs/sf-bootstrap-data/
       ignore_errors: True
     - name: "Copy the hiera configuration"
-      synchronize: src=/etc/puppet/hiera/sf/ dest=/root/sf-logs/hiera/ rsync_opts="--exclude .git"
+      synchronize: src=/etc/software-factory/ dest=/root/sf-logs/hiera/ rsync_opts="--exclude .git"
       ignore_errors: True
     - name: "Copy config-update logs"
       synchronize: src=/var/log/software-factory/ dest=/root/sf-logs/config-updates/
@@ -39,7 +39,6 @@
         - /var/log/upgrade-bootstrap.log
         - /var/log/cloud-init.log
         - /var/log/cloud-init-output.log
-        - /var/log/puppet_apply.log
 
 {% for host in inventory %}
 - hosts: {{ host['hostname'] }}

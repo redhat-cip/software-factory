@@ -1,11 +1,11 @@
 ---
-- include_vars: /etc/puppet/hiera/sf/sfconfig.yaml
+- include_vars: /etc/software-factory/sfconfig.yaml
 
-- name: Initalize version control for hiera files
+- name: Initalize version control for yaml files
   shell: git init .; git add *; git commit -m 'init'
   args:
-      chdir: /etc/puppet/hiera/sf/
-      creates: /etc/puppet/hiera/sf/.git
+      chdir: /etc/software-factory/
+      creates: /etc/software-factory/.git
 
 - name: Initialize bup
   command: bup init

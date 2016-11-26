@@ -111,9 +111,9 @@ resources:
         export TERM=xterm
         export SHELL=/bin/bash
         export SHLVL=1
-        sed -i 's/admin_password:.*/admin_password: adminpwd/' /etc/puppet/hiera/sf/sfconfig.yaml
-        sed -i 's/^fqdn:.*/fqdn: domain/' /etc/puppet/hiera/sf/sfconfig.yaml
-        cat << EOF > /etc/puppet/hiera/sf/arch.yaml
+        sed -i 's/admin_password:.*/admin_password: adminpwd/' /etc/software-factory/sfconfig.yaml
+        sed -i 's/^fqdn:.*/fqdn: domain/' /etc/software-factory/sfconfig.yaml
+        cat << EOF > /etc/software-factory/arch.yaml
         {{ arch_raw.replace('\n', '\n        ') }}
         EOF
         if [ "bootstrap" == "True" ]; then
@@ -264,9 +264,9 @@ resources:
                export SHELL=/bin/bash
                export SHLVL=1
 {% if 'install-server' in host['roles'] %}
-               sed -i 's/admin_password:.*/admin_password: adminpwd/' /etc/puppet/hiera/sf/sfconfig.yaml
-               sed -i 's/^fqdn:.*/fqdn: domain/' /etc/puppet/hiera/sf/sfconfig.yaml
-               cat << EOF > /etc/puppet/hiera/sf/arch.yaml
+               sed -i 's/admin_password:.*/admin_password: adminpwd/' /etc/software-factory/sfconfig.yaml
+               sed -i 's/^fqdn:.*/fqdn: domain/' /etc/software-factory/sfconfig.yaml
+               cat << EOF > /etc/software-factory/arch.yaml
                {{ arch_raw.replace('\n', '\n               ') }}
                EOF
 {# Until SoftwareConfig works, disabled auto-configuration for multi-node #}

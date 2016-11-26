@@ -1,5 +1,5 @@
 ---
-- include_vars: /etc/puppet/hiera/sf/sfcreds.yaml
+- include_vars: /etc/software-factory/sfcreds.yaml
 
 - name: "Create group"
   group:

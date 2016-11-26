@@ -4,7 +4,7 @@
   register: configrepo_gerritlinks
 
 - name: Include sfconfig.yaml to get fqdn
-  include_vars: /etc/puppet/hiera/sf/sfconfig.yaml
+  include_vars: /etc/software-factory/sfconfig.yaml
 
 - name: Copy gerrit commentlinks configuration
   when: configrepo_gerritlinks.stat.exists == false

@@ -173,7 +173,7 @@ First time: **Please read** :ref:`Root password consideration<root-password>`.
 .. code-block:: bash
 
  $ ssh -A root@sf_instance
- [root@managesf ~]# vim /etc/puppet/hiera/sf/sfconfig.yaml
+ [root@managesf ~]# vim /etc/software-factory/sfconfig.yaml
  [root@managesf ~]# sfconfig.sh
 
 
@@ -203,9 +203,9 @@ such as letsencrypt, you need to update the configuration:
 
 .. code-block:: bash
 
-  hieraedit.py --yaml /etc/puppet/hiera/sf/sfcreds.yaml -f cert.pem    gateway_crt
-  hieraedit.py --yaml /etc/puppet/hiera/sf/sfcreds.yaml -f privkey.pem gateway_key
-  hieraedit.py --yaml /etc/puppet/hiera/sf/sfcreds.yaml -f chain.pem   gateway_chain
+  hieraedit.py --yaml /etc/software-factory/sfcreds.yaml -f cert.pem    gateway_crt
+  hieraedit.py --yaml /etc/software-factory/sfcreds.yaml -f privkey.pem gateway_key
+  hieraedit.py --yaml /etc/software-factory/sfcreds.yaml -f chain.pem   gateway_chain
   # apply configuration change
   sfconfig.sh
 

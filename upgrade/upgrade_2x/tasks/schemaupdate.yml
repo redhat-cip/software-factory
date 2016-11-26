@@ -29,7 +29,7 @@
   service: name=gerrit state=started
 
 # Redmine schema update
-- include_vars: /etc/puppet/hiera/sf/_arch.yaml
+- include_vars: /etc/software-factory/_arch.yaml
 
 - name: Stop Apache service
   service: name=httpd state=stopped

@@ -17,7 +17,7 @@
   - include: tasks/new_creds.yml sf_secret_name=cauth_sql_pwd
   - include: tasks/new_creds.yml sf_secret_name=managesf_sql_pwd
   # 2.0.0: Remove hosts.yaml hiera
-  - file: path=/etc/puppet/hiera/sf/hosts.yaml state=absent
+  - file: path=/etc/software-factory/hosts.yaml state=absent
 
 - hosts: managesf
   tasks:

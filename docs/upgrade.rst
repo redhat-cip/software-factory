@@ -32,7 +32,7 @@ The upgrade script will:
 - Fetch the SF image of the version.
 - Stop all SF components (Gerrit, Jenkins, ...)
 - Live copy the file system diff using rsync.
-- Trigger puppet apply.
+- Trigger ansible apply.
 - Auto submit a new Review to Gerrit config repository if the upgrade
   bring modifications for the default JJB and Zuul base files.
 
