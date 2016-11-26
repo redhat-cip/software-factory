@@ -281,6 +281,7 @@ PASTE_VERSION=beb3ff7e266 # latest commit as of 05 Jun 2015
 
 GIT_REPO_LIST="$GIT_REPO_LIST $NODEPOOL_URL $GERRITBOT_URL $PASTE_URL REPOXPLORER_URL"
 if [ "${USE_SWIFT_CACHE}" == "yes" ]; then
+    GERRITBOT_EXTRA_VARS="gerritbot_url: \"${SWIFT_CACHE}/gerritbot.git\", gerritbot_commit: \"${GERRITBOT_VERSION}\""
     ZUUL_EXTRA_VARS="zuul_url: \"${SWIFT_CACHE}/zuul.git\""
     ZUUL_EXTRA_VARS+=", zuul_commit: \"${ZUUL_VERSION}\""
     ZUUL_EXTRA_VARS+=", jquery_visibility_url: \"${SWIFT_CACHE}/javascripts/jquery-visibility.min.js\""

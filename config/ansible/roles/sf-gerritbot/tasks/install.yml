@@ -1,0 +1,12 @@
+---
+- name: "Fetch gerritbot code"
+  git: repo={{ gerritbot_url }} dest=/usr/src/gerritbot recursive=no version={{ gerritbot_commit }} update=no force=yes
+
+- name: "Install gerritbot venv"
+  command: chdir=/usr/src/gerritbot {{ item }}
+  with_items:
+    - virtualenv /srv/gerritbot
+    - /srv/gerritbot/bin/pip install --upgrade 'pbr' 'pip'
+    - sed -i 's/^pbr.*//' requirements.txt
+    - /srv/gerritbot/bin/pip install -rrequirements.txt
+    - /srv/gerritbot/bin/python setup.py install --install-scripts /usr/bin

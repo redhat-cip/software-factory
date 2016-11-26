@@ -1,4 +1,8 @@
 role_actions:
+  - install
   - setup
   - update
   - get_logs
+
+gerritbot_url: https://git.openstack.org/openstack-infra/gerritbot
+gerritbot_commit: master

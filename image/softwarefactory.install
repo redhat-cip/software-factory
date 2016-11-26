@@ -496,20 +496,6 @@ EOF
     rm -Rf ${dir}/srv/lodgeit/lodgeit/.git
 }
 
-function install_gerritbot {
-    # Checkout VERSION in /tmp
-    rm -Rf ${dir}/tmp/gerritbot
-
-    retry do_chroot ${dir} git clone ${GERRITBOT_URL} /tmp/gerritbot
-    do_chroot ${dir} bash -c "cd /tmp/gerritbot && git checkout -b working ${GERRITBOT_VERSION}"
-
-    # Install
-    do_chroot ${dir} bash -c "cd /tmp/gerritbot && python setup.py install"
-
-    # Cleanup left-overs
-    rm -Rf ${dir}/tmp/gerritbot
-}
-
 function install_gitweb_theme {
     # Checkout VERSION in /tmp
     rm -Rf ${dir}/tmp/kogakure
@@ -584,8 +570,6 @@ if [ "$STEP" == 1 ]; then
     checkpoint "redmine installed"
     install_gerrit
     checkpoint "gerrit installed"
-    install_gerritbot
-    checkpoint "gerritbot installed"
     install_murmurd
     install_fonts
     install_edeploy
@@ -605,6 +589,7 @@ if [ "$STEP" == 1 ]; then
     ansible_install sf-managesf "$MANAGESF_EXTRA_VARS"
     ansible_install sf-lecm "$LECM_EXTRA_VARS"
     ansible_install sf-zuul "$ZUUL_EXTRA_VARS"
+    ansible_install sf-gerritbot "$GERRITBOT_EXTRA_VARS"
     ansible_install sf-nodepool "$NODEPOOL_EXTRA_VARS"
     ansible_install sf-storyboard "${STORYBOARD_EXTRA_VARS}"
     ansible_install sf-storyboard-webclient "${STORYBOARD_WEBCLIENT_EXTRA_VARS}"
