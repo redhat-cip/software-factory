@@ -574,7 +574,7 @@ if [ "$STEP" == 1 ]; then
     install_fonts
     install_edeploy
     install_serverspec
-    checkpoint "pygerrit, fonts, edeploy, serverspect installed"
+    checkpoint "murmurd, fonts, edeploy, serverspect installed"
     install_etherpad
     install_paste
     install_bup
@@ -583,10 +583,14 @@ if [ "$STEP" == 1 ]; then
     install_gitweb_theme
     checkpoint "gitweb theme installed"
     copy_sf_ansible_roles
-    ansible_install sf-base "${BASE_EXTRA_VARS}"
-    # Copy prepared managesf source to support depends-on
+    # Copy prepared source to support depends-on
     rsync -a --delete ${MANAGESF_CLONED_PATH}/ ${dir}/usr/src/managesf/
+    rsync -a --delete ${CAUTH_CLONED_PATH}/ ${dir}/usr/src/cauth/
+    rsync -a --delete ${SFMANAGER_CLONED_PATH}/ ${dir}/usr/src/python-sfmanager/
+    rsync -a --delete ${PYSFLIB_CLONED_PATH}/ ${dir}/usr/src/pysflib/
+    ansible_install sf-base "${BASE_EXTRA_VARS}"
     ansible_install sf-managesf "$MANAGESF_EXTRA_VARS"
+    ansible_install sf-cauth "$CAUTH_EXTRA_VARS"
     ansible_install sf-lecm "$LECM_EXTRA_VARS"
     ansible_install sf-zuul "$ZUUL_EXTRA_VARS"
     ansible_install sf-gerritbot "$GERRITBOT_EXTRA_VARS"

@@ -16,3 +16,18 @@
     - ./configure --prefix=/usr
     - make all
     - make install
+
+- name: "Install sfmanager venv"
+  command: chdir=/usr/src/python-sfmanager {{ item }}
+  with_items:
+    - virtualenv /srv/sfmanager
+    - sed -i 's/^.*pysflib.*//' requirements.txt
+    - /srv/sfmanager/bin/pip install --upgrade 'pbr' 'pip'
+    - /srv/sfmanager/bin/pip install -rrequirements.txt
+    - /srv/sfmanager/bin/python setup.py install --install-scripts /usr/bin
+
+- name: "Install pysflib"
+  command: chdir=/usr/src/pysflib {{ item }}
+  with_items:
+    - /srv/sfmanager/bin/pip install -rrequirements.txt
+    - /srv/sfmanager/bin/python setup.py install

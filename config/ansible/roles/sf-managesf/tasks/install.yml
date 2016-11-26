@@ -4,8 +4,15 @@
   with_items:
     - virtualenv /var/www/managesf
     - /var/www/managesf/bin/pip install --upgrade 'pbr' 'pip'
+    - sed -i 's/^.*pysflib.*//' requirements.txt
     - sed -i 's/^paramiko.*/paramiko<2/' requirements.txt
     - sed -i 's/^.*storyboardclient.*//' requirements.txt
+    - /var/www/managesf/bin/pip install -rrequirements.txt
+    - /var/www/managesf/bin/python setup.py install
+
+- name: "Install pysflib"
+  command: chdir=/usr/src/pysflib {{ item }}
+  with_items:
     - /var/www/managesf/bin/pip install -rrequirements.txt
     - /var/www/managesf/bin/python setup.py install
 

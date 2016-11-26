@@ -11,6 +11,9 @@
       mode: 0750
       setype: httpd_sys_content_t
 
+- name: "Copy app.wsgi"
+  copy: src=app.wsgi dest=/var/www/cauth/app.wsgi
+
 - name: Create /var/lib/cauth directory
   file: path=/var/lib/cauth state=directory owner=apache group=apache mode=0750
 
@@ -35,8 +38,11 @@
   template: src=templates/config.py.j2 dest=/var/www/cauth/config.py
   notify: apache reload
 
+- name: Create /var/www/cauth/templates
+  file: path=/var/www/cauth/templates state=directory
+
 - name: Install login.html
-  template: src=templates/login.html.j2 dest=/var/www/cauth/cauth/templates/login.html
+  template: src=login.html.j2 dest=/var/www/cauth/templates/login.html
 
 - name: Install auth site
   copy:

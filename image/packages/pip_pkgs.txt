@@ -10,14 +10,3 @@ glob2
 # Graphite req
 django<1.8
 django-tagging
-
-# Managesf/pysflib/cauth req
-# (use image/sf.install STAGING_PIP first to adds new packages without full cache rebuild)
-python-redmine==1.2.0
-gerritlib==0.4.0
-basicauth==0.3
-htpasswd
-wsgiref==0.1.2
-pygerrit
--e git+https://github.com/openstack-infra/python-storyboardclient.git#egg=python-storyboardclient
--e git+https://github.com/rohe/pyoidc.git@85514e6400a62e812d7dea968eba3738983312da#egg=pyoidc

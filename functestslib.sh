@@ -203,13 +203,11 @@ function build_image {
         sudo rsync -a --delete --no-owner config/config-repo/ ${IMAGE_PATH}/usr/local/share/sf-config-repo/
         sudo rsync -a --delete --no-owner serverspec/ ${IMAGE_PATH}/etc/serverspec/
         sudo rsync -a config/scripts/ ${IMAGE_PATH}/usr/local/bin/
-        echo "SKIP_BUILD: direct copy of ${MANAGESF_CLONED_PATH}/ to ${IMAGE_PATH}/var/www/managesf/lib/python2.7/site-packages/managesf/"
         sudo rsync -a --delete ${MANAGESF_CLONED_PATH}/managesf/ ${IMAGE_PATH}/var/www/managesf/lib/python2.7/site-packages/managesf/
-        echo "SKIP_BUILD: direct copy of ${CAUTH_CLONED_PATH}/ to ${IMAGE_PATH}/var/www/cauth/"
-        sudo rsync -a --delete ${CAUTH_CLONED_PATH}/ ${IMAGE_PATH}/var/www/cauth/
-        PYSFLIB_LOC=${IMAGE_PATH}/$(sudo chroot ${IMAGE_PATH} pip show pysflib | grep '^Location:' | awk '{ print $2 }')
-        echo "SKIP_BUILD: direct copy of ${PYSFLIB_CLONED_PATH}/pysflib/ to ${PYSFLIB_LOC}/pysflib/"
-        sudo rsync -a --delete ${PYSFLIB_CLONED_PATH}/pysflib/ ${PYSFLIB_LOC}/pysflib/
+        sudo rsync -a --delete ${CAUTH_CLONED_PATH}/cauth/ ${IMAGE_PATH}/var/www/cauth/lib/python2.7/site-packages/cauth/
+        for sflibuser in /var/www/cauth /var/www/managesf /srv/sfmanager; do
+            sudo rsync -a --delete ${PYSFLIB_CLONED_PATH}/pysflib/ ${IMAGE_PATH}/${sflibuser}/lib/python2.7/site-packages/pysflib/
+        done
         sudo cp image/edeploy/edeploy ${IMAGE_PATH}/usr/sbin/edeploy
         set +e
     fi

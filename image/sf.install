@@ -71,32 +71,31 @@ function install_sf {
     sudo cp -Rv ./../tools/slaves/* ${dir}/usr/local/bin/
 
     # Install cauth
-    [ ! -d "${dir}/var/www/cauth" ] && sudo mkdir ${dir}/var/www/cauth
-    sudo cp -Rv ${CAUTH_CLONED_PATH}/* ${dir}/var/www/cauth/
-    do_chroot ${dir} bash -c "cd /var/www/cauth && python setup.py install"
-
-    # Install pysflib
-    sudo mkdir -p ${dir}/tmp/pysflib
-    sudo cp -Rv ${PYSFLIB_CLONED_PATH}/* ${dir}/tmp/pysflib/
-    do_chroot ${dir} bash -c "cd /tmp/pysflib; python setup.py install"
-    do_chroot ${dir} bash -c "cd /tmp/pysflib; /var/www/managesf/bin/python setup.py install"
+    sudo rsync -a --delete ${CAUTH_CLONED_PATH}/ ${dir}/usr/src/cauth/
+    do_chroot ${dir} bash -c "cd /usr/src/cauth; /var/www/cauth/bin/python setup.py install"
 
     # Install managesf
     sudo rsync -a --delete ${MANAGESF_CLONED_PATH}/ ${dir}/usr/src/managesf/
     do_chroot ${dir} bash -c "cd /usr/src/managesf; /var/www/managesf/bin/python setup.py install"
 
     # Install python-sfmanager
-    sudo mkdir -p ${dir}/tmp/python-sfmanager
-    sudo cp -Rv ${SFMANAGER_CLONED_PATH}/* ${dir}/tmp/python-sfmanager/
-    do_chroot ${dir} bash -c "cd /tmp/python-sfmanager; python setup.py install"
+    sudo rsync -a --delete ${SFMANAGER_CLONED_PATH}/ ${dir}/usr/src/python-sfmanager/
+    do_chroot ${dir} bash -c "cd /usr/src/python-sfmanager; /srv/sfmanager/bin/python setup.py install --install-scripts /usr/bin"
 
-    do_chroot ${dir} find /root /var/www -name "*.pyc" -exec rm {} \;
+    # Install pysflib
+    sudo rsync -a --delete ${PYSFLIB_CLONED_PATH}/ ${dir}/usr/src/pysflib/
+    do_chroot ${dir} bash -c "cd /usr/src/pysflib; /var/www/cauth/bin/python setup.py install"
+    do_chroot ${dir} bash -c "cd /usr/src/pysflib; /var/www/managesf/bin/python setup.py install"
+    do_chroot ${dir} bash -c "cd /usr/src/pysflib; /srv/sfmanager/bin/python setup.py install"
+
+
+    do_chroot ${dir} find /root /var/www /srv/ -name "*.pyc" -exec rm {} \;
 
     # Documentation
     DOCBUILDDIR=$(mktemp -d /tmp/sfdocs_buildXXXXXXX)
     rm -Rf ${dir}/var/www/docs
     mkdir ${dir}/var/www/docs
-    cd ${DOCDIR} && make BUILDDIR=$DOCBUILDDIR CAUTH_CLONED_PATH=${CAUTH_CLONED_PATH} SFMANAGER_CLONED_PATH=${dir}/tmp/python-sfmanager html ; cd -
+    cd ${DOCDIR} && make BUILDDIR=$DOCBUILDDIR CAUTH_CLONED_PATH=${CAUTH_CLONED_PATH} SFMANAGER_CLONED_PATH=${SFMANAGER_CLONED_PATH} html ; cd -
     mv $DOCBUILDDIR/html/* ${dir}/var/www/docs/
     rm -rf $DOCBUILDDIR
 

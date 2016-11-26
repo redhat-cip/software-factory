@@ -65,6 +65,9 @@ function build_cache {
     [ -z "${SKIP_BUILD}" ] || return
     CACHE_HASH="$(git log --simplify-merges --format=oneline -n 1 $CACHE_DEPS)"
     CACHE_HASH+=" | managesf: $(cd $MANAGESF_CLONED_PATH; git log --simplify-merges --format=oneline -n 1 requirements.txt)"
+    CACHE_HASH+=" | cauth: $(cd $CAUTH_CLONED_PATH; git log --simplify-merges --format=oneline -n 1 requirements.txt)"
+    CACHE_HASH+=" | sfmanager: $(cd $SFMANAGER_CLONED_PATH; git log --simplify-merges --format=oneline -n 1 requirements.txt)"
+    CACHE_HASH+=" | pysflib: $(cd $PYSFLIB_CLONED_PATH; git log --simplify-merges --format=oneline -n 1 requirements.txt)"
     LOCAL_HASH="$(head -n 1 ${CACHE_PATH}.description 2> /dev/null)"
 
     echo "(STEP1) Cache: ${CACHE_HASH}"
@@ -83,7 +86,8 @@ function build_cache {
     (
         set -e
         cd image
-        STEP=1 MANAGESF_CLONED_PATH=$MANAGESF_CLONED_PATH \
+        STEP=1 MANAGESF_CLONED_PATH=$MANAGESF_CLONED_PATH PYSFLIB_CLONED_PATH=$PYSFLIB_CLONED_PATH \
+        CAUTH_CLONED_PATH=$CAUTH_CLONED_PATH SFMANAGER_CLONED_PATH=$SFMANAGER_CLONED_PATH \
             sudo -E ./softwarefactory.install ${CACHE_PATH} ${SF_VER}
         echo "${CACHE_HASH}" | sudo tee ${CACHE_PATH}.description > /dev/null
         ./get_image_versions_information.sh ${CACHE_PATH} | sudo tee -a ${CACHE_PATH}.description > /dev/null
