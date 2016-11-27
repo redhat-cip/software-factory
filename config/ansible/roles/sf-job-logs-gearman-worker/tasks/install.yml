@@ -6,7 +6,7 @@
 - name: "Install virtualenv for job logs gearman worker"
   command: "{{ item }}"
   with_items:
-    - virtualenv --system-site-packages /srv/log-gearman-worker
+    - virtualenv /srv/log-gearman-worker
     - /srv/log-gearman-worker/bin/pip install --upgrade 'pbr' 'pip'
     - /srv/log-gearman-worker/bin/pip install gear statsd PyYAML python-daemon
 - name: "Fetch job logs gearman worker from Openstack infra repo"
