@@ -60,6 +60,7 @@
     - { name: secure.config,
         path: /home/gerrit/site_path/etc,
         mode: '0600' }
+  notify: [restart gerrit]
 
 - name: "Install static configuration files for gerrit"
   copy:
