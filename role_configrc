@@ -6,15 +6,14 @@ VER=2.2.7
 
 # Version string
 PREVIOUS_VER=2.2.6
-SF_PREVIOUS_VER=C7.0-${PREVIOUS_VER}
 
 # A tagged release of SF is defined by the string "TaggedRelease" in the commit msg
 REL_VER=$(git log --simplify-merges -n 1 | grep -i 'TaggedRelease:' | awk '{ print $2 }')
 if [ ! -z "${REL_VER}" ]; then
     echo "This is release: ${REL_VER}."
     VER=${REL_VER}
-    SF_PREVIOUS_VER=C7.0-2.2.5
-    echo "Previous stable version is ${SF_PREVIOUS_VER}"
+    PREVIOUS_VER=2.2.5
+    echo "Previous stable version is ${PREVIOUS_VER}"
     TAGGED_RELEASE=1
     # Pinned versions of the subprojects to go with the current release
     PYSFLIB_PINNED_VERSION=5f0fb72a6f495f329374057e4b93d7e54bc4ef91
@@ -26,6 +25,7 @@ else
 fi
 
 SF_VER=${SF_VER:-C7.0-${VER}}
+SF_PREVIOUS_VER=C7.0-${PREVIOUS_VER}
 RELEASE_GPG_FINGERPRINT=0xE46E04A2344803E5A808BDD7E8C203A71C3BAE4B
 
 export LC_ALL=C

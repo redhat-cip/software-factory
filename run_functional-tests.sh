@@ -65,20 +65,13 @@ fi
 unset http_proxy
 unset https_proxy
 
-TECH_PREVIEW="elasticsearch job-logs-gearman-client job-logs-gearman-worker logstash kibana mirror"
-TECH_PREVIEW+=" storyboard storyboard-webclient repoxplorer"
-
 case "${TEST_TYPE}" in
     "minimal")
-        # Add tech preview components until they are fully integrated in the refarch
-        enable_arch_components locally $REFARCH_FILE "$TECH_PREVIEW"
         lxc_init
         run_bootstraps
         run_serverspec_tests
         ;;
     "functional")
-        # Add tech preview components until they are fully integrated in the refarch
-        enable_arch_components locally $REFARCH_FILE "$TECH_PREVIEW"
         lxc_init
         run_bootstraps
         run_serverspec_tests
@@ -103,13 +96,15 @@ case "${TEST_TYPE}" in
         ;;
     "upgrade")
         ./fetch_image.sh ${SF_PREVIOUS_VER} || fail "Could not fetch ${SF_PREVIOUS_VER}"
-        # Use previous default arch file
-        export REFARCH_FILE=/var/lib/sf/roles/install/${SF_PREVIOUS_VER}/softwarefactory/usr/local/share/sf-default-config/arch.yaml
+        # Use previous version arch, failback to current arch
+        git show ${PREVIOUS_VER}:config/refarch/allinone.yaml > ${ARTIFACTS_DIR}/upgrade_inital_arch.yaml ||
+            cp config/refarch/allinone.yaml ${ARTIFACTS_DIR}/upgrade_inital_arch.yaml
+        export REFARCH_FILE=${ARTIFACTS_DIR}/upgrade_inital_arch.yaml
         lxc_init ${SF_PREVIOUS_VER}
         run_bootstraps
         run_provisioner
-        # Add tech preview components until they are fully integrated in the refarch
-        enable_arch_components remote /etc/puppet/hiera/sf/arch.yaml "$TECH_PREVIEW"
+        # Copy new arch
+        scp config/refarch/allinone.yaml ${SF_HOST}:/etc/puppet/hiera/sf/arch.yaml
         run_upgrade
         run_checker "checksum_warn_only"
         run_serverspec_tests

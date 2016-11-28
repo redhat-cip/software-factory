@@ -17,6 +17,15 @@ inventory:
       - jenkins
       - redmine
       - murmur
+      - elasticsearch
+      - job-logs-gearman-client
+      - job-logs-gearman-worker
+      - logstash
+      - kibana
+      - mirror
+      - storyboard
+      - storyboard-webclient
+      - repoxplorer
     mem: 8
     cpu: 4
     disk: 20

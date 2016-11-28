@@ -35,6 +35,31 @@ The architecture is defined in /etc/puppet/hiera/sf/arch.yaml:
   Run sfconfig.sh after saving the sfconfig.yaml file.
 
 
+The minimal architecture includes following components:
+
+* mysql
+* gateway
+* cauth
+* managesf
+* gerrit
+* zuul
+* jenkins
+
+Optional services can be enabled:
+
+* gerritbot
+* etherpad
+* lodgeit
+* nodepool
+* redmine
+* mirror
+* murmur
+
+More services are also available, but their integration is still in progress, e.g.: "tech preview":
+
+* storyboard, storyboard-webclient
+* elasticsearch, job-logs-gearman-client, job-logs-gearman-worker, logstash, kibana
+* repoxplorer
 
 
 Extending the architecture
