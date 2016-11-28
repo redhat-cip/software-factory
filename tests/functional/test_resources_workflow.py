@@ -475,21 +475,15 @@ class TestResourcesWorkflow(Base):
                 change_id, 'jenkins')['Verified']
             if int(ret) != 0:
                 break
-        self.assertEqual(
-            self.gu.get_reviewer_approvals(
-                change_id, 'jenkins')['Verified'], '+1')
+        self.assertEqual(ret, '+1')
         # Check flag "sf-resources: skip-apply" in the commit msg
-        changes = self.gu.g.get('changes/')
-        change = [c for c in changes if c["_number"] == int(change_id)][0]
-        self.assertEqual(change['subject'],
+        change = self.gu.g.get(
+            'changes/?q=%s&o=CURRENT_REVISION&o=CURRENT_COMMIT' % change_id)[0]
+        revision = change["current_revision"]
+        commit = change['revisions'][revision]["commit"]
+        self.assertEqual(commit["message"].split('\n')[0],
                          'Propose missing resources to the config repo')
-        cmt = self.gu.g.get('changes/%s/'
-                            'revisions/current/commit' % change['id'])
-        self.assertTrue(cmt['message'].find('sf-resources: skip-apply') > 0)
-        # Fetch the last successful build ID for the config-update job
-        last_success_build_num_cu = \
-            self.ju.get_last_build_number("config-update",
-                                          "lastSuccessfulBuild")
+        self.assertTrue(commit["message"].find('sf-resources: skip-apply') > 0)
         # Approve the change and wait for the +2
         self.gu.submit_change_note(change['id'], "current", "Code-Review", "2")
         self.gu.submit_change_note(change['id'], "current", "Workflow", "1")
@@ -500,9 +494,7 @@ class TestResourcesWorkflow(Base):
                 change_id, 'jenkins')['Verified']
             if int(ret) != 0 and int(ret) != -1 and int(ret) != +1:
                 break
-        self.assertEqual(
-            self.gu.get_reviewer_approvals(
-                change_id, 'jenkins')['Verified'], '+2')
+        self.assertEqual(ret, '+2')
         # Check config-update return a success
         # The flag sf-resources: skip-apply should be detected
         # by the config update. Then missing resources won't
@@ -510,16 +502,9 @@ class TestResourcesWorkflow(Base):
         # This tests (checking config-update succeed) confirm
         # resource apply have been skipped if not managesf resources
         # apply would have return 409 error making config-update failed too.
-        self.ju.wait_till_job_completes("config-update",
-                                        last_success_build_num_cu,
-                                        "lastSuccessfulBuild",
-                                        max_retries=120)
-        previous = last_success_build_num_cu
-        last_success_build_num_cu = \
-            self.ju.get_last_build_number("config-update",
-                                          "lastSuccessfulBuild")
         # If not True then we cannot concider config-update succeed
-        self.assertEqual(previous + 1, last_success_build_num_cu)
+        config_update_log = self.ju.wait_for_config_update(revision)
+        self.assertIn("Finished: SUCCESS", config_update_log)
         # Checking again missing resources  must return nothing
         ret = requests.get("%s/manage/resources/?get_missing_"
                            "resources=true" % config.GATEWAY_URL,

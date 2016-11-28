@@ -536,6 +536,22 @@ class JenkinsUtils:
         except:
             return 0
 
+    def get_last_console(self, job_name):
+        try:
+            return self.get("%s/job/%s/lastBuild/consoleText" % (
+                self.jenkins_url, job_name)).text
+        except:
+            return ''
+
+    def wait_for_config_update(self, revision):
+        job_text = "Updating configuration using %s" % revision
+        for retry in xrange(60):
+            time.sleep(1)
+            job_log = self.get_last_console("config-update")
+            if job_text in job_log and "Finished: " in job_log:
+                break
+        return job_log
+
     def get_job_logs(self, job_name, job_id):
         """Get timestamped logs
         Works also if the timestamps wrapper is not set."""
