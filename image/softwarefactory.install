@@ -473,6 +473,7 @@ function install_paste {
         do_chroot ${dir} sed -i -e 's#/static/#/static/lodgeit/#g' /srv/lodgeit/lodgeit/lodgeit/views/layout.html
         do_chroot ${dir} sed -i -e 's#/static/#/static/lodgeit/#g' /srv/lodgeit/lodgeit/lodgeit/views/help/advanced.html
         do_chroot ${dir} sed -i -e 's#/static/#/static/lodgeit/#g' /srv/lodgeit/lodgeit/lodgeit/views/help/pasting.html
+        do_chroot ${dir} sed -i -e 's#/_captcha.png#/paste/_captcha.png#' /srv/lodgeit/lodgeit/lodgeit/views/new_paste.html
         # Include topmenu in Paste
         cat << EOF | patch ${dir}/srv/lodgeit/lodgeit/lodgeit/views/layout.html
 11a12

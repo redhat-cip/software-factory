@@ -1,0 +1,4 @@
+---
+fixes:
+  - Fix captcha display in lodgeit (paste) service incorrectly
+    displayed.
