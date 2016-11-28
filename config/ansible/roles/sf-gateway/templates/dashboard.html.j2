@@ -17,9 +17,9 @@
 </head>
 
 <body ng-controller="mainController">
-
     <div class="container">
 
+        {% if 'grafana' in roles %}
         <div class="row">
             <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6">
                 <iframe src="/grafana/dashboard-solo/db/zuul?panelId=1&fullscreen&theme=light" width="100%" height="200" frameborder="0" scrolling="no"></iframe>
@@ -28,6 +28,7 @@
                 <iframe src="/grafana/dashboard-solo/db/zuul?panelId=2&fullscreen&theme=light" width="100%" height="200" frameborder="0" scrolling="no"></iframe>
             </div>
         </div>
+        {% endif %}
 
         <div ng-if="errors" class="alert alert-danger" role="alert">
              <button type="button" class="close" data-dismiss="alert">
