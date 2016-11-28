@@ -10,14 +10,6 @@
   when:
       - selinuxenabled
 
-- name: "Copy service file"
-  copy: src=etherpad.service dest=/lib/systemd/system/etherpad.service
-  register: etherpad_service
-
-- name: "Daemon-reload"
-  when: etherpad_service|changed
-  command: systemctl daemon-reload
-
 - name: "Create directory"
   file: path={{ item }} owner=etherpad group=etherpad state=directory
   with_items:
@@ -34,5 +26,17 @@
   template: src=settings.json.j2 dest=/var/www/etherpad-lite/settings.json
   notify: [restart etherpad]
 
-- name: "Start service"
-  service: name=etherpad state=started enabled=yes
+- name: Install service file
+  copy:
+      src: etherpad.service
+      dest: /lib/systemd/system/etherpad.service
+      owner: root
+      group: root
+      mode: 0644
+
+- name: Start service
+  systemd:
+      name: etherpad
+      state: started
+      daemon_reload: yes
+      enabled: yes

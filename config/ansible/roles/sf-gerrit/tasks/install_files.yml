@@ -21,19 +21,6 @@
     path: /var/www/git/gitweb.cgi
     mode: 0755
 
-- name: "Install gerrit service file"
-  template:
-      src: gerrit.service.j2
-      dest: /lib/systemd/system/gerrit.service
-      owner: root
-      group: root
-      mode: 0644
-  register: install_service_file
-
-- name: "Reload systemctl daemon"
-  shell: "systemctl daemon-reload"
-  when: install_service_file|changed
-
 # During the first run, config repo isn't created, so use the default file
 - include_vars: "{{ item }}"
   with_first_found:

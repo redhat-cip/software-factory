@@ -154,8 +154,9 @@
       state: started
   when: groups['gerrit'] != groups['gateway']
 
-- name: Start apache service
-  service:
-    name: httpd
-    enabled: yes
-    state: started
+- name: Start service
+  systemd:
+      name: httpd
+      state: started
+      daemon_reload: yes
+      enabled: yes

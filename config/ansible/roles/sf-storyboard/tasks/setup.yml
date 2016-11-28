@@ -15,18 +15,27 @@
 
 - name: "Setup database"
   command: storyboard-db-manage upgrade head
+
 - name: "Setup superusers"
   command: storyboard-db-manage load_superusers /etc/storyboard/superuser.yaml
+
 - name: "Setup initial projects"
   command: storyboard-db-manage load_projects /etc/storyboard/projects.yaml
+
 - name: "Setup service_token"
   command: bash -c "mysql storyboard < /etc/storyboard/service_token.sql"
 
-- name: "Install storyboard service"
-  template: src=storyboard.service.j2 dest=/lib/systemd/system/storyboard.service
-  register: storyboard_service
-- name: "systemctl daemon-reload"
-  command: systemctl daemon-reload
-  when: storyboard_service|changed
-- name: "Start service"
-  service: name=storyboard state=started enabled=yes
+- name: Install service file
+  template:
+      src: storyboard.service.j2
+      dest: /lib/systemd/system/storyboard.service
+      owner: root
+      group: root
+      mode: 0644
+
+- name: Start service
+  systemd:
+      name: storyboard
+      state: started
+      daemon_reload: yes
+      enabled: yes

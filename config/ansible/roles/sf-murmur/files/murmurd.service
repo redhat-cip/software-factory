@@ -1,0 +1,12 @@
+[Unit]
+Description=Mumble Server (Murmur)
+Requires=network-online.target
+After=network-online.target mariadb.service time-sync.target
+
+[Service]
+User=murmur
+Type=simple
+ExecStart=/usr/local/murmur/murmur.x86 -ini /etc/murmur.ini -fg
+
+[Install]
+WantedBy=multi-user.target

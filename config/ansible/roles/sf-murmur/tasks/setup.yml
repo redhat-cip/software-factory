@@ -3,14 +3,36 @@
   include: /etc/ansible/tasks/create_user.yml user_name=murmur
 
 - name: Create log directory
-  file: path=/var/log/murmur state=directory mode=0750 owner=murmur group=murmur
+  file:
+      path: /var/log/murmur
+      state: directory
+      owner: murmur
+      group: murmur
+      mode: 0750
 
 - name: Install config file
-  template: src=murmur.ini.j2 dest=/etc/murmur.ini owner=murmur group=murmur mode=0400
-  notify: [restart murmur]
+  template:
+      src: murmur.ini.j2
+      dest: /etc/murmur.ini
+      owner: murmur
+      group: murmur
+      mode: 0400
+  notify: restart murmur
 
 - name: Set super user password
   command: /usr/local/murmur/murmur.x86 -ini /etc/murmur.ini -supw {{ mumble['super_user_password'] }}
 
-- name: Manage service
-  service: name=murmurd state=started enabled=yes
+- name: Install service file
+  copy:
+      src: murmurd.service
+      dest: /lib/systemd/system/murmurd.service
+      owner: root
+      group: root
+      mode: 0644
+
+- name: Start service
+  systemd:
+      name: murmurd
+      state: started
+      daemon_reload: yes
+      enabled: yes

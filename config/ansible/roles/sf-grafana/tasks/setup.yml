@@ -13,12 +13,12 @@
     value: /usr/libexec/wait4mariadb
   register: grafana_service
 
-- name: "Daemon-reload"
-  command: systemctl daemon-reload
-  when: grafana_service|changed
-
-- name: "Start the service"
-  service: name=grafana-server state=started enabled=yes
+- name: Start service
+  systemd:
+      name: grafana-server
+      state: started
+      daemon_reload: yes
+      enabled: yes
 
 - name: "Wait for db initialization"
   wait_for: port=3000

@@ -92,19 +92,6 @@
       name: jenkins
       password: "{{ jenkins_password }}"
 
-- name: Install service file
-  template:
-      src: jenkins.service.j2
-      dest: /lib/systemd/system/jenkins.service
-      owner: root
-      group: root
-      mode: 0644
-  register: install_service_file
-
-- name: Reload systemctl daemon
-  shell: "systemctl daemon-reload"
-  when: install_service_file|changed
-
 - name: Apply selinux port labelling
   seport:
       ports: "{{ item }}"
@@ -115,5 +102,17 @@
   when:
       - selinuxenabled
 
+- name: Install service file
+  template:
+      src: jenkins.service.j2
+      dest: /lib/systemd/system/jenkins.service
+      owner: root
+      group: root
+      mode: 0644
+
 - name: Start service
-  service: name=jenkins enabled=yes state=started
+  systemd:
+      name: jenkins
+      state: started
+      daemon_reload: yes
+      enabled: yes

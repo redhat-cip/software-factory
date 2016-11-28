@@ -71,15 +71,10 @@
   register: install_service_file
   when: nodepool.disabled == False
 
-- name: Reload systemctl daemon
-  shell: "systemctl daemon-reload"
-  when:
-      - install_service_file|changed
-      - nodepool.disabled == False
-
 - name: Start service
-  service:
-      name: nodepool
-      enabled: yes
+  systemd:
+      name: murmurd
       state: started
+      daemon_reload: yes
+      enabled: yes
   when: nodepool.disabled == False

@@ -18,14 +18,6 @@
   copy: src=logging.conf dest=/etc/gerritbot/logging.conf
   notify: [restart gerritbot]
 
-- name: "Copy service"
-  copy: src=gerritbot.service dest=/lib/systemd/system/gerritbot.service
-  register: gerritbot_service
-
-- name: "Daemon-reload"
-  command: systemctl daemon-reload
-  when: gerritbot_service|changed
-
 - name: "Init default channels.yaml file"
   copy: src="/usr/local/share/sf-config-repo/gerritbot/channels.yaml" dest="/etc/gerritbot/channels.yaml" remote_src=True force=no
 
@@ -40,5 +32,17 @@
     - 286366-Add_change_created_event_type.patch
     - 318096-Add__get_username_method_to_discover_username.patch
 
-- name: "Enable service"
-  service: name=gerritbot state=started enabled=yes
+- name: Install service file
+  copy:
+      src: gerritbot.service
+      dest: /lib/systemd/system/gerritbot.service
+      owner: root
+      group: root
+      mode: 0644
+
+- name: Start service
+  systemd:
+      name: gerritbot
+      state: started
+      daemon_reload: yes
+      enabled: yes

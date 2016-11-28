@@ -63,16 +63,20 @@
   become_user: gerrit
   when: initialize_done|changed
 
-# for ansible 2.2
-# - name: "Start service"
-# - systemd:
-#       name: gerrit
-#       state: started
-#       daemon_reload: yes
-#       enabled: yes
+- name: "Install gerrit service file"
+  template:
+      src: gerrit.service.j2
+      dest: /lib/systemd/system/gerrit.service
+      owner: root
+      group: root
+      mode: 0644
 
 - name: "Start service"
-  service: name=gerrit enabled=yes state=started
+  systemd:
+      name: gerrit
+      state: started
+      daemon_reload: yes
+      enabled: yes
 
 - name: "Add initial user"
   shell: 'mysql gerrit < /root/gerrit-firstuser-init.sql'

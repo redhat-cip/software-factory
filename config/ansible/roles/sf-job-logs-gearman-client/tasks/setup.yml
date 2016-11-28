@@ -1,13 +1,29 @@
 ---
 - name: "Install logs gearman client group"
   group: name=joblogsclient
+
 - name: "Install logs gearman client user"
   user: name=joblogsclient group=joblogsclient shell=/sbin/nologin home=/srv/log-gearman-client
+
 - name: "Install log gearman client configuration"
   template: src=templates/jenkins-log-client.yaml.j2 dest=/etc/log-gearman-client/config.yml owner=joblogsclient group=joblogsclient
   register: config
-- name: "Enable log gearman client"
-  service: name=log-gearman-client enabled=yes state=started
+
+- name: Install service file
+  copy:
+      src: log-gearman-client.service
+      dest: /usr/lib/systemd/system/log-gearman-client.service
+      owner: root
+      group: root
+      mode: 0644
+
+- name: Start service
+  systemd:
+      name: log-gearman-client
+      state: started
+      daemon_reload: yes
+      enabled: yes
+
 - name: "Restart log gearman client if needed"
   service: name=log-gearman-client state=restarted
   when: config|changed

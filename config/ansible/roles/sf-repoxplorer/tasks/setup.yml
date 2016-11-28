@@ -39,25 +39,26 @@
   with_items:
     - config.py
 
-- name: "Install RepoXplorer services files Indexer service"
-  copy:
-    src={{ item }}
-    dest=/lib/systemd/system/{{ item }}
-  register: services
-  with_items:
-    - repoxplorer-webui.service
-    - repoxplorer.service
-- command: systemctl daemon-reload
-  when: services|changed
-
 - name: "Add topmenu"
   patch: src=layout.html-topmenu.patch basedir=/srv/repoxplorer/local/share/repoxplorer/templates/
 
-- name: "Start repoxplorer services"
-  service:
-    name={{ item }}
-    state=restarted
-    enabled=yes
+- name: Install service file
+  copy:
+      src: "{{ item }}.service"
+      dest: "/lib/systemd/system/{{ item }}.service"
+      owner: root
+      group: root
+      mode: 0644
+  with_items:
+    - repoxplorer-webui
+    - repoxplorer
+
+- name: Start service
+  systemd:
+      name: "{{ item }}"
+      state: started
+      daemon_reload: yes
+      enabled: yes
   with_items:
     - repoxplorer-webui
     - repoxplorer

@@ -41,13 +41,17 @@
 - name: "Install managesf program"
   command: ln -sf /var/www/managesf/bin/managesf-api /usr/bin/managesf-api
 
-- name: "Install managesf service"
-  copy: src=managesf.service dest=/lib/systemd/system/managesf.service
-  register: managesf_service
+- name: Install service file
+  copy:
+      src: managesf.service
+      dest: /lib/systemd/system/managesf.service
+      owner: root
+      group: root
+      mode: 0644
 
-- name: "systemctl daemon-reload"
-  command: systemctl daemon-reload
-  when: managesf_service|changed
-
-- name: "Start service"
-  service: name=managesf state=started enabled=yes
+- name: Start service
+  systemd:
+      name: managesf
+      state: started
+      daemon_reload: yes
+      enabled: yes
