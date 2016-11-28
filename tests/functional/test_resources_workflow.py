@@ -469,7 +469,7 @@ class TestResourcesWorkflow(Base):
         change_id = str(lastid)
         # Check Jenkins reported Verified +1 on that change
         self.wait_for_jenkins_note(change_id)
-        while True:
+        for retry in xrange(60):
             time.sleep(1)
             ret = self.gu.get_reviewer_approvals(
                 change_id, 'jenkins')['Verified']
@@ -494,7 +494,7 @@ class TestResourcesWorkflow(Base):
         self.gu.submit_change_note(change['id'], "current", "Code-Review", "2")
         self.gu.submit_change_note(change['id'], "current", "Workflow", "1")
         self.wait_for_jenkins_note(change_id)
-        while True:
+        for retry in xrange(60):
             time.sleep(1)
             ret = self.gu.get_reviewer_approvals(
                 change_id, 'jenkins')['Verified']

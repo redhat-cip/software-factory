@@ -175,19 +175,15 @@ class TestProjectReplication(Base):
         raise Exception('replication.config has not been updated (rm)')
 
     def mirror_clone_and_check_files(self, url, pname):
-        retries = 0
-        while True:
+        for retry in xrange(50):
             clone = self.clone(url, pname)
             # clone may fail, as mirror repo is not yet ready(i.e gerrit not
             # yet replicated the project)
             if os.path.isdir(clone) and \
                os.path.isfile(os.path.join(clone, '.gitreview')):
                 return True
-            elif retries > 50:
-                break
             else:
                 time.sleep(3)
-                retries += 1
         return False
 
     def test_replication(self):

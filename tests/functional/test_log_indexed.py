@@ -79,25 +79,19 @@ curl -s -XPOST 'http://elasticsearch.%s:9200/%s/_search?pretty&size=1' -d '{
         today_str = datetime.datetime.utcnow().strftime('%Y.%m.%d')
         # Here we fetch the index name, but also we wait for
         # it to appears in ElasticSearch for 5 mins
-        retries = 300
         index = []
-        while True:
+        for retry in xrange(300):
             try:
                 out = self.run_ssh_cmd(config.SERVICE_PRIV_KEY_PATH, 'root',
                                        config.GATEWAY_HOST, subcmd)
                 outlines = out[0][0].split('\n')
                 outlines.pop()
-                retries -= 1
                 index = [o for o in outlines if
                          o.split()[2].startswith('logstash-%s' % today_str)]
-                if not len(index):
-                    raise Exception()
-                else:
+                if len(index):
                     break
             except:
-                if retries > 0:
-                    time.sleep(1)
-                    continue
+                time.sleep(1)
         self.assertEqual(
             len(index),
             1,
@@ -109,18 +103,14 @@ curl -s -XPOST 'http://elasticsearch.%s:9200/%s/_search?pretty&size=1' -d '{
     def verify_logs_exported(self):
         subcmd = "bash /tmp/test_request.sh"
         subcmd = shlex.split(subcmd)
-        retries = 300
-        while True:
-            retries -= 1
+        for retry in xrange(300):
             out = self.run_ssh_cmd(config.SERVICE_PRIV_KEY_PATH, 'root',
                                    config.GATEWAY_HOST, subcmd)
             ret = json.loads(out[0][0])
             if len(ret['hits']['hits']) >= 1:
                 break
             elif len(ret['hits']['hits']) == 0:
-                if retries > 0:
-                    time.sleep(1)
-                    continue
+                time.sleep(1)
         self.assertEqual(len(ret['hits']['hits']),
                          1,
                          "Fail to find our log in ElasticSeach")

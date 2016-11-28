@@ -113,14 +113,10 @@ class TestGerritHooks(Base):
         self.gitu.add_commit_and_publish(clone_dir, 'master', cmt_msg)
 
         # Check issue status (Gerrit hook updates the issue to in progress)
-        attempt = 0
-        while True:
+        for retry in xrange(10):
             if self.rm.test_issue_status(issue_id, 'In Progress'):
                 break
-            if attempt > 10:
-                break
             time.sleep(1)
-            attempt += 1
         self.assertTrue(self.rm.test_issue_status(issue_id, 'In Progress'))
         self._test_merging(pname, issue_id, status)
 
@@ -136,14 +132,10 @@ class TestGerritHooks(Base):
         self.assertTrue(self.gu.submit_patch(change_id, "current"))
 
         # Check issue status (Gerrit hook updates the issue to in progress)
-        attempt = 0
-        while True:
+        for retry in xrange(10):
             if self.rm.test_issue_status(issue_id, status):
                 break
-            if attempt > 10:
-                break
             time.sleep(1)
-            attempt += 1
         self.assertTrue(self.rm.test_issue_status(issue_id, status))
 
     @skipIfIssueTrackerMissing()

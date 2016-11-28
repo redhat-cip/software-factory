@@ -264,11 +264,9 @@ class TestGerrit(Base):
         self.assertEqual(len(change_ids), 1)
         change_id = change_ids[0]
         # Verify first_u has been automatically added to reviewers
-        attempts = 0
-        while True:
-            if len(gu_second_u.get_reviewers(change_id)) > 0 or attempts >= 3:
+        for retry in xrange(3):
+            if len(gu_second_u.get_reviewers(change_id)) > 0:
                 break
-            attempts += 1
             time.sleep(1)
         reviewers = gu_second_u.get_reviewers(change_id)
         self.assertGreaterEqual(len(reviewers), 1)
