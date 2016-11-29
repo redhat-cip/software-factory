@@ -1,0 +1,12 @@
+pipelines:
+    - name: 3rd-party-check
+      manager: IndependentPipelineManager
+      source: upstream
+      trigger:
+        upstream:
+          - event: patchset-created
+          - event: comment-added
+projects:
+  - name: test/sandbox
+    3rd-party-check:
+      - upstream-check

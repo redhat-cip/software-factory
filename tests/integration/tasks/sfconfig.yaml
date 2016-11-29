@@ -1,0 +1,7 @@
+- name: "Check if initialized"
+  stat: path=/root/config
+  register: configured
+
+- name: "Run sfconfig"
+  command: sfconfig.sh
+  when: configured.stat.exists == False

@@ -1,0 +1,301 @@
+---
+# Deploy upstream and downstream stacks
+- hosts: localhost
+  gather_facts: no
+  tasks:
+    - name: "Destroy stacks"
+      os_stack:
+        name: "{{ item }}"
+        state: "absent"
+      with_items:
+        - upstream
+        - downstream
+      when: reset_stack|default(None) == "yes"
+
+    - name: "Deploy stacks"
+      os_stack:
+        name: "{{ item }}"
+        # The 'update' parameter needs https://github.com/ansible/ansible-modules-extras/pull/3561
+        update: no
+        rollback: yes
+        template: "{{ stack_url }}"
+        parameters:
+          key_name: id_rsa
+          image_id: "sf-2.2.7"
+          domain: "{{ item }}.com"
+          bootstrap: false
+      with_items:
+        - upstream
+        - downstream
+      ignore_errors: yes
+      register: stacks
+
+    - name: "Get ip addresses"
+      set_fact:
+        upstream: "{{ stacks['results'][0]['stack']['outputs'][0]['output_value'].split()[-1] }}"
+        downstream: "{{ stacks['results'][1]['stack']['outputs'][0]['output_value'].split()[-1] }}"
+
+    - name: "Wait for ssh"
+      wait_for:
+        host: "{{ item }}"
+        port: 22
+        search_regex: OpenSSH
+        delay: 10
+      with_items:
+        - "{{ upstream }}"
+        - "{{ downstream }}"
+
+    - add_host:
+        name: "{{ upstream }}"
+        group: upstream
+    - add_host:
+        name: "{{ downstream }}"
+        group: downstream
+
+
+# Configure: sfconfig and setup ssl between downstream and upstream
+- hosts: upstream
+  gather_facts: no
+  remote_user: root
+  tasks:
+    - name: "Setup static host"
+      command: |
+        python -c "import yaml
+        data = yaml.load(open('/etc/software-factory/sfconfig.yaml'))
+        data['network']['static_hostnames'] = ['{{ groups['downstream'][0] }} downstream.com']
+        yaml.dump(data, open('/etc/software-factory/sfconfig.yaml', 'w'), default_flow_style=False)"
+
+    - include: tasks/sfconfig.yaml
+
+    - name: "Get localCA.pem"
+      command: cat /etc/pki/ca-trust/source/anchors/localCA.pem
+      register: localCA
+
+- hosts: downstream
+  gather_facts: no
+  remote_user: root
+  tasks:
+    - name: "Setup static host"
+      command: |
+        python -c "import yaml
+        data = yaml.load(open('/etc/software-factory/sfconfig.yaml'))
+        data['network']['static_hostnames'] = ['{{ groups['upstream'][0] }} upstream.com']
+        yaml.dump(data, open('/etc/software-factory/sfconfig.yaml', 'w'), default_flow_style=False)"
+
+    # Patch zuul with proposed fix
+    # TODO: remove when review is merged and image updated
+    - name: "Synchronize local zuul role to downstream"
+      synchronize:
+        src: ../../config/ansible/roles/sf-zuul/
+        dest: /etc/ansible/roles/sf-zuul/
+
+    - name: "Install upstream CA"
+      copy:
+        content: "{{ hostvars[groups['upstream'][0]]['localCA'].stdout }}"
+        dest: /etc/pki/ca-trust/source/anchors/upstreamCA.pem
+
+    - include: tasks/sfconfig.yaml
+
+# Configure zuul downstream user in upstream gerrit
+    - name: "Get zuul public key"
+      command: cat /var/lib/zuul/.ssh/id_rsa.pub
+      register: zuulKey
+
+- hosts: upstream
+  gather_facts: no
+  remote_user: root
+  tasks:
+    - name: "Add zuul-downstream user"
+      command: /root/gerrit-set-ci-user.sh downstream-zuul "'{{ hostvars[groups['downstream'][0]]['zuulKey'].stdout }}'" zuul@downstream.com
+
+# Configure zuul downstream to connect to upstream
+- hosts: downstream
+  gather_facts: no
+  remote_user: root
+  tasks:
+    - name: "Check zuul connection"
+      command: sudo -u zuul ssh -p 29418 -o StrictHostKeyChecking=no downstream-zuul@upstream.com gerrit version
+
+    - name: "Add gerrit_connections"
+      command: hieraedit.py --yaml /etc/software-factory/sfconfig.yaml --eval gerrit_connections "[{'name':'upstream', 'hostname':'upstream.com', 'puburl':'https://upstream.com/r/', 'username':'downstream-zuul'}]"
+
+    - name: "Restart sfconfig.sh"
+      shell: grep -q upstream /etc/zuul/zuul.conf || sfconfig.sh
+
+    - name: "Check zuul is connected"
+      command: netstat -n
+      register: netstat
+      failed_when: "'{{ groups['upstream'][0] }}:29418' not in netstat.stdout"
+
+
+# Prepare the test setup
+- hosts: upstream
+  gather_facts: no
+  remote_user: root
+  tasks:
+    - name: "Remove project"
+      command:  "{{ item }}"
+      with_items:
+        - sfmanager project delete --name "test/sandbox"
+        - rm -Rf /root/sandbox
+      when: reset_project|default(None) == "yes"
+
+    - include: tasks/create_project.yaml hostname=upstream.com
+
+- hosts: downstream
+  gather_facts: no
+  remote_user: root
+  tasks:
+    - name: "Remove project"
+      command:  "{{ item }}"
+      with_items:
+        - sfmanager project delete --name "test/sandbox"
+        - rm -Rf /root/sandbox /var/lib/zuul/git/sandbox
+      when: reset_project|default(None) == "yes"
+
+    - include: tasks/create_project.yaml hostname=downstream.com
+
+# Configure downstream config repo
+    - name: "Copy sandbox config"
+      copy:
+        src: "files/{{ item.name }}"
+        dest: "/root/config/{{ item.dest }}"
+      with_items:
+        - { name: zuul.yaml, dest: zuul/tp.yaml }
+        - { name: jobs.yaml, dest: jobs/tp.yaml }
+      register: sandbox_config
+
+    - name: "Update config-repo"
+      command: chdir=/root/config {{ item }}
+      with_items:
+        - git add zuul/tp.yaml jobs/tp.yaml
+        - git commit -m "Add sandbox config"
+        - submit_and_wait.py --approve
+      when: sandbox_config|changed
+
+    - name: "Grab commit sha"
+      command: cat /root/config/.git/refs/heads/master
+      register: commitsha
+
+    - name: "Wait for config-update job"
+      wait_for:
+        path: /var/lib/jenkins/jobs/config-update/lastSuccessful/log
+        search_regex: "{{ item }}"
+      with_items:
+        - "Updating configuration using {{ commitsha.stdout }}"
+        - "Finished: SUCCESS"
+      when: sandbox_config|changed
+
+# Submit a change upstream
+- hosts: upstream
+  gather_facts: no
+  remote_user: root
+  tasks:
+    - name: "Submit a change"
+      command: chdir=/root/sandbox {{ item }}
+      with_items:
+        - git reset --hard origin/master
+        - bash -c 'date > file'
+        - git add file
+        - git commit -m "add file"
+        - git review
+
+    - name: "Grab commit sha"
+      command: cat /root/sandbox/.git/refs/heads/master
+      register: commitsha
+
+# Check downstream processed the change
+- hosts: downstream
+  gather_facts: no
+  remote_user: root
+  tasks:
+    - name: "Check zuul-merger create the repo"
+      wait_for:
+        path: /var/log/zuul/merger.log
+        search_regex: "Updating repository /var/lib/zuul/git/test/sandbox"
+    - name: "Check zuul-merger update the repo"
+      wait_for:
+        path: /var/log/zuul/merger.log
+        search_regex: "CreateZuulRef.*{{ hostvars[groups['upstream'][0]]['commitsha'].stdout }}"
+    - name: "Check zuul launch the job"
+      wait_for:
+        path: /var/log/zuul/zuul.log
+        search_regex: "'ZUUL_COMMIT': u'{{ hostvars[groups['upstream'][0]]['commitsha'].stdout }}'"
+    - name: "Check jenkins executed the job"
+      wait_for:
+        path: /var/lib/jenkins/jobs/upstream-check/lastSuccessful/log
+        search_regex: "Prepared test/sandbox repo with commit {{ hostvars[groups['upstream'][0]]['commitsha'].stdout }}"
+
+
+# Let's try to reproduce the conflict bug now: Diverge upstream copy of the sandbox project
+- hosts: downstream
+  gather_facts: no
+  remote_user: root
+  tasks:
+    - name: "Remove merger copy"
+      command: rm -Rf /var/lib/zuul/git/test/sandbox
+
+    - name: "Clean-up the logs"
+      shell: "echo -n > {{ item }}"
+      with_items:
+        - /var/log/zuul/merger.log
+        - /var/log/zuul/zuul.log
+
+- hosts: upstream
+  gather_facts: no
+  remote_user: root
+  tasks:
+    - name: "Check if project modified"
+      stat: path=/root/sandbox/run_tests.sh
+      register: modified
+
+    - name: "Modify project"
+      command: chdir=/root/sandbox {{ item }}
+      with_items:
+        - git reset --hard origin/master
+        - git mv run_tests.sh test.sh
+        - git commit -m "renamed upstream run_tests.sh"
+        - git push
+      when: modified.stat.exists
+
+    - name: "Submit a review"
+      command: chdir=/root/sandbox {{ item }}
+      with_items:
+        - git reset --hard origin/master
+        - bash -c 'date > file'
+        - git add file
+        - git commit -m "add file"
+        - git review
+        # Give some time for the downstream merger to pick the change
+        - sleep 5
+
+# Re submit a change downstream
+- hosts: downstream
+  gather_facts: no
+  remote_user: root
+  tasks:
+    - name: "Submit a change (downstream)"
+      command: chdir=/root/sandbox {{ item }}
+      with_items:
+        - git reset --hard origin/master
+        - bash -c "date >> run_tests.sh"
+        - git add run_tests.sh
+        - git commit -m "change run_tests.sh"
+        - git review
+        - bash -c 'date > file'
+        - git add file
+        - git commit -m "add file"
+        - git review -y
+
+- hosts: downstream
+  gather_facts: no
+  remote_user: root
+  tasks:
+    - name: "Wait for zuul-merger conflict"
+      wait_for:
+        path: /var/log/zuul/merger.log
+        search_regex: "{{ item }}"
+      with_items:
+        - "Unable to merge.*project.*test/sandbox"
+        - "GitCommandError"
+        - "fatal: Couldn't find remote ref refs/changes"

@@ -23,6 +23,10 @@
   service: name=zuul state=reloaded
   when: localconfig.stdout != upstreamconfig.stdout
 
+- name: Restart zuul-merger
+  service: name=zuul-merger state=restarted
+  when: localconfig.stdout != upstreamconfig.stdout
+
 # Reload doesn't start service see: https://github.com/ansible/ansible/issues/4448
 - name: Ensure zuul services are running
   service: name={{ item }} state=started enabled=yes

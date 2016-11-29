@@ -1,0 +1,4 @@
+---
+sf_ver: 2.2.7
+swift_url: "http://46.231.132.68:8080/v1/AUTH_b50e80d3969f441a8b7b1fe831003e0a/sf-images"
+stack_url: "{{ swift_url }}/softwarefactory-C7.0-{{ sf_ver }}-minimal.hot"
