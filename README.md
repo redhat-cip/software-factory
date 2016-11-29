@@ -8,12 +8,14 @@ a powerful platform to build software. It is designed to
 run on an OpenStack-based cloud but it can also be used standalone
 without features related to the cloud-like tests environments.
 
-* Documentation: http://softwarefactory-project.io/docs
-* How-to contribute: http://softwarefactory-project.io/docs/contributor.html
+* Documentation: https://softwarefactory-project.io/docs
+* How-to contribute: https://softwarefactory-project.io/docs/contributor.html
+* Report issue tracker: https://softwarefactory-project.io/storyboard/#!/project/3
+* Report security issue through private story on the issue tracker
 * Contact: #softwarefactory channel on Freenode
 * Mailing list: softwarefactory-dev@redhat.com
 
-Live instance: http://softwarefactory-project.io
+Live instance: https://softwarefactory-project.io
 
 # Get Last releases
 
