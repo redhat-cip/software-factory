@@ -56,7 +56,7 @@ for user in ('redmine', 'gerrit', 'nodepool', 'etherpad', 'lodgeit', 'graphite',
         sqls.append("SET PASSWORD FOR '%s'@'nodepool.%s' = PASSWORD('%s');" % (
             user, fqdn, pwd
         ))
-    elif user in ('grafana', 'gnocchi'):
+    elif user == 'grafana':
         sqls.append("SET PASSWORD FOR '%s'@'statsd.%s' = PASSWORD('%s');" % (
             user, fqdn, pwd
         ))

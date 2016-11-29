@@ -17,9 +17,6 @@
     - gerritbot
     - grafana-server
     - postfix
-    - openstack-gnocchi-api
-    - openstack-gnocchi-metricd
-    - openstack-gnocchi-statsd
     - murmurd
     - log-gearman-client
     - log-gearman-worker

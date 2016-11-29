@@ -9,9 +9,6 @@
   # storyboard
   - include: tasks/new_creds.yml sf_secret_name=storyboard_sql_pwd
   - include: tasks/new_creds.yml sf_secret_name=storyboard_service_token
-  # gnocchi
-  - include: tasks/new_creds.yml sf_secret_name=grafana_sql_pwd
-  - include: tasks/new_creds.yml sf_secret_name=gnocchi_sql_pwd
   # SFService user
   - include: tasks/new_creds.yml sf_secret_name=service_user_pwd
   # Etherpad

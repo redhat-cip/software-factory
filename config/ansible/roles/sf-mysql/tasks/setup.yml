@@ -39,8 +39,13 @@
     - localhost
     - "{{ ansible_hostname }}"
 
-- name: remove the test database
-  mysql_db: name=test state=absent
+- name: remove useless databases if present
+  mysql_db:
+      name: "{{ item }}"
+      state: absent
+  with_items:
+      - test
+      - gnocchi
 
 - name: Create databases
   shell: "mysql < /root/create_databases.sql"

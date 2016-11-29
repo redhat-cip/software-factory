@@ -5,7 +5,6 @@ creds_nodepool_sql_pwd: NODEPOOL_SQL_PWD
 creds_etherpad_sql_pwd: ETHERPAD_SQL_PWD
 creds_lodgeit_sql_pwd: LODGEIT_SQL_PWD
 creds_grafana_sql_pwd: GRAFANA_SQL_PWD
-creds_gnocchi_sql_pwd: GNOCCHI_SQL_PWD
 creds_storyboard_sql_pwd: STORYBOARD_SQL_PWD
 creds_storyboard_service_token: STORYBOARD_SERVICE_TOKEN
 creds_cauth_sql_pwd: CAUTH_SQL_PWD

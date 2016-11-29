@@ -4,14 +4,6 @@
 STAGING_PKGS=""
 STAGING_PIP=""
 
-GNOCCHI_PLUGINS_URL="https://github.com/sileht/grafana-plugins-gnocchi"
-
-function install_gnocchi {
-    do_chroot ${dir} git clone $GNOCCHI_PLUGINS_URL /tmp/gnocchi-plugins
-    do_chroot ${dir} bash -c "cd /tmp/gnocchi-plugins ; git checkout 2e6055c41eb30bfb6aefe15d0ad571347d28a3a7"
-    do_chroot ${dir} mv /tmp/gnocchi-plugins/datasources/gnocchi /usr/share/grafana/public/app/plugins/datasource/.
-}
-
 function install_sf {
     set -e
     test -n "${CAUTH_CLONED_PATH}"
@@ -40,9 +32,6 @@ function install_sf {
 
     # Make sure final image use latest ids.tables
     cp ./C7.0-ids.tables ${dir}/etc/ids.tables
-
-    # Finish gnocchi install
-    install_gnocchi
 
     # Disable postfix and remove configuration to reduce puppet noise
     do_chroot ${dir} systemctl disable postfix

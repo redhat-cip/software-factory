@@ -1,11 +1,4 @@
 facter
-openstack-gnocchi-api
-openstack-gnocchi-carbonara
-openstack-gnocchi-common
-openstack-gnocchi-indexer-sqlalchemy
-openstack-gnocchi-metricd
-openstack-gnocchi-statsd
-openstack-puppet-modules
 puppet
 pyflakes
 pyOpenSSL
@@ -27,7 +20,6 @@ python-django-bash-completion
 python-django
 python-flake8
 python-glanceclient
-python-gnocchi
 python-keystoneclient
 python-keystonemiddleware
 python-logutils
