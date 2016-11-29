@@ -506,14 +506,26 @@ class JenkinsUtils:
                                    self.jenkins_password),
                              cookies=self.cookies)
 
-    def create_job(self, name):
+    def create_job(self, name, job=EMPTY_JOB_XML):
         url = "%s/createItem" % self.jenkins_url
         headers = {'content-type': 'text/xml'}
         resp = self.post(url,
                          params={'name': name},
-                         data=EMPTY_JOB_XML,
+                         data=job,
                          headers=headers)
         return resp.status_code
+
+    def run_job(self, job_name, parameters=None):
+        url = "%s/job/%s/build" % (self.jenkins_url, job_name)
+        if parameters:
+            url += "WithParameters"
+            requests.post(url,
+                          params=parameters,
+                          auth=(self.jenkins_user,
+                                self.jenkins_password),
+                          cookies=self.cookies)
+        else:
+            self.get(url)
 
     def list_jobs(self):
         from xml.dom import minidom

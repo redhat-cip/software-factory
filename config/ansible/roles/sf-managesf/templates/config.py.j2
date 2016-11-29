@@ -70,6 +70,9 @@ services = [
 {% if 'gerrit' in roles %}
     'SFGerrit',
 {% endif %}
+{% if 'jenkins' in roles %}
+    'SFJenkins',
+{% endif %}
 ]
 
 mysql = {
@@ -114,6 +117,12 @@ gerrit = {
     'db_name': 'gerrit',
     'db_user': 'gerrit',
     'db_password': '{{ creds_gerrit_sql_pwd }}'
+}
+
+jenkins = {
+    'api_url': 'http://jenkins.{{ fqdn }}:8080/jenkins/',
+    'user': 'jenkins',
+    'password': '{{ creds_jenkins_user_password }}'
 }
 
 redmine = {

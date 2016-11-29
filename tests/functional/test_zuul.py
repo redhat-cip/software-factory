@@ -19,9 +19,10 @@ import config
 import re
 import shutil
 import time
+import requests
 
 from utils import Base
-from utils import set_private_key
+from utils import set_private_key, get_cookie
 from utils import ManageSfUtils
 from utils import GerritGitUtils
 from utils import JenkinsUtils
@@ -240,3 +241,16 @@ class TestZuulOps(Base):
             gu.get_reviewer_approvals(change_id, 'jenkins')['Verified'], '+1')
 
         gu.del_pubkey(k_index)
+
+        # Test the manageSF jobs API: query per patch & revision
+        patch = gu.get_change_last_patchset(change_id)['_number']
+        cookie = get_cookie(config.ADMIN_USER, config.ADMIN_PASSWORD)
+        cookies = {"auth_pubtkt": cookie}
+        base_url = config.GATEWAY_URL + "/manage/jobs/"
+        for j in ["zuul-demo-functional-tests", "zuul-demo-unit-tests"]:
+            job = requests.get(base_url + '%s/?change=%s' % (j, patch),
+                               cookies=cookies).json()
+            self.assertTrue("jenkins" in job.keys(),
+                            job)
+            self.assertTrue(len(job["jenkins"]) > 1,
+                            job)

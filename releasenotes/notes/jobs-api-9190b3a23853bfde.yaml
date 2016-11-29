@@ -1,0 +1,18 @@
+---
+features:
+  - The Jobs API allows authorized users to start and
+    stop jobs on the platform, and also list details about
+    them. "Jobs" refers to a "build" in Jenkins terminology;
+    jobs definition is still managed through the config
+    repository.
+    sfmanager includes the new "job" subcommand allowing
+    users to interact with this API from the CLI.
+issues:
+  - query filtering is currently limited to job id, change
+    number and patchset (ie fetch jobs that were run for a
+    given gerrit change). Furthermore the job name must
+    be specified.
+  - possible performances issues due to the jenkins API
+    handling filtering poorly (there's actually no job filtering).
+    Looking up jobs might take substantial time on a
+    deployment with some history.
