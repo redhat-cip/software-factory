@@ -8,5 +8,7 @@ pipelines:
           - event: comment-added
 projects:
   - name: test/sandbox
+    check:
+      - sandbox-unit-tests
     3rd-party-check:
       - upstream-check

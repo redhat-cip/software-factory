@@ -20,6 +20,7 @@ git_user_email=zuul@{{ fqdn }}
 git_user_name=zuul
 zuul_url={{ zuul_pub_url }}p
 log_config=/etc/zuul/merger-logging.conf
+append_hostname=true
 
 {% if not logs['disabled'] %}
 [swift]

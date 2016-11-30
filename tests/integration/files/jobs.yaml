@@ -4,6 +4,7 @@
       - shell: |
           export ZUUL_BRANCH=${ZUUL_BRANCH:-master}
           export ZUUL_REF=${ZUUL_REF:-None}
+          echo "ZUUL_URL: ${ZUUL_URL}"
           [ "$ZUUL_REF" = "master" ] && ZUUL_REF=None
           echo "Clean workspace"
           rm -Rf ./*
@@ -19,3 +20,9 @@
     triggers:
       - zuul
     node: 'master'
+
+- project:
+    name: sandbox
+    node: master
+    jobs:
+      - '{name}-unit-tests'

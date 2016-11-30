@@ -83,7 +83,7 @@
         yaml.dump(data, open('/etc/software-factory/sfconfig.yaml', 'w'), default_flow_style=False)"
 
     # Patch zuul with proposed fix
-    # TODO: remove when review is merged and image updated
+    # TODO: remove this when review is merged and the image is updated
     - name: "Synchronize local zuul role to downstream"
       synchronize:
         src: ../../config/ansible/roles/sf-zuul/
@@ -150,7 +150,7 @@
       command:  "{{ item }}"
       with_items:
         - sfmanager project delete --name "test/sandbox"
-        - rm -Rf /root/sandbox /var/lib/zuul/git/sandbox
+        - rm -Rf /root/sandbox /var/lib/zuul/git/test /var/lib/zuul/git/upstream.com /var/lib/zuul/git/downstream.com
       when: reset_project|default(None) == "yes"
 
     - include: tasks/create_project.yaml hostname=downstream.com
@@ -212,7 +212,7 @@
     - name: "Check zuul-merger create the repo"
       wait_for:
         path: /var/log/zuul/merger.log
-        search_regex: "Updating repository /var/lib/zuul/git/test/sandbox"
+        search_regex: "Updating repository /var/lib/zuul/git/upstream.com/test/sandbox"
     - name: "Check zuul-merger update the repo"
       wait_for:
         path: /var/log/zuul/merger.log
@@ -232,14 +232,12 @@
   gather_facts: no
   remote_user: root
   tasks:
-    - name: "Remove merger copy"
-      command: rm -Rf /var/lib/zuul/git/test/sandbox
-
     - name: "Clean-up the logs"
       shell: "echo -n > {{ item }}"
       with_items:
         - /var/log/zuul/merger.log
         - /var/log/zuul/zuul.log
+
 
 - hosts: upstream
   gather_facts: no
@@ -291,11 +289,12 @@
   gather_facts: no
   remote_user: root
   tasks:
-    - name: "Wait for zuul-merger conflict"
+    - name: "Check zuul-merger created a different repo for downstream"
       wait_for:
         path: /var/log/zuul/merger.log
-        search_regex: "{{ item }}"
-      with_items:
-        - "Unable to merge.*project.*test/sandbox"
-        - "GitCommandError"
-        - "fatal: Couldn't find remote ref refs/changes"
+        search_regex: "Updating repository /var/lib/zuul/git/gerrit.downstream.com/test/sandbox"
+
+    - name: "Check zuul-url was correctly set"
+      wait_for:
+        path: /var/lib/jenkins/jobs/upstream-check/lastSuccessful/log
+        search_regex: "ZUUL_URL. https.//downstream.com/zuul/p/upstream.com"

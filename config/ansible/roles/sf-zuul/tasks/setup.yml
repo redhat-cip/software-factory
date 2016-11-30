@@ -20,6 +20,7 @@
     - 270338-zuul_temp-url-key.patch
     - 0001-Keep-existing-loggers-with-fileConfig.patch
     - 0001-Read-all-Gerrit-events-from-poll-interruption.patch
+    - Fix-Third-party-CI-conflict.patch
 
 - name: "Setup apache site zuul.conf"
   template: src=zuul.site.j2 dest=/etc/httpd/conf.d/zuul.conf mode=0444
