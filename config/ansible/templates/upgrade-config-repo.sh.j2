@@ -28,6 +28,7 @@ rsync -av /usr/local/share/sf-config-repo/ ${CONF_TMP}/ \
       --exclude nodepool/images.yaml \
       --exclude nodepool/labels.yaml \
       --exclude gerrit/replication.config \
+      --exclude gerrit/commentlinks.yaml \
       --exclude gerritbot/channels.yaml \
       --exclude resources/resources.yaml
 
