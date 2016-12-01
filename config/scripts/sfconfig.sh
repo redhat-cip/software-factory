@@ -21,6 +21,8 @@
 [ -z "${DEBUG}" ] || set -x
 set -e
 
+echo "[$(date)] Running sfconfig.sh"
+
 # Defaults
 DOMAIN=$(cat /etc/software-factory/sfconfig.yaml | grep "^fqdn:" | cut -d: -f2 | sed 's/ //g')
 BUILD=/root/sf-bootstrap-data

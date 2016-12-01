@@ -506,7 +506,7 @@ SCRIPT
     fi
 
     echo "[+] Running upgrade"
-    ssh ${SF_HOST} "cd software-factory; ./upgrade.sh" || fail "Upgrade failed" "/var/lib/lxc/${INSTALL_SERVER}/rootfs/var/log/upgrade-bootstrap.log"
+    ssh ${SF_HOST} "cd software-factory; ./upgrade.sh" | tee ${ARTIFACTS_DIR}/upgrade.sh.log || fail "Upgrade failed" "/var/lib/lxc/${INSTALL_SERVER}/rootfs/var/log/software-factory/upgrade.log"
     echo "[+] Update sf-bootstrap-data"
     fetch_bootstraps_data
     echo "[+] Auto submit the auto generated config review after the upgrade"
