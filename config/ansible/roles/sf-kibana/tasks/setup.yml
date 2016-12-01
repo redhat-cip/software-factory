@@ -7,10 +7,16 @@
               line="elasticsearch.url{{':'}} \"http://elasticsearch.{{ fqdn }}:9200\""
   register: kibanaconf
 
+- name: "Look for top menu patch"
+  command: grep -q "loadTopmenu" /opt/kibana/optimize/bundles/kibana.bundle.js
+  register: top_menu
+  ignore_errors: yes
+
 - name: Add top menu
   lineinfile:
     dest: /opt/kibana/optimize/bundles/kibana.bundle.js
     line: "{{ kibana_topmenu_patch }}"
+  when: top_menu.rc == 1
 
 - name: Kibana service started and enabled
   service: name=kibana state=started enabled=yes
