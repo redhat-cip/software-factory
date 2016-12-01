@@ -9,9 +9,14 @@
 - name: "Ensure apache is up"
   service: name=httpd enabled=yes state=started
 
+- name: "Check if apache is running"
+  command: systemctl -q is-active httpd
+  register: _httpd
+  failed_when: _httpd.rc != 3 and _httpd.rc != 0
+
 - name: "Reload apache"
   service: name=httpd state=reloaded
-  when: lecmgateway|changed
+  when: lecmgateway|changed and _httpd.rc == 0
 
 - name: "Ensure certificate are generated"
   command: lecm --generate

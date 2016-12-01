@@ -1,0 +1,7 @@
+---
+fixes:
+  - Let's encrypt configuration doesn't reload the httpd
+    service when it's not started.
+  - Gerrit service reindex pretask is removed because
+    it caused timeout. Reindex is now performed in the
+    component setup tasks.
