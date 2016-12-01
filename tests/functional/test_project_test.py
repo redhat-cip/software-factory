@@ -18,6 +18,7 @@ import os
 import config
 import copy
 import shutil
+import logging
 import time
 from yaml import load, dump
 
@@ -30,6 +31,10 @@ from utils import copytree
 from utils import create_random_str
 
 from pysflib.sfgerrit import GerritUtils
+
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
 
 
 class TestProjectTestsWorkflow(Base):
@@ -65,13 +70,6 @@ class TestProjectTestsWorkflow(Base):
         # Clone the config repo and make change to it
         # in order to test the new sample_project
         self.config_clone_dir = self.clone_as_admin("config")
-        if os.path.exists(os.path.join(self.config_clone_dir,
-                                       "zuul/_layout.yaml")):
-            self.layout_path = "zuul/_layout.yaml"
-        else:
-            self.layout_path = "zuul/layout.yaml"
-        self.original_layout = file(os.path.join(
-            self.config_clone_dir, self.layout_path)).read()
         self.original_zuul_projects = file(os.path.join(
             self.config_clone_dir, "zuul/projects.yaml")).read()
         self.original_project = file(os.path.join(
@@ -81,8 +79,7 @@ class TestProjectTestsWorkflow(Base):
 
     def tearDown(self):
         super(TestProjectTestsWorkflow, self).tearDown()
-        self.restore_config_repo(self.original_layout,
-                                 self.original_project,
+        self.restore_config_repo(self.original_project,
                                  self.original_zuul_projects)
         for name in self.projects:
             self.msu.deleteProject(name,
@@ -108,10 +105,7 @@ class TestProjectTestsWorkflow(Base):
             self.dirs_to_delete.append(os.path.dirname(clone_dir))
         return clone_dir
 
-    def restore_config_repo(self, layout, project, zuul):
-        file(os.path.join(
-            self.config_clone_dir, self.layout_path), 'w').write(
-            layout)
+    def restore_config_repo(self, project, zuul):
         file(os.path.join(
             self.config_clone_dir, "zuul/projects.yaml"), 'w').write(
             zuul)
@@ -120,7 +114,7 @@ class TestProjectTestsWorkflow(Base):
             project)
         self.commit_direct_push_as_admin(
             self.config_clone_dir,
-            "Restore _layout.yaml and projects.yaml")
+            "Restore {zuul,jobs}/projects.yaml")
 
     def commit_direct_push_as_admin(self, clone_dir, msg):
         # Stage, commit and direct push the additions on master
@@ -130,7 +124,7 @@ class TestProjectTestsWorkflow(Base):
     def push_review_as_admin(self, clone_dir, msg):
         # Stage, commit and direct push the additions on master
         self.gitu_admin.add_commit_for_all_new_additions(clone_dir, msg)
-        self.gitu_admin.review_push_branch(clone_dir, 'master')
+        return self.gitu_admin.review_push_branch(clone_dir, 'master')
 
     def create_project(self, name, user,
                        options=None):
@@ -139,7 +133,7 @@ class TestProjectTestsWorkflow(Base):
         self.projects.append(name)
 
     def test_check_project_test_workflow(self):
-        """ Validate new project to test via zuul _layout.yaml
+        """ Validate new project to test via zuul
         """
         # We want to create a project, provide project source
         # code with tests. We then configure zuul/jjb to handle the
@@ -148,19 +142,23 @@ class TestProjectTestsWorkflow(Base):
         # We use the sample-project (that already exists)
 
         pname = 'test_workflow_%s' % create_random_str()
+        logger.info("Creating project %s" % pname)
         # Be sure the project does not exist
         self.msu.deleteProject(pname,
                                config.ADMIN_USER)
         # Create it
         self.create_project(pname, config.ADMIN_USER)
 
+        logger.info("Populating the project with %s" %
+                    self.sample_project_dir)
         # Add the sample-project to the empty repository
         clone_dir = self.clone_as_admin(pname)
         copytree(self.sample_project_dir, clone_dir)
         self.commit_direct_push_as_admin(clone_dir, "Add the sample project")
 
-        # Change to config/zuul/_layout.yaml and jobs/projects.yaml
+        # Change to config/{zuul,jobs}/projects.yaml
         # in order to test the new project
+        logger.info("Adding config-repo configuration")
         ycontent = file(os.path.join(
             self.config_clone_dir, "zuul/projects.yaml")).read()
         file(os.path.join(
@@ -178,157 +176,48 @@ class TestProjectTestsWorkflow(Base):
             self.config_clone_dir, "jobs/projects.yaml"), 'w').write(
             dump(ycontent2))
 
-        # Retrieve the previous build number for config-check
-        last_success_build_num_ch = \
-            self.ju.get_last_build_number("config-check",
-                                          "lastSuccessfulBuild")
-        # Retrieve the previous build number for config-update
-        last_success_build_num_cu = \
-            self.ju.get_last_build_number("config-update",
-                                          "lastSuccessfulBuild")
-
         # Send review (config-check) will be triggered
-        self.push_review_as_admin(
+        logger.info("Submitting the config review")
+        change_sha = self.push_review_as_admin(
             self.config_clone_dir,
             "Add config definition in Zuul/JJB config for %s" % pname)
 
-        # Wait for config-check to finish and verify the success
-        self.ju.wait_till_job_completes("config-check",
-                                        last_success_build_num_ch,
-                                        "lastSuccessfulBuild")
+        change_nr = self.gu.get_change_number(change_sha)
 
-        last_build_num_ch, last_success_build_num_ch = 0, 1
-        attempt = 0
-        while last_build_num_ch != last_success_build_num_ch:
-            if attempt >= 90:
-                break
-            time.sleep(1)
-            last_build_num_ch = \
-                self.ju.get_last_build_number("config-check",
-                                              "lastBuild")
-            last_success_build_num_ch = \
-                self.ju.get_last_build_number("config-check",
-                                              "lastSuccessfulBuild")
-            attempt += 1
-
-        self.assertEqual(last_build_num_ch, last_success_build_num_ch)
-        # let some time to Zuul to update the test result to Gerrit.
-        time.sleep(2)
-
-        # Get the change id
-        change_ids = self.gu.get_my_changes_for_project("config")
-        self.assertGreater(len(change_ids), 0)
-        change_id = change_ids[0]
-
-        # Check whether zuul sets verified to +1 after running the tests
-        # let some time to Zuul to update the test result to Gerrit.
-        self.assert_reviewer_approvals(change_id, '+1')
+        logger.info("Waiting for verify +1 on change %d" % change_nr)
+        self.assertEquals(self.gu.wait_for_verify(change_nr), 1)
 
         # review the change
-        self.gu2.submit_change_note(change_id, "current", "Code-Review", "2")
-        self.gu2.submit_change_note(change_id, "current", "Workflow", "1")
+        logger.info("Approving and waiting for verify +2")
+        self.gu2.submit_change_note(change_nr, "current", "Code-Review", "2")
+        self.gu2.submit_change_note(change_nr, "current", "Workflow", "1")
 
-        # now zuul processes gate pipeline and runs config-check job
-        # Wait for config-check to finish and verify the success
-        self.ju.wait_till_job_completes("config-check",
-                                        last_success_build_num_ch,
-                                        "lastSuccessfulBuild")
-
-        last_build_num_ch, last_success_build_num_ch = 0, 1
-        attempt = 0
-        while last_build_num_ch != last_success_build_num_ch:
-            if attempt >= 90:
+        for retry in xrange(60):
+            jenkins_vote = self.gu.get_vote(change_nr, "Verified")
+            if jenkins_vote == 2:
                 break
             time.sleep(1)
-            last_build_num_ch = \
-                self.ju.get_last_build_number("config-check",
-                                              "lastBuild")
-            last_success_build_num_ch = \
-                self.ju.get_last_build_number("config-check",
-                                              "lastSuccessfulBuild")
-            attempt += 1
-
-        self.assertEqual(last_build_num_ch, last_success_build_num_ch)
-
-        # Check whether zuul sets verified to +2 after running the tests
-        # let some time to Zuul to update the test result to Gerrit.
-        self.assert_reviewer_approvals(change_id, '+2')
+        self.assertEquals(jenkins_vote, 2)
 
         # verify whether zuul merged the patch
-        change = self.gu.get_change('config', 'master', change_id)
-        change_status = change['status']
-        attempt = 0
-        while change_status != 'MERGED':
-            if attempt >= 90:
+        logger.info("Waiting for change to be merged")
+        for retry in xrange(60):
+            change_status = self.gu.get_info(change_nr)['status']
+            if change_status == "MERGED":
                 break
             time.sleep(1)
-            change = self.gu.get_change('config', 'master', change_id)
-            change_status = change['status']
-            attempt += 1
         self.assertEqual(change_status, 'MERGED')
 
-        # Test post pipe line
-        # as the patch is merged, post pieline should run config-update job
-        # Wait for config-update to finish and verify the success
-        self.ju.wait_till_job_completes("config-update",
-                                        last_success_build_num_cu,
-                                        "lastSuccessfulBuild")
-        last_build_num_cu = \
-            self.ju.get_last_build_number("config-update",
-                                          "lastBuild")
-        last_success_build_num_cu = \
-            self.ju.get_last_build_number("config-update",
-                                          "lastSuccessfulBuild")
-        self.assertEqual(last_build_num_cu, last_success_build_num_cu)
+        logger.info("Waiting for config-update")
+        config_update_log = self.ju.wait_for_config_update(change_sha)
+        self.assertIn("Finished: SUCCESS", config_update_log)
 
-        # Retrieve the prev build number for pname-unit-tests
-        # Retrieve the prev build number for pname-functional-tests
-        last_success_build_num_sp_ut = \
-            self.ju.get_last_build_number("%s-unit-tests" % pname,
-                                          "lastSuccessfulBuild")
-        last_success_build_num_sp_ft = \
-            self.ju.get_last_build_number("%s-functional-tests" % pname,
-                                          "lastSuccessfulBuild")
-        # Test config-update
-        # config-update should have created jobs for pname
-        # Trigger tests on pname
-        # Send a review and check tests has been run
-        self.gitu_admin.add_commit_and_publish(
+        logger.info("Submiting a test change to %s" % pname)
+        change_sha = self.gitu_admin.add_commit_and_publish(
             clone_dir, 'master', "Add useless file",
             self.un)
-        # Wait for pname-unit-tests to finish and verify the success
-        self.ju.wait_till_job_completes("%s-unit-tests" % pname,
-                                        last_success_build_num_sp_ut,
-                                        "lastSuccessfulBuild")
-        # Wait for pname-functional-tests to end and check the success
-        self.ju.wait_till_job_completes("%s-functional-tests" % pname,
-                                        last_success_build_num_sp_ft,
-                                        "lastSuccessfulBuild")
-        # Check the unit tests succeed
-        last_build_num_sp_ut = \
-            self.ju.get_last_build_number("%s-unit-tests" % pname,
-                                          "lastBuild")
-        last_success_build_num_sp_ut = \
-            self.ju.get_last_build_number("%s-unit-tests" % pname,
-                                          "lastSuccessfulBuild")
-        self.assertEqual(last_build_num_sp_ut, last_success_build_num_sp_ut)
-        # Check the functional tests succeed
-        last_build_num_sp_ft = \
-            self.ju.get_last_build_number("%s-functional-tests" % pname,
-                                          "lastBuild")
-        last_success_build_num_sp_ft = \
-            self.ju.get_last_build_number("%s-functional-tests" % pname,
-                                          "lastSuccessfulBuild")
-        self.assertEqual(last_build_num_sp_ft, last_success_build_num_sp_ft)
-        # Get the change id
-        change_ids = self.gu.get_my_changes_for_project(pname)
-        self.assertGreater(len(change_ids), 0)
-        change_id = change_ids[0]
 
-        # let some time to Zuul to update the test result to Gerrit.
-        for i in range(90):
-            if "jenkins" in self.gu.get_reviewers(change_id):
-                break
-            time.sleep(1)
+        change_nr = self.gu.get_change_number(change_sha)
 
-        self.assert_reviewer_approvals(change_id, '+1')
+        logger.info("Waiting for verify +1 on change %d" % change_nr)
+        self.assertEquals(self.gu.wait_for_verify(change_nr), 1)

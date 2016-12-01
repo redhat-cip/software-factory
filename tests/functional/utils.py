@@ -441,7 +441,9 @@ class GerritGitUtils(Tool):
     def review_push_branch(self, clone_dir, branch):
         self.exe('git checkout %s' % branch, clone_dir)
         self.exe('git review', clone_dir)
+        sha = open("%s/.git/refs/heads/%s" % (clone_dir, branch)).read()
         self.exe('git checkout master', clone_dir)
+        return sha.strip()
 
     def git_add(self, clone_dir, files=[]):
         to_add = " ".join(files)
@@ -471,7 +473,9 @@ class GerritGitUtils(Tool):
             self.exe("git reset --soft HEAD^", clone_dir)
             self.exe("git commit -C ORIG_HEAD", clone_dir)
 
+        sha = open("%s/.git/refs/heads/%s" % (clone_dir, branch)).read()
         self.exe('git review -v', clone_dir)
+        return sha
 
     def get_branches(self, clone_dir, include_remotes=False):
         cmd = 'git branch'
