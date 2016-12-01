@@ -18,6 +18,7 @@
   with_items:
     - 152290-Add-support-for-layout-configuration-split.patch
     - 270338-zuul_temp-url-key.patch
+    - 0001-Keep-existing-loggers-with-fileConfig.patch
 
 - name: "Setup apache site zuul.conf"
   template: src=zuul.site.j2 dest=/etc/httpd/conf.d/zuul.conf mode=0444

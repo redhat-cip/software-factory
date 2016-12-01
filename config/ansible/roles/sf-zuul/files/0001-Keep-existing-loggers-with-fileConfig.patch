@@ -1,0 +1,30 @@
+From 84974447e9c3acc16d7e69fd26a3d954bb66a50c Mon Sep 17 00:00:00 2001
+From: Tristan Cacqueray <tdecacqu@redhat.com>
+Date: Thu, 1 Dec 2016 12:05:22 +0000
+Subject: [PATCH] Keep existing loggers with fileConfig
+
+The setup_logging method disable all existing loggers
+that are not explicitly named in the logging configuration.
+This affect service reload when only the root key is used.
+
+Change-Id: I200c6244facd858d6964ac9b14f2ecdc2323bf72
+---
+ zuul/cmd/__init__.py | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/zuul/cmd/__init__.py b/zuul/cmd/__init__.py
+index 5ffd431..6f1be63 100644
+--- a/zuul/cmd/__init__.py
++++ b/zuul/cmd/__init__.py
+@@ -86,7 +86,7 @@ class ZuulApp(object):
+             if not os.path.exists(fp):
+                 raise Exception("Unable to read logging config file at %s" %
+                                 fp)
+-            logging.config.fileConfig(fp)
++            logging.config.fileConfig(fp, disable_existing_loggers=False)
+         else:
+             logging.basicConfig(level=logging.DEBUG)
+ 
+-- 
+2.7.3
+
