@@ -584,10 +584,10 @@ if [ "$STEP" == 1 ]; then
     checkpoint "gitweb theme installed"
     copy_sf_ansible_roles
     # Copy prepared source to support depends-on
-    rsync -a --delete ${MANAGESF_CLONED_PATH}/ ${dir}/usr/src/managesf/
-    rsync -a --delete ${CAUTH_CLONED_PATH}/ ${dir}/usr/src/cauth/
-    rsync -a --delete ${SFMANAGER_CLONED_PATH}/ ${dir}/usr/src/python-sfmanager/
-    rsync -a --delete ${PYSFLIB_CLONED_PATH}/ ${dir}/usr/src/pysflib/
+    rsync -a --delete --exclude 'build' ${MANAGESF_CLONED_PATH}/ ${dir}/usr/src/managesf/
+    rsync -a --delete --exclude 'build' ${CAUTH_CLONED_PATH}/ ${dir}/usr/src/cauth/
+    rsync -a --delete --exclude 'build' ${SFMANAGER_CLONED_PATH}/ ${dir}/usr/src/python-sfmanager/
+    rsync -a --delete --exclude 'build' ${PYSFLIB_CLONED_PATH}/ ${dir}/usr/src/pysflib/
     ansible_install sf-base "${BASE_EXTRA_VARS}"
     ansible_install sf-managesf "$MANAGESF_EXTRA_VARS"
     ansible_install sf-cauth "$CAUTH_EXTRA_VARS"
