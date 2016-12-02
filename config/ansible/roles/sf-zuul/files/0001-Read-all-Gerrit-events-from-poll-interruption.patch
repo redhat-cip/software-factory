@@ -1,0 +1,48 @@
+From eecae351aa5f98a5a103550616e2231b11f4c0e3 Mon Sep 17 00:00:00 2001
+From: Tristan Cacqueray <tdecacqu@redhat.com>
+Date: Fri, 2 Dec 2016 09:32:11 +0000
+Subject: [PATCH] Read all Gerrit events from poll interruption
+
+Gerrit may emits multiple events in a single packet, in particular the
+change-created and ref-updated events. This results in a single poll
+interruption and the GerritWatcher will only process the first event
+until there is more activity on the event streams.
+
+To correct this, the _read method needs to read all the lines already
+available in the paramiko channel file before polling the file.
+
+Story: 2000816
+Task: 3401
+Change-Id: I93b55a6491353aee8c954d349cef658c09d1ff2d
+---
+ zuul/connection/gerrit.py | 14 +++++++++-----
+ 1 file changed, 9 insertions(+), 5 deletions(-)
+
+diff --git a/zuul/connection/gerrit.py b/zuul/connection/gerrit.py
+index 62891cd..cadaa04 100644
+--- a/zuul/connection/gerrit.py
++++ b/zuul/connection/gerrit.py
+@@ -145,11 +145,15 @@ class GerritWatcher(threading.Thread):
+         self._stopped = False
+ 
+     def _read(self, fd):
+-        l = fd.readline()
+-        data = json.loads(l)
+-        self.log.debug("Received data from Gerrit event stream: \n%s" %
+-                       pprint.pformat(data))
+-        self.gerrit_connection.addEvent(data)
++        while True:
++            l = fd.readline()
++            data = json.loads(l)
++            self.log.debug("Received data from Gerrit event stream: \n%s" %
++                           pprint.pformat(data))
++            self.gerrit_connection.addEvent(data)
++            # Continue until all the lines received are consumed
++            if fd._pos == fd._realpos:
++                break
+ 
+     def _listen(self, stdout, stderr):
+         poll = select.poll()
+-- 
+2.7.3
+
