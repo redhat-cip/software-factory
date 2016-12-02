@@ -263,7 +263,7 @@ if [ "${USE_SWIFT_CACHE}" == "yes" ]; then
 fi
 
 # repoXplorer
-REPOXPLORER_URL="https://github.com/morucci/repoxplorer"
+REPOXPLORER_URL="https://softwarefactory-project.io/r/repoxplorer"
 REPOXPLORER_VERSION=a63cfecf0049afb34c7ac90ee1bcb979aa01e4d5 # 2016-11-25
 
 # Zuul / Nodepool
