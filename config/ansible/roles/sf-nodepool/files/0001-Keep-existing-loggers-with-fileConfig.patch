@@ -1,0 +1,29 @@
+From 3e8372f59e6f2c5229b25f84be7d27430d3a1f5e Mon Sep 17 00:00:00 2001
+From: Tristan Cacqueray <tdecacqu@redhat.com>
+Date: Mon, 5 Dec 2016 08:02:38 +0000
+Subject: [PATCH] Keep existing loggers with fileConfig
+
+The setup_logging method disable all existing loggers
+that are not explicitly named in the logging configuration.
+
+Change-Id: Id790e9fae5eef37607a23836f75964a245a89276
+---
+ nodepool/cmd/__init__.py | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/nodepool/cmd/__init__.py b/nodepool/cmd/__init__.py
+index 3d50e61..8938111 100644
+--- a/nodepool/cmd/__init__.py
++++ b/nodepool/cmd/__init__.py
+@@ -30,7 +30,7 @@ class NodepoolApp(object):
+             if not os.path.exists(fp):
+                 raise Exception("Unable to read logging config file at %s" %
+                                 fp)
+-            logging.config.fileConfig(fp)
++            logging.config.fileConfig(fp, disable_existing_loggers=False)
+         else:
+             logging.basicConfig(level=logging.DEBUG,
+                                 format='%(asctime)s %(levelname)s %(name)s: '
+-- 
+2.7.3
+

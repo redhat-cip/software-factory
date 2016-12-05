@@ -60,6 +60,7 @@
   with_items:
     - 272097-image-api-use-tasks.patch
     - 321480-Add-log-config-option-to-nodepool-cmd.patch
+    - 0001-Keep-existing-loggers-with-fileConfig.patch
 
 - name: Install service file
   copy:
