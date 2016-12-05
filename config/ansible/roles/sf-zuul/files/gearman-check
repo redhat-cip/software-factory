@@ -14,7 +14,7 @@ f. close()
 configured_jobs = []
 projects = layout_yaml.get('projects')
 for project in projects:
-    configured_jobs.extend(project.get('check'))
+    configured_jobs.extend(project.get('check', []))
     configured_jobs.extend(project.get('gate', []))
     configured_jobs.extend(project.get('post', []))
 
