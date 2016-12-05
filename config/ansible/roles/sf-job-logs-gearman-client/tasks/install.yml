@@ -1,10 +1,4 @@
 ---
-- name: "Install logs gearman client group"
-  group: name=joblogsclient
-
-- name: "Install logs gearman client user"
-  user: name=joblogsclient group=joblogsclient shell=/sbin/nologin home=/srv/log-gearman-client
-
 - name: "Install virtualenv for job logs gearman client"
   command: "{{ item }}"
   with_items:
@@ -19,9 +13,3 @@
 - name: "Patch the client for SF"
   patch: src=files/log-gearman-client.patch dest=/srv/log-gearman-client/bin/log-gearman-client.py
   when: fetched|changed
-
-- name: "Create configuration directory"
-  file: path=/etc/log-gearman-client/ state=directory mode=0755
-
-- name: "Create log directory"
-  file: path=/var/log/log-gearman-client/ state=directory mode=0755 owner=joblogsclient group=joblogsclient

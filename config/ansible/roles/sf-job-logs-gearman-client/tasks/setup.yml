@@ -1,15 +1,17 @@
 ---
-- name: "Install logs gearman client group"
-  group: name=joblogsclient
+- include: /etc/ansible/tasks/create_user.yml user_name=joblogsclient
 
-- name: "Install logs gearman client user"
-  user: name=joblogsclient group=joblogsclient shell=/sbin/nologin home=/srv/log-gearman-client
+- name: "Create configuration directory"
+  file: path=/etc/log-gearman-client/ state=directory mode=0755
+
+- name: "Create log directory"
+  file: path=/var/log/log-gearman-client/ state=directory mode=0755 owner=joblogsclient group=joblogsclient
 
 - name: "Install log gearman client configuration"
   template: src=templates/jenkins-log-client.yaml.j2 dest=/etc/log-gearman-client/config.yml owner=joblogsclient group=joblogsclient
   register: config
 
-- name: Install service file
+- name: "Install service file"
   copy:
       src: log-gearman-client.service
       dest: /usr/lib/systemd/system/log-gearman-client.service
@@ -17,7 +19,7 @@
       group: root
       mode: 0644
 
-- name: Start service
+- name: "Start service"
   systemd:
       name: log-gearman-client
       state: started
