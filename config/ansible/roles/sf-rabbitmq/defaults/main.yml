@@ -1,0 +1,7 @@
+role_actions:
+  - setup
+
+rabbitmq_users:
+  - name: storyboard
+    password: "{{ creds_storyboard_rabbitmq_password }}"
+    vhost: /storyboard

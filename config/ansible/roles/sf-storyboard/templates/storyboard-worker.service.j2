@@ -1,5 +1,5 @@
 [Unit]
-Description=Storyboard API Service
+Description=Storyboard Worker Daemon
 After=syslog.target network.target mariadb.service
 
 [Service]
@@ -7,7 +7,7 @@ Type=simple
 User=storyboard
 Group=storyboard
 EnvironmentFile=-/etc/sysconfig/storyboard
-ExecStart=/usr/bin/storyboard-api --config-file /etc/storyboard/storyboard.conf --log-config-append /etc/storyboard/logging.conf
+ExecStart=/usr/bin/storyboard-worker-daemon --config-file /etc/storyboard/storyboard.conf --log-config-append /etc/storyboard/logging.conf --worker-count 2
 ExecReload=/bin/kill -HUP $MAINPID
 
 [Install]

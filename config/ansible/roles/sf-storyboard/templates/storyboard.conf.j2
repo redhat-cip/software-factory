@@ -10,6 +10,10 @@ use_stderr = True
 bind_host = 0.0.0.0
 bind_port = 20000
 
+{% if storyboard_email_notification %}
+enable_notifications = True
+{% endif %}
+
 [scheduler]
 enable = False
 
@@ -35,5 +39,17 @@ connection_trace = False
 [plugin_token_cleaner]
 enable = False
 
+{% if storyboard_email_notification %}
+[notifications]
+rabbit_host=rabbitmq.{{ fqdn }}
+rabbit_login_method = AMQPLAIN
+rabbit_userid = storyboard
+rabbit_password = {{ storyboard_rabbitmq_password }}
+rabbit_port = 5672
+rabbit_virtual_host = /storyboard
+
 [plugin_email]
-enable = False
+enable = True
+sender = storyboard@{{ fqdn }}
+smtp_host = 127.0.0.1
+{% endif %}

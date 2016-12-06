@@ -1,0 +1,4 @@
+---
+- name: restart storyboard
+  service: name={{ item }} state=restarted
+  with_items: "{{ storyboard_services }}"

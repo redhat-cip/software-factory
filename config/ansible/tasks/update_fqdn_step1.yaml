@@ -12,6 +12,14 @@
 - name: Gather facts after hostname change again
   action: setup
 
+- name: Kill rabbitmq
+  service: name=rabbitmq-server state=stopped
+  when: fqdn_changed.rc == 1
+
+- name: Remove rabbitmq state data
+  command: rm -Rf /var/lib/rabbitmq/mnesia/
+  when: fqdn_changed.rc == 1
+
 - name: Restart mariadb service
   when: fqdn_changed.rc == 1
   service: name=mariadb state=restarted

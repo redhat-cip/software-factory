@@ -14,32 +14,10 @@
 # under the License.
 require 'spec_helper'
 
-describe user('storyboard') do
-    it { should exist }
-end
-
-describe group('storyboard') do
-    it { should exist }
-end
-
-describe file('/etc/storyboard/storyboard.conf') do
-    it {
-        should be_file
-        should be_owned_by 'storyboard'
-        should be_grouped_into 'storyboard'
-        should be_mode '400'
-    }
-end
-
-describe service('storyboard') do
+describe service('rabbitmq-server') do
   it { should be_running }
 end
 
-describe service('storyboard-worker') do
-  it { should be_running }
-end
-
-
-describe port(20000) do
+describe port(5672) do
   it { should be_listening }
 end

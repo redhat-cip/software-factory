@@ -34,3 +34,4 @@
   with_items:
     - storyboard-db-manage
     - storyboard-api
+    - storyboard-worker-daemon

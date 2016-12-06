@@ -1,0 +1,29 @@
+---
+- include: /etc/ansible/tasks/create_user.yml user_name=rabbitmq
+
+- name: Check mnesia directory
+  stat: path=/var/lib/rabbitmq/mnesia/
+  register: mnesia
+
+- name: Reset data
+  when: mnesia.stat.isdir is undefined
+  command: rabbitmqctl force_reset
+  ignore_errors: yes
+
+- name: Rabbitmq service started and enabled
+  service: name=rabbitmq-server state=started enabled=yes
+
+- name: Create vhosts
+  rabbitmq_vhost: name={{ item.vhost }} state=present
+  with_items: "{{ rabbitmq_users }}"
+
+- name: Create users
+  rabbitmq_user:
+    user: "{{ item.name }}"
+    vhost: "{{ item.vhost }}"
+    password: "{{ item.password }}"
+    configure_priv: .*
+    write_priv: .*
+    read_priv: .*
+    state: present
+  with_items: "{{ rabbitmq_users }}"

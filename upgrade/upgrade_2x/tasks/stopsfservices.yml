@@ -24,5 +24,7 @@
     - logstash
     - kibana
     - storyboard
+    - rabbitmq-server
+    - storyboard-worker
     - repoxplorer-webui
     - repoxplorer

@@ -8,6 +8,7 @@
   tasks:
   # storyboard
   - include: tasks/new_creds.yml sf_secret_name=storyboard_sql_pwd
+  - include: tasks/new_creds.yml sf_secret_name=storyboard_rabbitmq_password
   - include: tasks/new_creds.yml sf_secret_name=storyboard_service_token
   # SFService user
   - include: tasks/new_creds.yml sf_secret_name=service_user_pwd

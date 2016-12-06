@@ -17,6 +17,9 @@
 import urllib
 import json
 import requests
+import subprocess
+import time
+import uuid
 
 import config
 from utils import Base, skipIfServiceMissing
@@ -93,3 +96,59 @@ class TestStoryboard(Base):
         cookies = dict(auth_pubtkt=config.USERS["admin"]['auth_cookie'])
         resp = requests.delete(url, headers=headers, cookies=cookies)
         self.assertEqual(resp.status_code, 204)
+
+    @skipIfServiceMissing('storyboard')
+    def test_storyboard_notification(self):
+        cookies = dict(auth_pubtkt=config.USERS["admin"]['auth_cookie'])
+        headers = dict(Authorization='Bearer will-be-set-by-apache')
+        headers['Content-Type'] = 'application/json; charset=utf8'
+
+        # Enable notification in preferences
+        pref_url = "%s/storyboard_api/users/1/preferences" % config.GATEWAY_URL
+        prefs = {"plugin_email_enable": "true"}
+        resp = requests.post(pref_url, data=json.dumps(prefs),
+                             headers=headers, cookies=cookies)
+        self.assertEqual(resp.status_code, 200)
+
+        # Subscribe to project 1
+        sub_url = "%s/storyboard_api/subscriptions" % config.GATEWAY_URL
+        sub = {"target_id": 1, "target_type": "project_group", "user_id": 1}
+        resp = requests.post(sub_url, data=json.dumps(sub),
+                             headers=headers, cookies=cookies)
+        # Returns 409 when already subscribed
+        self.assertIn(resp.status_code, (200, 409))
+
+        # Create a story for project 1
+        url = "%s/storyboard_api/stories" % config.GATEWAY_URL
+        story = {
+            "title": "A new story",
+            "description": "a new description...",
+        }
+        resp = requests.post(url, data=json.dumps(story),
+                             headers=headers, cookies=cookies)
+        self.assertEqual(resp.status_code, 200)
+        story_id = resp.json()['id']
+
+        # Create a task for the new story
+        url = "%s/storyboard_api/tasks" % config.GATEWAY_URL
+        task_title = "Random_task_%s" % uuid.uuid4()
+        task = {
+            "title": task_title,
+            "project_id": 1,
+            "story_id": story_id,
+        }
+        resp = requests.post(url, data=json.dumps(task),
+                             headers=headers, cookies=cookies)
+        self.assertEqual(resp.status_code, 200)
+
+        # Check admins mail
+        cmd = ["ssh",
+               "-i", config.SERVICE_PRIV_KEY_PATH,
+               "-l", "root", config.GATEWAY_HOST,
+               "grep -q 'Task .%s. was created.' /var/mail/root" % task_title]
+        for retries in xrange(10):
+            ret = subprocess.Popen(cmd).wait()
+            if ret == 0:
+                break
+            time.sleep(1)
+        self.assertEqual(ret, 0)
