@@ -80,6 +80,11 @@ authentication:
         login_button_text: "Log in with OpenID Connect"
         client_id:
         client_secret:
+        mapping:
+            login: email
+            email: email
+            name: name
+            uid: sub
 
 
 gerrit_connections:

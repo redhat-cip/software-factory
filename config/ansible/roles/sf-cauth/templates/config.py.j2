@@ -96,6 +96,11 @@ auth = {
         'client_id': '{{ authentication['openid_connect']['client_id'] }}',
         'client_secret': '{{ authentication['openid_connect']['client_secret'] }}',
         'redirect_uri': '{{ gateway_url }}/auth/login/openid_connect/callback',
+        'mapping': {'login': {{ authentication['openid_connect']['mapping']['login'] }},
+                    'email': {{ authentication['openid_connect']['mapping']['email'] }},
+                    'name': {{ authentication['openid_connect']['mapping']['name'] }},
+                    'uid': {{ authentication['openid_connect']['mapping']['uid'] }},
+                    'ssh_keys': None}
     },
     {% endif %}
     'users': {

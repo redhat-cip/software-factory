@@ -712,6 +712,16 @@ def update_sfconfig(data):
         add_default_splash_image(data)
         dirty = True
 
+    # 2.2.7: add oidc field mapping, default to google values
+    if 'mapping' not in data['authentication']['openid_connect']:
+        data['authentication']['openid_connect']['mapping'] = {
+            'login': 'email',
+            'email': 'email',
+            'name': 'name',
+            'uid': 'sub',
+            'ssh_keys': None
+        }
+
     # 2.3.0: enable static hosts settings
     if 'static_hostnames' not in data['network']:
         data['network']['static_hostnames'] = []
