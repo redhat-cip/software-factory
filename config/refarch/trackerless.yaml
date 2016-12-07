@@ -19,3 +19,8 @@ inventory:
   - nodepool
   - jenkins
   - murmur
+  - elasticsearch
+  - job-logs-gearman-client
+  - job-logs-gearman-worker
+  - logstash
+  - kibana

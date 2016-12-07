@@ -55,6 +55,7 @@ class TestStoryboard(Base):
             self.assertEqual(resp.history[0].status_code, 307)
             self.assertIn("auth/login", resp.url)
 
+    @skipIfServiceMissing('storyboard')
     def test_storyboard_add_story(self):
         """ Test adding a story to storyboard """
         url = "%s/storyboard_api/stories" % config.GATEWAY_URL
