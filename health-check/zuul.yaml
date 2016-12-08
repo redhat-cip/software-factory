@@ -32,6 +32,16 @@
   include: playbooks/config_submit_change.yaml
   when: hostvars[groups["jenkins"][0]]["job_created"].stat.isdir is not defined or hostvars[groups["zuul"][0]]["zuul_created"].rc != 0
 
+- hosts: install-server
+  tasks:
+    - name: "wait for new jobs to appear in jenkins"
+      command: curl --head --silent "http://jenkins:8081/jenkins/job/{{ check[0] }}/api/json"
+      register: newjob
+      until: newjob.stdout.find("200 OK") != -1
+      retries: 36
+      delay: 5
+      changed_when: false
+
 # * Submit a bad change and verify Jenkins CI -1
 # * Fix bad change and verify Jenkins CI +1
 # * Check if change got merged

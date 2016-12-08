@@ -105,14 +105,26 @@ function run_health_openstack {
     EXTRA_VARS+=" os_auth_url=${OS_AUTH_URL} os_username=${OS_USERNAME} os_password=${OS_PASSWORD} os_tenant_name=${OS_TENANT_NAME}"
     EXTRA_VARS+=" os_tempurl_key=${RANDOM}${RANDOM}${RANDOM}"
     echo "$(date) Running /etc/ansible/health-check/nodepool.yaml" | tee -a ${ARTIFACTS_DIR}/integration_tests.txt
+    # Debug playbook
+    ssh ${SF_HOST} << EOF
+echo ansible-playbook "--extra-vars='${EXTRA_VARS}'" /etc/ansible/health-check/nodepool.yaml >> /root/debug_playbooks
+EOF
     ssh ${SF_HOST} ansible-playbook "--extra-vars='${EXTRA_VARS}'" /etc/ansible/health-check/nodepool.yaml >> ${ARTIFACTS_DIR}/integration_tests.txt \
         && echo "Nodepool integration test SUCCESS"    \
         || fail "Nodepool integration test failed" ${ARTIFACTS_DIR}/integration_tests.txt
     echo "$(date) Running /etc/ansible/health-check/swiftlogs.yaml" | tee -a ${ARTIFACTS_DIR}/integration_tests.txt
+    # Debug playbook
+    ssh ${SF_HOST} << EOF
+echo ansible-playbook "--extra-vars='${EXTRA_VARS}'" /etc/ansible/health-check/swiftlogs.yaml >> /root/debug_playbooks
+EOF
     ssh ${SF_HOST} ansible-playbook "--extra-vars='${EXTRA_VARS}'" /etc/ansible/health-check/swiftlogs.yaml >> ${ARTIFCATS_DIR}/integration_tests.txt \
         && { echo "Swiftlogs integration test SUCCESS"; EXTRA_VARS+=" test_log_export=yes"; }    \
         || echo "Swiftlogs integration test failed (non-voting)"
     echo "$(date) Running /etc/ansible/health-check/zuul.yaml" | tee -a ${ARTIFACTS_DIR}/integration_tests.txt
+    # Debug playbook
+    ssh ${SF_HOST} << EOF
+echo ansible-playbook "--extra-vars='${EXTRA_VARS}'" /etc/ansible/health-check/zuul.yaml >> /root/debug_playbooks
+EOF
     ssh ${SF_HOST} ansible-playbook "--extra-vars='${EXTRA_VARS}'" /etc/ansible/health-check/zuul.yaml >> ${ARTIFACTS_DIR}/integration_tests.txt \
         && echo "Zuul integration test SUCCESS"                        \
         || fail "Zuul integration test failed" ${ARTIFACTS_DIR}/integration_tests.txt
