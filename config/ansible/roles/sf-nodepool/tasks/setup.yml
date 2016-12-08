@@ -74,7 +74,7 @@
 
 - name: Start service
   systemd:
-      name: murmurd
+      name: nodepool
       state: started
       daemon_reload: yes
       enabled: yes
