@@ -163,6 +163,7 @@ class TestResourcesWorkflow(Base):
         resources = """resources:
   groups:
     %s:
+      unknown-key: value
       description: test for functional test
 """
         # Add the resource file with review then check CI
@@ -288,11 +289,11 @@ class TestResourcesWorkflow(Base):
       documentation: http://ichiban-cloud.io/docs
       issue-tracker: http://ichiban-cloud.bugtrackers.io
   repos:
-    %(r1name)s:
+    %(pname)s/%(r1name)s:
       name: %(pname)s/%(r1name)s
       description: The server part
       acl: %(aname)s
-    %(r2name)s:
+    %(pname)s/%(r2name)s:
       name: %(pname)s/%(r2name)s
       description: The client part
       acl: %(aname)s
@@ -318,14 +319,14 @@ class TestResourcesWorkflow(Base):
           mergeContent = false
           action = fast forward only
       groups:
-        - %(g1name)s
-        - %(g2name)s
+        - %(pname)s/%(g1name)s
+        - %(pname)s/%(g2name)s
   groups:
-    %(g1name)s:
+    %(pname)s/%(g1name)s:
       name: %(pname)s/%(g1name)s
       members:
         - user2@sftests.com
-    %(g2name)s:
+    %(pname)s/%(g2name)s:
       name: %(pname)s/%(g2name)s
       members:
         - user3@sftests.com
@@ -368,13 +369,13 @@ class TestResourcesWorkflow(Base):
                       res['resources']['projects'].keys())
         self.assertIn(tmpl_keys['aname'],
                       res['resources']['acls'].keys())
-        self.assertIn(tmpl_keys['g1name'],
+        self.assertIn(os.path.join(tmpl_keys['pname'], tmpl_keys['g1name']),
                       res['resources']['groups'].keys())
-        self.assertIn(tmpl_keys['g2name'],
+        self.assertIn(os.path.join(tmpl_keys['pname'], tmpl_keys['g2name']),
                       res['resources']['groups'].keys())
-        self.assertIn(tmpl_keys['r1name'],
+        self.assertIn(os.path.join(tmpl_keys['pname'], tmpl_keys['r1name']),
                       res['resources']['repos'].keys())
-        self.assertIn(tmpl_keys['r2name'],
+        self.assertIn(os.path.join(tmpl_keys['pname'], tmpl_keys['r2name']),
                       res['resources']['repos'].keys())
         # Modify the ACL to verify repos ACL are updated
         resources = re.sub('submit = group .*',
@@ -415,10 +416,14 @@ class TestResourcesWorkflow(Base):
         repos = res['resources'].get('repos', {})
         self.assertNotIn(tmpl_keys['pname'], projects.keys())
         self.assertNotIn(tmpl_keys['aname'], acls.keys())
-        self.assertNotIn(tmpl_keys['g1name'], groups.keys())
-        self.assertNotIn(tmpl_keys['g2name'], groups.keys())
-        self.assertNotIn(tmpl_keys['r1name'], repos.keys())
-        self.assertNotIn(tmpl_keys['r2name'], repos.keys())
+        self.assertNotIn(os.path.join(tmpl_keys['pname'], tmpl_keys['g1name']),
+                         groups.keys())
+        self.assertNotIn(os.path.join(tmpl_keys['pname'], tmpl_keys['g2name']),
+                         groups.keys())
+        self.assertNotIn(os.path.join(tmpl_keys['pname'], tmpl_keys['r1name']),
+                         repos.keys())
+        self.assertNotIn(os.path.join(tmpl_keys['pname'], tmpl_keys['r2name']),
+                         repos.keys())
 
     def test_GET_resources(self):
         """ Check resources - GET resources works as expected"""
