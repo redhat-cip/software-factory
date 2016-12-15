@@ -29,7 +29,8 @@
 - name: Expose localCA.pem
   copy:
       content: "{{ localCA_pem }}"
-      dest: /var/www/localCA.pem mode=0444
+      dest: /var/www/localCA.pem
+      mode: "0444"
 
 - name: Add embedded TLS certificate for apache
   when: not network['use_letsencrypt']
