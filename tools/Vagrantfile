@@ -27,6 +27,10 @@ Vagrant.configure(2) do |config|
   end
 
   config.vm.provision "shell", privileged: false, inline: <<-SHELL
+    # Disable SELinux (for squid)
+    sudo setenforce 0
+    sudo sed -i --follow-symlinks 's/^SELINUX=.*/SELINUX=disabled/g' /etc/sysconfig/selinux
+
     # Set MTU to be cloud-proof
     sudo ip link set dev eth0 mtu 1400
 
