@@ -425,13 +425,16 @@ class GerritGitUtils(Tool):
         self.exe("git commit --author '%s' -m '%s'" % (self.author, commit),
                  clone_dir)
 
-    def add_commit_for_all_new_additions(self, clone_dir, commit=None):
+    def add_commit_for_all_new_additions(self, clone_dir, commit=None,
+                                         publish=False):
         self.exe('git checkout master', clone_dir)
         if not commit:
             commit = "Add all the additions"
         self.exe('git add -A', clone_dir)
         self.exe("git commit --author '%s' -m '%s'" % (self.author, commit),
                  clone_dir)
+        if publish:
+            self.exe('git review -v', clone_dir)
 
     def direct_push_branch(self, clone_dir, branch):
         self.exe('git checkout %s' % branch, clone_dir)

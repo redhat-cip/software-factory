@@ -113,7 +113,8 @@ class TestResourcesWorkflow(Base):
 
     def propose_resources_change_check_ci(
             self, fpath, resources=None,
-            mode='add', expected='failure'):
+            mode='add', expected='failure',
+            msg=None):
 
         config_clone_dir = self.clone_as_admin("config")
         path = os.path.join(config_clone_dir, fpath)
@@ -132,9 +133,14 @@ class TestResourcesWorkflow(Base):
         last_build = self.ju.get_last_build_number("config-check",
                                                    label)
 
-        self.gitu_admin.add_commit_and_publish(
-            config_clone_dir, "master", "Validate resources",
-            fnames=[path])
+        if not msg:
+            msg = "Validate resources"
+        if mode == 'add':
+            self.gitu_admin.add_commit_and_publish(
+                config_clone_dir, "master", msg, fnames=[path])
+        if mode == 'del':
+            self.gitu_admin.add_commit_for_all_new_additions(
+                config_clone_dir, msg, publish=True)
 
         change_ids = self.gu.get_my_changes_for_project('config')
         self.assertGreater(len(change_ids), 0)
@@ -191,6 +197,35 @@ class TestResourcesWorkflow(Base):
                                                resources=resources,
                                                mode='add',
                                                expected='success')
+
+    def test_validate_resources_deletion(self):
+        """ Check resources - deletions detected and authorized via flag """
+        fpath = "resources/%s.yaml" % create_random_str()
+        name = create_random_str()
+        resources = """resources:
+  groups:
+    %s:
+      description: test for functional test
+      members: []
+"""
+        # Add the resources file w/o review
+        resources = resources % name
+        self.set_resources_then_direct_push(fpath,
+                                            resources=resources,
+                                            mode='add')
+
+        # Remove the resource file via the review
+        self.propose_resources_change_check_ci(fpath,
+                                               mode='del',
+                                               expected='failure')
+
+        # Remove the resource file with "allow-delete" flag via the review
+        shutil.rmtree(os.path.join(self.gitu_admin.tempdir, 'config'))
+        msg = "Remove resource with flag\nsf-resources: allow-delete"
+        self.propose_resources_change_check_ci(fpath,
+                                               mode='del',
+                                               expected='success',
+                                               msg=msg)
 
     def test_CUD_group(self):
         """ Check resources - ops on group work as expected """
