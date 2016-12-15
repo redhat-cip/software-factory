@@ -181,13 +181,12 @@ class TestResourcesWorkflow(Base):
         resources = """resources:
   groups:
     %s:
-      name: %s
       description: test for functional test
       members:
         - user2@sftests.com
 """
         # Add the resource file with review then check CI
-        resources = resources % (name, name)
+        resources = resources % name
         self.propose_resources_change_check_ci(fpath,
                                                resources=resources,
                                                mode='add',
@@ -200,14 +199,13 @@ class TestResourcesWorkflow(Base):
         resources = """resources:
   groups:
     %s:
-      name: %s
       description: test for functional test
       members:
         - user2@sftests.com
         - user3@sftests.com
 """
         # Add the resources file w/o review
-        resources = resources % (name, name)
+        resources = resources % name
         self.set_resources_then_direct_push(fpath,
                                             resources=resources,
                                             mode='add')
@@ -220,13 +218,12 @@ class TestResourcesWorkflow(Base):
         resources = """resources:
   groups:
     %s:
-      name: %s
       description: test for functional test
       members:
         - user4@sftests.com
         - user2@sftests.com
 """
-        resources = resources % (name, name)
+        resources = resources % name
         self.set_resources_then_direct_push(fpath,
                                             resources=resources,
                                             mode='add')
@@ -250,11 +247,10 @@ class TestResourcesWorkflow(Base):
         resources = """resources:
   repos:
     %s:
-      name: %s
       description: test for functional test
 """
         # Add the resources file w/o review
-        resources = resources % (name, name)
+        resources = resources % name
         self.set_resources_then_direct_push(fpath,
                                             resources=resources,
                                             mode='add')
@@ -278,7 +274,6 @@ class TestResourcesWorkflow(Base):
         resources = """resources:
   projects:
     %(pname)s:
-      name: %(pname)s
       description: An awesome project
       contacts:
         - contact@grostest.com
@@ -290,11 +285,9 @@ class TestResourcesWorkflow(Base):
       issue-tracker: http://ichiban-cloud.bugtrackers.io
   repos:
     %(pname)s/%(r1name)s:
-      name: %(pname)s/%(r1name)s
       description: The server part
       acl: %(aname)s
     %(pname)s/%(r2name)s:
-      name: %(pname)s/%(r2name)s
       description: The client part
       acl: %(aname)s
   acls:
@@ -323,11 +316,9 @@ class TestResourcesWorkflow(Base):
         - %(pname)s/%(g2name)s
   groups:
     %(pname)s/%(g1name)s:
-      name: %(pname)s/%(g1name)s
       members:
         - user2@sftests.com
     %(pname)s/%(g2name)s:
-      name: %(pname)s/%(g2name)s
       members:
         - user3@sftests.com
         - user4@sftests.com
@@ -439,7 +430,6 @@ class TestResourcesWorkflow(Base):
         new = """resources:
   groups:
     %(gname)s:
-      name: %(gname)s
       description: A test group
       members: ['user2@sftests.com']
 """

@@ -2,7 +2,6 @@ resources:
   projects: {}
   repos:
     config:
-      name: config
       description: Config repository (Do not delete it)
       acl: config-acl
   acls:
@@ -34,11 +33,9 @@ resources:
         - config-core
   groups:
     config-ptl:
-      name: config-ptl
       description: Team lead for the config repo
       members:
         - admin@sftests.com
     config-core:
-      name: config-core
       description: Team core for the config repo
       members: []
