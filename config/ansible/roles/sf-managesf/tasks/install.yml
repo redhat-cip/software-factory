@@ -13,6 +13,7 @@
 - name: "Install pysflib"
   command: chdir=/usr/src/pysflib {{ item }}
   with_items:
+    - sed -i 's/^.*storyboardclient.*//' requirements.txt
     - /var/www/managesf/bin/pip install -rrequirements.txt
     - /var/www/managesf/bin/python setup.py install
 

@@ -404,6 +404,7 @@ function prepare_functional_tests_utils {
     cat ${PYSFLIB_CLONED_PATH}/requirements.txt ${SFMANAGER_CLONED_PATH}/requirements.txt tests/requirements.txt | sort | uniq | grep -v '\(requests\|pysflib\)' > ${ARTIFACTS_DIR}/test-requirements.txt
     (
         set -e
+        pip install --user --upgrade pip pbr
         cd ${PYSFLIB_CLONED_PATH}; pip install --user -r ${ARTIFACTS_DIR}/test-requirements.txt || {
             echo "Can't install test-requirements.txt $(cat ${ARTIFACTS_DIR}/test-requirements.txt)"
             exit 1
