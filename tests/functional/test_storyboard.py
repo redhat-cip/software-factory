@@ -14,7 +14,6 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import urllib
 import json
 import requests
 import subprocess
@@ -24,15 +23,69 @@ import uuid
 import config
 from utils import Base, skipIfServiceMissing
 
-
-def get_cid_from_cookie(cookie):
-    for val in urllib.unquote(cookie).split(';'):
-        if val.startswith('cid='):
-            return int(val.split('=')[1])
-    raise RuntimeError("Couldn't find cid from cookie")
+from pysflib.sfstoryboard import SFStoryboard
 
 
 class TestStoryboard(Base):
+    @skipIfServiceMissing('storyboard')
+    def test_storyboard_hooks(self):
+        hook_url = "%s/manage/hooks/" % config.GATEWAY_URL
+        client = SFStoryboard(config.GATEWAY_URL + "/storyboard_api",
+                              config.USERS[config.USER_4]['auth_cookie'])
+        # Creates a story and task
+        project = client.projects.get("config")
+        story = client.stories.create(title="A new story")
+        task = client.tasks.create(story_id=story.id, project_id=project.id,
+                                   title="A new task")
+
+        # Prepare a patchset created event
+        change = {
+            "change": "42",
+            "project": "config",
+            "commit_message": "Task: #%d\nStory: #%d" % (task.id, story.id)
+        }
+
+        # Call patchset_created hook
+        cookies = dict(auth_pubtkt=config.USERS["admin"]['auth_cookie'])
+        headers = dict(Authorization='Bearer will-be-set-by-apache')
+        headers['Content-Type'] = 'application/json; charset=utf8'
+        resp = requests.post("%s/patchset_created" % hook_url, headers=headers,
+                             cookies=cookies, data=json.dumps(change))
+
+        # Check task and story got updated
+        self.assertEquals(resp.status_code, 200)
+        self.assertEquals(resp.json()['msg'], "Success")
+        task = client.tasks.get(task.id)
+        self.assertEquals(task.status, "inprogress")
+        self.assertIn("Fix proposed to",
+                      client.stories.get(story.id).comments.list()[-1].content)
+
+        # Call patchset_created again to simulate patchset 2
+        resp = requests.post("%s/patchset_created" % hook_url, headers=headers,
+                             cookies=cookies, data=json.dumps(change))
+
+        # Check duplicate comment didn't get added to the story
+        self.assertEquals(resp.status_code, 200)
+        self.assertEquals(resp.json()['msg'], "Success")
+        story_comments = client.stories.get(story.id).comments.list()
+        comment_found = 0
+        for comment in story_comments:
+            if "Fix proposed to" in comment.content:
+                comment_found += 1
+        self.assertEquals(comment_found, 1)
+
+        # Call change_merged hook
+        resp = requests.post("%s/change_merged" % hook_url, headers=headers,
+                             cookies=cookies, data=json.dumps(change))
+
+        # Check task and story got updated
+        self.assertEquals(resp.status_code, 200)
+        self.assertEquals(resp.json()['msg'], "Success")
+        task = client.tasks.get(task.id)
+        self.assertEquals(task.status, "merged")
+        self.assertIn("The following change on Gerrit has been merged",
+                      client.stories.get(story.id).comments.list()[-1].content)
+
     @skipIfServiceMissing('storyboard')
     def test_storyboard_api_access(self):
         """ Test if storyboard is accessible on gateway hosts

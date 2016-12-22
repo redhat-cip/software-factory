@@ -1,5 +1,10 @@
 resources:
-  projects: {}
+  projects:
+    internal:
+      description: Internal configuration project
+      issue-tracker: SFStoryboard
+      source-repositories:
+        - config
   repos:
     config:
       description: Config repository (Do not delete it)

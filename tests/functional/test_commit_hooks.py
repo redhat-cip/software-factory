@@ -30,15 +30,10 @@ from pysflib.sfgerrit import GerritUtils
 
 
 TEST_MSGS = [
-    ('bug: %s', 'Closed'),
     ('Bug: %s', 'Closed'),
-    ('bug: #%s', 'Closed'),
     ('Bug: #%s', 'Closed'),
-    ('issue: %s', 'Closed'),
     ('Issue: %s', 'Closed'),
-    ('issue: #%s', 'Closed'),
     ('Issue: #%s', 'Closed'),
-    ('related to: %s', 'In Progress'),
     ('Related-To: #%s', 'In Progress'),
 ]
 
