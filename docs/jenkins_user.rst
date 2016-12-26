@@ -97,4 +97,15 @@ Some explanation about this job configuration:
   also part of these variables.
 * node: is the slave label that specify where the job can be executed.
 
+CLI
+===
 
+The *sfmanager* utility lets users interact with jobs. The following operations are available:
+
+* list informations about jobs. Jobs can be filtered by name and by patchset.
+* show the parameters used by a given job
+* show the logs of a completed job
+* cancel a running job
+* run a new job; parameters from a previous job can be fetched automatically.
+
+Please refer to sfmanager's contextual help for more details.

@@ -289,7 +289,7 @@ class TestGateway(Base):
         url = config.GATEWAY_URL + "/static/js/jquery.min.js"
         resp = requests.get(url)
         self.assertEqual(resp.status_code, 200)
-        self.assertTrue("jQuery v1.7.2" in resp.content)
+        self.assertTrue("jQuery" in resp.content)
 
         paths = ('js/bootstrap.min.js', 'css/bootstrap.min.css')
         for p in paths:

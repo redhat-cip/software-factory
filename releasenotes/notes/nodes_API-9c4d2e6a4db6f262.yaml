@@ -1,0 +1,12 @@
+---
+features:
+  - "nodes" REST API
+    The endpoint at manage/nodes/ allows users with adequate
+    clearance to manage dynamic executors; typically nodes spawned
+    by Nodepool. The endpoint supports listing nodes, holding
+    a node up after a job, deleting such an node, and allowing
+    an ssh key to connect to a node. The endpoint at
+    /manage/nodes/image/ can be used to list current images.
+upgrade:
+  - The policies file is upgraded to include the default
+    access policies for the API.

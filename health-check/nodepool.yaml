@@ -94,3 +94,46 @@
 
     - name: "Wait for the first slave to appears online in Jenkins"
       shell: for i in {1..100}; do sleep ${i}; curl -Ls https://{{ fqdn }}/jenkins/computer/api/json | python -c "import sys, json; d = json.loads(sys.stdin.read()); slaves = [s for s in d['computer'] if ('base_centos-default' in s['displayName'])]; any(s['offline'] == False for s in slaves) and sys.exit(0) or sys.exit(1)" && exit 0; done; exit 1
+
+    - name: "Query the nodes REST API to get last node info"
+      uri:
+        url: http://managesf:20001/nodes/
+        HEADER_X-Remote-User: admin
+        return_content: yes
+        body_format: json
+      register: nodes_info
+
+    - name: "Hold the node with the REST API"
+      uri:
+        url: http://managesf:20001/nodes/id/{{ nodes_info.json['nodepool'][0]['node_id'] }}
+        HEADER_X-Remote-User: admin
+
+    - name: "Create a test ssh key"
+      command: ssh-keygen -N '' -f /tmp/{{ nodes_info.json['nodepool'][0]['node_name'] }}_id_rsa
+
+    - name: "Add the test ssh key to node's authorized keys with the REST API"
+      uri:
+        url: http://managesf:20001/nodes/id/{{ nodes_info.json['nodepool'][0]['node_id'] }}/authorize_key/
+        method: POST
+        body: "public_key={{ lookup('file', '/tmp/' + nodes_info.json.nodepool.0.node_name + '_id_rsa.pub')|urlencode() }}"
+        HEADER_X-Remote-User: admin
+        return_content: yes
+      register: ak_output
+      failed_when: "'OK' not in ak_output.content"
+
+    - name: "SSH into node with the test key"
+      command: ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -q -i /tmp/{{ node_info.json.nodepool.0.node_name }}_id_rsa jenkins@{{ node_info.json.nodepool.0.ip }} -c whoami
+      register: ssh_whoami
+      failed_when: ssh_whoami.stdout.find("jenkins") == -1
+
+    - name: "Schedule node for deletion"
+      uri:
+        url: http://managesf:20001/nodes/id/{{ node_info.json.nodepool.0.node_id }}/
+        method: DELETE
+        HEADER_X-Remote-User: admin
+        return_content: yes
+      register: del_node
+      failed_when: "'delete' not in del_node.content"
+
+    - name: "Delete test ssh key"
+      command: rm /tmp/{{ node_info.json.nodepool.0.node_name }}*

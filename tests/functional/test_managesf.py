@@ -508,7 +508,8 @@ class TestManageSF(Base):
         paths = [
             "/manage/project/",
             "/manage/project/%s" % project,
-            "/manage/project/membership/"]
+            "/manage/project/membership/",
+            "/manage/nodes/"]
         for path in paths:
             url = "https://%s%s" % (config.GATEWAY_HOST, path)
             resp = requests.get(url, cookies=cookies)

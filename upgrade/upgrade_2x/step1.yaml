@@ -10,6 +10,7 @@
   - include: tasks/sf_jjb_namechange.yml
   - include: tasks/policy_configrepo.yml
   - include: tasks/job_api_configrepo.yml
+  - include: tasks/agent_api_configrepo.yml
   - include: tasks/resources_configrepo.yml
   - include: tasks/gerrit_default_jenkins_user.yml
 

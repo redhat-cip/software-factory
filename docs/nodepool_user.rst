@@ -65,3 +65,20 @@ each job. This can have some advantages:
 
  * A clean VM for each job
  * A job have full system access (root)
+
+CLI
+===
+
+The CLI utility *sfmanager* can be used to interact with nodes that are currently running. The
+following actions are supported:
+
+* list nodes, with status information like id, state, age, ip address, base image
+* hold a specific node, so that it is not destroyed after it has been consumed for a job
+* add a SSH public key to the list of authorized keys on the node, allowing a user to do
+  remote operations on the node
+* schedule a node for deletion
+* list available images
+
+These operations might require specific authorizations defined within SF's policy engine.
+
+You can refer to sfmanager's contextual help for more details.

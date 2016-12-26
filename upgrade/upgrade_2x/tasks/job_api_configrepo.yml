@@ -5,7 +5,7 @@
 
 - name: Check if policy config has job api entries
   when: configrepo_policies.stat.exists == true
-  shell: grep -q managesf.job.get /root/config/policies/policy.yaml
+  shell: grep -q managesf.job:get /root/config/policies/policy.yaml
   register: grep
   ignore_errors: yes
 
@@ -20,9 +20,9 @@
     - git reset --hard origin/master --
     - git clean -f -x -d
     # Create default rules
-    - /usr/local/bin/hieraedit.py --yaml /root/config/policies/policy.yaml managesf.job.get rule:any
-    - /usr/local/bin/hieraedit.py --yaml /root/config/policies/policy.yaml managesf.job.stop rule:admin_or_service
-    - /usr/local/bin/hieraedit.py --yaml /root/config/policies/policy.yaml managesf.job.run rule:admin_or_service
+    - /usr/local/bin/hieraedit.py --yaml /root/config/policies/policy.yaml managesf.job:get rule:any
+    - /usr/local/bin/hieraedit.py --yaml /root/config/policies/policy.yaml managesf.job:stop rule:admin_or_service
+    - /usr/local/bin/hieraedit.py --yaml /root/config/policies/policy.yaml managesf.job:run rule:admin_or_service
     - git add policies
     - git commit -m "Initialize job API policies"
     - git push git+ssh://{{ fqdn }}/config master
