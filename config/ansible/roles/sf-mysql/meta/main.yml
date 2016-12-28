@@ -1,6 +1,6 @@
 ---
 galaxy_info:
-  description: Databse mysql service
+  description: Database service
   company: Red Hat
   license: Apache
   min_ansible_version: 1.9

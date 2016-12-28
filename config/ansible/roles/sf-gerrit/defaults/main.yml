@@ -6,21 +6,25 @@ role_actions:
   - restore
   - pre_restore
 
-gerrit_email_pk: "{{ creds_gerrit_email_pk }}"
-gerrit_pub_url: "{{ gateway_url }}/r/"
-gerrit_internal_url: "http://gerrit.{{ fqdn }}:8000/r/"
-gerrit_token_pk: "{{ creds_gerrit_token_pk }}"
+gerrit_port: 8000
 
-gitweb_cgi: '/var/www/git/gitweb.cgi'
+gerrit_pub_url: "https://example.com/r/"
+gerrit_internal_url: "http://localhost:{{ gerrit_port }}/r/"
 
-issues_tracker_api_key: "{{ creds_issues_tracker_api_key }}"
-issues_tracker_api_url: "{{ redmine_internal_url }}"
+managesf_internal_url: "http://localhost:20001"
 
-mysql_db: 'gerrit'
-mysql_host: "mysql.{{ fqdn }}"
-mysql_password: "{{ creds_gerrit_sql_pwd }}"
-mysql_port: 3306
-mysql_user: 'gerrit'
+gerrit_email: "gerrit@example.com"
 
-gerrit_heap_limit: 512m
+gerrit_email_pk: "CHANGE_ME"
+gerrit_token_pk: "CHANGE_ME"
+
+gitweb_cgi: "/var/www/git/gitweb.cgi"
+
+gerrit_mysql_db: "gerrit"
+gerrit_mysql_host: "mysql.example.com"
+gerrit_mysql_password: "CHANGE_ME"
+gerrit_mysql_port: 3306
+gerrit_mysql_user: "gerrit"
+
+gerrit_heap_limit: "512m"
 gerrit_connection_pool: 225

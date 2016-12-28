@@ -1,10 +1,17 @@
+{% for dbname, dbinfo in mysql_databases.iteritems() %}
+CREATE DATABASE IF NOT EXISTS {{ dbname }} CHARACTER SET utf8 COLLATE utf8_general_ci;
+{% for host in dbinfo['hosts'] %}
+GRANT ALL PRIVILEGES ON {{ dbname }}.* TO '{{ dbinfo['user'] }}'@'{{ host }}' IDENTIFIED BY "{{ dbinfo['password'] }}" WITH GRANT OPTION;
+{% endfor %}
+{% endfor %}
+
 /* Create auth database */
 CREATE DATABASE IF NOT EXISTS cauth CHARACTER SET utf8 COLLATE utf8_general_ci;
 {% for host in groups["cauth"] %}
 GRANT ALL PRIVILEGES ON cauth.* TO 'cauth'@'{{ host }}' IDENTIFIED BY "{{ hostvars[inventory_hostname]["creds_cauth_sql_pwd"] }}" WITH GRANT OPTION;
 {% endfor %}
 
-{% for service in ("redmine", "gerrit", "nodepool", "etherpad", "lodgeit", "grafana", "managesf", "storyboard") %}
+{% for service in ("redmine", "nodepool", "etherpad", "lodgeit", "grafana", "managesf", "storyboard") %}
   {% if service in groups %}
 CREATE DATABASE IF NOT EXISTS {{ service }} CHARACTER SET utf8 COLLATE utf8_general_ci;
 GRANT ALL PRIVILEGES ON {{ service }}.* TO '{{ service }}'@'localhost' IDENTIFIED BY "{{ hostvars[inventory_hostname]["creds_%s_sql_pwd" % service] }}" WITH GRANT OPTION;

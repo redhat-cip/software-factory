@@ -4,11 +4,11 @@
     gitHttpUrl =
 [database]
     type = MYSQL
-    hostname = {{ mysql_host }}
-    database = {{ mysql_db }}
-    username = {{ mysql_user }}
-    port = {{ mysql_port }}
-    url = jdbc:mysql://{{ mysql_host }}/{{ mysql_db }}?useUnicode=yes&characterEncoding=UTF-8
+    hostname = {{ gerrit_mysql_host }}
+    database = {{ gerrit_mysql_db }}
+    username = {{ gerrit_mysql_user }}
+    port = {{ gerrit_mysql_port }}
+    url = jdbc:mysql://{{ gerrit_mysql_host }}/{{ gerrit_mysql_db }}?useUnicode=yes&characterEncoding=UTF-8
 {% if gerrit_connection_pool %}
     connectionPool = true
     poolLimit = {{ gerrit_connection_pool }}
@@ -25,7 +25,7 @@
 [sshd]
     listenAddress = "*:29418"
 [httpd]
-    listenUrl = proxy-https://0.0.0.0:8000/r/
+    listenUrl = proxy-https://0.0.0.0:{{ gerrit_port }}/r/
 [commentlink "changeid"]
     match = (I[0-9a-f]{8,40})
     link = "#q,$1,n,z"
@@ -52,6 +52,6 @@
 [cache]
     directory = cache
 [user]
-    email = gerrit@{{ fqdn }}
+    email = {{ gerrit_email }}
 [plugins]
     allowRemoteAdmin = true

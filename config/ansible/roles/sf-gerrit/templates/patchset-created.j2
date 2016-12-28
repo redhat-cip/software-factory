@@ -99,7 +99,7 @@ echo -n "$PATCHSET ($PROJECT) $CHANGE - "
 COMMIT_MESSAGE=`git cat-file -p $COMMIT`
 COMMIT_MESSAGE="${COMMIT_MESSAGE//$QUOTE/$ESCAPED}"
 
-MANAGESF_BASE_URL=http://managesf.{{ fqdn }}:20001
+MANAGESF_BASE_URL="{{ managesf_internal_url }}"
 
 PAYLOAD=`mktemp -u`
 

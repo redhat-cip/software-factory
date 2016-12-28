@@ -1,6 +1,4 @@
 ---
-- include_vars: /etc/ansible/roles/sf-redmine/defaults/main.yml
-
 - name: "Create gerrit user"
   include: /etc/ansible/tasks/create_user.yml user_name=gerrit home_dir=/home/gerrit ssh_key=gerrit_service_rsa shell=/bin/bash
 
@@ -35,7 +33,7 @@
 
 - name: Apply selinux port labelling
   seport:
-      ports: 8000
+      ports: "{{ gerrit_port }}"
       proto: tcp
       setype: http_port_t
       state: present

@@ -43,7 +43,6 @@
       state: absent
   with_items:
       - test
-      - gnocchi
 
 - name: Create databases
   shell: "mysql < /root/create_databases.sql"

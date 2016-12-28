@@ -19,6 +19,16 @@
   - include: tasks/new_creds.yml sf_secret_name=managesf_sql_pwd
   # 2.0.0: Remove hosts.yaml hiera
   - file: path=/etc/software-factory/hosts.yaml state=absent
+  # 2.3.0: Import mysql_root_password
+  - file: path=/var/lib/software-factory/bootstrap-data state=directory mode=0700 owner=root group=root
+  - command: grep ^mysql_root_password /var/lib/software-factory/bootstrap-data/secrets.yaml
+    register: new_password
+    ignore_errors: yes
+  - command: awk '/creds_mysql_root_pwd/ { print $2 }' /etc/software-factory/sfcreds.yaml
+    register: mysql_root_password
+    when: new_password.rc != 0
+  - command: hieraedit.py --yaml /var/lib/software-factory/bootstrap-data/secrets.yaml mysql_root_password {{ mysql_root_password.stdout }}
+    when: new_password.rc != 0
   # 2.3.0: Remove gerrit.yaml hiera
   - stat: path=/etc/software-factory/gerrit.yaml
     register: gerrit_hiera

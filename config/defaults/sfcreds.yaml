@@ -1,6 +1,4 @@
-creds_mysql_root_pwd: MYSQL_ROOT_PWD
 creds_redmine_sql_pwd: REDMINE_SQL_PWD
-creds_gerrit_sql_pwd: GERRIT_SQL_PWD
 creds_nodepool_sql_pwd: NODEPOOL_SQL_PWD
 creds_etherpad_sql_pwd: ETHERPAD_SQL_PWD
 creds_lodgeit_sql_pwd: LODGEIT_SQL_PWD
@@ -11,8 +9,6 @@ creds_storyboard_service_token: STORYBOARD_SERVICE_TOKEN
 creds_cauth_sql_pwd: CAUTH_SQL_PWD
 creds_managesf_sql_pwd: MANAGESF_SQL_PWD
 creds_issues_tracker_api_key: REDMINE_API_KEY
-creds_gerrit_email_pk: GERRIT_EMAIL_PK
-creds_gerrit_token_pk: GERRIT_TOKEN_PK
 creds_jenkins_pub_key: JENKINS_PUB_KEY
 creds_service_pub_key: SERVICE_PUB_KEY
 creds_jenkins_user_password: JENKINS_USER_PASSWORD
