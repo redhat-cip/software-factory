@@ -1,7 +1,5 @@
 ---
 - include: /etc/ansible/tasks/create_user.yml user_name=managesf ssh_key=service_rsa
-- include_vars: /etc/ansible/vars/common.yml
-- include_vars: /etc/software-factory/sfcreds.yaml
 
 - name: "Set /var/www/managesf context"
   file: path=/var/www/managesf state=directory mode=0750 owner=managesf group=apache setype=httpd_sys_content_t

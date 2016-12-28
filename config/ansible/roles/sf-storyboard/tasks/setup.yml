@@ -1,7 +1,6 @@
 ---
 - include: /etc/ansible/tasks/create_user.yml user_name=storyboard
 - file: path=/etc/storyboard state=directory mode=0700 owner=storyboard group=storyboard
-- include_vars: /etc/software-factory/sfcreds.yaml
 
 - name: "Apply patch"
   patch: src={{ item }} basedir=/srv/storyboard/lib/python2.7/site-packages strip=1

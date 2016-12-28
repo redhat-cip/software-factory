@@ -1,6 +1,4 @@
 ---
-- include_vars: /etc/software-factory/sfconfig.yaml
-
 - name: Ensure postfix group is present
   group:
       name: postfix

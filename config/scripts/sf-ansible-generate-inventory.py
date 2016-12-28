@@ -11,15 +11,6 @@ from utils_refarch import load_refarch
 from utils_refarch import render_jinja2_template
 
 
-def install():
-    # Add sfconfig.yaml to all group_vars
-    if not os.path.isdir("%s/group_vars" % ansible_root):
-        os.mkdir("%s/group_vars" % ansible_root, 0700)
-    if not os.path.islink("%s/group_vars/all.yaml" % ansible_root):
-        os.symlink("/etc/software-factory/sfconfig.yaml",
-                   "%s/group_vars/all.yaml" % ansible_root)
-
-
 def generate_inventory():
     arch = load_refarch(args.arch, args.domain, args.install_server_ip)
 
@@ -91,7 +82,5 @@ for path in (args.ansible_root, "../ansible", "config/ansible"):
 if not ansible_root:
     print "Can't find ansible directory, use --ansible_root"
     exit(1)
-
-install()
 
 generate_inventory()

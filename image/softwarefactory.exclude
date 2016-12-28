@@ -53,6 +53,7 @@
 /root/sf-bootstrap-data/
 /root/software-factory/
 /root/config/
+/var/lib/software-factory/bootstrap-data/
 /var/lib/zuul/
 /var/lib/managesf/users.db
 /var/lib/murmur/murmur.sqlite

@@ -1,6 +1,4 @@
 ---
-- include_vars: /etc/software-factory/sfcreds.yaml
-
 - name: Apply selinux port labelling
   seport:
       ports: 5000

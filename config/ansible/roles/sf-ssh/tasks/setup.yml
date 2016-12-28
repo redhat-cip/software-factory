@@ -1,6 +1,4 @@
 ---
-- include_vars: /etc/software-factory/sfcreds.yaml
-
 - name: "Install service_rsa key"
   include: /etc/ansible/tasks/create_user.yml user_name=root shell=/bin/bash home_dir=/root ssh_key=service_rsa
 

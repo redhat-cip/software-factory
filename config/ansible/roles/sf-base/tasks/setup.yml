@@ -1,7 +1,4 @@
 ---
-- include_vars: /etc/software-factory/sfcreds.yaml
-- include_vars: /etc/software-factory/_arch.yaml
-
 - name: "sf: create basic directories"
   file: path={{ item }} state=directory mode=0755
   with_items:

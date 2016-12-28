@@ -1,8 +1,6 @@
 ---
 - hosts: managesf
   tasks:
-    - include_vars: /etc/ansible/vars/common.yml
-
     - name: Install upgrade-config-repo.sh
       template:
         src: "templates/upgrade-config-repo.sh.j2"

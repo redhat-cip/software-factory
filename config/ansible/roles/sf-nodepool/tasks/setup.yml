@@ -1,7 +1,4 @@
 ---
-- include_vars: /etc/ansible/vars/common.yml
-- include_vars: /etc/software-factory/sfconfig.yaml
-
 - include: /etc/ansible/tasks/create_user.yml user_name=nodepool ssh_key=jenkins_rsa
 
 - name: Create working directories

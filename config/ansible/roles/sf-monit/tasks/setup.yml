@@ -1,6 +1,4 @@
 ---
-- include_vars: /etc/software-factory/sfconfig.yaml
-
 - name: "monit: ensure directories exist"
   file:
     owner: root
