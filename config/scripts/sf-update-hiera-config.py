@@ -727,6 +727,11 @@ def update_sfconfig(data):
         data['network']['static_hostnames'] = []
         dirty = True
 
+    # 2.3.0: add debug setting
+    if 'debug' not in data:
+        data['debug'] = False
+        dirty = True
+
     return dirty
 
 

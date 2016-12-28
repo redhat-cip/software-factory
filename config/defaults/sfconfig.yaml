@@ -1,6 +1,9 @@
 # fqdn of the deployment used by authentication and in notification
 fqdn: sftests.com
 
+# Enable services debug mode
+debug: False
+
 network:
     use_letsencrypt: false
     smtp_relay:

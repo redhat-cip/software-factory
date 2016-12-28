@@ -13,3 +13,7 @@ gateway_url: "https://{{ fqdn }}"
 gerrit_pub_url: "{{ gateway_url }}/r/"
 zuul_pub_url: "{{ gateway_url }}/zuul/"
 zuul_internal_url: "http://zuul.{{ fqdn }}:8084/"
+
+zuul_loglevel: INFO
+zuul_gear_loglevel: WARNING
+zuul_root_loglevel: WARNING

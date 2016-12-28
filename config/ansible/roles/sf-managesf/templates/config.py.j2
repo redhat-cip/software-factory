@@ -30,8 +30,14 @@ app = {
 }
 
 logging = {
-    'root': {'level': 'DEBUG', 'handlers': ['normal', 'console']},
-    'loggers': {},
+    'root': {'level': '{{ managesf_root_loglevel }}', 'handlers': ['normal', 'console']},
+    'loggers': {
+        'managesf': {
+            'level': '{{ managesf_loglevel }}',
+            'handlers': ['normal', 'console'],
+            'propagate': False
+        },
+    },
     'handlers': {
         'console': {'level': 'INFO', 'class': 'logging.StreamHandler',
                     'formatter': 'console'},

@@ -1,5 +1,5 @@
 [loggers]
-keys=root,image
+keys=root,image,nodepool
 
 [handlers]
 keys=console,normal,image
@@ -8,13 +8,20 @@ keys=console,normal,image
 keys=console,normal
 
 [logger_root]
-level=DEBUG
 handlers=console,normal
+level={{ nodepool_root_loglevel }}
+
+[logger_nodepool]
+handlers=console,normal
+propagate=0
+qualname=nodepool
+level={{ nodepool_loglevel }}
 
 [logger_image]
-level=DEBUG
 handlers=image
+propagate=0
 qualname=nodepool.image
+level={{ nodepool_loglevel }}
 
 
 [handler_console]

@@ -39,7 +39,7 @@
   file: path=/etc/zuul/layout.yaml state=touch
 
 - name: "Copy logging configuration"
-  copy: src={{ item }} dest=/etc/zuul/{{ item }}
+  template: src={{ item }}.j2 dest=/etc/zuul/{{ item }}
   with_items:
     - logging.conf
     - gearman-logging.conf

@@ -1,5 +1,5 @@
 [loggers]
-keys=root
+keys=root,zuul
 
 [handlers]
 keys=console,normal
@@ -8,8 +8,14 @@ keys=console,normal
 keys=console,normal
 
 [logger_root]
-level=DEBUG
 handlers=console,normal
+level={{ zuul_root_loglevel }}
+
+[logger_zuul]
+qualname=zuul
+handlers=console,normal
+propagate=0
+level={{ zuul_loglevel }}
 
 
 [handler_console]
@@ -22,7 +28,7 @@ args=(sys.stdout,)
 level=DEBUG
 class=logging.handlers.TimedRotatingFileHandler
 formatter=normal
-args=('/var/log/zuul/gearman-server.log', 'midnight', 1, 3,)
+args=('/var/log/zuul/merger.log', 'midnight', 1, 30,)
 
 
 [formatter_normal]

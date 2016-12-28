@@ -361,6 +361,11 @@ d['managesf.project:create'] = 'rule:authenticated_api'
 d['managesf.project:delete'] = 'rule:authenticated_api'
 json.dump(d, file(f, 'w'), indent=1)
 print "POLICY: prepared policy to support project creation by any user..."
+
+f = '/etc/software-factory/sfconfig.yaml'
+d = yaml.load(open(f))
+d['debug'] = True
+yaml.dump(d, open(f, 'w'))
 SCRIPT
     ssh -A -tt ${SF_HOST} sfconfig.sh &> ${ARTIFACTS_DIR}/sfconfig.log \
         && echo "sfconfig.sh: SUCCESS"  \

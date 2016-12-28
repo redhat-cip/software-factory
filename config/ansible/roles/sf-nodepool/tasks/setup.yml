@@ -35,8 +35,8 @@
   when: nodepool.disabled == False
 
 - name: Install logging.conf
-  copy:
-      src: logging.conf
+  template:
+      src: logging.conf.j2
       dest: /etc/nodepool/logging.conf
 
 - name: Setup authorized keys
