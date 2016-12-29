@@ -1,7 +1,4 @@
 ---
-- include_vars: /etc/software-factory/jenkins.yaml
-- include_vars: /etc/ansible/roles/sf-jenkins/defaults/main.yml
-
 - include: /etc/ansible/tasks/create_user.yml user_name=jenkins ssh_key=jenkins_rsa
 
 - name: Create working directories
@@ -54,8 +51,8 @@
       - {name: jenkins_jobs.ini, dest: /etc/jenkins_jobs, mode: '0400'}
 
 - name: Install files for root user
-  copy:
-      src: "{{ item.name }}"
+  template:
+      src: "{{ item.name }}.j2"
       dest: "{{item.dest}}/{{ item.name }}"
       owner: root
       group: root
@@ -97,7 +94,7 @@
       proto: tcp
       setype: http_port_t
       state: present
-  with_items: [8081, 8010]
+  with_items: ["{{ jenkins_http_port}}", "{{ jenkins_api_port }}"]
   when:
       - selinuxenabled
 

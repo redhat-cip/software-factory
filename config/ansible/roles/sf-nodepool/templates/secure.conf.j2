@@ -3,6 +3,6 @@ dburi=mysql+pymysql://nodepool:{{ creds_nodepool_sql_pwd }}@mysql.{{ fqdn }}/nod
 
 [jenkins "default"]
 user=jenkins
-apikey={{ creds_jenkins_user_password }}
+apikey={{ jenkins_password }}
 credentials=4f98191e-efbb-4ac4-8131-0e4a8bb2ce14
 url={{ jenkins_api_url }}

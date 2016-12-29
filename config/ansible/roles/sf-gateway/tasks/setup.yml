@@ -1,6 +1,5 @@
 ---
 - include_vars: /etc/software-factory/sf_version.yaml
-- include_vars: /etc/ansible/roles/sf-jenkins/defaults/main.yml
 - include_vars: /etc/ansible/roles/sf-redmine/defaults/main.yml
 - include_vars: /etc/ansible/roles/sf-grafana/defaults/main.yml
 

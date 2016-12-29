@@ -88,6 +88,14 @@ def generate_role_vars(allvars_file, args):
         glue["zuul_internal_url"] = "http://%s:%s/" % (
             get_hostname("zuul"), defaults["zuul_port"])
 
+    if "jenkins" in arch["roles"]:
+        glue["jenkins_host"] = get_hostname("jenkins")
+        glue["jenkins_internal_url"] = "http://%s:%s/jenkins/" % (
+            get_hostname("jenkins"), defaults["jenkins_http_port"])
+        glue["jenkins_api_url"] = "http://%s:%s/jenkins/" % (
+            get_hostname("jenkins"), defaults["jenkins_api_port"])
+        glue["jenkins_pub_url"] = "%s/jenkins/" % glue["gateway_url"]
+
     # Save secrets to new secrets file
     yaml_dump(secrets, open("%s/secrets.yaml" % args.lib, "w"))
     # And add them to the all.yaml file

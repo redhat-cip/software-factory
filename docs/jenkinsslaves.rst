@@ -55,7 +55,7 @@ You will need to substitute:
 
  - <fqdn>: the one you defined in sfconfig.yaml (domain).
  - <jenkins-password>: The password of the Jenkins user. You can find it in
-   "/etc/software-factory/sfcreds.yaml" (creds_jenkins_user_password)
+   "/var/lib/software-factory/bootstrap-data/secrets.yaml" (jenkins_password)
 
 The instructions below are adapted to Centos 7 but should work on others Linux
 distributions.

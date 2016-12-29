@@ -494,11 +494,15 @@ class GerritGitUtils(Tool):
 
 class JenkinsUtils:
     def __init__(self):
-        with open('%s/sfcreds.yaml' % config.SF_BOOTSTRAP_DATA) as fh:
+        f = '%s/secrets.yaml' % config.SF_BOOTSTRAP_DATA
+        if not os.path.isfile(f):
+            # 2.3.0: secrets doesn't existed before
+            f = '%s/sfcreds.yaml' % config.SF_BOOTSTRAP_DATA
+        with open(f) as fh:
             yconfig = yaml.load(fh)
             self.jenkins_user = 'jenkins'
             self.jenkins_password = \
-                yconfig.get('creds_jenkins_user_password')
+                yconfig.get('jenkins_password')
         self.jenkins_url = config.GATEWAY_URL + "/jenkins/"
         self.cookies = {'auth_pubtkt': get_cookie(config.USER_1,
                                                   config.USER_1_PASSWORD)}

@@ -1,15 +1,15 @@
-# Managed by Puppet
-<VirtualHost *:8080>
+# Managed by Ansible
+<VirtualHost *:{{ jenkins_api_port }}>
     ProxyVia On
     ProxyRequests Off
 
-    ProxyPass /jenkins/ http://127.0.0.1:8082/jenkins/ nocanon retry=1 acquire=3000 timeout=600 Keepalive=On
-    ProxyPassReverse /jenkins/ http://127.0.0.1:8082/jenkins/
+    ProxyPass /jenkins/ http://127.0.0.1:{{ jenkins_port }}/jenkins/ nocanon retry=1 acquire=3000 timeout=600 Keepalive=On
+    ProxyPassReverse /jenkins/ http://127.0.0.1:{{ jenkins_port }}/jenkins/
 
     # jjb fails with "jenkins.NotFoundException: Requested item could not be found" when trying to access:
     # http://jenkins.sftests.com:8080/api/json?tree=jobs[url,color,name,jobs]
-    ProxyPass /api/ http://127.0.0.1:8082/jenkins/api/ nocanon retry=1 acquire=3000 timeout=600 Keepalive=On
-    ProxyPassReverse /api/ http://127.0.0.1:8082/jenkins/api/
+    ProxyPass /api/ http://127.0.0.1:{{ jenkins_port }}/jenkins/api/ nocanon retry=1 acquire=3000 timeout=600 Keepalive=On
+    ProxyPassReverse /api/ http://127.0.0.1:{{ jenkins_port }}/jenkins/api/
 
     ProxyPreserveHost On
     AllowEncodedSlashes NoDecode
@@ -33,12 +33,12 @@
     </LocationMatch>
 </VirtualHost>
 
-<VirtualHost *:8081>
+<VirtualHost *:{{ jenkins_http_port }}>
     ProxyVia On
     ProxyRequests Off
 
-    ProxyPass /jenkins/ http://127.0.0.1:8082/jenkins/ nocanon retry=1 acquire=3000 timeout=600 Keepalive=On
-    ProxyPassReverse /jenkins/ http://127.0.0.1:8082/jenkins/
+    ProxyPass /jenkins/ http://127.0.0.1:{{ jenkins_port }}/jenkins/ nocanon retry=1 acquire=3000 timeout=600 Keepalive=On
+    ProxyPassReverse /jenkins/ http://127.0.0.1:{{ jenkins_port }}/jenkins/
 
     ProxyPreserveHost On
     AllowEncodedSlashes NoDecode

@@ -38,6 +38,15 @@
   - command: hieraedit.py --yaml /etc/software-factory/custom-vars.yaml gerrit_heap_limit {{ heap_limit.stdout }}
     when: gerrit_hiera.stat.exists == True
   - file: path=/etc/software-factory/gerrit.yaml state=absent
+  # 2.3.0: Remove jenkins.yaml hiera
+  - stat: path=/etc/software-factory/jenkins.yaml
+    register: jenkins_hiera
+  - command: awk '/jenkins_heap_limit/ { print $2 }' /etc/software-factory/jenkins.yaml
+    register: heap_limit
+    when: jenkins_hiera.stat.exists == True
+  - command: hieraedit.py --yaml /etc/software-factory/custom-vars.yaml jenkins_heap_limit {{ heap_limit.stdout }}
+    when: jenkins_hiera.stat.exists == True
+  - file: path=/etc/software-factory/jenkins.yaml state=absent
 
 - hosts: managesf
   tasks:

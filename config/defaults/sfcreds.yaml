@@ -11,7 +11,6 @@ creds_managesf_sql_pwd: MANAGESF_SQL_PWD
 creds_issues_tracker_api_key: REDMINE_API_KEY
 creds_jenkins_pub_key: JENKINS_PUB_KEY
 creds_service_pub_key: SERVICE_PUB_KEY
-creds_jenkins_user_password: JENKINS_USER_PASSWORD
 creds_gerrit_local_sshkey: GERRIT_SERV_PUB_KEY
 creds_gerrit_admin_sshkey: GERRIT_ADMIN_PUB_KEY
 creds_etherpad_admin_key: ETHERPAD_ADMIN_KEY

@@ -5,8 +5,13 @@ role_actions:
   - backup
   - restore
 
-gateway_url: "https://{{ fqdn }}"
-jenkins_internal_url: "http://jenkins.{{ fqdn }}:8081/jenkins/"
-jenkins_api_url: "http://jenkins.{{ fqdn }}:8080/jenkins/"
-jenkins_pub_url: "{{ gateway_url }}/jenkins/"
-jenkins_password: "{{ creds_jenkins_user_password }}"
+jenkins_heap_limit: 256m
+
+jenkins_api_port: 8080
+jenkins_http_port: 8081
+jenkins_port: 8082
+
+jenkins_internal_url: "http://localhost:{{ jenkins_port }}/jenkins/"
+jenkins_api_url: "http://example.com:{{ jenkins_api_port }}/jenkins/"
+jenkins_pub_url: "https://example.com/jenkins/"
+jenkins_password: "CHANGE_ME"

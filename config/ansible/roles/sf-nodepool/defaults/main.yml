@@ -7,7 +7,9 @@ role_actions:
 nodepool_url: https://git.openstack.org/openstack-infra/nodepool
 nodepool_commit: master
 
-jenkins_host: "jenkins.{{fqdn}}"
+jenkins_password: "CHANGE_ME"
+
+jenkins_host: "example.com"
 jenkins_api_url: "http://{{ jenkins_host }}:8080/jenkins/"
 
 nodepool_loglevel: INFO

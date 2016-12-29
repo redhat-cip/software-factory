@@ -2,7 +2,7 @@
 
 RETRIES=0
 while true; do
-    wget --spider http://localhost:8082/jenkins/
+    wget --spider http://localhost:{{ jenkins_port }}/jenkins/
     [ $? -eq 0 ] && break
     let RETRIES=RETRIES+1
     [ "$RETRIES" == "90" ] && {
