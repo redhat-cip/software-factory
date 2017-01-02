@@ -24,3 +24,5 @@
     - logstash
     - kibana
     - storyboard
+    - repoxplorer-webui
+    - repoxplorer
