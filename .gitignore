@@ -51,6 +51,7 @@ edeploy/post
 
 # docs
 docs/_build
+docs/resources.rst
 
 # generated heat template
 deploy/heat/*.hot
