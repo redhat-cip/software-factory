@@ -116,7 +116,8 @@ angular.module('sfSettings', []).controller('mainController', function($scope, $
         $scope.errors = false;
         $http.put('/manage/htpasswd/')
             .success(function(data) {
-                $scope.gerrit_api_key = data;
+                // Remove quotes with substr
+                $scope.gerrit_api_key = data.substr(1, data.length - 2);
                 $scope.htpasswd_set = true;
             })
             .error(function(data) {

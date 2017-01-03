@@ -208,6 +208,7 @@ to save and restore the current state:
     zuul-changes.py load
 
 
+.. _gerrit-rest-api:
 How can I use the Gerrit REST API?
 ..................................
 
@@ -217,9 +218,8 @@ your needs. There is an extensive documentation available online:
   https://gerrit-review.googlesource.com/Documentation/rest-api.html
 
 To use the Gerrit REST API in Software Factory, you have to create an API
-password first. To do so, click the lock button on the upper right corner of the
-dashboard. A popup will show you a random password that you have to use to
-access Gerrit.
+password first. To do so, go to the user Settings page accessible on the
+upper right corner and click the Enable button for "Gerrit API key".
 Next, you need to use a different URL to access the Gerrit API. For example, if
 you want to query the list of changes, you would normally execute a request like
 this (as described in
@@ -236,3 +236,20 @@ documentation) would simply use /api/a/ and the generated API password from
 above.
 You can find a full working example to automate some tasks (in this case deleting a specific branch
 on a list of projects) in `tools/deletebranches.py`.
+
+
+How can I use Gertty?
+.....................
+
+After getting a Gerrit API key (as explained :ref:`above <gerrit-rest-api>`), use
+the *basic* auth-type in gertty.yaml, e.g.:
+
+.. code-block:: yaml
+
+    servers:
+      - name: sftests
+        url: https://sftests.com/api/
+        auth-type: basic
+        username: USER_NAME
+        password: API_KEY
+        git-root: ~/git/
