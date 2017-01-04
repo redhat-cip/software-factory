@@ -31,6 +31,7 @@ except:
 GATEWAY_HOST = sfconfig['fqdn']
 
 GATEWAY_URL = 'https://%s' % GATEWAY_HOST
+MANAGESF_API = GATEWAY_URL + "/manage/"
 
 GERRIT_USER = 'gerrit'
 GERRIT_SERVICE_PRIV_KEY_PATH = '%s/ssh_keys/gerrit_service_rsa' \
@@ -42,8 +43,11 @@ ADMIN_PASSWORD = sfconfig.get('authentication')['admin_password']
 USER_1 = "admin"
 USER_1_PASSWORD = ADMIN_PASSWORD
 
-HOOK_USER = "SF_SERVICE_USER"
-HOOK_USER_PASSWORD = sfcreds.get('creds_sf_service_user_pwd')
+SF_SERVICE_USER = "SF_SERVICE_USER"
+SF_SERVICE_USER_PASSWORD = sfcreds.get('creds_sf_service_user_pwd')
+
+HOOK_USER = SF_SERVICE_USER
+HOOK_USER_PASSWORD = SF_SERVICE_USER_PASSWORD
 
 ADMIN_USER = USER_1
 ADMIN_PRIV_KEY_PATH = '%s/ssh_keys/gerrit_admin_rsa' % SF_BOOTSTRAP_DATA

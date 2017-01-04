@@ -440,6 +440,8 @@ class GerritGitUtils(Tool):
         self.exe('git checkout %s' % branch, clone_dir)
         self.exe('git push origin %s' % branch, clone_dir)
         self.exe('git checkout master', clone_dir)
+        sha = open("%s/.git/refs/heads/%s" % (clone_dir, branch)).read()
+        return sha.strip()
 
     def review_push_branch(self, clone_dir, branch):
         self.exe('git checkout %s' % branch, clone_dir)
@@ -591,3 +593,94 @@ class JenkinsUtils:
             if cur > last:
                 break
             time.sleep(1)
+
+
+class ResourcesUtils():
+
+    def __init__(self, yaml=None):
+        default_yaml = """resources:
+  acls:
+    %(name)s-acl:
+      file: |
+        [access "refs/*"]
+          read = group %(name)s-core
+          owner = group %(name)s-ptl
+        [access "refs/heads/*"]
+          label-Verified = -2..+2 group %(name)s-ptl
+          label-Code-Review = -2..+2 group %(name)s-core
+          label-Workflow = -1..+1 group %(name)s-core
+          submit = group %(name)s-ptl
+          read = group %(name)s-core
+        [access "refs/meta/config"]
+          read = group %(name)s-core
+        [receive]
+          requireChangeId = true
+        [submit]
+          mergeContent = false
+          action = rebase if necessary
+      groups:
+      - %(name)s-core
+      - %(name)s-ptl
+  groups:
+    %(name)s-core:
+      description: Core developers for project %(name)s
+      members:
+        - admin@%(fqdn)s
+    %(name)s-ptl:
+      description: Project team lead for project %(name)s
+      members:
+        - admin@%(fqdn)s
+  repos:
+    %(name)s:
+      acl: %(name)s-acl
+      description: Code repository for %(name)s
+"""
+        self.ju = JenkinsUtils()
+        self.url = "ssh://admin@%s:29418/%s" % (config.GATEWAY_HOST, 'config')
+        self.ggu = GerritGitUtils(
+            'admin',
+            set_private_key(config.USERS['admin']["privkey"]),
+            config.USERS['admin']['email'])
+        self.yaml = yaml or default_yaml
+
+    def _direct_push(self, cdir, msg):
+        self.ggu.add_commit_for_all_new_additions(cdir, msg)
+        change_sha = self.ggu.direct_push_branch(cdir, 'master')
+        config_update_log = self.ju.wait_for_config_update(change_sha)
+        assert "Finished: SUCCESS" in config_update_log
+
+    def create_repo(self, name):
+        yaml = self.yaml % {'name': name, 'fqdn': config.GATEWAY_HOST}
+        cdir = self.ggu.clone(self.url, 'config', config_review=False)
+        file(os.path.join(cdir, 'resources', name + '.yaml'), 'w').write(yaml)
+        self._direct_push(cdir, 'Add project %s' % name)
+
+    def delete_repo(self, name):
+        cdir = self.ggu.clone(self.url, 'config', config_review=False)
+        os.unlink(os.path.join(cdir, 'resources', name + '.yaml'))
+        self._direct_push(cdir, 'Del project %s' % name)
+
+    def _direct_apply_call(self, prev, new):
+        data = {'prev': prev, 'new': new}
+        cookie = get_cookie(config.SF_SERVICE_USER,
+                            config.SF_SERVICE_USER_PASSWORD)
+        cookie = {"auth_pubtkt": cookie}
+        r = requests.put(config.MANAGESF_API + 'resources/',
+                         cookies=cookie,
+                         json=data)
+        assert r.status_code == requests.codes.ok
+        return r.json()
+
+    def direct_create_repo(self, name):
+        wanted_state_yaml = self.yaml % {
+            'name': name, 'fqdn': config.GATEWAY_HOST}
+        previous_state_yaml = yaml.dump({'resources': {}})
+        self._direct_apply_call(previous_state_yaml,
+                                wanted_state_yaml)
+
+    def direct_delete_repo(self, name):
+        previous_state_yaml = self.yaml % {
+            'name': name, 'fqdn': config.GATEWAY_HOST}
+        wanted_state_yaml = yaml.dump({'resources': {}})
+        self._direct_apply_call(previous_state_yaml,
+                                wanted_state_yaml)
