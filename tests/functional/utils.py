@@ -645,6 +645,10 @@ class ResourcesUtils():
             config.USERS['admin']['email'])
         self.yaml = yaml or default_yaml
 
+    def get_resources(self):
+        r = requests.get(config.MANAGESF_API + 'resources/')
+        return r.json()
+
     def _direct_push(self, cdir, msg):
         self.ggu.add_commit_for_all_new_additions(cdir, msg)
         change_sha = self.ggu.direct_push_branch(cdir, 'master')
@@ -670,7 +674,7 @@ class ResourcesUtils():
         r = requests.put(config.MANAGESF_API + 'resources/',
                          cookies=cookie,
                          json=data)
-        assert r.status_code == requests.codes.ok
+        assert r.status_code < 300
         return r.json()
 
     def direct_create_repo(self, name):

@@ -24,7 +24,7 @@ from yaml import load, dump
 
 from utils import Base
 from utils import set_private_key
-from utils import ManageSfUtils
+from utils import ResourcesUtils
 from utils import GerritGitUtils
 from utils import JenkinsUtils
 from utils import copytree
@@ -42,7 +42,7 @@ class TestProjectTestsWorkflow(Base):
     """
     @classmethod
     def setUpClass(cls):
-        cls.msu = ManageSfUtils(config.GATEWAY_URL)
+        cls.ru = ResourcesUtils()
         cls.sample_project_dir = \
             os.path.join(config.SF_TESTS_DIR, "sample_project/")
 
@@ -82,8 +82,7 @@ class TestProjectTestsWorkflow(Base):
         self.restore_config_repo(self.original_project,
                                  self.original_zuul_projects)
         for name in self.projects:
-            self.msu.deleteProject(name,
-                                   config.ADMIN_USER)
+            self.ru.direct_delete_repo(name)
         for dirs in self.dirs_to_delete:
             shutil.rmtree(dirs)
 
@@ -126,10 +125,8 @@ class TestProjectTestsWorkflow(Base):
         self.gitu_admin.add_commit_for_all_new_additions(clone_dir, msg)
         return self.gitu_admin.review_push_branch(clone_dir, 'master')
 
-    def create_project(self, name, user,
-                       options=None):
-        self.msu.createProject(name, user,
-                               options)
+    def create_project(self, name):
+        self.ru.direct_create_repo(name)
         self.projects.append(name)
 
     def test_check_project_test_workflow(self):
@@ -143,11 +140,9 @@ class TestProjectTestsWorkflow(Base):
 
         pname = 'test_workflow_%s' % create_random_str()
         logger.info("Creating project %s" % pname)
-        # Be sure the project does not exist
-        self.msu.deleteProject(pname,
-                               config.ADMIN_USER)
+
         # Create it
-        self.create_project(pname, config.ADMIN_USER)
+        self.create_project(pname)
 
         logger.info("Populating the project with %s" %
                     self.sample_project_dir)
