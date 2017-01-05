@@ -218,16 +218,6 @@
         Satisfy Any
     </Location>
 
-
-    <LocationMatch "^/dashboard">
-        Header set Cache-Control "no-cache, must-revalidate"
-        AuthType mod_auth_pubtkt
-        TKTAuthFakeBasicAuth on
-        TKTAuthLoginURL /auth/login
-        TKTAuthDebug 1
-        require valid-user
-    </LocationMatch>
-
     <LocationMatch "^/api">
         AuthType Basic
         AuthName "Gerrit API"

@@ -16,7 +16,6 @@
       state: directory
   with_items:
     - /var/www/sf
-    - /var/www/dashboard
 
 - name: Expose localCA.pem
   copy:
@@ -44,12 +43,13 @@
     mode: "{{ item.mode|default(0444) }}"
   with_items:
       - {name: base64helper, path: /usr/local/sbin, mode: '0755'}
-      - {name: dashboard.js, path: /var/www/dashboard}
       - {name: menu.js, path: /var/www/static/js}
       - {name: pages-404.html, path: /var/www/}
       - {name: ssl.conf, path: /etc/httpd/conf.d}
       - {name: user_settings.html, path: /var/www/sf}
       - {name: user_settings.js, path: /var/www/sf}
+      - {name: welcome.html, path: /var/www/sf}
+      - {name: welcome.js, path: /var/www/sf}
 
 - name: Install index.html for zuul
   copy:
@@ -82,12 +82,6 @@
       - {name: topmenu.html, dest: /var/www}
       - {name: topmenu.js, dest: /var/www/static/js}
   notify: apache reload
-
-- name: Copy dashboard index.html
-  template:
-      src: dashboard.html.j2
-      dest: /var/www/dashboard/index.html
-      mode: 0444
 
 - name: Install Kibana SF gateway rules
   template:

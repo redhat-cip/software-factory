@@ -9,16 +9,15 @@
     <div class="navbar navbar-default navbar-fixed-top" role="navigation">
         {% if theme['topmenu_logo_data'] %}
           <div class="navbar-header">
-              <a class="navbar-brand" href="/"><img src="data:image/png;base64,{{ theme['topmenu_logo_data'] }}" style="{{ theme['topmenu_logo_style'] }}" alt="Software Factory" title="Software Factory" /></a>
+              <a class="navbar-brand" href="/sf/welcome.html"><img src="data:image/png;base64,{{ theme['topmenu_logo_data'] }}" style="{{ theme['topmenu_logo_style'] }}" alt="Software Factory" title="Software Factory" /></a>
           </div>
         {% else %}
           <div class="navbar-header">
-            <a class="navbar-brand" href="/">Software Factory</a>
+            <a class="navbar-brand" href="/sf/welcome.html">Software Factory</a>
           </div>
         {% endif %}
         <div class="collapse navbar-collapse">
             <ul class="nav navbar-nav">
-                <li><a href="/dashboard/" target="_top">Dashboard</a></li>
             {% if 'gerrit' in roles %}
                 <li><a href="/r/" target="_top">Gerrit</a></li>
             {% endif %}

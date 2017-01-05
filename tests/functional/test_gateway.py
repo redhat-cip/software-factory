@@ -313,24 +313,19 @@ class TestGateway(Base):
         resp = requests.get(url)
         self.assertEqual(resp.status_code, 200)
 
-    def test_dashboard_accessible(self):
+    def test_welcome_accessible(self):
         """ Test if Dashboard is accessible on gateway host
         """
-        url = config.GATEWAY_URL + "/dashboard/"
+        url = config.GATEWAY_URL + "/sf/welcome.html"
 
-        self._auth_required(url)
-
-        resp = requests.get(
-            url,
-            cookies=dict(
-                auth_pubtkt=config.USERS[config.USER_1]['auth_cookie']))
+        resp = requests.get(url)
         self.assertEqual(resp.status_code, 200)
-        self.assertTrue('<body ng-controller="mainController">' in resp.text)
+        self.assertTrue('<body ng-app="sfWelcome"' in resp.text)
 
     def test_jenkinslogs_accessible(self):
         """ Test if Jenkins logs are accessible on gateway host
         """
-        url = "https://%s/jenkinslogs/127.0.0.1/dashboard/" % (
+        url = "https://%s/jenkinslogs/127.0.0.1/sf/welcome.html" % (
             config.GATEWAY_HOST)
         resp = requests.get(url, allow_redirects=False)
         self.assertEqual(resp.status_code, 307)

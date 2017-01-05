@@ -118,7 +118,7 @@ class TestUserdata(Base):
         except NotImplementedError:
             skip("user management not supported in this version of managesf")
         self.logout()
-        url = config.GATEWAY_URL + "/dashboard/"
+        url = config.GATEWAY_URL + "/sf/welcome.html"
         quoted_url = urllib2.quote(url, safe='')
         response = self.login('Flea', 'RHCP', quoted_url)
         self.assertEqual(url, response.url)
@@ -277,7 +277,7 @@ class TestUserdata(Base):
             self.assertEqual(201,
                              int(create_user.status_code))
         self.logout()
-        url = config.GATEWAY_URL + "/dashboard/"
+        url = config.GATEWAY_URL + "/sf/welcome.html"
         quoted_url = urllib2.quote(url, safe='')
         response = self.login('naruto',
                               'rasengan', quoted_url)
