@@ -15,11 +15,13 @@
 # under the License.
 
 import os
+import re
 import config
 import copy
 import shutil
 import logging
 import time
+import requests
 from yaml import load, dump
 
 from utils import Base
@@ -29,6 +31,7 @@ from utils import GerritGitUtils
 from utils import JenkinsUtils
 from utils import copytree
 from utils import create_random_str
+from utils import get_cookie
 
 from pysflib.sfgerrit import GerritUtils
 
@@ -67,20 +70,21 @@ class TestProjectTestsWorkflow(Base):
         self.gitu_admin = GerritGitUtils(self.un,
                                          priv_key_path,
                                          config.USERS[self.un]['email'])
-        # Clone the config repo and make change to it
-        # in order to test the new sample_project
+        # Clone the config repo and keep job/zuul config content
         self.config_clone_dir = self.clone_as_admin("config")
         self.original_zuul_projects = file(os.path.join(
             self.config_clone_dir, "zuul/projects.yaml")).read()
         self.original_project = file(os.path.join(
             self.config_clone_dir, "jobs/projects.yaml")).read()
+        self.need_restore_config_repo = False
         # Put USER_2 as core for config project
         self.gu.add_group_member(config.USER_2, "config-core")
 
     def tearDown(self):
         super(TestProjectTestsWorkflow, self).tearDown()
-        self.restore_config_repo(self.original_project,
-                                 self.original_zuul_projects)
+        if self.need_restore_config_repo:
+            self.restore_config_repo(self.original_project,
+                                     self.original_zuul_projects)
         for name in self.projects:
             self.ru.direct_delete_repo(name)
         for dirs in self.dirs_to_delete:
@@ -105,20 +109,23 @@ class TestProjectTestsWorkflow(Base):
         return clone_dir
 
     def restore_config_repo(self, project, zuul):
+        logger.info("Restore {zuul,jobs}/projects.yaml")
         file(os.path.join(
             self.config_clone_dir, "zuul/projects.yaml"), 'w').write(
             zuul)
         file(os.path.join(
             self.config_clone_dir, "jobs/projects.yaml"), 'w').write(
             project)
-        self.commit_direct_push_as_admin(
+        change_sha = self.commit_direct_push_as_admin(
             self.config_clone_dir,
             "Restore {zuul,jobs}/projects.yaml")
+        logger.info("Waiting for config-update on %s" % change_sha)
+        self.ju.wait_for_config_update(change_sha)
 
     def commit_direct_push_as_admin(self, clone_dir, msg):
         # Stage, commit and direct push the additions on master
         self.gitu_admin.add_commit_for_all_new_additions(clone_dir, msg)
-        self.gitu_admin.direct_push_branch(clone_dir, 'master')
+        return self.gitu_admin.direct_push_branch(clone_dir, 'master')
 
     def push_review_as_admin(self, clone_dir, msg):
         # Stage, commit and direct push the additions on master
@@ -128,6 +135,20 @@ class TestProjectTestsWorkflow(Base):
     def create_project(self, name):
         self.ru.direct_create_repo(name)
         self.projects.append(name)
+
+    def test_timestamped_logs(self):
+        """Test that jenkins timestamps logs"""
+        # Done here to make sure a config-update job was run and to avoid
+        # duplicating code
+        timestamp_re = re.compile('\d{2}:\d{2}:\d{2}.\d{0,3}')
+        n = self.ju.get_last_build_number("config-update",
+                                          "lastBuild")
+        cu_logs = self.ju.get_job_logs("config-update",
+                                       n)
+        self.assertTrue(cu_logs is not None)
+        for l in cu_logs.split('\n'):
+            if l:
+                self.assertRegexpMatches(l, timestamp_re, msg=l)
 
     def test_check_project_test_workflow(self):
         """ Validate new project to test via zuul
@@ -182,7 +203,7 @@ class TestProjectTestsWorkflow(Base):
         logger.info("Waiting for verify +1 on change %d" % change_nr)
         self.assertEquals(self.gu.wait_for_verify(change_nr), 1)
 
-        # review the change
+        # review the config change as a member from the config-core group
         logger.info("Approving and waiting for verify +2")
         self.gu2.submit_change_note(change_nr, "current", "Code-Review", "2")
         self.gu2.submit_change_note(change_nr, "current", "Workflow", "1")
@@ -202,11 +223,13 @@ class TestProjectTestsWorkflow(Base):
                 break
             time.sleep(1)
         self.assertEqual(change_status, 'MERGED')
+        self.need_restore_config_repo = True
 
         logger.info("Waiting for config-update")
         config_update_log = self.ju.wait_for_config_update(change_sha)
         self.assertIn("Finished: SUCCESS", config_update_log)
 
+        # Propose a change on a the repo and expect a Verified +1
         logger.info("Submiting a test change to %s" % pname)
         change_sha = self.gitu_admin.add_commit_and_publish(
             clone_dir, 'master', "Add useless file",
@@ -216,3 +239,33 @@ class TestProjectTestsWorkflow(Base):
 
         logger.info("Waiting for verify +1 on change %d" % change_nr)
         self.assertEquals(self.gu.wait_for_verify(change_nr), 1)
+
+        # Update the change on a the repo and expect a Verified -1
+        logger.info("Submiting a test change to %s suppose to fail" % pname)
+        data = "#!/bin/bash\nexit 1\n"
+        file(os.path.join(clone_dir, "run_tests.sh"), 'w').write(data)
+        os.chmod(os.path.join(clone_dir, "run_tests.sh"), 0755)
+        self.gitu_admin.add_commit_and_publish(
+            clone_dir, "master", None, fnames=["run_tests.sh"])
+
+        logger.info("Waiting for verify -1 on change %d" % change_nr)
+        self.assertEquals(self.gu.wait_for_verify(change_nr), -1)
+
+        logger.info("Validate jobs ran via the job api %s" % pname)
+        # This piece of code is there by convenience ...
+        # TODO: Should be moved in the job api tests file.
+        # Test the manageSF jobs API: query per patch & revision
+        change_ids = self.gu.get_my_changes_for_project(pname)
+        self.assertGreater(len(change_ids), 0)
+        change_id = change_ids[0]
+        patch = self.gu.get_change_last_patchset(change_id)['_number']
+        cookie = get_cookie(config.ADMIN_USER, config.ADMIN_PASSWORD)
+        cookies = {"auth_pubtkt": cookie}
+        base_url = config.GATEWAY_URL + "/manage/jobs/"
+        for j in ["%s-functional-tests" % pname, "%s-unit-tests" % pname]:
+            job = requests.get(base_url + '%s/?change=%s' % (j, patch),
+                               cookies=cookies).json()
+            self.assertTrue("jenkins" in job.keys(),
+                            job)
+            self.assertTrue(len(job["jenkins"]) > 1,
+                            job)
