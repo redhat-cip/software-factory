@@ -60,15 +60,11 @@ class TestGerritHooks(Base):
         self.dirs_to_delete = []
         self.issues = []
         self.u = config.ADMIN_USER
-        self.u2 = config.USER_2
         self.rm = get_issue_tracker_utils(
             auth_cookie=config.USERS[config.ADMIN_USER]['auth_cookie'])
         self.gu = GerritUtils(
             config.GATEWAY_URL,
             auth_cookie=config.USERS[self.u]['auth_cookie'])
-        self.gu2 = GerritUtils(
-            config.GATEWAY_URL,
-            auth_cookie=config.USERS[self.u2]['auth_cookie'])
         self.gu.add_pubkey(config.USERS[self.u]["pubkey"])
         priv_key_path = set_private_key(config.USERS[self.u]["privkey"])
         self.gitu = GerritGitUtils(self.u,
@@ -99,8 +95,6 @@ class TestGerritHooks(Base):
 
         # Create the project
         self.create_project(pname, self.u)
-        # Put USER_2 as core for the project
-        self.gu.add_group_member(self.u2, "%s-core" % pname)
 
         # Create an issue on the project
         issue_id = self.rm.create_issue(pname, "There is a problem")
@@ -128,7 +122,6 @@ class TestGerritHooks(Base):
         self.gu.submit_change_note(change_id, "current", "Code-Review", "2")
         self.gu.submit_change_note(change_id, "current", "Workflow", "1")
         self.gu.submit_change_note(change_id, "current", "Verified", "2")
-        self.gu2.submit_change_note(change_id, "current", "Code-Review", "2")
         self.assertTrue(self.gu.submit_patch(change_id, "current"))
 
         # Check issue status (Gerrit hook updates the issue to in progress)
@@ -142,7 +135,7 @@ class TestGerritHooks(Base):
     def test_gerrit_hook(self):
         """test various commit messages triggering a hook"""
         for template, final_status in TEST_MSGS:
-            pname = 'p_%s' % create_random_str()
+            pname = 'my_namespace/%s' % create_random_str()
             self._test_update_issue_hooks(template, final_status, pname)
 
     @skipIfIssueTrackerMissing()
@@ -157,10 +150,3 @@ This fix solves the Universe. Not just the "Universe", the Universe.
             pname = 'p_%s' % create_random_str()
             self._test_update_issue_hooks(verbose_template, final_status,
                                           pname)
-
-    @skipIfIssueTrackerMissing()
-    def test_gerrit_hook_namespace(self):
-        """test various commit messages triggering a hook (with namespace)"""
-        for template, final_status in TEST_MSGS:
-            pname = 'my_namespace/%s' % create_random_str()
-            self._test_update_issue_hooks(template, final_status, pname)
