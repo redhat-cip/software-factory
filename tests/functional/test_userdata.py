@@ -35,31 +35,11 @@ class TestUserdata(Base):
     @classmethod
     def setUpClass(cls):
         cls.msu = ManageSfUtils(config.GATEWAY_URL)
-
-    @classmethod
-    def tearDownClass(cls):
-        pass
-
-    def setUp(self):
-        super(TestUserdata, self).setUp()
-        self.projects = []
-        self.rm = get_issue_tracker_utils(
+        cls.rm = get_issue_tracker_utils(
             auth_cookie=config.USERS[config.ADMIN_USER]['auth_cookie'])
-        self.gu = GerritUtils(
+        cls.gu = GerritUtils(
             config.GATEWAY_URL,
             auth_cookie=config.USERS[config.ADMIN_USER]['auth_cookie'])
-
-    def tearDown(self):
-        super(TestUserdata, self).tearDown()
-        for name in self.projects:
-            self.msu.deleteProject(name,
-                                   config.ADMIN_USER)
-
-    def create_project(self, name, user, options=None,
-                       cookie=None):
-        self.msu.createProject(name, user, options,
-                               cookie)
-        self.projects.append(name)
 
     def verify_userdata_gerrit(self, login):
         # Now check that the correct data was stored in Gerrit
