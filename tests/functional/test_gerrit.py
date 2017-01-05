@@ -17,17 +17,22 @@
 import os
 import shutil
 import time
-
 import requests
-
 import config
+import logging
+
 from utils import Base
 from utils import set_private_key
 from utils import ManageSfUtils
+from utils import ResourcesUtils
 from utils import GerritGitUtils
 from utils import create_random_str
 
 from pysflib.sfgerrit import GerritUtils
+
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
 
 
 class TestGerrit(Base):
@@ -46,48 +51,56 @@ class TestGerrit(Base):
         self.projects = []
         self.clone_dirs = []
         self.dirs_to_delete = []
-        self.msu = ManageSfUtils(config.GATEWAY_URL)
+        self.ru = ResourcesUtils()
 
     def tearDown(self):
         super(TestGerrit, self).tearDown()
         for name in self.projects:
-            self.msu.deleteProject(name,
-                                   config.ADMIN_USER)
+            self.ru.direct_delete_repo(name)
         for dirs in self.dirs_to_delete:
             shutil.rmtree(dirs)
 
-    def create_project(self, name, options=None):
-        self.msu.createProject(name,
-                               config.ADMIN_USER,
-                               options=options)
+    def create_project(self, name):
+        self.ru.direct_create_repo(name)
         self.projects.append(name)
 
-    def test_review_labels(self):
-        """ Test if list of review labels are as expected
-        """
+    def _prepare_review_submit_testing(self, data=None):
         pname = 'p_%s' % create_random_str()
         self.create_project(pname)
-        un = config.ADMIN_USER
         gu = GerritUtils(
             config.GATEWAY_URL,
-            auth_cookie=config.USERS[un]['auth_cookie'])
-        k_index = gu.add_pubkey(config.USERS[un]["pubkey"])
+            auth_cookie=config.USERS[config.ADMIN_USER]['auth_cookie'])
+        k_index = gu.add_pubkey(config.USERS[config.ADMIN_USER]["pubkey"])
         self.assertTrue(gu.project_exists(pname))
-        priv_key_path = set_private_key(config.USERS[un]["privkey"])
-        gitu = GerritGitUtils(un,
+        priv_key_path = set_private_key(
+            config.USERS[config.ADMIN_USER]["privkey"])
+        gitu = GerritGitUtils(config.ADMIN_USER,
                               priv_key_path,
-                              config.USERS[un]['email'])
-        url = "ssh://%s@%s:29418/%s" % (un, config.GATEWAY_HOST,
+                              config.USERS[config.ADMIN_USER]['email'])
+        url = "ssh://%s@%s:29418/%s" % (config.ADMIN_USER, config.GATEWAY_HOST,
                                         pname)
         clone_dir = gitu.clone(url, pname)
         self.dirs_to_delete.append(os.path.dirname(clone_dir))
 
-        gitu.add_commit_and_publish(clone_dir, "master", "Test commit")
+        if not data:
+            gitu.add_commit_and_publish(clone_dir, "master", "Test commit")
+        else:
+            file(os.path.join(clone_dir, "file"), 'w').write(data[1])
+            gitu.add_commit_and_publish(clone_dir, "master", "Test commit",
+                                        fnames=[data[0]])
 
         change_ids = gu.get_my_changes_for_project(pname)
         self.assertEqual(len(change_ids), 1)
         change_id = change_ids[0]
 
+        return change_id, gu, k_index, pname
+
+    def test_review_labels(self):
+        """ Test if list of review labels are as expected
+        """
+        change_id, gu, k_index, _ = self._prepare_review_submit_testing()
+
+        logger.info("Looking for labels for change %s" % change_id)
         labels = gu.get_labels_list_for_change(change_id)
 
         self.assertIn('Workflow', labels)
@@ -97,40 +110,10 @@ class TestGerrit(Base):
 
         gu.del_pubkey(k_index)
 
-    def _prepare_review_submit_testing(self):
-        pname = 'p_%s' % create_random_str()
-        self.create_project(pname)
-        self.msu.addUsertoProjectGroups(config.ADMIN_USER,
-                                        pname,
-                                        config.USER_2,
-                                        "core-group")
-        un = config.ADMIN_USER
-        gu = GerritUtils(
-            config.GATEWAY_URL,
-            auth_cookie=config.USERS[un]['auth_cookie'])
-        k_index = gu.add_pubkey(config.USERS[un]["pubkey"])
-        self.assertTrue(gu.project_exists(pname))
-        priv_key_path = set_private_key(config.USERS[un]["privkey"])
-        gitu = GerritGitUtils(un,
-                              priv_key_path,
-                              config.USERS[un]['email'])
-        url = "ssh://%s@%s:29418/%s" % (un, config.GATEWAY_HOST,
-                                        pname)
-        clone_dir = gitu.clone(url, pname)
-        self.dirs_to_delete.append(os.path.dirname(clone_dir))
-
-        gitu.add_commit_and_publish(clone_dir, "master", "Test commit")
-
-        change_ids = gu.get_my_changes_for_project(pname)
-        self.assertEqual(len(change_ids), 1)
-        change_id = change_ids[0]
-
-        return change_id, gu, k_index
-
     def test_review_submit_approval(self):
         """ Test submit criteria - CR(+2s), V(+1), W(+1)
         """
-        change_id, gu, k_index = self._prepare_review_submit_testing()
+        change_id, gu, k_index, _ = self._prepare_review_submit_testing()
 
         gu.submit_change_note(change_id, "current", "Code-Review", "1")
         self.assertFalse(gu.submit_patch(change_id, "current"))
@@ -160,29 +143,9 @@ class TestGerrit(Base):
     def test_check_download_commands(self):
         """ Test if download commands plugin works
         """
-        pname = 'p_%s' % create_random_str()
-        self.create_project(pname)
-        un = config.ADMIN_USER
-        gu = GerritUtils(
-            config.GATEWAY_URL,
-            auth_cookie=config.USERS[un]['auth_cookie'])
-        self.assertTrue(gu.project_exists(pname))
-        k_index = gu.add_pubkey(config.USERS[un]["pubkey"])
-        priv_key_path = set_private_key(config.USERS[un]["privkey"])
-        gitu = GerritGitUtils(un,
-                              priv_key_path,
-                              config.USERS[un]['email'])
-        url = "ssh://%s@%s:29418/%s" % (un, config.GATEWAY_HOST,
-                                        pname)
-        clone_dir = gitu.clone(url, pname)
-        self.dirs_to_delete.append(os.path.dirname(clone_dir))
-
-        gitu.add_commit_and_publish(clone_dir, "master", "Test commit")
-
-        change_ids = gu.get_my_changes_for_project(pname)
-        self.assertEqual(len(change_ids), 1)
-        change_id = change_ids[0]
+        change_id, gu, k_index, _ = self._prepare_review_submit_testing()
         resp = gu.get_change_last_patchset(change_id)
+
         self.assertIn("current_revision", resp)
         self.assertIn("revisions", resp)
         current_rev = resp["current_revision"]
@@ -206,74 +169,48 @@ class TestGerrit(Base):
     def test_check_add_automatic_reviewers(self):
         """ Test if reviewers-by-blame plugin works
         """
-        pname = 'p_%s' % create_random_str()
-        self.create_project(pname)
-        self.msu.addUsertoProjectGroups(config.ADMIN_USER,
-                                        pname,
-                                        config.USER_2,
-                                        "core-group")
-        first_u = config.ADMIN_USER
-        gu_first_u = GerritUtils(
-            config.GATEWAY_URL,
-            auth_cookie=config.USERS[first_u]['auth_cookie'])
-        self.assertTrue(gu_first_u.project_exists(pname))
-        # Push data in the create project as Admin user
-        k1_index = gu_first_u.add_pubkey(config.USERS[first_u]["pubkey"])
-        priv_key_path = set_private_key(config.USERS[first_u]["privkey"])
-        gitu = GerritGitUtils(first_u,
-                              priv_key_path,
-                              config.USERS[first_u]['email'])
-        url = "ssh://%s@%s:29418/%s" % (first_u, config.GATEWAY_HOST,
-                                        pname)
-        clone_dir = gitu.clone(url, pname)
-        self.dirs_to_delete.append(os.path.dirname(clone_dir))
-        data = ['this', 'is', 'a', 'couple', 'of', 'lines']
-        clone_dir = gitu.clone(url, pname)
-        file(os.path.join(clone_dir, "file"), 'w').write("\n".join(data))
-        gitu.add_commit_and_publish(clone_dir, "master", "Test commit",
-                                    fnames=["file"])
-        # Get the change id
-        change_ids = gu_first_u.get_my_changes_for_project(pname)
-        self.assertEqual(len(change_ids), 1)
-        change_id = change_ids[0]
+        data = "this\nis\na\ncouple\nof\nlines"
+        change_id, gu, k1_index, pname = self._prepare_review_submit_testing(
+            ('file', data))
+
         # Merge the change
-        gu_first_u.submit_change_note(change_id, "current", "Code-Review", "2")
-        gu_first_u.submit_change_note(change_id, "current", "Verified", "2")
-        gu_first_u.submit_change_note(change_id, "current", "Workflow", "1")
-        second_u = config.USER_2
-        gu_second_u = GerritUtils(
+        gu.submit_change_note(change_id, "current", "Code-Review", "2")
+        gu.submit_change_note(change_id, "current", "Verified", "2")
+        gu.submit_change_note(change_id, "current", "Workflow", "1")
+        self.assertTrue(gu.submit_patch(change_id, "current"))
+
+        gu2 = GerritUtils(
             config.GATEWAY_URL,
-            auth_cookie=config.USERS[second_u]['auth_cookie'])
-        self.assertTrue(gu_first_u.submit_patch(change_id, "current"))
+            auth_cookie=config.USERS[config.USER_2]['auth_cookie'])
         # Change the file we have commited with Admin user
-        k2_index = gu_second_u.add_pubkey(config.USERS[second_u]["pubkey"])
-        priv_key_path = set_private_key(config.USERS[second_u]["privkey"])
-        gitu = GerritGitUtils(second_u,
-                              priv_key_path,
-                              config.USERS[second_u]['email'])
-        url = "ssh://%s@%s:29418/%s" % (second_u, config.GATEWAY_HOST,
-                                        pname)
-        clone_dir = gitu.clone(url, pname)
+        k2_index = gu2.add_pubkey(config.USERS[config.USER_2]["pubkey"])
+        priv_key_path = set_private_key(config.USERS[config.USER_2]["privkey"])
+        gitu2 = GerritGitUtils(
+            config.USER_2, priv_key_path,
+            config.USERS[config.USER_2]['email'])
+        url = "ssh://%s@%s:29418/%s" % (
+            config.USER_2, config.GATEWAY_HOST, pname)
+        clone_dir = gitu2.clone(url, pname)
         self.dirs_to_delete.append(os.path.dirname(clone_dir))
         data = ['this', 'is', 'some', 'lines']
         file(os.path.join(clone_dir, "file"), 'w').write("\n".join(data))
-        gitu.add_commit_and_publish(clone_dir, "master", "Test commit",
-                                    fnames=["file"])
+        gitu2.add_commit_and_publish(
+            clone_dir, "master", "Test commit", fnames=["file"])
         # Get the change id
-        change_ids = gu_second_u.get_my_changes_for_project(pname)
+        change_ids = gu2.get_my_changes_for_project(pname)
         self.assertEqual(len(change_ids), 1)
         change_id = change_ids[0]
         # Verify first_u has been automatically added to reviewers
         for retry in xrange(3):
-            if len(gu_second_u.get_reviewers(change_id)) > 0:
+            if len(gu2.get_reviewers(change_id)) > 0:
                 break
             time.sleep(1)
-        reviewers = gu_second_u.get_reviewers(change_id)
-        self.assertGreaterEqual(len(reviewers), 1)
-        self.assertTrue(first_u in reviewers)
+        reviewers = gu2.get_reviewers(change_id)
+        self.assertEqual(len(reviewers), 1)
+        self.assertEqual(reviewers[0], config.ADMIN_USER)
 
-        gu_first_u.del_pubkey(k1_index)
-        gu_second_u.del_pubkey(k2_index)
+        gu.del_pubkey(k1_index)
+        gu2.del_pubkey(k2_index)
 
     def test_gerrit_version(self):
         """ Test if correct Gerrit version is running
@@ -285,6 +222,31 @@ class TestGerrit(Base):
                 auth_pubtkt=config.USERS[config.USER_1]['auth_cookie']))
         self.assertTrue('"2.11.9"' in resp.text)
 
+
+class TestGerritGitWeb(Base):
+    """ Functional tests that validate some GitWeb access behaviors.
+    """
+    def setUp(self):
+        super(TestGerritGitWeb, self).setUp()
+        self.projects = []
+        self.clone_dirs = []
+        self.dirs_to_delete = []
+        self.msu = ManageSfUtils(config.GATEWAY_URL)
+
+    def tearDown(self):
+        super(TestGerritGitWeb, self).tearDown()
+        for name in self.projects:
+            self.msu.deleteProject(name,
+                                   config.ADMIN_USER)
+        for dirs in self.dirs_to_delete:
+            shutil.rmtree(dirs)
+
+    def create_project(self, name, options=None):
+        self.msu.createProject(name,
+                               config.ADMIN_USER,
+                               options=options)
+        self.projects.append(name)
+
     def test_gitweb_access(self):
         """ Test if gitweb access works correctly
         """
@@ -294,7 +256,7 @@ class TestGerrit(Base):
         priv_pname = 'p_private_%s' % create_random_str()
         self.create_project(priv_pname, options={"private": ""})
 
-        # Test access to a public repo first
+        # Test anonymous access to a public repo
         url = "%s/r/gitweb?p=%s.git" % (config.GATEWAY_URL, pub_pname)
         expected_title = "%s.git/summary" % pub_pname
 
