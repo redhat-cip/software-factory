@@ -20,15 +20,21 @@ import shutil
 import time
 import stat
 import tempfile
+import logging
 
 from utils import Base
 from utils import set_private_key
-from utils import ManageSfUtils
+from utils import ResourcesUtils
 from utils import GerritGitUtils
+from utils import JenkinsUtils
 from utils import Tool
-from subprocess import Popen, PIPE, call, CalledProcessError
+from subprocess import Popen, PIPE, call
 
 from pysflib.sfgerrit import GerritUtils
+
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
 
 
 class TestProjectReplication(Base):
@@ -36,8 +42,9 @@ class TestProjectReplication(Base):
     """
     def setUp(self):
         super(TestProjectReplication, self).setUp()
-        self.msu = ManageSfUtils(config.GATEWAY_URL)
+        self.ru = ResourcesUtils()
         self.un = config.ADMIN_USER
+        self.ju = JenkinsUtils()
         self.gu = GerritUtils(
             config.GATEWAY_URL,
             auth_cookie=config.USERS[self.un]['auth_cookie'])
@@ -80,7 +87,7 @@ class TestProjectReplication(Base):
         super(TestProjectReplication, self).tearDown()
         self.delete_config_section(self.un, self.pname)
         self.delete_mirror_repo(self.pname)
-        self.msu.deleteProject(self.pname, self.un)
+        self.ru.direct_delete_repo(self.pname)
         self.gu2.del_pubkey(self.k_idx)
 
     def clone(self, uri, target):
@@ -92,8 +99,9 @@ class TestProjectReplication(Base):
         self.mt.exe(cmd, self.mt_tempdir)
         return clone
 
-    def create_project(self, name, user, options=None):
-        self.msu.createProject(name, user, options)
+    def create_project(self, name):
+        logger.info("Create repo to for testing replication %s" % name)
+        self.ru.direct_create_repo(name)
 
     def ssh_run_cmd(self, sshkey_priv_path, user, host, subcmd):
         host = '%s@%s' % (user, host)
@@ -107,6 +115,7 @@ class TestProjectReplication(Base):
         return p.communicate(), p.returncode
 
     def delete_mirror_repo(self, name):
+        logger.info("Delete mirror repo created by the replication")
         mirror_path = '/home/gerrit/git/%s.git' % name
         cmd = ['ssh', 'gerrit.%s' % config.GATEWAY_HOST,
                'rm', '-rf', mirror_path]
@@ -115,6 +124,7 @@ class TestProjectReplication(Base):
                          config.GATEWAY_HOST, cmd)
 
     def create_config_section(self, project):
+        logger.info("Add the replication config section")
         host = '%s@%s' % (config.GERRIT_USER, config.GATEWAY_HOST)
         mirror_repo_path = '/home/gerrit/git/\${name}.git'
         url = '%s:%s' % (host, mirror_repo_path)
@@ -130,48 +140,47 @@ class TestProjectReplication(Base):
             self.config_clone_dir, "Add replication test section")
         # The direct push will trigger the config-update job
         # as we commit through 29418
-        self.gitu_admin.direct_push_branch(self.config_clone_dir, 'master')
-        attempts = 0
+        change_sha = self.gitu_admin.direct_push_branch(
+            self.config_clone_dir, 'master')
+        logger.info("Waiting for config-update on %s" % change_sha)
+        self.ju.wait_for_config_update(change_sha)
         cmd = ['ssh', 'gerrit.%s' % config.GATEWAY_HOST, 'grep',
                'test_project', '/home/gerrit/site_path/etc/replication.config']
-        while attempts < 30:
-            out, code = self.ssh_run_cmd(config.SERVICE_PRIV_KEY_PATH,
-                                         'root',
-                                         config.GATEWAY_HOST, cmd)
-            if code == 0:
-                return
-            attempts += 1
-            time.sleep(2)
+        logger.info("Wait for the replication config section to land")
+        _, code = self.ssh_run_cmd(config.SERVICE_PRIV_KEY_PATH,
+                                   'root', config.GATEWAY_HOST, cmd)
+        if code == 0:
+            return
         raise Exception('replication.config file has not been updated (add)')
 
     def delete_config_section(self, user, project):
+        logger.info("Remove the replication config section")
         url = "ssh://%s@%s:29418/config" % (self.un, config.GATEWAY_HOST)
         self.config_clone_dir = self.gitu_admin.clone(
             url, 'config', config_review=True)
+        sha = open("%s/.git/refs/heads/master" %
+                   self.config_clone_dir).read().strip()
         path = os.path.join(self.config_clone_dir, 'gerrit/replication.config')
         call("git config -f %s --remove-section remote.test_project" %
              path, shell=True)
-        try:
-            self.gitu_admin.add_commit_for_all_new_additions(
-                self.config_clone_dir, "Remove replication test section")
-        except CalledProcessError:
-            # We fail if nothing to re-initialized
-            return
+        change_sha = self.gitu_admin.add_commit_for_all_new_additions(
+            self.config_clone_dir, "Remove replication test section")
         # The direct push will trigger the config-update job
         # as we commit through 29418
-        self.gitu_admin.direct_push_branch(self.config_clone_dir, 'master')
-        attempts = 0
+        if change_sha == sha:
+            # Nothing have been changed/Nothing to publish
+            return
+        change_sha = self.gitu_admin.direct_push_branch(
+            self.config_clone_dir, 'master')
+        logger.info("Waiting for config-update on %s" % change_sha)
+        self.ju.wait_for_config_update(change_sha)
         cmd = ['ssh', 'gerrit.%s' % config.GATEWAY_HOST, 'grep',
                'test_project',
                '/home/gerrit/site_path/etc/replication.config']
-        while attempts < 30:
-            out, code = self.ssh_run_cmd(config.SERVICE_PRIV_KEY_PATH,
-                                         'root',
-                                         config.GATEWAY_HOST, cmd)
-            if code != 0:
-                return
-            attempts += 1
-            time.sleep(2)
+        _, code = self.ssh_run_cmd(config.SERVICE_PRIV_KEY_PATH,
+                                   'root', config.GATEWAY_HOST, cmd)
+        if code != 0:
+            return
         raise Exception('replication.config has not been updated (rm)')
 
     def mirror_clone_and_check_files(self, url, pname):
@@ -179,18 +188,20 @@ class TestProjectReplication(Base):
             clone = self.clone(url, pname)
             # clone may fail, as mirror repo is not yet ready(i.e gerrit not
             # yet replicated the project)
+            if os.path.isdir(clone):
+                logger.info("Files in the mirror repo: %s" % os.listdir(clone))
             if os.path.isdir(clone) and \
                os.path.isfile(os.path.join(clone, '.gitreview')):
-                return True
+                break
             else:
                 time.sleep(3)
-        return False
+        self.assertTrue(os.path.exists(os.path.join(clone, '.gitreview')))
 
     def test_replication(self):
         """ Test gerrit replication for review process
         """
         # Create the project
-        self.create_project(self.pname, self.un)
+        self.create_project(self.pname)
 
         # Be sure sftests.com host key is inside the known_hosts
         cmds = [['ssh', 'gerrit.%s' % config.GATEWAY_HOST,
@@ -208,5 +219,5 @@ class TestProjectReplication(Base):
         self.managesf_repo_path = "ssh://%s@%s/home/gerrit/git/" % (
             'root', config.GATEWAY_HOST)
         repo_url = self.managesf_repo_path + '%s.git' % self.pname
-        self.assertTrue(self.mirror_clone_and_check_files(repo_url,
-                                                          self.pname))
+        logger.info("Wait for the replication to happen")
+        self.mirror_clone_and_check_files(repo_url, self.pname)
