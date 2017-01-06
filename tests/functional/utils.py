@@ -435,6 +435,8 @@ class GerritGitUtils(Tool):
                  clone_dir)
         if publish:
             self.exe('git review -v', clone_dir)
+        sha = open("%s/.git/refs/heads/master" % clone_dir).read()
+        return sha.strip()
 
     def direct_push_branch(self, clone_dir, branch):
         self.exe('git checkout %s' % branch, clone_dir)

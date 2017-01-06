@@ -80,7 +80,7 @@ class TestResourcesWorkflow(Base):
     def commit_direct_push_as_admin(self, clone_dir, msg):
         # Stage, commit and direct push the additions on master
         self.gitu_admin.add_commit_for_all_new_additions(clone_dir, msg)
-        self.gitu_admin.direct_push_branch(clone_dir, 'master')
+        return self.gitu_admin.direct_push_branch(clone_dir, 'master')
 
     def set_resources_then_direct_push(self, fpath,
                                        resources=None, mode='add'):
@@ -90,18 +90,11 @@ class TestResourcesWorkflow(Base):
             file(path, 'w').write(resources)
         elif mode == 'del':
             os.unlink(path)
-        last_success_build_num_cu = \
-            self.ju.get_last_build_number("config-update",
-                                          "lastSuccessfulBuild")
-        self.commit_direct_push_as_admin(
+        change_sha = self.commit_direct_push_as_admin(
             config_clone_dir,
             "Add new resources for functional tests")
-        self.ju.wait_till_job_completes("config-update",
-                                        last_success_build_num_cu,
-                                        "lastSuccessfulBuild",
-                                        max_retries=120)
-        # Give more time to underlying services to create resources
-        time.sleep(2)
+        config_update_log = self.ju.wait_for_config_update(change_sha)
+        self.assertIn("Finished: SUCCESS", config_update_log)
 
     def wait_for_jenkins_note(self, change_id):
         attempt = 0
@@ -113,8 +106,7 @@ class TestResourcesWorkflow(Base):
 
     def propose_resources_change_check_ci(
             self, fpath, resources=None,
-            mode='add', expected='failure',
-            msg=None):
+            mode='add', expected_note=1, msg=None):
 
         config_clone_dir = self.clone_as_admin("config")
         path = os.path.join(config_clone_dir, fpath)
@@ -123,37 +115,18 @@ class TestResourcesWorkflow(Base):
         elif mode == 'del':
             os.unlink(path)
 
-        if expected == 'success':
-            label = "lastSuccessfulBuild"
-            note = '+1'
-        if expected == 'failure':
-            label = "lastFailedBuild"
-            note = '-1'
-
-        last_build = self.ju.get_last_build_number("config-check",
-                                                   label)
-
         if not msg:
             msg = "Validate resources"
         if mode == 'add':
-            self.gitu_admin.add_commit_and_publish(
+            change_sha = self.gitu_admin.add_commit_and_publish(
                 config_clone_dir, "master", msg, fnames=[path])
         if mode == 'del':
-            self.gitu_admin.add_commit_for_all_new_additions(
+            change_sha = self.gitu_admin.add_commit_for_all_new_additions(
                 config_clone_dir, msg, publish=True)
 
-        change_ids = self.gu.get_my_changes_for_project('config')
-        self.assertGreater(len(change_ids), 0)
-        change_id = change_ids[0]
-
-        self.ju.wait_till_job_completes("config-check",
-                                        last_build,
-                                        label,
-                                        max_retries=120)
-        self.wait_for_jenkins_note(change_id)
-        self.assertEqual(
-            self.gu.get_reviewer_approvals(change_id, 'jenkins')['Verified'],
-            note)
+        change_nr = self.gu.get_change_number(change_sha)
+        note = self.gu.wait_for_verify(change_nr)
+        self.assertEqual(note, expected_note)
 
     def get_resources(self):
         gateau = config.USERS[config.ADMIN_USER]['auth_cookie']
@@ -177,7 +150,7 @@ class TestResourcesWorkflow(Base):
         self.propose_resources_change_check_ci(fpath,
                                                resources=resources,
                                                mode='add',
-                                               expected='failure')
+                                               expected_note=-1)
 
     def test_validate_correct_resource_workflow(self):
         """ Check resources - good model is detected by config-check """
@@ -195,8 +168,7 @@ class TestResourcesWorkflow(Base):
         resources = resources % name
         self.propose_resources_change_check_ci(fpath,
                                                resources=resources,
-                                               mode='add',
-                                               expected='success')
+                                               mode='add')
 
     def test_validate_resources_deletion(self):
         """ Check resources - deletions detected and authorized via flag """
@@ -217,14 +189,13 @@ class TestResourcesWorkflow(Base):
         # Remove the resource file via the review
         self.propose_resources_change_check_ci(fpath,
                                                mode='del',
-                                               expected='failure')
+                                               expected_note=-1)
 
         # Remove the resource file with "allow-delete" flag via the review
         shutil.rmtree(os.path.join(self.gitu_admin.tempdir, 'config'))
         msg = "Remove resource with flag\nsf-resources: allow-delete"
         self.propose_resources_change_check_ci(fpath,
                                                mode='del',
-                                               expected='success',
                                                msg=msg)
 
     def test_CUD_group(self):
@@ -496,19 +467,10 @@ class TestResourcesWorkflow(Base):
         for r in json.loads(r.content[4:]):
             if r['_number'] > lastid:
                 lastid = r['_number']
-        change_id = str(lastid)
-        # Check Jenkins reported Verified +1 on that change
-        self.wait_for_jenkins_note(change_id)
-        for retry in xrange(60):
-            time.sleep(1)
-            ret = self.gu.get_reviewer_approvals(
-                change_id, 'jenkins')['Verified']
-            if int(ret) != 0:
-                break
-        self.assertEqual(ret, '+1')
+        self.assertEqual(self.gu.wait_for_verify(lastid), 1)
         # Check flag "sf-resources: skip-apply" in the commit msg
         change = self.gu.g.get(
-            'changes/?q=%s&o=CURRENT_REVISION&o=CURRENT_COMMIT' % change_id)[0]
+            'changes/?q=%s&o=CURRENT_REVISION&o=CURRENT_COMMIT' % lastid)[0]
         revision = change["current_revision"]
         commit = change['revisions'][revision]["commit"]
         self.assertEqual(commit["message"].split('\n')[0],
@@ -517,14 +479,6 @@ class TestResourcesWorkflow(Base):
         # Approve the change and wait for the +2
         self.gu.submit_change_note(change['id'], "current", "Code-Review", "2")
         self.gu.submit_change_note(change['id'], "current", "Workflow", "1")
-        self.wait_for_jenkins_note(change_id)
-        for retry in xrange(60):
-            time.sleep(1)
-            ret = self.gu.get_reviewer_approvals(
-                change_id, 'jenkins')['Verified']
-            if int(ret) != 0 and int(ret) != -1 and int(ret) != +1:
-                break
-        self.assertEqual(ret, '+2')
         # Check config-update return a success
         # The flag sf-resources: skip-apply should be detected
         # by the config update. Then missing resources won't
@@ -534,6 +488,7 @@ class TestResourcesWorkflow(Base):
         # apply would have return 409 error making config-update failed too.
         # If not True then we cannot concider config-update succeed
         config_update_log = self.ju.wait_for_config_update(revision)
+        self.assertIn("Skip resources apply.", config_update_log)
         self.assertIn("Finished: SUCCESS", config_update_log)
         # Checking again missing resources  must return nothing
         ret = requests.get("%s/manage/resources/?get_missing_"
