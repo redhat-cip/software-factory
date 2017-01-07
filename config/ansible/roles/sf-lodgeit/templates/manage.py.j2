@@ -7,7 +7,7 @@ from lodgeit import local
 from lodgeit.application import make_app
 from lodgeit.database import session
 
-dburi = "mysql://lodgeit:{{lodgeit_mysql_password}}@mysql.{{fqdn}}:3306/lodgeit"
+dburi = "mysql://{{ lodgeit_mysql_user }}:{{ lodgeit_mysql_password }}@{{ lodgeit_mysql_host }}:{{ lodgeit_mysql_port }}/{{ lodgeit_mysql_db }}"
 
 session_key = "{{lodgeit_session_key}}"
 

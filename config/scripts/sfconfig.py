@@ -136,6 +136,14 @@ def generate_role_vars(allvars_file, args):
             'password': secrets['grafana_mysql_password'],
         }
 
+    if "lodgeit" in arch["roles"]:
+        glue["lodgeit_mysql_host"] = get_hostname("mysql")
+        glue["mysql_databases"]["lodgeit"] = {
+            'hosts': ['localhost', get_hostname("lodgeit")],
+            'user': 'lodgeit',
+            'password': secrets['lodgeit_mysql_password'],
+        }
+
     if "storyboard" in arch["roles"]:
         glue["storyboard_mysql_host"] = glue["mysql_host"]
         glue["mysql_databases"]["storyboard"] = {

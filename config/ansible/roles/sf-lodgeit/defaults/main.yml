@@ -1,5 +1,10 @@
 role_actions:
   - setup
 
+lodgeit_mysql_host: "mysql.example.com"
+lodgeit_mysql_port: 3306
+lodgeit_mysql_db: "lodgeit"
+lodgeit_mysql_user: "lodgeit"
 lodgeit_mysql_password: "CHANGE_ME"
+
 lodgeit_session_key: "CHANGE_ME"
