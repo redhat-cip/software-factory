@@ -82,7 +82,7 @@ services = [
 ]
 
 mysql = {
-    'host': 'mysql.{{ fqdn }}',
+    'host': '{{ managesf_mysql_host }}',
 }
 
 # fake host, does not matter
@@ -119,9 +119,9 @@ gerrit = {
     'ssh_port': 29418,
     'sshkey_priv_path': '/var/lib/managesf/.ssh/gerrit_admin_rsa',
     'replication_config_path': '/home/gerrit/site_path/etc/replication.config',
-    'db_host': 'mysql.{{ fqdn }}',
-    'db_name': 'gerrit',
-    'db_user': 'gerrit',
+    'db_host': '{{ gerrit_mysql_host }}',
+    'db_name': '{{ gerrit_mysql_db }}',
+    'db_user': '{{ gerrit_mysql_user }}',
     'db_password': '{{ gerrit_mysql_password }}'
 }
 
@@ -143,14 +143,14 @@ storyboard = {
     'url': 'http://storyboard.{{ fqdn }}:20000/v1/',
     'host': 'storyboard',
     'service_token': '{{ storyboard_service_token }}',
-    'db_host': 'mysql.{{ fqdn }}',
-    'db_name': 'storyboard',
-    'db_user': 'storyboard',
+    'db_host': '{{ storyboard_mysql_host }}',
+    'db_name': '{{ storyboard_mysql_db }}',
+    'db_user': '{{ storyboard_mysql_user }}',
     'db_password': '{{ storyboard_mysql_password }}',
 }
 
 sqlalchemy = {
-    'url': 'mysql://managesf:{{ managesf_mysql_password }}@mysql.{{ fqdn }}/managesf?charset=utf8',
+    'url': 'mysql://{{ managesf_mysql_user }}:{{ managesf_mysql_password }}@{{ managesf_mysql_host }}:{{ managesf_mysql_port }}/{{ managesf_mysql_db }}?charset=utf8',
     'encoding': 'utf-8',
 }
 

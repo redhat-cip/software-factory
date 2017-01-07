@@ -76,6 +76,12 @@ def generate_role_vars(allvars_file, args):
     if "managesf" in arch["roles"]:
         glue["managesf_internal_url"] = "http://%s:%s" % (
             get_hostname("managesf"), defaults["managesf_port"])
+        glue["managesf_mysql_host"] = get_hostname("mysql")
+        glue["mysql_databases"]["managesf"] = {
+            'hosts': ['localhost', get_hostname("managesf")],
+            'user': 'managesf',
+            'password': secrets['managesf_mysql_password'],
+        }
 
     if "gerrit" in arch["roles"]:
         glue["gerrit_pub_url"] = "%s/r/" % glue["gateway_url"]
