@@ -96,6 +96,7 @@
         RewriteRule /r/gitweb.*$ /r/#/admin/projects/%1,branches [QSD,R,L,NE]
     </LocationMatch>
 
+{% if 'grafana' in roles %}
     <LocationMatch "^/grafana/">
         RequestHeader unset X-Forwarded-User
         <If "%{HTTP_COOKIE} =~ /auth_pubtkt=.*/">
@@ -111,6 +112,7 @@
             RequestHeader set X-Forwarded-User %{RU}e
         </If>
     </LocationMatch>
+{% endif %}
 
     <IfModule mod_proxy.c>
         ProxyVia On
@@ -160,9 +162,11 @@
         ProxyPassMatch ^/jenkinslogs/{{ prefix }}(.*)$ http://{{ prefix }}$1
         {% endfor %}
 
+{% if 'grafana' in roles %}
         RewriteRule ^/grafana$ grafana/ [R]
         ProxyPass /grafana/ {{ grafana_internal_url }}
         ProxyPassReverse /grafana/ {{ grafana_internal_url }}
+{% endif %}
     </IfModule>
 
     <LocationMatch "^/jenkinslogs/">

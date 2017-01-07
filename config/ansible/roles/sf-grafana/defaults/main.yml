@@ -2,4 +2,4 @@ role_actions:
   - setup
 
 grafana_http_port: 3000
-grafana_internal_url: http://grafana.{{ fqdn }}:{{ grafana_http_port }}/
+grafana_internal_url: "http://localhost:{{ grafana_http_port }}/"

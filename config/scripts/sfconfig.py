@@ -101,6 +101,10 @@ def generate_role_vars(allvars_file, args):
             get_hostname("redmine"), defaults["redmine_port"])
         glue["redmine_pub_url"] = "%s/redmine/" % glue["gateway_url"]
 
+    if "grafana" in arch["roles"]:
+        glue["grafana_internal_url"] = "http://%s:%s/" % (
+            get_hostname("grafana"), defaults["grafana_http_port"])
+
     # Save secrets to new secrets file
     yaml_dump(secrets, open("%s/secrets.yaml" % args.lib, "w"))
     # And add them to the all.yaml file
