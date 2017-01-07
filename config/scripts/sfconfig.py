@@ -125,6 +125,14 @@ def generate_role_vars(allvars_file, args):
         # Make sure api key doesn't have any '-'
         secrets["redmine_api_key"] = secrets["redmine_api_key"].replace('-',
                                                                         '')
+        glue["redmine_mysql_host"] = get_hostname("mysql")
+        glue["mysql_databases"]["redmine"] = {
+            'hosts': list(set(('localhost',
+                               get_hostname("redmine"),
+                               get_hostname("managesf")))),
+            'user': 'redmine',
+            'password': secrets['redmine_mysql_password'],
+        }
 
     if "grafana" in arch["roles"]:
         glue["grafana_internal_url"] = "http://%s:%s/" % (

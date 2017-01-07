@@ -4,19 +4,4 @@ CREATE DATABASE IF NOT EXISTS {{ dbname }} CHARACTER SET utf8 COLLATE utf8_gener
 GRANT ALL PRIVILEGES ON {{ dbname }}.* TO '{{ dbinfo['user'] }}'@'{{ host }}' IDENTIFIED BY "{{ dbinfo['password'] }}" WITH GRANT OPTION;
 {% endfor %}
 {% endfor %}
-
-{% for service in ("redmine", ) %}
-  {% if service in groups %}
-CREATE DATABASE IF NOT EXISTS {{ service }} CHARACTER SET utf8 COLLATE utf8_general_ci;
-GRANT ALL PRIVILEGES ON {{ service }}.* TO '{{ service }}'@'localhost' IDENTIFIED BY "{{ hostvars[inventory_hostname]["%s_mysql_password" % service] }}" WITH GRANT OPTION;
-    {% for host in groups[service] %}
-GRANT ALL PRIVILEGES ON {{ service }}.* TO '{{ service }}'@'{{ host }}' IDENTIFIED BY "{{ hostvars[inventory_hostname]["%s_mysql_password" % service] }}" WITH GRANT OPTION;
-    {% endfor %}
-  {% endif %}
-{% endfor %}
-/* Allow managesf to fetch redmine API key from the db */
-GRANT SELECT ON redmine.* TO 'managesf'@'localhost' IDENTIFIED BY "{{ hostvars[inventory_hostname]["managesf_mysql_password"] }}";
-{% for host in groups["managesf"] %}
-    GRANT SELECT ON redmine.* TO 'managesf'@'{{ host }}' IDENTIFIED BY "{{ hostvars[inventory_hostname]["managesf_mysql_password"] }}";
-{% endfor %}
 FLUSH PRIVILEGES;

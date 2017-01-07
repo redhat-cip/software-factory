@@ -10,4 +10,8 @@ redmine_pub_url: "https://example.com/redmine/"
 redmine_api_key: "CHANGE_ME"
 redmine_api_url: "http://api-redmine.{{ fqdn }}:{{ redmine_port }}/"
 
+redmine_mysql_host: "mysql.example.com"
+redmine_mysql_port: 3306
+redmine_mysql_db: "redmine"
+redmine_mysql_user: "redmine"
 redmine_mysql_password: "CHANGE_ME"
