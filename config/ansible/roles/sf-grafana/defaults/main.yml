@@ -4,4 +4,8 @@ role_actions:
 grafana_http_port: 3000
 grafana_internal_url: "http://localhost:{{ grafana_http_port }}/"
 
+grafana_mysql_host: "mysql.example.com"
+grafana_mysql_port: 3306
+grafana_mysql_db: "grafana"
+grafana_mysql_user: "grafana"
 grafana_mysql_password: "CHANGE_ME"

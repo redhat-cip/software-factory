@@ -5,20 +5,13 @@ GRANT ALL PRIVILEGES ON {{ dbname }}.* TO '{{ dbinfo['user'] }}'@'{{ host }}' ID
 {% endfor %}
 {% endfor %}
 
-{% for service in ("redmine", "etherpad", "lodgeit", "grafana") %}
+{% for service in ("redmine", "etherpad", "lodgeit") %}
   {% if service in groups %}
 CREATE DATABASE IF NOT EXISTS {{ service }} CHARACTER SET utf8 COLLATE utf8_general_ci;
 GRANT ALL PRIVILEGES ON {{ service }}.* TO '{{ service }}'@'localhost' IDENTIFIED BY "{{ hostvars[inventory_hostname]["%s_mysql_password" % service] }}" WITH GRANT OPTION;
     {% for host in groups[service] %}
 GRANT ALL PRIVILEGES ON {{ service }}.* TO '{{ service }}'@'{{ host }}' IDENTIFIED BY "{{ hostvars[inventory_hostname]["%s_mysql_password" % service] }}" WITH GRANT OPTION;
     {% endfor %}
-  {% elif service in ("grafana") %}
-CREATE DATABASE IF NOT EXISTS {{ service }} CHARACTER SET utf8 COLLATE utf8_general_ci;
-    {% if "statsd" in groups %}
-      {% for host in groups["statsd"] %}
-GRANT ALL PRIVILEGES ON {{ service }}.* TO '{{ service }}'@'{{ host }}' IDENTIFIED BY "{{ hostvars[inventory_hostname]["%s_mysql_password" % service] }}" WITH GRANT OPTION;
-      {% endfor %}
-    {% endif %}
   {% endif %}
 {% endfor %}
 /* Allow managesf to fetch redmine API key from the db */

@@ -129,6 +129,12 @@ def generate_role_vars(allvars_file, args):
     if "grafana" in arch["roles"]:
         glue["grafana_internal_url"] = "http://%s:%s/" % (
             get_hostname("grafana"), defaults["grafana_http_port"])
+        glue["grafana_mysql_host"] = get_hostname("mysql")
+        glue["mysql_databases"]["grafana"] = {
+            'hosts': ['localhost', get_hostname("grafana")],
+            'user': 'grafana',
+            'password': secrets['grafana_mysql_password'],
+        }
 
     if "storyboard" in arch["roles"]:
         glue["storyboard_mysql_host"] = glue["mysql_host"]

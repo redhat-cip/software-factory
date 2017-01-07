@@ -35,7 +35,7 @@ root_url = {{ gateway_url }}/grafana/
 
 [database]
 type = mysql
-host = mysql.{{ fqdn }}:3306
-name = grafana
-user = grafana
+host = {{ grafana_mysql_host }}:{{ grafana_mysql_port }}
+name = {{ grafana_mysql_db }}
+user = {{ grafana_mysql_user }}
 password = {{ grafana_mysql_password }}
