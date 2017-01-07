@@ -23,6 +23,7 @@
         RewriteRule "/issues(.*$)" "/redmine/issues/$1" [R]
     </Location>
 
+{% if 'redmine' in roles %}
     <Location /redmine/>
         ProxyPassReverse /
 
@@ -58,6 +59,7 @@
         # Non-default addition for Redmine
         ProxyHTMLLinks  option      value
     </Location>
+{% endif %}
 
     <LocationMatch "/r/(?!(login|logout|a))">
     RewriteEngine On
@@ -133,9 +135,11 @@
         ProxyPass /manage/ http://managesf:20001/ retry=0
         ProxyPassReverse /manage/ http://managesf:20001/
 
+{% if 'redmine' in roles %}
         ProxyPass /redmine/ {{ redmine_internal_url }} nocanon retry=0
         ProxyPassReverse /redmine/ {{ redmine_internal_url }}
         ProxyHTMLURLMap {{ redmine_internal_url }} /redmine/
+{% endif %}
 
         ProxyPass /etherpad/ http://127.0.0.1:9001/ retry=0
         ProxyPassReverse /etherpad/ http://127.0.0.1:9001/

@@ -1,7 +1,7 @@
-Listen 8083
-NameVirtualHost *:8083
+Listen {{ redmine_port }}
+NameVirtualHost *:{{ redmine_port }}
 
-<VirtualHost redmine.{{fqdn}}:8083>
+<VirtualHost *:{{ redmine_port }}>
 
 LogLevel warn
 RailsBaseURI /

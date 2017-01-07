@@ -2,8 +2,10 @@ role_actions:
   - setup
   - get_logs
 
-redmine_internal_url: "http://redmine.{{ fqdn }}:8083/"
-redmine_pub_url: "{{ gateway_url }}/redmine/"
+redmine_port: 8083
+
+redmine_internal_url: "http://localhost:{{ redmine_port }}"
+redmine_pub_url: "https://example.com/redmine/"
 
 redmine_api_key: "{{ creds_issues_tracker_api_key }}"
-redmine_api_url: "http://api-redmine.{{ fqdn }}:8083/"
+redmine_api_url: "http://api-redmine.{{ fqdn }}:{{ redmine_port }}/"

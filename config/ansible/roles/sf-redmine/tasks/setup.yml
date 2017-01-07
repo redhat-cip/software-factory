@@ -11,7 +11,7 @@
 
 - name: Apply selinux port labelling
   seport:
-      ports: 8083
+      ports: "{{ redmine_port }}"
       proto: tcp
       setype: http_port_t
       state: present

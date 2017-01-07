@@ -96,6 +96,11 @@ def generate_role_vars(allvars_file, args):
             get_hostname("jenkins"), defaults["jenkins_api_port"])
         glue["jenkins_pub_url"] = "%s/jenkins/" % glue["gateway_url"]
 
+    if "redmine" in arch["roles"]:
+        glue["redmine_internal_url"] = "http://%s:%s/" % (
+            get_hostname("redmine"), defaults["redmine_port"])
+        glue["redmine_pub_url"] = "%s/redmine/" % glue["gateway_url"]
+
     # Save secrets to new secrets file
     yaml_dump(secrets, open("%s/secrets.yaml" % args.lib, "w"))
     # And add them to the all.yaml file
