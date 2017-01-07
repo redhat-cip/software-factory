@@ -142,7 +142,7 @@ auth = {
 services = ['managesf', ]
 
 sqlalchemy = {
-    'url'           : 'mysql://cauth:{{ cauth_mysql_password }}@mysql.{{ fqdn }}/cauth',
+    'url'           : 'mysql://{{ cauth_mysql_user }}:{{ cauth_mysql_password }}@{{ cauth_mysql_host }}:{{ cauth_mysql_port }}/{{ cauth_mysql_db }}',
     'echo'          : True,
     'encoding'      : 'utf-8'
 }

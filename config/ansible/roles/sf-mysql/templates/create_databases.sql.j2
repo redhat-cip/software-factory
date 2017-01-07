@@ -5,12 +5,6 @@ GRANT ALL PRIVILEGES ON {{ dbname }}.* TO '{{ dbinfo['user'] }}'@'{{ host }}' ID
 {% endfor %}
 {% endfor %}
 
-/* Create auth database */
-CREATE DATABASE IF NOT EXISTS cauth CHARACTER SET utf8 COLLATE utf8_general_ci;
-{% for host in groups["cauth"] %}
-GRANT ALL PRIVILEGES ON cauth.* TO 'cauth'@'{{ host }}' IDENTIFIED BY "{{ hostvars[inventory_hostname]["cauth_mysql_password"] }}" WITH GRANT OPTION;
-{% endfor %}
-
 {% for service in ("redmine", "nodepool", "etherpad", "lodgeit", "grafana", "managesf", "storyboard") %}
   {% if service in groups %}
 CREATE DATABASE IF NOT EXISTS {{ service }} CHARACTER SET utf8 COLLATE utf8_general_ci;

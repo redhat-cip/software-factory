@@ -10,6 +10,10 @@ hash_code: |
 
 hash_code_end: ", salt))"
 
+cauth_mysql_db: "cauth"
+cauth_mysql_host: "mysql.example.com"
 cauth_mysql_password: "CHANGE_ME"
+cauth_mysql_port: 3306
+cauth_mysql_user: "cauth"
 
 sf_service_user_password: "CHANGE_ME"
