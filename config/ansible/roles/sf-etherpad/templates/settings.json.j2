@@ -7,7 +7,7 @@
   "dbSettings" : {
                   "user"    : "etherpad",
                   "host"    : "mysql.{{fqdn}}",
-                  "password": "{{creds_etherpad_sql_pwd}}",
+                  "password": "{{etherpad_mysql_password}}",
                   "database": "etherpad"
                  },
   "defaultPadText" : "Welcome to Etherpad!\n\nThis pad text is synchronized as you type, so that everyone viewing this page sees the same text. This allows you to collaborate seamlessly on documents!\n\nGet involved with Etherpad at http:\/\/etherpad.org\n",
@@ -39,7 +39,7 @@
   "disableIPlogging": false,
   "users": {
     "admin": {
-      "password": "{{creds_etherpad_admin_key}}",
+      "password": "{{etherpad_admin_key}}",
       "is_admin": true
       }
   },

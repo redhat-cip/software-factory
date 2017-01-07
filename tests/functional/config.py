@@ -18,12 +18,17 @@ if "REQUESTS_CA_BUNDLE" not in os.environ and os.path.isfile(requests_ca):
 
 sfconfig_filename = "%s/sfconfig.yaml" % SF_BOOTSTRAP_DATA
 sfcreds_filename = "%s/sfcreds.yaml" % SF_BOOTSTRAP_DATA
+secrets_filename = "%s/secrets.yaml" % SF_BOOTSTRAP_DATA
 sfarch_filename = "%s/_arch.yaml" % SF_BOOTSTRAP_DATA
 
 try:
     sfconfig = yaml.load(open(sfconfig_filename))
     sfcreds = yaml.load(open(sfcreds_filename))
     sfarch = yaml.load(open(sfarch_filename))
+    if os.path.isfile(secrets_filename):
+        secrets = yaml.load(open(secrets_filename))
+    else:
+        secrets = sfcreds
 except:
     print "Can't load config"
     raise
@@ -44,7 +49,7 @@ USER_1 = "admin"
 USER_1_PASSWORD = ADMIN_PASSWORD
 
 SF_SERVICE_USER = "SF_SERVICE_USER"
-SF_SERVICE_USER_PASSWORD = sfcreds.get('creds_sf_service_user_pwd')
+SF_SERVICE_USER_PASSWORD = secrets.get('sf_service_user_password')
 
 HOOK_USER = SF_SERVICE_USER
 HOOK_USER_PASSWORD = SF_SERVICE_USER_PASSWORD

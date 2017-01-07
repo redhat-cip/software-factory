@@ -14,4 +14,5 @@ jenkins_port: 8082
 jenkins_internal_url: "http://localhost:{{ jenkins_port }}/jenkins/"
 jenkins_api_url: "http://example.com:{{ jenkins_api_port }}/jenkins/"
 jenkins_pub_url: "https://example.com/jenkins/"
+
 jenkins_password: "CHANGE_ME"

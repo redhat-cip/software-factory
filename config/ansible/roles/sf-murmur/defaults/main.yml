@@ -1,2 +1,4 @@
 role_actions:
   - setup
+
+mumble_ice_secret: "CHANGE_ME"

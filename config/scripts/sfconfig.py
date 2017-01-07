@@ -100,6 +100,9 @@ def generate_role_vars(allvars_file, args):
         glue["redmine_internal_url"] = "http://%s:%s/" % (
             get_hostname("redmine"), defaults["redmine_port"])
         glue["redmine_pub_url"] = "%s/redmine/" % glue["gateway_url"]
+        # Make sure api key doesn't have any '-'
+        secrets["redmine_api_key"] = secrets["redmine_api_key"].replace('-',
+                                                                        '')
 
     if "grafana" in arch["roles"]:
         glue["grafana_internal_url"] = "http://%s:%s/" % (

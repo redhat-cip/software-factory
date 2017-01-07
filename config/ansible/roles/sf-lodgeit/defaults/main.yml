@@ -1,2 +1,5 @@
 role_actions:
   - setup
+
+lodgeit_mysql_password: "CHANGE_ME"
+lodgeit_session_key: "CHANGE_ME"

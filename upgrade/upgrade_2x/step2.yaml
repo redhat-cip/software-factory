@@ -6,17 +6,6 @@
 
 - hosts: install-server
   tasks:
-  # storyboard
-  - include: tasks/new_creds.yml sf_secret_name=storyboard_sql_pwd
-  - include: tasks/new_creds.yml sf_secret_name=storyboard_rabbitmq_password
-  - include: tasks/new_creds.yml sf_secret_name=storyboard_service_token
-  # SFService user
-  - include: tasks/new_creds.yml sf_secret_name=service_user_pwd
-  # Etherpad
-  - include: tasks/new_creds.yml sf_secret_name=etherpad_admin_key
-  # Cauth and managesf database access
-  - include: tasks/new_creds.yml sf_secret_name=cauth_sql_pwd
-  - include: tasks/new_creds.yml sf_secret_name=managesf_sql_pwd
   # 2.0.0: Remove hosts.yaml hiera
   - file: path=/etc/software-factory/hosts.yaml state=absent
   # 2.3.0: Import mysql_root_password

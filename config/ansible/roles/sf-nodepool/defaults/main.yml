@@ -14,3 +14,5 @@ jenkins_api_url: "http://{{ jenkins_host }}:8080/jenkins/"
 
 nodepool_loglevel: INFO
 nodepool_root_loglevel: WARNING
+
+nodepool_mysql_password: "CHANGE_ME"

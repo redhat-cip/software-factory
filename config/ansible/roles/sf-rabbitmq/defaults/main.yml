@@ -3,5 +3,5 @@ role_actions:
 
 rabbitmq_users:
   - name: storyboard
-    password: "{{ creds_storyboard_rabbitmq_password }}"
+    password: "{{ storyboard_rabbitmq_password }}"
     vhost: /storyboard

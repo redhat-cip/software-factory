@@ -7,9 +7,9 @@ from lodgeit import local
 from lodgeit.application import make_app
 from lodgeit.database import session
 
-dburi = "mysql://lodgeit:{{creds_lodgeit_sql_pwd}}@mysql.{{fqdn}}:3306/lodgeit"
+dburi = "mysql://lodgeit:{{lodgeit_mysql_password}}@mysql.{{fqdn}}:3306/lodgeit"
 
-session_key = "{{creds_lodgeit_session_key}}"
+session_key = "{{lodgeit_session_key}}"
 
 def run_app(app, path='/'):
     env = create_environ(path, session_key)

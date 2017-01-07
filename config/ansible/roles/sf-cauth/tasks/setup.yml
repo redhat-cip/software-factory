@@ -28,7 +28,7 @@
   register: admin_password_hashed
 
 - name: Hash service user password
-  shell: python <<<"{{hash_code}}'{{creds_sf_service_user_pwd}}'{{hash_code_end}}"
+  shell: python <<<"{{hash_code}}'{{sf_service_user_password}}'{{hash_code_end}}"
   register: service_user_password_hashed
 
 - name: Install cauth config.py

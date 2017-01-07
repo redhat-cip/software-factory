@@ -20,7 +20,7 @@ serverpassword={{ mumble['password'] }}
 
 # Ice access
 ice="tcp -h murmur.{{ fqdn }} -p 6502"
-icesecretwrite={{ creds_mumble_ice_secret }}
+icesecretwrite={{ mumble_ice_secret }}
 
 [Ice]
 Ice.Warn.UnknownProperties=1

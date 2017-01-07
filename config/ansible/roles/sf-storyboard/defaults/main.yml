@@ -8,8 +8,11 @@ storyboard_commit: master
 storyboardclient_url: https://git.openstack.org/openstack-infra/python-storyboardclient
 storyboardclient_commit: master
 
+storyboard_service_token: "CHANGE_ME"
+storyboard_mysql_password: "CHANGE_ME"
+
 storyboard_email_notification: True
-storyboard_rabbitmq_password: "{{ creds_storyboard_rabbitmq_password }}"
+storyboard_rabbitmq_password: "CHANGE_ME"
 
 storyboard_services:
   - storyboard

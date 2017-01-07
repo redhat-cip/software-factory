@@ -134,21 +134,22 @@ jenkins = {
 redmine = {
     'host': 'api-redmine.{{ fqdn }}',
     'url': '{{ redmine_api_url }}',
-    'db_url': 'mysql://managesf:{{ creds_managesf_sql_pwd }}@mysql.{{ fqdn }}/redmine?charset=utf8',
+    'db_url': 'mysql://managesf:{{ managesf_mysql_password }}@mysql.{{ fqdn }}/redmine?charset=utf8',
+    'api_key': '{{ redmine_api_key }}',
 }
 
 storyboard = {
     'url': 'http://storyboard.{{ fqdn }}:20000/v1/',
     'host': 'storyboard',
-    'service_token': '{{ creds_storyboard_service_token }}',
+    'service_token': '{{ storyboard_service_token }}',
     'db_host': 'mysql.{{ fqdn }}',
     'db_name': 'storyboard',
     'db_user': 'storyboard',
-    'db_password': '{{ creds_storyboard_sql_pwd }}',
+    'db_password': '{{ storyboard_mysql_password }}',
 }
 
 sqlalchemy = {
-    'url': 'mysql://managesf:{{ creds_managesf_sql_pwd }}@mysql.{{ fqdn }}/managesf?charset=utf8',
+    'url': 'mysql://managesf:{{ managesf_mysql_password }}@mysql.{{ fqdn }}/managesf?charset=utf8',
     'encoding': 'utf-8',
 }
 

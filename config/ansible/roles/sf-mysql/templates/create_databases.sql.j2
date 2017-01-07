@@ -8,28 +8,28 @@ GRANT ALL PRIVILEGES ON {{ dbname }}.* TO '{{ dbinfo['user'] }}'@'{{ host }}' ID
 /* Create auth database */
 CREATE DATABASE IF NOT EXISTS cauth CHARACTER SET utf8 COLLATE utf8_general_ci;
 {% for host in groups["cauth"] %}
-GRANT ALL PRIVILEGES ON cauth.* TO 'cauth'@'{{ host }}' IDENTIFIED BY "{{ hostvars[inventory_hostname]["creds_cauth_sql_pwd"] }}" WITH GRANT OPTION;
+GRANT ALL PRIVILEGES ON cauth.* TO 'cauth'@'{{ host }}' IDENTIFIED BY "{{ hostvars[inventory_hostname]["cauth_mysql_password"] }}" WITH GRANT OPTION;
 {% endfor %}
 
 {% for service in ("redmine", "nodepool", "etherpad", "lodgeit", "grafana", "managesf", "storyboard") %}
   {% if service in groups %}
 CREATE DATABASE IF NOT EXISTS {{ service }} CHARACTER SET utf8 COLLATE utf8_general_ci;
-GRANT ALL PRIVILEGES ON {{ service }}.* TO '{{ service }}'@'localhost' IDENTIFIED BY "{{ hostvars[inventory_hostname]["creds_%s_sql_pwd" % service] }}" WITH GRANT OPTION;
+GRANT ALL PRIVILEGES ON {{ service }}.* TO '{{ service }}'@'localhost' IDENTIFIED BY "{{ hostvars[inventory_hostname]["%s_mysql_password" % service] }}" WITH GRANT OPTION;
     {% for host in groups[service] %}
-GRANT ALL PRIVILEGES ON {{ service }}.* TO '{{ service }}'@'{{ host }}' IDENTIFIED BY "{{ hostvars[inventory_hostname]["creds_%s_sql_pwd" % service] }}" WITH GRANT OPTION;
+GRANT ALL PRIVILEGES ON {{ service }}.* TO '{{ service }}'@'{{ host }}' IDENTIFIED BY "{{ hostvars[inventory_hostname]["%s_mysql_password" % service] }}" WITH GRANT OPTION;
     {% endfor %}
   {% elif service in ("grafana") %}
 CREATE DATABASE IF NOT EXISTS {{ service }} CHARACTER SET utf8 COLLATE utf8_general_ci;
     {% if "statsd" in groups %}
       {% for host in groups["statsd"] %}
-GRANT ALL PRIVILEGES ON {{ service }}.* TO '{{ service }}'@'{{ host }}' IDENTIFIED BY "{{ hostvars[inventory_hostname]["creds_%s_sql_pwd" % service] }}" WITH GRANT OPTION;
+GRANT ALL PRIVILEGES ON {{ service }}.* TO '{{ service }}'@'{{ host }}' IDENTIFIED BY "{{ hostvars[inventory_hostname]["%s_mysql_password" % service] }}" WITH GRANT OPTION;
       {% endfor %}
     {% endif %}
   {% endif %}
 {% endfor %}
 /* Allow managesf to fetch redmine API key from the db */
-GRANT SELECT ON redmine.* TO 'managesf'@'localhost' IDENTIFIED BY "{{ hostvars[inventory_hostname]["creds_managesf_sql_pwd"] }}";
+GRANT SELECT ON redmine.* TO 'managesf'@'localhost' IDENTIFIED BY "{{ hostvars[inventory_hostname]["managesf_mysql_password"] }}";
 {% for host in groups["managesf"] %}
-    GRANT SELECT ON redmine.* TO 'managesf'@'{{ host }}' IDENTIFIED BY "{{ hostvars[inventory_hostname]["creds_managesf_sql_pwd"] }}";
+    GRANT SELECT ON redmine.* TO 'managesf'@'{{ host }}' IDENTIFIED BY "{{ hostvars[inventory_hostname]["managesf_mysql_password"] }}";
 {% endfor %}
 FLUSH PRIVILEGES;

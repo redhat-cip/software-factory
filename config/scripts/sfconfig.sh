@@ -51,45 +51,20 @@ Host ${DOMAIN}
 EOF
 }
 
-function generate_random_pswd {
-    # The sed character replacement makes the base64-string URL safe; for example required by lodgeit
-    echo $(base64 -w $1 < /dev/urandom | head -n1 | sed -e 's#/#_#g;s#\+#_#g')
-}
-
 function random_hex_string {
     SIZE=${1-:12}
     python -c "import random; print ''.join(random.choice('0123456789abcdef') for n in xrange($SIZE))"
-}
-
-function generate_api_key {
-    out=""
-    while [ ${#out} -lt 40 ]; do
-            out=$out`echo "obase=16; $RANDOM" | bc`
-    done
-
-    out=${out:0:40}
-    echo $out | awk '{print tolower($0)}'
 }
 
 function generate_yaml {
     OUTPUT=/etc/software-factory/
 
     echo "[sfconfig] copy defaults hiera to ${OUTPUT}"
-    # Generate random passwords for services and users
-    for cred in $(awk '!/api_key|sshkey|pub_key/ {print $1}' /etc/software-factory/sfcreds.yaml); do
-        password=$(generate_random_pswd 32)
-        sed -i "s#\($cred\).*#\1 $password#"  /etc/software-factory/sfcreds.yaml
-    done
-
     # Default authorized ssh keys on each node
     JENKINS_PUB="$(cat ${BUILD}/ssh_keys/jenkins_rsa.pub | cut -d' ' -f2)"
     SERVICE_PUB="$(cat ${BUILD}/ssh_keys/service_rsa.pub | cut -d' ' -f2)"
     sed -i "s#JENKINS_PUB_KEY#${JENKINS_PUB}#" ${OUTPUT}/sfcreds.yaml
     sed -i "s#SERVICE_PUB_KEY#${SERVICE_PUB}#" ${OUTPUT}/sfcreds.yaml
-
-    # Redmine part
-    REDMINE_API_KEY=$(generate_api_key)
-    sed -i "s#REDMINE_API_KEY#${REDMINE_API_KEY}#" ${OUTPUT}/sfcreds.yaml
 
     # Gerrit part
     GERRIT_SERV_PUB="$(cat ${BUILD}/ssh_keys/gerrit_service_rsa.pub | cut -d' ' -f2)"
@@ -222,14 +197,6 @@ fi
 
 # Ensure all the ssh keys and certs are on sfcreds
 manage_ssh_keys_and_certs
-
-if [ -f "/etc/software-factory/sfcreds.yaml.orig" ]; then
-    # Most likely this is a sfconfig.sh run after restoring a backup.
-    # We need to update the mysql root password
-    oldpw=`grep -Po "(?<=creds_mysql_root_pwd: ).*" /etc/software-factory/sfcreds.yaml.orig`
-    newpw=`grep -Po "(?<=creds_mysql_root_pwd: ).*" /etc/software-factory/sfcreds.yaml`
-    mysqladmin -u root -p"$oldpw" password "$newpw" && rm /etc/software-factory/sfcreds.yaml.orig
-fi
 
 update_config
 

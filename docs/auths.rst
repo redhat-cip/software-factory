@@ -128,8 +128,7 @@ can manage the email address used in Software Factory service indepently from th
 Redmine API key change
 """"""""""""""""""""""
 
-To change the Redmine API key, you need to edit /etc/software-factory/sfcreds.yaml and change the value of
-`creds_issues_tracker_api_key`. Then call `sfconfig.sh` to update the key.
+To change the Redmine API key, you need to edit /var/lib/software-factory/bootstrap-data/secrets.yaml and change the value of `redmine_api_key`. Then call `sfconfig.sh` to update the key.
 
 
 Local database access credencials
