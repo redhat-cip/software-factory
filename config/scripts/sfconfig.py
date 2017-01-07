@@ -96,6 +96,14 @@ def generate_role_vars(allvars_file, args):
         glue["zuul_internal_url"] = "http://%s:%s/" % (
             get_hostname("zuul"), defaults["zuul_port"])
 
+    if "nodepool" in arch["roles"]:
+        glue["nodepool_mysql_host"] = glue["mysql_host"]
+        glue["mysql_databases"]["nodepool"] = {
+            'hosts': ["localhost", get_hostname("nodepool")],
+            'user': 'nodepool',
+            'password': secrets['nodepool_mysql_password'],
+        }
+
     if "jenkins" in arch["roles"]:
         glue["jenkins_host"] = get_hostname("jenkins")
         glue["jenkins_internal_url"] = "http://%s:%s/jenkins/" % (

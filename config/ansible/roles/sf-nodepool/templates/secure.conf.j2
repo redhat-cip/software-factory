@@ -1,5 +1,5 @@
 [database]
-dburi=mysql+pymysql://nodepool:{{ nodepool_mysql_password }}@mysql.{{ fqdn }}/nodepool
+dburi=mysql+pymysql://{{ nodepool_mysql_user }}:{{ nodepool_mysql_password }}@{{ nodepool_mysql_host }}:{{ nodepool_mysql_port }}/{{ nodepool_mysql_db }}
 
 [jenkins "default"]
 user=jenkins
