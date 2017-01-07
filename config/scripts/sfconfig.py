@@ -144,6 +144,14 @@ def generate_role_vars(allvars_file, args):
             'password': secrets['lodgeit_mysql_password'],
         }
 
+    if "etherpad" in arch["roles"]:
+        glue["etherpad_mysql_host"] = get_hostname("mysql")
+        glue["mysql_databases"]["etherpad"] = {
+            'hosts': ['localhost', get_hostname("etherpad")],
+            'user': 'etherpad',
+            'password': secrets['etherpad_mysql_password'],
+        }
+
     if "storyboard" in arch["roles"]:
         glue["storyboard_mysql_host"] = glue["mysql_host"]
         glue["mysql_databases"]["storyboard"] = {
