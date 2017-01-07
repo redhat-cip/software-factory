@@ -124,6 +124,14 @@ def generate_role_vars(allvars_file, args):
         glue["grafana_internal_url"] = "http://%s:%s/" % (
             get_hostname("grafana"), defaults["grafana_http_port"])
 
+    if "storyboard" in arch["roles"]:
+        glue["storyboard_mysql_host"] = glue["mysql_host"]
+        glue["mysql_databases"]["storyboard"] = {
+            'hosts': ["localhost", get_hostname("storyboard")],
+            'user': 'storyboard',
+            'password': secrets["storyboard_mysql_password"],
+        }
+
     # Save secrets to new secrets file
     yaml_dump(secrets, open("%s/secrets.yaml" % args.lib, "w"))
     # And add them to the all.yaml file

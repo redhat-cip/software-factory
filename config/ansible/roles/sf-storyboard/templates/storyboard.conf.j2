@@ -22,7 +22,7 @@ allowed_origins = https://{{ fqdn }}
 max_age=3600
 
 [database]
-connection = mysql+pymysql://storyboard:{{ storyboard_mysql_password }}@mysql.{{ fqdn }}:3306/storyboard
+connection = mysql+pymysql://{{ storyboard_mysql_user }}:{{ storyboard_mysql_password }}@{{ storyboard_mysql_host }}:{{ storyboard_mysql_port }}/{{ storyboard_mysql_db }}
 max_retries = 10
 retry_interval = 10
 

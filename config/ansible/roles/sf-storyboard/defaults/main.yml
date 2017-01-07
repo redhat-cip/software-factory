@@ -9,6 +9,11 @@ storyboardclient_url: https://git.openstack.org/openstack-infra/python-storyboar
 storyboardclient_commit: master
 
 storyboard_service_token: "CHANGE_ME"
+
+storyboard_mysql_host: "mysql.example.com"
+storyboard_mysql_port: 3306
+storyboard_mysql_db: "storyboard"
+storyboard_mysql_user: "storyboard"
 storyboard_mysql_password: "CHANGE_ME"
 
 storyboard_email_notification: True
