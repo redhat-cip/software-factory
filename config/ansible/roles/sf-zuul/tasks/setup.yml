@@ -4,7 +4,7 @@
 
 - name: Apply selinux port labelling
   seport:
-      ports: 8084
+      ports: "{{ zuul_port }}"
       proto: tcp
       setype: http_port_t
       state: present

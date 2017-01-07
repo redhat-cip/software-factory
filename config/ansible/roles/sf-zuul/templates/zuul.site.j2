@@ -1,7 +1,7 @@
-Listen 8084
-NameVirtualHost *:8084
+Listen {{ zuul_port }}
+NameVirtualHost *:{{ zuul_port }}
 
-<VirtualHost *:8084>
+<VirtualHost *:{{ zuul_port }}>
   DocumentRoot /var/www/zuul
 
   LogLevel warn

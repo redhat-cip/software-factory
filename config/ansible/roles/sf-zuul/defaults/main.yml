@@ -9,10 +9,11 @@ jquery_graphite_url: http://status.openstack.org/jquery-graphite.js
 zuul_url: https://git.openstack.org/openstack-infra/zuul
 zuul_commit: master
 
-gateway_url: "https://{{ fqdn }}"
-gerrit_pub_url: "{{ gateway_url }}/r/"
-zuul_pub_url: "{{ gateway_url }}/zuul/"
-zuul_internal_url: "http://zuul.{{ fqdn }}:8084/"
+zuul_port: 8084
+
+gerrit_pub_url: "https://example.com/r/"
+zuul_pub_url: "https://example.com/zuul/"
+zuul_internal_url: "http://localhost:{{ zuul_port }}/"
 
 zuul_loglevel: INFO
 zuul_gear_loglevel: WARNING

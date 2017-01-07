@@ -83,6 +83,11 @@ def generate_role_vars(allvars_file, args):
             'password': secrets['gerrit_mysql_password'],
         }
 
+    if "zuul" in arch["roles"]:
+        glue["zuul_pub_url"] = "%s/zuul/" % glue["gateway_url"]
+        glue["zuul_internal_url"] = "http://%s:%s/" % (
+            get_hostname("zuul"), defaults["zuul_port"])
+
     # Save secrets to new secrets file
     yaml_dump(secrets, open("%s/secrets.yaml" % args.lib, "w"))
     # And add them to the all.yaml file
