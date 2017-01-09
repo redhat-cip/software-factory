@@ -35,20 +35,6 @@ function update_config {
     /usr/local/bin/sf-update-hiera-config.py
     /usr/local/bin/sf-ansible-generate-inventory.py --domain ${DOMAIN} --install_server_ip $(ip route get 8.8.8.8 | awk '{ print $7 }') \
         /etc/software-factory/arch.yaml
-
-    # set managesf gitconfig
-    git config --global user.name "SF initial configurator"
-    git config --global user.email admin@$DOMAIN
-    git config --global gitreview.username "admin"
-    git config --global push.default simple
-
-    # update .ssh/config
-    cat << EOF > /root/.ssh/config
-Host ${DOMAIN}
-    User admin
-    Port 29418
-    IdentityFile /root/sf-bootstrap-data/ssh_keys/gerrit_admin_rsa
-EOF
 }
 
 function random_hex_string {

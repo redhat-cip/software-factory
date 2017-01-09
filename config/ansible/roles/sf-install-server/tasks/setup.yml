@@ -7,6 +7,12 @@
       chdir: /etc/software-factory/
       creates: /etc/software-factory/.git
 
+- name: Initialize git access
+  template: src=sshconfig.j2 dest=/root/.ssh/config
+
+- name: Initialize git config
+  template: src=gitconfig.j2 dest=/root/.gitconfig
+
 - name: Initialize bup
   command: bup init
   args:
