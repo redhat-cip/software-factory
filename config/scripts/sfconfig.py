@@ -30,6 +30,12 @@ def yaml_dump(content, fileobj):
     yaml.dump(content, fileobj, default_flow_style=False)
 
 
+def get_sf_version():
+    return filter(lambda x: x.startswith("VERS="),
+                  open("/var/lib/edeploy/conf").readlines()
+                  )[0].strip().split('-')[1]
+
+
 def generate_role_vars(allvars_file, args):
     """ This function 'glue' all roles and convert sfconfig.yaml """
     secrets = yaml_load("%s/secrets.yaml" % args.lib)
@@ -56,6 +62,7 @@ def generate_role_vars(allvars_file, args):
         return arch["roles"][role][0]["hostname"]
 
     glue["gateway_url"] = "https://%s" % sfconfig["fqdn"]
+    glue["sf_version"] = get_sf_version()
 
     if sfconfig["debug"]:
         for service in ("managesf", "zuul", "nodepool"):

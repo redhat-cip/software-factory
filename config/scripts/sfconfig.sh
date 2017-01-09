@@ -32,7 +32,6 @@ HOME=/root
 export PATH=/bin:/sbin:/usr/local/bin:/usr/local/sbin
 
 function update_config {
-    echo "sf_version: $(grep ^VERS= /var/lib/edeploy/conf | cut -d"=" -f2 | cut -d'-' -f2)" > /etc/software-factory/sf_version.yaml
     /usr/local/bin/sf-update-hiera-config.py
     /usr/local/bin/sf-ansible-generate-inventory.py --domain ${DOMAIN} --install_server_ip $(ip route get 8.8.8.8 | awk '{ print $7 }') \
         /etc/software-factory/arch.yaml

@@ -36,6 +36,8 @@
   - command: hieraedit.py --yaml /etc/software-factory/custom-vars.yaml jenkins_heap_limit {{ heap_limit.stdout }}
     when: jenkins_hiera.stat.exists == True
   - file: path=/etc/software-factory/jenkins.yaml state=absent
+  # 2.3.0: Remove sf_version.yaml hiera
+  - file: path=/etc/software-factory/sf_version.yaml state=absent
 
 - hosts: managesf
   tasks:

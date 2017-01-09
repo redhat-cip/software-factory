@@ -1,6 +1,4 @@
 ---
-- include_vars: /etc/software-factory/sf_version.yaml
-
 - name: "check /var/www/redmine owner"
   stat: path=/var/www/redmine
   register: redmine_owner
