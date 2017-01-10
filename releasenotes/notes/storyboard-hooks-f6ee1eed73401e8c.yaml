@@ -1,5 +1,3 @@
 ---
 features:
-  - Storyboard service now supports commit message hook
-    such as 'Story: #ID', 'Task: #ID' and the 'Related-'
-    prefix.
+  - Storyboard service now supports commit message hook.

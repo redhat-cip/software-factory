@@ -1,6 +1,6 @@
 ---
 features:
-  - "nodes" REST API
+  - nodes REST API
     The endpoint at manage/nodes/ allows users with adequate
     clearance to manage dynamic executors; typically nodes spawned
     by Nodepool. The endpoint supports listing nodes, holding

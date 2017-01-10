@@ -1,0 +1,19 @@
+---
+features:
+  - A new jobs API is available to manage (start, stop)
+    jobs.
+  - Integrate repoXplorer as a new component.
+fixes:
+  - Avoid /var/lib/elasticsearch to be wiped during the upgrade.
+  - makes sure on Storyboard the top-menu is on top.
+  - makes sure on Kibana the top-menu is displayed only once.
+  - fix the third-party-ci conflict bug between same upstream
+    and downstream repository's names.
+  - fix Storyboard email notifications mecanics
+  - Gerrit All-projects ACLs give full label rights to the Administrator
+    and Project Owner group.
+others:
+  - Bump Storyboard to last available stable version.
+  - Improve internal logging by making sure most services
+    logs in journalctl.
+  - New SF logo inside the top menu and login page.

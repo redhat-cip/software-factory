@@ -2,6 +2,51 @@
 Release Notes
 =============
 
+2.3.0
+=====
+
+New Features
+------------
+
+- A new jobs API is available to manage (start, stop) jobs.
+- Integrate repoXplorer as a new component.
+- A new /etc/software-factory/custom-vars.yaml is created to manage custom Ansible variables such as gerrit heap limit.
+- A new 'debug' option in sfconfig.yaml enable to switch all service debug mode. Debug logs are now written to service.log (was debug.log), and regular logs are available through journald.
+- Use gerrit connections pool to improve performance.
+- The Jobs API allows authorized users to start and stop jobs on the platform, and also list details about them. "Jobs" refers to a "build" in Jenkins terminology; jobs definition is still managed through the config repository. sfmanager includes the new "job" subcommand allowing users to interact with this API from the CLI.
+- nodes REST API The endpoint at manage/nodes/ allows users with adequate clearance to manage dynamic executors; typically nodes spawned by Nodepool. The endpoint supports listing nodes, holding a node up after a job, deleting such an node, and allowing an ssh key to connect to a node. The endpoint at /manage/nodes/image/ can be used to list current images.
+- Support OpenID Connect identity provider.
+- Storyboard service now supports commit message hook.
+
+
+Known Issues
+------------
+
+- query filtering is currently limited to job id, change number and patchset (ie fetch jobs that were run for a given gerrit change). Furthermore the job name must be specified.
+- possible performances issues due to the jenkins API handling filtering poorly (there's actually no job filtering). Looking up jobs might take substantial time on a deployment with some history.
+
+
+Bug Fixes
+---------
+
+- Avoid /var/lib/elasticsearch to be wiped during the upgrade.
+- makes sure on Storyboard the top-menu is on top.
+- makes sure on Kibana the top-menu is displayed only once.
+- fix the third-party-ci conflict bug between same upstream and downstream repository's names.
+- fix Storyboard email notifications mecanics
+- Gerrit All-projects ACLs give full label rights to the Administrator and Project Owner group.
+- ensure grafana is disabled in the dashboard if role not included
+- The hideci javascript now properly display CI results on the Gerrit web UI.
+- Fix captcha display in lodgeit (paste) service incorrectly displayed.
+- Let's encrypt configuration doesn't reload the httpd service when it's not started.
+- Gerrit service reindex pretask is removed because it caused timeout. Reindex is now performed in the component setup tasks.
+
+Other Notes
+-----------
+
+- Migration to Ansible is now completed, Puppet is no longer used.
+
+
 2.2.6
 =====
 
