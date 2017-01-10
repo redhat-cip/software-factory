@@ -201,6 +201,7 @@ clean_mount_points() {
     # Since /dev is a copy, we shall clean it as it will be reconstructed at boot time
     umount ${dir}/dev/shm || true
     umount ${dir}/dev/ || true
+    umount ${dir}/sys/ || true
     rm -rf ${dir}/dev
     mkdir -p ${dir}/dev
 
@@ -305,6 +306,7 @@ clear_trap() {
 mount_fs() {
     [ -d ${dir}/proc ] || mkdir ${dir}/proc
     mount -t proc none ${dir}/proc
+    [ -d ${dir}/sys ] && mount -t sysfs -o ro sysfs ${dir}/sys
 
     # Let's create a copy of the current /dev
     mkdir -p ${dir}/dev/pts

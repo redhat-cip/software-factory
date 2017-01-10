@@ -124,6 +124,8 @@ EOF
         rpm --root="$target" --import $(ls $target/etc/pki/rpm-gpg/*.key | fgrep -v Debug)
         # We cannot use install_packages since the basesystem isn't yet setup
         yum --disableplugin=* --installroot $target $INSTALL_OPTIONS install -y basesystem yum shadow-utils
+        mount -t sysfs -o ro sysfs ${target}/sys
+        echo "/dev/root / ext4 errors=remount-ro 0 1" > ${target}/etc/fstab
         checkpoint "first bootstrap"
     elif [ -f "${target}/usr/bin/yum-complete-transaction" ]; then
         do_chroot ${dir} yum-complete-transaction --cleanup-only
@@ -148,6 +150,11 @@ EOF
     mkdir -p ${target}/usr/share/edeploy
 
     echo  'LANG=en_US.UTF-8' > ${target}/etc/locale.conf
+
+    [ -d ${target}/etc/dracut.conf.d/ ] || mkdir ${target}/etc/dracut.conf.d/
+    cat > ${target}/etc/dracut.conf.d/img.conf <<EOF
+filesystems+="ext4"
+EOF
 
     cat > ${target}/etc/sysconfig/network <<EOF
 NETWORKING=yes
