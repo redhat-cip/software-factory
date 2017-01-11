@@ -8,6 +8,9 @@ NameVirtualHost *:{{ zuul_port }}
 
   RewriteEngine on
   RewriteRule ^/status.json$ http://127.0.0.1:8001/status.json [P]
+  RewriteRule ^/status/(.*) http://127.0.0.1:8001/status/$1 [P]
+
+  AddOutputFilterByType DEFLATE application/json
 
   SetEnv GIT_PROJECT_ROOT /var/lib/zuul/git/
   SetEnv GIT_HTTP_EXPORT_ALL

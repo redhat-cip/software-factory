@@ -1,0 +1,4 @@
+---
+fixes:
+  - The hideci javascript now properly display CI
+    results on the Gerrit web UI.

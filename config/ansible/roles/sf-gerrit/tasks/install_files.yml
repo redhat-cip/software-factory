@@ -59,6 +59,7 @@
   with_items:
     - { name: replication.config }
     - { name: GerritSiteHeader.html }
+    - { name: GerritSite.css }
 
 - name: "Install static configuration files or scripts (root user)"
   copy:

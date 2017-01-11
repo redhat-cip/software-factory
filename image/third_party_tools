@@ -244,7 +244,7 @@ fi
 
 
 # JQuery
-JQUERY_VERSION=2.1.1
+JQUERY_VERSION=1.7.2
 JQUERY_URL="https://code.jquery.com/jquery-${JQUERY_VERSION}.min.js"
 
 URL_LIST="$URL_LIST $JQUERY_URL"
