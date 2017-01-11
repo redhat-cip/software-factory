@@ -39,6 +39,14 @@ case $1 in
             echo "ZUUL_URL and ZUUL_REF need to set. Exit."
             exit 1
         }
+        # Check tips of the HEAD is change on resources/
+        HEAD_SHA=$(git --no-pager log --no-merges --format='%H' -n 1 HEAD)
+        HEAD_RESOURCES_SHA=$(git --no-pager log --no-merges --format='%H' -n 1 HEAD -- resources)
+        if [ "$HEAD_SHA" != "$HEAD_RESOURCES_SHA" ]; then
+            echo
+            echo "Nothing to validate on the resources."
+            exit 0
+        fi
         http_code=$(curl -s -w "%{http_code}" -H "X-Remote-User: SF_SERVICE_USER" \
          -H "Content-Type: application/json" \
          -d '{"zuul_url": "'$ZUUL_URL'/config", "zuul_ref": "'$ZUUL_REF'"}' \
@@ -81,6 +89,15 @@ case $1 in
         clone=$(mktemp -d)
         git clone $GATEWAY_URL/r/config $clone
         cd $clone
+        # Check tips of the HEAD is change on resources/
+        HEAD_SHA=$(git --no-pager log --no-merges --format='%H' -n 1 HEAD)
+        HEAD_RESOURCES_SHA=$(git --no-pager log --no-merges --format='%H' -n 1 HEAD -- resources)
+        if [ "$HEAD_SHA" != "$HEAD_RESOURCES_SHA" ]; then
+            echo
+            echo "Nothing to apply on the resources."
+            rm -R $clone
+            exit 0
+        fi
         if git log -1 --no-merges | grep "sf-resources: skip-apply" > /dev/null; then
             echo
             echo "The commit msg tag: 'sf-resources: skip-apply' has been detected."
