@@ -78,16 +78,16 @@
       failed_when: imagelist.stdout.find("{{ image_name }}") == -1
 
     - name: "Wait for ssh connection to be okay for image build"
-      wait_for: path=/var/log/nodepool/image.log timeout=900 search_regex="{{ image_name }}.* access okay"
+      wait_for: path=/var/log/nodepool/image.log timeout=1200 search_regex="{{ image_name }}.* access okay"
 
     - name: "Wait for image build to succeed: Base setup done."
-      wait_for: path=/var/log/nodepool/image.log timeout=900 search_regex="nodepool.image.build.{{ provider_name }}.{{ image_name }}.*Base setup done."
+      wait_for: path=/var/log/nodepool/image.log timeout=1200 search_regex="nodepool.image.build.{{ provider_name }}.{{ image_name }}.*Base setup done."
 
     - name: "Wait for snapshot to be ready"
-      wait_for: path=/var/log/nodepool/nodepool.log timeout=900 search_regex="SnapshotImageUpdater.* Image .*{{ image_name }}.* in {{ provider_name }} is ready"
+      wait_for: path=/var/log/nodepool/nodepool.log timeout=1200 search_regex="SnapshotImageUpdater.* Image .*{{ image_name }}.* in {{ provider_name }} is ready"
 
     - name: "Wait for the first slave node to connect on Jenkins"
-      wait_for: path=/var/log/nodepool/nodepool.log timeout=900 search_regex=".*Node .* ready in provider.*"
+      wait_for: path=/var/log/nodepool/nodepool.log timeout=1200 search_regex="NodeLauncher. Node .* is ready"
 
     - name: "Wait for the first slave to appear in Jenkins"
       shell: for i in {1..100}; do sleep ${i}; curl -Ls https://{{ fqdn }}/jenkins/computer/api/json | python -c "import sys, json; d = json.loads(sys.stdin.read()); slaves = [s for s in d['computer'] if ('base_centos-default' in s['displayName'])]; len(slaves) > 0 and sys.exit(0) or sys.exit(1)" && exit 0; done; exit 1
