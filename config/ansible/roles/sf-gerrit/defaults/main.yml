@@ -15,6 +15,12 @@ managesf_internal_url: "http://localhost:20001"
 
 gerrit_email: "gerrit@example.com"
 
+# Define service and admin user ssh keys to manage them
+gerrit_service_rsa: ""
+gerrit_service_rsa_pub: ""
+gerrit_admin_rsa: ""
+gerrit_admin_rsa_pub: ""
+
 gerrit_email_pk: "CHANGE_ME"
 gerrit_token_pk: "CHANGE_ME"
 

@@ -5,6 +5,7 @@
 
 import argparse
 import os
+import subprocess
 import yaml
 import uuid
 
@@ -36,6 +37,11 @@ def get_sf_version():
                   )[0].strip().split('-')[1]
 
 
+def execute(argv):
+    if subprocess.Popen(argv).wait():
+        raise RuntimeError("Command failed: %s" % argv)
+
+
 def generate_role_vars(allvars_file, args):
     """ This function 'glue' all roles and convert sfconfig.yaml """
     secrets = yaml_load("%s/secrets.yaml" % args.lib)
@@ -60,6 +66,15 @@ def generate_role_vars(allvars_file, args):
         if len(arch["roles"][role]) != 1:
             raise RuntimeError("Role %s is defined on multi-host" % role)
         return arch["roles"][role][0]["hostname"]
+
+    def get_or_generate_ssh_key(name):
+        priv = "%s/ssh_keys/%s" % (args.lib, name)
+        pub = "%s/ssh_keys/%s.pub" % (args.lib, name)
+
+        if not os.path.isfile(priv):
+            execute(["ssh-keygen", "-t", "rsa", "-N", "", "-f", priv, "-q"])
+        glue[name] = open(priv).read()
+        glue["%s_pub" % name] = open(pub).read()
 
     glue["gateway_url"] = "https://%s" % sfconfig["fqdn"]
     glue["sf_version"] = get_sf_version()
@@ -91,6 +106,7 @@ def generate_role_vars(allvars_file, args):
         }
 
     if "gerrit" in arch["roles"]:
+        glue["gerrit_host"] = get_hostname("gerrit")
         glue["gerrit_pub_url"] = "%s/r/" % glue["gateway_url"]
         glue["gerrit_internal_url"] = "http://%s:%s/r/" % (
             get_hostname("gerrit"), defaults["gerrit_port"])
@@ -103,6 +119,8 @@ def generate_role_vars(allvars_file, args):
             'user': 'gerrit',
             'password': secrets['gerrit_mysql_password'],
         }
+        get_or_generate_ssh_key("gerrit_service_rsa")
+        get_or_generate_ssh_key("gerrit_admin_rsa")
 
     if "zuul" in arch["roles"]:
         glue["zuul_pub_url"] = "%s/zuul/" % glue["gateway_url"]
@@ -198,7 +216,9 @@ def main():
     args = usage()
 
     allyaml = "%s/group_vars/all.yaml" % args.ansible_root
-    for dirname in ("%s/group_vars" % args.ansible_root, args.lib):
+    for dirname in ("%s/group_vars" % args.ansible_root,
+                    args.lib,
+                    "%s/ssh_keys" % args.lib):
         if not os.path.isdir(dirname):
             os.makedirs(dirname, 0700)
     # Remove previously created link to sfconfig.yaml

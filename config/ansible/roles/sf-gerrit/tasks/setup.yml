@@ -18,13 +18,15 @@
 
 - name: "Copy gerrit admin key"
   copy:
-      content: "{{ hostvars[inventory_hostname][item.name] }}"
-      dest: "/root/{{ item.file }}"
-      mode: "{{ item.mode }}"
-      owner: root
-      group: root
-  with_items:
-      - {name: gerrit_admin_rsa, file: gerrit_admin_rsa, mode: "0400"}
+      content: "{{ gerrit_admin_rsa }}"
+      dest: "/root/.ssh/gerrit_admin"
+      mode: "0400"
+
+- name: "Copy gerrit admin pub key"
+  copy:
+      content: "{{ gerrit_admin_rsa_pub }}"
+      dest: "/root/.ssh/gerrit_admin.pub"
+      mode: "0444"
 
 - name: "Allow gerrit to connect to himself for self replication"
   authorized_key:

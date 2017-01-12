@@ -1,4 +1,2 @@
 creds_jenkins_pub_key: JENKINS_PUB_KEY
 creds_service_pub_key: SERVICE_PUB_KEY
-creds_gerrit_local_sshkey: GERRIT_SERV_PUB_KEY
-creds_gerrit_admin_sshkey: GERRIT_ADMIN_PUB_KEY

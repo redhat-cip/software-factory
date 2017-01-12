@@ -1,4 +1,9 @@
 Host {{ fqdn }}
     User admin
     Port 29418
-    IdentityFile /root/sf-bootstrap-data/ssh_keys/gerrit_admin_rsa
+    IdentityFile /root/.ssh/gerrit_admin
+
+Host gerrit
+    User admin
+    Port 29418
+    IdentityFile /root/.ssh/gerrit_admin

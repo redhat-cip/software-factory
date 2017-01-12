@@ -38,6 +38,9 @@
   - file: path=/etc/software-factory/jenkins.yaml state=absent
   # 2.3.0: Remove sf_version.yaml hiera
   - file: path=/etc/software-factory/sf_version.yaml state=absent
+  # 2.3.0: Move sshkey to /var/lib/software-factory/bootstrap-data/ssh_keys
+  - file: path=/var/lib/software-factory/bootstrap-data/ssh_keys state=directory mode=0700 owner=root group=root
+  - shell: "[ -f /root/sf-bootstrap-data/ssh_keys/gerrit_service_rsa ] && mv /root/sf-bootstrap-data/ssh_keys/gerrit_*_rsa* /var/lib/software-factory/bootstrap-data/ssh_keys/"
 
 - hosts: managesf
   tasks:

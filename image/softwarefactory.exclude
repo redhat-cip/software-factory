@@ -58,7 +58,6 @@
 /var/lib/managesf/users.db
 /var/lib/murmur/murmur.sqlite
 /var/lib/cauth/state_mapping.db
-/var/www/managesf/gerrit_admin_rsa
 /var/www/managesf/users.db
 /var/www/cauth/keys/
 /var/www/redmine/log
