@@ -47,9 +47,7 @@ function generate_yaml {
 
     echo "[sfconfig] copy defaults hiera to ${OUTPUT}"
     # Default authorized ssh keys on each node
-    JENKINS_PUB="$(cat ${BUILD}/ssh_keys/jenkins_rsa.pub | cut -d' ' -f2)"
     SERVICE_PUB="$(cat ${BUILD}/ssh_keys/service_rsa.pub | cut -d' ' -f2)"
-    sed -i "s#JENKINS_PUB_KEY#${JENKINS_PUB}#" ${OUTPUT}/sfcreds.yaml
     sed -i "s#SERVICE_PUB_KEY#${SERVICE_PUB}#" ${OUTPUT}/sfcreds.yaml
 
     chown -R root:root /etc/software-factory
@@ -62,7 +60,6 @@ function generate_keys {
 
     # Service key is used to allow root access from managesf to other nodes
     [ -f ${OUTPUT}/service_rsa ]        || ssh-keygen -N '' -f ${OUTPUT}/service_rsa > /dev/null
-    [ -f ${OUTPUT}/jenkins_rsa ]        || ssh-keygen -N '' -f ${OUTPUT}/jenkins_rsa > /dev/null
 
     # generating keys for cauth
     OUTPUT=${BUILD}/certs

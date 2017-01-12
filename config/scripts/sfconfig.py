@@ -142,6 +142,7 @@ def generate_role_vars(allvars_file, args):
         glue["jenkins_api_url"] = "http://%s:%s/jenkins/" % (
             get_hostname("jenkins"), defaults["jenkins_api_port"])
         glue["jenkins_pub_url"] = "%s/jenkins/" % glue["gateway_url"]
+        get_or_generate_ssh_key("jenkins_rsa")
 
     if "redmine" in arch["roles"]:
         glue["redmine_internal_url"] = "http://%s:%s/" % (

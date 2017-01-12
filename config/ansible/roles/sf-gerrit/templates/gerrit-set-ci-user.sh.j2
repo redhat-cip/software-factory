@@ -4,7 +4,7 @@ set -x
 set -e
 
 USER_NAME="${1:-jenkins}"
-USER_SSHKEY="${2:-ssh-rsa {{ creds_jenkins_pub_key }}}"
+USER_SSHKEY="${2:-ssh-rsa {{ jenkins_rsa_pub.split()[1] }}}"
 USER_MAIL="${3:-jenkins@{{ fqdn }}}"
 # Capitalize user_name, e.g. "Jenkins CI"
 USER_FULLNAME="$(tr '[:lower:]' '[:upper:]' <<< ${USER_NAME:0:1})${USER_NAME:1} CI"
