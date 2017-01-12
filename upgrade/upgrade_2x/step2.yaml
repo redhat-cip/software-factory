@@ -42,6 +42,7 @@
   - file: path=/var/lib/software-factory/bootstrap-data/ssh_keys state=directory mode=0700 owner=root group=root
   - shell: "[ -f /root/sf-bootstrap-data/ssh_keys/gerrit_service_rsa ] && mv /root/sf-bootstrap-data/ssh_keys/gerrit_*_rsa* /var/lib/software-factory/bootstrap-data/ssh_keys/"
   - shell: "[ -f /root/sf-bootstrap-data/ssh_keys/jenkins_rsa ] && mv /root/sf-bootstrap-data/ssh_keys/jenkins_rsa* /var/lib/software-factory/bootstrap-data/ssh_keys/"
+  - shell: "[ -f /root/sf-bootstrap-data/ssh_keys/service_rsa ] && mv /root/sf-bootstrap-data/ssh_keys/service_rsa* /var/lib/software-factory/bootstrap-data/ssh_keys/"
 
 - hosts: managesf
   tasks:

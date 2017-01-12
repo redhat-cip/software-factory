@@ -42,25 +42,7 @@ function random_hex_string {
     python -c "import random; print ''.join(random.choice('0123456789abcdef') for n in xrange($SIZE))"
 }
 
-function generate_yaml {
-    OUTPUT=/etc/software-factory/
-
-    echo "[sfconfig] copy defaults hiera to ${OUTPUT}"
-    # Default authorized ssh keys on each node
-    SERVICE_PUB="$(cat ${BUILD}/ssh_keys/service_rsa.pub | cut -d' ' -f2)"
-    sed -i "s#SERVICE_PUB_KEY#${SERVICE_PUB}#" ${OUTPUT}/sfcreds.yaml
-
-    chown -R root:root /etc/software-factory
-    chmod -R 0750 /etc/software-factory
-}
-
 function generate_keys {
-    # Re-entrant method, need to check if file exists first before creating
-    OUTPUT=${BUILD}/ssh_keys
-
-    # Service key is used to allow root access from managesf to other nodes
-    [ -f ${OUTPUT}/service_rsa ]        || ssh-keygen -N '' -f ${OUTPUT}/service_rsa > /dev/null
-
     # generating keys for cauth
     OUTPUT=${BUILD}/certs
     [ -f ${OUTPUT}/privkey.pem ]        || openssl genrsa -out ${OUTPUT}/privkey.pem 1024
@@ -122,13 +104,8 @@ EOF
     [ -f ${OUTPUT}/gateway.pem ] || cat ${OUTPUT}/gateway.key ${OUTPUT}/gateway.crt > ${OUTPUT}/gateway.pem
 }
 
-function manage_ssh_keys_and_certs {
+function manage_certs {
     OUTPUT=/etc/software-factory/
-
-    for key in $(find ${BUILD}/ssh_keys -type f); do
-        name=$(basename $key | sed "s/.pub/_pub/")
-        hieraedit.py --yaml ${OUTPUT}/sfcreds.yaml -f $key $name
-    done
 
     for cert in $(find ${BUILD}/certs -type f ); do
         name=$(basename $cert | sed 's/\.\([[:alpha:]]\{3\}\)/_\1/')
@@ -161,17 +138,13 @@ function wait_for_ssh {
 
 # Generate site specifics configuration
 # Make sure sf-bootstrap-data sub-directories exist
-for i in hiera ssh_keys certs; do
+for i in hiera certs; do
     [ -d ${BUILD}/$i ] || mkdir -p ${BUILD}/$i
 done
 generate_keys
-if [ ! -f "${BUILD}/generate.done" ]; then
-    generate_yaml
-    touch "${BUILD}/generate.done"
-fi
 
 # Ensure all the ssh keys and certs are on sfcreds
-manage_ssh_keys_and_certs
+manage_certs
 
 update_config
 

@@ -84,6 +84,9 @@ def generate_role_vars(allvars_file, args):
             glue["%s_loglevel" % service] = "DEBUG"
             glue["%s_root_loglevel" % service] = "INFO"
 
+    if "install-server" in arch["roles"]:
+        get_or_generate_ssh_key("service_rsa")
+
     if "mysql" in arch["roles"]:
         glue["mysql_host"] = get_hostname("mysql")
 
