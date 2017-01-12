@@ -12,7 +12,7 @@
       shell: "cd /root/config && git log --name-only > /root/sf-logs/config-repo.git.log"
       ignore_errors: True
     - name: "Copy the bootstrap data"
-      synchronize: src=/root/sf-bootstrap-data/ dest=/root/sf-logs/sf-bootstrap-data/
+      synchronize: src=/var/lib/software-factory/bootstrap-data/ dest=/root/sf-logs/sf-bootstrap-data/
       ignore_errors: True
     - name: "Copy the hiera configuration"
       synchronize: src=/etc/software-factory/ dest=/root/sf-logs/hiera/ rsync_opts="--exclude .git"

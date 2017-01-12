@@ -8,7 +8,5 @@
     rsync_opts: --relative
   with_items:
     - /etc/software-factory/sfconfig.yaml
-    - /etc/software-factory/sfcreds.yaml
     - /var/lib/software-factory/bootstrap-data
-    - /root/sf-bootstrap-data
     - /root/config

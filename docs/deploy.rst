@@ -199,15 +199,13 @@ SSL Certificates
 ----------------
 
 By default, SF creates a self-signed certificate. To use another certificate,
-such as letsencrypt, you need to update the configuration:
+you need to copy the provided files to /var/lib/software-factory/bootstrap-data/certs and
+apply the change with the sfconfig.sh script.
 
-.. code-block:: bash
+* gateway.crt: the public certificate
+* gateway.key: the private key
+* gateway.chain: the TLS chain file
 
-  hieraedit.py --yaml /etc/software-factory/sfcreds.yaml -f cert.pem    gateway_crt
-  hieraedit.py --yaml /etc/software-factory/sfcreds.yaml -f privkey.pem gateway_key
-  hieraedit.py --yaml /etc/software-factory/sfcreds.yaml -f chain.pem   gateway_chain
-  # apply configuration change
-  sfconfig.sh
 
 
 Access Software Factory

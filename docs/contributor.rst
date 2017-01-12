@@ -104,7 +104,7 @@ First you need to copy the sf-bootstrap-data/ from the managesf node.
 
 .. code-block:: bash
 
-  rsync -a root@sftests.com:sf-bootstrap-data/ sf-bootstrap-data/
+  rsync -a root@sftests.com:/var/lib/software-factory/bootstrap-data/ sf-bootstrap-data/
   nosetests --no-byte-compile -s -v tests/functional
 
 Tips: ::

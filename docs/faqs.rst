@@ -91,8 +91,6 @@ certificates) and running sfconfig.sh again:
 .. code-block:: bash
 
     sed -i -e 's/fqdn:.*/fqdn: mynewhostname.com/g' /etc/software-factory/sfconfig.yaml
-    sed -i -e 's/sftests.com/sftests2.com/g' /etc/software-factory/arch.yaml
-    rm /root/sf-bootstrap-data/certs/gateway.* /root/openssl.cnf
     sfconfig.sh
 
 Please note that you might need to update URLs in other places as well, for

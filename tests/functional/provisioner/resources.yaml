@@ -35,12 +35,10 @@ users:
  - name: user2
  - name: user3
 commands:
-  - cmd: hieraedit.py --yaml /etc/software-factory/sfcreds.yaml safekey pc_test
   - cmd: hieraedit.py --yaml /etc/software-factory/sfconfig.yaml safekey pc_test
   - cmd: echo "admin:OpPzvAQ.RbXb6" > /etc/httpd/managesf_htpasswd
 checksum:
   - file: /etc/software-factory/sfconfig.yaml
-  - file: /etc/software-factory/sfcreds.yaml
   - file: /var/lib/jenkins/credentials.xml
   - file: /var/lib/jenkins/secret.key
   - file: /etc/httpd/managesf_htpasswd

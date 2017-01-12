@@ -330,7 +330,7 @@ function fail {
 function fetch_bootstraps_data {
     echo "[+] Fetch bootstrap data"
     rm -Rf sf-bootstrap-data
-    scp -r ${SF_HOST}:sf-bootstrap-data .
+    scp -r ${SF_HOST}:sf-bootstrap-data . || mkdir sf-bootstrap-data
     # could be remove after 2.2.7 release
     rsync -a -L ${SF_HOST}:/etc/puppet/hiera/sf/ sf-bootstrap-data/
     rsync -a -L ${SF_HOST}:/etc/ansible/group_vars/ sf-bootstrap-data/group_vars/

@@ -48,7 +48,7 @@
 
 - name: Install cauth private key
   copy:
-    content: "{{ privkey_pem }}"
+    content: "{{ cauth_privkey }}"
     dest: /srv/cauth_keys/privkey.pem
     owner: root
     group: apache

@@ -1,0 +1,5 @@
+---
+features:
+  - Generated secrets during the first deployment are now
+    stored in /var/lib/software-factory instead of /root
+    directory.

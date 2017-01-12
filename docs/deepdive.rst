@@ -76,7 +76,6 @@ The system configuration
 The sfconfig.sh script drives the system configuration. This script does the following actions:
 
 * Generates secrets such as ssh keys and tls certificats,
-* Generates sfcreds.yaml system credencials such as service database access and api keys,
 * Run sf-update-hiera-config.py to ensure hieras are up-to-date, this script
   checks for missing section and makes sure the defaults value are present. This is particularly
   useful when after an upgrade, a new component configuration has been added

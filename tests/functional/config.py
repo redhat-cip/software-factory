@@ -17,18 +17,16 @@ if "REQUESTS_CA_BUNDLE" not in os.environ and os.path.isfile(requests_ca):
     os.environ["REQUESTS_CA_BUNDLE"] = requests_ca
 
 sfconfig_filename = "%s/sfconfig.yaml" % SF_BOOTSTRAP_DATA
-sfcreds_filename = "%s/sfcreds.yaml" % SF_BOOTSTRAP_DATA
 secrets_filename = "%s/secrets.yaml" % SF_BOOTSTRAP_DATA
 sfarch_filename = "%s/_arch.yaml" % SF_BOOTSTRAP_DATA
 
 try:
     sfconfig = yaml.load(open(sfconfig_filename))
-    sfcreds = yaml.load(open(sfcreds_filename))
     sfarch = yaml.load(open(sfarch_filename))
     if os.path.isfile(secrets_filename):
         secrets = yaml.load(open(secrets_filename))
     else:
-        secrets = sfcreds
+        secrets = {}
 except:
     print "Can't load config"
     raise

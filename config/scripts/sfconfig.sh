@@ -26,96 +26,14 @@ echo "[$(date)] Running sfconfig.sh"
 
 # Defaults
 DOMAIN=$(cat /etc/software-factory/sfconfig.yaml | grep "^fqdn:" | cut -d: -f2 | sed 's/ //g')
-BUILD=/root/sf-bootstrap-data
 HOME=/root
 
 export PATH=/bin:/sbin:/usr/local/bin:/usr/local/sbin
 
-function update_config {
-    /usr/local/bin/sf-update-hiera-config.py
-    /usr/local/bin/sf-ansible-generate-inventory.py --domain ${DOMAIN} --install_server_ip $(ip route get 8.8.8.8 | awk '{ print $7 }') \
-        /etc/software-factory/arch.yaml
-}
-
-function random_hex_string {
-    SIZE=${1-:12}
-    python -c "import random; print ''.join(random.choice('0123456789abcdef') for n in xrange($SIZE))"
-}
-
-function generate_keys {
-    # generating keys for cauth
-    OUTPUT=${BUILD}/certs
-    [ -f ${OUTPUT}/privkey.pem ]        || openssl genrsa -out ${OUTPUT}/privkey.pem 1024
-    [ -f ${OUTPUT}/pubkey.pem ]         || openssl rsa -in ${OUTPUT}/privkey.pem -out ${OUTPUT}/pubkey.pem -pubout
-
+function wait_for_ssh {
     [ -d "${HOME}/.ssh" ] || mkdir -m 0700 "${HOME}/.ssh"
     [ -f "${HOME}/.ssh/known_hosts" ] || touch "${HOME}/.ssh/known_hosts"
 
-    # Default self-signed SSL certificate
-    OUTPUT=${BUILD}/certs
-
-    # If localCA doesn't exists, remove all ssl files
-    [ -f ${OUTPUT}/localCA.pem ] || rm -f ${OUTPUT}/gateway.*
-
-    # Gen CA
-    [ -f ${OUTPUT}/localCA.pem ] || openssl req -nodes -days 3650 -new -x509 -subj "/C=FR/O=SoftwareFactory/OU=$(random_hex_string 6)" \
-        -keyout ${OUTPUT}/localCAkey.pem        \
-        -out ${OUTPUT}/localCA.pem
-
-    # If FQDN changed, remove all ssl files
-    [ -f ${OUTPUT}/gateway.cnf ] && [ "$(grep ' = ${DOMAIN}$' ${OUTPUT}/gateway.cnf))" == "" ] && \
-        rm -f ${OUTPUT}/gateway.*
-
-    # Gen conf
-    [ -f ${OUTPUT}/gateway.cnf ] || {
-        cat > ${OUTPUT}/gateway.cnf << EOF
-[req]
-req_extensions = v3_req
-distinguished_name = req_distinguished_name
-
-[ req_distinguished_name ]
-commonName_default = ${DOMAIN}
-
-[ v3_req ]
-subjectAltName=@alt_names
-
-[alt_names]
-DNS.1 = ${DOMAIN}
-EOF
-    }
-
-    # Gen Key
-    [ -f ${OUTPUT}/gateway.key ] || openssl genrsa -out ${OUTPUT}/gateway.key 2048
-    # Gen Req
-    [ -f ${OUTPUT}/gateway.req ] || openssl req -new -subj "/C=FR/O=SoftwareFactory/CN=${DOMAIN}" \
-        -extensions v3_req -config ${OUTPUT}/gateway.cnf  \
-        -key ${OUTPUT}/gateway.key              \
-        -out ${OUTPUT}/gateway.req
-    # Gen certificate
-    [ -f ${OUTPUT}/localCA.srl ] || echo '00' > ${OUTPUT}/localCA.srl
-    [ -f ${OUTPUT}/gateway.crt ] || openssl x509 -req -days 3650 \
-        -extensions v3_req -extfile ${OUTPUT}/gateway.cnf \
-        -CA ${OUTPUT}/localCA.pem               \
-        -CAkey ${OUTPUT}/localCAkey.pem         \
-        -CAserial ${OUTPUT}/localCA.srl         \
-        -in ${OUTPUT}/gateway.req               \
-        -out ${OUTPUT}/gateway.crt
-    # Gen pem
-    [ -f ${OUTPUT}/gateway.pem ] || cat ${OUTPUT}/gateway.key ${OUTPUT}/gateway.crt > ${OUTPUT}/gateway.pem
-}
-
-function manage_certs {
-    OUTPUT=/etc/software-factory/
-
-    for cert in $(find ${BUILD}/certs -type f ); do
-        name=$(basename $cert | sed 's/\.\([[:alpha:]]\{3\}\)/_\1/')
-        hieraedit.py --yaml ${OUTPUT}/sfcreds.yaml -f $cert $name
-    done
-
-    hieraedit.py --yaml /etc/software-factory/sfcreds.yaml -f ${BUILD}/certs/gateway.crt gateway_chain
-}
-
-function wait_for_ssh {
     local host=$1
     while true; do
         KEY=$(ssh-keyscan -p 22 $host 2> /dev/null | grep ssh-rsa)
@@ -136,26 +54,19 @@ function wait_for_ssh {
 # End of functions
 # -----------------
 
-# Generate site specifics configuration
-# Make sure sf-bootstrap-data sub-directories exist
-for i in hiera certs; do
-    [ -d ${BUILD}/$i ] || mkdir -p ${BUILD}/$i
-done
-generate_keys
+/usr/local/bin/sf-update-hiera-config.py
+/usr/local/bin/sf-ansible-generate-inventory.py                         \
+    --domain ${DOMAIN}                                                  \
+    --install_server_ip $(ip route get 8.8.8.8 | awk '{ print $7 }')    \
+    /etc/software-factory/arch.yaml
+/usr/local/bin/sfconfig.py
 
-# Ensure all the ssh keys and certs are on sfcreds
-manage_certs
-
-update_config
 
 # Configure ssh access to inventory
 HOSTS=$(awk "/${DOMAIN}/ { print \$1 }" /etc/ansible/hosts | sort | uniq)
 for host in $HOSTS; do
     wait_for_ssh $host
 done
-
-echo "[sfconfig] Starting configuration"
-/usr/local/bin/sfconfig.py
 
 time ansible-playbook /etc/ansible/sf_setup.yml || {
     echo "[sfconfig] sf_setup playbook failed"

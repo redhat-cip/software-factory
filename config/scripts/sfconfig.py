@@ -5,6 +5,7 @@
 
 import argparse
 import os
+import random
 import subprocess
 import yaml
 import uuid
@@ -14,7 +15,6 @@ def append_legacy(allvars_file, args):
     """ Add bulk legacy vars to support smooth transition """
     allvars_file.write("###### Legacy content ######\n")
     allvars_file.write(open(args.sfconfig).read())
-    allvars_file.write(open(args.sfcreds).read())
     allvars_file.write(open(args.arch).read())
     if os.path.isfile(args.extra):
         allvars_file.write(open(args.extra).read())
@@ -76,6 +76,99 @@ def generate_role_vars(allvars_file, args):
         glue[name] = open(priv).read()
         glue["%s_pub" % name] = open(pub).read()
 
+    def get_or_generate_cauth_keys():
+        priv_file = "%s/certs/cauth_privkey.pem" % args.lib
+        pub_file = "%s/certs/cauth_pubkey.pem" % args.lib
+        if not os.path.isfile(priv_file):
+            execute(["openssl", "genrsa", "-out", priv_file, "1024"])
+        if not os.path.isfile(pub_file):
+            execute(["openssl", "rsa", "-in", priv_file, "-out", pub_file,
+                     "-pubout"])
+        glue["cauth_privkey"] = open(priv_file).read()
+        glue["cauth_pubkey"] = open(pub_file).read()
+
+    def get_or_generate_localCA():
+        ca_file = "%s/certs/localCA.pem" % args.lib
+        ca_key_file = "%s/certs/localCAkey.pem" % args.lib
+        ca_srl_file = "%s/certs/localCA.srl" % args.lib
+        gateway_cnf = "%s/certs/gateway.cnf" % args.lib
+        gateway_key = "%s/certs/gateway.key" % args.lib
+        gateway_req = "%s/certs/gateway.req" % args.lib
+        gateway_crt = "%s/certs/gateway.crt" % args.lib
+        gateway_pem = "%s/certs/gateway.pem" % args.lib
+
+        def xunlink(filename):
+            if os.path.isfile(filename):
+                os.unlink(filename)
+
+        # First manage CA
+        if not os.path.isfile(ca_file):
+            # When CA doesn't exists, remove all certificates
+            for fn in [gateway_cnf, gateway_req, gateway_crt]:
+                xunlink(fn)
+            # Generate a random OU subject to be able to trust multiple sf CA
+            ou = ''.join(random.choice('0123456789abcdef') for n in xrange(6))
+            execute(["openssl", "req", "-nodes", "-days", "3650", "-new",
+                     "-x509", "-subj", "/C=FR/O=SoftwareFactory/OU=%s" % ou,
+                     "-keyout", ca_key_file, "-out", ca_file])
+
+        if not os.path.isfile(ca_srl_file):
+            open(ca_srl_file, "w").write("00\n")
+
+        if os.path.isfile(gateway_cnf) and \
+                open(gateway_cnf).read().find("DNS.1 = %s\n" %
+                                              sfconfig["fqdn"]) == -1:
+            # if FQDN changed, remove all certificates
+            for fn in [gateway_cnf, gateway_req, gateway_crt]:
+                xunlink(fn)
+
+        # Then manage certificate request
+        if not os.path.isfile(gateway_cnf):
+            open(gateway_cnf, "w").write("""[req]
+req_extensions = v3_req
+distinguished_name = req_distinguished_name
+
+[ req_distinguished_name ]
+commonName_default = %s
+
+[ v3_req ]
+subjectAltName=@alt_names
+
+[alt_names]
+DNS.1 = %s
+""" % (sfconfig["fqdn"], sfconfig["fqdn"]))
+
+        if not os.path.isfile(gateway_key):
+            if os.path.isfile(gateway_req):
+                xunlink(gateway_req)
+            execute(["openssl", "genrsa", "-out", gateway_key, "2048"])
+
+        if not os.path.isfile(gateway_req):
+            if os.path.isfile(gateway_crt):
+                xunlink(gateway_crt)
+            execute(["openssl", "req", "-new", "-subj",
+                     "/C=FR/O=SoftwareFactory/CN=%s" % sfconfig["fqdn"],
+                     "-extensions", "v3_req", "-config", gateway_cnf,
+                     "-key", gateway_key, "-out", gateway_req])
+
+        if not os.path.isfile(gateway_crt):
+            if os.path.isfile(gateway_pem):
+                xunlink(gateway_pem)
+            execute(["openssl", "x509", "-req", "-days", "3650",
+                     "-extensions", "v3_req", "-extfile", gateway_cnf,
+                     "-CA", ca_file, "-CAkey", ca_key_file,
+                     "-CAserial", ca_srl_file,
+                     "-in", gateway_req, "-out", gateway_crt])
+
+        if not os.path.isfile(gateway_pem):
+            open(gateway_pem, "w").write("%s\n%s\n" % (
+                open(gateway_key).read(), open(gateway_crt).read()))
+
+        glue["localCA_pem"] = open(ca_file).read()
+        glue["gateway_crt"] = open(gateway_crt).read()
+        glue["gateway_key"] = open(gateway_key).read()
+        glue["gateway_chain"] = glue["gateway_crt"]
+
     glue["gateway_url"] = "https://%s" % sfconfig["fqdn"]
     glue["sf_version"] = get_sf_version()
 
@@ -83,6 +176,12 @@ def generate_role_vars(allvars_file, args):
         for service in ("managesf", "zuul", "nodepool"):
             glue["%s_loglevel" % service] = "DEBUG"
             glue["%s_root_loglevel" % service] = "INFO"
+
+    if "cauth" in arch["roles"]:
+        get_or_generate_cauth_keys()
+
+    if "gateway" in arch["roles"]:
+        get_or_generate_localCA()
 
     if "install-server" in arch["roles"]:
         get_or_generate_ssh_key("service_rsa")
@@ -210,7 +309,6 @@ def usage():
     p.add_argument("--ansible_root", default="/etc/ansible")
     p.add_argument("--arch", default="/etc/software-factory/_arch.yaml")
     p.add_argument("--sfconfig", default="/etc/software-factory/sfconfig.yaml")
-    p.add_argument("--sfcreds", default="/etc/software-factory/sfcreds.yaml")
     p.add_argument("--extra", default="/etc/software-factory/custom-vars.yaml")
     p.add_argument("--lib", default="/var/lib/software-factory/bootstrap-data")
     return p.parse_args()
@@ -222,7 +320,8 @@ def main():
     allyaml = "%s/group_vars/all.yaml" % args.ansible_root
     for dirname in ("%s/group_vars" % args.ansible_root,
                     args.lib,
-                    "%s/ssh_keys" % args.lib):
+                    "%s/ssh_keys" % args.lib,
+                    "%s/certs" % args.lib):
         if not os.path.isdir(dirname):
             os.makedirs(dirname, 0700)
     # Remove previously created link to sfconfig.yaml

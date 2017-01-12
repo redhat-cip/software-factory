@@ -59,7 +59,7 @@
 
 - name: "auth: install pubkey.pem"
   copy:
-      content: "{{ pubkey_pem }}"
+      content: "{{ cauth_pubkey }}"
       dest: "/srv/cauth_keys/pubkey.pem"
       mode: 0444
       setype: httpd_sys_content_t
