@@ -202,12 +202,15 @@
 
 
     <Location "/manage">
-        AuthType mod_auth_pubtkt
-        TKTAuthLoginURL /auth/login
-        TKTAuthFakeBasicAuth on
-        TKTAuthDebug 1
-        require valid-user
-        RequestHeader set X-Remote-User %{REMOTE_USER}s
+        RequestHeader unset X-Remote-User
+        <If "%{HTTP_COOKIE} =~ /auth_pubtkt=.*/">
+            AuthType mod_auth_pubtkt
+            TKTAuthLoginURL /auth/login
+            TKTAuthFakeBasicAuth on
+            TKTAuthDebug 1
+            require valid-user
+            RequestHeader set X-Remote-User %{REMOTE_USER}s
+        </If>
     </Location>
 
     <Location "/manage/bind">
