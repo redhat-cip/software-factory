@@ -36,8 +36,7 @@ class TestRepoxplorer(Base):
     def test_repoxplorer_data_indexed(self):
         """ Test if RepoXplorer has indexed the config repository
         """
-        url = config.GATEWAY_URL + "/repoxplorer/commits.json?pid=%s" % (
-            config.GATEWAY_HOST)
+        url = config.GATEWAY_URL + "/repoxplorer/commits.json?pid=internal"
         resp = requests.get(url)
         self.assertEqual(resp.status_code, 200)
         self.assertTrue(resp.json()[2] > 0)

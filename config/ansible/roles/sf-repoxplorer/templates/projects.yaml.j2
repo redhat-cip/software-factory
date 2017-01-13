@@ -1,9 +1,9 @@
 templates:
 - name: default
   branch: master
-  gitweb: https://{{ fqdn }}/r/gitweb?p=%(name)s.git;a=commit;h=%%(sha)s
+  gitweb: https://{{ fqdn }}/r/gitweb?p=%(name)s.git;a=commitdiff;h=%%(sha)s;ds=sidebyside
   uri: https://{{ fqdn }}/r/%(name)s
 projects:
-  {{ fqdn }}:
+  internal:
     - name: config
       template: default
