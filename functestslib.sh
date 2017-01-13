@@ -340,7 +340,6 @@ function fetch_bootstraps_data {
     echo "[+] Fetch ${SF_HOST} ssl cert"
     scp -r ${SF_HOST}:/etc/pki/ca-trust/extracted/openssl/ca-bundle.trust.crt sf-bootstrap-data/ca-bundle.trust.crt
     export REQUESTS_CA_BUNDLE="$(pwd)/sf-bootstrap-data/ca-bundle.trust.crt"
-    checkpoint "fetch_bootstraps_data"
 }
 
 function run_bootstraps {
@@ -446,28 +445,15 @@ function run_backup_start {
     echo "$(date) ======= run_backup_start"
     sfmanager --url "${MANAGESF_URL}" --auth "admin:${ADMIN_PASSWORD}" system backup_start || fail "Backup failed"
     sfmanager --url "${MANAGESF_URL}" --auth "admin:${ADMIN_PASSWORD}" system backup_get   || fail "Backup get failed"
-    tar tzvf sf_backup.tar.gz > ${ARTIFACTS_DIR}/backup_content.log
+    cp sf_backup.tar.gz ${ARTIFACTS_DIR}/
     checkpoint "run_backup_start"
 }
 
 function run_backup_restore {
     echo "$(date) ======= run_backup_restore"
-    # Check for legacy backup support (remove this after 2.2.6 release)
-    ssh ${SF_HOST} test -d /var/www/managesf/lib/python2.7/site-packages/managesf*/managesf/services/jenkins
-    if [ $? -eq 0 ]; then
-        sfmanager --url "${MANAGESF_URL}" --auth "admin:${ADMIN_PASSWORD}" system restore --filename $(pwd)/sf_backup.tar.gz || fail "Backup resore failed"
-        echo "[+] Waiting for gerrit to restart..."
-        retry=0
-        while [ $retry -lt 1000 ]; do
-            wget --no-check-certificate --spider  https://${SF_HOST}/r/ 2> /dev/null && break
-            sleep 1
-            let retry=retry+1
-        done
-    else
-        # TODO: replace by sfmanager command
-        scp sf_backup.tar.gz ${SF_HOST}:/var/www/managesf/sf_backup.tar.gz
-        ssh ${SF_HOST} ansible-playbook /etc/ansible/sf_restore.yml &> ${ARTIFACTS_DIR}/restore.log || fail "Backup restore failed"
-    fi
+    # TODO: replace by sfmanager command
+    scp sf_backup.tar.gz ${SF_HOST}:/root/backup.tar.gz
+    ssh ${SF_HOST} ansible-playbook -vv -e "backup_file=/root/backup.tar.gz" /etc/ansible/sf_restore.yml &> ${ARTIFACTS_DIR}/restore.log || fail "Backup restore failed"
     fetch_bootstraps_data
     checkpoint "run_backup_restore"
 }

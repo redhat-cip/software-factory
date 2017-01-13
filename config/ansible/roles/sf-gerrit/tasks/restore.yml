@@ -1,4 +1,9 @@
 ---
+# Remove old git repositories
+- name: "Remove previous git repositories"
+  file:
+    path: /home/gerrit/site_path/git/
+    state: absent
 - name: "Restore data"
   synchronize:
     src: "{{ backup_src }}/"

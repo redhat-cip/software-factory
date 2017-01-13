@@ -11,17 +11,14 @@
     - name: "Create empty backup directory"
       file: path=/var/lib/software-factory/backup state=directory mode=0700
 
-    - name: "Copy backup from managesf"
-      command: scp managesf.{{domain}}:/var/www/managesf/sf_backup.tar.gz /var/lib/software-factory/backup.tar.gz
-
     - name: "Extract backup file"
-      command: chdir=/var/lib/software-factory/backup/ tar xzpf /var/lib/software-factory/backup.tar.gz
+      command: chdir=/var/lib/software-factory/backup/ tar xzpf {{'{{'}} backup_file|default('/var/www/managesf/sf_backup.tar.gz') {{'}}'}}
 
-# Call pre restore task
+# Call stop task
 {% for host in inventory %}
 - hosts: {{ host['hostname'] }}
   roles:
-{% for role in host['roles'] %}    - {role: "sf-{{ role }}", action: "pre_restore"}
+{% for role in host['roles'] %}    - {role: "sf-{{ role }}", action: "stop"}
 {% endfor %}
 {% endfor %}
 
@@ -30,13 +27,6 @@
 - hosts: {{ host['hostname'] }}
   roles:
 {% for role in host['roles'] %}    - {role: "sf-{{ role }}", action: "restore", backup_src: "/var/lib/software-factory/backup/{{ role }}"}
-{% endfor %}
-{% endfor %}
-
-{% for host in inventory %}
-- hosts: {{ host['hostname'] }}
-  roles:
-{% for role in host['roles'] %}    - {role: "sf-{{ role }}", action: "post_restore"}
 {% endfor %}
 {% endfor %}
 

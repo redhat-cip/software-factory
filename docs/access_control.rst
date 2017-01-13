@@ -92,13 +92,6 @@ Allow admin or user Bob to create projects
 
   'managesf.project:create': 'rule:admin_api or user:Bob'
 
-Allow members of gerrit group 'backups' to restore backups
-..........................................................
-
-.. code-block:: yaml
-
-  'managesf.restore:restore': 'group:backups'
-
 Check if the targeted group of the action is the targeted project's dev group
 .............................................................................
 

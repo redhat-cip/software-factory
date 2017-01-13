@@ -4,7 +4,7 @@ role_actions:
   - get_logs
   - backup
   - restore
-  - pre_restore
+  - stop
 
 gerrit_port: 8000
 
