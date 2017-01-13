@@ -28,10 +28,11 @@ from utils import Base
 from utils import set_private_key
 from utils import GerritGitUtils
 from utils import JenkinsUtils
-
 from utils import create_random_str
+from utils import skipIfServiceMissing
 
 from pysflib.sfgerrit import GerritUtils
+from pysflib.sfstoryboard import SFStoryboard
 
 
 class TestResourcesWorkflow(Base):
@@ -198,6 +199,95 @@ class TestResourcesWorkflow(Base):
                                                mode='del',
                                                msg=msg)
 
+    @skipIfServiceMissing('storyboard')
+    def test_CUD_project(self):
+        """ Check resources - ops on project work as expected """
+        sclient = SFStoryboard(config.GATEWAY_URL + "/storyboard_api",
+                               config.USERS[config.USER_4]['auth_cookie'])
+        fpath = "resources/%s.yaml" % create_random_str()
+        name = create_random_str()
+        resources = """resources:
+  projects:
+    %(pname)s:
+      description: An awesome project
+      issue-tracker: SFStoryboard
+      source-repositories:
+        - %(pname)s/%(r1name)s
+  repos:
+    %(pname)s/%(r1name)s:
+      description: The server part
+      acl: %(pname)s
+  acls:
+    %(pname)s:
+      file: |
+        [access "refs/*"]
+          read = group Anonymous Users
+"""
+        tmpl_keys = {'pname': create_random_str(),
+                     'r1name': create_random_str()}
+
+        resources = resources % tmpl_keys
+        # Add the resources file w/o review
+        self.set_resources_then_direct_push(fpath,
+                                            resources=resources,
+                                            mode='add')
+
+        # Some checks to validate stuff have been created
+        projects = [p.name for p in sclient.projects.get_all()]
+        self.assertIn(
+            "%s/%s" % (tmpl_keys['pname'], tmpl_keys['r1name']),
+            projects)
+        project_groups = [p.name for p in
+                          sclient.project_groups.get_all()]
+        self.assertIn(tmpl_keys['pname'], project_groups)
+
+        # Modify the project resource
+        resources = """resources:
+  projects:
+    %(pname)s:
+      description: An awesome project
+      issue-tracker: SFStoryboard
+      source-repositories:
+        - %(pname)s/%(r1name)s
+        - %(pname)s/%(r2name)s
+  repos:
+    %(pname)s/%(r1name)s:
+      description: The server part
+      acl: %(pname)s
+    %(pname)s/%(r2name)s:
+      description: The server part
+      acl: %(pname)s
+  acls:
+    %(pname)s:
+      file: |
+        [access "refs/*"]
+          read = group Anonymous Users
+"""
+        tmpl_keys.update({'r2name': create_random_str()})
+        resources = resources % tmpl_keys
+        self.set_resources_then_direct_push(fpath,
+                                            resources=resources,
+                                            mode='add')
+        # Some checks to validate stuff have been updated
+        projects = [p.name for p in sclient.projects.get_all()]
+        for name in (tmpl_keys['r1name'], tmpl_keys['r2name']):
+            self.assertIn(
+                "%s/%s" % (tmpl_keys['pname'], name), projects)
+        project_groups = [p.name for p in
+                          sclient.project_groups.get_all()]
+        self.assertIn(tmpl_keys['pname'], project_groups)
+
+        # Del the resources file w/o review
+        self.set_resources_then_direct_push(fpath,
+                                            mode='del')
+
+        # Check the project group has been deleted
+        # Note the project (in storyboard) is not deleted
+        # this is a current limitation of the API (01/13/2017)
+        project_groups = [p.name for p in
+                          sclient.project_groups.get_all()]
+        self.assertFalse(tmpl_keys['pname'] in project_groups)
+
     def test_CUD_group(self):
         """ Check resources - ops on group work as expected """
         fpath = "resources/%s.yaml" % create_random_str()
@@ -284,11 +374,11 @@ class TestResourcesWorkflow(Base):
       contacts:
         - contact@grostest.com
       source-repositories:
-        - %(r1name)s
-        - %(r2name)s
+        - %(pname)s/%(r1name)s
+        - %(pname)s/%(r2name)s
       website: http://ichiban-cloud.io
       documentation: http://ichiban-cloud.io/docs
-      issue-tracker: http://ichiban-cloud.bugtrackers.io
+      issue-tracker-url: http://ichiban-cloud.bugtrackers.io
   repos:
     %(pname)s/%(r1name)s:
       description: The server part
