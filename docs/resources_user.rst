@@ -3,21 +3,16 @@
 Managing resources via the config repository
 ============================================
 
-The version 2.2.6 of Software Factory features a new way of managing
-user groups, Git repositories, Gerrit acls, and projects.
+Software Factory features a way to manage user groups,
+Git repositories, Gerrit acls, and projects.
 
 The resources mentioned above can be managed (create/delete/update)
 with the CI/CD workflow of the config repository.
 
 .. note::
 
-   Warning : this feature is experimental and should not be used in production.
-
-.. note::
-
-   This feature is going to replace legacy managesf REST endpoints project,
-   memberships, groups. Legacy endpoints will be removed once this feature is
-   known to be stable.
+   This feature replaces the legacy managesf REST endpoints for projects,
+   memberships and groups. Legacy endpoints will be removed soon.
 
 .. note::
 
@@ -26,8 +21,7 @@ with the CI/CD workflow of the config repository.
 
 .. note::
 
-   Only Gerrit is supported via this workflow. The other services support, such
-   as Storyboard, will be added soon.
+   Only Gerrit and Storyboard are supported via this workflow.
 
 Advantages of managing resources via the config repository
 ----------------------------------------------------------
@@ -37,10 +31,10 @@ the current state of the resources on the services. For instance
 a group described in YAML will be created and provisioned with the
 specified users on Gerrit. Any modifications on the group description
 will be reflected on Gerrit. So looking at the YAML files you'll
-see the real state of the SF services like Gerrit.
+see the real state of SF services like Gerrit.
 
 Furthermore using this config repository leverages the review workflow
-through Gerrit so that any modifications on a resource YAML will need
+through Gerrit so that any modifications on a resource YAML requires
 an human review before being applied to the services. And finally
 all modifications will be tracked though the Git config repository history.
 
@@ -61,8 +55,7 @@ describe this resource.
 
   resources:
     groups:
-      mygroup-id:
-        name: mygroup
+      mygroup:
         members:
           - me@domain.com
           - you@domain.com
@@ -79,7 +72,7 @@ Once done::
  * Everybody with access to the platform can comment and note the change.
  * Users with rights of CR+2 and W+1 can approve the change.
  * Once approved and merged, the config-update job will take care
-   of creating the group on the services like Gerrit.
+   of creating the group on services like Gerrit.
 
 It is a good practice to check the output of the validation (config-check job)
 and the apply (config-update job).
@@ -94,7 +87,6 @@ Below is a YAML file that can be used as a starting point:
   resources:
     projects:
       ichiban-cloud:
-        name: ichiban-cloud
         description: The best cloud platform engine
         contacts:
           - contacts@ichiban-cloud.io
@@ -103,14 +95,12 @@ Below is a YAML file that can be used as a starting point:
           - ichiban-storage
         website: http://ichiban-cloud.io
         documentation: http://ichiban-cloud.io/docs
-        issue-tracker: http://ichiban-cloud.bugtrackers.io
+        issue-tracker-url: http://ichiban-cloud.bugtrackers.io
     repos:
       ichiban-compute:
-        name: ichiban-compute
         description: The compute manager of ichiban-cloud
         acl: ichiban-dev-acl
       ichiban-storage:
-        name: ichiban-storage
         description: The storage manager of ichiban-cloud
         acl: ichiban-dev-acl
     acls:
@@ -142,28 +132,36 @@ Below is a YAML file that can be used as a starting point:
           - ichiban-core
     groups:
       ichiban-ptl:
-        name: ichiban-ptl
         members:
           - john@ichiban-cloud.io
           - randal@ichiban-cloud.io
         description: Project Techincal Leaders of ichiban-cloud
       ichiban-core:
-        name: ichiban-core
         members:
           - eva@ichiban-cloud.io
           - marco@ichiban-cloud.io
         description: Project Core of ichiban-cloud
 
 Please note the users mentioned in the groups must have been
-connected once on your SF platform.
-
-Resources are identified by an ID provided like (from the example above)
-*ichiban-dev-acl*. Any modifications on this ID will be detected as a deletion
-and a creation. **It is important to understand this ID is an UUID that needs
-to remain the same over the lifetime of the resource.**
+connected at least once on your SF platform.
 
 Deleting a resource is as simple as removing it from the resources YAML files.
-Updating a resource is as simple as updating it from the resources YAML files
-and by taking care of keeping the same resource ID.
+Updating a resource is as simple as updating it from the resources YAML files.
+
+Keys under each resources' groups are usually used to create and reference (as
+unique id) real resources into services. So if you want to rename a resource
+you will see that the resource is detected as "Deleted" an a new one will
+be detected as "Created". If you intend to do that with the repos' resource then
+you have to make sure you have fetch locally your git repo's branches because
+the git repo is going to be deleted and created under the new name.
 
 You can find details about resource models :ref:`here <config-resources-model>`
+
+Resource deletion
+-----------------
+
+When resources' modifications include the deletion of a resource, the verification
+job "config-check" will return a failure if the commit message of the change
+does not include the string "sf-resources: allow-delete". This can be seen
+as a confirmation from the change's author to be sure resources' deletions are
+expected.
