@@ -366,7 +366,7 @@ print "POLICY: prepared policy to support project creation by any user..."
 f = '/etc/software-factory/sfconfig.yaml'
 d = yaml.load(open(f))
 d['debug'] = True
-yaml.dump(d, open(f, 'w'))
+yaml.dump(d, open(f, 'w'), default_flow_style=False)
 SCRIPT
     ssh -A -tt ${SF_HOST} sfconfig.sh &> ${ARTIFACTS_DIR}/sfconfig.log \
         && echo "sfconfig.sh: SUCCESS"  \
