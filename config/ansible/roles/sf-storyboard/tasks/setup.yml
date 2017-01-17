@@ -7,7 +7,6 @@
   with_items:
     - storyboard.conf
     - superuser.yaml
-    - projects.yaml
     - service_token.sql
   notify: restart storyboard
 
@@ -19,9 +18,6 @@
 
 - name: "Setup superusers"
   command: storyboard-db-manage load_superusers /etc/storyboard/superuser.yaml
-
-- name: "Setup initial projects"
-  command: storyboard-db-manage load_projects /etc/storyboard/projects.yaml
 
 - name: "Setup service_token"
   command: bash -c "mysql storyboard < /etc/storyboard/service_token.sql"

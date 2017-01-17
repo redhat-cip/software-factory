@@ -471,33 +471,6 @@ function run_upgrade {
     sudo mkdir -p /var/lib/lxc/${INSTALL_SERVER}/rootfs/${IMAGE_PATH}/ || fail "Could not copy ${SF_VER}"
     sudo rsync -a --delete ${IMAGE_PATH}/ /var/lib/lxc/${INSTALL_SERVER}/rootfs/${IMAGE_PATH}/ || fail "Could not copy ${SF_VER}"
 
-    # TODO: remove this after 2.3.0 release (storyboard hook test fix)
-    ssh ${SF_HOST} python <<SCRIPT
-import json
-import yaml
-import os
-import subprocess
-os.chdir('/root/config')
-f = 'resources/resources.yaml'
-d = yaml.load(open(f))
-commit = False
-if 'internal' not in d['resources']['projects']:
-    d['resources']['projects']['internal'] = {
-        'description': 'Internal configuration project',
-        'issue-tracker': 'SFStoryboard',
-        'source-repositories': ['config'],
-    }
-    yaml.dump(d, file(f, 'w'))
-    commit = True
-if commit:
-    for cmd in [
-        ['git', 'add', 'resources'],
-        ['git', 'commit', '-m', 'Add config repo issue tracker'],
-        ['git', 'push', 'git+ssh://sftests.com/config', 'master']
-        ]:
-        subprocess.Popen(cmd).wait()
-SCRIPT
-
     echo "[+] Running upgrade"
     ssh ${SF_HOST} "cd software-factory; ./upgrade.sh" | tee ${ARTIFACTS_DIR}/upgrade.sh.log || fail "Upgrade failed" "/var/lib/lxc/${INSTALL_SERVER}/rootfs/var/log/software-factory/upgrade.log"
     echo "[+] Update sf-bootstrap-data"
@@ -510,15 +483,40 @@ SCRIPT
             ssh ${SF_HOST} "cd config; submit_and_wait.py --review-id $review_id --approve"
         ) || fail "Could not approve the auto generated config review"
     } || echo "No config review found"
-    echo "[+] Auto submit the auto generated config (replication.config) upgrade"
-    review_id=$(./tools/get_last_autogen_upgrade_config_review.py https://${SF_HOST} "Add gerrit%2Freplication.config in the config repository")
-    [ "$review_id" != "0" ] && {
-        (
-            ssh ${SF_HOST} "cd config; submit_and_wait.py --review-id $review_id --rebase"
-            sleep 45
-            ssh ${SF_HOST} "cd config; submit_and_wait.py --review-id $review_id --approve"
-        ) || fail "Could not approve the auto generated config review for replication.config"
-    } || echo "No config review found"
+
+    # TODO: remove this after 2.3.0 release (storyboard hook test fix)
+    ssh ${SF_HOST} python <<SCRIPT
+import json
+import yaml
+import os
+import subprocess
+os.chdir('/root/config')
+subprocess.Popen(['git', 'checkout', 'master']).wait()
+subprocess.Popen(['git', 'fetch', '-a']).wait()
+subprocess.Popen(['git', 'reset', '--hard', 'origin/master']).wait()
+f = 'resources/resources.yaml'
+d = yaml.load(open(f))
+commit = False
+if 'internal' not in d['resources']['projects']:
+    d['resources']['projects']['internal'] = {
+        'description': 'Internal configuration project',
+        'issue-tracker': 'SFStoryboard',
+        'source-repositories': ['config'],
+    }
+    yaml.dump(d, file(f, 'w'), default_flow_style=False)
+    commit = True
+if commit:
+    for cmd in [
+        ['git', 'add', 'resources'],
+        ['git', 'commit', '-m', 'Add config repo issue tracker'],
+        ['git', 'push', 'git+ssh://sftests.com/config', 'master']
+        ]:
+        subprocess.Popen(cmd).wait()
+SCRIPT
+    # Force the resources engine to detect changes and call callbacks for the
+    # commit pushed just above.
+    ssh ${SF_HOST} "/usr/local/bin/resources.sh apply" || fail "Fail to run resources apply"
+
     checkpoint "run_upgrade"
 }
 
