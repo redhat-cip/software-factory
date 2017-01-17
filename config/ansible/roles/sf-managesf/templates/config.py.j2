@@ -109,6 +109,7 @@ resources = {
     'master_repo': '{{ gateway_url }}/r/config',
 }
 
+{% if 'gerrit' in roles %}
 gerrit = {
     'user': 'gerrit',
     'admin_user': 'admin',
@@ -124,20 +125,26 @@ gerrit = {
     'db_user': '{{ gerrit_mysql_user }}',
     'db_password': '{{ gerrit_mysql_password }}'
 }
+{% endif %}
 
+{% if 'jenkins' in roles %}
 jenkins = {
     'api_url': 'http://jenkins.{{ fqdn }}:8080/jenkins/',
     'user': 'jenkins',
     'password': '{{ jenkins_password }}'
 }
+{% endif %}
 
+{% if 'redmine' in roles %}
 redmine = {
     'host': 'api-redmine.{{ fqdn }}',
     'url': '{{ redmine_api_url }}',
     'db_url': 'mysql://managesf:{{ managesf_mysql_password }}@mysql.{{ fqdn }}/redmine?charset=utf8',
     'api_key': '{{ redmine_api_key }}',
 }
+{% endif %}
 
+{% if 'storyboard' in roles %}
 storyboard = {
     'base_url': '{{ gateway_url }}',
     'url': 'http://storyboard.{{ fqdn }}:20000/v1/',
@@ -148,6 +155,7 @@ storyboard = {
     'db_user': '{{ storyboard_mysql_user }}',
     'db_password': '{{ storyboard_mysql_password }}',
 }
+{% endif %}
 
 sqlalchemy = {
     'url': 'mysql://{{ managesf_mysql_user }}:{{ managesf_mysql_password }}@{{ managesf_mysql_host }}:{{ managesf_mysql_port }}/{{ managesf_mysql_db }}?charset=utf8',
