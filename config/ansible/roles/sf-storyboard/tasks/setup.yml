@@ -2,13 +2,6 @@
 - include: /etc/ansible/tasks/create_user.yml user_name=storyboard
 - file: path=/etc/storyboard state=directory mode=0700 owner=storyboard group=storyboard
 
-- name: "Apply patch"
-  patch: src={{ item }} basedir=/srv/storyboard/lib/python2.7/site-packages strip=1
-  ignore_errors: yes
-  with_items:
-    - 0001-Increase-rabbitmq-connections-attempt.patch
-    - 0001-Ignore-bad-requests-in-notification-hook.patch
-
 - name: "Install storyboard.conf"
   template: src={{ item }}.j2 dest=/etc/storyboard/{{ item }} owner=storyboard group=storyboard mode=0400
   with_items:
