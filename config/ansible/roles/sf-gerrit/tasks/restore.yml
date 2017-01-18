@@ -1,9 +1,13 @@
 ---
 # Remove old git repositories
-- name: "Remove previous git repositories"
+- name: "Remove previous state repositories"
   file:
-    path: /home/gerrit/site_path/git/
+    path: "/home/gerrit/site_path/{{ item }}"
     state: absent
+  with_items:
+    - git
+    - cache
+    - index
 - name: "Restore data"
   synchronize:
     src: "{{ backup_src }}/"
