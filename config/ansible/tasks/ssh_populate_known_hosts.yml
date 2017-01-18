@@ -1,0 +1,38 @@
+---
+- name: Check if ssh_known_hosts exist
+  stat: path=/root/.ssh/known_hosts
+  register: ssh_known_hosts
+
+- name: Create ssh known_hosts config file
+  file:
+      path: /root/.ssh/known_hosts
+      owner: root
+      group: root
+      mode: 0600
+      state: touch
+  when: ssh_known_hosts.stat.exists == False
+
+- name: Get all server hostnames
+  shell: awk '/{{ ansible_domain }}/ { print $1 }' /etc/ansible/hosts | sort -u
+  register: servers
+
+- name: Wait for ssh services on all servers
+  wait_for:
+    host: "{{ item }}"
+    port: 22
+  with_items: "{{ servers.stdout_lines }}"
+
+- name: Gathering public ssh servers keys
+  shell: "ssh-keyscan -p 22 {{ item }} | grep ssh-rsa"
+  with_items: "{{ servers.stdout_lines }}"
+  register: public_ssh_host_keys
+  until: public_ssh_host_keys|success
+  retries: 30
+  delay: 10
+
+- name: Populate ssh_know_hosts
+  lineinfile:
+      dest: /root/.ssh/known_hosts
+      line: "{{ item.stdout }}"
+  with_items: "{{ public_ssh_host_keys.results }}"
+  no_log: True

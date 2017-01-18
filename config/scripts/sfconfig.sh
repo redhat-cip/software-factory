@@ -25,34 +25,10 @@ logger "sfconfig.sh: started"
 echo "[$(date)] Running sfconfig.sh"
 
 # Defaults
-DOMAIN=$(cat /etc/software-factory/sfconfig.yaml | grep "^fqdn:" | cut -d: -f2 | sed 's/ //g')
+DOMAIN=$(awk '/^fqdn/ {print $2}' /etc/software-factory/sfconfig.yaml)
 HOME=/root
 
 export PATH=/bin:/sbin:/usr/local/bin:/usr/local/sbin
-
-function wait_for_ssh {
-    [ -d "${HOME}/.ssh" ] || mkdir -m 0700 "${HOME}/.ssh"
-    [ -f "${HOME}/.ssh/known_hosts" ] || touch "${HOME}/.ssh/known_hosts"
-
-    local host=$1
-    while true; do
-        KEY=$(ssh-keyscan -p 22 $host 2> /dev/null | grep ssh-rsa)
-        if [ "$KEY" != ""  ]; then
-            grep -q ${host} ${HOME}/.ssh/known_hosts || (echo $KEY >> $HOME/.ssh/known_hosts)
-            echo "  -> $host:22 is up!"
-            return 0
-        fi
-        let RETRIES=RETRIES+1
-        [ "$RETRIES" == "40" ] && return 1
-        echo "  [E] ssh-keyscan on $host_ip:22 failed, will retry in 1 seconds (attempt $RETRIES/40)"
-        sleep 1
-    done
-}
-
-
-# -----------------
-# End of functions
-# -----------------
 
 /usr/local/bin/sf-update-hiera-config.py
 /usr/local/bin/sf-ansible-generate-inventory.py                         \
@@ -60,13 +36,6 @@ function wait_for_ssh {
     --install_server_ip $(ip route get 8.8.8.8 | awk '{ print $7 }')    \
     /etc/software-factory/arch.yaml
 /usr/local/bin/sfconfig.py
-
-
-# Configure ssh access to inventory
-HOSTS=$(awk "/${DOMAIN}/ { print \$1 }" /etc/ansible/hosts | sort | uniq)
-for host in $HOSTS; do
-    wait_for_ssh $host
-done
 
 time ansible-playbook /etc/ansible/sf_setup.yml || {
     echo "[sfconfig] sf_setup playbook failed"
@@ -84,9 +53,12 @@ time ansible-playbook /etc/ansible/sf_postconf.yml || {
 }
 
 logger "sfconfig.sh: ended"
-echo "${DOMAIN}: SUCCESS"
-echo
-echo "Access dashboard: https://${DOMAIN}"
-echo "Login with admin user, get the admin password by running:"
-echo "  awk '/admin_password/ {print \$2}' /etc/software-factory/sfconfig.yaml"
+cat << EOF
+${DOMAIN}: SUCCESS
+
+Access dashboard: https://${DOMAIN}
+Login with admin user, get the admin password by running:
+  awk '/admin_password/ {print \$2}' /etc/software-factory/sfconfig.yaml
+
+EOF
 exit 0

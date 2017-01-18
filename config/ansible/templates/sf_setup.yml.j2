@@ -2,6 +2,11 @@
 # This file is managed by sfconfig.sh, don't edit.
 # This playbook applies ansible roles.
 
+- hosts: localhost
+  connection: local
+  tasks:
+    - include: tasks/ssh_populate_known_hosts.yml
+
 
 # TODO: Fix fqdn update to work on distributed arch
 - hosts: managesf
