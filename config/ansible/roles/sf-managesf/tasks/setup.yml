@@ -22,6 +22,7 @@
     - {content: "{{ gerrit_admin_rsa_pub }}", name: "gerrit_admin_rsa.pub", mode: "0444"}
     - {content: "{{ jenkins_rsa }}", name: "jenkins_rsa", mode: "0400"}
     - {content: "{{ jenkins_rsa_pub }}", name: "jenkins_rsa.pub", mode: "0444"}
+  no_log: True
 
 - name: "ensure pages.txt is writable by managesf"
   file: path=/etc/httpd/pages.txt state=touch mode=0640 owner=managesf group=apache

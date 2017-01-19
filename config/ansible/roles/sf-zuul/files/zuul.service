@@ -1,12 +1,13 @@
 [Unit]
 Description=Zuul Server Service
-After=syslog.target network.target gerrit.service
+After=syslog.target network.target
 
 [Service]
 Type=simple
 User=zuul
 Group=zuul
 EnvironmentFile=-/etc/sysconfig/zuul
+ExecStartPre=/usr/libexec/wait4gerrit
 ExecStart=/usr/bin/zuul-server -d
 ExecReload=/bin/kill -HUP $MAINPID
 
