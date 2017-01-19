@@ -22,7 +22,10 @@ sfarch_filename = "%s/_arch.yaml" % SF_BOOTSTRAP_DATA
 
 try:
     sfconfig = yaml.load(open(sfconfig_filename))
-    sfarch = yaml.load(open(sfarch_filename))
+    if not os.path.isfile(sfarch_filename):
+        sfarch = yaml.load(open("%s/group_vars/all.yaml" % SF_BOOTSTRAP_DATA))
+    else:
+        sfarch = yaml.load(open(sfarch_filename))
     if os.path.isfile(secrets_filename):
         secrets = yaml.load(open(secrets_filename))
     else:

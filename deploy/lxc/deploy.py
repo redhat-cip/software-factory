@@ -5,8 +5,7 @@ import os
 import subprocess
 import yaml
 
-from utils_refarch import load_refarch
-from utils_refarch import render_jinja2_template
+from sfconfig import load_refarch, render_template
 
 
 DEBUG = False
@@ -152,11 +151,11 @@ def init(arch, base, arch_raw):
         os.mkdir("/var/lib/lxc", 0755)
 
     # Generate network
-    render_jinja2_template("/var/lib/lxc/%s-network.xml" % args.domain,
-                           "./libvirt-network.xml.j2", {
-                               "domain": args.domain,
-                               "ip_prefix": arch["ip_prefix"],
-                           })
+    render_template("/var/lib/lxc/%s-network.xml" % args.domain,
+                    "./libvirt-network.xml.j2", {
+                        "domain": args.domain,
+                        "ip_prefix": arch["ip_prefix"],
+                    })
 
     for host in arch["inventory"]:
         # Prepare host rootfs
@@ -171,9 +170,8 @@ def init(arch, base, arch_raw):
 
     # Generate libvirt domains
     for host in arch["inventory"]:
-        render_jinja2_template("/var/lib/lxc/%s.xml" % host["hostname"],
-                               "./libvirt-hosts.xml.j2",
-                               host)
+        render_template("/var/lib/lxc/%s.xml" % host["hostname"],
+                        "./libvirt-hosts.xml.j2", host)
 
     # Clean known_hosts
     execute(["sed", "-i",

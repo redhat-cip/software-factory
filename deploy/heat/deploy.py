@@ -7,8 +7,7 @@ import argparse
 import os
 import yaml
 
-from utils_refarch import load_refarch
-from utils_refarch import render_jinja2_template
+from sfconfig import load_refarch, render_template
 
 
 def render():
@@ -17,12 +16,11 @@ def render():
         # TODO: remove default m1.medium and find flavor automatically
         host["flavor"] = "m1.medium"
     arch["fixed_ip"] = False
-    render_jinja2_template("%s.hot" % filename,
-                           "software-factory.hot.j2", arch)
+    render_template("%s.hot" % filename, "software-factory.hot.j2", arch)
     # Also generate fixed_ip version
     arch["fixed_ip"] = True
-    render_jinja2_template("%s-fixed-ip.hot" % filename,
-                           "software-factory.hot.j2", arch)
+    render_template("%s-fixed-ip.hot" % filename, "software-factory.hot.j2",
+                    arch)
 
 
 def start():

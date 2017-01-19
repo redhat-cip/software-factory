@@ -7,17 +7,25 @@ import argparse
 import os
 import random
 import subprocess
-import yaml
+import sys
 import uuid
+import yaml
+
+from jinja2 import FileSystemLoader
+from jinja2.environment import Environment
 
 
-def append_legacy(allvars_file, args):
-    """ Add bulk legacy vars to support smooth transition """
-    allvars_file.write("###### Legacy content ######\n")
-    allvars_file.write(open(args.sfconfig).read())
-    allvars_file.write(open(args.arch).read())
-    if os.path.isfile(args.extra):
-        allvars_file.write(open(args.extra).read())
+required_roles = (
+    "install-server",
+    "gateway",
+    "mysql",
+    "gerrit",
+)
+
+
+def fail(msg):
+    print >>sys.stderr, msg
+    exit(1)
 
 
 def yaml_load(filename):
@@ -31,21 +39,95 @@ def yaml_dump(content, fileobj):
     yaml.dump(content, fileobj, default_flow_style=False)
 
 
+def execute(argv):
+    if subprocess.Popen(argv).wait():
+        raise RuntimeError("Command failed: %s" % argv)
+
+
+def render_template(dest, template, data):
+    with open(dest, "w") as out:
+        loader = FileSystemLoader(os.path.dirname(template))
+        env = Environment(trim_blocks=True, loader=loader)
+        template = env.get_template(os.path.basename(template))
+        out.write("%s\n" % template.render(data))
+    print("[+] Created %s" % dest)
+
+
+def load_refarch(filename, domain=None, install_server_ip=None):
+    arch = yaml_load(filename)
+    # Update domain
+    if domain:
+        arch["domain"] = domain
+    # roles is a dictwith roles name as key and host list as value
+    arch["roles"] = {}
+    # hosts_files is a dict with host ip as key and hostname list as value
+    arch["hosts_file"] = {}
+    # ip_prefix is used as network cidr, it's the first 3 bytes of all ips
+    ip_prefix = None
+    hostid = 10
+    for host in arch["inventory"]:
+        if install_server_ip and "install-server" in host["roles"]:
+            host["ip"] = install_server_ip
+        elif "ip" not in host:
+            host["ip"] = "192.168.135.1%d" % hostid
+
+        if not ip_prefix:
+            ip_prefix = '.'.join(host["ip"].split('.')[0:3])
+        elif ip_prefix != '.'.join(host["ip"].split('.')[0:3]):
+            fail("%s: Host is not on the correct network" % host["name"])
+
+        host["hostname"] = "%s.%s" % (host["name"], arch["domain"])
+        # aliases is a list of cname for this host.
+        aliases = set((host['name'],))
+        for role in host["roles"]:
+            # Add host to role list
+            arch["roles"].setdefault(role, []).append(host)
+            # Add extra aliases for specific roles
+            if role == "redmine":
+                aliases.add("api-redmine.%s" % arch['domain'])
+            elif role == "gateway":
+                aliases.add(arch['domain'])
+            elif role == "cauth":
+                aliases.add("auth.%s" % arch['domain'])
+            # Add role name virtual name (as cname)
+            aliases.add("%s.%s" % (role, arch["domain"]))
+            aliases.add(role)
+        arch["hosts_file"][host["ip"]] = [host["hostname"]] + list(aliases)
+        # Set minimum requirement
+        host.setdefault("cpu", "1")
+        host.setdefault("mem", "4")
+        host.setdefault("disk", "10")
+        # Add id for network device name
+        host["hostid"] = hostid
+        hostid += 1
+    arch["ip_prefix"] = ip_prefix
+
+    # Check roles
+    for requirement in required_roles:
+        if requirement not in arch["roles"]:
+            fail("%s role is missing" % requirement)
+        if len(arch["roles"][requirement]) > 1:
+            fail("Only one instance of %s is required" % requirement)
+
+    # Add gateway and install-server hostname/ip for easy access
+    gateway_host = arch["roles"]["gateway"][0]
+    install_host = arch["roles"]["install-server"][0]
+    arch["gateway"] = gateway_host["hostname"]
+    arch["gateway_ip"] = gateway_host["ip"]
+    arch["install"] = install_host["hostname"]
+    arch["install_ip"] = install_host["ip"]
+    return arch
+
+
 def get_sf_version():
     return filter(lambda x: x.startswith("VERS="),
                   open("/var/lib/edeploy/conf").readlines()
                   )[0].strip().split('-')[1]
 
 
-def execute(argv):
-    if subprocess.Popen(argv).wait():
-        raise RuntimeError("Command failed: %s" % argv)
-
-
-def generate_role_vars(allvars_file, args):
+def generate_role_vars(arch, allvars_file, args):
     """ This function 'glue' all roles and convert sfconfig.yaml """
     secrets = yaml_load("%s/secrets.yaml" % args.lib)
-    arch = yaml_load(args.arch)
     sfconfig = yaml_load(args.sfconfig)
 
     # Generate all variable when the value is CHANGE_ME
@@ -304,13 +386,62 @@ DNS.1 = %s
     yaml_dump(glue, allvars_file)
 
 
+def generate_inventory_and_playbooks(arch, ansible_root):
+    # Adds playbooks to architecture
+    for host in arch["inventory"]:
+        host["rolesname"] = map(lambda x: "sf-%s" % x, host["roles"])
+
+    templates = "%s/templates" % ansible_root
+
+    # Generate inventory
+    render_template("%s/hosts" % ansible_root,
+                    "%s/inventory.j2" % templates,
+                    arch)
+
+    # Generate inventory
+    render_template("%s/get_logs.yml" % ansible_root,
+                    "%s/get_logs.yml.j2" % templates,
+                    arch)
+
+    # Generate main playbook
+    render_template("%s/sf_setup.yml" % ansible_root,
+                    "%s/sf_setup.yml.j2" % templates,
+                    arch)
+
+    render_template("%s/sf_postconf.yml" % ansible_root,
+                    "%s/sf_postconf.yml.j2" % templates,
+                    arch)
+
+    render_template("%s/sf_backup.yml" % ansible_root,
+                    "%s/sf_backup.yml.j2" % templates,
+                    arch)
+
+    render_template("%s/sf_restore.yml" % ansible_root,
+                    "%s/sf_restore.yml.j2" % templates,
+                    arch)
+
+    render_template("%s/sf_configrepo_update.yml" % ansible_root,
+                    "%s/sf_configrepo_update.yml.j2" % templates,
+                    arch)
+
+    render_template("/etc/serverspec/hosts.yaml",
+                    "%s/serverspec.yml.j2" % templates,
+                    arch)
+
+    render_template("/etc/hosts",
+                    "%s/etc-hosts.j2" % templates,
+                    arch)
+
+
 def usage():
     p = argparse.ArgumentParser()
+    p.add_argument("--domain", default="sftests.com")
+    p.add_argument("--install_server_ip")
     p.add_argument("--ansible_root", default="/etc/ansible")
-    p.add_argument("--arch", default="/etc/software-factory/_arch.yaml")
     p.add_argument("--sfconfig", default="/etc/software-factory/sfconfig.yaml")
     p.add_argument("--extra", default="/etc/software-factory/custom-vars.yaml")
     p.add_argument("--lib", default="/var/lib/software-factory/bootstrap-data")
+    p.add_argument("--arch", default="/etc/software-factory/arch.yaml")
     return p.parse_args()
 
 
@@ -328,10 +459,19 @@ def main():
     if os.path.islink(allyaml):
         os.unlink(allyaml)
 
+    arch = load_refarch(args.arch, args.domain, args.install_server_ip)
+
+    generate_inventory_and_playbooks(arch, args.ansible_root)
+
     with open(allyaml, "w") as allvars_file:
-        generate_role_vars(allvars_file, args)
-        append_legacy(allvars_file, args)
-    print("%s written!" % allyaml)
+        generate_role_vars(arch, allvars_file, args)
+        allvars_file.write("###### Legacy content ######\n")
+        allvars_file.write(open(args.sfconfig).read())
+        if os.path.isfile(args.extra):
+            allvars_file.write(open(args.extra).read())
+        yaml_dump(arch, allvars_file)
+
+    print("[+] %s written!" % allyaml)
 
 
 if __name__ == "__main__":

@@ -31,11 +31,10 @@ HOME=/root
 export PATH=/bin:/sbin:/usr/local/bin:/usr/local/sbin
 
 /usr/local/bin/sf-update-hiera-config.py
-/usr/local/bin/sf-ansible-generate-inventory.py                         \
+/usr/local/bin/sfconfig.py                                              \
     --domain ${DOMAIN}                                                  \
     --install_server_ip $(ip route get 8.8.8.8 | awk '{ print $7 }')    \
-    /etc/software-factory/arch.yaml
-/usr/local/bin/sfconfig.py
+    --arch /etc/software-factory/arch.yaml
 
 time ansible-playbook /etc/ansible/sf_setup.yml || {
     echo "[sfconfig] sf_setup playbook failed"

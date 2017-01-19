@@ -46,6 +46,7 @@
   - file: path=/var/lib/software-factory/bootstrap-data/certs state=directory mode=0700 owner=root group=root
   - shell: "[ -f /root/sf-bootstrap-data/certs/localCA.pem ] && mv /root/sf-bootstrap-data/certs/localCA* /var/lib/software-factory/bootstrap-data/certs/"
   - file: path=/etc/software-factory/sfcreds.yaml state=absent
+  - file: path=/etc/software-factory/_arch.yaml state=absent
   - file: path=/root/sf-bootstrap-data state=absent
 
 - hosts: managesf
