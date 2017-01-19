@@ -4,6 +4,7 @@
 # Generate ansible group vars based on refarch and sfconfig.yaml
 
 import argparse
+import base64
 import os
 import random
 import subprocess
@@ -42,6 +43,10 @@ def yaml_dump(content, fileobj):
 def execute(argv):
     if subprocess.Popen(argv).wait():
         raise RuntimeError("Command failed: %s" % argv)
+
+
+def encode_image(path):
+    return base64.b64encode(open(path).read())
 
 
 def render_template(dest, template, data):
@@ -119,16 +124,33 @@ def load_refarch(filename, domain=None, install_server_ip=None):
     return arch
 
 
+def update_sfconfig(data):
+    """ This method ensure /etc/software-factory content is upgraded """
+    if not os.path.isfile("/etc/software-factory/logo-topmenu.png"):
+        open("/etc/software-factory/logo-topmenu.png", "w").write(
+            base64.decodestring(data['theme']['topmenu_logo_data']))
+        del data['theme']['topmenu_logo_data']
+
+    if not os.path.isfile("/etc/software-factory/logo-favicon.ico"):
+        open("/etc/software-factory/logo-favicon.ico", "w").write(
+            base64.decodestring(data['theme']['favicon_data']))
+        del data['theme']['favicon_data']
+
+    if not os.path.isfile("/etc/software-factory/logo-splash.png"):
+        open("/etc/software-factory/logo-splash.png", "w").write(
+            base64.decodestring(data['theme']['splash_image_data']))
+        del data['theme']['splash_image_data']
+
+
 def get_sf_version():
     return filter(lambda x: x.startswith("VERS="),
                   open("/var/lib/edeploy/conf").readlines()
                   )[0].strip().split('-')[1]
 
 
-def generate_role_vars(arch, allvars_file, args):
+def generate_role_vars(arch, sfconfig, allvars_file, args):
     """ This function 'glue' all roles and convert sfconfig.yaml """
     secrets = yaml_load("%s/secrets.yaml" % args.lib)
-    sfconfig = yaml_load(args.sfconfig)
 
     # Generate all variable when the value is CHANGE_ME
     defaults = {}
@@ -264,6 +286,12 @@ DNS.1 = %s
 
     if "gateway" in arch["roles"]:
         get_or_generate_localCA()
+        glue["gateway_topmenu_logo_data"] = encode_image(
+            "/etc/software-factory/logo-topmenu.png")
+        glue["gateway_favicon_data"] = encode_image(
+            "/etc/software-factory/logo-favicon.ico")
+        glue["gateway_splash_image_data"] = encode_image(
+            "/etc/software-factory/logo-splash.png")
 
     if "install-server" in arch["roles"]:
         get_or_generate_ssh_key("service_rsa")
@@ -460,11 +488,14 @@ def main():
         os.unlink(allyaml)
 
     arch = load_refarch(args.arch, args.domain, args.install_server_ip)
+    sfconfig = yaml_load(args.sfconfig)
+
+    update_sfconfig(sfconfig)
 
     generate_inventory_and_playbooks(arch, args.ansible_root)
 
     with open(allyaml, "w") as allvars_file:
-        generate_role_vars(arch, allvars_file, args)
+        generate_role_vars(arch, sfconfig, allvars_file, args)
         allvars_file.write("###### Legacy content ######\n")
         allvars_file.write(open(args.sfconfig).read())
         if os.path.isfile(args.extra):

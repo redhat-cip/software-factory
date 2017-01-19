@@ -1,0 +1,7 @@
+---
+features:
+  - Custom logo data such as the favicon or the top-menu
+    can be replaced in /etc/software-factory directory.
+upgrade:
+  - The logo data will be extracted from the sfconfig.yaml
+    and written as regular file in /etc/software-factory.

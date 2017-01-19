@@ -5,10 +5,10 @@ function loadTopmenu() {
         iframe.setAttribute("height", "51px");
         iframe.setAttribute("id", "sf-topmenu");
         iframe.frameBorder = 0;
-        {% if theme["favicon_data"] %}
+        {% if gateway_favicon_data %}
             var favicon = document.createElement("link");
             favicon.setAttribute("type", "image/x-icon");
-            favicon.setAttribute("href", "data:image/x-icon;base64,{{ theme['favicon_data'] }}");
+            favicon.setAttribute("href", "data:image/x-icon;base64,{{ gateway_favicon_data }}");
             favicon.setAttribute("rel", "icon");
             document.getElementsByTagName("head")[0].appendChild(favicon);
         {% endif %}
