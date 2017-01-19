@@ -1,6 +1,5 @@
 ---
-# Remove old git repositories
-- name: "Remove previous state repositories"
+- name: "Remove previous state and git repositories"
   file:
     path: "/home/gerrit/site_path/{{ item }}"
     state: absent
@@ -8,6 +7,7 @@
     - git
     - cache
     - index
+
 - name: "Restore data"
   synchronize:
     src: "{{ backup_src }}/"

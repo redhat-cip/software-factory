@@ -21,6 +21,7 @@
 [ -z "${DEBUG}" ] || set -x
 set -e
 
+logger "sfconfig.sh: started"
 echo "[$(date)] Running sfconfig.sh"
 
 # Defaults
@@ -224,6 +225,7 @@ time ansible-playbook /etc/ansible/sf_postconf.yml || {
     exit 1
 }
 
+logger "sfconfig.sh: ended"
 echo "${DOMAIN}: SUCCESS"
 echo
 echo "Access dashboard: https://${DOMAIN}"

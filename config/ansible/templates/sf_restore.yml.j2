@@ -2,6 +2,9 @@
 # Retrieve backup file
 - hosts: localhost
   tasks:
+    - name: "Signal journald"
+      command: "logger sf_restore.yml: started"
+
     - name: "Remove previous backup"
       file: path=/var/lib/software-factory/backup state=absent
 
@@ -12,7 +15,10 @@
       file: path=/var/lib/software-factory/backup state=directory mode=0700
 
     - name: "Extract backup file"
-      command: chdir=/var/lib/software-factory/backup/ tar xzpf {{'{{'}} backup_file|default('/var/www/managesf/sf_backup.tar.gz') {{'}}'}}
+      unarchive:
+          src: "{{'{{'}} backup_file|default('/var/www/managesf/sf_backup.tar.gz') {{'}}'}}"
+          dest: /var/lib/software-factory/backup
+          remote_src: yes
 
 # Call stop task
 {% for host in inventory %}
@@ -35,3 +41,6 @@
   tasks:
     - name: "Re-run sfconfig.sh"
       shell: sfconfig.sh &>> /var/log/software-factory/sfconfig-restore.log
+
+    - name: "Signal journald"
+      command: "logger sf_restore.yml: ended"

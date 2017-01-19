@@ -9,10 +9,13 @@ SyslogIdentifier=gerrit
 ExecStartPre=/usr/libexec/wait4mariadb
 ExecStart=/usr/bin/java -Xmx{{ gerrit_heap_limit }} -Djava.security.egd=file:///dev/urandom -jar /home/gerrit/site_path/bin/gerrit.war daemon -d /home/gerrit/site_path --console-log
 ExecStartPost=/usr/libexec/wait4gerrit
+ExecStop=/bin/kill -s SIGINT $MAINPID
+# stupid java exit codes
+SuccessExitStatus=130 SIGINT
+SuccessExitStatus=143 SIGTERM
 LimitCPU=infinity
 LimitFSIZE=infinity
 LimitDATA=infinity
-LimitCORE=0
 LimitAS=infinity
 LimitLOCKS=infinity
 
