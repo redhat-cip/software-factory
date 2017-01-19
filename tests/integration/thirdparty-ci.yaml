@@ -119,8 +119,8 @@
     - name: "Add gerrit_connections"
       command: hieraedit.py --yaml /etc/software-factory/sfconfig.yaml --eval gerrit_connections "[{'name':'upstream', 'hostname':'upstream.com', 'puburl':'https://upstream.com/r/', 'username':'downstream-zuul'}]"
 
-    - name: "Restart sfconfig.sh"
-      shell: grep -q upstream /etc/zuul/zuul.conf || sfconfig.sh
+    - name: "Restart sfconfig.py"
+      shell: grep -q upstream /etc/zuul/zuul.conf || sfconfig.py
 
     - name: "Check zuul is connected"
       command: netstat -n

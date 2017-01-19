@@ -71,7 +71,7 @@
   - name: Make sure /var/log/software-factory exists
     file: path=/var/log/software-factory state=directory mode=0700
   - name: Restart the configuration script
-    shell: sfconfig.sh &>> /var/log/software-factory/upgrade.log
+    shell: sfconfig.py &>> /var/log/software-factory/upgrade.log
   # Managesf database migration
   - include: tasks/managesf_db.yml
   # Cauth database migration

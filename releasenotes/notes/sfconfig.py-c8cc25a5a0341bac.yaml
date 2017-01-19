@@ -1,0 +1,4 @@
+---
+features:
+  - The main configuration script has been rewritten in
+    python and it's now called sfconfig.py.

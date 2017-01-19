@@ -15,14 +15,14 @@ gerritbot.yaml
 
 nodepool.yaml
 ---------
-* Setup provider with sfconfig.sh
+* Setup provider with sfconfig.py
 * Add image and node label to config-repo
 * Check if slave are running
 
 swiftlogs.yaml
 ---------
 * Create swift container
-* Setup logexport with sfconfig.sh
+* Setup logexport with sfconfig.py
 
 zuul.yaml
 ---------

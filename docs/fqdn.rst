@@ -29,7 +29,7 @@ Automatic TLS certificate with Let's Encrypt
 
 SF comes with the `lecm <https://github.com/Spredzy/lecm>`_ utility to automatically
 manages TLS certificate. To support let's encrypt https security, you need to
-enable this option in sfconfig.yaml (and run sfconfig.sh after).
+enable this option in sfconfig.yaml (and run sfconfig.py after).
 
 .. code-block:: yaml
 

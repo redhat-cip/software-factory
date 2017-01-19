@@ -31,8 +31,8 @@ The architecture is defined in /etc/software-factory/arch.yaml:
 
 .. note::
 
-  Any modification to arch.yaml needs to be manually applied with the sfconfig.sh script.
-  Run sfconfig.sh after saving the sfconfig.yaml file.
+  Any modification to arch.yaml needs to be manually applied with the sfconfig.py script.
+  Run sfconfig.py after saving the sfconfig.yaml file.
 
 
 The minimal architecture includes following components:
@@ -74,7 +74,7 @@ To deploy a specific service on a dedicated instance:
 * Make sure remote ssh connection access happen without password authentication,
 * Add the new instance to the arch inventory and set it's ip address,
 * Add desired services in the roles list (e.g., elasticsearch), and
-* Run sfconfig.sh to reconfigure the deployment.
+* Run sfconfig.py to reconfigure the deployment.
 
 See config/refarch directory for example architectures.
 
@@ -99,4 +99,4 @@ This procedure demonstrates how to run the log indexation services (ELK stack) o
         - log-gearman-client
         - log-gearman-worker
 
-* Run sfconfig.sh
+* Run sfconfig.py

@@ -30,7 +30,7 @@
 
     - name: "Restart sfconfig"
       when: provider_config.rc != 0
-      command: sfconfig.sh
+      command: sfconfig.py
 
 - hosts: nodepool
   tasks:

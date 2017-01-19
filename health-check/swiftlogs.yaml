@@ -20,6 +20,6 @@
       environment: "{{os_env}}"
       command: "swift post -m 'Temp-URL-Key: {{ os_tempurl_key }}'"
 
-# * Setup logexport with sfconfig.sh
+# * Setup logexport with sfconfig.py
 - name: "Check logexport configuration"
   include: playbooks/sfconfig_logs_setup.yaml

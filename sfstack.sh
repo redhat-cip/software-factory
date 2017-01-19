@@ -23,7 +23,7 @@ sed -i '/.*192\.168\.135\.101.*/d' ~/.ssh/known_hosts
 ssh-keyscan 192.168.135.101 >> ~/.ssh/known_hosts
 
 echo "[+] Auto configure"
-ssh root@192.168.135.101 sfconfig.sh > /dev/null
+ssh root@192.168.135.101 sfconfig.py > /dev/null
 
 echo "[+] Run serverspec"
 ssh root@192.168.135.101 "cd /etc/serverspec; rake spec"

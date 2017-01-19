@@ -147,7 +147,7 @@ disk. Assign enough memory to it (2GB is a good starting point), and boot the
 VM.  Ensure you have at least one network interface besides the loopback
 interface up; run ``dhclient`` for example.
 
-Now you need to deploy SF. Run ``sfconfig.sh`` and wait a few minutes while the
+Now you need to deploy SF. Run ``sfconfig.py`` and wait a few minutes while the
 system is prepared for you.
 
 Finally, change the root password to make sure you can login afterwards.
@@ -174,7 +174,7 @@ First time: **Please read** :ref:`Root password consideration<root-password>`.
 
  $ ssh -A root@sf_instance
  [root@managesf ~]# vim /etc/software-factory/sfconfig.yaml
- [root@managesf ~]# sfconfig.sh
+ [root@managesf ~]# sfconfig.py
 
 
 .. _network-access:
@@ -200,7 +200,7 @@ SSL Certificates
 
 By default, SF creates a self-signed certificate. To use another certificate,
 you need to copy the provided files to /var/lib/software-factory/bootstrap-data/certs and
-apply the change with the sfconfig.sh script.
+apply the change with the sfconfig.py script.
 
 * gateway.crt: the public certificate
 * gateway.key: the private key

@@ -39,8 +39,8 @@
 # Call sfconfig
 - hosts: localhost
   tasks:
-    - name: "Re-run sfconfig.sh"
-      shell: sfconfig.sh &>> /var/log/software-factory/sfconfig-restore.log
+    - name: "Re-run sfconfig.py"
+      shell: sfconfig.py &>> /var/log/software-factory/sfconfig-restore.log
 
     - name: "Signal journald"
       command: "logger sf_restore.yml: ended"

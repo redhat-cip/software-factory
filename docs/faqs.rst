@@ -86,12 +86,12 @@ How can I change the hostname?
 You can change the hostname after the deployment by setting the fqdn parameter
 in /etc/software-factory/sfconfig.yaml, removing the existing SSL certificates
 (only required if runninng functional tests and using the default self-signed
-certificates) and running sfconfig.sh again:
+certificates) and running sfconfig.py again:
 
 .. code-block:: bash
 
     sed -i -e 's/fqdn:.*/fqdn: mynewhostname.com/g' /etc/software-factory/sfconfig.yaml
-    sfconfig.sh
+    sfconfig.py
 
 Please note that you might need to update URLs in other places as well, for
 example git remote urls in .gitreview and .git/config files in repositories
@@ -101,7 +101,7 @@ hosted on Software Factory.
 How can I distribute service to new instance ?
 ..............................................
 
-By default, sfconfig.sh will deploy and configure all service on
+By default, sfconfig.py will deploy and configure all service on
 the install server (allinone). To use a distributed architecture,
 new instances needs to be manually deployed using the sf image,
 then root ssh access needs to be granted using the service_rsa.pub
@@ -118,7 +118,7 @@ host:
       roles:
         - elasticsearch
 
-Note that sfconfig.sh won't disable a service previously deployed.
+Note that sfconfig.py won't disable a service previously deployed.
 
 
 How-to create channels in Mumble ?
@@ -148,7 +148,7 @@ in sfconfig.yaml and then specify what url needs to be mirrored in the config-re
 
 * Add the mirror role to /etc/software-factory/arch.yaml
 * Configure the mirror role in /etc/software-factory/sfconfig.yaml
-* Run sfconfig.sh
+* Run sfconfig.py
 * Edit mirror configuration template provided in config repo mirrors directory.
 
 When the periodic_update is set, the mirror update will be sceduled periodically

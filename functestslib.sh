@@ -368,9 +368,9 @@ d = yaml.load(open(f))
 d['debug'] = True
 yaml.dump(d, open(f, 'w'), default_flow_style=False)
 SCRIPT
-    ssh -A -tt ${SF_HOST} sfconfig.sh &> ${ARTIFACTS_DIR}/sfconfig.log \
-        && echo "sfconfig.sh: SUCCESS"  \
-        || { kill -9 $SSH_AGENT_PID; fail "sfconfig.sh failed" ${ARTIFACTS_DIR}/sfconfig.log; }
+    ssh -A -tt ${SF_HOST} "sfconfig.sh || sfconfig.py" &> ${ARTIFACTS_DIR}/sfconfig.log \
+        && echo "sfconfig.py: SUCCESS"  \
+        || { kill -9 $SSH_AGENT_PID; fail "sfconfig.py failed" ${ARTIFACTS_DIR}/sfconfig.log; }
     kill -9 $SSH_AGENT_PID
     checkpoint "run_bootstraps"
     fetch_bootstraps_data
@@ -491,7 +491,7 @@ function change_fqdn {
     echo "$(date) ======= change_fqdn"
     ssh ${SF_HOST} "sed -i -e 's/fqdn: ${SF_HOST}/fqdn: sftests2.com/g' /etc/software-factory/sfconfig.yaml"
     ssh ${SF_HOST} "sed -i -e 's/${SF_HOST}/sftests2.com/g' /etc/software-factory/arch.yaml"
-    # This triggers cert recreating in sfconfig.sh. Should be done automatically
+    # This triggers cert recreating in sfconfig.py. Should be done automatically
     # in the Ansible task update_fqdn; but that is currently executed after cert
     # creation.
     ssh ${SF_HOST} "rm sf-bootstrap-data/certs/gateway.* openssl.cnf"
@@ -501,7 +501,7 @@ function change_fqdn {
 
 function run_sfconfig {
     echo "$(date) ======= run_sfconfig"
-    ssh ${SF_HOST} sfconfig.sh &> ${ARTIFACTS_DIR}/last_sfconfig.sh || fail "sfconfig.sh failed" ${ARTIFACTS_DIR}/last_sfconfig.sh
+    ssh ${SF_HOST} "sfconfig.sh || sfconfig.py" &> ${ARTIFACTS_DIR}/last_sfconfig.py || fail "sfconfig.py failed" ${ARTIFACTS_DIR}/last_sfconfig.py
     checkpoint "run_sfconfig"
 }
 

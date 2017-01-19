@@ -59,7 +59,7 @@ Different architectures are supported through a notion of REFARCH.
 Here is how an all-in-one deployment works:
 
 * Start the image and wait for ssh access
-* Run the sfconfig.sh script to configure services
+* Run the sfconfig.py script to configure services
 
 Multi-node deployment needs multiple instance to be started:
 
@@ -73,7 +73,7 @@ Next sections cover how services are configured.
 The system configuration
 ------------------------
 
-The sfconfig.sh script drives the system configuration. This script does the following actions:
+The sfconfig.py script drives the system configuration. This script does the following actions:
 
 * Generates secrets such as ssh keys and tls certificats,
 * Run sf-update-hiera-config.py to ensure hieras are up-to-date, this script
@@ -90,7 +90,7 @@ The sfconfig.sh script drives the system configuration. This script does the fol
 
 That system configuration process is re-entrant and needs to be executed everytime settings are changed.
 For example, to remove redmine from topmenu, edit the sfconfig.yaml value of topmenu_hide_redmine
-and execute the sfconfig.sh script.
+and execute the sfconfig.py script.
 
 Then SF is meant to be a self-service system, thus project configuration is done through the config-repo.
 
@@ -127,7 +127,7 @@ on the role_configrc commited in the tag, it will:
 * Stop all services
 * Copy the new image in-place using rsync
 * Execute upgrade task (such as database migration or system-level change such as permission change)
-* Execute the sfconfig.sh script
+* Execute the sfconfig.py script
 * Check deployment
 
 To be sure the system is consistent, rsync will erase all foreign file except the one in the exclude

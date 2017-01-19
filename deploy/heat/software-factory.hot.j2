@@ -40,7 +40,7 @@ parameters:
 {% if inventory|length == 1 %}
   bootstrap:
     type: boolean
-    description: Whether or not run a first sfconfig.sh
+    description: Whether or not run a first sfconfig.py
     default: true
 {% endif %}
 
@@ -117,7 +117,7 @@ resources:
         {{ arch_raw.replace('\n', '\n        ') }}
         EOF
         if [ "bootstrap" == "True" ]; then
-            sfconfig.sh 2>&1
+            sfconfig.py 2>&1
         fi
 
   run_sfconfig:
@@ -272,7 +272,7 @@ resources:
 {# Until SoftwareConfig works, disabled auto-configuration for multi-node #}
 {% if inventory|length == 1 %}
                if [ "bootstrap" == "True" ]; then
-                   sfconfig.sh
+                   sfconfig.py
                fi
 {% endif %}
 {% endif %}

@@ -1,5 +1,5 @@
 ---
-# * Setup provider with sfconfig.sh
+# * Setup provider with sfconfig.py
 - name: "Check nodepool configuration"
   include: playbooks/sfconfig_nodepool_setup.yaml
 

@@ -10,6 +10,7 @@ import random
 import subprocess
 import string
 import sys
+import time
 import uuid
 import yaml
 
@@ -51,6 +52,10 @@ def save_file(content, filename):
 def execute(argv):
     if subprocess.Popen(argv).wait():
         raise RuntimeError("Command failed: %s" % argv)
+
+
+def pread(argv):
+    return subprocess.Popen(argv, stdout=subprocess.PIPE).stdout.read()
 
 
 def encode_image(path):
@@ -648,8 +653,6 @@ def generate_inventory_and_playbooks(arch, ansible_root):
 
 def usage():
     p = argparse.ArgumentParser()
-    p.add_argument("--domain", default="sftests.com")
-    p.add_argument("--install_server_ip")
     p.add_argument("--ansible_root", default="/etc/ansible")
     p.add_argument("--sfconfig", default="/etc/software-factory/sfconfig.yaml")
     p.add_argument("--extra", default="/etc/software-factory/custom-vars.yaml")
@@ -661,6 +664,10 @@ def usage():
 def main():
     args = usage()
 
+    execute(["logger", "sfconfig.py: started"])
+    print("[%s] Running sfconfig.py" % time.ctime())
+
+    # Create required directories
     allyaml = "%s/group_vars/all.yaml" % args.ansible_root
     for dirname in ("%s/group_vars" % args.ansible_root,
                     args.lib,
@@ -668,10 +675,11 @@ def main():
                     "%s/certs" % args.lib):
         if not os.path.isdir(dirname):
             os.makedirs(dirname, 0700)
-    # Remove previously created link to sfconfig.yaml
     if os.path.islink(allyaml):
+        # Remove previously created link to sfconfig.yaml
         os.unlink(allyaml)
 
+    # Make sure the yaml files are updated
     sfconfig = yaml_load(args.sfconfig)
     sfarch = yaml_load(args.arch)
     if update_sfconfig(sfconfig):
@@ -679,9 +687,12 @@ def main():
     if clean_arch(sfarch):
         save_file(sfarch, args.arch)
 
-    arch = load_refarch(args.arch, args.domain, args.install_server_ip)
+    # Process the arch file and render playbooks
+    local_ip = pread(["ip", "route", "get", "8.8.8.8"]).split()[6]
+    arch = load_refarch(args.arch, sfconfig['fqdn'], local_ip)
     generate_inventory_and_playbooks(arch, args.ansible_root)
 
+    # Generate group vars
     with open(allyaml, "w") as allvars_file:
         generate_role_vars(arch, sfconfig, allvars_file, args)
         allvars_file.write("###### Legacy content ######\n")
@@ -691,6 +702,16 @@ def main():
         yaml_dump(arch, allvars_file)
 
     print("[+] %s written!" % allyaml)
+
+    execute(["ansible-playbook", "/etc/ansible/sf_initialize.yml"])
+    execute(["logger", "sfconfig.py: ended"])
+    print("""%s: SUCCESS
+
+Access dashboard: https://%s
+Login with admin user, get the admin password by running:
+  awk '/admin_password/ {print $2}' /etc/software-factory/sfconfig.yaml
+
+""" % (sfconfig['fqdn'], sfconfig['fqdn']))
 
 
 if __name__ == "__main__":

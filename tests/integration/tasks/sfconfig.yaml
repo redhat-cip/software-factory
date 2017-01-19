@@ -3,5 +3,5 @@
   register: configured
 
 - name: "Run sfconfig"
-  command: sfconfig.sh
+  command: sfconfig.py
   when: configured.stat.exists == False

@@ -13,8 +13,8 @@ Ansible roles variable can be over-written in /etc/software-factory/custom-vars.
 
 .. note::
 
-  Any modification to sfconfig.yaml needs to be manually applied with the sfconfig.sh script.
-  Run sfconfig.sh after saving the sfconfig.yaml file.
+  Any modification to sfconfig.yaml needs to be manually applied with the sfconfig.py script.
+  Run sfconfig.py after saving the sfconfig.yaml file.
 
 
 .. toctree::

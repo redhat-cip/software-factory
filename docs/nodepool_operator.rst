@@ -39,7 +39,7 @@ to adapt sfconfig.yaml. Below is an example of configuration.
        rate: 10.0
        username: 'user'
 
-To apply the configuration you need to run again the sfconfig.sh script.
+To apply the configuration you need to run again the sfconfig.py script.
 
 You should be able to validate the configuration via the nodepool client by checking if
 Nodepool is able to authenticate on the cloud account.
