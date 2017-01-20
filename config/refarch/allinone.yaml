@@ -26,6 +26,7 @@ inventory:
       - mirror
       - storyboard
       - storyboard-webclient
+      - mosquitto
       - repoxplorer
     mem: 8
     cpu: 4

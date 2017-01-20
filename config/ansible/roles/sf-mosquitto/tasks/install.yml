@@ -1,0 +1,5 @@
+---
+- name: "Install package"
+  yum:
+    name: mosquitto
+    state: latest

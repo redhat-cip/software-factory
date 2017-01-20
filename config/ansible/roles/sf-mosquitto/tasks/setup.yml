@@ -1,0 +1,18 @@
+---
+- include: /etc/ansible/tasks/create_user.yml user_name=mosquitto
+
+- name: Configure standard listener and websockets
+  blockinfile:
+    dest: /etc/mosquitto/mosquitto.conf
+    block: |
+      listener 1883
+      listener 1884
+      protocol websockets
+  register: mosquittoconf
+
+- name: MQTT service started and enabled
+  service: name=mosquitto state=started enabled=yes
+
+- name: Restart MQTT after the configuration changed
+  service: name=mosquitto state=restarted
+  when: mosquittoconf|changed

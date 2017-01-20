@@ -3,3 +3,4 @@ tox
 nose
 nose-timer
 selenium
+paho-mqtt
