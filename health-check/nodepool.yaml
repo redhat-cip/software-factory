@@ -122,13 +122,13 @@
       failed_when: "'OK' not in ak_output.content"
 
     - name: "SSH into node with the test key"
-      command: ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -q -i /tmp/{{ node_info.json.nodepool.0.node_name }}_id_rsa jenkins@{{ node_info.json.nodepool.0.ip }} -c whoami
+      command: ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -q -i /tmp/{{ nodes_info.json.nodepool.0.node_name }}_id_rsa jenkins@{{ nodes_info.json.nodepool.0.ip }} whoami
       register: ssh_whoami
       failed_when: ssh_whoami.stdout.find("jenkins") == -1
 
     - name: "Schedule node for deletion"
       uri:
-        url: http://managesf:20001/nodes/id/{{ node_info.json.nodepool.0.node_id }}/
+        url: http://managesf:20001/nodes/id/{{ nodes_info.json.nodepool.0.node_id }}/
         method: DELETE
         HEADER_X-Remote-User: admin
         return_content: yes
@@ -136,4 +136,9 @@
       failed_when: "'delete' not in del_node.content"
 
     - name: "Delete test ssh key"
-      command: rm /tmp/{{ node_info.json.nodepool.0.node_name }}*
+      file:
+        path: "/tmp/{{ nodes_info.json.nodepool.0.node_name }}_{{ item }}"
+        state: absent
+      with_items:
+        - "id_rsa"
+        - "id_rsa.pub"
