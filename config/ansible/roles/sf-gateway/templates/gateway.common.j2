@@ -183,7 +183,7 @@
     DocumentRoot /var/www/
 
     RewriteEngine On
-    RewriteRule ^/$ /r/ [R]
+    RewriteRule ^/$ /{{ welcome_page_path }} [R]
     RewriteRule ^/redmine/redmine/(.*)$ /redmine/$1 [R=301,L]
 
     <LocationMatch "^/storyboard_api">

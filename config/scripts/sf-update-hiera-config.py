@@ -732,6 +732,11 @@ def update_sfconfig(data):
         data['debug'] = False
         dirty = True
 
+    # 2.4.0: add welcome page setting
+    if 'welcome_page_path' not in data:
+        data['welcome_page_path'] = "sf/welcome.html"
+        dirty = True
+
     return dirty
 
 

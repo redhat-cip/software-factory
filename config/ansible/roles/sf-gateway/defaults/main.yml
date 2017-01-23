@@ -1,3 +1,5 @@
 role_actions:
   - setup
   - get_logs
+
+welcome_page_path: "sf/welcome.html"

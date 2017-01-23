@@ -1,0 +1,5 @@
+---
+features:
+  - The default landing page is by default the new welcome.html page
+upgrade:
+  - The default landing page will be changed from gerrit "r/" to this new welcome.html page. The operator can use the sfconfig.yaml option "welcome_page_path" to modify the landing page url.

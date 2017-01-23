@@ -4,6 +4,9 @@ fqdn: sftests.com
 # Enable services debug mode
 debug: False
 
+# Default landing web page
+welcome_page_path: "sf/welcome.html"
+
 network:
     use_letsencrypt: false
     smtp_relay:

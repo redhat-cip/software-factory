@@ -352,7 +352,8 @@ class TestGateway(Base):
         url = "https://%s/" % config.GATEWAY_HOST
         resp = requests.get(url)
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual(resp.url, "https://%s/r/" % config.GATEWAY_HOST)
+        self.assertEqual(resp.url,
+                         "https://%s/sf/welcome.html" % config.GATEWAY_HOST)
 
         self.assertEqual(resp.history[0].status_code, 302)
         self.assertEqual(resp.history[0].url,
