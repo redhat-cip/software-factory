@@ -516,6 +516,7 @@ build_all() {
     ansible_install sf-job-logs-gearman-client "log_gearman_client_url: \"${LOG_GEARMAN_CLIENT_URL}\""
     ansible_install sf-job-logs-gearman-worker "log_gearman_worker_url: \"${LOG_GEARMAN_WORKER_URL}\""
     ansible_install sf-repoxplorer
+    ansible_install sf-germqtt
     install_sf
     checkpoint "sf installed"
     image_clean

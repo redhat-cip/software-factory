@@ -1,0 +1,12 @@
+[default]
+pidfile = /var/run/germqtt.pid
+
+[gerrit]
+username=jenkins
+hostname=gerrit.{{ fqdn }}
+key=/usr/share/germqtt/.ssh/id_rsa
+
+[mqtt]
+hostname=localhost
+topic=gerrit
+qos = 2

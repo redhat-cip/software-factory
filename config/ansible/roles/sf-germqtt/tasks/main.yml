@@ -1,0 +1,3 @@
+---
+- include: "{{ action }}.yml"
+  when: action in role_actions

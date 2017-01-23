@@ -26,6 +26,7 @@ inventory:
       - storyboard
       - storyboard-webclient
       - mosquitto
+      - germqtt
       - repoxplorer
     mem: 8
     cpu: 4
