@@ -5,9 +5,10 @@
   command: chdir=/usr/src/storyboard {{ item }}
   with_items:
     - virtualenv /srv/storyboard
-    - /srv/storyboard/bin/pip install --upgrade 'pbr' 'pip' 'setuptools'
-    - sed -i 's/^pbr.*//' requirements.txt
-    - sed -i 's/^.*storyboardclient.*//' requirements.txt
+    - /srv/storyboard/bin/pip install --upgrade 'pbr' 'pip'
+    - /srv/storyboard/bin/pip install -I 'setuptools=={{ storyboard_setuptools_version }}'
+    - sed -i '/^pbr.*/d' requirements.txt
+    - sed -i '/^.*storyboardclient.*/d' requirements.txt
     - /srv/storyboard/bin/pip install -rrequirements.txt
     - /srv/storyboard/bin/python setup.py install
 

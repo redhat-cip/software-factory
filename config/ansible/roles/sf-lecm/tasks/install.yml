@@ -11,7 +11,8 @@
   command: chdir=/usr/src/lecm {{ item }}
   with_items:
     - virtualenv /srv/lecm
-    - /srv/lecm/bin/pip install --upgrade pbr pip setuptools
+    - /srv/lecm/bin/pip install --upgrade 'pbr' 'pip'
+    - /srv/lecm/bin/pip install -I 'setuptools=={{ lecm_setuptools_version }}'
     - /srv/lecm/bin/pip install -rrequirements.txt
     - /srv/lecm/bin/python setup.py install
 
