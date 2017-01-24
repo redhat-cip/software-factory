@@ -65,3 +65,17 @@
 'managesf.tests:add': 'rule:admin_api or rule:ptl_api'
 # config (permissions) API
 'managesf.config:get': 'rule:authenticated_api'
+# resources API
+'managesf.resources:get': 'rule:any'
+'managesf.resources:validate': 'rule:admin_or_service'
+'managesf.resources:apply': 'rule:admin_or_service'
+# jobs API
+'managesf.job:get': 'rule:any'
+'managesf.job:stop': 'rule:admin_or_service'
+'managesf.job:run': 'rule:admin_or_service'
+# nodes API
+'managesf.node:get': 'rule:any'
+'managesf.node:hold': 'rule:admin_or_service'
+'managesf.node:delete': 'rule:admin_or_service'
+'managesf.node:image-get': 'rule:any'
+'managesf.node:add_authorized_key': 'rule:admin_or_service'
