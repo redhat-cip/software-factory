@@ -1,6 +1,6 @@
-#!/bin/sh
+#!/bin/env python
 #
-# Copyright (C) 2015 Red Hat <licensing@enovance.com>
+# Copyright (C) 2016 Red Hat
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -35,79 +35,30 @@
 #                  --change-owner
 #                  --newrev
 
-QUOTE="\""
-ESCAPED="\\\""
+import argparse
+import subprocess
+import requests
 
-while [ $# -gt 1 ]
-do
-key="$1"
+MANAGESF_BASE_URL = "{{ managesf_internal_url }}"
 
-case $key in
-    --change)
-    CHANGE="${2//$QUOTE/$ESCAPED}"
-    shift # past argument
-    ;;
-    --is-draft)
-    ISDRAFT="${2//$QUOTE/$ESCAPED}"
-    shift # past argument
-    ;;
-    --change-url)
-    CHANGEURL="${2//$QUOTE/$ESCAPED}"
-    shift # past argument
-    ;;
-    --project)
-    PROJECT="${2//$QUOTE/$ESCAPED}"
-    shift # past argument
-    ;;
-    --branch)
-    BRANCH="${2//$QUOTE/$ESCAPED}"
-    ;;
-    --topic)
-    TOPIC="${2//$QUOTE/$ESCAPED}"
-    shift # past argument
-    ;;
-    --uploader)
-    UPLOADER="${2//$QUOTE/$ESCAPED}"
-    shift # past argument
-    ;;
-    --commit)
-    COMMIT="${2//$QUOTE/$ESCAPED}"
-    ;;
-    --patchset)
-    PATCHSET="${2//$QUOTE/$ESCAPED}"
-    shift # past argument
-    ;;
-    --kind)
-    KIND="${2//$QUOTE/$ESCAPED}"
-    shift # past argument
-    ;;
-    --change-owner)
-    CHANGEOWNER="${2//$QUOTE/$ESCAPED}"
-    ;;
-    --newrev)
-    NEWREV="${2//$QUOTE/$ESCAPED}"
-    ;;
-    *)
-            # unknown option
-    ;;
-esac
-shift # past argument or value
-done
+# Parse arguments
+p = argparse.ArgumentParser()
+for arg in ("change", "is-draft", "change-url", "project", "branch",
+            "topic", "submitter", "uploader", "commit", "patchset", "kind",
+            "change-owner", "newrev"):
+    p.add_argument("--%s" % arg)
+payload = p.parse_args().__dict__
 
-echo -n "$PATCHSET ($PROJECT) $CHANGE - "
+# Get commit message
+p = subprocess.Popen(["git", "cat-file", "-p", payload['commit']],
+                     stdout=subprocess.PIPE)
+p.wait()
+payload['commit_message'] = p.stdout.read()
 
-COMMIT_MESSAGE=`git cat-file -p $COMMIT`
-COMMIT_MESSAGE="${COMMIT_MESSAGE//$QUOTE/$ESCAPED}"
+# Call managesf
+r = requests.post("%s/hooks/patchset_created" % MANAGESF_BASE_URL,
+                  json=payload, headers={'X-Remote-User': 'SF_SERVICE_USER'})
 
-MANAGESF_BASE_URL="{{ managesf_internal_url }}"
-
-PAYLOAD=`mktemp -u`
-
-echo '{"change": "'$CHANGE'", "is_draft": "'$ISDRAFT'", "change_url": "'$CHANGEURL'", "project": "'$PROJECT'", "branch": "'$BRANCH'", "topic": "'$TOPIC'", "uploader": "'$UPLOADER'", "commit": "'$COMMIT'", "patchset": "'$PATCHSET'", "commit_message": "'$COMMIT_MESSAGE'", "kind": "'$KIND'", "change_owner": "'$CHANGEOWNER'", "newrev": "'$NEWREV'"}' > ${PAYLOAD}
-
-# hook call
-curl -sS -X POST ${MANAGESF_BASE_URL}/hooks/patchset_created/ \
-     -H "Accept: application/json" -H "Content-Type: application/json" \
-     -H "X-Remote-User: SF_SERVICE_USER" -d @${PAYLOAD}
-
-rm ${PAYLOAD}
+# Show status
+payload['status'] = r.status_code
+print("%(project)s %(change)s - %(status)s" % payload)
