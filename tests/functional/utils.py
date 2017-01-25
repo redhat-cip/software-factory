@@ -297,28 +297,6 @@ class ManageSfUtils(Tool):
         output = self.exe(cmd)
         return output
 
-    def create_or_delete_group(self, requestor, groupname, mode='create'):
-        assert mode in ('create', 'delete')
-        desc = ""
-        if mode == 'create':
-            desc = "-d 'The group'"
-        subcmd = (" group %s --name=%s %s" % (mode, groupname, desc))
-        auth_password = config.USERS[requestor]['password']
-        cmd = self.base_cmd % (requestor, auth_password) + subcmd
-        output = self.exe(cmd)
-        return output
-
-    def add_or_remove_to_group(self, requestor, groupname,
-                               users, mode='add'):
-        assert isinstance(users, list)
-        assert mode in ('add', 'remove')
-        subcmd = (" group %s --name=%s -e %s" % (
-                  mode, groupname, " ".join(users)))
-        auth_password = config.USERS[requestor]['password']
-        cmd = self.base_cmd % (requestor, auth_password) + subcmd
-        output = self.exe(cmd)
-        return output
-
     def create_init_tests(self, project, user):
         subcmd = " tests init --project=%s" % project
         passwd = config.USERS[user]['password']
