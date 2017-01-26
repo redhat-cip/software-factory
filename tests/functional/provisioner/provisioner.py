@@ -25,12 +25,14 @@ sys.path.append(os.path.dirname(pwd))             # flake8: noqa
 import config
 
 from utils import ManageSfUtils
+from utils import ResourcesUtils
 from utils import GerritGitUtils
-from pysflib.sfredmine import RedmineUtils
 from utils import JenkinsUtils
 from utils import get_cookie
 from utils import is_present
 from utils import ssh_run_cmd
+
+from pysflib.sfstoryboard import SFStoryboard
 
 # TODO: Create pads and pasties.
 
@@ -50,17 +52,18 @@ class SFProvisioner(object):
         config.USERS[config.ADMIN_USER]['auth_cookie'] = get_cookie(
             config.ADMIN_USER, config.USERS[config.ADMIN_USER]['password'])
         self.msu = ManageSfUtils(config.GATEWAY_URL)
+        self.ru = ResourcesUtils()
         self.ggu = GerritGitUtils(config.ADMIN_USER,
                                   config.ADMIN_PRIV_KEY_PATH,
                                   config.USERS[config.ADMIN_USER]['email'])
         self.ju = JenkinsUtils()
-        self.rm = RedmineUtils(
-            config.GATEWAY_URL + "/redmine/",
-            auth_cookie=config.USERS[config.ADMIN_USER]['auth_cookie'])
+        self.stb_client = SFStoryboard(
+            config.GATEWAY_URL + "/storyboard_api",
+            config.USERS[config.ADMIN_USER]['auth_cookie'])
 
     def create_project(self, name):
         print " Creating project %s ..." % name
-        self.msu.createProject(name, config.ADMIN_USER)
+        self.ru.create_repo(name)
 
     def push_files_in_project(self, name, files):
         print " Add files(%s) in a commit ..." % ",".join(files)
@@ -75,13 +78,21 @@ class SFProvisioner(object):
         self.ggu.add_commit_for_all_new_additions(clone_dir)
         self.ggu.direct_push_branch(clone_dir, 'master')
 
+    def create_storyboard_issue(self, name, issue_name):
+        project = self.stb_client.projects.get(name)
+        story = self.stb_client.stories.create(title=issue_name)
+        task = self.stb_client.tasks.create(
+            story_id=story.id, project_id=project.id,
+            title=issue_name)
+        return task.id, story.id
+
     def create_issues_on_project(self, name, issues):
         print " Create %s issue(s) for that project ..." % len(issues)
         for i in issues:
-            if is_present('redmine'):
-                issue = self.rm.create_issue(name, i['name'])
+            if is_present('storyboard'):
+                issue = self.create_storyboard_issue(name, i['name'])
             else:
-                issue = random.randint(1,100)
+                issue = (random.randint(1,100), random.randint(1,100))
             yield issue, i['review']
 
     def create_jenkins_jobs(self, name, jobnames):
@@ -107,10 +118,11 @@ class SFProvisioner(object):
         """Very basic review creator for statistics and restore tests
         purposes."""
         self.ggu.config_review(self.clone_dir)
-        self.ggu.add_commit_in_branch(self.clone_dir,
-                                      'branch_' + issue,
-                                      commit='test\n\nBug: %s' % issue)
-        self.ggu.review_push_branch(self.clone_dir, 'branch_' + issue)
+        self.ggu.add_commit_in_branch(
+            self.clone_dir,
+            'branch_' + str(issue[0]),
+            commit='test\n\nTask: #%s\nStory: #%s' % (issue[0], issue[1]))
+        self.ggu.review_push_branch(self.clone_dir, 'branch_' + str(issue[0]))
 
     def create_local_user(self, username, password, email):
         self.msu.create_user(username, password, email)
@@ -157,9 +169,9 @@ class SFProvisioner(object):
             for i, review in self.create_issues_on_project(project['name'],
                                                            project['issues']):
                 if review:
-                    print "Create review for bug %i in %s" % (i,
-                                                              project['name'])
-                    self.create_review(project['name'], str(i))
+                    print "Create review for bug %s in %s" % (
+                        i, project['name'])
+                    self.create_review(project['name'], i)
             self.create_jenkins_jobs(project['name'],
                                      [j['name'] for j in project['jobnames']])
         self.create_pads(2)

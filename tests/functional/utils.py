@@ -618,6 +618,12 @@ class ResourcesUtils():
     %(name)s:
       acl: %(name)s-acl
       description: Code repository for %(name)s
+  projects:
+    %(name)s:
+      description: Project %(name)s
+      issue-tracker: SFStoryboard
+      source-repositories:
+        - %(name)s
 """
         self.ju = JenkinsUtils()
         self.url = "ssh://admin@%s:29418/%s" % (config.GATEWAY_HOST, 'config')

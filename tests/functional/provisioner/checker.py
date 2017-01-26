@@ -25,12 +25,13 @@ sys.path.append(os.path.dirname(pwd))             # flake8: noqa
 import config
 
 from utils import get_cookie
-from pysflib.sfredmine import RedmineUtils
 from pysflib.sfgerrit import GerritUtils
 from utils import GerritGitUtils
 from utils import JenkinsUtils
 from utils import is_present
 from utils import ssh_run_cmd
+
+from pysflib.sfstoryboard import SFStoryboard
 
 
 class SFchecker:
@@ -52,16 +53,19 @@ class SFchecker:
                                   config.ADMIN_PRIV_KEY_PATH,
                                   config.USERS[config.ADMIN_USER]['email'])
         self.ju = JenkinsUtils()
-        self.rm = RedmineUtils(
-            config.GATEWAY_URL + "/redmine/",
-            auth_cookie=config.USERS[config.ADMIN_USER]['auth_cookie'])
+        self.stb_client = SFStoryboard(
+            config.GATEWAY_URL + "/storyboard_api",
+            config.USERS[config.ADMIN_USER]['auth_cookie'])
 
     def check_project(self, name):
         print " Check project %s exists ..." % name,
-        if not self.gu.project_exists(name) or \
-           (is_present('redmine') and not self.rm.project_exists(name)):
+        if not self.gu.project_exists(name):
             print "FAIL"
             exit(1)
+        if is_present('storyboard'):
+            if name not in [p.name for p in self.stb_client.projects.get_all()]:
+                print "FAIL"
+                exit(1)
         print "OK"
 
     def check_files_in_project(self, name, files):
@@ -76,17 +80,20 @@ class SFchecker:
                 exit(1)
 
     def check_issues_on_project(self, name, issues):
-        print " Check that at least %s issues exists for that project ...," %\
-            len(issues)
-        current_issues = self.rm.get_issues_by_project(name)
-        if len(current_issues) < len(issues):
+        print (" Check that at least %s issues exists "
+               "for that project ..." % len(issues))
+        p = [p for p in self.stb_client.projects.get_all()
+             if p.name == name][0]
+        pt = [t for t in self.stb_client.tasks.get_all() if
+              t.project_id == p.id]
+        if len(pt) != len(issues):
             print "FAIL: expected %s, project has %s" % (
-                len(issues), len(current_issues))
+                len(issues), len(pt))
             exit(1)
         print "OK"
 
     def check_jenkins_jobs(self, name, jobnames):
-        print " Check that jenkins jobs(%s) exists ..." % ",".join(jobnames),
+        print " Check that jenkins jobs(%s) exists ..." % ",".join(jobnames)
         for jobname in jobnames:
             if not '%s_%s' % (name, jobname) in self.ju.list_jobs():
                 print "FAIL"
@@ -171,7 +178,7 @@ class SFchecker:
             self.check_project(project['name'])
             self.check_files_in_project(project['name'],
                                         [f['name'] for f in project['files']])
-            if is_present('redmine'):
+            if is_present('storyboard'):
                 self.check_issues_on_project(project['name'],
                                              project['issues'])
             self.check_reviews_on_project(project['name'], project['issues'])

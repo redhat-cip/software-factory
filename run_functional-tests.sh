@@ -102,6 +102,8 @@ case "${TEST_TYPE}" in
         export REFARCH_FILE=${ARTIFACTS_DIR}/upgrade_inital_arch.yaml
         lxc_init ${SF_PREVIOUS_VER}
         run_bootstraps
+        # Remove this sleep after 2.4.0 release see : https://softwarefactory-project.io/r/#/c/6250/
+        sleep 20
         run_provisioner
         # Copy new arch
         scp config/refarch/allinone.yaml ${SF_HOST}:/etc/puppet/hiera/sf/arch.yaml
