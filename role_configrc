@@ -5,14 +5,14 @@
 VER=2.4.0
 
 # Version string
-PREVIOUS_VER=2.2.6
+PREVIOUS_VER=2.3.0
 
 # A tagged release of SF is defined by the string "TaggedRelease" in the commit msg
 REL_VER=$(git log --simplify-merges -n 1 | grep -i 'TaggedRelease:' | awk '{ print $2 }')
 if [ ! -z "${REL_VER}" ]; then
     echo "This is release: ${REL_VER}."
     VER=${REL_VER}
-    PREVIOUS_VER=2.2.6
+    PREVIOUS_VER=2.3.0
     echo "Previous stable version is ${PREVIOUS_VER}"
     TAGGED_RELEASE=1
     # Pinned versions of the subprojects to go with the current release

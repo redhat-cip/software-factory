@@ -2,14 +2,13 @@
 - name: Check if /etc/puppet/hiera/sf exist
   stat:
       path: /etc/puppet/hiera/sf
-  register: puppet_directory_exist
+  register: puppet_directory
 
 - name: Copy data to /etc/software-factory
   synchronize:
       src: /etc/puppet/hiera/sf/
       dest: /etc/software-factory/
-  when:
-      - puppet_directory_exist
+  when: puppet_directory.stat.exists
 
 - name: Cleanup puppet directory
   file:
