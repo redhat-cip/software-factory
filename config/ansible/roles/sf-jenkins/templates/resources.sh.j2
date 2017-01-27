@@ -88,7 +88,10 @@ case $1 in
     apply)
         clone=$(mktemp -d)
         git clone $GATEWAY_URL/r/config $clone
+        # Be sure to use the right ref (ZUUL_COMMIT references the commit
+        # for which the config-update job is running)
         cd $clone
+        git checkout $ZUUL_COMMIT
         # Check tips of the HEAD is change on resources/
         HEAD_SHA=$(git --no-pager log --no-merges --format='%H' -n 1 HEAD)
         HEAD_RESOURCES_SHA=$(git --no-pager log --no-merges --format='%H' -n 1 HEAD -- resources)
@@ -108,6 +111,7 @@ case $1 in
         cd -
         rm -R $clone
         http_code=$(curl -s -w "%{http_code}" -H "X-Remote-User: SF_SERVICE_USER" \
+         -H 'Content-Type: application/json' -d '{"COMMIT": "'$ZUUL_COMMIT'"}' \
          -X PUT $ENDPOINT -o $APPLIED_OUTPUT)
         cat $APPLIED_OUTPUT | python -m json.tool
         [ "$http_code" != "201" ] && {
