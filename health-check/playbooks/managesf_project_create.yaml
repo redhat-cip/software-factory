@@ -18,10 +18,30 @@
         - "git reset --hard origin/master --"
       when: p.stat.isdir is defined and p.stat.isdir == True
 
-    - name: Create project with managesf
-      command: "sfmanager --auth admin:{{ authentication.admin_password }} --url http://{{ fqdn }} project create --name {{ project }}"
+- name: "Reset config repos"
+  include: config_reset.yaml
+  when: p.stat.isdir is not defined
+
+- hosts: install-server
+  tasks:
+    - name: Create project with the resources backend
+      template: src=../templates/project-resource.yaml.j2 dest=/root/config/resources/project-resource-{{ project }}.yaml
       when: p.stat.isdir is not defined
 
+    - name: Commit change
+      command: chdir=/root/config  {{ item }}
+      with_items:
+          - 'git add resources/project-resource-{{ project }}.yaml'
+          - 'git commit -a -m "Add {{ project }} to resources"'
+      environment: {'EDITOR':'test'}
+      when: p.stat.isdir is not defined
+
+- name: "Submit config repos"
+  include: config_submit_change.yaml
+  when: p.stat.isdir is not defined
+
+- hosts: install-server
+  tasks:
     - name: Checkout project
       git: repo=http://{{ fqdn }}/r/{{ project }} dest={{ project_path }}
       when: p.stat.isdir is not defined

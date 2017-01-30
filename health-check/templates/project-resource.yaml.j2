@@ -1,0 +1,46 @@
+resources:
+  projects:
+    {{ project }}:
+      description: The project {{ project }}
+      issue-tracker: SFStoryboard
+      source-repositories:
+        - {{ project }}
+  repos:
+    {{ project }}:
+      description: The git repository {{ project }}
+      acl: config-acl
+  acls:
+    {{ project }}-acl:
+      file: |
+        [access "refs/*"]
+          read = group {{ project }}-core
+          owner = group {{ project }}-ptl
+        [access "refs/heads/*"]
+          label-Code-Review = -2..+2 group {{ project }}-core
+          label-Code-Review = -2..+2 group {{ project }}-ptl
+          label-Verified = -2..+2 group {{ project }}-ptl
+          label-Workflow = -1..+1 group {{ project }}-core
+          label-Workflow = -1..+1 group {{ project }}-ptl
+          label-Workflow = -1..+0 group Registered Users
+          submit = group {{ project }}-ptl
+          read = group {{ project }}-core
+          read = group Registered Users
+        [access "refs/meta/config"]
+          read = group {{ project }}-core
+          read = group Registered Users
+        [receive]
+          requireChangeId = true
+        [submit]
+          mergeContent = false
+          action = fast forward only
+      groups:
+        - {{ project }}-ptl
+        - {{ project }}-core
+  groups:
+    {{ project }}-ptl:
+      description: Team lead for the {{ project }} repo
+      members:
+        - admin@sftests.com
+    {{ project }}-core:
+      description: Team core for the {{ project }} repo
+      members: []
