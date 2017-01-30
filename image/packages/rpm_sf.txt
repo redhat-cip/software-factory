@@ -1,3 +1,2 @@
 jenkins-1.651.3
-logstash
 kibana
