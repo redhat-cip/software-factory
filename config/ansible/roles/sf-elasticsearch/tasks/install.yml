@@ -1,0 +1,11 @@
+---
+- name: "Add the elasticsearch RPM repository"
+  yum_repository:
+    name: elasticsearch
+    description: Elasticsearch repository
+    baseurl: "{{ elasticsearch_repo_url }}"
+
+- name: "Install Elasticsearch package"
+  yum:
+    name: elasticsearch
+    state: latest

@@ -71,6 +71,11 @@ if [ "${USE_SWIFT_CACHE}" == "yes" ]; then
     LOG_GEARMAN_WORKER_URL="${SWIFT_CACHE}/log_gearman/log-gearman-worker.py"
 fi
 
+# Elasticsearch
+if [ "${USE_SWIFT_CACHE}" == "yes" ]; then
+    ELASTICSEARCH_EXTRA_VARS="elasticsearch_repo_url: \"http://46.231.132.68:8080/v1/AUTH_b50e80d3969f441a8b7b1fe831003e0a/rpms\""
+fi
+
 
 # mod_auth_pubtkt
 MOD_AUTH_PUBTKT_VERSION=0.8

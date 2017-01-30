@@ -1,2 +1,5 @@
 role_actions:
+  - install
   - setup
+
+elasticsearch_repo_url: https://packages.elastic.co/elasticsearch/2.x/centos
