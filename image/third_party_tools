@@ -87,6 +87,13 @@ if [ "${USE_SWIFT_CACHE}" == "yes" ]; then
     LOGSTASH_EXTRA_VARS+=", logstash_repo_gpgcheck: \"0\""
 fi
 
+# Kibana
+if [ "${USE_SWIFT_CACHE}" == "yes" ]; then
+    KIBANA_EXTRA_VARS="kibana_repo_url: \"http://46.231.132.68:8080/v1/AUTH_b50e80d3969f441a8b7b1fe831003e0a/rpms\""
+    KIBANA_EXTRA_VARS+=", kibana_repo_name: \"elastic\""
+    KIBANA_EXTRA_VARS+=", kibana_repo_desc: \"Mirrored elastic repo\""
+    KIBANA_EXTRA_VARS+=", kibana_repo_gpgcheck: \"0\""
+fi
 
 # mod_auth_pubtkt
 MOD_AUTH_PUBTKT_VERSION=0.8
