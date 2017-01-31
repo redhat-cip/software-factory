@@ -1,0 +1,4 @@
+---
+upgrade:
+  - Storyboard FULLTEXT indexes were not enabled by
+    previous deployment and are now automatically added.
