@@ -23,7 +23,6 @@ import logging
 
 from utils import Base
 from utils import set_private_key
-from utils import ManageSfUtils
 from utils import ResourcesUtils
 from utils import GerritGitUtils
 from utils import create_random_str
@@ -38,14 +37,6 @@ logger.setLevel(logging.DEBUG)
 class TestGerrit(Base):
     """ Functional tests that validate some gerrit behaviors.
     """
-    @classmethod
-    def setUpClass(cls):
-        pass
-
-    @classmethod
-    def tearDownClass(cls):
-        pass
-
     def setUp(self):
         super(TestGerrit, self).setUp()
         self.projects = []
@@ -222,60 +213,16 @@ class TestGerrit(Base):
                 auth_pubtkt=config.USERS[config.USER_1]['auth_cookie']))
         self.assertTrue('"2.11.9"' in resp.text)
 
-
-class TestGerritGitWeb(Base):
-    """ Functional tests that validate some GitWeb access behaviors.
-    """
-    def setUp(self):
-        super(TestGerritGitWeb, self).setUp()
-        self.projects = []
-        self.clone_dirs = []
-        self.dirs_to_delete = []
-        self.msu = ManageSfUtils(config.GATEWAY_URL)
-
-    def tearDown(self):
-        super(TestGerritGitWeb, self).tearDown()
-        for name in self.projects:
-            self.msu.deleteProject(name,
-                                   config.ADMIN_USER)
-        for dirs in self.dirs_to_delete:
-            shutil.rmtree(dirs)
-
-    def create_project(self, name, options=None):
-        self.msu.createProject(name,
-                               config.ADMIN_USER,
-                               options=options)
-        self.projects.append(name)
-
     def test_gitweb_access(self):
         """ Test if gitweb access works correctly
         """
-        pub_pname = 'p_public_%s' % create_random_str()
-        self.create_project(pub_pname)
+        pname = 'p_%s' % create_random_str()
+        self.create_project(pname)
 
-        priv_pname = 'p_private_%s' % create_random_str()
-        self.create_project(priv_pname, options={"private": ""})
-
-        # Test anonymous access to a public repo
-        url = "%s/r/gitweb?p=%s.git" % (config.GATEWAY_URL, pub_pname)
-        expected_title = "%s.git/summary" % pub_pname
+        # Test anonymous access to a repo
+        url = "%s/r/gitweb?p=%s.git" % (config.GATEWAY_URL, pname)
+        expected_title = "%s.git/summary" % pname
 
         resp = requests.get(url)
-        self.assertTrue(resp.url.endswith('/r/gitweb?p=%s.git' % pub_pname))
-        self.assertTrue(expected_title in resp.text)
-
-        # Test anonymous access to a private repo
-        url = "%s/r/gitweb?p=%s.git" % (config.GATEWAY_URL, priv_pname)
-        expected_title = "%s.git/summary" % priv_pname
-
-        resp = requests.get(url)
-        self.assertTrue("auth/login" in resp.url)
-        self.assertFalse(expected_title in resp.text)
-
-        # Test authenticated access to a private repo
-        resp = requests.get(
-            url,
-            cookies=dict(
-                auth_pubtkt=config.USERS[config.USER_1]['auth_cookie']))
-        self.assertTrue(resp.url.endswith('/r/gitweb?p=%s.git' % priv_pname))
+        self.assertTrue(resp.url.endswith('/r/gitweb?p=%s.git' % pname))
         self.assertTrue(expected_title in resp.text)
