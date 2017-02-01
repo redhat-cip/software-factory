@@ -208,53 +208,6 @@ class ManageSfUtils(Tool):
         self.base_cmd = "sfmanager --url %s --auth-server-url " \
             "%s --auth %%s:%%s " % (url, config.GATEWAY_URL)
 
-    def createProject(self, name, user, options=None, cookie=None):
-        passwd = config.USERS[user]['password']
-        base_cmd = self.base_cmd % (user, passwd)
-        if cookie:
-            base_cmd = base_cmd + " --cookie %s " % (cookie)
-
-        cmd = base_cmd + " project create --name %s " % name
-        if options:
-            for k, v in options.items():
-                cmd = cmd + " --" + k + " " + v
-
-        self.exe(cmd)
-
-    def deleteProject(self, name, user):
-        passwd = config.USERS[user]['password']
-        cmd = self.base_cmd + " project delete --name %s"
-        cmd = cmd % (user, passwd, name)
-        self.exe(cmd)
-
-    def addUsertoProjectGroups(self, auth_user, project, new_user, groups):
-        passwd = config.USERS[auth_user]['password']
-        if new_user in config.USERS:
-            umail = config.USERS[new_user]['email']
-        else:
-            # Likely we want to add a group not a user
-            umail = new_user
-        cmd = self.base_cmd % (auth_user, passwd)
-        cmd = cmd + " membership add --project %s " % project
-        cmd = cmd + " --user %s --groups %s" % (umail, groups)
-        self.exe(cmd)
-
-    def deleteUserFromProjectGroups(self, auth_user,
-                                    project, user, group=None):
-        passwd = config.USERS[auth_user]['password']
-        umail = config.USERS[user]['email']
-        cmd = self.base_cmd % (auth_user, passwd) + "membership remove "
-        cmd = cmd + " --project %s --user %s " % (project, umail)
-        if group:
-            cmd = cmd + " --group %s " % group
-        self.exe(cmd)
-
-    def list_active_members(self, user):
-        passwd = config.USERS[user]['password']
-        cmd = self.base_cmd % (user, passwd) + " --json sf_user list"
-        output = self.exe(cmd)
-        return json.loads(output)
-
     def register_user(self, auth_user, username, email):
         passwd = config.USERS[auth_user]['password']
         cmd = self.base_cmd % (auth_user, passwd) + " sf_user create "
