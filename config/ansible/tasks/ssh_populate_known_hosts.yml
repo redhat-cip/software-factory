@@ -13,7 +13,7 @@
   when: ssh_known_hosts.stat.exists == False
 
 - name: Get all server hostnames
-  shell: awk '/{{ ansible_domain }}/ { print $1 }' /etc/ansible/hosts | sort -u
+  shell: grep '^[a-zA-Z0-9]' /etc/ansible/hosts | awk '{ print $1 }' | sort -u
   register: servers
 
 - name: Wait for ssh services on all servers
