@@ -13,12 +13,6 @@
 - name: Initialize git config
   template: src=gitconfig.j2 dest=/root/.gitconfig
 
-- name: Initialize bup
-  command: bup init
-  args:
-    chdir: /root
-    creates: /root/.bup/HEAD
-
 - name: Install backup trigger job
   copy:
     src: "{{ item.name }}"

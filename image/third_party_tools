@@ -109,15 +109,6 @@ if [ "${USE_SWIFT_CACHE}" == "yes" ]; then
 fi
 
 
-# bup
-BUP_URL="https://github.com/bup/bup.git"
-BUP_VERSION=0.26
-
-GIT_REPO_LIST="$GIT_REPO_LIST $BUP_URL"
-if [ "${USE_SWIFT_CACHE}" == "yes" ]; then
-    BUP_URL="${SWIFT_CACHE}/bup.git"
-fi
-
 # gerrit
 GERRIT_VERSION=2.11.9
 GERRIT_URL="https://gerrit-releases.storage.googleapis.com/gerrit-${GERRIT_VERSION}.war"

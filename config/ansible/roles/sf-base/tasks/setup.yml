@@ -11,6 +11,31 @@
 - name: "sf: create log directory"
   file: path=/var/log/software-factory state=directory mode=0700
 
+- name: "system: manage sysctl"
+  sysctl:
+    name: "{{ item.name }}"
+    value: "{{ item.value }}"
+  with_items:
+    - {name: net.ipv4.ip_forward, value: 0}
+    - {name: net.ipv4.ip_dynaddr, value: 0}
+    - {name: net.ipv4.tcp_ecn, value: 0}
+    - {name: net.ipv4.conf.default.rp_filter, value: 1}
+    - {name: net.ipv4.conf.all.rp_filter, value: 1}
+    - {name: net.ipv4.tcp_syncookies, value: 1}
+    - {name: net.ipv4.conf.all.accept_source_route, value: 0}
+    - {name: net.ipv4.conf.default.accept_source_route, value: 0}
+    - {name: net.ipv4.conf.all.accept_redirects, value: 0}
+    - {name: net.ipv4.conf.default.accept_redirects, value: 0}
+    - {name: net.ipv4.conf.all.secure_redirects, value: 0}
+    - {name: net.ipv4.conf.default.secure_redirects, value: 0}
+    - {name: net.ipv4.icmp_echo_ignore_broadcasts, value: 1}
+    - {name: kernel.sysrq, value: 0}
+  when: ansible_virtualization_role != "guest"
+
+- name: "system: make sure auditd is enabled"
+  systemd: name=auditd enabled=yes state=started
+  when: ansible_virtualization_role != "guest"
+
 - name: "system: manage /etc/hosts"
   template: src=/etc/ansible/templates/etc-hosts.j2 dest=/etc/hosts mode=0644
 
