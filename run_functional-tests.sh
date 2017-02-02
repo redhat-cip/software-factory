@@ -97,8 +97,7 @@ case "${TEST_TYPE}" in
     "upgrade")
         ./fetch_image.sh ${SF_PREVIOUS_VER} || fail "Could not fetch ${SF_PREVIOUS_VER}"
         # Use previous version arch, failback to current arch
-        git show ${PREVIOUS_VER}:config/refarch/allinone.yaml > ${ARTIFACTS_DIR}/upgrade_inital_arch.yaml ||
-            cp config/refarch/allinone.yaml ${ARTIFACTS_DIR}/upgrade_inital_arch.yaml
+        git show ${PREVIOUS_VER}:config/refarch/allinone.yaml > ${ARTIFACTS_DIR}/upgrade_inital_arch.yaml
         export REFARCH_FILE=${ARTIFACTS_DIR}/upgrade_inital_arch.yaml
         lxc_init ${SF_PREVIOUS_VER}
         run_bootstraps
@@ -106,7 +105,6 @@ case "${TEST_TYPE}" in
         sleep 20
         run_provisioner
         # Copy new arch
-        scp config/refarch/allinone.yaml ${SF_HOST}:/etc/puppet/hiera/sf/arch.yaml
         scp config/refarch/allinone.yaml ${SF_HOST}:/etc/software-factory/arch.yaml
         run_upgrade
         run_checker "checksum_warn_only"

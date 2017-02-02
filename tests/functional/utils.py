@@ -24,7 +24,6 @@ import stat
 import tempfile
 import string
 import random
-import config
 import requests
 import time
 import yaml
@@ -32,9 +31,10 @@ import yaml
 import logging
 import pkg_resources
 
+from subprocess import Popen, PIPE
 from pysflib.sfredmine import RedmineUtils
 
-from subprocess import Popen, PIPE
+import config
 
 
 logging.getLogger("requests").setLevel(logging.WARNING)
@@ -64,7 +64,7 @@ EMPTY_JOB_XML = """<?xml version='1.0' encoding='UTF-8'?>
 skipIf = unittest.skipIf
 skip = unittest.skip
 
-services = config.sfarch['roles'].keys()
+services = config.groupvars['roles'].keys()
 
 
 def is_present(service):
@@ -397,15 +397,8 @@ class GerritGitUtils(Tool):
 
 class JenkinsUtils:
     def __init__(self):
-        f = '%s/secrets.yaml' % config.SF_BOOTSTRAP_DATA
-        if not os.path.isfile(f):
-            # 2.3.0: secrets doesn't existed before
-            f = '%s/sfcreds.yaml' % config.SF_BOOTSTRAP_DATA
-        with open(f) as fh:
-            yconfig = yaml.load(fh)
-            self.jenkins_user = 'jenkins'
-            self.jenkins_password = \
-                yconfig.get('jenkins_password')
+        self.jenkins_user = 'jenkins'
+        self.jenkins_password = config.groupvars.get('jenkins_password')
         self.jenkins_url = config.GATEWAY_URL + "/jenkins/"
         self.cookies = {'auth_pubtkt': get_cookie(config.USER_1,
                                                   config.USER_1_PASSWORD)}

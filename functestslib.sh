@@ -6,7 +6,7 @@ export SF_HOST=${SF_HOST:-sftests.com}
 export SKIP_CLEAN_ROLES="y"
 
 MANAGESF_URL=https://${SF_HOST}
-JENKINS_URL="http://${SF_HOST}/jenkinslogs/${JENKINS_IP}:8081/"
+JENKINS_URL="https://${SF_HOST}/jenkinslogs/${JENKINS_IP}:8081/"
 
 ARTIFACTS_DIR="/var/lib/sf/artifacts"
 # This environment variable is set ZUUL in the jenkins job workspace
@@ -330,17 +330,12 @@ function fail {
 function fetch_bootstraps_data {
     echo "[+] Fetch bootstrap data"
     rm -Rf sf-bootstrap-data
-    scp -r ${SF_HOST}:sf-bootstrap-data . || mkdir sf-bootstrap-data
-    # could be remove after 2.2.7 release
-    rsync -a -L ${SF_HOST}:/etc/puppet/hiera/sf/ sf-bootstrap-data/
-    rsync -a -L ${SF_HOST}:/etc/ansible/group_vars/ sf-bootstrap-data/group_vars/
-    rsync -a -L ${SF_HOST}:/etc/software-factory/ sf-bootstrap-data/
+    # TODO(2.4.0): remove bellow line
+    rsync -a -L ${SF_HOST}:/root/sf-bootstrap-data/ sf-bootstrap-data/ 2> /dev/null || :
     rsync -a -L ${SF_HOST}:/var/lib/software-factory/bootstrap-data/ sf-bootstrap-data/
-    ADMIN_PASSWORD=$(awk '/admin_password:/ {print $2}' sf-bootstrap-data/sfconfig.yaml)
-
-    echo "[+] Fetch ${SF_HOST} ssl cert"
-    scp -r ${SF_HOST}:/etc/pki/ca-trust/extracted/openssl/ca-bundle.trust.crt sf-bootstrap-data/ca-bundle.trust.crt
-    export REQUESTS_CA_BUNDLE="$(pwd)/sf-bootstrap-data/ca-bundle.trust.crt"
+    scp ${SF_HOST}:/etc/ansible/group_vars/all.yaml sf-bootstrap-data/
+    ADMIN_PASSWORD=$(awk '/admin_password:/ {print $2}' sf-bootstrap-data/all.yaml)
+    export REQUESTS_CA_BUNDLE="$(pwd)/sf-bootstrap-data/certs/localCA.pem"
 }
 
 function run_bootstraps {
@@ -461,10 +456,6 @@ function run_backup_restore {
 
 function run_upgrade {
     echo "$(date) ======= run_upgrade"
-    # TODO: remove this temporary fix after 2.2.3 or 2.3.0 release
-    ssh ${SF_HOST} "cd config; sed -i zuul/projects.yaml -e 's#\.\*#unused_job_definition#'; git add zuul/projects.yaml"
-    ssh ${SF_HOST} "cd config; git commit -m 'remove set_node_options from projects'; git push git+ssh://${SF_HOST}/config master"
-
     INSTALL_SERVER=managesf.${SF_HOST}
     sudo git clone file://$(pwd) /var/lib/lxc/${INSTALL_SERVER}/rootfs/root/software-factory  --depth 1 || fail "Could not clone sf in managesf instance"
     echo "[+] Copying new version (${IMAGE_PATH}/ -> /var/lib/lxc/${INSTALL_SERVER}/rootfs/${IMAGE_PATH})"
@@ -491,11 +482,6 @@ function change_fqdn {
     echo "$(date) ======= change_fqdn"
     ssh ${SF_HOST} "sed -i -e 's/fqdn: ${SF_HOST}/fqdn: sftests2.com/g' /etc/software-factory/sfconfig.yaml"
     ssh ${SF_HOST} "sed -i -e 's/${SF_HOST}/sftests2.com/g' /etc/software-factory/arch.yaml"
-    # This triggers cert recreating in sfconfig.py. Should be done automatically
-    # in the Ansible task update_fqdn; but that is currently executed after cert
-    # creation.
-    ssh ${SF_HOST} "rm sf-bootstrap-data/certs/gateway.* openssl.cnf"
-
     checkpoint "change_fqdn"
 }
 
@@ -564,10 +550,7 @@ function if_gui_tests_failure {
 
 function run_serverspec_tests {
     echo "$(date) ======= run_serverspec_tests"
-    # Wait a few seconds for zuul to start
-    sleep 5
     # Copy current serverspec
-    sudo rsync -a --delete serverspec/ ${IMAGE_PATH}/etc/serverspec/
     ssh ${SF_HOST} "cd /etc/serverspec; rake spec" 2>&1 | tee ${ARTIFACTS_DIR}/serverspec.output
     [ "${PIPESTATUS[0]}" != "0" ] && fail "Serverspec tests failed"
     checkpoint "run_serverspec_tests"

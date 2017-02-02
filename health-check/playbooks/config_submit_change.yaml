@@ -13,11 +13,6 @@
 
 - hosts: jenkins
   tasks:
-    - name: Check for config-check failure
-      when: hostvars[groups["install-server"][0]]["submit_status"].rc != 0
-      command: "cat /var/lib/jenkins/jobs/config-check/builds/lastFailedBuild/log"
-      failed_when: true
-
     - name: Check for config-update post job
       wait_for:
         path: /var/lib/jenkins/jobs/config-update/builds/lastStableBuild/build.xml

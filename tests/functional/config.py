@@ -12,29 +12,13 @@ if "http_proxy" in os.environ:
 if "https_proxy" in os.environ:
     del os.environ["https_proxy"]
 
-requests_ca = "%s/ca-bundle.trust.crt" % SF_BOOTSTRAP_DATA
+requests_ca = "%s/certs/localCA.pem" % SF_BOOTSTRAP_DATA
 if "REQUESTS_CA_BUNDLE" not in os.environ and os.path.isfile(requests_ca):
     os.environ["REQUESTS_CA_BUNDLE"] = requests_ca
 
-sfconfig_filename = "%s/sfconfig.yaml" % SF_BOOTSTRAP_DATA
-secrets_filename = "%s/secrets.yaml" % SF_BOOTSTRAP_DATA
-sfarch_filename = "%s/_arch.yaml" % SF_BOOTSTRAP_DATA
+groupvars = yaml.safe_load(open("%s/all.yaml" % SF_BOOTSTRAP_DATA))
 
-try:
-    sfconfig = yaml.load(open(sfconfig_filename))
-    if not os.path.isfile(sfarch_filename):
-        sfarch = yaml.load(open("%s/group_vars/all.yaml" % SF_BOOTSTRAP_DATA))
-    else:
-        sfarch = yaml.load(open(sfarch_filename))
-    if os.path.isfile(secrets_filename):
-        secrets = yaml.load(open(secrets_filename))
-    else:
-        secrets = {}
-except:
-    print "Can't load config"
-    raise
-
-GATEWAY_HOST = sfconfig['fqdn']
+GATEWAY_HOST = groupvars['fqdn']
 
 GATEWAY_URL = 'https://%s' % GATEWAY_HOST
 MANAGESF_API = GATEWAY_URL + "/manage/"
@@ -45,12 +29,12 @@ GERRIT_SERVICE_PRIV_KEY_PATH = '%s/ssh_keys/gerrit_service_rsa' \
 SERVICE_PRIV_KEY_PATH = '%s/ssh_keys/service_rsa' \
                         % SF_BOOTSTRAP_DATA
 
-ADMIN_PASSWORD = sfconfig.get('authentication')['admin_password']
+ADMIN_PASSWORD = groupvars['authentication']['admin_password']
 USER_1 = "admin"
 USER_1_PASSWORD = ADMIN_PASSWORD
 
 SF_SERVICE_USER = "SF_SERVICE_USER"
-SF_SERVICE_USER_PASSWORD = secrets.get('sf_service_user_password')
+SF_SERVICE_USER_PASSWORD = groupvars.get('sf_service_user_password')
 
 HOOK_USER = SF_SERVICE_USER
 HOOK_USER_PASSWORD = SF_SERVICE_USER_PASSWORD
