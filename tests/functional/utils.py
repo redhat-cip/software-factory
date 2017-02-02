@@ -31,6 +31,7 @@ import yaml
 import logging
 import pkg_resources
 
+from distutils.version import StrictVersion
 from subprocess import Popen, PIPE
 from pysflib.sfredmine import RedmineUtils
 
@@ -65,6 +66,10 @@ skipIf = unittest.skipIf
 skip = unittest.skip
 
 services = config.groupvars['roles'].keys()
+
+
+def cmp_version(v1, v2):
+    return StrictVersion(v1) < StrictVersion(v2)
 
 
 def is_present(service):
@@ -560,6 +565,12 @@ class ResourcesUtils():
         change_sha = self.ggu.direct_push_branch(cdir, 'master')
         config_update_log = self.ju.wait_for_config_update(change_sha)
         assert "Finished: SUCCESS" in config_update_log
+
+    def create_resources(self, name, data):
+        cdir = self.ggu.clone(self.url, 'config', config_review=False)
+        rfile = os.path.join(cdir, 'resources', name + '.yaml')
+        yaml.dump(data, file(rfile, "w"), default_flow_style=False)
+        self._direct_push(cdir, 'Add resources %s' % name)
 
     def create_repo(self, name):
         yaml = self.yaml % {'name': name, 'fqdn': config.GATEWAY_HOST}

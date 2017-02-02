@@ -76,6 +76,7 @@ case "${TEST_TYPE}" in
         run_bootstraps
         run_serverspec_tests
         run_health_base
+        run_provisioner
         lxc_poweroff
         lxc_start
         wait_boot_finished
@@ -83,7 +84,6 @@ case "${TEST_TYPE}" in
         if [ "${SF_TESTS}" != "tests/functional" ]; then
             exit 0
         fi
-        run_provisioner
         run_backup_start
         lxc_stop
         lxc_init

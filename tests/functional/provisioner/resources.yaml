@@ -2,6 +2,105 @@ local_users:
  - username: finn
    password: mathematical
    email: finn@candykingdom.ooo
+ - username: adev
+   password: adevpass
+   email: adev@softwarefactory-project.io
+ - username: alead
+   password: aleadpass
+   email: alead@softwarefactory-project.io
+resources:
+  projects:
+    tdpw-project:
+      name: tdpw
+      description: The is a demo RPM distribution project to experiment
+      review-dashboard: default
+      issue-tracker: SFStoryboard
+      source-repositories:
+      - tdpw/python-readerlib
+      - tdpw/python-readerlib-distgit
+      - tdpw/reader
+      - tdpw/reader-distgit
+      - tdpw/reader-ansible
+      - tdpw/reader-ansible-distgit
+      - tdpw/tdpw-installer
+      - tdpw/tdpw-installer-distgit
+      - tdpw/tdpw-info
+  acls:
+    tdpw-acl:
+      file: |
+        [access "refs/*"]
+          read = group tdpw-core
+          owner = group tdpw-ptl
+        [access "refs/heads/*"]
+            label-Verified = -2..+2 group tdpw-ptl
+            label-Code-Review = -2..+2 group tdpw-core
+            label-Workflow = -1..+1 group tdpw-core
+            rebase = group tdpw-core
+            abandon = group tdpw-core
+            submit = group tdpw-ptl
+            read = group tdpw-core
+        [access "refs/tags/*"]
+            pushTag = group tdpw-core
+            pushSignedTag = group tdpw-core
+        [access "refs/meta/config"]
+            read = group tdpw-core
+        [receive]
+            requireChangeId = true
+        [submit]
+            mergeContent = false
+            action = rebase if necessary
+      groups:
+      - tdpw-core
+      - tdpw-ptl
+  groups:
+    tdpw-core:
+      name: tdpw-core
+      description: Core developers for project tdpw
+      members:
+      - finn@candykingdom.ooo
+      - adev@softwarefactory-project.io
+    tdpw-ptl:
+      name: tdpw-ptl
+      description: Project team lead for project tdpw
+      members:
+      - alead@softwarefactory-project.io
+  repos:
+    tdpw/python-readerlib:
+      name: tdpw/python-readerlib
+      acl: tdpw-acl
+      description: Python library of the Reader project
+    tdpw/python-readerlib-distgit:
+      name: tdpw/python-readerlib-distgit
+      acl: tdpw-acl
+      description: RPM packaging for python-readerlib
+    tdpw/reader:
+      name: tdpw/reader
+      acl: tdpw-acl
+      description: The Reader server
+    tdpw/reader-distgit:
+      name: tdpw/reader-distgit
+      acl: tdpw-acl
+      description: RPM packaging for the Reader server
+    tdpw/reader-ansible:
+      name: tdpw/reader-ansible
+      acl: tdpw-acl
+      description: The Ansible role of the Reader server
+    tdpw/reader-ansible-distgit:
+      name: tdpw/reader-ansible-distgit
+      acl: tdpw-acl
+      description: RPM packaging for the Reader Ansible role
+    tdpw/tdpw-installer:
+      name: tdpw/tdpw-installer
+      acl: tdpw-acl
+      description: The installer for the tdpw RPM Distribution
+    tdpw/tdpw-installer-distgit:
+      name: tdpw/tdpw-installer-distgit
+      acl: tdpw-acl
+      description: RPM packaging for the tdpw Distribution installer
+    tdpw/tdpw-info:
+      name: tdpw/tdpw-info
+      acl: tdpw-acl
+      description: tdpw Distribution info repository
 projects:
  - name: dummy_project1
    issues:
@@ -36,7 +135,7 @@ users:
  - name: user3
 commands:
   - cmd: hieraedit.py --yaml /etc/software-factory/sfconfig.yaml safekey pc_test
-  - cmd: echo "admin:OpPzvAQ.RbXb6" > /etc/httpd/managesf_htpasswd
+  - cmd: echo "adev:OpPzvAQ.RbXb6" > /etc/httpd/managesf_htpasswd
 checksum:
   - file: /etc/software-factory/sfconfig.yaml
   - file: /var/lib/jenkins/credentials.xml

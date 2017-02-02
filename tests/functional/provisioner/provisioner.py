@@ -31,6 +31,7 @@ from utils import JenkinsUtils
 from utils import get_cookie
 from utils import is_present
 from utils import ssh_run_cmd
+from utils import cmp_version
 
 from pysflib.sfstoryboard import SFStoryboard
 
@@ -61,22 +62,37 @@ class SFProvisioner(object):
             config.GATEWAY_URL + "/storyboard_api",
             config.USERS[config.ADMIN_USER]['auth_cookie'])
 
+    def create_resources(self):
+        print " Creating resources ..."
+        if cmp_version(os.environ.get("PROVISIONED_VERSION", "0.0"), "2.4.0"):
+            # Remove review-dashboard
+            for p in self.resources['resources']['projects'].values():
+                del p['review-dashboard']
+        self.ru.create_resources("provisioner",
+            {'resources': self.resources['resources']})
+        # Create review for the first few repositories
+        for project in self.resources['resources']['repos'].keys()[:3]:
+            self.clone_project(project)
+            self.create_review(project, "Test review for %s" % project)
+
     def create_project(self, name):
         print " Creating project %s ..." % name
         self.ru.create_repo(name)
 
-    def push_files_in_project(self, name, files):
-        print " Add files(%s) in a commit ..." % ",".join(files)
+    def clone_project(self, name):
         # TODO(fbo); use gateway host instead of gerrit host
         self.url = "ssh://%s@%s:29418/%s" % (config.ADMIN_USER,
                                              config.GATEWAY_HOST, name)
-        clone_dir = self.ggu.clone(self.url, name, config_review=False)
-        self.clone_dir = clone_dir
+        self.clone_dir = self.ggu.clone(self.url, name, config_review=False)
+
+    def push_files_in_project(self, name, files):
+        print " Add files(%s) in a commit ..." % ",".join(files)
+        self.clone_project(name)
         for f in files:
-            file(os.path.join(clone_dir, f), 'w').write('data')
-            self.ggu.git_add(clone_dir, (f,))
-        self.ggu.add_commit_for_all_new_additions(clone_dir)
-        self.ggu.direct_push_branch(clone_dir, 'master')
+            file(os.path.join(self.clone_dir, f), 'w').write('data')
+            self.ggu.git_add(self.clone_dir, (f,))
+        self.ggu.add_commit_for_all_new_additions(self.clone_dir)
+        self.ggu.direct_push_branch(self.clone_dir, 'master')
 
     def create_storyboard_issue(self, name, issue_name):
         project = self.stb_client.projects.get(name)
@@ -109,20 +125,23 @@ class SFProvisioner(object):
         pass
 
 
-    def simple_login(self, user):
+    def simple_login(self, user, password):
         """log as user to make the user listable"""
-        get_cookie(user, config.USERS[user]['password'])
+        get_cookie(user, password)
 
-
-    def create_review(self, project, issue):
+    def create_review(self, project, commit_message, branch='master'):
         """Very basic review creator for statistics and restore tests
         purposes."""
         self.ggu.config_review(self.clone_dir)
         self.ggu.add_commit_in_branch(
             self.clone_dir,
-            'branch_' + str(issue[0]),
-            commit='test\n\nTask: #%s\nStory: #%s' % (issue[0], issue[1]))
-        self.ggu.review_push_branch(self.clone_dir, 'branch_' + str(issue[0]))
+            branch,
+            commit=commit_message)
+        self.ggu.review_push_branch(self.clone_dir, branch)
+
+    def create_review_for_issue(self, project, issue):
+        self.create_review(project, 'test\n\nTask: #%s\nStory: #%s' % (
+                           issue[0], issue[1]), 'branch_%s' % str(issue[0]))
 
     def create_local_user(self, username, password, email):
         self.msu.create_user(username, password, email)
@@ -158,9 +177,10 @@ class SFProvisioner(object):
             self.create_local_user(user['username'],
                                    user['password'],
                                    user['email'])
+            self.simple_login(user['username'], user['password'])
         for u in self.resources['users']:
             print "log in as %s" % u['name']
-            self.simple_login(u['name'])
+            self.simple_login(u['name'], config.USERS[u['name']]['password'])
         for project in self.resources['projects']:
             print "Create user datas for %s" % project['name']
             self.create_project(project['name'])
@@ -171,9 +191,10 @@ class SFProvisioner(object):
                 if review:
                     print "Create review for bug %s in %s" % (
                         i, project['name'])
-                    self.create_review(project['name'], i)
+                    self.create_review_for_issue(project['name'], i)
             self.create_jenkins_jobs(project['name'],
                                      [j['name'] for j in project['jobnames']])
+        self.create_resources()
         self.create_pads(2)
         self.create_pasties(2)
 

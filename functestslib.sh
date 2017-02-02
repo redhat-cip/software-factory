@@ -433,6 +433,11 @@ function reset_etc_hosts_dns {
 
 function run_provisioner {
     echo "$(date) ======= run_provisioner"
+    if [ "${TEST_TYPE}" == "upgrade" ]; then
+        export PROVISIONED_VERSION="${PREVIOUS_VER}"
+    else
+        export PROVISIONED_VERSION="${VER}"
+    fi
     ./tests/functional/provisioner/provisioner.py 2>> ${ARTIFACTS_DIR}/provisioner.debug || fail "Provisioner failed" ${ARTIFACTS_DIR}/provisioner.debug
     checkpoint "run_provisioner"
 }
