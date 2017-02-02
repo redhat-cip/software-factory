@@ -111,6 +111,9 @@
           echo "[+] Checking gerrit commentlinks"
           python -c "import yaml; 'commentlinks' in yaml.safe_load(open('gerrit/commentlinks.yaml'))"
 
+          echo "[+] Check dashboards"
+          sf-update-dashboard --check --input dashboards/
+
           echo "[+] Checking syntax errors in policy file"
           python -c "import yaml; yaml.safe_load(open('policies/policy.yaml'))"
 
@@ -126,8 +129,9 @@
     defaults: global
     builders:
       - shell: |
-          echo "Updating configuration using $ZUUL_COMMIT"
+          echo "[+] Updating configuration using $ZUUL_COMMIT"
           ssh root@managesf.{{ fqdn }} sf_configrepo_update
+
           echo "[+] Applying resources changes"
           /usr/local/bin/resources.sh apply
     publishers:

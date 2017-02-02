@@ -14,6 +14,11 @@
       state: directory
   with_items:
     - /var/www/sf
+    - /var/www/dashboard
+    - /var/www/dashboards_data
+
+- name: "Install sf-update-dashboard command"
+  copy: src=sf-update-dashboard.py dest=/usr/local/bin/sf-update-dashboard mode=0555
 
 - name: Expose localCA.pem
   copy:
@@ -49,11 +54,18 @@
       - {name: user_settings.js, path: /var/www/sf}
       - {name: welcome.html, path: /var/www/sf}
       - {name: welcome.js, path: /var/www/sf}
+      - {name: gerrit_dashboard.js, path: /var/www/static/js}
 
 - name: Install index.html for zuul
   copy:
     src: zuul.index.html
     dest: /var/www/zuul/index.html
+    mode: 0444
+
+- name: Install gerrit dashboard
+  copy:
+    src: dashboard.index.html
+    dest: /var/www/dashboard/index.html
     mode: 0444
 
 - name: Touch files

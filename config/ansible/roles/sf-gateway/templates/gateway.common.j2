@@ -186,6 +186,16 @@
     RewriteRule ^/$ /{{ welcome_page_path }} [R]
     RewriteRule ^/redmine/redmine/(.*)$ /redmine/$1 [R=301,L]
 
+    <Location "/dashboard">
+        RewriteEngine on
+        RewriteCond %{REQUEST_FILENAME} -s [OR]
+        RewriteCond %{REQUEST_FILENAME} -l [OR]
+        RewriteCond %{REQUEST_FILENAME} -d
+        RewriteRule ^.*$ - [NC,L]
+
+        RewriteRule ^(.*) /dashboard/index.html [NC,L]
+    </location>
+
     <LocationMatch "^/storyboard_api">
         # If api requests are authenticated, check cauth cookie
         <If "%{HTTP:Authorization} =~/Bearer .*/">

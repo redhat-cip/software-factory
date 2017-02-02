@@ -80,6 +80,13 @@ def has_issue_tracker():
     return set(config.ISSUE_TRACKERS) & set(services)
 
 
+def skipIfProvisionVersionLesserThan(wanted_version):
+    return skipIf(cmp_version(os.environ.get("PROVISIONED_VERSION", "0.0"),
+                              wanted_version),
+                  'This instance provisionned data is not supported (%s)' %
+                  wanted_version)
+
+
 def skipIfServiceMissing(service):
     return skipIf(service not in services,
                   'This instance of SF is not running %s' % service)

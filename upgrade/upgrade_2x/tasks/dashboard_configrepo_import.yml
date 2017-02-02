@@ -1,0 +1,17 @@
+---
+- name: Check if dashboards directory already exists in the config-repo
+  stat: path=/root/config/dashboards
+  register: configrepo_dashboards
+
+- name: "Init dashboards config repo directory"
+  when: configrepo_dashboards.stat.exists == false
+  command: chdir=/root/config {{ item }}
+  with_items:
+    - git fetch --all
+    - git reset --hard origin/master --
+    - git clean -f -x -d
+    - mkdir dashboards
+    - cp {{install_path}}/softwarefactory/usr/local/share/sf-config-repo/dashboards/default.dash /root/config/dashboards/
+    - git add dashboards
+    - git commit -m "Initialize dashboards configuration"
+    - git push git+ssh://{{ fqdn }}/config master

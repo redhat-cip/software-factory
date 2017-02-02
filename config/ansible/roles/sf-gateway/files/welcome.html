@@ -38,6 +38,7 @@
                 <li ng-if="project.website" class="list-group-item"><span class="glyphicon glyphicon-home"> Website: <a href="{{ project.website }}">{{ project.website }}</a></span></li>
                 <li ng-if="project.documentation" class="list-group-item"><span class="glyphicon glyphicon-info-sign"> Documentation: <a href="{{ project.documentation }}">{{ project.documentation }}</a></span></li>
                 <li ng-if="project['issue-tracker-url']" class="list-group-item"><span class="glyphicon glyphicon-barcode"> Issue-tracker: <a href="{{ project['issue-tracker-url'] }}">{{ project['issue-tracker-url'] }}</a></span></li>
+                <li ng-if="project['review-dashboard']" class="list-group-item"><span class="glyphicon glyphicon-th-list"> Review dashboard: <a href="/dashboard/project_{{ name }}">{{ project['review-dashboard'] }}</a></span></li>
                 <li ng-if="project.contacts" class="list-group-item"><span class="glyphicon glyphicon-envelope"> Contact:</span>
                     <ul><li ng-repeat="(id, contact) in project.contacts"><a href="mailto:{{ contact }}">{{ contact }}</a></li></ul>
                 </li>

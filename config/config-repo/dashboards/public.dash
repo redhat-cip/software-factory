@@ -1,0 +1,19 @@
+[dashboard]
+title = Public dashboard
+description = Review overview
+foreach = status:open
+
+[section "Positive Feedback"]
+query = label:Code-Review>=1
+
+[section "Negative Feedback"]
+query = label:Code-Review<=-1
+
+[section "14 Days Without Feedback"]
+query = NOT label:Code-Review<=2 NOT label:Workflow<=-1 age:14d
+
+[section "Work In Progress"]
+query = label:Workflow<=-1
+
+[section "Last 10 changes"]
+query = limit:10

@@ -1,0 +1,12 @@
+Gerrit Dashboards
+=================
+
+These files are gerrit-dash-creator files.
+Once merged, a link will be added to the "dashboard" page available from the top-menu.
+
+
+Project Dashboard
+-----------------
+
+Project defined in the resources can also reference a dashboard by it's filename,
+so that a project dashboard will be generated using all the relevant source repositories.
