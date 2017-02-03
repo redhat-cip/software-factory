@@ -17,29 +17,9 @@
 'authenticated_api': 'is_authenticated:True'
 'any': '@'
 'none': '!'
-# Project API CRUD
-'managesf.project:get_one': 'rule:any'
-'managesf.project:get_all': 'rule:any'
-'managesf.project:create': 'rule:admin_api'
-'managesf.project:delete': 'rule:admin_api or rule:ptl_api'
 # Backup API
 'managesf.backup:get': 'rule:admin_api'
 'managesf.backup:create': 'rule:admin_api'
-# Restoration of backup API
-'managesf.restore:restore': 'rule:admin_api'
-# Project memberships API CRUD
-# Assigning or deassigning members to groups for a project obey the following rules:
-# - any group if requestor is admin or project PTL
-# - core or dev group if requestor is project core
-# - dev group if requestor is project dev
-'managesf.membership:get': 'rule:any'
-'managesf.membership:create': 'rule:admin_api or rule:ptl_api or (rule:core_api and (target.group:core-group or target.group:dev-group)) or (rule:dev_api and target.group:dev-group)'
-'managesf.membership:delete': 'rule:admin_api or rule:ptl_api or (rule:core_api and (target.group:core-group or target.group:dev-group)) or (rule:dev_api and target.group:dev-group)'
-# Generic group API CRUD
-'managesf.group:get': 'rule:authenticated_api'
-'managesf.group:create': 'rule:authenticated_api'
-'managesf.group:update': 'rule:admin_api or group:%(group)s'
-'managesf.group:delete': 'rule:admin_api or group:%(group)s'
 # Pages API CRUD
 'managesf.pages:get': 'rule:admin_api or rule:ptl_api'
 'managesf.pages:create': 'rule:admin_api or rule:ptl_api'
