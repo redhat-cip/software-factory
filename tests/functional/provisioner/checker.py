@@ -137,11 +137,11 @@ class SFchecker:
         print "Check that users are listable ...",
         users = [u['name'] for u in self.resources['users']]
         c = {'auth_pubtkt': config.USERS[config.ADMIN_USER]['auth_cookie']}
-        url = 'http://%s/manage/project/membership/' % config.GATEWAY_HOST
+        url = 'http://%s/manage/services_users/' % config.GATEWAY_HOST
         registered = requests.get(url,
                                   cookies=c).json()
         # usernames are in first position
-        r_users = [u[0] for u in registered]
+        r_users = [u['username'] for u in registered]
         if not set(users).issubset(set(r_users)):
             print "FAIL: expected %s, got %s" % (users, r_users)
             exit(1)
