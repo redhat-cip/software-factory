@@ -3,9 +3,6 @@
   stat: path=/root/config/policies
   register: configrepo_policies
 
-- name: Include sfconfig.yaml to get fqdn
-  include_vars: /etc/software-factory/sfconfig.yaml
-
 - name: Init policy configuration
   when: configrepo_policies.stat.exists == false
   command: chdir=/root/config {{ item }}

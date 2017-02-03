@@ -9,9 +9,6 @@
   register: grep
   ignore_errors: yes
 
-- name: Include sfconfig.yaml to get fqdn
-  include_vars: /etc/software-factory/sfconfig.yaml
-
 - name: Init policy configuration
   when: configrepo_policies.stat.exists == true and grep.rc == 1
   command: chdir=/root/config {{ item }}

@@ -1,6 +1,4 @@
 ---
-- include_vars: /etc/software-factory/sfconfig.yaml
-
 - name: Update email of Jenkins CI user
   command: mysql gerrit -e "{{ item }}"
   with_items:
@@ -8,4 +6,4 @@
     - "update accounts set preferred_email = 'jenkins@{{ fqdn }}' where account_id = '2' and preferred_email = 'admin@{{ fqdn }}';"
 
 - name: Gerrit flush caches
-  command: ssh -p 29418 admin@{{ fqdn }} gerrit flush-caches --all
+  command: ssh {{ fqdn }} gerrit flush-caches --all

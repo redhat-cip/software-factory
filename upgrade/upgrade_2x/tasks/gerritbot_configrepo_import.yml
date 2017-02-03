@@ -3,9 +3,6 @@
   stat: path=/root/config/gerritbot
   register: configrepo_gerritbot
 
-- name: Include sfconfig.yaml to get fqdn
-  include_vars: /etc/software-factory/sfconfig.yaml
-
 - name: Copy gerritbot configuration
   when: configrepo_gerritbot.stat.exists == false
   command: chdir=/root/config {{ item }}
