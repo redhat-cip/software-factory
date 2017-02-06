@@ -32,12 +32,11 @@ if test -f /var/lib/sf/zuul-rpm-build/repodata/repomd.xml; then
 fi
 
 if [ "${USE_SWIFT_CACHE}" == "yes" ]; then
-    ENABLED_REPOS+="sfbase,sfextras,sfupdates,sfepel,sfrdo,sfpassenger,sfrelease"
+    ENABLED_REPOS+="sfbase,sfextras,sfupdates,sfepel,sfrdo,sfrelease"
     DISABLED_REPOS="*"
     INSTALL_OPTIONS="--disablerepo=${DISABLED_REPOS} --enablerepo=${ENABLED_REPOS}"
     ANSIBLE_EXTRA_VARS="yum_disable_repo=* yum_enable_repo=${ENABLED_REPOS}"
 fi
-
 
 [ -z "$DEBUG" ] || set -x
 # Target dir where the centos images will be built
@@ -97,12 +96,6 @@ enabled=0
 name=openstack-newton
 baseurl=http://46.231.132.68:8080/v1/AUTH_b50e80d3969f441a8b7b1fe831003e0a/repomirror/openstack-newton/
 gpgcheck=1
-enabled=0
-
-[sfpassenger]
-name=Passenger
-baseurl=http://46.231.132.68:8080/v1/AUTH_b50e80d3969f441a8b7b1fe831003e0a/repomirror/passenger/
-gpgcheck=0
 enabled=0
 
 [sfrelease]
@@ -212,13 +205,6 @@ install_sf_packages() {
         do_chroot ${dir} yum downgrade -y python2-passlib-1.6.5
     }
 
-    if [ ! -f "${dir}/usr/lib64/httpd/modules/mod_passenger.so" ]; then
-        http_fetch ${PASSENGER_REPO} ${dir}/etc/yum.repos.d/passenger.repo
-        install_packages ${dir} ${PASSENGER_PKGS}
-        rm -f ${dir}/etc/yum.repos.d/passenger.repo
-        checkpoint "passenger installed"
-    fi
-
     retry do_chroot ${dir} pip install --upgrade 'pip<8'
     retry do_chroot ${dir} pip install ${PIP_PKGS}
     checkpoint "pip packages installed"
@@ -226,67 +212,6 @@ install_sf_packages() {
     # install zuul_swift_upload.py
     http_fetch $ZUUL_SWIFT_UPLOAD_URL ${dir}/usr/local/bin/zuul_swift_upload.py
     chmod +x ${dir}/usr/local/bin/zuul_swift_upload.py
-}
-
-function install_redmine {
-    # Disable gem rdoc installation
-    echo gem: --no-rdoc --no-ri > ${dir}/root/.gemrc
-
-    # Ensure basic directories
-    [ -d ${dir}/var/www/html ] || mkdir -p ${dir}/var/www/html
-    [ -d ${dir}/var/log/httpd ] || mkdir -p ${dir}/var/log/httpd
-
-    # Install Redmine
-    if [ -d ${dir}/var/www/redmine ]; then
-        head ${dir}/var/www/redmine/doc/CHANGELOG | grep "${REDMINE_VERSION}$" || {
-            rm -Rf ${dir}/var/www/redmine
-            checkpoint "Removed outdated redmine version..."
-        }
-    fi
-
-    # Remove old install directory
-    rm -Rf ${dir}/usr/share/redmine
-
-    # Install Redmine
-    if [ ! -d ${dir}/var/www/redmine ]; then
-        http_fetch $REDMINE_RHEL_URL ${dir}/var/www/redmine.tar.gz
-        do_chroot ${dir} tar -xzpf /var/www/redmine.tar.gz -C /var/www
-        cat > ${dir}/var/www/redmine-${REDMINE_VERSION}/config/database.yml <<EOF
-production:
-  adapter: mysql2
-  database: redmine
-  host: localhost
-  username: root
-  password: ""
-  encoding: utf8
-EOF
-        SUDO_UID=0 SUDO_GID=0 do_chroot ${dir} bash -c "cd /var/www/redmine-${REDMINE_VERSION} && bundle install --without development test"
-        mv ${dir}/var/www/redmine-${REDMINE_VERSION} ${dir}/var/www/redmine
-        rm ${dir}/var/www/redmine.tar.gz
-        SUDO_UID=0 SUDO_GID=0 do_chroot ${dir} bash -c "cd /var/www/redmine/ && gem uninstall mysql2 && bundle update" || {
-            rm -Rf /var/www/redmine
-            exit 1
-        }
-    fi
-
-    # Install Redmine backlog plugin
-    [ -d ${dir}/var/www/redmine/plugins ] || mkdir -p ${dir}/var/www/redmine/plugins
-    if [ ! -d ${dir}/var/www/redmine/plugins/redmine_backlogs ]; then
-        retry do_chroot ${dir} git clone -b ${REDMINE_BACKLOG_VERSION} $REDMINE_BACKLOG_URL /var/www/redmine/plugins/redmine_backlogs
-        do_chroot ${dir} bash -c "cd /var/www/redmine/plugins/redmine_backlogs; patch Gemfile" < ./patches/redmine_backlog_gemfile.patch
-        SUDO_UID=0 SUDO_GID=0 do_chroot ${dir} bash -c "cd /var/www/redmine/plugins/redmine_backlogs && bundle install --without development test"
-    fi
-
-    # Install Redmine http plugin
-    if [ ! -d ${dir}/var/www/redmine/plugins/redmine_http_auth ]; then
-        retry do_chroot ${dir} git clone $REDMINE_HTTP_PLUGIN_URL /var/www/redmine/plugins/redmine_http_auth
-        do_chroot ${dir} bash -c "cd /var/www/redmine/plugins/redmine_http_auth; git checkout -b sf_pinned ${REDMINE_HTTP_PLUGIN_VERSION}"
-    fi
-
-    # Set files permissions (according to: http://www.redmine.org/projects/redmine/wiki/redmineinstall )
-    mkdir -p ${dir}/var/www/redmine/{tmp,tmp/pdf,public/plugin_assets}
-    do_chroot ${dir} chown -R apache:apache /var/www/redmine/{files,log,tmp,public/plugin_assets}
-    do_chroot ${dir} chmod -R 755 /var/www/redmine/{files,log,tmp,public/plugin_assets}
 }
 
 install_edeploy() {
@@ -342,6 +267,7 @@ remove_obsolete() {
     rm -Rf ${dir}/usr/local/murmur
     rm -Rf ${dir}/var/www/managesf
     rm -Rf ${dir}/var/www/cauth
+    rm -Rf ${dir}/var/www/redmine
 
     # Gemfile is a sign /var/www/static was setup manually. It's now replaced by sf-web-assets package
     if [ -f ${dir}/var/www/static/font-awesome/Gemfile ]; then
@@ -442,8 +368,6 @@ build_all() {
     checkpoint "sf dep packages installed"
     enable_selinux
     checkpoint "selinux configured"
-    install_redmine
-    checkpoint "redmine installed"
     install_edeploy
     install_serverspec
     checkpoint "edeploy, serverspect installed"

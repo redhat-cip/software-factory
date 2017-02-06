@@ -1,2 +1,0 @@
-check process httpd with pidfile /var/run/httpd/httpd.pid
-    if failed host localhost port 8083 protocol http with timeout 600 seconds for 5 cycles then alert

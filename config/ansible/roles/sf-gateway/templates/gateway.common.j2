@@ -1,11 +1,5 @@
     RewriteMap base64helper "prg:/usr/local/sbin/base64helper"
 
-    # Don't login to Redmine itself, use cauth instead
-    <LocationMatch "/redmine/login">
-    RewriteEngine On
-    RewriteRule ^(.*)$ /auth/login [R,NC,L]
-    </LocationMatch>
-
     # Disable caching of static files
     <LocationMatch "/static">
     CacheDisable on
@@ -16,50 +10,6 @@
         RewriteEngine On
         RewriteRule ^(.*)$ /auth/login [R,NC,L]
     </LocationMatch>
-
-    # TODO: make /issues/ location bug-tracker awar
-    <Location "/issues/">
-        RewriteEngine On
-        RewriteRule "/issues(.*$)" "/redmine/issues/$1" [R]
-    </Location>
-
-{% if 'redmine' in roles %}
-    <Location /redmine/>
-        ProxyPassReverse /
-
-        ProxyHTMLURLMap /           /redmine/
-        ProxyHTMLURLMap /redmine/   /redmine/
-
-        SetOutputFilter INFLATE;proxy-html;DEFLATE
-
-        ProxyHTMLMeta On
-        ProxyHTMLEnable On
-
-        # Included example from /usr/share/doc/httpd-2.4.6/proxy-html.conf
-        ProxyHTMLLinks    a             href
-        ProxyHTMLLinks    area          href
-        ProxyHTMLLinks    link          href
-        ProxyHTMLLinks    img           src longdesc usemap
-        ProxyHTMLLinks    object        classid codebase data usemap
-        ProxyHTMLLinks    q             cite
-        ProxyHTMLLinks    blockquote    cite
-        ProxyHTMLLinks    ins           cite
-        ProxyHTMLLinks    del           cite
-        ProxyHTMLLinks    form          action
-        ProxyHTMLLinks    input         src usemap
-        ProxyHTMLLinks    head          profile
-        ProxyHTMLLinks    base          href
-        ProxyHTMLLinks    script        src for
-
-        ProxyHTMLEvents    onclick ondblclick onmousedown onmouseup \
-                onmouseover onmousemove onmouseout onkeypress \
-                onkeydown onkeyup onfocus onblur onload \
-                onunload onsubmit onreset onselect onchange
-
-        # Non-default addition for Redmine
-        ProxyHTMLLinks  option      value
-    </Location>
-{% endif %}
 
     <LocationMatch "/r/(?!(login|logout|a))">
     RewriteEngine On
@@ -137,12 +87,6 @@
         ProxyPass /manage/ http://managesf:20001/ retry=0
         ProxyPassReverse /manage/ http://managesf:20001/
 
-{% if 'redmine' in roles %}
-        ProxyPass /redmine/ {{ redmine_internal_url }} nocanon retry=0
-        ProxyPassReverse /redmine/ {{ redmine_internal_url }}
-        ProxyHTMLURLMap {{ redmine_internal_url }} /redmine/
-{% endif %}
-
         ProxyPass /etherpad/ http://127.0.0.1:9001/ retry=0
         ProxyPassReverse /etherpad/ http://127.0.0.1:9001/
 
@@ -184,7 +128,6 @@
 
     RewriteEngine On
     RewriteRule ^/$ /{{ welcome_page_path }} [R]
-    RewriteRule ^/redmine/redmine/(.*)$ /redmine/$1 [R=301,L]
 
     <Location "/dashboard">
         RewriteEngine on

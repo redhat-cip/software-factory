@@ -4,9 +4,6 @@ role_actions:
   - update
   - get_logs
 
-redmine_api_url: "http://api-redmine.{{ fqdn }}:8083/"
-roles: []
-
 managesf_loglevel: INFO
 managesf_root_loglevel: WARNING
 

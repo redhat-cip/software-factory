@@ -1,4 +1,0 @@
----
-- name: "Fetch redmine logs"
-  synchronize: mode=pull src=/var/www/redmine/log dest="{{ log_dest }}/log"
-  ignore_errors: True

@@ -36,19 +36,10 @@
     tags:
       - project_rename
 
-  - name: "Copy Redmine SQL commands"
-    template:
-      src: redmine.j2
-      dest: /tmp/redmine.sql
-      mode: 755
-    tags:
-      - project_rename
-
   - name: "Rename project in DB"
     mysql_db: state=import name={{ item}} target=/tmp/{{ item }}.sql
     with_items:
       - gerrit
-      - redmine
     tags:
       - project_rename
 

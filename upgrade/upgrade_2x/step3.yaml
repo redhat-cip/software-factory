@@ -31,7 +31,6 @@
 - hosts: gerrit
   tasks:
   - include: tasks/allprojectsupdate.yml
-  - include: tasks/schemaupdate.yml
   - include: tasks/update_configrepo.yaml
   - name: Propose replication.config in the config repo
     shell: /usr/local/bin/propose_replication_config.sh

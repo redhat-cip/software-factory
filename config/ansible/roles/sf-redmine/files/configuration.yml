@@ -1,3 +1,0 @@
-default:
-  email_delivery:
-      delivery_method: :sendmail

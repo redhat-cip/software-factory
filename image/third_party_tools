@@ -18,11 +18,8 @@ EPEL_PKGS="$(grep '^[a-zA-Z]' ${ORIG}/packages/rpm_epel.txt)"
 BUILD_PKGS="$(grep '^[a-zA-Z]' ${ORIG}/packages/rpm_build_requirements.txt)"
 CENTOS_PKGS="$(grep '^[a-zA-Z]' ${ORIG}/packages/rpm_centos.txt)"
 
-PASSENGER_REPO="https://oss-binaries.phusionpassenger.com/yum/definitions/el-passenger.repo"
-PASSENGER_PKGS="$(grep '^[a-zA-Z]' ${ORIG}/packages/rpm_passenger.txt)"
-
-RPM_PKGS="${PASSENGER_PKGS} ${EPEL_PKGS} ${RDO_PKGS} ${CENTOS_PKGS} ${BUILD_PKGS}"
-URL_LIST="$URL_LIST $PASSENGER_REPO $RDO_REPO"
+RPM_PKGS="${EPEL_PKGS} ${RDO_PKGS} ${CENTOS_PKGS} ${BUILD_PKGS}"
+URL_LIST="$URL_LIST $RDO_REPO"
 
 # pip
 PIP_PKGS="$(grep '^[a-zA-Z\-]' ${ORIG}/packages/pip_pkgs.txt)"
@@ -95,23 +92,6 @@ if [ "${USE_SWIFT_CACHE}" == "yes" ]; then
     GRAFANA_EXTRA_VARS+=", grafana_repo_gpgcheck: \"1\""
     GRAFANA_EXTRA_VARS+=", grafana_repo_gpgkey: \"\""
 fi
-
-# redmine
-REDMINE_VERSION=2.6.9
-REDMINE_RHEL_URL="http://www.redmine.org/releases/redmine-${REDMINE_VERSION}.tar.gz"
-REDMINE_BACKLOG_URL="https://github.com/backlogs/redmine_backlogs.git"
-REDMINE_BACKLOG_VERSION="v1.0.6"
-REDMINE_HTTP_PLUGIN_URL="https://github.com/kevinfoote/redmine_http_auth.git"
-REDMINE_HTTP_PLUGIN_VERSION="259fb633ac27737d8b0f6a02230e7fa8f619b852"
-
-URL_LIST="$URL_LIST $REDMINE_RHEL_URL"
-GIT_REPO_LIST="$GIT_REPO_LIST $REDMINE_BACKLOG_URL $REDMINE_HTTP_PLUGIN_URL"
-if [ "${USE_SWIFT_CACHE}" == "yes" ]; then
-    REDMINE_RHEL_URL="${SWIFT_CACHE}/redmine/redmine-${REDMINE_VERSION}.tar.gz"
-    REDMINE_BACKLOG_URL="${SWIFT_CACHE}/redmine_backlogs.git"
-    REDMINE_HTTP_PLUGIN_URL="${SWIFT_CACHE}/redmine_http_auth.git"
-fi
-
 
 # gerrit
 GERRIT_VERSION=2.11.9

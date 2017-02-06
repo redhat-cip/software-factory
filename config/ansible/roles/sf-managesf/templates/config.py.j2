@@ -65,13 +65,8 @@ auth = {
 }
 
 services = [
-# Because of http://softwarefactory-project.io/redmine/issues/1466
-# Add storyboard service at the begining
 {% if 'storyboard' in roles %}
     'SFStoryboard',
-{% endif %}
-{% if 'redmine' in roles %}
-    'SFRedmine',
 {% endif %}
 {% if 'gerrit' in roles %}
     'SFGerrit',
@@ -138,15 +133,6 @@ nodepool = {
     'host': 'nodepool.{{ fqdn }}',
     'user': 'root',
     'key': '/var/lib/managesf/.ssh/id_rsa',
-}
-{% endif %}
-
-{% if 'redmine' in roles %}
-redmine = {
-    'host': 'api-redmine.{{ fqdn }}',
-    'url': '{{ redmine_api_url }}',
-    'db_url': 'mysql://managesf:{{ managesf_mysql_password }}@mysql.{{ fqdn }}/redmine?charset=utf8',
-    'api_key': '{{ redmine_api_key }}',
 }
 {% endif %}
 

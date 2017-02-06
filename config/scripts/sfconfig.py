@@ -101,9 +101,7 @@ def load_refarch(filename, domain=None, install_server_ip=None):
             # Add host to role list
             arch["roles"].setdefault(role, []).append(host)
             # Add extra aliases for specific roles
-            if role == "redmine":
-                aliases.add("api-redmine.%s" % arch['domain'])
-            elif role == "gateway":
+            if role == "gateway":
                 aliases.add(arch['domain'])
             elif role == "cauth":
                 aliases.add("auth.%s" % arch['domain'])
@@ -550,22 +548,6 @@ DNS.1 = %s
             get_hostname("jenkins"), defaults["jenkins_api_port"])
         glue["jenkins_pub_url"] = "%s/jenkins/" % glue["gateway_url"]
         get_or_generate_ssh_key("jenkins_rsa")
-
-    if "redmine" in arch["roles"]:
-        glue["redmine_internal_url"] = "http://%s:%s/" % (
-            get_hostname("redmine"), defaults["redmine_port"])
-        glue["redmine_pub_url"] = "%s/redmine/" % glue["gateway_url"]
-        # Make sure api key doesn't have any '-'
-        secrets["redmine_api_key"] = secrets["redmine_api_key"].replace('-',
-                                                                        '')
-        glue["redmine_mysql_host"] = get_hostname("mysql")
-        glue["mysql_databases"]["redmine"] = {
-            'hosts': list(set(('localhost',
-                               get_hostname("redmine"),
-                               get_hostname("managesf")))),
-            'user': 'redmine',
-            'password': secrets['redmine_mysql_password'],
-        }
 
     if "grafana" in arch["roles"]:
         glue["grafana_internal_url"] = "http://%s:%s/" % (
