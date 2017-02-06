@@ -9,7 +9,7 @@ platform by allowing you to deploy such a platform within a couple of minutes bu
 an important point is how I maintain this platform up to date ?
 
 - Latest version of Software Factory workflow.
-- Most recent stable version of components like (Jenkins, Gerrit, JJB, Redmine, ...).
+- Most recent stable version of components like (Jenkins, Gerrit, JJB, ...).
 - Most recent base OS packages (libraries, kernel, ...).
 
 Software Factory being image-based, each new releases provides a new set of image to be used

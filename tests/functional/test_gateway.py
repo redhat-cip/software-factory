@@ -21,10 +21,8 @@ import shlex
 import config
 from utils import Base
 from utils import ManageSfUtils
-from utils import skipIfIssueTrackerMissing, has_issue_tracker
 from utils import skipIfProvisionVersionLesserThan
-# from utils import skipIfServiceMissing
-from utils import get_issue_tracker_utils, ssh_run_cmd
+from utils import ssh_run_cmd
 from pysflib.sfgerrit import GerritUtils
 
 from requests.auth import HTTPBasicAuth
@@ -38,57 +36,6 @@ class TestGateway(Base):
         resp = requests.get(url, allow_redirects=False)
         self.assertEqual(resp.status_code, 307)
         self.assertTrue("/auth/login" in resp.headers['Location'])
-
-    @skipIfIssueTrackerMissing()
-    def test_tracker_root_url_for_404(self):
-        """ Test if tracker yield RoutingError
-        """
-        tracker = get_issue_tracker_utils(
-            auth_cookie=config.USERS[config.ADMIN_USER]['auth_cookie'])
-        url = tracker.get_root_url()
-        for i in xrange(11):
-            resp = requests.get(url)
-            self.assertNotEquals(resp.status_code, 404,
-                                 "%s returned status %s" % (url,
-                                                            resp.status_code))
-
-# TODO(fbo): commented as it causes troubles with the GIT style resources
-# backend. Reactivate it once the plugins are rewritten in compliance with
-# the YAML backend
-#    @skipIfServiceMissing('redmine')
-#    def test_redmine_versions_edit(self):
-#        tracker = get_issue_tracker_utils()
-#        cookies = dict(auth_pubtkt=config.USERS[config.USER_1]['auth_cookie'])
-#
-#        # We need a session, because we execute two requests and the
-#        # authenticity_token is assigned to a session
-#        s = requests.Session()
-#
-#        url = "%s/projects/config/versions/new" % tracker.get_root_url()
-#        resp = s.get(url, cookies=cookies)
-#
-#        # Find the authenticity_token in the response
-#        m = re.search('authenticity_token.*value="(.*)"', resp.text)
-#        authenticity_token = m.group(1)
-#
-#        # Create a new version
-#        url = "%s/projects/config/versions" % tracker.get_root_url()
-#        data = {'version[name]': 'sample6',
-#                'authenticity_token': authenticity_token}
-#        resp = s.post(url, data, cookies=cookies)
-#        self.assertEqual(resp.status_code, 200)
-#
-#        # Edit the version
-#        url = "%s/versions/1" % tracker.get_root_url()
-#        data = {'version[name]': 'sample20',
-#                'authenticity_token': authenticity_token,
-#                '_method': 'put'}
-#        resp = s.post(url, data, cookies=cookies, allow_redirects=False)
-#        self.assertEqual(resp.status_code, 302)
-#        location = resp.headers.get('Location')
-#        self.assertEqual(
-#            location,
-#            '%s/projects/config/settings/versions' % tracker.get_root_url())
 
     def _url_is_not_world_readable(self, url):
         """Utility function to make sure a url is not accessible"""
@@ -111,11 +58,6 @@ class TestGateway(Base):
         """
         subpaths = ["/r/", "/jenkins/",
                     "/zuul/", "/etherpad/", "/paste/", "/docs/", "/app/kibana"]
-        if has_issue_tracker():
-            tracker = get_issue_tracker_utils(
-                auth_cookie=config.USERS[config.ADMIN_USER]['auth_cookie'])
-            if 'redmine' in tracker.get_root_url():
-                subpaths.append('/%s/' % 'redmine')
         url = config.GATEWAY_URL + "/topmenu.html"
         resp = requests.get(url)
         self.assertEqual(resp.status_code, 200)
@@ -238,38 +180,6 @@ class TestGateway(Base):
                 auth_pubtkt=config.USERS[config.USER_1]['auth_cookie']))
         self.assertEqual(resp.status_code, 200)
         self.assertTrue('<title>Zuul Status</title>' in resp.text)
-
-    @skipIfIssueTrackerMissing()
-    def test_tracker_accessible(self):
-        """ Test if Issue Tracker is accessible on gateway host
-        """
-        tracker = get_issue_tracker_utils(
-            auth_cookie=config.USERS[config.ADMIN_USER]['auth_cookie'])
-        url = tracker.get_root_url()
-
-        # Without SSO cookie. Note that auth is no longer enforced
-        resp = requests.get(url)
-        self.assertEqual(resp.status_code, 200,
-                         "%s returned status %s" % (url, resp.status_code))
-
-        # With SSO cookie
-        resp = requests.get(
-            url,
-            cookies=dict(
-                auth_pubtkt=config.USERS[config.USER_1]['auth_cookie']))
-        self.assertEqual(resp.status_code, 200)
-
-        # User should be known in tracker if logged in with SSO
-        self.assertTrue(config.USER_1 in resp.text)
-
-        # Check one of the static files is accessible
-        url = tracker.test_static_file()
-        resp = requests.get(
-            url,
-            cookies=dict(
-                auth_pubtkt=config.USERS[config.USER_1]['auth_cookie']))
-        self.assertEqual(resp.status_code, 200,
-                         "%s returned status %s" % (url, resp.status_code))
 
     def test_etherpad_accessible(self):
         """ Test if Etherpad is accessible on gateway host

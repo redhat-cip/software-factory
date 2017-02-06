@@ -8,7 +8,6 @@ inventory:
       - cauth
       - gateway
       - managesf
-      - redmine
       - statsd
     mem: 8
     cpu: 4

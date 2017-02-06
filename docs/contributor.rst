@@ -12,7 +12,7 @@ The easiest way to get involved is to join us on IRC: #softwarefactory channel o
 
 The mailing list is: softwarefactory-dev@redhat.com , subscribe here: https://www.redhat.com/mailman/listinfo/softwarefactory-dev
 
-User stories and bug tracker is available here: http://softwarefactory-project.io/redmine/projects/software-factory/issues
+User stories and bug tracker is available here: https://softwarefactory-project.io/storyboard/#!/project_group/4
 
 
 Prepare a development environment

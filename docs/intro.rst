@@ -12,7 +12,7 @@ SF integrates services matching each step in the software
 production chain:
 
 * Code review system : `Gerrit <http://en.wikipedia.org/wiki/Gerrit_%28software%29>`_
-* Issue tracker : `Redmine <http://en.wikipedia.org/wiki/Redmine>`_
+* Issue tracker : `Storyboard <http://docs.openstack.org/infra/storyboard/>`_
 * Continuous integration : `Zuul <http://ci.openstack.org/zuul/>`_
 * Tests environment : `Jenkins <http://en.wikipedia.org/wiki/Jenkins_%28software%29>`_ and `Nodepool <http://docs.openstack.org/infra/system-config/nodepool.html>`_
 * Collaborative tools : `Etherpad <http://en.wikipedia.org/wiki/Etherpad>`_, `Pastebin <http://en.wikipedia.org/wiki/Pastebin>`_
@@ -56,7 +56,7 @@ Gerrit
 Gerrit is the main component of SF. It provides the Git
 server, a code review mechanism, and a powerful ACL system. SF
 configures Gerrit to integrate correctly with the issues tracker
-(Redmine) and the CI system (Jenkins/Zuul).
+and the CI system (Jenkins/Zuul).
 
 Some useful plugins are installed on Gerrit:
 
@@ -69,10 +69,10 @@ Some useful plugins are installed on Gerrit:
 * Delete-project: Let the admin the ability to fully remove an useless Gerrit project.
 * Download-commands: Ease integration of Gerrit with IDE
 
-Some Gerrit hooks are installed to handle Redmine issues:
+Some Gerrit hooks are installed to handle Storyboard issues:
 
 * An issue referenced in a commit message will be automatically
-  set as "In progress" in Redmine.
+  set as "In progress" in Storyboard.
 * An issue referenced by a change will be closed when Gerrit merges it.
 
 Gerrit is configured to work with Zuul and Jenkins, that means
@@ -121,21 +121,10 @@ to start pushing jobs artifcats such as system logs or resulting build to a
 a true Object Store like Swift.
 
 
-Redmine
-=======
-
-Redmine is the issue tracker inside Software Factory. Redmine
-configuration done by in SF is quite standard. Additionally
-SF embed the "Redmine Backlogs" plugin that eases Agile
-methodologies to be used with Redmine.
-
-.. image:: imgs/redmine.jpg
-
-
 Etherpad and Lodgeit
 ====================
 
-Software Factory deploys along with Redmine, Gerrit and Jenkins two
+Software Factory deploys along with Storyboard, Gerrit and Jenkins two
 additional collaboration tools. The first one is an Etherpad where team members can
 live edit text documents to collaborate. This is really handy for instance to
 brainstorm of design documents.
@@ -160,9 +149,9 @@ Thanks to it you can easily for instance :
 * Perform and restore a backup of the SF user data.
 * ===
 
-By unified way it means action is performed in Gerrit and on Redmine, for
+By unified way it means action is performed in Gerrit and on Storyboard, for
 instance if a user is added to the admin group of a project A
-it is also added on the related Redmine and Gerrit group automatically.
+it is also added on the related Gerrit group automatically.
 
 
 Top menu - One entry point
@@ -180,8 +169,8 @@ Single Sign On
 ==============
 
 As it is always a pain to deal with login/logout of each component, the
-SF provides an unified authentication through Gerrit, Redmine and Jenkins.
-Once your are authenticated on Gerrit your are also logged in on Redmine and Jenkins.
+SF provides an unified authentication through Gerrit, Storyboard and Jenkins.
+Once your are authenticated on Gerrit your are also logged in on Storyboard and Jenkins.
 A logout from one service logs you out from other services as well.
 
 Currently SF provides four kind of backends to authenticate:

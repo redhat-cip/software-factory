@@ -16,7 +16,6 @@ inventory:
       - zuul
       - nodepool
       - jenkins
-      - redmine
       - murmur
       - elasticsearch
       - job-logs-gearman-client

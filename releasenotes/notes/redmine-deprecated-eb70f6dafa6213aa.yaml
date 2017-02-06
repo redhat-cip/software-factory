@@ -1,0 +1,4 @@
+---
+deprecations:
+  - Redmine service is now deprecated and it will be
+    removed in an upcomming release.

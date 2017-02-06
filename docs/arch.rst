@@ -51,7 +51,6 @@ Optional services can be enabled:
 * etherpad
 * lodgeit
 * nodepool
-* redmine
 * mirror
 * murmur
 

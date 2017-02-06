@@ -128,18 +128,17 @@ After adding the files, you need to commit the changes in your local repo
 Commit message hooks
 ''''''''''''''''''''
 
-If you are working on a feature or a bug that is defined in a ticket on Redmine,
-you can add a line like "Bug: XXX" in your commit message, where XXX is the
-ticket number on Redmine. This way, when you submit your change for review, the
-ticket will see its status updated to "In Progress"; when the change is merged
-the ticket will be closed automatically.
+If you are working on a feature or a bug that is defined in a task on Storyboard
+you can add a line like "Task: XXX" in your commit message, where XXX is the
+task number. This way, when you submit your change for review, the
+task will see its status updated to "In Progress"; when the change is merged
+the task will be closed automatically.
 The following keywords are supported:
 
-* bug/Bug
-* issue/Issue
-* fix/Fix
-* close/Close
-* Related to/Related-To (this will not close the bug upon merging the patch)
+* Task
+* Story
+* Related-Task (this will not close the bug upon merging the patch)
+* Related-Story (this will not close the bug upon merging the patch)
 
 .. _publishchange:
 

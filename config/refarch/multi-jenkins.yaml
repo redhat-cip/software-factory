@@ -9,7 +9,6 @@ inventory:
       - gateway
       - managesf
       - statsd
-      - redmine
       - zuul
       - nodepool
       - gerrit

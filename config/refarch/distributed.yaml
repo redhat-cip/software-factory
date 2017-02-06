@@ -9,9 +9,6 @@ inventory:
       - cauth
       - gateway
       - managesf
-  - name: redmine
-    roles:
-      - redmine
   - name: zuul
     roles:
       - zuul

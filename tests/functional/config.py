@@ -212,4 +212,4 @@ USERS = {
 
 
 # List of potential issue tracker plugins supported by managesf
-ISSUE_TRACKERS = ['redmine', ]
+ISSUE_TRACKERS = []

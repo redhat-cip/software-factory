@@ -1,9 +1,3 @@
 # Note: '\' character needs to be escapped twice ('\\')
 # Double quote needs to be escaped too
-commentlinks:
-  - name: Redmine_addressing
-    match: '([Bb]ug|[Ff]ix|[Ss]tory|[Ii]ssue|[Cc]loses?):\\s+#?(\\d+)'
-    html: '$1 <a href=\"/redmine/issues/$2\">$2</a>'
-  - name: Redmine_related
-    match: '([Rr]elated|[Rr]elated[ -][Tt]o):\\s+#?(\\d+)'
-    html: '$1 <a href=\"/redmine/issues/$2\">$2</a>'
+commentlinks: []

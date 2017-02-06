@@ -46,13 +46,6 @@ digraph {
         "Nodepool";
     }
 
-    subgraph cluster_redmine {
-        style = dashed;
-        label="Redmine";
-        "Redmine";
-        "RedmineApache" [label="Apache"];
-    }
-
     subgraph cluster_mysql {
         style = dashed;
         label="Mysql";
@@ -82,31 +75,25 @@ digraph {
     "Apache" -> "Paste";
     "Apache" -> "GerritApache";
     "Apache" -> "JenkinsApache";
-    "Apache" -> "RedmineApache";
     "GerritApache" -> "Gerrit";
     "JenkinsApache" -> "master";
     "slave" -> "master" [constraint=False];
     "master" -> "slave" [style=invis];
     "cauth" -> "Github";
-    "cauth" -> "Redmine";
     "cauth" -> "Gerrit";
-    "managesf" -> "Redmine";
     "managesf" -> "Gerrit";
-    "Gerrit" -> "Redmine" [constraint=False];
     "cauth" -> "managesf";
 
     edge [color=red];
     "User" -> "Gerrit";
 
     edge [color=orange];
-    "Redmine" -> "MySQL";
     "Gerrit" -> "MySQL";
     "Etherpad" -> "MySQL";
     "Paste" -> "MySQL";
     "managesf" -> "LocalAuth";
 
     edge [color=gray];
-    "RedmineApache" -> "Redmine";
     "Apache" -> "cauth";
     "Apache" -> "managesf";
     "master" -> "Zuul" [constraint=False];

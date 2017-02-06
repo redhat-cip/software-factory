@@ -79,14 +79,6 @@ Once the ini file is filled appropriately, the script can be launched with
  $ python export_issues.py
 
 
-Redmine API limitations
-.......................
-
-Not every functionality is exposed through Redmine's REST API, so some resources
-cannot be migrated programmatically. For a complete and up-to-date list of
-available resources, see http://www.redmine.org/projects/redmine/wiki/Rest_api
-
-
 sfmigration library limitations
 ...............................
 

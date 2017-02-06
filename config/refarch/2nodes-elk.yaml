@@ -15,7 +15,6 @@ inventory:
       - zuul
       - nodepool
       - jenkins
-      - redmine
       - murmur
       - storyboard
       - storyboard-webclient

@@ -33,18 +33,6 @@ What is the added value of Software Factory ?
 * Openstack integration to run slave (nodepool) and store artifacts (swift)
 
 
-Why sf integrates redmine and can it be disabled ?
-..................................................
-
-SF goal is to propose a complete workflow to produce software,
-including an issue tracking system integrated with the ci workflow.
-
-However since most development team already have an issue tracker,
-an on-going effort to support external issue tracker is still in progress.
-The main challenge is to do functional testing using mocked resources
-to simulate an external tracker.
-
-
 Why can't I +2 after being added to the core group ?
 ....................................................
 

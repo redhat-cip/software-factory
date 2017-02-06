@@ -125,12 +125,6 @@ can disable this behavior in the user settings page (available from top right me
 can manage the email address used in Software Factory service indepently from the identity provider data.
 
 
-Redmine API key change
-""""""""""""""""""""""
-
-To change the Redmine API key, you need to edit /var/lib/software-factory/bootstrap-data/secrets.yaml and change the value of `redmine_api_key`. Then call `sfconfig.py` to update the key.
-
-
 Local database access credencials
 """""""""""""""""""""""""""""""""
 

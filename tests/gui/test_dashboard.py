@@ -15,7 +15,6 @@
 # under the License.
 
 from tests.functional import config
-from tests.functional.utils import has_issue_tracker
 from tests.gui.base import BaseGuiTest, snapshot_if_failure
 
 from selenium.common.exceptions import NoSuchElementException
@@ -81,8 +80,6 @@ class TestSoftwareFactoryDashboard(BaseGuiTest):
         driver.find_element_by_link_text("Get started")
         driver.find_element_by_link_text("Paste")
         driver.find_element_by_link_text("Etherpad")
-        if has_issue_tracker():
-            driver.find_element_by_link_text("Redmine")
         driver.find_element_by_link_text("Zuul")
         driver.find_element_by_link_text("Jenkins")
         driver.find_element_by_link_text("Gerrit")
