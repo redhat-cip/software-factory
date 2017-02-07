@@ -29,7 +29,7 @@ providers:
 {% if provider.username %}
     username: {{ provider.username }}
 {% endif %}
-{% if provider.network %}
+{% if provider.network|default(None) %}
     networks:
       - name: {{ provider.network }}
 {% endif %}
