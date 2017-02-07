@@ -22,7 +22,6 @@ import requests
 from utils import Base
 from utils import ManageSfUtils
 from utils import ResourcesUtils
-from utils import create_random_str
 from utils import skipIfServiceMissing, skipIfServicePresent
 
 from pysflib.sfgerrit import GerritUtils
@@ -65,26 +64,6 @@ class TestManageSF(Base):
     def create_project(self, name):
         self.ru.direct_create_repo(name)
         self.projects.append(name)
-
-    def test_project_pages_config(self):
-        """ Check if managesf allow us to configure pages for a project
-        """
-        project = 'p_%s' % create_random_str()
-        self.create_project(project)
-        self.assertTrue(self.gu.project_exists(project))
-        self.msu.update_project_page(config.ADMIN_USER, project,
-                                     "https://tests.com/")
-        self.assertEqual(self.msu.get_project_page(config.ADMIN_USER,
-                                                   project).strip(),
-                         "https://tests.com/")
-        self.msu.delete_project_page(config.USER_3, project)
-        self.assertEqual(self.msu.get_project_page(config.ADMIN_USER,
-                                                   project).strip(),
-                         "https://tests.com/")
-        self.msu.delete_project_page(config.ADMIN_USER, project)
-        self.assertEqual(self.msu.get_project_page(config.ADMIN_USER,
-                                                   project).strip(),
-                         "")
 
     def test_api_key_auth_with_sfmanager(self):
         """Test the api key auth workflow"""
