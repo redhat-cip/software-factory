@@ -11,16 +11,6 @@ with the CI/CD workflow of the config repository.
 
 .. note::
 
-   This feature replaces the legacy managesf REST endpoints for projects,
-   memberships and groups. Legacy endpoints will be removed soon.
-
-.. note::
-
-   It is not recommanded to use both, the legacy endpoints and the resources definition
-   with the config repository to avoid conflicts.
-
-.. note::
-
    Only Gerrit and Storyboard are supported via this workflow.
 
 Advantages of managing resources via the config repository
