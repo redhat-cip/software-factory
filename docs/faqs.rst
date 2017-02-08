@@ -235,6 +235,7 @@ the *basic* auth-type in gertty.yaml, e.g.:
     servers:
       - name: sftests
         url: https://sftests.com/api/
+        git-url: ssh://USER_NAME@sftests.com:29418
         auth-type: basic
         username: USER_NAME
         password: API_KEY
