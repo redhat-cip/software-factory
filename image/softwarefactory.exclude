@@ -83,4 +83,3 @@
 /etc/software-factory/
 /etc/httpd/htpasswd
 /etc/httpd/managesf_htpasswd
-/etc/httpd/pages.txt

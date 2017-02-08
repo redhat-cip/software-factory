@@ -251,17 +251,6 @@
         RequestHeader set Authorization "Basic %{B64}e"
     </LocationMatch>
 
-    RewriteMap path2content "txt:/etc/httpd/pages.txt"
-    <LocationMatch "^/pages/((?!404.*).)+">
-        RewriteEngine On
-        RewriteRule "/pages/([a-zA-Z1-9]*)/(.*$)" "${path2content:$1|{{ fqdn }}/pages/404}/$2" [P]
-    </LocationMatch>
-
-    <LocationMatch "^/pages/404/.*">
-        RewriteEngine On
-        RewriteRule ^(.*)$ /pages-404.html [R]
-    </LocationMatch>
-
     <Directory /var/www>
         AllowOverride None
         Order allow,deny
