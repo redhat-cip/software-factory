@@ -38,6 +38,11 @@ Deprecation Notes
 
 - Redmine service is now deprecated and it will be removed in an upcomming release.
 
+Other Notes
+-----------
+
+- Authentication to the external accessible Gerrit API is handled by Apache and the Gerrit user password is default and must not be changed. Thus the API to change the password at Gerrit level is now forbidden. Password change must be done via managesf only.
+
 
 2.3.0
 =====
