@@ -190,12 +190,6 @@ function heat_wait {
 }
 
 function build_image {
-    # Make sure subproject are available
-    if [ ! -d "${CAUTH_CLONED_PATH}" ] || [ ! -d "${MANAGESF_CLONED_PATH}" ] || \
-        [ ! -d "${PYSFLIB_CLONED_PATH}" ] || [ ! -d "${SFMANAGER_CLONED_PATH}" ]; then
-        echo "[+] Fetching subprocects"
-        ./image/fetch_subprojects.sh
-    fi
     if [ -z "${SKIP_BUILD}" ]; then
         echo "[+] Building image ${IMAGE_PATH}"
         ./build_image.sh 2>&1 | tee ${ARTIFACTS_DIR}/image_build.log | grep '(STEP'

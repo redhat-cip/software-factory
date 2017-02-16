@@ -24,12 +24,16 @@ function publish {
         rm -f "${IMG_NAME}.tgz"
     fi
     echo "[+] Creating edeploy file of ${SRC}"
+    for path in /var/lib/yum/yumdb/ /usr/src/; do
+        sudo mount -t tmpfs -o mode=0700 ${IMG}/${path}
+    done
     (cd $IMG; sudo tar -c -p --use-compress-program=pigz --numeric-owner --xattrs --selinux -f ../${IMG_NAME}.tgz .)
-    if [ "${IMG_NAME}" != "sf-centos7" ]; then
-        for arch in $(ls ${ORIG}/config/refarch/*.yaml); do
-            (cd ${ORIG}/deploy/heat; sudo ./deploy.py --arch ${arch} --output ${SRC}-${SF_VER}-$(basename $arch .yaml).hot render)
-        done
-    fi
+    for path in /var/lib/yum/yumdb/ /usr/src/; do
+        sudo umount ${IMG}/${path}
+    done
+    for arch in $(ls ${ORIG}/config/refarch/*.yaml); do
+        (cd ${ORIG}/deploy/heat; sudo ./deploy.py --arch ${arch} --output ${SRC}-${SF_VER}-$(basename $arch .yaml).hot render)
+    done
     echo "[+] Creating manifest"
     OBJ="$(/bin/ls ${IMG_NAME}.{tgz,description,img.qcow2} ${IMG_NAME}-allinone.hot ${IMG_NAME}-allinone-fixed-ip.hot 2> /dev/null || true)"
     sha256sum $OBJ | sudo tee ${IMG_NAME}.digest
@@ -47,5 +51,3 @@ function publish {
 ORIG=$(pwd)
 echo "=== Publish image ${IMAGE_PATH} ==="
 publish ${IMAGE_PATH} softwarefactory-${SF_VER}
-echo "=== Publish cache ${CACHE_PATH} ==="
-publish ${CACHE_PATH} sf-centos7

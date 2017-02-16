@@ -87,8 +87,4 @@ function sync_and_deflate {
 
 prepare_buildenv
 
-if [ -z "$FETCH_CACHE" ]; then
-    sync_and_deflate ${IMAGE_PATH} "softwarefactory-${SF_VER}"
-else
-    sync_and_deflate ${CACHE_PATH} "sf-centos7"
-fi
+sync_and_deflate ${IMAGE_PATH} "softwarefactory-${SF_VER}"

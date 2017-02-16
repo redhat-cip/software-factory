@@ -93,57 +93,11 @@ fake_shadow_utils() {
     done
 }
 
-install_packages_disabled() {
-    local chroot=$1
-    shift
-    local packages=$@
-
-    do_chroot ${chroot} mv /sbin/chkconfig /sbin/chkconfig.save
-    cat >> ${chroot}/sbin/chkconfig << EOF
-#!/bin/bash
-for i in \$*; do
-    arg2=\$arg1
-    arg1=\$i
-done
-
-if echo \$arg1 | egrep -q '^(on|off|reset|resetpriorities)$'; then
-    service=\$arg2
-else
-    service=\$arg1
-fi
-
-chkconfig.save \$* || exit 1
-chkconfig.save \$service off || exit 0
-EOF
-
-    chmod +x ${chroot}/sbin/chkconfig
-
-    if do_chroot ${chroot} which systemctl > /dev/null; then
-        do_chroot ${chroot} mv /usr/bin/systemctl /usr/bin/systemctl.save
-        cat >> ${chroot}/usr/bin/systemctl << EOF
-#!/bin/bash
-
-new_arg_line=\$(echo \$* | sed 's/\(enable\|disable\) /disable /g')
-exec /usr/bin/systemctl.save \$new_arg_line
-EOF
-        chmod +x ${chroot}/usr/bin/systemctl
-    fi
-
-    install_packages $chroot $packages
-
-    do_chroot ${chroot} mv /sbin/chkconfig.save /sbin/chkconfig
-
-    # systemd support starts from 7
-    if do_chroot ${chroot} which systemctl > /dev/null; then
-        do_chroot ${chroot} mv /usr/bin/systemctl.save /usr/bin/systemctl
-    fi
-}
-
 install_packages() {
     local chroot=$1
     shift
     local packages=$@
-    do_chroot $chroot yum $INSTALL_OPTIONS install -y $packages
+    do_chroot $chroot yum ${INSTALL_OPTIONS} install -y $packages
 }
 
 remove_packages() {
@@ -159,7 +113,6 @@ update_system() {
         fake_shadow_utils
     fi
 }
-
 
 clear_packages_cache() {
     do_chroot ${dir} yum clean all
@@ -202,6 +155,7 @@ clean_mount_points() {
     umount ${dir}/dev/shm || true
     umount ${dir}/dev/ || true
     umount ${dir}/sys/ || true
+    umount ${dir}/proc/ || true
     rm -rf ${dir}/dev
     mkdir -p ${dir}/dev
 
@@ -262,27 +216,20 @@ cleanup() {
         # clear package cache before removing the pkg manager
         clear_packages_cache $dir
 
-        # The step 2 is the last one - so perform here last actions
-        if [ "$STEP" = 2 ]; then
-            # Let's disable yum for normal usage
-            if [ -z "$KEEP_PKGMNGR" -a -x ${dir}/usr/sbin/edeploy ]; then
-                do_chroot ${dir} /usr/sbin/edeploy deactivate-pkgmngr
-            fi
-            # Verify the IDS are correct
-            [ -f "${dir}/usr/sbin/check-ug.py" ] && do_chroot ${dir} /usr/sbin/check-ug.py
-            # store role information at the end for nested calls
-            echo -e "\nRole ${ROLE}\nVersion ${version}\n" > ${dir}/etc/motd
+        # Verify the IDS are correct
+        [ -f "${dir}/usr/sbin/check-ug.py" ] && do_chroot ${dir} /usr/sbin/check-ug.py
+        # store role information at the end for nested calls
+        echo -e "\nRole ${ROLE}\nVersion ${version}\n" > ${dir}/etc/motd
 
-            if [ ! -d ${dir}/var/lib/edeploy ]; then
-                mkdir -p ${dir}/var/lib/edeploy
-            fi
-            echo -e "VERS=${version}\nROLE=${ROLE}" > ${dir}/var/lib/edeploy/conf
-
-            echo ${ROLE} > ${dir}/etc/hostname
-            mkdir -p "$dir/var/lib/edeploy/${version}"
-
-            echo > "${dir}"/etc/resolv.conf
+        if [ ! -d ${dir}/var/lib/edeploy ]; then
+            mkdir -p ${dir}/var/lib/edeploy
         fi
+        echo -e "VERS=${version}\nROLE=${ROLE}" > ${dir}/var/lib/edeploy/conf
+
+        echo ${ROLE} > ${dir}/etc/hostname
+        mkdir -p "$dir/var/lib/edeploy/${version}"
+
+        echo > "${dir}/etc/resolv.conf"
 
         clean_chroot
         clean_mount_points
@@ -306,10 +253,11 @@ clear_trap() {
 mount_fs() {
     [ -d ${dir}/proc ] || mkdir ${dir}/proc
     mount -t proc none ${dir}/proc
-    [ -d ${dir}/sys ] && mount -t sysfs -o ro sysfs ${dir}/sys
+    [ -d ${dir}/sys ] || mkdir ${dir}/sys
+    mount -t sysfs -o ro sysfs ${dir}/sys
 
     # Let's create a copy of the current /dev
-    mkdir -p ${dir}/dev/pts
+    [ -d ${dir}/dev/pts ] || mkdir -p ${dir}/dev/pts
     rsync -aX --delete-before --exclude=shm /dev/ ${dir}/dev/
 
     [ -d ${dir}/dev/shm ] || mkdir ${dir}/dev/shm

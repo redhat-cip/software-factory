@@ -70,6 +70,8 @@ def prepare_role(base_path, name, ip, gateway, netmask="255.255.255.0"):
     root = "/var/lib/lxc/%s/rootfs" % name
     bootstrap_data_cert_path = "/var/lib/software-factory/bootstrap-data/certs"
     if execute(["rsync", "-a", "--delete",
+                # Don't copy sources
+                "--exclude", "/usr/src",
                 # Keep new version in place for faster upgrade tests
                 "--exclude", "/var/lib/sf/roles/install/",
                 # Keep TLS CA too

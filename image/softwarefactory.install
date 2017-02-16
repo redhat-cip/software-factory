@@ -21,12 +21,23 @@ set -e
 ORIG=$(cd $(dirname $0); pwd)
 . ${ORIG}/third_party_tools
 
+# Check for testing packages
+if grep -q testing /etc/yum.repos.d/zuul-built.repo 2> /dev/null; then
+    TESTING_URL="$(grep '\/zuul-build\/' /etc/yum.repos.d/zuul-built.repo | cut -d= -f2)"
+    ENABLED_REPOS="sftesting,"
+fi
+if test -f /var/lib/sf/zuul-rpm-build/repodata/repomd.xml; then
+    LOCAL_TESTING="/var/lib/sf/zuul-rpm-build"
+    ENABLED_REPOS+="local-testing,"
+fi
+
 if [ "${USE_SWIFT_CACHE}" == "yes" ]; then
-    ENABLED_REPOS="sfbase,sfextras,sfupdates,sfepel,sfrdo,sfjenkins,sfpassenger,sf"
+    ENABLED_REPOS+="sfbase,sfextras,sfupdates,sfepel,sfrdo,sfjenkins,sfpassenger,sf,sfrelease"
     DISABLED_REPOS="*"
     INSTALL_OPTIONS="--disablerepo=${DISABLED_REPOS} --enablerepo=${ENABLED_REPOS}"
     ANSIBLE_EXTRA_VARS="yum_disable_repo=* yum_enable_repo=${ENABLED_REPOS}"
 fi
+
 
 [ -z "$DEBUG" ] || set -x
 # Target dir where the centos images will be built
@@ -46,7 +57,7 @@ if [ -z "$ORIG" ]; then
     exit 1
 fi
 
-if [ -z "$dir" ]; then
+if [ -z "${dir}" ]; then
     echo "dir env variable must be set to the top dir of your destination directory" 1>&2
     exit 1
 fi
@@ -54,8 +65,6 @@ fi
 . ${ORIG}/functions
 
 bootstrap() {
-    local target=$dir
-
     mount_fs
 
     # We need to enable the sf-mirror on the build host for bootstrapping
@@ -104,64 +113,93 @@ enabled=0
 
 [sf]
 name=SF repository for various packages
-baseurl=http://46.231.132.68:8080/v1/AUTH_b50e80d3969f441a8b7b1fe831003e0a/rpms
+baseurl=http://46.231.132.68:8080/v1/AUTH_b50e80d3969f441a8b7b1fe831003e0a/rpms/
+gpgcheck=0
+enabled=1
+
+[sfrelease]
+name=SF released packages
+baseurl=http://46.231.133.231/kojifiles/repos/sf-master-centos7-build/latest/x86_64/
 gpgcheck=0
 enabled=1
 EOF
+    # Check for testing packages
+    if test -n "${TESTING_URL}"; then
+        cat >> /etc/yum.repos.d/sf-mirror.repo << EOF
+[sftesting]
+name=SF testing packages
+baseurl=${TESTING_URL}
+gpgcheck=0
+enabled=1
+priority=1
+EOF
+    fi
+    # Check for local testing packages
+    if test -n "${LOCAL_TESTING}"; then
+        cat >> /etc/yum.repos.d/sf-mirror.repo << EOF
+[local-testing]
+name=SF local testing packages
+baseurl=file://${LOCAL_TESTING}/
+gpgcheck=0
+enabled=1
+priority=1
+EOF
+        mkdir -p "${dir}/${LOCAL_TESTING}"
+        rsync -a --delete "${LOCAL_TESTING}/" "${dir}/${LOCAL_TESTING}/"
+    fi
+
     mkdir -p ${dir}/etc/pki/rpm-gpg/
     rsync -a --delete ${ORIG}/keys/ ${dir}/etc/pki/rpm-gpg/
 
-    local release_rpm_url=$(add_main_repository)
-
-    if [ ! -f "${target}/etc/redhat-release" ]; then
-        rpm --initdb --root="$target"
-        rpm -ivh --root "$target" $release_rpm_url
+    if [ ! -f "${dir}/etc/redhat-release" ]; then
+        local release_rpm_url=$(add_main_repository)
+        rpm --initdb --root="${dir}"
+        rpm -ivh --root "${dir}" $release_rpm_url
     fi
 
-    sed -i 's/$releasever/7/g' ${target}/etc/yum.repos.d/*
+    sed -i 's/$releasever/7/g' ${dir}/etc/yum.repos.d/*
 
     # Add the SF repo mirror
-    cp /etc/yum.repos.d/sf-mirror.repo ${target}/etc/yum.repos.d/
+    cp /etc/yum.repos.d/sf-mirror.repo ${dir}/etc/yum.repos.d/
 
-    cp -f /etc/resolv.conf ${target}/etc/
+    cp -f /etc/resolv.conf ${dir}/etc/
 
-    if [ ! -f "${target}/usr/bin/yum" ]; then
-        rpm --root="$target" --import $(ls $target/etc/pki/rpm-gpg/*.key | fgrep -v Debug)
+    if [ ! -f "${dir}/usr/bin/yum" ]; then
+        rpm --root="${dir}" --import $(ls ${dir}/etc/pki/rpm-gpg/*.key | fgrep -v Debug)
         # We cannot use install_packages since the basesystem isn't yet setup
-        yum --disableplugin=* --installroot $target $INSTALL_OPTIONS install -y basesystem yum shadow-utils
-        mount -t sysfs -o ro sysfs ${target}/sys
-        echo "/dev/root / ext4 errors=remount-ro 0 1" > ${target}/etc/fstab
+        yum --disableplugin=* --installroot ${dir} ${INSTALL_OPTIONS} install -y basesystem yum shadow-utils
+        echo "/dev/root / ext4 errors=remount-ro 0 1" > ${dir}/etc/fstab
         checkpoint "first bootstrap"
-    elif [ -f "${target}/usr/bin/yum-complete-transaction" ]; then
+    elif [ -f "${dir}/usr/bin/yum-complete-transaction" ]; then
         do_chroot ${dir} yum-complete-transaction --cleanup-only
-        do_chroot ${dir} yum update -y $INSTALL_OPTIONS
+        do_chroot ${dir} yum update -y ${INSTALL_OPTIONS}
     fi
 
-    cp -p ${ORIG}/edeploy/* ${target}/usr/sbin/
+    cp -p ${ORIG}/edeploy/* ${dir}/usr/sbin/
     cp ${ORIG}/C7.0-ids.tables ${dir}/etc/ids.tables
     fake_shadow_utils
 
-    [ -d "$target/var/lib/edeploy/${version}" ] || mkdir -p "$target/var/lib/edeploy/${version}"
+    [ -d "${dir}/var/lib/edeploy/${version}" ] || mkdir -p "${dir}/var/lib/edeploy/${version}"
 
-    rebuild_db $target
+    rebuild_db ${dir}
 
-    cp ${target}/etc/skel/.bashrc ${target}/root
-    cp ${target}/etc/skel/.bash_profile ${target}/root
+    cp ${dir}/etc/skel/.bashrc ${dir}/root
+    cp ${dir}/etc/skel/.bash_profile ${dir}/root
 
-    mkdir -p ${target}/usr/share/edeploy
+    mkdir -p ${dir}/usr/share/edeploy
 
-    echo  'LANG=en_US.UTF-8' > ${target}/etc/locale.conf
+    echo  'LANG=en_US.UTF-8' > ${dir}/etc/locale.conf
 
-    [ -d ${target}/etc/dracut.conf.d/ ] || mkdir ${target}/etc/dracut.conf.d/
-    cat > ${target}/etc/dracut.conf.d/img.conf <<EOF
+    [ -d ${dir}/etc/dracut.conf.d/ ] || mkdir ${dir}/etc/dracut.conf.d/
+    cat > ${dir}/etc/dracut.conf.d/img.conf <<EOF
 filesystems+="ext4"
 EOF
 
-    cat > ${target}/etc/sysconfig/network <<EOF
+    cat > ${dir}/etc/sysconfig/network <<EOF
 NETWORKING=yes
 NOZEROCONF=yes
 EOF
-    chmod 0644 ${target}/etc/sysconfig/network
+    chmod 0644 ${dir}/etc/sysconfig/network
 }
 
 enable_selinux() {
@@ -293,6 +331,10 @@ EOF
         SUDO_UID=0 SUDO_GID=0 do_chroot ${dir} bash -c "cd /var/www/redmine-${REDMINE_VERSION} && bundle install --without development test"
         mv ${dir}/var/www/redmine-${REDMINE_VERSION} ${dir}/var/www/redmine
         rm ${dir}/var/www/redmine.tar.gz
+        SUDO_UID=0 SUDO_GID=0 do_chroot ${dir} bash -c "cd /var/www/redmine/ && gem uninstall mysql2 && bundle update" || {
+            rm -Rf /var/www/redmine
+            exit 1
+        }
     fi
 
     # Install Redmine backlog plugin
@@ -308,10 +350,6 @@ EOF
         retry do_chroot ${dir} git clone $REDMINE_HTTP_PLUGIN_URL /var/www/redmine/plugins/redmine_http_auth
         do_chroot ${dir} bash -c "cd /var/www/redmine/plugins/redmine_http_auth; git checkout -b sf_pinned ${REDMINE_HTTP_PLUGIN_VERSION}"
     fi
-
-    # Update bundle; remove mysql2 gem because it might need to be rebuilt
-    # against newer mariadb server
-    SUDO_UID=0 SUDO_GID=0 do_chroot ${dir} bash -c "cd /var/www/redmine/ && gem uninstall mysql2 && bundle update"
 
     # Set files permissions (according to: http://www.redmine.org/projects/redmine/wiki/redmineinstall )
     mkdir -p ${dir}/var/www/redmine/{tmp,tmp/pdf,public/plugin_assets}
@@ -424,29 +462,113 @@ function install_gitweb_theme {
 }
 
 function copy_sf_ansible_roles {
-    sudo rsync --delete -a --no-owner ./../config/ansible/ ${dir}/etc/ansible/
+    rsync --delete -a --no-owner ./../config/ansible/ ${dir}/etc/ansible/
 }
 
 image_clean() {
     rm -Rf ${dir}/usr/share/doc ${dir}/usr/share/info
     rm -Rf ${dir}/share ${dir}/usr/share/backgrounds
-    put_git_mark ${dir}
-}
-
-final_image_clean() {
-    # Remove build-requirements package
-    do_chroot ${dir} yum remove -y ${BUILD_PKGS} &> /dev/null
     rm -Rf ${dir}/usr/local/share/gems/cache ${dir}/usr/local/share/gems/doc
-    rm -Rf ${dir}/var/lib/yum/yumdb/*
     rm -Rf ${dir}/root/.cache
     rm -Rf ${dir}/root/.npm
     rm -Rf ${dir}/root/.gem
     rm -Rf ${dir}/root/.rpmdb
-    rm -Rf ${dir}/usr/src/
 }
 
 fix_ansible_issue5504() {
     sed -i "s/after=remote_head, //" ${dir}/usr/lib/python2.7/site-packages/ansible/modules/core/source_control/git.py
+}
+
+function install_sf {
+    set -e
+    test -n "${CAUTH_CLONED_PATH}"
+    test -n "${MANAGESF_CLONED_PATH}"
+    test -n "${PYSFLIB_CLONED_PATH}"
+    test -n "${SFMANAGER_CLONED_PATH}"
+
+    mkdir -p ${dir}/usr/src
+
+    cp -f /etc/resolv.conf "${dir}/etc/"
+
+    if [ ! -z "${STAGING_PKGS}" ]; then
+        install_packages ${dir} ${STAGING_PKGS}
+    fi
+    if [ ! -z "${STAGING_PIP}" ]; then
+        retry do_chroot ${dir} pip install 'pip<8' ${STAGING_PIP}
+    fi
+
+    # Make sure subproject are available
+    if [ ! -d "${CAUTH_CLONED_PATH}" ] || [ ! -d "${MANAGESF_CLONED_PATH}" ] || \
+        [ ! -d "${PYSFLIB_CLONED_PATH}" ] || [ ! -d "${SFMANAGER_CLONED_PATH}" ]; then
+        echo "Can't find subprojects in $(dirname ${CAUTH_CLONED_PATH})"
+        echo "Run ./image/fetch_subprojects.sh first"
+        exit -1
+    fi
+
+    # Make sure final image use latest ids.tables
+    cp ./C7.0-ids.tables ${dir}/etc/ids.tables
+
+    # Disable postfix and remove configuration to reduce puppet noise
+    # Disable postfix and remove configuration
+    do_chroot ${dir} systemctl disable postfix
+    for i in main.cf virtual; do
+        echo -n > ${dir}/etc/postfix/$i
+    done
+
+    # Install ansible playbooks and configuration files
+    do_chroot ${dir} mkdir -p /etc/software-factory
+    rsync --delete -a --no-owner ./../serverspec/ ${dir}/etc/serverspec/
+
+    # Sf-config
+    rsync -a --no-owner ./../config/scripts/ ${dir}/usr/local/bin/
+    rsync --delete -a -L --no-owner ./../config/defaults/ ${dir}/etc/software-factory/
+    rsync --delete -a -L --no-owner ./../config/defaults/ ${dir}/usr/local/share/sf-default-config/
+    rsync --delete -a --no-owner ./../config/ansible/ ${dir}/etc/ansible/
+    mkdir -p ${dir}/etc/software-factory ${dir}/etc/ansible/group_vars ${dir}/var/lib/ansible
+    rsync --delete -a --no-owner ./../health-check/ ${dir}/etc/ansible/health-check/
+
+    cp -Rv ./../config/config-repo/ ${dir}/usr/local/share/sf-config-repo
+    cp -Rv ./../tools/slaves/ ${dir}/usr/local/share/sf-jenkins-slave-tools
+    # Also copy tool in image PATH so that sf image could
+    # be used as slave base image
+    cp -Rv ./../tools/slaves/* ${dir}/usr/local/bin/
+
+    # Install cauth
+    rsync -a --delete ${CAUTH_CLONED_PATH}/ ${dir}/usr/src/cauth/
+    do_chroot ${dir} bash -c "cd /usr/src/cauth; /var/www/cauth/bin/python setup.py install"
+
+    # Install managesf
+    rsync -a --delete ${MANAGESF_CLONED_PATH}/ ${dir}/usr/src/managesf/
+    do_chroot ${dir} bash -c "cd /usr/src/managesf; /var/www/managesf/bin/python setup.py install"
+
+    # Install python-sfmanager
+    rsync -a --delete ${SFMANAGER_CLONED_PATH}/ ${dir}/usr/src/python-sfmanager/
+    do_chroot ${dir} bash -c "cd /usr/src/python-sfmanager; /srv/sfmanager/bin/python setup.py install --install-scripts /usr/bin"
+
+    # Install pysflib
+    rsync -a --delete ${PYSFLIB_CLONED_PATH}/ ${dir}/usr/src/pysflib/
+    do_chroot ${dir} bash -c "cd /usr/src/pysflib; /var/www/cauth/bin/python setup.py install"
+    do_chroot ${dir} bash -c "cd /usr/src/pysflib; /var/www/managesf/bin/python setup.py install"
+    do_chroot ${dir} bash -c "cd /usr/src/pysflib; /srv/sfmanager/bin/python setup.py install"
+
+    do_chroot ${dir} find /root /var/www /srv/ -name "*.pyc" -exec rm {} \;
+
+    # Documentation
+    DOCBUILDDIR=$(mktemp -d /tmp/sfdocs_buildXXXXXXX)
+    rm -Rf ${dir}/var/www/docs
+    mkdir ${dir}/var/www/docs
+    cd ${DOCDIR} && make BUILDDIR=$DOCBUILDDIR MANAGESF_CLONED_PATH=${MANAGESF_CLONED_PATH} SFMANAGER_CLONED_PATH=${SFMANAGER_CLONED_PATH} html ; cd -
+    mv $DOCBUILDDIR/html/* ${dir}/var/www/docs/
+    rm -rf $DOCBUILDDIR
+
+    # Deactivate default disabling of root ssh access of cloud-init
+    sed -i 's/disable_root:.*/disable_root: 0/' ${dir}/etc/cloud/cloud.cfg
+
+    # Set a default password. This is needed when image is booted when metadata servers
+    # are not available. Cloudinit will deactivate root auth by password.
+    do_chroot ${dir} bash -c "passwd -d root"
+    # Be sure sshd disallow authentication by password (only allowed by key)
+    sed -i 's/^PasswordAuthentication.*/PasswordAuthentication no/' ${dir}/etc/ssh/sshd_config
 }
 
 START=$(date '+%s')
@@ -454,7 +576,7 @@ function checkpoint {
     set +x
     NOW=$(date '+%s')
     ELAPSED=$(python -c "print('%03.2fmin' % (($NOW - $START) / 60.0))")
-    echo "(STEP${STEP}) $ELAPSED - $*"
+    echo "(STEP1) $ELAPSED - $*"
     START=$(date '+%s')
     [ -z "${DEBUG}" ] || set -x
 }
@@ -468,7 +590,7 @@ fi
 check_binary yum
 check_binary rpm
 
-if [ "$STEP" == 1 ]; then
+build_all() {
     bootstrap
     checkpoint "bootstrapped"
     install_sf_packages
@@ -516,17 +638,11 @@ if [ "$STEP" == 1 ]; then
     ansible_install sf-job-logs-gearman-client "log_gearman_client_url: \"${LOG_GEARMAN_CLIENT_URL}\""
     ansible_install sf-job-logs-gearman-worker "log_gearman_worker_url: \"${LOG_GEARMAN_WORKER_URL}\""
     ansible_install sf-repoxplorer "$REPOXPLORER_EXTRA_VARS"
-    image_clean
-    do_chroot ${dir} passwd -l root
-    checkpoint "image cleaned"
-fi
-
-if [ "$STEP" == 2 ]; then
-    mount_fs
-    . sf.install
     install_sf
     checkpoint "sf installed"
     image_clean
-    final_image_clean
     checkpoint "image cleaned"
-fi
+    put_git_mark ${dir}
+}
+
+build_all

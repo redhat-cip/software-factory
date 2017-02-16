@@ -163,30 +163,6 @@ function check_args() {
     # ex: when booting an image directly from LXC or OpenStack Heat.
 }
 
-function activate-pkgmngr() {
-    if [ ! -L /usr/bin/yum ]; then
-        mv -f /usr/bin/yum /usr/bin/yum.real
-    fi
-    ln -sf /usr/bin/yum.real /usr/bin/yum
-}
-
-function deactivate-pkgmngr() {
-    cat > /usr/bin/pkgmngr.edeploy <<EOF
-#!/bin/sh
-
-echo \$*
-echo "\$(basename \$0) is deactivated. Use \"edeploy activate-pkgmngr\" to bring it back."
-exit 0
-EOF
-    chmod a+x /usr/bin/pkgmngr.edeploy
-    for pkgmngr in yum; do
-        if [ ! -L /usr/bin/${pkgmngr} ]; then
-            mv -f /usr/bin/${pkgmngr} /usr/bin/${pkgmngr}.real
-        fi
-        ln -sf /usr/bin/pkgmngr.edeploy /usr/bin/${pkgmngr}
-    done
-}
-
 function help() {
     usage
     cat <<EOF
@@ -205,16 +181,12 @@ function help() {
 
     profile: show the profile the guest has been setup as.
 
-    activate-pkgmngr: activate the package manager
-
-    deactivate-pkgmngr: deactivate the package manager
-
     help: display this help message.
 EOF
 }
 
 function usage() {
-    echo "Usage: $progname ({test-}upgrade <target version>|list|verify|help|version|role|profile|activate-pkgmngr|deactivate-pkgmngr)"
+    echo "Usage: $progname ({test-}upgrade <target version>|list|verify|help|version|role|profile)"
 }
 
 command="$1"
@@ -226,10 +198,6 @@ case "$command" in
         ;;
     test-upgrade|upgrade|list|verify|version|role|profile)
         check_args
-        "$command" "$@"
-        ;;
-
-    activate-pkgmngr|deactivate-pkgmngr)
         "$command" "$@"
         ;;
     *)
