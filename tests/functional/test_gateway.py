@@ -224,7 +224,7 @@ class TestGateway(Base):
         url = config.GATEWAY_URL + "/static/lodgeit/jquery.js"
         resp = requests.get(url)
         self.assertEqual(resp.status_code, 200)
-        self.assertTrue("jQuery 1.2.6" in resp.content)
+        self.assertTrue("jQuery v1" in resp.content)
 
     def test_docs_accessible(self):
         """ Test if Sphinx docs are accessible on gateway host

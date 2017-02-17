@@ -414,28 +414,6 @@ function install_fonts {
     http_fetch $ANGULARJS_URL ${dir}/var/www/static/js/angular.min.js
 }
 
-function install_paste {
-    # Paste (Lodgeit)
-    if [ ! -d "${dir}/srv/lodgeit" ]; then
-        do_chroot ${dir} mkdir -p /srv/lodgeit
-        retry do_chroot ${dir} git clone ${PASTE_URL} /srv/lodgeit/lodgeit
-        do_chroot ${dir} bash -c "cd /srv/lodgeit/lodgeit && git checkout ${PASTE_VERSION}"
-        do_chroot ${dir} chown -R apache:apache /srv/lodgeit
-
-        # Replace absolute URLs beginning with /static/
-        do_chroot ${dir} sed -i -e 's#/static/#/static/lodgeit/#g' /srv/lodgeit/lodgeit/lodgeit/views/layout.html
-        do_chroot ${dir} sed -i -e 's#/static/#/static/lodgeit/#g' /srv/lodgeit/lodgeit/lodgeit/views/help/advanced.html
-        do_chroot ${dir} sed -i -e 's#/static/#/static/lodgeit/#g' /srv/lodgeit/lodgeit/lodgeit/views/help/pasting.html
-        do_chroot ${dir} sed -i -e 's#/_captcha.png#/paste/_captcha.png#' /srv/lodgeit/lodgeit/lodgeit/views/new_paste.html
-        # Include topmenu in Paste
-        cat << EOF | patch ${dir}/srv/lodgeit/lodgeit/lodgeit/views/layout.html
-11a12
->     <script type="text/javascript" src="/static/js/topmenu.js"></script>
-EOF
-    fi
-    rm -Rf ${dir}/srv/lodgeit/lodgeit/.git
-}
-
 function install_gitweb_theme {
     # Checkout VERSION in /tmp
     rm -Rf ${dir}/tmp/kogakure
@@ -470,6 +448,7 @@ remove_obsolete() {
         rm -f ${dir}/usr/lib64/httpd/modules/mod_auth_pubtkt.so
     }
     rm -Rf ${dir}/usr/src/git*
+    rm -Rf ${dir}/srv/lodgeit
 }
 
 fix_ansible_issue5504() {
@@ -606,8 +585,6 @@ build_all() {
     install_edeploy
     install_serverspec
     checkpoint "murmurd, fonts, edeploy, serverspect installed"
-    install_paste
-    checkpoint "paste installed"
     install_gitweb_theme
     checkpoint "gitweb theme installed"
     remove_obsolete
@@ -622,6 +599,7 @@ build_all() {
     ansible_install sf-cauth "$CAUTH_EXTRA_VARS"
     ansible_install sf-lecm "$LECM_EXTRA_VARS"
     ansible_install sf-zuul "$ZUUL_EXTRA_VARS"
+    ansible_install sf-lodgeit
     ansible_install sf-etherpad "$ETHERPAD_EXTRA_VARS"
     ansible_install sf-gerritbot "$GERRITBOT_EXTRA_VARS"
     ansible_install sf-nodepool "$NODEPOOL_EXTRA_VARS"

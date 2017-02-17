@@ -1,4 +1,5 @@
 role_actions:
+  - install
   - setup
 
 lodgeit_mysql_host: "mysql.example.com"

@@ -276,11 +276,7 @@ ZUUL_VERSION=a8b90b38094587bbd82ffa5e4028aef1dfd02987     # 2016-08-24
 GERRITBOT_URL="https://github.com/openstack-infra/gerritbot"
 GERRITBOT_VERSION=d48b1bc41717291e43425ff437d6214b6934f60f
 
-# paste (lodgeit)
-PASTE_URL="https://git.openstack.org/openstack-infra/lodgeit"
-PASTE_VERSION=beb3ff7e266 # latest commit as of 05 Jun 2015
-
-GIT_REPO_LIST="$GIT_REPO_LIST $NODEPOOL_URL $GERRITBOT_URL $PASTE_URL $REPOXPLORER_URL"
+GIT_REPO_LIST="$GIT_REPO_LIST $NODEPOOL_URL $GERRITBOT_URL $REPOXPLORER_URL"
 if [ "${USE_SWIFT_CACHE}" == "yes" ]; then
     GERRITBOT_EXTRA_VARS="gerritbot_url: \"${SWIFT_CACHE}/gerritbot.git\", gerritbot_commit: \"${GERRITBOT_VERSION}\""
     ZUUL_EXTRA_VARS="zuul_url: \"${SWIFT_CACHE}/zuul.git\""
@@ -289,7 +285,6 @@ if [ "${USE_SWIFT_CACHE}" == "yes" ]; then
     ZUUL_EXTRA_VARS+=", jquery_graphite_url: \"${SWIFT_CACHE}/javascripts/jquery-graphite.js\""
     NODEPOOL_EXTRA_VARS="nodepool_url: \"${SWIFT_CACHE}/nodepool.git\""
     NODEPOOL_EXTRA_VARS+=", nodepool_commit: \"${NODEPOOL_VERSION}\""
-    PASTE_URL="${SWIFT_CACHE}/lodgeit.git"
 fi
 
 LECM_URL="https://github.com/Spredzy/lecm"

@@ -1,34 +1,36 @@
 ---
+- include: /etc/ansible/tasks/create_user.yml user_name=lodgeit
+
 - name: Apply selinux port labelling
   seport:
-      ports: 5000
-      proto: tcp
-      setype: http_port_t
-      state: present
-  when:
-      - selinuxenabled
+    ports: 5000
+    proto: tcp
+    setype: http_port_t
+    state: present
+  when: ansible_selinux.status == "enabled"
 
-- name: Install manage.py
-  template: src=manage.py.j2 dest=/srv/lodgeit/lodgeit/manage.py mode=0755
-  notify: [restart lodgeit]
+- name: Patch for /paste topurl
+  patch:
+    src: lodgeit_nestedpath.patch
+    basedir: /usr/lib/python2.7/site-packages/lodgeit
+    strip: 1
 
-- name: Install urls.py
-  copy: src=urls.py dest=/srv/lodgeit/lodgeit/lodgeit/urls.py
+- name: Set service environment
+  lineinfile:
+    dest: /etc/sysconfig/lodgeit
+    regexp: '^LODGEIT_SQL_SERVER='
+    line: 'LODGEIT_SQL_SERVER="{{ lodgeit_mysql_host }} {{ lodgeit_mysql_port }}"'
+
+- name: Set configuration
+  ini_file:
+    dest: /etc/lodgeit/lodgeit.conf
+    section: root
+    option: "{{ item.option }}"
+    value: "{{ item.value }}"
+  with_items:
+    - {option: "dburi", value: "mysql://{{ lodgeit_mysql_user }}:{{ lodgeit_mysql_password }}@{{ lodgeit_mysql_host }}:{{ lodgeit_mysql_port }}/{{ lodgeit_mysql_db }}"}
+    - {option: "secret_key", value: "{{lodgeit_session_key}}"}
+  notify: restart lodgeit
 
 - name: Install static link
-  file: dest=/var/www/static/lodgeit src=/srv/lodgeit/lodgeit/lodgeit/static state=link
-
-- name: Install service file
-  copy:
-      src: lodgeit.service
-      dest: /lib/systemd/system/lodgeit.service
-      owner: root
-      group: root
-      mode: 0644
-
-- name: Start service
-  systemd:
-      name: lodgeit
-      state: started
-      daemon_reload: yes
-      enabled: yes
+  file: dest=/var/www/static/lodgeit src=/usr/lib/python2.7/site-packages/lodgeit/static state=link
