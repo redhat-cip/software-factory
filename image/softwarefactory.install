@@ -633,7 +633,7 @@ build_all() {
     ansible_install sf-mosquitto
     ansible_install sf-job-logs-gearman-client "log_gearman_client_url: \"${LOG_GEARMAN_CLIENT_URL}\""
     ansible_install sf-job-logs-gearman-worker "log_gearman_worker_url: \"${LOG_GEARMAN_WORKER_URL}\""
-    ansible_install sf-repoxplorer "$REPOXPLORER_EXTRA_VARS"
+    ansible_install sf-repoxplorer
     install_sf
     checkpoint "sf installed"
     image_clean

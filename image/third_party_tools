@@ -267,10 +267,6 @@ if [ "${USE_SWIFT_CACHE}" == "yes" ]; then
     ANGULARJS_URL="${SWIFT_CACHE}/javascripts/angular.min.js"
 fi
 
-# repoXplorer
-REPOXPLORER_URL="https://softwarefactory-project.io/r/repoxplorer"
-REPOXPLORER_VERSION=a63cfecf0049afb34c7ac90ee1bcb979aa01e4d5 # 2016-11-25
-
 # Zuul / Nodepool
 NODEPOOL_URL="https://github.com/openstack-infra/nodepool"
 NODEPOOL_VERSION=1fd2a14ab79d256419083e2b2d9c463af36e039a # 2016-05-18
@@ -294,8 +290,6 @@ if [ "${USE_SWIFT_CACHE}" == "yes" ]; then
     NODEPOOL_EXTRA_VARS="nodepool_url: \"${SWIFT_CACHE}/nodepool.git\""
     NODEPOOL_EXTRA_VARS+=", nodepool_commit: \"${NODEPOOL_VERSION}\""
     PASTE_URL="${SWIFT_CACHE}/lodgeit.git"
-    REPOXPLORER_EXTRA_VARS="repoxplorer_url: \"${REPOXPLORER_URL}\""
-    REPOXPLORER_EXTRA_VARS+=", repoxplorer_commit: \"${REPOXPLORER_VERSION}\""
 fi
 
 LECM_URL="https://github.com/Spredzy/lecm"

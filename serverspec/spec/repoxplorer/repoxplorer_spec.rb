@@ -34,6 +34,6 @@ describe service('repoxplorer-webui') do
   it { should be_running }
 end
 
-describe port(8091) do
+describe port(51000) do
   it { should be_listening }
 end
