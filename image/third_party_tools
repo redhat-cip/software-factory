@@ -238,12 +238,13 @@ fi
 
 
 # etherpad
-ETHERPAD_LITE_VERSION=1.5.7
+ETHERPAD_LITE_VERSION=1.6.1
 ETHERPAD_LITE_URL="https://codeload.github.com/ether/etherpad-lite/tar.gz/${ETHERPAD_LITE_VERSION}"
 
 URL_LIST="$URL_LIST $ETHERPAD_LITE_URL"
 if [ "${USE_SWIFT_CACHE}" == "yes" ]; then
-    ETHERPAD_LITE_URL="${SWIFT_CACHE}/etherpad/${ETHERPAD_LITE_VERSION}"
+    ETHERPAD_EXTRA_VARS="etherpad_source_url: \"${SWIFT_CACHE}/etherpad/${ETHERPAD_LITE_VERSION}\""
+    ETHERPAD_EXTRA_VARS+=", etherpad_version: \"${ETHERPAD_LITE_VERSION}\""
 fi
 
 

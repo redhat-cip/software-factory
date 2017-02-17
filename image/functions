@@ -21,7 +21,7 @@ function ansible_install {
   roles:
     - { role: "$role", action: "install", $params }
 EOF
-    do_chroot ${dir} ansible-playbook $ansible_debug /ansible-install-playbook
+    do_chroot ${dir} ansible-playbook $ansible_debug -e "${ANSIBLE_EXTRA_VARS}" /ansible-install-playbook
     checkpoint "$role installed (ansible)"
 }
 

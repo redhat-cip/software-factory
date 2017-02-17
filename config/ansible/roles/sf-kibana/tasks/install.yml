@@ -11,3 +11,5 @@
   yum:
     name: kibana
     state: latest
+    disablerepo: "*"
+    enablerepo: "{{ kibana_repo_name }}"

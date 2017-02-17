@@ -75,10 +75,5 @@ python-wrapt
 python2-statsd
 yamllint
 
-# Nodejs stuff
-v8
-nodejs
-npm
-
 # Shell Utilities
 htop

@@ -1,5 +1,9 @@
 role_actions:
+  - install
   - setup
+
+etherpad_version: 1.6.1
+etherpad_source_url: "https://github.com/ether/etherpad-lite/archive/{{ etherpad_version }}.tar.gz"
 
 etherpad_mysql_host: "mysql.example.com"
 etherpad_mysql_port: 3306

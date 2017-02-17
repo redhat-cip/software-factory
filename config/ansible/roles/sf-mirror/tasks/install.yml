@@ -1,6 +1,10 @@
 ---
 - name: "Install requirements"
-  yum: name={{ item }} state=present
+  yum:
+    name: "{{ item }}"
+    state: present
+    disablerepo: "{{ yum_disable_repo|default(omit) }}"
+    enablerepo: "{{ yum_enable_repo|default(omit) }}"
   with_items: [python-lxml, PyYAML, python-requests]
 
 - name: "Fetch mirror2swift code"

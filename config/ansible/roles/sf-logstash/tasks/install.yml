@@ -11,3 +11,5 @@
   yum:
     name: logstash
     state: latest
+    disablerepo: "*"
+    enablerepo: "{{ logstash_repo_name }}"

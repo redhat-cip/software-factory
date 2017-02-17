@@ -18,7 +18,15 @@
 
 set -e
 
-INSTALL_OPTIONS="--disablerepo=base,epel,extras,updates,jenkins,passenger --enablerepo=sfbase,sfextras,sfupdates,sfepel,sfrdo,sfjenkins,sfpassenger"
+ORIG=$(cd $(dirname $0); pwd)
+. ${ORIG}/third_party_tools
+
+if [ "${USE_SWIFT_CACHE}" == "yes" ]; then
+    ENABLED_REPOS="sfbase,sfextras,sfupdates,sfepel,sfrdo,sfjenkins,sfpassenger,sf"
+    DISABLED_REPOS="*"
+    INSTALL_OPTIONS="--disablerepo=${DISABLED_REPOS} --enablerepo=${ENABLED_REPOS}"
+    ANSIBLE_EXTRA_VARS="yum_disable_repo=* yum_enable_repo=${ENABLED_REPOS}"
+fi
 
 [ -z "$DEBUG" ] || set -x
 # Target dir where the centos images will be built
@@ -33,8 +41,6 @@ export LC_ALL=C
 export HOME=/root
 export PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin
 
-ORIG=$(cd $(dirname $0); pwd)
-
 if [ -z "$ORIG" ]; then
     echo "ORIG env variable must be set to the top dir of the sources" 1>&2
     exit 1
@@ -45,7 +51,6 @@ if [ -z "$dir" ]; then
     exit 1
 fi
 
-. ${ORIG}/third_party_tools
 . ${ORIG}/functions
 
 bootstrap() {
@@ -194,20 +199,6 @@ install_sf_packages() {
     chmod +x ${dir}/usr/local/bin/zuul_swift_upload.py
 
     [ -d ${dir}/var/lib/grafana ] || install_packages ${dir} ${GRAFANA_URL}
-}
-
-function nodejs_epel_stick {
-    # Stick nodejs to 0.10. 01/10/2016 Nodejs 0.10.x has been removed from EPEL repo as upstream LTS ended
-    # Etherpad-lite does not support nodejs other than 0.10.x, 0.11.x and 0.12.x. This need to be removed
-    # when upstream supports newer version of nodejs.
-    SF_MIRROR=http://46.231.132.68:8080/v1/AUTH_b50e80d3969f441a8b7b1fe831003e0a/repomirror
-    do_chroot ${dir} yum -y $INSTALL_OPTIONS install nodejs-devel libuv-devel
-    do_chroot ${dir} yum -y $INSTALL_OPTIONS downgrade \
-        $SF_MIRROR/epel/n/nodejs-0.10.46-1.el7.x86_64.rpm \
-        $SF_MIRROR/epel/l/libuv-0.10.34-2.el7.x86_64.rpm \
-        $SF_MIRROR/epel/n/npm-1.3.6-5.el7.noarch.rpm \
-        $SF_MIRROR/epel/n/nodejs-devel-0.10.46-1.el7.x86_64.rpm \
-        $SF_MIRROR/epel/l/libuv-devel-0.10.34-2.el7.x86_64.rpm
 }
 
 function install_jenkins {
@@ -395,29 +386,6 @@ function install_fonts {
     http_fetch $ANGULARJS_URL ${dir}/var/www/static/js/angular.min.js
 }
 
-function install_etherpad {
-    # Etherpad_lite
-    if [ ! -d "${dir}/var/www/etherpad-lite" ]; then
-        http_fetch $ETHERPAD_LITE_URL ${dir}/tmp/etherpad_lite.tar.gz
-        mkdir -p ${dir}/var/www/etherpad-lite
-        do_chroot ${dir} tar -xzf /tmp/etherpad_lite.tar.gz --strip-components=1 -C /var/www/etherpad-lite
-        # /bin/installDeps.sh is looking for /usr/bin/node
-        [ ! -e "${dir}/usr/bin/node" ] && do_chroot ${dir} ln -s /usr/bin/nodejs /usr/bin/node
-        SUDO_UID=0 SUDO_GID=0 retry do_chroot ${dir} sh /var/www/etherpad-lite/bin/installDeps.sh
-        # Include topmenu in Etherpad
-        cat << EOF | patch ${dir}/var/www/etherpad-lite/src/templates/index.html
-38a39
->         <script type="text/javascript" src="/static/js/topmenu.js"></script>
-53d53
-<               border-top: 8px solid rgba(51,51,51,.8);
-EOF
-        cat << EOF | patch ${dir}/var/www/etherpad-lite/src/templates/pad.html
-50a51
->         <script type="text/javascript" src="/static/js/topmenu.js"></script>
-EOF
-    fi
-}
-
 function install_paste {
     # Paste (Lodgeit)
     if [ ! -d "${dir}/srv/lodgeit" ]; then
@@ -505,7 +473,6 @@ if [ "$STEP" == 1 ]; then
     checkpoint "bootstrapped"
     install_sf_packages
     fix_ansible_issue5504
-    nodejs_epel_stick
     checkpoint "sf dep packages installed"
     enable_selinux
     checkpoint "selinux configured"
@@ -520,10 +487,9 @@ if [ "$STEP" == 1 ]; then
     install_edeploy
     install_serverspec
     checkpoint "murmurd, fonts, edeploy, serverspect installed"
-    install_etherpad
     install_paste
     install_mod_authpub_tkt
-    checkpoint "etherpad, paste, mod_authpub_tkt installed"
+    checkpoint "paste, mod_authpub_tkt installed"
     install_gitweb_theme
     checkpoint "gitweb theme installed"
     copy_sf_ansible_roles
@@ -537,6 +503,7 @@ if [ "$STEP" == 1 ]; then
     ansible_install sf-cauth "$CAUTH_EXTRA_VARS"
     ansible_install sf-lecm "$LECM_EXTRA_VARS"
     ansible_install sf-zuul "$ZUUL_EXTRA_VARS"
+    ansible_install sf-etherpad "$ETHERPAD_EXTRA_VARS"
     ansible_install sf-gerritbot "$GERRITBOT_EXTRA_VARS"
     ansible_install sf-nodepool "$NODEPOOL_EXTRA_VARS"
     ansible_install sf-storyboard "${STORYBOARD_EXTRA_VARS}"

@@ -7,14 +7,19 @@
       proto: tcp
       setype: http_port_t
       state: present
-  when:
-      - selinuxenabled
+  when: ansible_selinux.status == "enabled"
 
 - name: "Create directory"
   file: path={{ item }} owner=etherpad group=etherpad state=directory
   with_items:
     - /var/www/etherpad-lite
     - /var/log/etherpad
+
+- name: "Adds top-menu"
+  patch:
+    src: etherpad-top-menu.patch
+    basedir: /var/www/etherpad-lite
+    strip: 1
 
 - name: "Copy run.sh"
   copy: src=run.sh dest=/var/www/etherpad-lite/run.sh mode=0555

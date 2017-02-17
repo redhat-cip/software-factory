@@ -11,3 +11,5 @@
   yum:
     name: elasticsearch
     state: latest
+    disablerepo: "*"
+    enablerepo: "{{ elasticsearch_repo_name }}"
