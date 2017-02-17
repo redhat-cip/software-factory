@@ -390,16 +390,6 @@ install_serverspec() {
     retry do_chroot ${dir} gem install serverspec -v ${SERVERSPEC_VERSION}
 }
 
-function install_mod_authpub_tkt {
-    # Install mod authpub tkt for apache (SSO)
-    if [ ! -f ${dir}/usr/lib64/httpd/modules/mod_auth_pubtkt.so ]; then
-        http_fetch $MOD_AUTH_PUBTKT_URL ${dir}/tmp/mod_auth_pubtkt-${MOD_AUTH_PUBTKT_VERSION}.tar.gz
-        do_chroot ${dir} bash -c "cd /tmp && tar -xvzf mod_auth_pubtkt-${MOD_AUTH_PUBTKT_VERSION}.tar.gz"
-        do_chroot ${dir} bash -c "cd /tmp/mod_auth_pubtkt-${MOD_AUTH_PUBTKT_VERSION} && unset DEBUG && ./configure --apxs=/usr/bin/apxs && make && make install"
-        do_chroot ${dir} rm -Rf /tmp/mod_auth_pubtkt-${MOD_AUTH_PUBTKT_VERSION}
-    fi
-}
-
 function install_fonts {
     # Twitter Bootstrap - http://getbootstrap.com/
     if [ ! -d ${dir}/var/www/static/bootstrap ]; then
@@ -473,6 +463,12 @@ image_clean() {
     rm -Rf ${dir}/root/.npm
     rm -Rf ${dir}/root/.gem
     rm -Rf ${dir}/root/.rpmdb
+}
+
+remove_obsolete() {
+    do_chroot ${dir} rpm -q mod_auth_pubtkt 2> /dev/null || {
+        rm -f ${dir}/usr/lib64/httpd/modules/mod_auth_pubtkt.so
+    }
 }
 
 fix_ansible_issue5504() {
@@ -610,10 +606,10 @@ build_all() {
     install_serverspec
     checkpoint "murmurd, fonts, edeploy, serverspect installed"
     install_paste
-    install_mod_authpub_tkt
-    checkpoint "paste, mod_authpub_tkt installed"
+    checkpoint "paste installed"
     install_gitweb_theme
     checkpoint "gitweb theme installed"
+    remove_obsolete
     copy_sf_ansible_roles
     # Copy prepared source to support depends-on
     rsync -a --delete --exclude 'build' ${MANAGESF_CLONED_PATH}/ ${dir}/usr/src/managesf/

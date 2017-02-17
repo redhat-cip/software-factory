@@ -95,16 +95,6 @@ if [ "${USE_SWIFT_CACHE}" == "yes" ]; then
     KIBANA_EXTRA_VARS+=", kibana_repo_gpgcheck: \"0\""
 fi
 
-# mod_auth_pubtkt
-MOD_AUTH_PUBTKT_VERSION=0.8
-MOD_AUTH_PUBTKT_URL="https://neon1.net/mod_auth_pubtkt/mod_auth_pubtkt-${MOD_AUTH_PUBTKT_VERSION}.tar.gz"
-
-URL_LIST="$URL_LIST $MOD_AUTH_PUBTKT_URL"
-if [ "${USE_SWIFT_CACHE}" == "yes" ]; then
-    MOD_AUTH_PUBTKT_URL="${SWIFT_CACHE}/apache_mod/mod_auth_pubtkt-${MOD_AUTH_PUBTKT_VERSION}.tar.gz"
-fi
-
-
 # redmine
 REDMINE_VERSION=2.6.9
 REDMINE_RHEL_URL="http://www.redmine.org/releases/redmine-${REDMINE_VERSION}.tar.gz"

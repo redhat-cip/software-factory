@@ -1,4 +1,11 @@
 ---
+- name: "Install requirements"
+  yum:
+    name: "mod_auth_pubtkt"
+    state: present
+    disablerepo: "{{ yum_disable_repo|default(omit) }}"
+    enablerepo: "{{ yum_enable_repo|default(omit) }}"
+
 - name: "Install cauth venv"
   command: chdir=/usr/src/cauth {{ item }}
   with_items:
