@@ -209,7 +209,7 @@ trap do_cleanup 0
 # Copy the data
 
 if [ -d "$DIR" ]; then
-    rsync -a "$DIR/" "$MDIR/"
+    rsync --exclude /usr/src -a "$DIR/" "$MDIR/"
 else
     tar xf "$DIR" -C "$MDIR"
 fi

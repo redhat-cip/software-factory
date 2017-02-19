@@ -45,13 +45,6 @@ function fetch_prebuilt {
     rm -f ${TMP_FILE}
     echo "Fetching ${SWIFT_SF_URL}/${IMG}.tgz"
     sudo curl -o ${UPSTREAM}/${IMG}.tgz ${SWIFT_SF_URL}/${IMG}.tgz
-    echo "Fetching ${SWIFT_SF_URL}/${IMG}.img.qcow2"
-    sudo curl -o ${UPSTREAM}/${IMG}.img.qcow2 ${SWIFT_SF_URL}/${IMG}.img.qcow2
-    echo "Fetching ${SWIFT_SF_URL}/${IMG}.{digest,description,hot,hash}"
-    # Fetch ${IMG}.hot for 2.1.8 digest
-    sudo curl -o ${UPSTREAM}/${IMG}.hot ${SWIFT_SF_URL}/${IMG}.hot
-    sudo curl -o ${UPSTREAM}/${IMG}-allinone.hot ${SWIFT_SF_URL}/${IMG}-allinone.hot
-    sudo curl -o ${UPSTREAM}/${IMG}-allinone-fixed-ip.hot ${SWIFT_SF_URL}/${IMG}-allinone-fixed-ip.hot
     sudo curl -o ${UPSTREAM}/${IMG}.digest ${SWIFT_SF_URL}/${IMG}.digest
     sudo curl -o ${UPSTREAM}/${IMG}.description ${SWIFT_SF_URL}/${IMG}.description
     echo "Digests..."
@@ -62,7 +55,9 @@ function fetch_prebuilt {
             exit -1
         }
     fi
-    (cd ${UPSTREAM}; exec sha256sum -c ./${IMG}.digest) || exit -1
+    grep "${IMG}.tgz$" ${UPSTREAM}/${IMG}.digest | sudo tee ${UPSTREAM}/${IMG}.small_digest > /dev/null
+
+    (cd ${UPSTREAM}; exec sha256sum -c ./${IMG}.small_digest) || exit -1
 }
 
 function sync_and_deflate {

@@ -50,14 +50,7 @@ function build_qcow {
     [ -f "${IMAGE_FILE}" ] && sudo rm -Rf ${IMAGE_FILE}
     [ -f "${IMAGE_FILE}.qcow2" ] && sudo rm -Rf "${IMAGE_FILE}.qcow2"
 
-    # Hides source/cache directories
-    for path in /var/lib/yum/yumdb/ /usr/src/; do
-        sudo mount -t tmpfs -o mode=0700 ${IMAGE_PATH}/${path}
-    done
     sudo ./image/create-image.sh ${IMAGE_PATH} ${IMAGE_FILE} ./image/params.virt || failure=1
-    for path in /var/lib/yum/yumdb/ /usr/src/; do
-        sudo umount ${IMAGE_PATH}/${path}
-    done
     # Remove the raw image, only keep the qcow2 image
     sudo rm -f ${IMAGE_FILE} ${IMAGE_FILE}.md5
     if [ "$failure" == 1 ]; then
@@ -73,16 +66,9 @@ function build_image {
     fi
 
     if [ ! -d ${IMAGE_PATH} ]; then
-        if [ "${USER}" == "jenkins" ]; then
-            # Use the provided cache
-            echo "(STEP1) Jenkins user detected, re-using cache ${CACHE_PATH}"
-            sudo mkdir -p $(dirname ${IMAGE_PATH})
-            sudo mv ${CACHE_PATH} ${IMAGE_PATH}
-        else
-            echo "(STEP1) Image not found, rebuilding from scratch"
-            # TODO: add function to fetch current cache
-            sudo mkdir -p ${IMAGE_PATH}
-        fi
+        echo "(STEP1) Image not found, rebuilding from scratch"
+        # TODO: add function to fetch last build
+        sudo mkdir -p ${IMAGE_PATH}
     fi
 
     (
@@ -91,7 +77,7 @@ function build_image {
         DOCDIR=$DOCDIR MANAGESF_CLONED_PATH=$MANAGESF_CLONED_PATH PYSFLIB_CLONED_PATH=$PYSFLIB_CLONED_PATH \
         CAUTH_CLONED_PATH=$CAUTH_CLONED_PATH SFMANAGER_CLONED_PATH=$SFMANAGER_CLONED_PATH \
             sudo -E ./softwarefactory.install ${IMAGE_PATH} ${SF_VER}
-        ./get_image_versions_information.sh ${IMAGE_PATH} | sudo tee ${IMAGE_PATH}.description > /dev/null
+        ./get_image_versions_information.sh ${IMAGE_PATH} | sudo tee ${IMAGE_PATH}-${SF_VER}.description > /dev/null
     )
     if [ "$?" != "0" ]; then
         echo "(STEP1) FAILED"

@@ -14,23 +14,8 @@ function publish {
     IMG=$(basename $SRC)
     IMG_NAME=$2
     cd $(dirname $SRC)
-    echo "[+] Check if $IMG have changed"
-    TMP_FILE=$(mktemp /tmp/swift_description-${IMG_NAME}-XXXXXX)
-    curl -o ${TMP_FILE} ${SWIFT_SF_URL}/${IMG_NAME}.description
-    diff ${TMP_FILE} ${IMG_NAME}.description 2> /dev/null && return
-    rm -f ${TMP_FILE}
-    echo "[+] Upstream is out dated"
-    if [ ! -f "${IMG_NAME}.tgz" ]; then
-        rm -f "${IMG_NAME}.tgz"
-    fi
     echo "[+] Creating edeploy file of ${SRC}"
-    for path in /var/lib/yum/yumdb/ /usr/src/; do
-        sudo mount -t tmpfs -o mode=0700 ${IMG}/${path}
-    done
     (cd $IMG; sudo tar -c -p --use-compress-program=pigz --numeric-owner --xattrs --selinux -f ../${IMG_NAME}.tgz .)
-    for path in /var/lib/yum/yumdb/ /usr/src/; do
-        sudo umount ${IMG}/${path}
-    done
     for arch in $(ls ${ORIG}/config/refarch/*.yaml); do
         (cd ${ORIG}/deploy/heat; sudo ./deploy.py --arch ${arch} --output ${SRC}-${SF_VER}-$(basename $arch .yaml).hot render)
     done
