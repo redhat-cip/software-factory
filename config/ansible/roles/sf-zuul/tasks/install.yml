@@ -7,12 +7,6 @@
     recursive: no
     force: yes
 
-- name: "Fetch javascripts"
-  get_url: url={{item.src}} dest=/var/www/static/js/{{item.dst}}
-  with_items:
-    - {src: "{{jquery_visibility_url}}",  dst: jquery-visibility.min.js}
-    - {src: "{{jquery_graphite_url}}",    dst: jquery.graphite.js}
-
 - name: "Install venv"
   command: chdir=/usr/src/zuul {{ item }}
   with_items:

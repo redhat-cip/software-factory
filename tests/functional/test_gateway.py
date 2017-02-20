@@ -216,7 +216,6 @@ class TestGateway(Base):
             url = config.GATEWAY_URL + "/static/bootstrap/%s" % p
             resp = requests.get(url)
             self.assertEqual(resp.status_code, 200)
-            self.assertTrue("Bootstrap v3.2.0" in resp.content)
 
     def test_static_dir_for_paste_accessible(self):
         """ Test if static dir for paste is accessible on gateway host

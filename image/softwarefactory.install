@@ -390,30 +390,6 @@ install_serverspec() {
     retry do_chroot ${dir} gem install serverspec -v ${SERVERSPEC_VERSION}
 }
 
-function install_fonts {
-    # Twitter Bootstrap - http://getbootstrap.com/
-    if [ ! -d ${dir}/var/www/static/bootstrap ]; then
-        http_fetch $BOOTSTRAP_URL ${dir}/tmp/bootstrap.zip
-        do_chroot ${dir} unzip -q -o /tmp/bootstrap.zip -d /var/www/static/
-        do_chroot ${dir} mv /var/www/static/bootstrap-${BOOTSTRAP_VERSION}-dist /var/www/static/bootstrap
-        do_chroot ${dir} rm /tmp/bootstrap.zip
-    fi
-
-    # Font Awesome - http://fortawesome.github.io/Font-Awesome/
-    if [ ! -d ${dir}/var/www/static/font-awesome ]; then
-        http_fetch $FONTAWESOME_URL ${dir}/tmp/font-awesome.zip
-        do_chroot ${dir} unzip -q -o /tmp/font-awesome.zip -d /var/www/static/
-        do_chroot ${dir} mv /var/www/static/Font-Awesome-${FONTAWESOME_VERSION} /var/www/static/font-awesome
-        do_chroot ${dir} rm /tmp/font-awesome.zip
-    fi
-
-    [ -d ${dir}/var/www/static/js ] || do_chroot ${dir} mkdir /var/www/static/js
-    # JQuery - http://jquery.com/
-    http_fetch $JQUERY_URL ${dir}/var/www/static/js/jquery.min.js
-    # AngularJS
-    http_fetch $ANGULARJS_URL ${dir}/var/www/static/js/angular.min.js
-}
-
 function install_gitweb_theme {
     # Checkout VERSION in /tmp
     rm -Rf ${dir}/tmp/kogakure
@@ -449,6 +425,11 @@ remove_obsolete() {
     }
     rm -Rf ${dir}/usr/src/git*
     rm -Rf ${dir}/srv/lodgeit
+
+    # Gemfile is a sign /var/www/static was setup manually. It's now replaced by sf-web-assets package
+    if [ -f ${dir}/var/www/static/font-awesome/Gemfile ]; then
+        rm -Rf ${dir}/var/www/static
+    fi
 }
 
 fix_ansible_issue5504() {
@@ -581,10 +562,9 @@ build_all() {
     install_gerrit
     checkpoint "gerrit installed"
     install_murmurd
-    install_fonts
     install_edeploy
     install_serverspec
-    checkpoint "murmurd, fonts, edeploy, serverspect installed"
+    checkpoint "murmurd, edeploy, serverspect installed"
     install_gitweb_theme
     checkpoint "gitweb theme installed"
     remove_obsolete
@@ -595,6 +575,7 @@ build_all() {
     rsync -a --delete --exclude 'build' ${SFMANAGER_CLONED_PATH}/ ${dir}/usr/src/python-sfmanager/
     rsync -a --delete --exclude 'build' ${PYSFLIB_CLONED_PATH}/ ${dir}/usr/src/pysflib/
     ansible_install sf-base "${BASE_EXTRA_VARS}"
+    ansible_install sf-gateway
     ansible_install sf-managesf "$MANAGESF_EXTRA_VARS"
     ansible_install sf-cauth "$CAUTH_EXTRA_VARS"
     ansible_install sf-lecm "$LECM_EXTRA_VARS"
