@@ -60,6 +60,7 @@
     - { name: replication.config }
     - { name: GerritSiteHeader.html }
     - { name: GerritSite.css }
+    - { name: gitweb_config.perl }
 
 - name: "Install static configuration files or scripts (root user)"
   copy:

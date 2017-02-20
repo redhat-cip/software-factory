@@ -390,21 +390,6 @@ install_serverspec() {
     retry do_chroot ${dir} gem install serverspec -v ${SERVERSPEC_VERSION}
 }
 
-function install_gitweb_theme {
-    # Checkout VERSION in /tmp
-    rm -Rf ${dir}/tmp/kogakure
-
-    retry do_chroot ${dir} git clone ${KOGAKURE_URL} /tmp/kogakure
-    do_chroot ${dir} bash -c "cp /tmp/kogakure/gitweb.css /var/www/git/static/"
-
-    # tweak config for gravatars and syntax highlighting
-    do_chroot ${dir} bash -c "echo '\$feature{"'"'"'"avatar"'"'"'"}{"'"'"'"default"'"'"'"} = ["'"'"'"gravatar"'"'"'"];' >> /etc/gitweb.conf"
-    do_chroot ${dir} bash -c "echo '\$feature{"'"'"'"highlight"'"'"'"}{"'"'"'"default"'"'"'"} = [1];' >> /etc/gitweb.conf"
-
-    # Cleanup left-overs
-    rm -Rf ${dir}/tmp/kogakure
-}
-
 function copy_sf_ansible_roles {
     rsync --delete -a --no-owner ./../config/ansible/ ${dir}/etc/ansible/
 }
@@ -564,9 +549,7 @@ build_all() {
     install_murmurd
     install_edeploy
     install_serverspec
-    checkpoint "murmurd, edeploy, serverspect installed"
-    install_gitweb_theme
-    checkpoint "gitweb theme installed"
+    checkpoint "murmurd, edeploy, serverspec installed"
     remove_obsolete
     copy_sf_ansible_roles
     # Copy prepared source to support depends-on
@@ -583,6 +566,7 @@ build_all() {
     ansible_install sf-lodgeit
     ansible_install sf-etherpad "$ETHERPAD_EXTRA_VARS"
     ansible_install sf-gerritbot "$GERRITBOT_EXTRA_VARS"
+    ansible_install sf-gitweb
     ansible_install sf-nodepool "$NODEPOOL_EXTRA_VARS"
     ansible_install sf-storyboard "${STORYBOARD_EXTRA_VARS}"
     ansible_install sf-storyboard-webclient "${STORYBOARD_WEBCLIENT_EXTRA_VARS}"

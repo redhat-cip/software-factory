@@ -98,8 +98,6 @@ yum-utils
 
 # SF requirements
 git
-gitweb
-highlight
 mariadb
 mariadb-server
 memcached

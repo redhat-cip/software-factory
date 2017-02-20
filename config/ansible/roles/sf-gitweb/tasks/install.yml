@@ -1,0 +1,13 @@
+---
+- name: "Install package"
+  yum:
+    name: "gitweb, highlight, perl-Digest-MD5, gitweb-theme-kogakure"
+    state: latest
+    disablerepo: "{{ yum_disable_repo|default(omit) }}"
+    enablerepo: "{{ yum_enable_repo|default(omit) }}"
+
+- name: "Set theme in use"
+  replace:
+    dest: /var/www/git/gitweb.cgi
+    regexp: '"static/.*.css"'
+    replace: '"static/{{ theme }}.css"'
