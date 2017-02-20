@@ -17,6 +17,9 @@
     ignore_errors: yes
     when: "'storyboard' in mysql_databases"
 
+- include: repoxplorer_upgrade_tasks.yml
+  when: '"repoxplorer" in roles and "elasticsearch" in roles'
+
 - hosts: auth
   tasks:
   - include: tasks/remove_old_service_user.yml

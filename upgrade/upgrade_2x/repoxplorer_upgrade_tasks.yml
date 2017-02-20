@@ -1,0 +1,6 @@
+---
+- hosts: elasticsearch
+  tasks:
+  # repoXplorer does not manage DB version so wipe it
+  - name: Remove repoxplorer EL index
+    command: curl -XDELETE "http://elasticsearch:9200/repoxplorer/"

@@ -1,0 +1,7 @@
+---
+features:
+  - integration of repoXplorer 0.6.2 with support of commit
+    metadata extracting.
+upgrade:
+  - repoxplorer Elasticsearch index will be wipped before
+    being automatically rebuild.
