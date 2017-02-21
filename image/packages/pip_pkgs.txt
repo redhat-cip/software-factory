@@ -1,9 +1,6 @@
 # Avoid insecure message
 requests[security]
 
-# Zuul_swift_upload req
-glob2
-
 # Graphite req
 django<1.8
 django-tagging

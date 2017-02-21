@@ -405,6 +405,9 @@ image_clean() {
 }
 
 remove_obsolete() {
+    do_chroot ${dir} rpm -q python-glob2 2> /dev/null || {
+        rm -Rf ${dir}/usr/lib/python2.7/site-packages/glob2*
+    }
     do_chroot ${dir} rpm -q mod_auth_pubtkt 2> /dev/null || {
         rm -f ${dir}/usr/lib64/httpd/modules/mod_auth_pubtkt.so
     }
