@@ -55,6 +55,7 @@
 /root/config/
 /var/lib/software-factory/bootstrap-data/
 /var/lib/zuul/
+/var/lib/umurmurd/
 /var/lib/managesf/users.db
 /var/lib/murmur/murmur.sqlite
 /var/lib/cauth/state_mapping.db

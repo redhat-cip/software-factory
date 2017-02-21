@@ -14,28 +14,15 @@
 # under the License.
 require 'spec_helper'
 
-describe user('murmur') do
-    it {
-        should exist
-    }
+describe user('umurmurd') do
+  it { should exist }
 end
 
-describe group('murmur') do
-    it {
-        should exist
-    }
+describe group('umurmurd') do
+  it { should exist }
 end
 
-describe file('/etc/murmur.ini') do
-    it {
-        should be_file
-        should be_owned_by 'murmur'
-        should be_grouped_into 'murmur'
-        should be_mode '400'
-    }
-end
-
-describe service('murmurd') do
+describe service('umurmurd') do
   it { should be_running }
 end
 

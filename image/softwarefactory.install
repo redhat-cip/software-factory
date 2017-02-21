@@ -326,14 +326,6 @@ RSERV=managesf
 EOF
 }
 
-install_murmurd() {
-    if [ ! -d ${dir}/usr/local/murmur ]; then
-        http_fetch $MURMUR_URL ${dir}/tmp/murmur.tar.bz2
-        tar -xjf ${dir}/tmp/murmur.tar.bz2 -C ${dir}/tmp/
-        mv ${dir}/tmp/murmur-static_x86-${MURMUR_VERSION} ${dir}/usr/local/murmur
-    fi
-}
-
 install_serverspec() {
     retry do_chroot ${dir} gem install serverspec -v ${SERVERSPEC_VERSION}
 }
@@ -363,6 +355,7 @@ remove_obsolete() {
     rm -Rf ${dir}/srv/lodgeit
     rm -Rf ${dir}/root/gerrit_data_source
     rm -Rf ${dir}/srv/sfmanager
+    rm -Rf ${dir}/usr/local/murmur
 
     # Gemfile is a sign /var/www/static was setup manually. It's now replaced by sf-web-assets package
     if [ -f ${dir}/var/www/static/font-awesome/Gemfile ]; then
@@ -490,10 +483,9 @@ build_all() {
     checkpoint "selinux configured"
     install_redmine
     checkpoint "redmine installed"
-    install_murmurd
     install_edeploy
     install_serverspec
-    checkpoint "murmurd, edeploy, serverspec installed"
+    checkpoint "edeploy, serverspect installed"
     remove_obsolete
     copy_sf_ansible_roles
     # Copy prepared source to support depends-on
@@ -508,6 +500,7 @@ build_all() {
     ansible_install sf-lecm "$LECM_EXTRA_VARS"
     ansible_install sf-zuul "$ZUUL_EXTRA_VARS"
     ansible_install sf-lodgeit
+    ansible_install sf-murmur
     ansible_install sf-etherpad "$ETHERPAD_EXTRA_VARS"
     ansible_install sf-gerrit
     ansible_install sf-gerritbot "$GERRITBOT_EXTRA_VARS"

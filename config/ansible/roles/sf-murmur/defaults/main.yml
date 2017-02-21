@@ -1,4 +1,15 @@
 role_actions:
+  - install
   - setup
 
-mumble_ice_secret: "CHANGE_ME"
+murmur_password: ""
+murmur_max_users: 42
+murmur_welcome_text: "SF mumble server"
+
+murmur_channels:
+  - name: Dev
+    description: Developper loundge
+  - name: Meeting
+    description: Meeting room
+  - name: Meeting-Alt
+    description: Second meeting room

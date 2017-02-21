@@ -3,6 +3,9 @@
   tasks:
   - include: tasks/bootloader.yml
   - shell: /usr/local/bin/sf-update-uid-gid.py 2>&1 | tee -a /var/log/sf_ids_update.log
+  # Remove unused users
+  - user: name=murmur state=absent
+  - group: name=murmur state=absent
 
 - hosts: install-server
   tasks:

@@ -104,16 +104,6 @@ if [ "${USE_SWIFT_CACHE}" == "yes" ]; then
 fi
 
 
-# murmur
-MURMUR_VERSION=1.2.13
-MURMUR_URL="https://github.com/mumble-voip/mumble/releases/download/${MURMUR_VERSION}/murmur-static_x86-${MURMUR_VERSION}.tar.bz2"
-
-URL_LIST="$URL_LIST $MURMUR_URL"
-if [ "${USE_SWIFT_CACHE}" == "yes" ]; then
-    MURMUR_URL="${SWIFT_CACHE}/murmur/murmur-static_x86-${MURMUR_VERSION}.tar.bz2"
-fi
-
-
 # gerrit
 GERRIT_VERSION=2.11.9
 GERRIT_URL="https://gerrit-releases.storage.googleapis.com/gerrit-${GERRIT_VERSION}.war"

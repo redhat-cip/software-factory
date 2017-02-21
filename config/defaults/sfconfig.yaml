@@ -173,4 +173,3 @@ gerritbot:
 
 mumble:
     password: False
-    super_user_password: CHANGEME

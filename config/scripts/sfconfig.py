@@ -342,6 +342,11 @@ def generate_role_vars(arch, sfconfig, allvars_file, args):
     """ This function 'glue' all roles and convert sfconfig.yaml """
     secrets = yaml_load("%s/secrets.yaml" % args.lib)
 
+    # Cleanup obsolete secrets
+    for unused in ("mumble_ice_secret", ):
+        if unused in secrets:
+            del secrets[unused]
+
     # Generate all variable when the value is CHANGE_ME
     defaults = {}
     for role in arch["roles"]:
@@ -595,6 +600,10 @@ DNS.1 = %s
             'user': 'storyboard',
             'password': secrets["storyboard_mysql_password"],
         }
+
+    if "murmur" in arch["roles"]:
+        if sfconfig["mumble"].get("password"):
+            glue["murmur_password"] = sfconfig["mumble"].get("password")
 
     # Save secrets to new secrets file
     yaml_dump(secrets, open("%s/secrets.yaml" % args.lib, "w"))
