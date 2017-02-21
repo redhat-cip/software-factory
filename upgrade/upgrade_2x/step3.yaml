@@ -1,0 +1,34 @@
+---
+- hosts: install-server
+  tasks:
+  # Managesf database migration
+  - include: tasks/managesf_db.yml
+  # Cauth database migration
+  - include: tasks/cauth_db.yml
+  # Storyboard database migration
+  - name: "Manually fix storyboard schema, see https://review.openstack.org/427028. This is expected to fail on subsequent run"
+    command: |
+        mysql storyboard -e "
+            ALTER TABLE projects ADD FULLTEXT projects_fti (name, description);
+            ALTER TABLE stories ADD FULLTEXT stories_fti (title, description);
+            ALTER TABLE tasks ADD FULLTEXT tasks_fti (title);
+            ALTER TABLE comments ADD FULLTEXT comments_fti (content);
+            ALTER TABLE users ADD FULLTEXT users_fti (full_name, email);"
+    ignore_errors: yes
+    when: "'storyboard' in mysql_databases"
+
+- hosts: auth
+  tasks:
+  - include: tasks/remove_old_service_user.yml
+
+- hosts: jenkins
+  tasks:
+  - include: tasks/submitconfigreview.yml
+
+- hosts: gerrit
+  tasks:
+  - include: tasks/allprojectsupdate.yml
+  - include: tasks/schemaupdate.yml
+  - include: tasks/update_configrepo.yaml
+  - name: Propose replication.config in the config repo
+    shell: /usr/local/bin/propose_replication_config.sh

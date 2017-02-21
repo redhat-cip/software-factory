@@ -44,4 +44,11 @@ STEP2_RETURN_CODE=$?
 echo "Ansible return code is : ${STEP2_RETURN_CODE}"
 [ ${STEP2_RETURN_CODE} != "0" ] && exit -1
 
+# Step2 setup global group_vars, run the last step
+echo "[+] Running step3.yaml"
+ansible-playbook step3.yaml
+STEP3_RETURN_CODE=$?
+echo "Ansible return code is : ${STEP3_RETURN_CODE}"
+[ ${STEP3_RETURN_CODE} != "0" ] && exit -1
+
 exit 0

@@ -462,7 +462,8 @@ function run_upgrade {
     sudo rsync -a --exclude /usr/src --delete ${IMAGE_PATH}/ /var/lib/lxc/${INSTALL_SERVER}/rootfs/${IMAGE_PATH}/ || fail "Could not copy ${SF_VER}"
 
     echo "[+] Running upgrade"
-    ssh ${SF_HOST} "cd software-factory; ./upgrade.sh" | tee ${ARTIFACTS_DIR}/upgrade.sh.log || fail "Upgrade failed" "/var/lib/lxc/${INSTALL_SERVER}/rootfs/var/log/software-factory/upgrade.log"
+    ssh ${SF_HOST} "cd software-factory; ./upgrade.sh" | tee ${ARTIFACTS_DIR}/upgrade.sh.log
+    [ "${PIPESTATUS[0]}" != "0" ] && fail "Upgrade failed" "/var/lib/lxc/${INSTALL_SERVER}/rootfs/var/log/software-factory/upgrade.log"
     echo "[+] Update sf-bootstrap-data"
     fetch_bootstraps_data
     echo "[+] Auto submit the auto generated config review after the upgrade"
