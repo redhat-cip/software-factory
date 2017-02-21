@@ -49,6 +49,30 @@
   - file: path=/etc/software-factory/_arch.yaml state=absent
   - file: path=/root/sf-bootstrap-data state=absent
 
+- hosts: gerrit
+  tasks:
+  - name: "Check for previous install"
+    stat: path=/home/gerrit/site_path
+    register: gerrit_home
+
+  - block:
+    # 2.4.0: switch to packaged version
+    - name: "Move config file to /etc"
+      command: rsync -a /home/gerrit/site_path/etc/ /etc/gerrit/
+
+    - name: "Move logs to /var/log"
+      command: rsync -a /home/gerrit/site_path/logs/ /var/log/gerrit/
+
+    - name: "Move data to /var/lib"
+      command: rsync -a /home/gerrit/site_path/cache /home/gerrit/site_path/data /home/gerrit/site_path/index /home/gerrit/site_path/git /home/gerrit/site_path/static /home/gerrit/site_path/tmp /var/lib/gerrit/
+
+    - name: "Move .ssh to new home directory"
+      command: rsync -a /home/gerrit/.ssh /var/lib/gerrit/.ssh/
+
+    - name: "Archive previous gerrit tree"
+      command: mv /home/gerrit /home/gerrit.old
+    when: gerrit_home.stat.exists == True
+
 - hosts: managesf
   tasks:
   # 2.2.7: managesf is running with its own user

@@ -141,5 +141,5 @@ checksum:
   - file: /var/lib/jenkins/credentials.xml
   - file: /var/lib/jenkins/secret.key
   - file: /etc/httpd/managesf_htpasswd
-  - file: /home/gerrit/site_path/etc/ssh_host_rsa_key.pub
-  - file: /home/gerrit/site_path/etc/ssh_host_rsa_key
+  - file: /etc/gerrit/ssh_host_rsa_key.pub
+  - file: /etc/gerrit/ssh_host_rsa_key

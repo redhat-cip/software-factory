@@ -244,15 +244,6 @@ install_sf_packages() {
     [ -d ${dir}/var/lib/grafana ] || install_packages ${dir} ${GRAFANA_URL}
 }
 
-function install_gerrit {
-    # Gerrit
-    [ -d "${dir}/root/gerrit_data_source/" ] || mkdir ${dir}/root/gerrit_data_source/
-    http_fetch $GERRIT_URL ${dir}/root/gerrit_data_source/gerrit.war
-    http_fetch $MYSQLJAVA_URL ${dir}/root/gerrit_data_source/mysql-connector-java.jar
-    http_fetch $BCPROVJAVA_URL ${dir}/root/gerrit_data_source/bcprov.jar
-    http_fetch $BCPKIXJAVA_URL ${dir}/root/gerrit_data_source/bcpkix.jar
-}
-
 function install_redmine {
     # Disable gem rdoc installation
     echo gem: --no-rdoc --no-ri > ${dir}/root/.gemrc
@@ -370,6 +361,7 @@ remove_obsolete() {
     }
     rm -Rf ${dir}/usr/src/git*
     rm -Rf ${dir}/srv/lodgeit
+    rm -Rf ${dir}/root/gerrit_data_source
 
     # Gemfile is a sign /var/www/static was setup manually. It's now replaced by sf-web-assets package
     if [ -f ${dir}/var/www/static/font-awesome/Gemfile ]; then
@@ -502,8 +494,6 @@ build_all() {
     checkpoint "selinux configured"
     install_redmine
     checkpoint "redmine installed"
-    install_gerrit
-    checkpoint "gerrit installed"
     install_murmurd
     install_edeploy
     install_serverspec
@@ -524,6 +514,7 @@ build_all() {
     ansible_install sf-zuul "$ZUUL_EXTRA_VARS"
     ansible_install sf-lodgeit
     ansible_install sf-etherpad "$ETHERPAD_EXTRA_VARS"
+    ansible_install sf-gerrit
     ansible_install sf-gerritbot "$GERRITBOT_EXTRA_VARS"
     ansible_install sf-gitweb
     ansible_install sf-nodepool "$NODEPOOL_EXTRA_VARS"

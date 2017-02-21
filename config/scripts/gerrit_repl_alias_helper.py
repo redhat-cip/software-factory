@@ -26,11 +26,11 @@ from paramiko import SSHConfig
 import unittest
 
 OWNER = 'gerrit'
-SSH_CONFIG = '/home/gerrit/.ssh/config'
-KEYS_DB = '/home/gerrit/.ssh/'
+SSH_CONFIG = '/var/lib/gerrit/.ssh/config'
+KEYS_DB = '/var/lib/gerrit/.ssh/'
 
 # This helper will let you modify or add (if not exists yet)
-# an Alias section into /home/gerrit/site_path/.ssh/config. The
+# an Alias section into /var/lib/gerrit/.ssh/config. The
 # deletion is supported too. This tool will only allow you
 # to add a predefined section (see the template below)
 # If you need a more thourough configuration you can edit

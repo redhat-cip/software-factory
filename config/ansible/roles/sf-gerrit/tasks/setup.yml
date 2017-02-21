@@ -1,14 +1,85 @@
 ---
+# Use real shell for replication tests. TODO: improve replication test and set /sbin/nologin shell
 - name: "Create gerrit user"
-  include: /etc/ansible/tasks/create_user.yml user_name=gerrit home_dir=/home/gerrit ssh_key=gerrit_service_rsa shell=/bin/bash
+  include: /etc/ansible/tasks/create_user.yml user_name=gerrit ssh_key=gerrit_service_rsa shell=/bin/bash
 
-- include: install_files.yml
-- include: install_plugins.yml
+- name: "Chmod cgi file"
+  file:
+    path: /var/www/git/gitweb.cgi
+    mode: 0755
+
+- name: "Install project.config"
+  copy:
+    src: "project.config"
+    dest: "/root/project.config"
+
+# During the first run, config repo isn't created, so use the default file
+- include_vars: "{{ item }}"
+  with_first_found:
+    - /root/config/gerrit/commentlinks.yaml
+    - /usr/local/share/sf-config-repo/gerrit/commentlinks.yaml
+
+- name: "Install configuration files"
+  template:
+    src: "{{ item.name }}.j2"
+    dest: "{{ item.path }}/{{ item.name }}"
+    owner: gerrit
+    group: gerrit
+    mode: "{{ item.mode }}"
+  with_items:
+    - { name: patchset-created,
+        path: /var/lib/gerrit/hooks,
+        mode: '0740' }
+    - { name: change-merged,
+        path: /var/lib/gerrit/hooks,
+        mode: '0740' }
+    - { name: gerrit.config,
+        path: /etc/gerrit,
+        mode: '0644' }
+    - { name: secure.config,
+        path: /etc/gerrit,
+        mode: '0600' }
+  notify: [restart gerrit]
+
+- name: "Install static configuration files for gerrit"
+  copy:
+    src: "{{ item.name }}"
+    dest: /etc/gerrit/
+    mode: 0644
+    owner: gerrit
+    group: gerrit
+  with_items:
+    - { name: replication.config }
+    - { name: GerritSiteHeader.html }
+    - { name: GerritSite.css }
+
+- name: "Install initialization and migration scripts"
+  template:
+    src: "{{ item.name }}.j2"
+    dest: "/root/{{ item.name }}"
+    owner: root
+    group: root
+    mode: "{{ item.mode | default('0700')}}"
+  with_items:
+    - { name: gerrit-firstuser-init.sql, mode: '0644' }
+    - { name: gerrit-restore-user-keys.sql, mode: '0644' }
+    - { name: gerrit-set-default-acl.sh }
+    - { name: gerrit-set-ci-user.sh }
+
+- name: "Add monit service check"
+  copy:
+    src: monit
+    dest: /etc/monit.d/gerrit
+    owner: root
+    group: root
+    mode: 0640
+  notify:
+    - restart monit
 
 - name: "Copy gerrit service key"
   copy:
       content: "{{ hostvars[inventory_hostname][item.name] }}"
-      dest: "/home/gerrit/site_path/etc/{{ item.file }}"
+      dest: "/etc/gerrit/{{ item.file }}"
       mode: "{{ item.mode }}"
       owner: gerrit
       group: gerrit
@@ -42,53 +113,38 @@
   when:
       - selinuxenabled
 
-- name: "Test if gerrit is already installed"
-  stat:
-      path: /home/gerrit/site_path/bin/gerrit.war
-  register: gerrit_war
+- name: "Test if gerrit All-Projects exists"
+  stat: path=/var/lib/gerrit/git/All-Projects.git
+  register: gerrit_allprojects
 
-- name: "Initialize gerrit with gerrit user"
-  shell: '/usr/bin/java -jar /home/gerrit/gerrit.war init -d /home/gerrit/site_path --batch --no-auto-start'
-  become: true
-  become_user: gerrit
-  register: initialize_done
-  when: gerrit_war.stat.exists == False
-
-- name: "Check if service is running"
+- name: "Test if gerrit is running"
   command: systemctl -q is-active gerrit
   register: _gerrit
   failed_when: _gerrit.rc != 3 and _gerrit.rc != 0
 
-- name: "Reindex gerrit"
-  command: /usr/bin/java -jar /home/gerrit/gerrit.war reindex -d /home/gerrit/site_path
+- name: "Initialize/Upgrade gerrit when service is not running"
+  command: /usr/bin/java -jar /usr/lib64/gerrit/release.war init -d /var/lib/gerrit --batch --no-auto-start --skip-plugins
   become: true
   become_user: gerrit
   when: _gerrit.rc == 3
 
-- name: "Install gerrit service file"
-  template:
-      src: gerrit.service.j2
-      dest: /lib/systemd/system/gerrit.service
-      owner: root
-      group: root
-      mode: 0644
+- name: "Reindex gerrit when service is not running"
+  command: /usr/bin/java -jar /usr/lib64/gerrit/release.war reindex -d /var/lib/gerrit
+  become: true
+  become_user: gerrit
+  when: _gerrit.rc == 3
 
 - name: "Start service"
-  systemd:
-      name: gerrit
-      state: started
-      daemon_reload: yes
-      enabled: yes
+  service: name=gerrit state=started enabled=yes
 
 - name: "Add initial user"
   shell: 'mysql gerrit < /root/gerrit-firstuser-init.sql'
-  register: first_user
-  when: initialize_done|changed
+  when: gerrit_allprojects.stat.exists == False
 
 - name: "Add jenkins user"
   command: /root/gerrit-set-ci-user.sh
-  when: initialize_done|changed
+  when: gerrit_allprojects.stat.exists == False
 
 - name: "Set ACL"
   command: /root/gerrit-set-default-acl.sh
-  when: initialize_done|changed
+  when: gerrit_allprojects.stat.exists == False

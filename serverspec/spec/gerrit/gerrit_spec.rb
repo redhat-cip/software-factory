@@ -18,53 +18,18 @@ describe user('gerrit') do
     it {
         should exist
         should belong_to_group 'gerrit'
-        should have_home_directory '/home/gerrit'
+        should have_home_directory '/var/lib/gerrit'
     }
 end
 
-describe file('/home/gerrit/site_path') do
+describe file('/etc/gerrit') do
     it {
         should be_directory
         should be_owned_by 'gerrit'
     }
 end
 
-describe file('/home/gerrit/site_path/etc') do
-    it {
-        should be_directory
-        should be_owned_by 'gerrit'
-    }
-end
-
-describe file('/home/gerrit/site_path/bin') do
-    it {
-        should be_directory
-        should be_owned_by 'gerrit'
-    }
-end
-
-describe file('/home/gerrit/site_path/static') do
-    it {
-        should be_directory
-        should be_owned_by 'gerrit'
-    }
-end
-
-describe file('/home/gerrit/site_path/hooks') do
-    it {
-        should be_directory
-        should be_owned_by 'gerrit'
-    }
-end
-
-describe file('/home/gerrit/site_path/lib') do
-    it {
-        should be_directory
-        should be_owned_by 'gerrit'
-    }
-end
-
-describe file('/home/gerrit/site_path/etc/gerrit.config') do
+describe file('/etc/gerrit/gerrit.config') do
     it {
         should be_file
         should be_owned_by 'gerrit'
@@ -73,7 +38,7 @@ describe file('/home/gerrit/site_path/etc/gerrit.config') do
     }
 end
 
-describe file('/home/gerrit/site_path/etc/secure.config') do
+describe file('/etc/gerrit/secure.config') do
     it {
         should be_file
         should be_owned_by 'gerrit'
@@ -82,82 +47,12 @@ describe file('/home/gerrit/site_path/etc/secure.config') do
     }
 end
 
-describe file('/home/gerrit/site_path/etc/ssh_host_rsa_key') do
+describe file('/etc/gerrit/ssh_host_rsa_key') do
     it {
         should be_file
         should be_owned_by 'gerrit'
         should be_grouped_into 'gerrit'
         should be_mode '400'
-    }
-end
-
-describe file('/home/gerrit/site_path/etc/ssh_host_rsa_key.pub') do
-    it {
-        should be_file
-        should be_owned_by 'gerrit'
-        should be_grouped_into 'gerrit'
-        should be_mode '444'
-    }
-end
-
-describe file('/root/gerrit-firstuser-init.sql') do
-    it {
-        should be_file
-        should be_mode '644'
-    }
-end
-
-describe file('/root/gerrit-set-default-acl.sh') do
-     it {
-        should be_file
-        should be_mode '700'
-    }
-end
-
-describe file('/root/gerrit-set-ci-user.sh') do
-    it {
-        should be_file
-        should be_mode '700'
-    }
-end
-
-
-describe file('/home/gerrit/gerrit.war') do
-    it {
-        should be_file
-        should be_owned_by 'gerrit'
-        should be_grouped_into 'gerrit'
-        should be_mode '644'
-    }
-end
-
-describe file('/home/gerrit/site_path/lib/mysql-connector-java-5.1.21.jar') do
-    it {
-        should be_file
-        should be_owned_by 'gerrit'
-        should be_grouped_into 'gerrit'
-    }
-end
-
-describe file('/home/gerrit/site_path/lib/bcprov-jdk15on-1.51.jar') do
-    it {
-        should be_file
-        should be_owned_by 'gerrit'
-        should be_grouped_into 'gerrit'
-    }
-end
-
-describe file('/home/gerrit/site_path/lib/bcpkix-jdk15on-1.51.jar') do
-    it {
-        should be_file
-        should be_owned_by 'gerrit'
-        should be_grouped_into 'gerrit'
-    }
-end
-
-describe file('/lib/systemd/system/gerrit.service') do
-    it {
-        should be_file
     }
 end
 

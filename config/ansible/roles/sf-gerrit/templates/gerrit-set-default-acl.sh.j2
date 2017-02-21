@@ -26,7 +26,7 @@ cmsg="Provide the default config"
 # be sure to not overwrite project.config if modified
 # by someone else.
 [ -z "$1" -a $(git log --pretty=oneline | wc -l) -eq 1 ] && {
-    cp /root/gerrit_data_source/project.config .
+    cp /root/project.config .
 }
 
 

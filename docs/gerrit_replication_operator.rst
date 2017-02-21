@@ -21,30 +21,30 @@ SF to authenticate and replicate.
 
 You will find the key at this path::
 
- /home/gerrit/site_path/etc/ssh_host_rsa_key.pub
+ /etc/gerrit/ssh_host_rsa_key.pub
 
 
 Add the host key of the remote server to the known_hosts
 ........................................................
 
 The gerrit replication plugin expects to validate the remote's
-host key. It will look at /home/gerrit/.ssh/known_hosts. If the
+host key. It will look at /var/lib/gerrit/.ssh/known_hosts. If the
 replication issue is "Host key rejected" from the log file
-/home/gerrit/site_path/logs/replication.log then::
+/var/log/gerrit/replication.log then::
 
- $ ssh-keyscan <hostname> 2> /dev/null >> /home/gerrit/.ssh/known_hosts
+ $ ssh-keyscan <hostname> 2> /dev/null >> /var/lib/gerrit/.ssh/known_hosts
 
 
 Define a deploy key inside Software Factory
 ...........................................
 
 In order to configure Gerrit to use a specific deploy key you have to
-edit the file /home/gerrit/.ssh/config. The following statements
+edit the file /var/lib/gerrit/.ssh/config. The following statements
 will force Gerrit to use the key named *deploy-key.pub* for
 the host named "github-host-p1-alias"::
 
  Host "github-host-p1-alias"
- IdentityFile /home/gerrit/.ssh/deploy-key.pub
+ IdentityFile /var/lib/gerrit/.ssh/deploy-key.pub
  PreferredAuthentications publickey
  Hostname github.com
 

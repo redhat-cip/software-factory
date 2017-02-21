@@ -1,0 +1,10 @@
+---
+features:
+  - Uses a new gerrit package that better respect the
+    Filesystem Hierarchy Standard (FHS). Configuration
+    is now stored in /etc/gerrit, stateful data in
+    /var/lib/gerrit and logs in /var/log/gerrit.
+  - Includes the reviewnotes gerrit plugin
+upgrade:
+  - Gerrit is upgraded to 2.11.10 version, old setup
+    is saved in /home/gerrit.old.

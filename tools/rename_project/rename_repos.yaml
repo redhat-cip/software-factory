@@ -52,34 +52,34 @@
     tags:
       - project_rename
 
-  - file: path=/home/gerrit/site_path/git/ state=directory mode=0755 owner=gerrit recurse=yes
+  - file: path=/var/lib/gerrit/git/ state=directory mode=0755 owner=gerrit recurse=yes
     tags:
       - project_rename
 
   - name: Check if old git directory exists
-    stat: path=/home/gerrit/site_path/git/{{ item.old }}.git
+    stat: path=/var/lib/gerrit/git/{{ item.old }}.git
     with_items: repos
     register: gitdir
     tags:
       - project_rename
 
   - name: Ensure new git directory (needed if namespace used) exists
-    file: path=/home/gerrit/site_path/git/{{ item.new | dirname }} state=directory
+    file: path=/var/lib/gerrit/git/{{ item.new | dirname }} state=directory
     with_items: repos
     tags:
       - project_rename
 
   - name: Rename git directory
-    command: mv /home/gerrit/site_path/git/{{ item.old }}.git /home/gerrit/site_path/git/{{ item.new }}.git
+    command: mv /var/lib/gerrit/git/{{ item.old }}.git /var/lib/gerrit/git/{{ item.new }}.git
     with_items: repos
     when: gitdir.results[0].stat.exists is defined and gitdir.results[0].stat.exists == true
     tags:
       - project_rename
 
   # Section name can't have '/' to be managed by managesf
-  - name: Update section name in /home/gerrit/site_path/etc/replication.config
+  - name: Update section name in /etc/gerrit/replication.config
     replace:
-      dest=/home/gerrit/site_path/etc/replication.config
+      dest=/etc/gerrit/replication.config
       regexp='(\[remote .){{ item.old | regex_replace('/', '_') }}(.*)'
       replace='\1{{ item.new | regex_replace('/', '_') }}\2'
       backup=yes
@@ -88,9 +88,9 @@
       - replication_project_rename
 
   # Alias name can't have '/' as the alias name is used as a path for the private key
-  - name: Update alias name in url /home/gerrit/site_path/etc/replication.config
+  - name: Update alias name in url /etc/gerrit/replication.config
     replace:
-      dest=/home/gerrit/site_path/etc/replication.config
+      dest=/etc/gerrit/replication.config
       regexp='(url = git@alias_gh_){{ item.old | regex_replace('/', '_') }}(.*)'
       replace='\1{{ item.new | regex_replace('/', '_') }}\2'
       backup=yes
@@ -98,9 +98,9 @@
     tags:
       - replication_project_rename
 
-  - name: Update project name in /home/gerrit/site_path/etc/replication.config
+  - name: Update project name in /etc/gerrit/replication.config
     replace:
-      dest=/home/gerrit/site_path/etc/replication.config
+      dest=/etc/gerrit/replication.config
       regexp='(projects = ){{ item.old }}(.*)'
       replace='\1{{ item.new }}\2'
       backup=yes
@@ -109,11 +109,11 @@
       - replication_project_rename
 
   - name: Check if .ssh/config exists
-    stat: path=/home/gerrit/.ssh/config
+    stat: path=/var/lib/gerrit/.ssh/config
     register: sshconfig
-  - name: Update projectname in /home/gerrit/.ssh/config
+  - name: Update projectname in /var/lib/gerrit/.ssh/config
     replace:
-      dest=/home/gerrit/.ssh/config
+      dest=/var/lib/gerrit/.ssh/config
       regexp='(.*alias_gh_){{ item.old | regex_replace('/', '_') }}(.*)'
       replace='\1{{ item.new | regex_replace('/', '_') }}\2'
       backup=yes
@@ -123,21 +123,21 @@
       - replication_project_rename
 
   - name: Check if there is a SSH replication key to rename
-    stat: path=/home/gerrit/.ssh/alias_gh_{{ item.old | regex_replace('/', '_') }}.key
+    stat: path=/var/lib/gerrit/.ssh/alias_gh_{{ item.old | regex_replace('/', '_') }}.key
     with_items: repos
     register: sshkeyfile
     tags:
       - replication_project_rename
 
   - name: Rename replication SSH key
-    command: mv /home/gerrit/.ssh/alias_gh_{{ item.old | regex_replace('/', '_') }}.key /home/gerrit/.ssh/alias_gh_{{ item.new | regex_replace('/', '_') }}.key
+    command: mv /var/lib/gerrit/.ssh/alias_gh_{{ item.old | regex_replace('/', '_') }}.key /var/lib/gerrit/.ssh/alias_gh_{{ item.new | regex_replace('/', '_') }}.key
     with_items: repos
     when: sshkeyfile.results[0].stat.exists is defined and sshkeyfile.results[0].stat.exists == true
     tags:
       - replication_project_rename
 
   - name: "Start re-index"
-    shell: java -jar /home/gerrit/site_path/bin/gerrit.war reindex -d /home/gerrit/site_path
+    shell: /usr/bin/java -jar /usr/lib64/gerrit/release.war reindex -d /var/lib/gerrit
     tags:
       - project_rename
 

@@ -116,7 +116,7 @@ class TestProjectReplication(Base):
 
     def delete_mirror_repo(self, name):
         logger.info("Delete mirror repo created by the replication")
-        mirror_path = '/home/gerrit/git/%s.git' % name
+        mirror_path = '/var/lib/gerrit/tmp/%s.git' % name
         cmd = ['ssh', 'gerrit.%s' % config.GATEWAY_HOST,
                'rm', '-rf', mirror_path]
         self.ssh_run_cmd(config.SERVICE_PRIV_KEY_PATH,
@@ -126,7 +126,7 @@ class TestProjectReplication(Base):
     def create_config_section(self, project):
         logger.info("Add the replication config section")
         host = '%s@%s' % (config.GERRIT_USER, config.GATEWAY_HOST)
-        mirror_repo_path = '/home/gerrit/git/\${name}.git'
+        mirror_repo_path = '/var/lib/gerrit/tmp/\${name}.git'
         url = '%s:%s' % (host, mirror_repo_path)
         path = os.path.join(self.config_clone_dir,
                             'gerrit/replication.config')
@@ -145,7 +145,7 @@ class TestProjectReplication(Base):
         logger.info("Waiting for config-update on %s" % change_sha)
         self.ju.wait_for_config_update(change_sha)
         cmd = ['ssh', 'gerrit.%s' % config.GATEWAY_HOST, 'grep',
-               'test_project', '/home/gerrit/site_path/etc/replication.config']
+               'test_project', '/etc/gerrit/replication.config']
         logger.info("Wait for the replication config section to land")
         _, code = self.ssh_run_cmd(config.SERVICE_PRIV_KEY_PATH,
                                    'root', config.GATEWAY_HOST, cmd)
@@ -176,7 +176,7 @@ class TestProjectReplication(Base):
         self.ju.wait_for_config_update(change_sha)
         cmd = ['ssh', 'gerrit.%s' % config.GATEWAY_HOST, 'grep',
                'test_project',
-               '/home/gerrit/site_path/etc/replication.config']
+               '/etc/gerrit/replication.config']
         _, code = self.ssh_run_cmd(config.SERVICE_PRIV_KEY_PATH,
                                    'root', config.GATEWAY_HOST, cmd)
         if code != 0:
@@ -206,7 +206,7 @@ class TestProjectReplication(Base):
         # Be sure sftests.com host key is inside the known_hosts
         cmds = [['ssh', 'gerrit.%s' % config.GATEWAY_HOST,
                  'ssh-keyscan', 'sftests.com', '>',
-                 '/home/gerrit/.ssh/known_hosts']]
+                 '/var/lib/gerrit/.ssh/known_hosts']]
         for cmd in cmds:
             self.ssh_run_cmd(config.SERVICE_PRIV_KEY_PATH,
                              'root',
@@ -216,7 +216,7 @@ class TestProjectReplication(Base):
         self.create_config_section(self.pname)
 
         # Verify if gerrit replicated the repo
-        self.managesf_repo_path = "ssh://%s@%s/home/gerrit/git/" % (
+        self.managesf_repo_path = "ssh://%s@%s/var/lib/gerrit/tmp/" % (
             'root', config.GATEWAY_HOST)
         repo_url = self.managesf_repo_path + '%s.git' % self.pname
         logger.info("Wait for the replication to happen")

@@ -15,7 +15,7 @@
   when: localconfig.stdout != upstreamconfig.stdout
   template:
     src: gerrit.config.j2
-    dest: /home/gerrit/site_path/etc/gerrit.config
+    dest: /etc/gerrit/gerrit.config
     owner: gerrit
     group: gerrit
     mode: 0644

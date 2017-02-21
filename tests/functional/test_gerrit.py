@@ -143,12 +143,6 @@ class TestGerrit(Base):
         fetch = resp["revisions"][current_rev]["fetch"]
         self.assertGreater(fetch.keys(), 0)
 
-        # disable and check if the fetch has anything
-        gu.e_d_plugin("download-commands", 'disable')
-        resp = gu.get_change_last_patchset(change_id)
-        fetch = resp["revisions"][current_rev]["fetch"]
-        self.assertEqual(len(fetch.keys()), 0)
-
         # enable the plugin and check if the fetch information is valid
         gu.e_d_plugin("download-commands", 'enable')
         resp = gu.get_change_last_patchset(change_id)
@@ -211,7 +205,7 @@ class TestGerrit(Base):
             url,
             cookies=dict(
                 auth_pubtkt=config.USERS[config.USER_1]['auth_cookie']))
-        self.assertTrue('"2.11.9"' in resp.text)
+        self.assertTrue('"2.11.10"' in resp.text)
 
     def test_gitweb_access(self):
         """ Test if gitweb access works correctly

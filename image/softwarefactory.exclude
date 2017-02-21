@@ -70,7 +70,8 @@
 + /home/gerrit/site_path/lib/
 + /home/gerrit/site_path/plugins/
 - /home/gerrit/*
-/home/zuul/
+/var/lib/gerrit/
+/etc/gerrit/
 /usr/share/config.init.done
 /srv/cauth_keys/
 /var/lib/elasticsearch/
