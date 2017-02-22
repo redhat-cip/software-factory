@@ -1,0 +1,40 @@
+---
+- name: "Install package"
+  yum:
+    name: "jenkins-1.651.3"
+    state: present
+    disablerepo: "{{ yum_disable_repo|default(omit) }}"
+    enablerepo: "{{ yum_enable_repo|default(omit) }}"
+
+- name: "Create plugins directory"
+  file: path=/var/lib/jenkins/plugins state=directory
+
+- name: "Download plugin (using cache)"
+  get_url:
+    url: "{{ jenkins_cache_url }}/{{ item.name }}.hpi"
+    dest: "/var/lib/jenkins/plugins/{{ item.name }}.hpi"
+    checksum: "{{ item.checksum }}"
+  with_items: "{{ jenkins_plugins }}"
+  when: jenkins_cache_url != ""
+
+- name: "Download swarm-client (using cache)"
+  get_url:
+    url: "{{ jenkins_cache_url }}/swarm-client-{{ jenkins_swarm_client_version }}-jar-with-dependencies.jar"
+    dest: "/var/lib/jenkins/swarm-client-latest.jar"
+    checksum: "{{ jenkins_swarm_client_checksum }}"
+  when: jenkins_cache_url != ""
+
+- name: "Download plugin"
+  get_url:
+    url: "{{ jenkins_plugins_url }}/{{ item.name }}/{{ item.version }}/{{ item.name }}.hpi"
+    dest: "/var/lib/jenkins/plugins/{{ item.name }}.hpi"
+    checksum: "{{ item.checksum }}"
+  with_items: "{{ jenkins_plugins }}"
+  when: jenkins_cache_url == ""
+
+- name: "Download swarm-client"
+  get_url:
+    url: "https://repo.jenkins-ci.org/releases/org/jenkins-ci/plugins/swarm-client/{{ jenkins_swarm_client_version }}/swarm-client-{{ jenkins_swarm_client_version }}-jar-with-dependencies.jar"
+    dest: "/var/lib/jenkins/swarm-client-latest.jar"
+    checksum: "{{ jenkins_swarm_client_checksum }}"
+  when: jenkins_cache_url == ""

@@ -1,4 +1,5 @@
 role_actions:
+  - install
   - stop
   - setup
   - update
@@ -17,3 +18,53 @@ jenkins_api_url: "http://example.com:{{ jenkins_api_port }}/jenkins/"
 jenkins_pub_url: "https://example.com/jenkins/"
 
 jenkins_password: "CHANGE_ME"
+
+jenkins_plugins_url: "https://updates.jenkins-ci.org/download/plugins"
+jenkins_cache_url: ""
+
+jenkins_swarm_client_version: "2.1"
+jenkins_swarm_client_checksum: "sha256:dbabd2757624df588b258a3c476c06946e0e8c3e98076cc17d7ade371b91a967"
+
+jenkins_plugins:
+  - name: ansicolor
+    version: "0.4.2"
+    checksum: "sha256:f07b310f7164f5a1ed9f7ad81b8924f1c1af4c09edc959b87f43899723273c42"
+  - name: cobertura
+    version: "1.9.8"
+    checksum: "sha256:e2a3fb159aa78f09b72c859f2e057810c6e431437992f938b4942f517ccd5ade"
+  - name: credentials-binding
+    version: "1.4"
+    checksum: "sha256:a25ac1ff5ef23855c6a08de5a8779ee5615e6ccde07e3a35ffdcd9d31fbd9a1a"
+  - name: dashboard-view
+    version: "2.9.10"
+    checksum: "sha256:f813a240e3dd7df8a83f0c21ffd4615c5178fd219d4f2c9c16af490afdd53440"
+  - name: gearman-plugin
+    version: "0.2.0"
+    checksum: "sha256:ca4d68d41fcc2278eab02f61bf064f176c7301cad3a07045cff1aedaae7a3b7c"
+  - name: plain-credentials
+    version: "1.0"
+    checksum: "sha256:2f5aa3c8157b7b490eaec85fd7c75e0a7599e41e77d395b5caecb94c868183da"
+  - name: postbuildscript
+    version: "0.17"
+    checksum: "sha256:1115f69c0b2cb580d4bed3f46651e48c647abe93737ecbea98bebdefce5ab46e"
+  - name: reverse-proxy-auth-plugin
+    version: "1.4.0"
+    checksum: "sha256:e740e346d5a8dca081948bac292d15931561091d40d460a554b1afc015792b9d"
+  - name: simple-theme-plugin
+    version: "0.3"
+    checksum: "sha256:a5fd861fb51569684a4837976e28f6fcd6248c6024e5b97e61c03c918e961834"
+  - name: ssh-agent
+    version: "1.4.1"
+    checksum: "sha256:ae8227bf219e96a4d76f36dc6d6e652ddd0209e8d9c4cf4483a07858d707ce6e"
+  - name: swarm
+    version: "{{ jenkins_swarm_client_version }}"
+    checksum: "sha256:2e673b88982fc8568c8d023753616fac9e0ac37e03405def8a68dfa9f8c7366a"
+  - name: timestamper
+    version: "1.8.7"
+    checksum: "sha256:c2b766486270969489db38541dd5fcf0cd566c10753b378570053c3c9f03c0c6"
+  - name: workflow-step-api
+    version: "1.8"
+    checksum: "sha256:a132602f687292ea190d768e9bf022193b50bee09f63182dea5eb06fbaa9dc02"
+  - name: zmq-event-publisher
+    version: "0.0.5"
+    checksum: "sha256:104c3c264c39d0c253572b41951e7c0d181a68c11535972c846f295c67c403ef"

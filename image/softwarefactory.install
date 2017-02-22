@@ -212,7 +212,7 @@ enable_selinux() {
 
 install_sf_packages() {
     do_chroot ${dir} bash -c 'for key in /etc/pki/rpm-gpg/*.key; do rpm --import $key; done'
-    install_packages ${dir} $CENTOS_PKGS $BUILD_PKGS $SF_PKGS
+    install_packages ${dir} $CENTOS_PKGS $BUILD_PKGS
 
     checkpoint "centos rpms installed"
 
@@ -237,54 +237,6 @@ install_sf_packages() {
     chmod +x ${dir}/usr/local/bin/zuul_swift_upload.py
 
     [ -d ${dir}/var/lib/grafana ] || install_packages ${dir} ${GRAFANA_URL}
-}
-
-function install_jenkins {
-    [ -d ${dir}/var/lib/jenkins/plugins ] || mkdir -p ${dir}/var/lib/jenkins/plugins
-
-    # Jenkins Swarm client
-    swarm_client=$(basename $JENKINS_SWARM_CLIENT_URL)
-    http_fetch $JENKINS_SWARM_CLIENT_URL ${dir}/var/lib/jenkins/${swarm_client}
-    rm -f ${dir}/var/lib/jenkins/swarm-client-latest.jar
-    ln -sf ${swarm_client} ${dir}/var/lib/jenkins/swarm-client-latest.jar
-
-    # Jenkins ssh-agent plugin
-    http_fetch $JENKINS_SSH_AGENT_URL ${dir}/var/lib/jenkins/plugins/$(basename $JENKINS_SSH_AGENT_URL)
-    # Jenkins Gearman plugin
-    http_fetch $JENKINS_GEARMAN_PLUGIN_URL ${dir}/var/lib/jenkins/plugins/$(basename $JENKINS_GEARMAN_PLUGIN_URL)
-
-    # Jenkins Swarm plugin
-    http_fetch $JENKINS_SWARM_URL ${dir}/var/lib/jenkins/plugins/$(basename $JENKINS_SWARM_URL)
-
-    # Jenkins timestamper plugin
-    http_fetch $JENKINS_TIMESTAMPER_URL ${dir}/var/lib/jenkins/plugins/$(basename $JENKINS_TIMESTAMPER_URL)
-
-    # Jenkins theme plugin
-    http_fetch $JENKINS_SIMPLE_THEME_PLUGIN_URL ${dir}/var/lib/jenkins/plugins/$(basename $JENKINS_SIMPLE_THEME_PLUGIN_URL)
-
-    # Jenkins credentials plugin
-    http_fetch $JENKINS_CREDENTIALS_BINDING_URL ${dir}/var/lib/jenkins/plugins/$(basename $JENKINS_CREDENTIALS_BINDING_URL)
-    http_fetch $JENKINS_WORKFLOW_STEP_API_URL ${dir}/var/lib/jenkins/plugins/$(basename $JENKINS_WORKFLOW_STEP_API_URL)
-    http_fetch $JENKINS_PLAIN_CREDENTIALS_URL ${dir}/var/lib/jenkins/plugins/$(basename $JENKINS_PLAIN_CREDENTIALS_URL)
-    http_fetch $JENKINS_REVERSE_PROXY_AUTH_PLUGIN_URL ${dir}/var/lib/jenkins/plugins/$(basename $JENKINS_REVERSE_PROXY_AUTH_PLUGIN_URL)
-
-    # Jenkins plugin to run scripts as publishers
-    http_fetch $JENKINS_POSTBUILDSCRIPT_URL ${dir}/var/lib/jenkins/plugins/$(basename $JENKINS_POSTBUILDSCRIPT_URL)
-
-    # Jenkins ZMQ event plugin
-    http_fetch $JENKINS_ZMQ_EVENT_PUBLISHER_URL ${dir}/var/lib/jenkins/plugins/$(basename $JENKINS_ZMQ_EVENT_PUBLISHER_URL)
-
-    # Jenkins Dashboard plugin
-    http_fetch $JENKINS_DASHBOARD_VIEW_URL ${dir}/var/lib/jenkins/plugins/$(basename $JENKINS_DASHBOARD_VIEW_URL)
-
-    # Jenkins Cobertura code coverage plugin
-    http_fetch $JENKINS_COBERTURA_URL ${dir}/var/lib/jenkins/plugins/$(basename $JENKINS_COBERTURA_URL)
-
-    # Jenkins AnsiColor plugin
-    http_fetch $JENKINS_ANSICOLOR_URL ${dir}/var/lib/jenkins/plugins/$(basename $JENKINS_ANSICOLOR_URL)
-
-    # make sure jenkins is disabled by default
-    rm -Rf ${dir}/etc/rc.d/*/*jenkins*
 }
 
 function install_gerrit {
@@ -543,8 +495,6 @@ build_all() {
     checkpoint "sf dep packages installed"
     enable_selinux
     checkpoint "selinux configured"
-    install_jenkins
-    checkpoint "jenkins installed"
     install_redmine
     checkpoint "redmine installed"
     install_gerrit
@@ -562,6 +512,7 @@ build_all() {
     rsync -a --delete --exclude 'build' ${PYSFLIB_CLONED_PATH}/ ${dir}/usr/src/pysflib/
     ansible_install sf-base "${BASE_EXTRA_VARS}"
     ansible_install sf-gateway
+    ansible_install sf-jenkins "$JENKINS_EXTRA_VARS"
     ansible_install sf-managesf "$MANAGESF_EXTRA_VARS"
     ansible_install sf-cauth "$CAUTH_EXTRA_VARS"
     ansible_install sf-lecm "$LECM_EXTRA_VARS"
