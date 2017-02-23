@@ -134,8 +134,8 @@
         ProxyPass /storyboard_api/ http://storyboard:20000/v1/ nocanon retry=0
         ProxyPassReverse /storyboard_api/ http://storyboard:20000/v1/
 
-        ProxyPass /manage/ http://managesf:20001/ retry=0
-        ProxyPassReverse /manage/ http://managesf:20001/
+        ProxyPass /manage/ http://managesf:20001/ retry=0 timeout=2400
+        ProxyPassReverse /manage/ http://managesf:20001/ timeout=2400
 
 {% if 'redmine' in roles %}
         ProxyPass /redmine/ {{ redmine_internal_url }} nocanon retry=0
