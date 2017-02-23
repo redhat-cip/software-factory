@@ -84,8 +84,8 @@
         ProxyPass /storyboard_api/ http://storyboard:20000/v1/ nocanon retry=0
         ProxyPassReverse /storyboard_api/ http://storyboard:20000/v1/
 
-        ProxyPass /manage/ http://managesf:20001/ retry=0
-        ProxyPassReverse /manage/ http://managesf:20001/
+        ProxyPass /manage/ http://managesf:20001/ retry=0 timeout=2400
+        ProxyPassReverse /manage/ http://managesf:20001/ timeout=2400
 
         ProxyPass /etherpad/ http://127.0.0.1:9001/ retry=0
         ProxyPassReverse /etherpad/ http://127.0.0.1:9001/
