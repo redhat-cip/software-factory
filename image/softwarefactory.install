@@ -221,6 +221,11 @@ install_sf_packages() {
     install_packages ${dir} ${EPEL_PKGS} ${RDO_PKGS}
     checkpoint "epel+rdo rpms installed"
 
+    # Quick and dirty fix for the current issue on RDO 02232017
+    do_chroot ${dir} rpm -q python2-passlib-1.6.5-1.el7 > /dev/null || {
+        do_chroot ${dir} yum downgrade -y python2-passlib-1.6.5
+    }
+
     if [ ! -f "${dir}/usr/lib64/httpd/modules/mod_passenger.so" ]; then
         http_fetch ${PASSENGER_REPO} ${dir}/etc/yum.repos.d/passenger.repo
         install_packages ${dir} ${PASSENGER_PKGS}

@@ -8,7 +8,8 @@ python2-oslo-context
 python2-oslo-i18n
 python2-oslo-serialization
 python2-oslo-utils
-python2-passlib
+# Pin until python2-passlib-1.7.0-1.el7 set a correct version number
+python2-passlib-1.6.5-1.el7
 python2-pecan
 python2-PyMySQL
 python-babel
