@@ -6,6 +6,14 @@
     disablerepo: "{{ yum_disable_repo|default(omit) }}"
     enablerepo: "{{ yum_enable_repo|default(omit) }}"
 
+- name: Cleanup unused files/directories
+  file:
+      path: "{{ item }}"
+      state: absent
+  with_items:
+      - /etc/init.d/jenkins
+      - /usr/local/jenkins
+
 - name: "Create plugins directory"
   file: path=/var/lib/jenkins/plugins state=directory
 

@@ -16,14 +16,6 @@
     - {name: /var/lib/jenkins/defconf, mode: '0500'}
     - {name: /var/lib/jenkins/plugins}
 
-- name: Cleanup unused files/directories
-  file:
-      path: "{{ item }}"
-      state: absent
-  with_items:
-      - /etc/init.d/jenkins
-      - /usr/local/jenkins
-
 - name: Install templates for root user
   template:
       src: "{{ item.name }}.j2"
