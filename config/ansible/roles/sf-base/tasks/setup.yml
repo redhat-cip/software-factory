@@ -149,4 +149,3 @@
     - /usr/lib/python2.7/site-packages/requests/
     - /var/www/managesf/lib/python2.7/site-packages/requests/
     - /var/www/cauth/lib/python2.7/site-packages/requests/
-    - /srv/sfmanager/lib/python2.7/site-packages/requests/

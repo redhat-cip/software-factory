@@ -362,6 +362,7 @@ remove_obsolete() {
     rm -Rf ${dir}/usr/src/git*
     rm -Rf ${dir}/srv/lodgeit
     rm -Rf ${dir}/root/gerrit_data_source
+    rm -Rf ${dir}/srv/sfmanager
 
     # Gemfile is a sign /var/www/static was setup manually. It's now replaced by sf-web-assets package
     if [ -f ${dir}/var/www/static/font-awesome/Gemfile ]; then
@@ -435,15 +436,10 @@ function install_sf {
     rsync -a --delete ${MANAGESF_CLONED_PATH}/ ${dir}/usr/src/managesf/
     do_chroot ${dir} bash -c "cd /usr/src/managesf; /var/www/managesf/bin/python setup.py install"
 
-    # Install python-sfmanager
-    rsync -a --delete ${SFMANAGER_CLONED_PATH}/ ${dir}/usr/src/python-sfmanager/
-    do_chroot ${dir} bash -c "cd /usr/src/python-sfmanager; /srv/sfmanager/bin/python setup.py install --install-scripts /usr/bin"
-
     # Install pysflib
     rsync -a --delete ${PYSFLIB_CLONED_PATH}/ ${dir}/usr/src/pysflib/
     do_chroot ${dir} bash -c "cd /usr/src/pysflib; /var/www/cauth/bin/python setup.py install"
     do_chroot ${dir} bash -c "cd /usr/src/pysflib; /var/www/managesf/bin/python setup.py install"
-    do_chroot ${dir} bash -c "cd /usr/src/pysflib; /srv/sfmanager/bin/python setup.py install"
 
     do_chroot ${dir} find /root /var/www /srv/ -name "*.pyc" -exec rm {} \;
 
@@ -503,9 +499,8 @@ build_all() {
     # Copy prepared source to support depends-on
     rsync -a --delete --exclude 'build' ${MANAGESF_CLONED_PATH}/ ${dir}/usr/src/managesf/
     rsync -a --delete --exclude 'build' ${CAUTH_CLONED_PATH}/ ${dir}/usr/src/cauth/
-    rsync -a --delete --exclude 'build' ${SFMANAGER_CLONED_PATH}/ ${dir}/usr/src/python-sfmanager/
     rsync -a --delete --exclude 'build' ${PYSFLIB_CLONED_PATH}/ ${dir}/usr/src/pysflib/
-    ansible_install sf-base "${BASE_EXTRA_VARS}"
+    ansible_install sf-base
     ansible_install sf-gateway
     ansible_install sf-jenkins "$JENKINS_EXTRA_VARS"
     ansible_install sf-managesf "$MANAGESF_EXTRA_VARS"
