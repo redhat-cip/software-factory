@@ -1,0 +1,46 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+# Build environment for SF Koji
+
+Vagrant.configure(2) do |config|
+
+  config.vm.network "public_network", :bridge => 'wlp4s0', :dev => 'wlp4s0'
+
+  config.ssh.forward_agent = true
+
+  config.vm.provider "libvirt" do |vb, override|
+    override.vm.box = "http://cloud.centos.org/centos/7/vagrant/x86_64/images/CentOS-7.LibVirt.box"
+    vb.memory = 512
+    vb.cpus = 1
+    vb.video_type = "qxl"
+    vb.storage :file, :size => "30G"
+    end
+
+  config.vm.provider "virtualbox" do |vb|
+    vb.memory = "512"
+    vb.cpus = 1
+    vb.video_type = "qxl"
+    vb.storage :file, :size => "30G"
+  end
+
+  config.vm.provision "shell", privileged: false, inline: <<-SHELL
+    # Install prerequisites
+    sudo yum install -y epel-release
+    sudo yum install -y git git-review vim-enhanced tmux curl wget rpmdevtools createrepo mock python-jinja2 python-pip python-yaml python-crypto
+    sudo /usr/sbin/usermod -a -G mock vagrant
+    sudo pip install zuul
+    echo 46.231.133.231 koji.softwarefactory-project.io | sudo tee -a /etc/hosts
+    # Install SF tooling
+    git clone https://softwarefactory-project.io/r/config
+    git clone https://softwarefactory-project.io/r/software-factory/sfinfo
+    chmod +x sfinfo/zuul_rpm_build.py
+    # clone your distgits in here with respect to the namespace
+    mkdir software-factory
+    mkdir bin
+    cd bin && ln -s /home/vagrant/sfinfo/zuul_rpm_build.py
+    echo 'echo -e Build rpms with: zuul_rpm_build.py --distro-info /path/to/sfinfo/sf-master.yaml --project /path/to/project-distgit' >> ~/.bashrc 
+  SHELL
+
+  config.vm.provision "file", source: "~/.gitconfig", destination: "~/.gitconfig"
+  config.vm.provision "file", source: "~/.vimrc", destination: "~/.vimrc"
+end
