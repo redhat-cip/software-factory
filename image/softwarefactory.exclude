@@ -77,9 +77,11 @@
 /srv/cauth_keys/
 /var/lib/elasticsearch/
 /var/lib/repoxplorer/
+/var/lib/managesf/
 
 # Sf configuration
 /etc/puppet/hiera/sf/
 /etc/software-factory/
 /etc/httpd/htpasswd
 /etc/httpd/managesf_htpasswd
+/etc/managesf/

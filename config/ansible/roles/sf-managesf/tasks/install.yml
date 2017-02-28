@@ -1,36 +1,7 @@
 ---
-- name: "Install managesf venv"
-  command: chdir=/usr/src/managesf {{ item }}
-  with_items:
-    - virtualenv /var/www/managesf
-    - /var/www/managesf/bin/pip install --upgrade 'pbr' 'pip'
-    - sed -i 's/^.*pysflib.*//' requirements.txt
-    - sed -i 's/^paramiko.*/paramiko<2/' requirements.txt
-    - sed -i 's/^.*storyboardclient.*//' requirements.txt
-    - /var/www/managesf/bin/pip install -rrequirements.txt
-    - /var/www/managesf/bin/python setup.py install
-
-- name: "Install pysflib"
-  command: chdir=/usr/src/pysflib {{ item }}
-  with_items:
-    - sed -i 's/^.*storyboardclient.*//' requirements.txt
-    - /var/www/managesf/bin/pip install -rrequirements.txt
-    - /var/www/managesf/bin/python setup.py install
-
-- name: "Fetch storyboardclient"
-  git:
-    repo: "{{ storyboardclient_url }}"
-    dest: /usr/src/python-storyboardclient
-    version: "{{ storyboardclient_commit }}"
-    recursive: no
-    force: yes
-
-- name: "Install storyboardclient"
-  command: chdir=/usr/src/python-storyboardclient {{ item }}
-  with_items:
-    - sed -i 's/^pbr.*//' requirements.txt
-    - /var/www/managesf/bin/pip install -rrequirements.txt
-    - /var/www/managesf/bin/python setup.py install
-
-- name: "Fix pbr version issue"
-  copy: src=/etc/ansible/roles/sf-storyboard/files/storyboard_pbr_version_fix.py dest=/var/www/managesf/lib/python2.7/site-packages/storyboardclient/__init__.py
+- name: "Install package"
+  yum:
+    name: "managesf"
+    state: latest
+    disablerepo: "{{ yum_disable_repo|default(omit) }}"
+    enablerepo: "{{ yum_enable_repo|default(omit) }}"

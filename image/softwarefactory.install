@@ -170,10 +170,8 @@ EOF
         yum --disableplugin=* --installroot ${dir} ${INSTALL_OPTIONS} install -y basesystem yum shadow-utils
         echo "/dev/root / ext4 errors=remount-ro 0 1" > ${dir}/etc/fstab
         checkpoint "first bootstrap"
-    elif [ -f "${dir}/usr/bin/yum-complete-transaction" ]; then
-        do_chroot ${dir} yum-complete-transaction --cleanup-only
-        do_chroot ${dir} yum update -y ${INSTALL_OPTIONS}
     fi
+
 
     cp -p ${ORIG}/edeploy/* ${dir}/usr/sbin/
     cp ${ORIG}/C7.0-ids.tables ${dir}/etc/ids.tables
@@ -356,6 +354,7 @@ remove_obsolete() {
     rm -Rf ${dir}/root/gerrit_data_source
     rm -Rf ${dir}/srv/sfmanager
     rm -Rf ${dir}/usr/local/murmur
+    rm -Rf ${dir}/var/www/managesf
 
     # Gemfile is a sign /var/www/static was setup manually. It's now replaced by sf-web-assets package
     if [ -f ${dir}/var/www/static/font-awesome/Gemfile ]; then
@@ -425,14 +424,9 @@ function install_sf {
     rsync -a --delete ${CAUTH_CLONED_PATH}/ ${dir}/usr/src/cauth/
     do_chroot ${dir} bash -c "cd /usr/src/cauth; /var/www/cauth/bin/python setup.py install"
 
-    # Install managesf
-    rsync -a --delete ${MANAGESF_CLONED_PATH}/ ${dir}/usr/src/managesf/
-    do_chroot ${dir} bash -c "cd /usr/src/managesf; /var/www/managesf/bin/python setup.py install"
-
     # Install pysflib
     rsync -a --delete ${PYSFLIB_CLONED_PATH}/ ${dir}/usr/src/pysflib/
     do_chroot ${dir} bash -c "cd /usr/src/pysflib; /var/www/cauth/bin/python setup.py install"
-    do_chroot ${dir} bash -c "cd /usr/src/pysflib; /var/www/managesf/bin/python setup.py install"
 
     do_chroot ${dir} find /root /var/www /srv/ -name "*.pyc" -exec rm {} \;
 
@@ -495,7 +489,7 @@ build_all() {
     ansible_install sf-base
     ansible_install sf-gateway
     ansible_install sf-jenkins "$JENKINS_EXTRA_VARS"
-    ansible_install sf-managesf "$MANAGESF_EXTRA_VARS"
+    ansible_install sf-managesf
     ansible_install sf-cauth "$CAUTH_EXTRA_VARS"
     ansible_install sf-lecm "$LECM_EXTRA_VARS"
     ansible_install sf-zuul "$ZUUL_EXTRA_VARS"
@@ -519,6 +513,8 @@ build_all() {
     ansible_install sf-germqtt
     install_sf
     checkpoint "sf installed"
+    do_chroot ${dir} yum update -y ${INSTALL_OPTIONS} --exclude="python2-passlib jenkins"
+    checkpoint "image final update"
     image_clean
     checkpoint "image cleaned"
     put_git_mark ${dir}

@@ -4,8 +4,6 @@ role_actions:
   - update
   - get_logs
 
-storyboardclient_url: https://git.openstack.org/openstack-infra/python-storyboardclient
-storyboardclient_commit: master
 redmine_api_url: "http://api-redmine.{{ fqdn }}:8083/"
 roles: []
 

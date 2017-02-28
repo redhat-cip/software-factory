@@ -1,12 +1,6 @@
 ---
 - include: /etc/ansible/tasks/create_user.yml user_name=managesf ssh_key=service_rsa
 
-- name: "Set /var/www/managesf context"
-  file: path=/var/www/managesf state=directory mode=0750 owner=managesf group=apache setype=httpd_sys_content_t
-
-- name: "Create log directory"
-  file: path=/var/log/managesf state=directory mode=0700 owner=managesf
-
 - name: "Create config directory"
   file: path=/etc/managesf state=directory mode=0750 group=managesf
 
@@ -24,26 +18,12 @@
     - {content: "{{ jenkins_rsa_pub }}", name: "jenkins_rsa.pub", mode: "0444"}
   no_log: True
 
-- name: "Create sshconfig directory"
-  file: path=/var/www/managesf/sshconfig state=directory mode=0750 owner=managesf group=managesf
-
 - name: "ensure managesf_htpasswd is present"
   file: path=/etc/httpd/managesf_htpasswd state=touch mode=0640 owner=managesf group=apache
 
 - name: "Setup config.py"
   template: src=config.py.j2 dest=/etc/managesf/config.py group=managesf mode=0440
   notify: [restart managesf]
-
-- name: "Install managesf program"
-  command: ln -sf /var/www/managesf/bin/managesf-api /usr/bin/managesf-api
-
-- name: Install service file
-  copy:
-      src: managesf.service
-      dest: /lib/systemd/system/managesf.service
-      owner: root
-      group: root
-      mode: 0644
 
 - name: Start service
   systemd:

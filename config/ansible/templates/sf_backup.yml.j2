@@ -25,4 +25,4 @@
     - name: "Generate backup file"
       command: chdir=/var/lib/software-factory/backup/ tar czpf /var/lib/software-factory/backup.tar.gz .
     - name: "Copy backup to managesf"
-      command: scp /var/lib/software-factory/backup.tar.gz managesf.{{domain}}:/var/www/managesf/sf_backup.tar.gz
+      command: scp /var/lib/software-factory/backup.tar.gz managesf.{{domain}}:/var/lib/managesf/sf_backup.tar.gz

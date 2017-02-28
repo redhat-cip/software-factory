@@ -38,9 +38,6 @@ STORYBOARD_CLIENT_COMMIT="cfdfaf866ca5da63ac734552772e1fe2f87c6543"
 STORYBOARD_WEBCLIENT_COMMIT="28b4809"
 
 if [ "${USE_SWIFT_CACHE}" == "yes" ]; then
-    MANAGESF_EXTRA_VARS="storyboardclient_url: \"${SWIFT_CACHE}/python-storyboardclient.git\""
-    MANAGESF_EXTRA_VARS+=", storyboardclient_commit: \"${STORYBOARD_CLIENT_COMMIT}\""
-
     STORYBOARD_EXTRA_VARS+="storyboard_url: \"${SWIFT_CACHE}/storyboard.git\""
     STORYBOARD_EXTRA_VARS+=", storyboard_commit: \"${STORYBOARD_COMMIT}\""
     STORYBOARD_EXTRA_VARS+=", storyboardclient_url: \"${SWIFT_CACHE}/python-storyboardclient.git\""

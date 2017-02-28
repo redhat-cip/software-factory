@@ -147,5 +147,4 @@
   when: new_crt|changed
   with_items:
     - /usr/lib/python2.7/site-packages/requests/
-    - /var/www/managesf/lib/python2.7/site-packages/requests/
     - /var/www/cauth/lib/python2.7/site-packages/requests/
