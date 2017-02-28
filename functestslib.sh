@@ -429,6 +429,10 @@ function run_provisioner {
     echo "$(date) ======= run_provisioner"
     if [ "${TEST_TYPE}" == "upgrade" ]; then
         export PROVISIONED_VERSION="${PREVIOUS_VER}"
+        # use the actual CA from the current deployment
+        rm /tmp/localCA.pem 2> /dev/null
+        curl -k https://sftests.com/localCA.pem -o /tmp/localCA.pem
+        export REQUESTS_CA_BUNDLE="/tmp/localCA.pem"
     else
         export PROVISIONED_VERSION="${VER}"
     fi
