@@ -1,0 +1,47 @@
+---
+- name: Check if policy config is already in config-repo
+  stat: path=/root/config/policies
+  register: configrepo_policies
+
+- name: Check if policy config has obsolete image-update entry
+  when: configrepo_policies.stat.exists == true
+  shell: grep -q managesf.node:image-update\" /root/config/policies/policy.yaml
+  register: grep_iu
+  ignore_errors: yes
+
+- name: Check if policy config has correct image API entries
+  when: configrepo_policies.stat.exists == true
+  shell: grep -q managesf.node:image-start-update\|managesf.node:image-update-status /root/config/policies/policy.yaml
+  register: grep_new
+  ignore_errors: yes
+
+- name: Init policy configuration
+  when: configrepo_policies.stat.exists == true and ( grep_iu.rc == 0 or grep_new.rc == 1 )
+  command: chdir=/root/config {{ item }}
+  with_items:
+    - git fetch --all
+    - git reset --hard origin/master --
+    - git clean -f -x -d
+
+- name: Remove obsolete image-update entry
+  when: configrepo_policies.stat.exists == true and grep_iu.rc == 0
+  command: chdir=/root/config {{ item }}
+  with_items:
+    # Remove obsolete rule
+    - sed -i '/managesf.node:image-update/d' /root/config/policies/policy.yaml
+
+- name: Add new image policies
+  when: configrepo_policies.stat.exists == true and grep_new.rc == 1
+  command: chdir=/root/config {{ item }}
+  with_items:
+    # Create default rules
+    - /usr/local/bin/hieraedit.py --yaml /root/config/policies/policy.yaml managesf.node:image-start-update rule:admin_or_service
+    - /usr/local/bin/hieraedit.py --yaml /root/config/policies/policy.yaml managesf.node:image-update-status rule:admin_or_service
+
+- name: Submit policy configuration changes
+  when: configrepo_policies.stat.exists == true and ( grep_iu.rc == 0 or grep_new.rc == 1 )
+  command: chdir=/root/config {{ item }}
+  with_items:
+    - git add policies
+    - git commit -m "Add node API image update related policies"
+    - git push git+ssh://{{ fqdn }}/config master

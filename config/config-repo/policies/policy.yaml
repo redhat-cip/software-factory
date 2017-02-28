@@ -59,3 +59,5 @@
 'managesf.node:delete': 'rule:admin_or_service'
 'managesf.node:image-get': 'rule:any'
 'managesf.node:add_authorized_key': 'rule:admin_or_service'
+'managesf.node:image-start-update': 'rule:admin_or_service'
+'managesf.node:image-update-status': 'rule:admin_or_service'
