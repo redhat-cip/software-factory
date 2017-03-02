@@ -1,0 +1,18 @@
+---
+features:
+  - nodes images update REST API
+    The endpoint at manage/nodes/images allows users with adequate
+    clearance to manage the images used to spawn dynamic executors.
+    The endpoint supports listing images (provider required) and
+    starting the update of an image. The status of an update and its
+    logs can be fetched through the API as well.
+  - nodes images update API support in the CLI
+    sfmanager provides the new command "image" to list and update
+    nodepool images from the CLI. It can also be used to retrieve
+    build logs related to an image update (please note that these logs
+    are only available for updates triggered through this API).
+upgrade:
+  - The policies file is upgraded to include the default
+    access policies for the API.
+  - The managesf database has a new table that stores updates outcomes
+    for archival.
