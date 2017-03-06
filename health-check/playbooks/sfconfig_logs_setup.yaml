@@ -1,5 +1,18 @@
 ---
 # * Setup logs export
+- hosts: jenkins
+  tasks:
+    - name: Stop jenkins service
+      service: name=jenkins state=stopped
+
+- hosts: zuul
+  tasks:
+    - name: Stop zuul services
+      service: name={{ item }} state=restarted
+      with_items:
+        - zuul-merger
+        - zuul
+
 - hosts: install-server
   tasks:
     - name: Add swift logs configuration to sfconfig
@@ -14,12 +27,6 @@
 
     - name: Restart sfconfig
       command: sfconfig.py
-
-- hosts: zuul
-  tasks:
-    # TODO: fixme
-    - name: Restart zuul to take logsexport option into account
-      service: name=zuul state=restarted
 
 - hosts: zuul
   tasks:
