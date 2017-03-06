@@ -12,7 +12,7 @@ function put_git_mark {
 function ansible_install {
     local role=$1
     local params=$2
-    local ansible_debug=""
+    local ansible_debug="-vvv"
 
     [ -z "$DEBUG" ] || ansible_debug="-vvvv"
     cat <<EOF> $dir/ansible-install-playbook
@@ -21,6 +21,7 @@ function ansible_install {
   roles:
     - { role: "$role", action: "install", $params }
 EOF
+    echo "ansible_install: installing $role with \"${params}\""
     do_chroot ${dir} ansible-playbook $ansible_debug -e "${ANSIBLE_EXTRA_VARS}" /ansible-install-playbook
     checkpoint "$role installed (ansible)"
 }

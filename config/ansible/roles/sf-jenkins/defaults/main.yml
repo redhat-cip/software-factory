@@ -7,6 +7,12 @@ role_actions:
   - backup
   - restore
 
+jenkins_repo_name: jenkins
+jenkins_repo_desc: Jenkins repository
+jenkins_repo_url: https://pkg.jenkins.io/redhat-stable/
+jenkins_repo_gpgkey: https://pkg.jenkins.io/redhat-stable/jenkins.io.key
+jenkins_repo_gpgcheck: 1
+
 jenkins_heap_limit: 256m
 
 jenkins_api_port: 8080

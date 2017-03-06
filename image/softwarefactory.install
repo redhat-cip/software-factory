@@ -32,7 +32,7 @@ if test -f /var/lib/sf/zuul-rpm-build/repodata/repomd.xml; then
 fi
 
 if [ "${USE_SWIFT_CACHE}" == "yes" ]; then
-    ENABLED_REPOS+="sfbase,sfextras,sfupdates,sfepel,sfrdo,sfjenkins,sfpassenger,sf,sfrelease"
+    ENABLED_REPOS+="sfbase,sfextras,sfupdates,sfepel,sfrdo,sfpassenger,sfrelease"
     DISABLED_REPOS="*"
     INSTALL_OPTIONS="--disablerepo=${DISABLED_REPOS} --enablerepo=${ENABLED_REPOS}"
     ANSIBLE_EXTRA_VARS="yum_disable_repo=* yum_enable_repo=${ENABLED_REPOS}"
@@ -99,23 +99,11 @@ baseurl=http://46.231.132.68:8080/v1/AUTH_b50e80d3969f441a8b7b1fe831003e0a/repom
 gpgcheck=1
 enabled=0
 
-[sfjenkins]
-name=Jenkins packages
-baseurl=http://46.231.132.68:8080/v1/AUTH_b50e80d3969f441a8b7b1fe831003e0a/repomirror/jenkins/
-gpgcheck=1
-enabled=0
-
 [sfpassenger]
 name=Passenger
 baseurl=http://46.231.132.68:8080/v1/AUTH_b50e80d3969f441a8b7b1fe831003e0a/repomirror/passenger/
 gpgcheck=0
 enabled=0
-
-[sf]
-name=SF repository for various packages
-baseurl=http://46.231.132.68:8080/v1/AUTH_b50e80d3969f441a8b7b1fe831003e0a/rpms/
-gpgcheck=0
-enabled=1
 
 [sfrelease]
 name=SF released packages
@@ -238,8 +226,6 @@ install_sf_packages() {
     # install zuul_swift_upload.py
     http_fetch $ZUUL_SWIFT_UPLOAD_URL ${dir}/usr/local/bin/zuul_swift_upload.py
     chmod +x ${dir}/usr/local/bin/zuul_swift_upload.py
-
-    [ -d ${dir}/var/lib/grafana ] || install_packages ${dir} ${GRAFANA_URL}
 }
 
 function install_redmine {
@@ -506,6 +492,7 @@ build_all() {
     ansible_install sf-elasticsearch "${ELASTICSEARCH_EXTRA_VARS}"
     ansible_install sf-logstash "${LOGSTASH_EXTRA_VARS}"
     ansible_install sf-kibana "${KIBANA_EXTRA_VARS}"
+    ansible_install sf-grafana "${GRAFANA_EXTRA_VARS}"
     ansible_install sf-mosquitto
     ansible_install sf-job-logs-gearman-client "log_gearman_client_url: \"${LOG_GEARMAN_CLIENT_URL}\""
     ansible_install sf-job-logs-gearman-worker "log_gearman_worker_url: \"${LOG_GEARMAN_WORKER_URL}\""
@@ -514,6 +501,7 @@ build_all() {
     install_sf
     checkpoint "sf installed"
     do_chroot ${dir} yum update -y ${INSTALL_OPTIONS} --exclude="python2-passlib jenkins"
+    do_chroot ${dir} yum update -y --disablerepo=* --enablerepo=grafana,logstash,kibana,elastic
     checkpoint "image final update"
     image_clean
     checkpoint "image cleaned"

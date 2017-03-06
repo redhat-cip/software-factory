@@ -195,6 +195,7 @@ function build_image {
         ./build_image.sh 2>&1 | tee ${ARTIFACTS_DIR}/image_build.log | grep '(STEP'
         [ "${PIPESTATUS[0]}" == "0" ] || fail "Roles building FAILED" ${ARTIFACTS_DIR}/image_build.log
         [ -f "${IMAGE_PATH}.description_diff" ] && grep "^[><]" ${IMAGE_PATH}.description_diff | grep -v '[><] SF:'
+        cp ${IMAGE_PATH}-${SF_VER}.description ${ARTIFACTS_DIR}/
         checkpoint "build_image"
         prepare_functional_tests_utils
     else
