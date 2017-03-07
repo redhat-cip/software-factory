@@ -6,5 +6,6 @@
       command: chdir=/root/config {{ item }}
       with_items:
         - git fetch --all
+        - git checkout master
         - git reset --hard origin/master --
         - git clean -f -d
