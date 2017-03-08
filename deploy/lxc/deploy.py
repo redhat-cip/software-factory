@@ -51,7 +51,7 @@ def port_redirection(arch, mode):
 
     execute(["iptables", mode_arg, "FORWARD", "-i", ext_interface,
              "-d", arch["gateway_ip"], "-j", "ACCEPT"], silent=silent)
-    for port in (80, 443, 8080, 29418, 45452, 64738):
+    for port in (80, 443, 1883, 1884, 8080, 29418, 45452, 64738):
         execute(["iptables", mode_arg, "PREROUTING", "-t", "nat",
                  "-i", ext_interface, "-p", "tcp", "--dport", str(port),
                  "-j", "DNAT", "--to-destination", "%s:%s" % (

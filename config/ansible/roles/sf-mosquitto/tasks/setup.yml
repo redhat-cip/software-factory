@@ -1,13 +1,30 @@
 ---
 - include: /etc/ansible/tasks/create_user.yml user_name=mosquitto
 
-- name: Configure standard listener and websockets
+- name: init ACL file
+  template: src=acl.conf.j2 dest=/etc/mosquitto/acl.conf mode=0440 owner=mosquitto group=mosquitto
+
+- stat: path=/etc/mosquitto/passwords
+  register: p
+
+- name: init passwords file if necessary
+  file: path=/etc/mosquitto/passwords state=touch owner=mosquitto group=mosquitto mode=0440
+  when: p.stat.exists is defined and not p.stat.exists
+
+- name: update password file
+  shell: "{{ item }}"
+  with_items:
+    - /usr/bin/mosquitto_passwd -b /etc/mosquitto/passwords SF_SERVICE_USER {{sf_service_user_password}}
+
+- name: finish mosquitto configuration
   blockinfile:
     dest: /etc/mosquitto/mosquitto.conf
     block: |
       listener 1883
       listener 1884
       protocol websockets
+      acl_file /etc/mosquitto/acl.conf
+      password_file /etc/mosquitto/passwords
   register: mosquittoconf
 
 - name: MQTT service started and enabled

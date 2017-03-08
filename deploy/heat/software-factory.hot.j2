@@ -193,7 +193,8 @@ resources:
     ('gateway', (('tcp', 80), ('tcp', 443))),
     ('swarm', (('tcp', 8080), ('tcp', 45452))),
     ('gerrit', (('tcp', 29418),)),
-    ('murmur', (('tcp', 64738), ('udp', 64738)))
+    ('murmur', (('tcp', 64738), ('udp', 64738))),
+    ('firehose', (('tcp', 1883), ('tcp', 1884)))
     ) %}
 {% for port in ports %}
         {remote_ip_prefix: { get_param: sg_user_cidr },

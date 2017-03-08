@@ -549,6 +549,9 @@ DNS.1 = %s
         glue["jenkins_pub_url"] = "%s/jenkins/" % glue["gateway_url"]
         get_or_generate_ssh_key("jenkins_rsa")
 
+    if "mosquitto" in arch["roles"]:
+        glue["mosquitto_host"] = get_hostname("mosquitto")
+
     if "grafana" in arch["roles"]:
         glue["grafana_internal_url"] = "http://%s:%s/" % (
             get_hostname("grafana"), defaults["grafana_http_port"])

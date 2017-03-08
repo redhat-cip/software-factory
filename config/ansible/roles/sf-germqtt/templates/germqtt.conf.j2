@@ -7,6 +7,8 @@ hostname=gerrit.{{ fqdn }}
 key=/usr/share/germqtt/.ssh/id_rsa
 
 [mqtt]
-hostname=localhost
+hostname={{ mosquitto_host }}
 topic=gerrit
 qos = 2
+username=SF_SERVICE_USER
+password={{ sf_service_user_password }}
