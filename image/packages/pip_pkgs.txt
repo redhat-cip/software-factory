@@ -1,6 +1,0 @@
-# Avoid insecure message
-requests[security]
-
-# Graphite req
-django<1.8
-django-tagging

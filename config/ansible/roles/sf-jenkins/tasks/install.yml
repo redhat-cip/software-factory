@@ -14,6 +14,13 @@
     disablerepo: "*"
     enablerepo: "{{ jenkins_repo_name }}"
 
+- name: "Install requirements"
+  yum:
+    name: "python2-jenkins-job-builder, wget"
+    state: present
+    disablerepo: "{{ yum_disable_repo|default(omit) }}"
+    enablerepo: "{{ yum_enable_repo|default(omit) }}"
+
 - name: Cleanup unused files/directories
   file:
       path: "{{ item }}"

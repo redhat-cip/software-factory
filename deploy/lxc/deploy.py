@@ -97,7 +97,8 @@ def prepare_role(base_path, name, ip, gateway, netmask="255.255.255.0"):
     )
     open("%s/etc/sysconfig/network" % root, "w").write(
         "NETWORKING=yes\n" +
-        "HOSTNAME=%s\n" % name
+        "HOSTNAME=%s\n" % name +
+        "GATEWAY=%s\n" % gateway
     )
     open("%s/etc/hostname" % root, "w").write("%s\n" % (name))
     open("%s/etc/hosts" % root, "w").write("127.0.0.1 %s localhost\n" % name)

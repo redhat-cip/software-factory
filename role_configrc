@@ -1,32 +1,15 @@
 #!/bin/sh
 #
 
-# Current development version of SF
-VER=2.4.0
-
-# Version string
-PREVIOUS_VER=2.3.0
-
-# A tagged release of SF is defined by the string "TaggedRelease" in the commit msg
-REL_VER=$(git log --simplify-merges -n 1 | grep -i 'TaggedRelease:' | awk '{ print $2 }')
-if [ ! -z "${REL_VER}" ]; then
-    echo "This is release: ${REL_VER}."
-    VER=${REL_VER}
-    PREVIOUS_VER=2.3.0
-    echo "Previous stable version is ${PREVIOUS_VER}"
-    TAGGED_RELEASE=1
-    # Pinned versions of the subprojects to go with the current release
-    PYSFLIB_PINNED_VERSION=095a36a38c617538040e3abc5c46c92bd2b23da8
-    MANAGESF_PINNED_VERSION=0f091acfdaaf8a7b2c5c2134553ff3155567a444
-    CAUTH_PINNED_VERSION=7b2fb1b9c5bea13ca216d57f34a6ac0f6f59a637
-    SFMANAGER_PINNED_VERSION=c5666ffe1151facd7973e09495d3d28e4c6e2d08
-else
-    TAGGED_RELEASE=0
-fi
+# Current SF version
+VER=2.5.0
+PREVIOUS_VER=2.4.0
 
 SF_VER=${SF_VER:-C7.0-${VER}}
 SF_PREVIOUS_VER=C7.0-${PREVIOUS_VER}
 RELEASE_GPG_FINGERPRINT=0xE46E04A2344803E5A808BDD7E8C203A71C3BAE4B
+
+SF_REPO="${SF_REPO:-sf-master-centos7-build/latest/x86_64}"
 
 export LC_ALL=C
 
@@ -34,7 +17,7 @@ SWIFT_BASE_URL="http://46.231.132.68:8080"
 SWIFT_ACCOUNT="b50e80d3969f441a8b7b1fe831003e0a"
 SWIFT_IMAGE_CONTAINER="sf-images"
 SWIFT_DOCS_CONTAINER="sf-docs"
-# Url where SF roles (software-factory and install-server-vm) are published
+# Url where SF image is published
 SWIFT_SF_URL="${SWIFT_BASE_URL}/v1/AUTH_${SWIFT_ACCOUNT}/${SWIFT_IMAGE_CONTAINER}"
 # Url where latest doc is stored
 SWIFT_DOCS_URL="${SWIFT_BASE_URL}/v1/AUTH_${SWIFT_ACCOUNT}/${SWIFT_DOCS_CONTAINER}"

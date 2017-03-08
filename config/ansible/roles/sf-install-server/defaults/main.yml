@@ -1,4 +1,5 @@
 role_actions:
+  - install
   - setup
   - backup
   - restore

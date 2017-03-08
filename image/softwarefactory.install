@@ -28,11 +28,11 @@ if grep -q testing /etc/yum.repos.d/zuul-built.repo 2> /dev/null; then
 fi
 if test -f /var/lib/sf/zuul-rpm-build/repodata/repomd.xml; then
     LOCAL_TESTING="/var/lib/sf/zuul-rpm-build"
-    ENABLED_REPOS+="local-testing,"
+    ENABLED_REPOS+="sflocal-testing,"
 fi
 
 if [ "${USE_SWIFT_CACHE}" == "yes" ]; then
-    ENABLED_REPOS+="sfbase,sfextras,sfupdates,sfepel,sfrdo,sfrelease"
+    ENABLED_REPOS+="sfbase,sfextras,sfupdates,sfepel,sfrdo,sfmaster"
     DISABLED_REPOS="*"
     INSTALL_OPTIONS="--disablerepo=${DISABLED_REPOS} --enablerepo=${ENABLED_REPOS}"
     ANSIBLE_EXTRA_VARS="yum_disable_repo=* yum_enable_repo=${ENABLED_REPOS}"
@@ -85,50 +85,7 @@ name=CentOS-7 - Updates
 baseurl=http://46.231.132.68:8080/v1/AUTH_b50e80d3969f441a8b7b1fe831003e0a/repomirror/updates/
 gpgcheck=1
 enabled=0
-
-[sfepel]
-name=Extra Packages for Enterprise Linux 7
-baseurl=http://46.231.132.68:8080/v1/AUTH_b50e80d3969f441a8b7b1fe831003e0a/repomirror/epel/
-gpgcheck=1
-enabled=0
-
-[sfrdo]
-name=openstack-newton
-baseurl=http://46.231.132.68:8080/v1/AUTH_b50e80d3969f441a8b7b1fe831003e0a/repomirror/openstack-newton/
-gpgcheck=1
-enabled=0
-
-[sfrelease]
-name=SF released packages
-baseurl=http://46.231.133.231/kojifiles/repos/sf-master-centos7-build/latest/x86_64/
-gpgcheck=0
-enabled=1
 EOF
-    # Check for testing packages
-    if test -n "${TESTING_URL}"; then
-        cat >> /etc/yum.repos.d/sf-mirror.repo << EOF
-[sftesting]
-name=SF testing packages
-baseurl=${TESTING_URL}
-gpgcheck=0
-enabled=1
-priority=1
-EOF
-    fi
-    # Check for local testing packages
-    if test -n "${LOCAL_TESTING}"; then
-        cat >> /etc/yum.repos.d/sf-mirror.repo << EOF
-[local-testing]
-name=SF local testing packages
-baseurl=file://${LOCAL_TESTING}/
-gpgcheck=0
-enabled=1
-priority=1
-EOF
-        mkdir -p "${dir}/${LOCAL_TESTING}"
-        rsync -a --delete "${LOCAL_TESTING}/" "${dir}/${LOCAL_TESTING}/"
-    fi
-
     mkdir -p ${dir}/etc/pki/rpm-gpg/
     rsync -a --delete ${ORIG}/keys/ ${dir}/etc/pki/rpm-gpg/
 
@@ -148,7 +105,7 @@ EOF
     if [ ! -f "${dir}/usr/bin/yum" ]; then
         rpm --root="${dir}" --import $(ls ${dir}/etc/pki/rpm-gpg/*.key | fgrep -v Debug)
         # We cannot use install_packages since the basesystem isn't yet setup
-        yum --disableplugin=* --installroot ${dir} ${INSTALL_OPTIONS} install -y basesystem yum shadow-utils
+        yum --disableplugin=* --installroot ${dir} ${INSTALL_OPTIONS} install -y basesystem yum shadow-utils yum-plugin-priorities
         echo "/dev/root / ext4 errors=remount-ro 0 1" > ${dir}/etc/fstab
         checkpoint "first bootstrap"
     fi
@@ -190,24 +147,65 @@ enable_selinux() {
 }
 
 install_sf_packages() {
+    cat > ${dir}/etc/yum.repos.d/sf-repos.repo <<EOF
+[sfepel]
+name=Extra Packages for Enterprise Linux 7
+baseurl=http://46.231.132.68:8080/v1/AUTH_b50e80d3969f441a8b7b1fe831003e0a/repomirror/epel/
+gpgcheck=1
+enabled=0
+priority=105
+
+[sfrdo]
+name=openstack-newton
+baseurl=http://46.231.132.68:8080/v1/AUTH_b50e80d3969f441a8b7b1fe831003e0a/repomirror/openstack-newton/
+gpgcheck=1
+enabled=0
+
+[sfmaster]
+name=SF master packages
+baseurl=http://46.231.133.231/kojifiles/repos/${SF_REPO}/
+gpgcheck=0
+enabled=0
+priority=100
+EOF
+    # Check for testing packages
+    if test -n "${TESTING_URL}"; then
+        cat >> ${dir}/etc/yum.repos.d/sf-repos.repo << EOF
+[sftesting]
+name=SF testing packages
+baseurl=${TESTING_URL}
+gpgcheck=0
+enabled=0
+priority=2
+EOF
+    fi
+    # Check for local testing packages
+    if test -n "${LOCAL_TESTING}"; then
+        cat >> ${dir}/etc/yum.repos.d/sf-repos.repo << EOF
+[sflocal-testing]
+name=SF local testing packages
+baseurl=file://${LOCAL_TESTING}/
+gpgcheck=0
+enabled=0
+priority=1
+EOF
+        mkdir -p "${dir}/${LOCAL_TESTING}"
+        rsync -a --delete "${LOCAL_TESTING}/" "${dir}/${LOCAL_TESTING}/"
+    fi
+
     do_chroot ${dir} bash -c 'for key in /etc/pki/rpm-gpg/*.key; do rpm --import $key; done'
-    install_packages ${dir} $CENTOS_PKGS $BUILD_PKGS
 
-    checkpoint "centos rpms installed"
+    do_chroot ${dir} yum ${INSTALL_OPTIONS} group install -y "Minimal Install"
 
-    [ -f "${dir}/etc/yum.repos.d/epel.repo" ] || install_packages ${dir} epel-release
-    [ -f "${dir}/etc/yum.repos.d/rdo-release.repo" ] || install_packages ${dir} ${RDO_REPO}
-    install_packages ${dir} ${EPEL_PKGS} ${RDO_PKGS}
-    checkpoint "epel+rdo rpms installed"
+    # python-virtualenv needed for venv creation
+    # mariadb-devel needed for Mysql-Python pip install
+    # gcc needed for pycrypto pip install
+    # git/patch/tmux/vim-enhanced needed for comfort
+    # python-flake8/python-nose needed for test_project_test
+    install_packages ${dir} ansible git patch python-virtualenv mariadb-devel gcc tmux vim-enhanced python-flake8 python-nose
 
-    # Quick and dirty fix for the current issue on RDO 02232017
-    do_chroot ${dir} rpm -q python2-passlib-1.6.5-1.el7 > /dev/null || {
-        do_chroot ${dir} yum downgrade -y python2-passlib-1.6.5
-    }
-
-    retry do_chroot ${dir} pip install --upgrade 'pip<8'
-    retry do_chroot ${dir} pip install ${PIP_PKGS}
-    checkpoint "pip packages installed"
+    # Quick and dirty fix for the current issue on RDO 20170223
+    install_packages ${dir} python2-passlib-1.6.5
 
     # install zuul_swift_upload.py
     http_fetch $ZUUL_SWIFT_UPLOAD_URL ${dir}/usr/local/bin/zuul_swift_upload.py
@@ -236,6 +234,7 @@ EOF
 }
 
 install_serverspec() {
+    install_packages ${dir} rubygems rubygem-rake
     retry do_chroot ${dir} gem install serverspec -v ${SERVERSPEC_VERSION}
 }
 
@@ -254,25 +253,8 @@ image_clean() {
 }
 
 remove_obsolete() {
-    do_chroot ${dir} rpm -q python-glob2 2> /dev/null || {
-        rm -Rf ${dir}/usr/lib/python2.7/site-packages/glob2*
-    }
-    do_chroot ${dir} rpm -q mod_auth_pubtkt 2> /dev/null || {
-        rm -f ${dir}/usr/lib64/httpd/modules/mod_auth_pubtkt.so
-    }
-    rm -Rf ${dir}/usr/src/git*
-    rm -Rf ${dir}/srv/lodgeit
-    rm -Rf ${dir}/root/gerrit_data_source
-    rm -Rf ${dir}/srv/sfmanager
-    rm -Rf ${dir}/usr/local/murmur
-    rm -Rf ${dir}/var/www/managesf
-    rm -Rf ${dir}/var/www/cauth
-    rm -Rf ${dir}/var/www/redmine
-
-    # Gemfile is a sign /var/www/static was setup manually. It's now replaced by sf-web-assets package
-    if [ -f ${dir}/var/www/static/font-awesome/Gemfile ]; then
-        rm -Rf ${dir}/var/www/static
-    fi
+    # 2.5.0 starts fresh
+    true
 }
 
 fix_ansible_issue5504() {
@@ -284,24 +266,11 @@ function install_sf {
 
     mkdir -p ${dir}/usr/src
 
-    cp -f /etc/resolv.conf "${dir}/etc/"
-
-    if [ ! -z "${STAGING_PKGS}" ]; then
-        install_packages ${dir} ${STAGING_PKGS}
-    fi
-    if [ ! -z "${STAGING_PIP}" ]; then
-        retry do_chroot ${dir} pip install 'pip<8' ${STAGING_PIP}
-    fi
-
     # Make sure final image use latest ids.tables
     cp ./C7.0-ids.tables ${dir}/etc/ids.tables
 
-    # Disable postfix and remove configuration to reduce puppet noise
-    # Disable postfix and remove configuration
-    do_chroot ${dir} systemctl disable postfix
-    for i in main.cf virtual; do
-        echo -n > ${dir}/etc/postfix/$i
-    done
+    # Disable postfix, NetworkManager and Firewalld
+    do_chroot ${dir} systemctl disable postfix NetworkManager firewalld
 
     # Install ansible playbooks and configuration files
     do_chroot ${dir} mkdir -p /etc/software-factory
@@ -374,6 +343,8 @@ build_all() {
     remove_obsolete
     copy_sf_ansible_roles
     ansible_install sf-base
+    ansible_install sf-install-server
+    ansible_install sf-mysql
     ansible_install sf-gateway
     ansible_install sf-jenkins "$JENKINS_EXTRA_VARS"
     ansible_install sf-managesf
@@ -395,6 +366,7 @@ build_all() {
     ansible_install sf-kibana "${KIBANA_EXTRA_VARS}"
     ansible_install sf-grafana "${GRAFANA_EXTRA_VARS}"
     ansible_install sf-mosquitto
+    ansible_install sf-rabbitmq
     ansible_install sf-job-logs-gearman-client "log_gearman_client_url: \"${LOG_GEARMAN_CLIENT_URL}\""
     ansible_install sf-job-logs-gearman-worker "log_gearman_worker_url: \"${LOG_GEARMAN_WORKER_URL}\""
     ansible_install sf-repoxplorer

@@ -1,7 +1,7 @@
 ---
 - name: "Install requirements"
   yum:
-    name: "sf-web-assets, httpd, mod_ssl, mod_wsgi"
+    name: "mariadb-server"
     state: present
     disablerepo: "{{ yum_disable_repo|default(omit) }}"
     enablerepo: "{{ yum_enable_repo|default(omit) }}"

@@ -76,7 +76,7 @@ function build_image {
         cd image
         DOCDIR=$DOCDIR MANAGESF_CLONED_PATH=$MANAGESF_CLONED_PATH PYSFLIB_CLONED_PATH=$PYSFLIB_CLONED_PATH \
         CAUTH_CLONED_PATH=$CAUTH_CLONED_PATH SFMANAGER_CLONED_PATH=$SFMANAGER_CLONED_PATH \
-            sudo -E ./softwarefactory.install ${IMAGE_PATH} ${SF_VER}
+        SF_REPO=${SF_REPO} sudo -E ./softwarefactory.install ${IMAGE_PATH} ${SF_VER}
         ./get_image_versions_information.sh ${IMAGE_PATH} | sudo tee ${IMAGE_PATH}-${SF_VER}.description > /dev/null
     )
     if [ "$?" != "0" ]; then

@@ -2,9 +2,9 @@
 - name: "Create libexec directory"
   file: path=/usr/local/libexec/software-factory state=directory mode=0755
 
-- name: "Install sfmanager"
+- name: "Install packages"
   yum:
-    name: "python2-sfmanager"
-    state: latest
+    name: "postfix, monit, ntp, cloud-init, cloud-utils-growpart, python2-sfmanager"
+    state: present
     disablerepo: "{{ yum_disable_repo|default(omit) }}"
     enablerepo: "{{ yum_enable_repo|default(omit) }}"

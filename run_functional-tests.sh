@@ -95,9 +95,12 @@ case "${TEST_TYPE}" in
         run_serverspec_tests
         ;;
     "upgrade")
-        ./fetch_image.sh ${SF_PREVIOUS_VER} || fail "Could not fetch ${SF_PREVIOUS_VER}"
+        SKIP_GPG=1 ./fetch_image.sh ${SF_PREVIOUS_VER} || fail "Could not fetch ${SF_PREVIOUS_VER}"
         # Use previous version arch, failback to current arch
-        git show ${PREVIOUS_VER}:config/refarch/allinone.yaml > ${ARTIFACTS_DIR}/upgrade_inital_arch.yaml
+        git show ${PREVIOUS_VER}:config/refarch/allinone.yaml > ${ARTIFACTS_DIR}/upgrade_inital_arch.yaml || {
+            # When previous version isn't tagged yet, use current allinone arch
+            cp config/refarch/allinone.yaml ${ARTIFACTS_DIR}/upgrade_inital_arch.yaml
+        }
         export REFARCH_FILE=${ARTIFACTS_DIR}/upgrade_inital_arch.yaml
         lxc_init ${SF_PREVIOUS_VER}
         run_bootstraps

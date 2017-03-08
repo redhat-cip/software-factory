@@ -10,6 +10,6 @@
 - name: "Install package"
   yum:
     name: grafana
-    state: latest
+    state: present
     disablerepo: "*"
     enablerepo: "{{ grafana_repo_name }}"

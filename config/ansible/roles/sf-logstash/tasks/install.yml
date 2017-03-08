@@ -10,6 +10,6 @@
 - name: "Install logstash package"
   yum:
     name: logstash
-    state: latest
+    state: present
     disablerepo: "*"
     enablerepo: "{{ logstash_repo_name }}"

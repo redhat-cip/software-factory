@@ -16,9 +16,6 @@ echo
 echo "# RPM packages versions"
 sudo chroot ${dir} rpm -qa | sort | while read pkg; do echo "rpm: ${pkg}"; done
 echo
-echo "# PIP packages versions"
-sudo chroot ${dir} pip freeze | sort | while read pkg; do echo "pip: ${pkg}"; done
-echo
 echo "# Gem packages versions"
 sudo chroot ${dir} gem list | grep '^[a-z]' | sort | while read pkg; do echo "gem: ${pkg}"; done
 echo

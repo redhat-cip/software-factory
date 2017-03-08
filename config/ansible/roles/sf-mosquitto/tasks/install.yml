@@ -2,6 +2,6 @@
 - name: "Install package"
   yum:
     name: mosquitto
-    state: latest
+    state: present
     disablerepo: "{{ yum_disable_repo|default(omit) }}"
     enablerepo: "{{ yum_enable_repo|default(omit) }}"
