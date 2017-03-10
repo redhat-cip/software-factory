@@ -341,6 +341,7 @@ remove_obsolete() {
     rm -Rf ${dir}/srv/sfmanager
     rm -Rf ${dir}/usr/local/murmur
     rm -Rf ${dir}/var/www/managesf
+    rm -Rf ${dir}/var/www/cauth
 
     # Gemfile is a sign /var/www/static was setup manually. It's now replaced by sf-web-assets package
     if [ -f ${dir}/var/www/static/font-awesome/Gemfile ]; then
@@ -354,10 +355,6 @@ fix_ansible_issue5504() {
 
 function install_sf {
     set -e
-    test -n "${CAUTH_CLONED_PATH}"
-    test -n "${MANAGESF_CLONED_PATH}"
-    test -n "${PYSFLIB_CLONED_PATH}"
-    test -n "${SFMANAGER_CLONED_PATH}"
 
     mkdir -p ${dir}/usr/src
 
@@ -368,14 +365,6 @@ function install_sf {
     fi
     if [ ! -z "${STAGING_PIP}" ]; then
         retry do_chroot ${dir} pip install 'pip<8' ${STAGING_PIP}
-    fi
-
-    # Make sure subproject are available
-    if [ ! -d "${CAUTH_CLONED_PATH}" ] || [ ! -d "${MANAGESF_CLONED_PATH}" ] || \
-        [ ! -d "${PYSFLIB_CLONED_PATH}" ] || [ ! -d "${SFMANAGER_CLONED_PATH}" ]; then
-        echo "Can't find subprojects in $(dirname ${CAUTH_CLONED_PATH})"
-        echo "Run ./image/fetch_subprojects.sh first"
-        exit -1
     fi
 
     # Make sure final image use latest ids.tables
@@ -405,14 +394,6 @@ function install_sf {
     # Also copy tool in image PATH so that sf image could
     # be used as slave base image
     cp -Rv ./../tools/slaves/* ${dir}/usr/local/bin/
-
-    # Install cauth
-    rsync -a --delete ${CAUTH_CLONED_PATH}/ ${dir}/usr/src/cauth/
-    do_chroot ${dir} bash -c "cd /usr/src/cauth; /var/www/cauth/bin/python setup.py install"
-
-    # Install pysflib
-    rsync -a --delete ${PYSFLIB_CLONED_PATH}/ ${dir}/usr/src/pysflib/
-    do_chroot ${dir} bash -c "cd /usr/src/pysflib; /var/www/cauth/bin/python setup.py install"
 
     do_chroot ${dir} find /root /var/www /srv/ -name "*.pyc" -exec rm {} \;
 
@@ -468,10 +449,6 @@ build_all() {
     checkpoint "edeploy, serverspect installed"
     remove_obsolete
     copy_sf_ansible_roles
-    # Copy prepared source to support depends-on
-    rsync -a --delete --exclude 'build' ${MANAGESF_CLONED_PATH}/ ${dir}/usr/src/managesf/
-    rsync -a --delete --exclude 'build' ${CAUTH_CLONED_PATH}/ ${dir}/usr/src/cauth/
-    rsync -a --delete --exclude 'build' ${PYSFLIB_CLONED_PATH}/ ${dir}/usr/src/pysflib/
     ansible_install sf-base
     ansible_install sf-gateway
     ansible_install sf-jenkins "$JENKINS_EXTRA_VARS"

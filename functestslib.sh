@@ -209,11 +209,9 @@ function build_image {
         sudo rsync -a --delete --no-owner config/config-repo/ ${IMAGE_PATH}/usr/local/share/sf-config-repo/
         sudo rsync -a --delete --no-owner serverspec/ ${IMAGE_PATH}/etc/serverspec/
         sudo rsync -a config/scripts/ ${IMAGE_PATH}/usr/local/bin/
-        sudo rsync -a --delete ${MANAGESF_CLONED_PATH}/managesf/ ${IMAGE_PATH}/var/www/managesf/lib/python2.7/site-packages/managesf/
-        sudo rsync -a --delete ${CAUTH_CLONED_PATH}/cauth/ ${IMAGE_PATH}/var/www/cauth/lib/python2.7/site-packages/cauth/
-        for sflibuser in /var/www/cauth /var/www/managesf /srv/sfmanager; do
-            sudo rsync -a --delete ${PYSFLIB_CLONED_PATH}/pysflib/ ${IMAGE_PATH}/${sflibuser}/lib/python2.7/site-packages/pysflib/
-        done
+        sudo rsync -a --delete ${MANAGESF_CLONED_PATH}/managesf/ ${IMAGE_PATH}/usr/lib/python2.7/site-packages/managesf/
+        sudo rsync -a --delete ${CAUTH_CLONED_PATH}/cauth/ ${IMAGE_PATH}/usr/lib/python2.7/site-packages/cauth/
+        sudo rsync -a --delete ${PYSFLIB_CLONED_PATH}/pysflib/ ${IMAGE_PATH}/usr/lib/python2.7/site-packages/pysflib/
         sudo cp image/edeploy/edeploy ${IMAGE_PATH}/usr/sbin/edeploy
         set +e
     fi
