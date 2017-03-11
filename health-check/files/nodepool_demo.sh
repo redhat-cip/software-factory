@@ -1,7 +1,7 @@
 #!/bin/bash
 # This script re-use a software-factory image as a nodepool slave
 
-sudo edeploy activate-pkgmngr
+sudo rm /etc/yum.repos.d/jenkins.repo
 sudo userdel jenkins
 
 # Set tests domain name to the nodepool client ip

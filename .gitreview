@@ -2,4 +2,4 @@
 host=softwarefactory-project.io
 port=29418
 project=software-factory
-defaultbranch=master
+defaultbranch=2.4

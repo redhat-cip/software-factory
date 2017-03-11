@@ -107,7 +107,7 @@ enabled=0
 
 [sfrelease]
 name=SF released packages
-baseurl=http://46.231.133.231/kojifiles/repos/sf-master-centos7-build/latest/x86_64/
+baseurl=http://46.231.133.231/kojifiles/repos/${SF_REPO}/
 gpgcheck=0
 enabled=1
 EOF
@@ -283,6 +283,7 @@ EOF
         do_chroot ${dir} bash -c "cd /var/www/redmine/plugins/redmine_http_auth; git checkout -b sf_pinned ${REDMINE_HTTP_PLUGIN_VERSION}"
     fi
 
+    SUDO_UID=0 SUDO_GID=0 do_chroot ${dir} bash -c "cd /var/www/redmine/ && bundler update nokogiri"
     # Set files permissions (according to: http://www.redmine.org/projects/redmine/wiki/redmineinstall )
     mkdir -p ${dir}/var/www/redmine/{tmp,tmp/pdf,public/plugin_assets}
     do_chroot ${dir} chown -R apache:apache /var/www/redmine/{files,log,tmp,public/plugin_assets}

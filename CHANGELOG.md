@@ -2,6 +2,43 @@
 Release Notes
 =============
 
+2.4.0
+=====
+
+New Features
+------------
+
+- The default landing page is by default the new welcome.html page
+- Generated secrets during the first deployment are now stored in /var/lib/software-factory instead of /root directory.
+- integration of repoXplorer 0.6.2 with support of commit metadata extracting.
+- Add support for custom gerrit dashboards.
+- Uses a new gerrit package that better respect the Filesystem Hierarchy Standard (FHS). Configuration is now stored in /etc/gerrit, stateful data in /var/lib/gerrit and logs in /var/log/gerrit.
+- Includes the reviewnotes gerrit plugin
+- Custom logo data such as the favicon or the top-menu can be replaced in /etc/software-factory directory.
+- nodes images update REST API The endpoint at manage/nodes/images allows users with adequate clearance to manage the images used to spawn dynamic executors. The endpoint supports listing images (provider required) and starting the update of an image. The status of an update and its logs can be fetched through the API as well.
+- nodes images update API support in the CLI sfmanager provides the new command "image" to list and update nodepool images from the CLI. It can also be used to retrieve build logs related to an image update (please note that these logs are only available for updates triggered through this API).
+- The main configuration script has been rewritten in python and it's now called sfconfig.py.
+- The murmur service is replaced by umurmur.
+
+
+Upgrade Notes
+-------------
+
+- The default landing page will be changed from gerrit "r/" to this new welcome.html page. The operator can use the sfconfig.yaml option "welcome_page_path" to modify the landing page url.
+- repoxplorer Elasticsearch index will be wipped before being automatically rebuild.
+- Gerrit is upgraded to 2.11.10 version, old setup is saved in /home/gerrit.old.
+- The logo data will be extracted from the sfconfig.yaml and written as regular file in /etc/software-factory.
+- The policies file is upgraded to include the default access policies for the API.
+- The managesf database has a new table that stores updates outcomes for archival.
+- Storyboard FULLTEXT indexes were not enabled by previous deployment and are now automatically added.
+
+
+Deprecation Notes
+-----------------
+
+- Redmine service is now deprecated and it will be removed in an upcomming release.
+
+
 2.3.0
 =====
 
