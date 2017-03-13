@@ -103,6 +103,7 @@ Once SF is up and running, the actual configuration of the CI happens in the con
 * gerritbot/: IRC notification for gerrit event configuration,
 * gerrit/: Gerrit replication endpoint configuration, and
 * mirrors/: mirror2swift configuration.
+* resources/: Platform wide groups, projects, repositories definitions.
 
 This is actually managed through SF CI system, thanks to the config-update job.
 This job is actually an ansible playbook that will:
