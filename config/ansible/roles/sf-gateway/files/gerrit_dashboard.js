@@ -19,7 +19,10 @@
 // for the JavaScript code in this page.
 
 angular.module('sfGerritDashboard', [], function($locationProvider) {
-    $locationProvider.html5Mode(true);
+    $locationProvider.html5Mode({
+        enabled: true,
+        requireBase: false
+    });
 }).controller('mainController', function($scope, $http, $location, $window) {
     var name = $location.path().substring(11);
 
