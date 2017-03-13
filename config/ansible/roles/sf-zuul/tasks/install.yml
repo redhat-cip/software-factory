@@ -13,6 +13,7 @@
     - virtualenv /srv/zuul
     - /srv/zuul/bin/pip install --upgrade pbr pip
     - sed -i 's/^pbr.*//' requirements.txt
+    - sed -i 's/^GitPython.*/GitPython>=0.3.3,<2.1.2/' requirements.txt
     - /srv/zuul/bin/pip install -rrequirements.txt
     - /srv/zuul/bin/pip install python-swiftclient python-keystoneclient
     - /srv/zuul/bin/python setup.py install
