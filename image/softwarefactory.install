@@ -165,8 +165,8 @@ enabled=0
 name=SF master packages
 baseurl=http://46.231.133.231/kojifiles/repos/${SF_REPO}/
 gpgcheck=0
-enabled=0
-priority=100
+enabled=1
+priority=110
 EOF
     # Check for testing packages
     if test -n "${TESTING_URL}"; then
@@ -202,7 +202,7 @@ EOF
     # gcc needed for pycrypto pip install
     # git/patch/tmux/vim-enhanced needed for comfort
     # python-flake8/python-nose needed for test_project_test
-    install_packages ${dir} ansible git patch python-virtualenv mariadb-devel gcc tmux vim-enhanced python-flake8 python-nose
+    install_packages ${dir} grub2 ansible git patch python-virtualenv mariadb-devel gcc tmux vim-enhanced python-flake8 python-nose
 
     # Quick and dirty fix for the current issue on RDO 20170223
     install_packages ${dir} python2-passlib-1.6.5
