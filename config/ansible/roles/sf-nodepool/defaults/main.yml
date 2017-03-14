@@ -4,9 +4,6 @@ role_actions:
   - update
   - get_logs
 
-nodepool_url: https://git.openstack.org/openstack-infra/nodepool
-nodepool_commit: master
-
 jenkins_password: "CHANGE_ME"
 
 jenkins_host: "example.com"

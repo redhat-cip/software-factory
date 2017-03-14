@@ -1,24 +1,7 @@
 ---
-- name: "Fetch code"
-  git:
-    repo: "{{ nodepool_url }}"
-    dest: /usr/src/nodepool
-    version: "{{ nodepool_commit }}"
-    recursive: no
-    force: yes
-
-- name: "Install venv"
-  command: chdir=/usr/src/nodepool {{ item }}
-  with_items:
-    - virtualenv /srv/nodepool
-    - /srv/nodepool/bin/pip install --upgrade pbr pip
-    - sed -i 's/^pbr.*//' requirements.txt
-    - sed -i 's/^shade.*/shade==1.9.0/' requirements.txt
-    # Fix for http://stackoverflow.com/questions/39829473/cryptography-assertionerror-sorry-but-this-version-only-supports-100-named-gro
-    - sh -c "echo pycparser==2.14 >> requirements.txt"
-    - /srv/nodepool/bin/pip install 'funcsigs' -rrequirements.txt
-    - /srv/nodepool/bin/python setup.py install
-
-- name: "Install program"
-  command: ln -sf /srv/nodepool/bin/{{ item }} /usr/bin/{{ item }}
-  with_items: [nodepool, nodepoold]
+- name: "Install package"
+  yum:
+    name: "nodepool"
+    state: present
+    disablerepo: "{{ yum_disable_repo|default(omit) }}"
+    enablerepo: "{{ yum_enable_repo|default(omit) }}"

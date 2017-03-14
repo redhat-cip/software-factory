@@ -1,20 +1,6 @@
 ---
 - include: /etc/ansible/tasks/create_user.yml user_name=nodepool ssh_key=jenkins_rsa
 
-- name: Create working directories
-  file:
-      path: "{{ item.name }}"
-      state: directory
-      owner: nodepool
-      group: nodepool
-      mode: "{{ item.mode | default(0550) }}"
-  with_items:
-    - {name: /etc/nodepool}
-    - {name: /etc/nodepool/scripts}
-    - {name: /opt/nodepool}
-    - {name: /var/log/nodepool, mode: '0700'}
-    - {name: /var/run/nodepool}
-
 - name: Install templates
   template:
       src: "{{ item.name }}.j2"
@@ -26,6 +12,12 @@
       - {name: _nodepool.yaml, dest: /etc/nodepool, owner: nodepool}
       - {name: secure.conf, dest: /etc/nodepool, group: nodepool, mode: '0440'}
       - {name: sf-nodepool-conf-update.sh, dest: /usr/local/bin, mode: '0555'}
+
+- name: Install sf-nodepool-conf-merger.py
+  copy:
+    src: sf-nodepool-conf-merger.py
+    dest: /usr/local/bin/sf-nodepool-conf-merger.py
+    mode: 0555
 
 - name: Setup sysconfig
   template:
@@ -49,30 +41,6 @@
       content: "{{ localCA_pem }}"
       dest: /etc/nodepool/scripts/localCA.pem
 
-- name: Apply patches
-  patch:
-      src: "{{ item }}"
-      basedir: /srv/nodepool/lib/python2.7/site-packages
-      strip: 1
-  with_items:
-    - 272097-image-api-use-tasks.patch
-    - 321480-Add-log-config-option-to-nodepool-cmd.patch
-    - 0001-Keep-existing-loggers-with-fileConfig.patch
-
-- name: Install service file
-  copy:
-      src: nodepool.service
-      dest: /lib/systemd/system/nodepool.service
-      owner: root
-      group: root
-      mode: 0644
-  register: install_service_file
-  when: nodepool.disabled == False
-
 - name: Start service
-  systemd:
-      name: nodepool
-      state: started
-      daemon_reload: yes
-      enabled: yes
+  service: name=nodepool state=started enabled=yes
   when: nodepool.disabled == False

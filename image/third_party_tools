@@ -70,26 +70,6 @@ if [ "${USE_SWIFT_CACHE}" == "yes" ]; then
     GRAFANA_EXTRA_VARS+=", grafana_repo_gpgkey: \"\""
 fi
 
-# gerrit
-GERRIT_VERSION=2.11.9
-GERRIT_URL="https://gerrit-releases.storage.googleapis.com/gerrit-${GERRIT_VERSION}.war"
-MYSQLJAVA_VERSION=5.1.21
-MYSQLJAVA_URL="http://repo2.maven.org/maven2/mysql/mysql-connector-java/${MYSQLJAVA_VERSION}/mysql-connector-java-${MYSQLJAVA_VERSION}.jar"
-BCPROV_VERSION="151"
-BCPROVJDK_VERSION="jdk15on"
-BCPROVJAVA_URL="http://downloads.bouncycastle.org/java/bcprov-${BCPROVJDK_VERSION}-${BCPROV_VERSION}.jar"
-BCPKIX_VERSION=$BCPROV_VERSION
-BCPKIXJDK_VERSION=$BCPROVJDK_VERSION
-BCPKIXJAVA_URL="http://downloads.bouncycastle.org/java/bcpkix-${BCPKIXJDK_VERSION}-${BCPKIX_VERSION}.jar"
-
-URL_LIST="$URL_LIST $GERRIT_URL $MYSQLJAVA_URL $BCPROVJAVA_URL $BCPKIXJAVA_URL"
-if [ "${USE_SWIFT_CACHE}" == "yes" ]; then
-    GERRIT_URL="${SWIFT_CACHE}/gerrit/gerrit-${GERRIT_VERSION}.war"
-    MYSQLJAVA_URL="${SWIFT_CACHE}/gerrit/mysql-connector-java-${MYSQLJAVA_VERSION}.jar"
-    BCPROVJAVA_URL="${SWIFT_CACHE}/gerrit/bcprov-${BCPROVJDK_VERSION}-${BCPROV_VERSION}.jar"
-    BCPKIXJAVA_URL="${SWIFT_CACHE}/gerrit/bcpkix-${BCPKIXJDK_VERSION}-${BCPKIX_VERSION}.jar"
-fi
-
 # zuul_swift_upload
 ZUUL_SWIFT_UPLOAD_URL="https://raw.githubusercontent.com/openstack-infra/project-config/master/jenkins/scripts/zuul_swift_upload.py"
 URL_LIST="${URL_LIST} ${ZUUL_SWIFT_UPLOAD_URL}"
@@ -116,22 +96,13 @@ if [ "${USE_SWIFT_CACHE}" == "yes" ]; then
     ETHERPAD_EXTRA_VARS+=", etherpad_version: \"${ETHERPAD_LITE_VERSION}\""
 fi
 
-# Zuul / Nodepool
-NODEPOOL_URL="https://github.com/openstack-infra/nodepool"
-NODEPOOL_VERSION=1fd2a14ab79d256419083e2b2d9c463af36e039a # 2016-05-18
-ZUUL_VERSION=a8b90b38094587bbd82ffa5e4028aef1dfd02987     # 2016-08-24
-
 # gerritbot
 GERRITBOT_URL="https://github.com/openstack-infra/gerritbot"
 GERRITBOT_VERSION=d48b1bc41717291e43425ff437d6214b6934f60f
 
-GIT_REPO_LIST="$GIT_REPO_LIST $NODEPOOL_URL $GERRITBOT_URL $REPOXPLORER_URL"
+GIT_REPO_LIST="$GIT_REPO_LIST $GERRITBOT_URL"
 if [ "${USE_SWIFT_CACHE}" == "yes" ]; then
     GERRITBOT_EXTRA_VARS="gerritbot_url: \"${SWIFT_CACHE}/gerritbot.git\", gerritbot_commit: \"${GERRITBOT_VERSION}\""
-    ZUUL_EXTRA_VARS="zuul_url: \"${SWIFT_CACHE}/zuul.git\""
-    ZUUL_EXTRA_VARS+=", zuul_commit: \"${ZUUL_VERSION}\""
-    NODEPOOL_EXTRA_VARS="nodepool_url: \"${SWIFT_CACHE}/nodepool.git\""
-    NODEPOOL_EXTRA_VARS+=", nodepool_commit: \"${NODEPOOL_VERSION}\""
 fi
 
 LECM_URL="https://github.com/Spredzy/lecm"
