@@ -1,26 +1,7 @@
 ---
-- name: "Fetch code"
-  git:
-    repo: "{{ zuul_url }}"
-    dest: /usr/src/zuul
-    version: "{{ zuul_commit }}"
-    recursive: no
-    force: yes
-
-- name: "Install venv"
-  command: chdir=/usr/src/zuul {{ item }}
-  with_items:
-    - virtualenv /srv/zuul
-    - /srv/zuul/bin/pip install --upgrade pbr pip
-    - sed -i 's/^pbr.*//' requirements.txt
-    - sed -i 's/^GitPython.*/GitPython>=0.3.3,<2.1.2/' requirements.txt
-    - /srv/zuul/bin/pip install -rrequirements.txt
-    - /srv/zuul/bin/pip install python-swiftclient python-keystoneclient
-    - /srv/zuul/bin/python setup.py install
-
-- name: "Install program"
-  command: ln -sf /srv/zuul/bin/{{ item }} /usr/bin/{{ item }}
-  with_items: [zuul, zuul-cloner, zuul-merger, zuul-server, zuul-launcher]
-
-- name: "Install web virtualhost"
-  synchronize: src=/usr/src/zuul/etc/status/public_html/ dest=/var/www/zuul/ delete=yes
+- name: "Install package"
+  yum:
+    name: "zuul-webui, zuul-server, zuul-merger"
+    state: present
+    disablerepo: "{{ yum_disable_repo|default(omit) }}"
+    enablerepo: "{{ yum_enable_repo|default(omit) }}"

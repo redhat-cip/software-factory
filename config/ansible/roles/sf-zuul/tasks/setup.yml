@@ -11,32 +11,24 @@
   when:
       - selinuxenabled
 
-- name: "Apply patch"
-  patch: src={{ item }} basedir=/srv/zuul/lib/python2.7/site-packages strip=1
-  # ignore_errors because first patch will failed on second run with: Reversed (or previously applied) patch detected
-  ignore_errors: yes
-  with_items:
-    - 152290-Add-support-for-layout-configuration-split.patch
-    - 270338-zuul_temp-url-key.patch
-    - 0001-Keep-existing-loggers-with-fileConfig.patch
-    - 0001-Read-all-Gerrit-events-from-poll-interruption.patch
-    - Fix-Third-party-CI-conflict.patch
-
-- name: "Setup apache site zuul.conf"
+- name: Setup apache site zuul.conf
   template: src=zuul.site.j2 dest=/etc/httpd/conf.d/zuul.conf mode=0444
   notify: apache reload
 
-- name: "Create state directory directory"
-  file: path={{ item }} state=directory owner=zuul group=zuul
-  with_items:
-    - /var/log/zuul
-    - /var/run/zuul
+- name: Create /var/www/zuul
+  file: path=/var/www/zuul state=directory
 
-- name: "Create /etc/zuul directory"
-  file: path=/etc/zuul state=directory
+- name: Symlink zuul image
+  file: src=/usr/share/javascript/zuul/images/ dest=/var/www/zuul/images state=link
 
-- name: "Touch layout.yaml"
-  file: path=/etc/zuul/layout.yaml state=touch
+- name: Symlink zuul static assets
+  file: src=/usr/share/javascript/zuul/ dest=/var/www/static/zuul state=link
+
+- name: Install index.html for zuul
+  copy:
+    src: zuul.index.html
+    dest: /var/www/zuul/index.html
+    mode: 0444
 
 - name: "Copy logging configuration"
   template: src={{ item }}.j2 dest=/etc/zuul/{{ item }}
@@ -53,23 +45,11 @@
   template: src=zuul.conf.j2 dest=/etc/zuul/zuul.conf mode=0440 group=zuul
   notify: restart zuul
 
-- name: Install service file
-  copy:
-      src: "{{ item }}.service"
-      dest: "/lib/systemd/system/{{ item }}.service"
-      owner: root
-      group: root
-      mode: 0644
-  with_items:
-    - zuul
-    - zuul-merger
-
 - name: Start service
-  systemd:
-      name: "{{ item }}"
-      state: started
-      daemon_reload: yes
-      enabled: yes
+  service:
+    name: "{{ item }}"
+    state: started
+    enabled: yes
   with_items:
     - zuul
     - zuul-merger

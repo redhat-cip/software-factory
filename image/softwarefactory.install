@@ -234,8 +234,10 @@ EOF
 }
 
 install_serverspec() {
-    install_packages ${dir} rubygems rubygem-rake
-    retry do_chroot ${dir} gem install serverspec -v ${SERVERSPEC_VERSION}
+    if ! test -d ${dir}/usr/local/share/gems/gems/serverspec-${SERVERSPEC_VERSION}/lib/serverspec; then
+        install_packages ${dir} rubygems rubygem-rake
+        retry do_chroot ${dir} gem install serverspec -v ${SERVERSPEC_VERSION}
+    fi
 }
 
 function copy_sf_ansible_roles {
@@ -253,8 +255,7 @@ image_clean() {
 }
 
 remove_obsolete() {
-    # 2.5.0 starts fresh
-    true
+    rm -Rf ${dir}/srv/zuul ${dir}/usr/src/zuul ${dir}/var/www/zuul
 }
 
 fix_ansible_issue5504() {
@@ -350,7 +351,7 @@ build_all() {
     ansible_install sf-managesf
     ansible_install sf-cauth "$CAUTH_EXTRA_VARS"
     ansible_install sf-lecm "$LECM_EXTRA_VARS"
-    ansible_install sf-zuul "$ZUUL_EXTRA_VARS"
+    ansible_install sf-zuul
     ansible_install sf-lodgeit
     ansible_install sf-murmur
     ansible_install sf-etherpad "$ETHERPAD_EXTRA_VARS"

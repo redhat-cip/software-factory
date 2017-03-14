@@ -5,9 +5,6 @@ role_actions:
   - update
   - get_logs
 
-zuul_url: https://git.openstack.org/openstack-infra/zuul
-zuul_commit: master
-
 zuul_port: 8084
 
 gerrit_pub_url: "https://example.com/r/"
