@@ -1,12 +1,5 @@
 ---
 - include: /etc/ansible/tasks/create_user.yml user_name=storyboard
-- file: path=/etc/storyboard state=directory mode=0700 owner=storyboard group=storyboard
-
-- name: "Apply patch"
-  patch: src={{ item }} basedir=/srv/storyboard/lib/python2.7/site-packages strip=1
-  ignore_errors: yes
-  with_items:
-    - 0001-Support-MariaDB-in-the-migration-scripts.patch
 
 - name: "Install storyboard.conf"
   template: src={{ item }}.j2 dest=/etc/storyboard/{{ item }} owner=storyboard group=storyboard mode=0400
@@ -15,9 +8,6 @@
     - superuser.yaml
     - service_token.sql
   notify: restart storyboard
-
-- name: "Install logging.conf"
-  copy: src=logging.conf dest=/etc/storyboard/logging.conf
 
 - name: "Setup database"
   command: storyboard-db-manage upgrade head
@@ -28,19 +18,9 @@
 - name: "Setup service_token"
   command: bash -c "mysql storyboard < /etc/storyboard/service_token.sql"
 
-- name: Install service file
-  template:
-      src: "{{ item }}.service.j2"
-      dest: "/lib/systemd/system/{{ item }}.service"
-      owner: root
-      group: root
-      mode: 0644
-  with_items: "{{ storyboard_services }}"
-
 - name: Start service
-  systemd:
+  service:
       name: "{{ item }}"
       state: started
-      daemon_reload: yes
       enabled: yes
   with_items: "{{ storyboard_services }}"

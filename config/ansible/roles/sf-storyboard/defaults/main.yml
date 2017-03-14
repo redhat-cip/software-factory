@@ -2,13 +2,6 @@ role_actions:
   - install
   - setup
 
-storyboard_url: https://git.openstack.org/openstack-infra/storyboard
-storyboard_commit: master
-storyboard_setuptools_version: 33.1.1
-
-storyboardclient_url: https://git.openstack.org/openstack-infra/python-storyboardclient
-storyboardclient_commit: master
-
 storyboard_service_token: "CHANGE_ME"
 
 storyboard_mysql_host: "mysql.example.com"

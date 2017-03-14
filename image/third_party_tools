@@ -14,16 +14,9 @@ URL_LIST="$URL_LIST $RDO_REPO"
 SERVERSPEC_VERSION=2.25.0
 
 # Storyboard
-STORYBOARD_COMMIT="0022dbd4377b1de8767d6ae7de1c26c09aa9966c"
-STORYBOARD_CLIENT_COMMIT="cfdfaf866ca5da63ac734552772e1fe2f87c6543"
 STORYBOARD_WEBCLIENT_COMMIT="28b4809"
 
 if [ "${USE_SWIFT_CACHE}" == "yes" ]; then
-    STORYBOARD_EXTRA_VARS+="storyboard_url: \"${SWIFT_CACHE}/storyboard.git\""
-    STORYBOARD_EXTRA_VARS+=", storyboard_commit: \"${STORYBOARD_COMMIT}\""
-    STORYBOARD_EXTRA_VARS+=", storyboardclient_url: \"${SWIFT_CACHE}/python-storyboardclient.git\""
-    STORYBOARD_EXTRA_VARS+=", storyboardclient_commit: \"${STORYBOARD_CLIENT_COMMIT}\""
-
     STORYBOARD_WEBCLIENT_EXTRA_VARS="storyboard_webclient_url: \"${SWIFT_CACHE}/storyboard-webclient/storyboard-webclient-${STORYBOARD_WEBCLIENT_COMMIT}.tar.gz\""
     STORYBOARD_WEBCLIENT_EXTRA_VARS+=", storyboard_webclient_commit: \"${STORYBOARD_WEBCLIENT_COMMIT}\""
 fi
