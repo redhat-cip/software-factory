@@ -24,7 +24,7 @@
       shell: "echo 'resources: {}' > /tmp/empty_resources.yaml"
       when: config_done.stat.exists != True
 
-    - name: Change default admin email
+    - name: Change default admin email in default resources file
       replace:
           dest: /usr/local/share/sf-config-repo/resources/resources.yaml
           regexp: '@sftests.com'
@@ -48,6 +48,13 @@
       command: rsync -av /usr/local/share/sf-config-repo/ {{ conf_tmp.stdout }}/
       when: config_done.stat.exists != True
 
+    - name: Change default fqdn in default repoxplorer projects.yaml file
+      replace:
+          dest: "{{ conf_tmp.stdout }}/repoxplorer/projects.yaml"
+          regexp: 'sftests.com'
+          replace: '{{ fqdn }}'
+      when: config_done.stat.exists != True
+
     - name: Push config repo
       command: git {{ item }} chdir={{ conf_tmp.stdout }}
       with_items:
@@ -60,16 +67,5 @@
       when: config_done.stat.exists != True
 
 - include: sf_configrepo_update.yml
-
-# This is needed because repoxplorer update task actually trigger a config-update when it "git push"
-# TODO: refactor repoxplorer update task to avoid triggering a config-update during config-update... and remove bellow wait
-- hosts: jenkins
-  tasks:
-    - name: Wait for first config-update
-      when: "'repoxplorer' in roles"
-      wait_for:
-        path: /var/lib/jenkins/jobs/config-update/builds/lastStableBuild/log
-        search_regex: "^Finished. SUCCESS$"
-        timeout: 120
 
 - include: sf_postconf.yml

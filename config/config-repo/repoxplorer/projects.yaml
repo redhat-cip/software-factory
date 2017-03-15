@@ -1,0 +1,9 @@
+templates:
+- name: default
+  branch: master
+  gitweb: https://sftests.com/r/gitweb?p=%(name)s.git;a=commitdiff;h=%%(sha)s;ds=sidebyside
+  uri: https://sftests.com/r/%(name)s
+projects:
+  internal:
+    - name: config
+      template: default

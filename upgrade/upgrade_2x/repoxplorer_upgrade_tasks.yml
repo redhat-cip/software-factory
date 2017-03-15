@@ -4,3 +4,37 @@
   # repoXplorer does not manage DB version so wipe it
   - name: Remove repoxplorer EL index
     command: curl -XDELETE "http://elasticsearch:9200/repoxplorer/"
+
+- hosts: install-server
+  tasks:
+  - name: "Check if repoxplorer directory already exists in the config repo"
+    stat: path=/root/config/repoxplorer
+    register: configrepo_repoxplorer
+
+  - name: "Init repoxplorer config repo directory (1)"
+    command: chdir=/root/config {{ item }}
+    with_items:
+      - mkdir repoxplorer
+      - cp /usr/local/share/sf-config-repo/repoxplorer/projects.yaml /root/config/repoxplorer/
+      - cp /usr/local/share/sf-config-repo/repoxplorer/idents.yaml /root/config/repoxplorer/
+    when: configrepo_repoxplorer.stat.exists == false
+
+  - name: Change default fqdn in default repoxplorer projects.yaml file
+    replace:
+      dest: /root/config/repoxplorer/projects.yaml
+      regexp: 'sftests.com'
+      replace: '{{ fqdn }}'
+    when: configrepo_repoxplorer.stat.exists == false
+
+  - name: "Push repoxplorer directory in the config repo"
+    command: chdir=/root/config {{ item }}
+    with_items:
+      - git add repoxplorer
+      - git commit -m "Initialize repoxplorer configuration"
+      - git push git+ssh://{{ fqdn }}/config master
+    when: configrepo_repoxplorer.stat.exists == false
+
+- hosts: repoxplorer
+  tasks:
+  - name: "Restart repoxplorer indexer"
+    service: name=repoxplorer state=restarted
