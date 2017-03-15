@@ -28,7 +28,9 @@ channels = ( {
          name = "{{ channel['name'] }}";
          parent = "Lobby";
          description = "{{ channel['description'] }}";
-         password = "{{ channel['password']|default('') }}";
+         {% if channel.get('password') %}
+         password = "{{ channel['password'] }}";
+         {% endif %}
          }
 {% endfor %}
 );
