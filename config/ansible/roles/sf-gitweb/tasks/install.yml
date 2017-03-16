@@ -7,7 +7,7 @@
     enablerepo: "{{ yum_enable_repo|default(omit) }}"
 
 - name: "Copy theme to gitweb.css"
-  file:
+  copy:
     src: "/var/www/git/static/{{ theme }}.css"
     dest: "/var/www/git/static/gitweb.css"
     remote_src: True
