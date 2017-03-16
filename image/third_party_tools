@@ -96,15 +96,7 @@ if [ "${USE_SWIFT_CACHE}" == "yes" ]; then
     ETHERPAD_EXTRA_VARS+=", etherpad_version: \"${ETHERPAD_LITE_VERSION}\""
 fi
 
-# gerritbot
-GERRITBOT_URL="https://github.com/openstack-infra/gerritbot"
-GERRITBOT_VERSION=d48b1bc41717291e43425ff437d6214b6934f60f
-
-GIT_REPO_LIST="$GIT_REPO_LIST $GERRITBOT_URL"
-if [ "${USE_SWIFT_CACHE}" == "yes" ]; then
-    GERRITBOT_EXTRA_VARS="gerritbot_url: \"${SWIFT_CACHE}/gerritbot.git\", gerritbot_commit: \"${GERRITBOT_VERSION}\""
-fi
-
+# lecm
 LECM_URL="https://github.com/Spredzy/lecm"
 LECM_VER="0.0.6"
 

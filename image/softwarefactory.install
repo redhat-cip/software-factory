@@ -258,6 +258,7 @@ remove_obsolete() {
     rm -Rf ${dir}/srv/zuul ${dir}/usr/src/zuul ${dir}/var/www/zuul
     rm -Rf ${dir}/srv/storyboard ${dir}/usr/src/storyboard ${dir}/usr/src/python-storyboardclient
     rm -Rf ${dir}/srv/nodepool ${dir}/usr/src/nodepool
+    rm -Rf ${dir}/srv/gerritbot ${dir}/usr/src/gerritbot
 }
 
 fix_ansible_issue5504() {
@@ -358,7 +359,7 @@ build_all() {
     ansible_install sf-murmur
     ansible_install sf-etherpad "$ETHERPAD_EXTRA_VARS"
     ansible_install sf-gerrit
-    ansible_install sf-gerritbot "$GERRITBOT_EXTRA_VARS"
+    ansible_install sf-gerritbot
     ansible_install sf-gitweb
     ansible_install sf-nodepool
     ansible_install sf-storyboard
