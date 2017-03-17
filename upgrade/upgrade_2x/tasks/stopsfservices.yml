@@ -17,7 +17,7 @@
     - gerritbot
     - grafana-server
     - postfix
-    - murmurd
+    - umurmurd
     - log-gearman-client
     - log-gearman-worker
     - elasticsearch
