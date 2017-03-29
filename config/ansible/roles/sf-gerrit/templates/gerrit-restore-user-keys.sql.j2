@@ -1,8 +1,0 @@
-SET @pubkey="{{ gerrit_admin_rsa_pub }}";
-SET @jenkinskey="{{ jenkins_rsa_pub }}";
-
-DELETE FROM account_ssh_keys WHERE  account_id=1 AND seq=1;
-DELETE FROM account_ssh_keys WHERE  account_id=1 AND seq=2;
-DELETE FROM account_ssh_keys WHERE  account_id=2;
-INSERT INTO account_ssh_keys SELECT @pubkey,'Y',1,1;
-INSERT INTO account_ssh_keys SELECT @jenkinskey,'Y',2,1;

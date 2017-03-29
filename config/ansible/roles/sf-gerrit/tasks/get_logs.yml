@@ -1,9 +1,0 @@
----
-- name: "Fetch gerrit logs and config"
-  synchronize:
-    mode: pull
-    src: "/var/lib/gerrit/{{ item }}/"
-    dest: "{{ log_dest }}/{{ item }}/"
-    rsync_opts: "--exclude mail --exclude ssh_host_*"
-  with_items: ["logs", "etc"]
-  ignore_errors: True

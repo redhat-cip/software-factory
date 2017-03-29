@@ -1,5 +1,0 @@
----
-fixes:
-  - Nodepool logging for image-update command now properly
-    print setup scripts stdout on terminal. Moreover service's
-    logs were missing automatic rotation.

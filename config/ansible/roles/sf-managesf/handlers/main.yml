@@ -1,3 +1,0 @@
----
-- name: restart managesf
-  service: name=managesf state=restarted

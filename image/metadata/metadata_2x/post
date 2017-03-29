@@ -1,6 +1,0 @@
-#!/bin/sh
-
-# Unit files may changed - so ask for a reload after having updated the files system.
-systemctl daemon-reload
-
-exit 0

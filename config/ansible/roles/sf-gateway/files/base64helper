@@ -1,9 +1,0 @@
-#!/usr/bin/python
-import base64
-import sys
-
-while True:
-    username = sys.stdin.readline().strip()
-    authorization_str = base64.b64encode("%s:password" % username)
-    sys.stdout.write(authorization_str + '\n')
-    sys.stdout.flush()

@@ -1,4 +1,0 @@
----
-security:
-  - Upgrade jenkins to version 1.651.2 to mitigate
-    Jenkins Security Advisory 2016-05-11.

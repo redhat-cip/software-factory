@@ -1,1 +1,0 @@
-../../config/scripts/sfconfig.py

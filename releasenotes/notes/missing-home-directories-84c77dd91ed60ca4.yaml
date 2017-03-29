@@ -1,6 +1,0 @@
----
-upgrade:
-  - Some home directories were managed by puppet User
-    statement, which didn't get recreated after upgrade
-    when user already exists. This release fix by ensuring
-    directory are present before running puppet.

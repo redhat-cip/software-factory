@@ -1,4 +1,0 @@
-/* Service token expires in 10 years */
-insert into accesstokens (id, access_token, created_at, updated_at, expires_in, expires_at, user_id)
-       values (1, "{{ storyboard_service_token }}", now(), now(), 315360000, date_add(now(), INTERVAL 315360000 SECOND), 1)
-       on duplicate key update updated_at=now(), access_token="{{ storyboard_service_token }}";

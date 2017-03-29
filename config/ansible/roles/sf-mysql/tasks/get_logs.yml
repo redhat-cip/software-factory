@@ -1,4 +1,0 @@
----
-- name: "Fetch mariadb logs"
-  synchronize: mode=pull src=/var/log/mariadb/ dest="{{ log_dest }}/log"
-  ignore_errors: True

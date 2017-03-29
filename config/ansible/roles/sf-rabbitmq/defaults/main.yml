@@ -1,8 +1,0 @@
-role_actions:
-  - install
-  - setup
-
-rabbitmq_users:
-  - name: storyboard
-    password: "{{ storyboard_rabbitmq_password }}"
-    vhost: /storyboard

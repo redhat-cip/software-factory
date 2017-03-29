@@ -1,8 +1,0 @@
----
-- name: "Retrieve data"
-  synchronize:
-    src: "{{ backup_src }}/mysqldump.sql.gz"
-    dest: /root/mysqldump.sql.gz
-
-- name: "Restore data"
-  shell: cat /root/mysqldump.sql.gz | gunzip | mysql

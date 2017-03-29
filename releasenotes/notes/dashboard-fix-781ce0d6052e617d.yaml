@@ -1,3 +1,0 @@
----
-fixes:
-  - ensure grafana is disabled in the dashboard if role not included

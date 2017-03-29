@@ -1,7 +1,0 @@
----
-features:
-  - The mirror update task now shows the detail of
-    each mirror files update.
-fixes:
-  - The mirror update postconf to add a new pipeline
-    error is now fixed.

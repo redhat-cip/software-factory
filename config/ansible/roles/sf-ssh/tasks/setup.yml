@@ -1,9 +1,0 @@
----
-- name: "Install service_rsa key"
-  include: /etc/ansible/tasks/create_user.yml user_name=root shell=/bin/bash home_dir=/root ssh_key=service_rsa
-
-- name: "Allow jenkins to run sf-config-update"
-  authorized_key:
-    user: root
-    key: "{{ jenkins_rsa_pub }}"
-    key_options: 'command="/usr/local/bin/sf-config-update.sh",no-port-forwarding,no-x11-forwarding,no-agent-forwarding,no-pty'

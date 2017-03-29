@@ -1,7 +1,0 @@
-{% for dbname, dbinfo in mysql_databases.iteritems() %}
-CREATE DATABASE IF NOT EXISTS {{ dbname }} CHARACTER SET utf8 COLLATE utf8_general_ci;
-{% for host in dbinfo['hosts'] %}
-GRANT ALL PRIVILEGES ON {{ dbname }}.* TO '{{ dbinfo['user'] }}'@'{{ host }}' IDENTIFIED BY "{{ dbinfo['password'] }}" WITH GRANT OPTION;
-{% endfor %}
-{% endfor %}
-FLUSH PRIVILEGES;

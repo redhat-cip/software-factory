@@ -1,8 +1,0 @@
----
-- name: restart zuul
-  service:
-    name: "{{ item }}"
-    state: restarted
-  with_items:
-    - zuul
-    - zuul-merger

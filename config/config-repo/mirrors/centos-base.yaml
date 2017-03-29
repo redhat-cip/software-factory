@@ -1,9 +1,0 @@
-#- name: os
-#  type: repodata
-#  url: 'http://centos.mirror.example.com/7/os/x86_64/'
-#  prefix: 'os/'
-#
-#- name: extras
-#  type: repodata
-#  url: 'http://centos.mirror.example.com/7/extras/x86_64/'
-#  prefix: 'extras/'

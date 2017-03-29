@@ -1,3 +1,0 @@
----
-- name: restart lodgeit
-  service: name=lodgeit state=restarted enabled=yes

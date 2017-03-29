@@ -1,7 +1,0 @@
----
-- name: Check for bootloader
-  stat: path=/boot/grub2/grub.cfg
-  register: bootloader
-- name: Update bootloader configuration
-  command: grub2-mkconfig -o /boot/grub2/grub.cfg
-  when: bootloader.stat.exists == true

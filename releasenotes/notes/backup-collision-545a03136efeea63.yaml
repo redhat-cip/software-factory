@@ -1,3 +1,0 @@
----
-fixes:
-  - Avoid possible overlapping of SF backup scripts runs

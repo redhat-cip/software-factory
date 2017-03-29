@@ -1,7 +1,0 @@
-labels: []
-#labels:
-#  - name: myproject-centos7-slave
-#    image: centos7
-#    min-ready: 5
-#    providers:
-#      - name: default

@@ -1,9 +1,0 @@
----
-# At this point the config repository base JJB and ZUUL configuration files
-# has not been upgraded. We submit a patch to the config repository
-# in order to let the config-check do its job as well as the user review
-# process. This let the ability to the user to fix or report problem with
-# the upgrade.
-
-- name: Trigger upgrade config repo
-  shell: /usr/local/bin/upgrade-config-repo.sh

@@ -1,4 +1,0 @@
----
-fixes:
-  - Fix config-check that was unable to validate nodepool
-    configuration when multiple cloud provider are used.

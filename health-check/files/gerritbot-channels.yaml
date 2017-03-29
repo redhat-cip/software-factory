@@ -1,8 +1,0 @@
-irc-channel-health-check:
-  events:
-    - patchset-created
-    - change-merged
-  projects:
-    - config
-  branches:
-    - master

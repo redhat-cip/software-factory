@@ -1,9 +1,0 @@
-WSGIScriptAlias /auth /var/www/cauth/app.wsgi
-WSGIDaemonProcess cauth
-<Location /auth>
-    WSGIPassAuthorization On
-    WSGIProcessGroup cauth
-    WSGIApplicationGroup %{GLOBAL}
-    Order deny,allow
-    Allow from all
-</Location>

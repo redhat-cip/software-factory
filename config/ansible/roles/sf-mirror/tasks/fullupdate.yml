@@ -1,6 +1,0 @@
----
-- name: "Update mirrors"
-  become: true
-  become_user: mirror2swift
-  command: mirror2swift --update {{ item }}
-  with_fileglob: [ /var/lib/mirror2swift/*.yaml ]

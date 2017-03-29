@@ -1,4 +1,0 @@
-{% for item in repos %}
-update account_project_watches set project_name = "{{ item.new }}" where project_name = "{{ item.old }}";
-update changes set dest_project_name = "{{ item.new }}", created_on = created_on where dest_project_name = "{{ item.old }}";
-{% endfor %}

@@ -1,5 +1,0 @@
----
-fixes:
-  - Properly set postfix myhostname to the fqdn. To
-    avoid Greylisting, operator needs to configure
-    the reverse dns of public ip to the fqdn.

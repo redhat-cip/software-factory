@@ -1,3 +1,0 @@
----
-features:
-  - Use gerrit connections pool to improve performance.

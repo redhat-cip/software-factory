@@ -1,8 +1,0 @@
---- layout.html	2016-11-24 16:09:05.962373234 +0000
-+++ layout.html.new	2016-11-24 16:08:59.900472569 +0000
-@@ -49,4 +49,5 @@
-     <script src="javascript/jquery.simplePagination.js"></script>
-     <script src="javascript/bootstrap-3.3.6.min.js"></script>
-     <script src="javascript/moment-2.14.1.min.js"></script>
-+    <script src="/static/js/topmenu.js"></script>
- </%def>

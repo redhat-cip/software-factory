@@ -1,7 +1,0 @@
----
-features:
-  - Gerritbot channels configuration is now managed
-    through the config-repo.
-upgrade:
-  - Gerritbot channels.yaml configuration file will be
-    automatically submitted to the configuration repo

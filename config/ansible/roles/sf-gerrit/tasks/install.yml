@@ -1,7 +1,0 @@
----
-- name: "Install packages"
-  yum:
-    name: "gerrit, gerrit-plugin-commit-message-length-validator, gerrit-plugin-download-commands, gerrit-plugin-replication, gerrit-plugin-reviewnotes, gerrit-plugin-singleusergroup, gerrit-plugin-avatars-gravatar, gerrit-plugin-delete-project, gerrit-plugin-reviewers-by-blame"
-    state: present
-    disablerepo: "{{ yum_disable_repo|default(omit) }}"
-    enablerepo: "{{ yum_enable_repo|default(omit) }}"

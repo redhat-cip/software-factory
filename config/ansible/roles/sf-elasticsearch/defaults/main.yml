@@ -1,9 +1,0 @@
-role_actions:
-  - install
-  - setup
-
-elasticsearch_repo_name: elasticsearch
-elasticsearch_repo_desc: Elasticsearch repository
-elasticsearch_repo_url: https://packages.elastic.co/elasticsearch/2.x/centos
-elasticsearch_repo_gpgkey: http://packages.elastic.co/GPG-KEY-elasticsearch
-elasticsearch_repo_gpgcheck: 1

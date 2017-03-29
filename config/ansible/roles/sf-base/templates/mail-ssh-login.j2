@@ -1,8 +1,0 @@
-$ModLoad ommail
-$ActionMailSMTPServer localhost
-$ActionMailFrom root@{{ fqdn }}
-$ActionMailTo root@localhost
-$template mailSubject,"SSH Login to %hostname%"
-$template mailBody,"%msg%"
-$ActionMailSubject mailSubject
-if $msg contains 'Accepted publickey for' and not ($msg contains '192.168.') then :ommail:;mailBody

@@ -1,9 +1,0 @@
----
-- include: /etc/ansible/tasks/create_user.yml user_name=gerritbot ssh_key=jenkins_rsa
-
-- name: "Setup gerritbot.conf"
-  template: src=gerritbot.conf.j2 dest=/etc/gerritbot/gerritbot.conf
-  notify: [restart gerritbot]
-
-- name: Start service
-  service: name=gerritbot state=started enabled=yes

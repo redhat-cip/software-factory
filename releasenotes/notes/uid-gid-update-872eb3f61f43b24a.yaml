@@ -1,5 +1,0 @@
----
-upgrade:
-  - System user/group id are now correctly updated according
-    to ids.table definition. This is due to support upgrade
-    from version prior 2.1.7 when image uid/gid were not consistent.

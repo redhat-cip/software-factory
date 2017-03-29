@@ -1,6 +1,0 @@
-#!/bin/bash
-WAIT4PORT=$(dirname ${BASH_SOURCE[0]})/wait4port
-HOST="mysql"
-
-# Wait until the mysql server accepts connections on port 3306
-$WAIT4PORT $HOST 3306

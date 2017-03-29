@@ -1,3 +1,0 @@
----
-- name: "Apply new policy.yaml"
-  copy: src=/root/config/policies/policy.yaml dest=/etc/managesf/policy.yaml

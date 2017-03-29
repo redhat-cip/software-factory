@@ -1,3 +1,0 @@
----
-- name: restart umurmurd
-  service: name=umurmurd state=restarted enabled=yes

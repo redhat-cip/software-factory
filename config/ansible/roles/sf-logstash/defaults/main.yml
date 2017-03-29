@@ -1,9 +1,0 @@
-role_actions:
-  - install
-  - setup
-
-logstash_repo_name: logstash
-logstash_repo_desc: Logstash repository
-logstash_repo_url: https://packages.elastic.co/logstash/2.3/centos
-logstash_repo_gpgkey: http://packages.elastic.co/GPG-KEY-elasticsearch
-logstash_repo_gpgcheck: 1

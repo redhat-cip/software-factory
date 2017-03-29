@@ -1,5 +1,0 @@
----
-features:
-  - When nodepool is enabled, slaves are now put offline
-    by default to avoid reuse. To keep a slave alive,
-    jobs needs to explicitly use the "set_node_reuse" option.

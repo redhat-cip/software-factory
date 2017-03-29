@@ -1,3 +1,0 @@
----
-- name: nodepool restart
-  service: name=nodepool state=restarted

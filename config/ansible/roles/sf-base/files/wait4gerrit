@@ -1,8 +1,0 @@
-#!/bin/bash
-WAIT4PORT=$(dirname ${BASH_SOURCE[0]})/wait4port
-HOST="gerrit"
-
-# Wait until port 8000 and 29418 are opened
-for port in 29418 8000; do
-    $WAIT4PORT $HOST $port
-done

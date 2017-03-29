@@ -1,9 +1,0 @@
----
-- name: "Install storyboard-webclient config.json"
-  template: src=config.json.j2 dest=/var/www/storyboard/config.json
-
-- name: "Add topmenu"
-  patch: src=index.html-topmenu.patch basedir=/var/www/storyboard
-
-- name: "Remove logout button"
-  replace: dest=/var/www/storyboard/js/templates.js regexp='<a href="#!/auth/deauthorize">(.*?)</a>' replace=''

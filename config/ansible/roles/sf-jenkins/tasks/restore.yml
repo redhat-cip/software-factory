@@ -1,5 +1,0 @@
----
-- name: "Restore data"
-  synchronize:
-    src: "{{ backup_src }}/"
-    dest: /
